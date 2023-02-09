@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
+import { debounceTime, distinctUntilChanged, Subject, switchMap } from 'rxjs';
 import { Fingers } from '../shared/fingers';
 
 @Component({
@@ -12,6 +13,11 @@ export class FingerSlidersComponent implements OnInit {
   readonly MAX_RANGE = 1000;
   readonly MIN_RANGE = -1000;
   readonly INIT_VALUE = 0;
+  private readonly URL = 'https://862851fc-5ea3-4cc8-83a9-4d279cd866e4.mock.pstmn.io';
+
+  @Input() componentName: string = 'Left' || 'Right';
+  @Input() sliderTrigger$ = new Subject<string>();
+
 
   sliders = this.fb.group({
     little: [0],
@@ -30,27 +36,43 @@ export class FingerSlidersComponent implements OnInit {
 
   ngOnInit(): void {
     this.get();
+    this.sliderTrigger$.pipe(
+      debounceTime(100)
+    ).subscribe(f => this.updateFinger(f));
   }
 
   get() {
     this.http.get<Fingers>(
-      'https://476bc48d-1c5e-4896-973a-2c70adaeab95.mock.pstmn.io/fingers',
+      `${this.URL}/${this.componentName}-hand`,
       {responseType: 'json'}
     ).subscribe(json => this.sliders.setValue(json));
   }
 
-  update() {
+  updateFinger(fingerName: string) {
+    let finger =
+    {
+      [fingerName]: this.sliders.get(fingerName)
+        ? this.sliders.get(fingerName)?.value
+        : this.sliders.get('thumbGroup')?.get(fingerName)?.value
+    }
 
+    this.http.patch(
+      `${this.URL}/${this.componentName}-hand`,
+      finger,
+      {responseType: 'json'}
+      ).subscribe(res => console.warn(res));
+  }
+
+  updateAll() {
     this.http.put(
-      'https://476bc48d-1c5e-4896-973a-2c70adaeab95.mock.pstmn.io/fingers',
-      {value: this.sliders.value},
+      `${this.URL}/${this.componentName}-hand`,
+      this.sliders.value,
       {responseType: 'json'}
       ).subscribe(res => console.warn(res));
   }
 
   reset() {
     this.sliders.reset(this.initialValues);
-    this.update();
+    this.updateAll();
   }
-
 }
