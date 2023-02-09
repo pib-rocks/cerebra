@@ -1,0 +1,17 @@
+$pib-pink: #e6007e;
+$pib-violet: #951b81;
+$pib-blue: #009fe3;
+$pib-grey: #707070;
+
+$form-range-track-bg: #dee2e6;
+$form-range-thumb-bg: $pib-blue;
+
+.nav .nav-item .nav-link {
+  color: $pib-pink;
+}
+
+$theme-colors: (
+  "primary": $pib-pink
+);
+
+@import "../../node_modules/bootstrap/scss/bootstrap";

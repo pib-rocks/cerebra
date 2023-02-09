@@ -1,0 +1,70 @@
+<div class="container-fluid">
+  <a>
+    <img src="https://pib.rocks/wp-content/uploads/2022/03/pib-Logo-1.png" alt="" class="img-fluid d-inline-block my-2"
+      width="117" height="24" style="cursor: pointer;" title="https://pib.rocks/">
+  </a>
+
+  <ul class="nav nav-tabs my-1" id="myTab" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="hand-tab" data-bs-toggle="tab" data-bs-target="#hand" type="button" role="tab" aria-controls="hand" aria-selected="true">Hand</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="arms-tab" data-bs-toggle="tab" data-bs-target="#arms" type="button" role="tab" aria-controls="arms" aria-selected="false">Arms</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="head-tab" data-bs-toggle="tab" data-bs-target="#head" type="button" role="tab" aria-controls="head" aria-selected="false">Head</button>
+    </li>
+  </ul>
+  <div class="tab-content" id="myTabContent">
+    <div class="tab-pane fade show active" id="hand" role="tabpanel" aria-labelledby="hand-tab">
+      <div class="row my-3">
+        <div class="col-5">
+          <form [formGroup]="sliders">
+            <label for="little" class="form-label" style="font-family: Open Sans, Arial, Helvetica, sans-serif;">Little finger
+              <p style="font-family: Open Sans, Arial, Helvetica, sans-serif;">Current value: {{sliders.controls['little'].value}}</p>
+            </label>
+            <input id="little" type="range" min="{{MIN_RANGE}}" max="{{MAX_RANGE}}" value="{{INIT_VALUE}}" class="form-range"
+              (mouseup)="update()" formControlName="little">
+
+            <label for="ring" class="form-label" style="font-family: Open Sans, Arial, Helvetica, sans-serif;">Ring finger
+              <p style="font-family: Open Sans, Arial, Helvetica, sans-serif;">Current value: {{sliders.controls['ring'].value}}</p>
+            </label>
+            <input id="ring" type="range" min="{{MIN_RANGE}}" max="{{MAX_RANGE}}" value="{{INIT_VALUE}}" class="form-range"
+              (mouseup)="update()" formControlName="ring">
+
+            <label for="middle" class="form-label" style="font-family: Open Sans, Arial, Helvetica, sans-serif;">Middle finger
+              <p style="font-family: Open Sans, Arial, Helvetica, sans-serif;">Current value: {{sliders.controls['middle'].value}}</p>
+            </label>
+            <input id="middle" type="range" min="{{MIN_RANGE}}" max="{{MAX_RANGE}}" value="{{INIT_VALUE}}" class="form-range"
+              (mouseup)="update()" formControlName="middle">
+
+            <label for="index" class="form-label" style="font-family: Open Sans, Arial, Helvetica, sans-serif;">Index finger
+              <p style="font-family: Open Sans, Arial, Helvetica, sans-serif;">Current value: {{sliders.controls['index'].value}}</p>
+            </label>
+            <input id="index" type="range" min="{{MIN_RANGE}}" max="{{MAX_RANGE}}" value="{{INIT_VALUE}}" class="form-range"
+              (mouseup)="update()" formControlName="index">
+
+            <div formGroupName="thumbGroup">
+              <label for="thumb" class="form-label" style="font-family: Open Sans, Arial, Helvetica, sans-serif;">Thumb
+                <p style="font-family: Open Sans, Arial, Helvetica, sans-serif;">Current value: {{sliders.controls['thumbGroup'].controls['thumb'].value}}</p>
+              </label>
+              <input id="thumb" type="range" min="{{MIN_RANGE}}" max="{{MAX_RANGE}}" value="{{INIT_VALUE}}" class="form-range"
+                (mouseup)="update()" formControlName="thumb">
+
+              <label for="thenar" class="form-label" style="font-family: Open Sans, Arial, Helvetica, sans-serif;">Thenar (thumb)
+                <p style="font-family: Open Sans, Arial, Helvetica, sans-serif;">Current value: {{sliders.controls['thumbGroup'].controls['thenar'].value}}</p>
+              </label>
+              <input id="thenar" type="range" min="{{MIN_RANGE}}" max="{{MAX_RANGE}}" value="{{INIT_VALUE}}" class="form-range"
+                (mouseup)="update()" formControlName="thenar">
+            </div>
+
+            <button type="button" class="btn btn-primary my-4" (click)="reset()">Reset</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    <div class="tab-pane fade" id="arms" role="tabpanel" aria-labelledby="arms-tab">placeholder</div>
+    <div class="tab-pane fade" id="head" role="tabpanel" aria-labelledby="head-tab">placeholder</div>
+  </div>
+</div>
+
