@@ -13,10 +13,11 @@ export class FingerSlidersComponent implements OnInit {
   readonly MAX_RANGE = 1000;
   readonly MIN_RANGE = -1000;
   readonly INIT_VALUE = 0;
-  private readonly URL = 'https://862851fc-5ea3-4cc8-83a9-4d279cd866e4.mock.pstmn.io';
+  private readonly URL = 'http://localhost:8080/api/pib/init';
 
   @Input() componentName: string = 'Left' || 'Right';
   @Input() sliderTrigger$ = new Subject<string>();
+  message!: string;
 
 
   sliders = this.fb.group({
@@ -36,18 +37,24 @@ export class FingerSlidersComponent implements OnInit {
 
   ngOnInit(): void {
     this.get();
+    /** 
     this.sliderTrigger$.pipe(
       debounceTime(100)
     ).subscribe(f => this.updateFinger(f));
+    */
+   this.sliderTrigger$.pipe(debounceTime(100)).subscribe(value => {
+    this.sendRequestToServer(value);
+   });
   }
 
   get() {
     this.http.get<Fingers>(
-      `${this.URL}/${this.componentName}-hand`,
+      `${this.URL}/${this.componentName}`,
       {responseType: 'json'}
     ).subscribe(json => this.sliders.setValue(json));
   }
 
+  /** 
   updateFinger(fingerName: string) {
     let finger =
     {
@@ -70,9 +77,25 @@ export class FingerSlidersComponent implements OnInit {
       {responseType: 'json'}
       ).subscribe(res => console.warn(res));
   }
+*/
+  sendRequestToServer(fingerName: string){
+    let finger =
+    {
+      [fingerName]: this.sliders.get(fingerName)
+        ? this.sliders.get(fingerName)?.value
+        : this.sliders.get('thumbGroup')?.get(fingerName)?.value
+    }
+    console.log(finger[fingerName]);
+    this.http.get(`http://localhost:8080/api/pib/${fingerName}/${finger[fingerName]}` ,{responseType: 'text'}).subscribe(data => {
+      
+      this.message = data;
+      
+  });
+
+  }
 
   reset() {
     this.sliders.reset(this.initialValues);
-    this.updateAll();
+    //this.updateAll();
   }
 }
