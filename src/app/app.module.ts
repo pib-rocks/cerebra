@@ -14,9 +14,9 @@ import { HandComponent } from './hand/hand.component';
   declarations: [
     AppComponent,
     FingerSlidersComponent,
+    RightArmComponent,
     HandComponent,
-    ArmComponent,
-    RightArmComponent
+    ArmComponent
   ],
   imports: [
     BrowserModule,
