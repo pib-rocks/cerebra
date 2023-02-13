@@ -13,7 +13,7 @@ export class FingerSlidersComponent implements OnInit {
   readonly MAX_RANGE = 1000;
   readonly MIN_RANGE = -1000;
   readonly INIT_VALUE = 0;
-  private readonly URL = 'http://localhost:8080/api/pib/init';
+  private readonly URL = 'http://localhost:8080/api/pib/finger';
 
   @Input() componentName: string = 'Left' || 'Right';
   @Input() sliderTrigger$ = new Subject<string>();
@@ -49,7 +49,7 @@ export class FingerSlidersComponent implements OnInit {
 
   get() {
     this.http.get<Fingers>(
-      `${this.URL}/${this.componentName}`,
+      `${this.URL}/init/${this.componentName}`,
       {responseType: 'json'}
     ).subscribe(json => this.sliders.setValue(json));
   }
@@ -79,17 +79,10 @@ export class FingerSlidersComponent implements OnInit {
   }
 */
   sendRequestToServer(fingerName: string){
-    let finger =
-    {
-      [fingerName]: this.sliders.get(fingerName)
-        ? this.sliders.get(fingerName)?.value
-        : this.sliders.get('thumbGroup')?.get(fingerName)?.value
-    }
-    console.log(finger[fingerName]);
-    this.http.get(`http://localhost:8080/api/pib/${fingerName}/${finger[fingerName]}` ,{responseType: 'text'}).subscribe(data => {
+    let finger = this.sliders.get(fingerName) ? this.sliders.get(fingerName)?.value : this.sliders.get('thumbGroup')?.get(fingerName)?.value;
+    this.http.get(`${this.URL}/${fingerName}/${finger}` ,{responseType: 'text'}).subscribe(data => {
       
       this.message = data;
-      
   });
 
   }

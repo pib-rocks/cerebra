@@ -6,11 +6,15 @@ import { HttpClientModule } from '@angular/common/http'
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { FingerSlidersComponent } from './finger-slider/finger-sliders.component';
+import { ArmComponent } from './arm/arm.component';
+import { RightArmComponent } from './arm/right-arm/right-arm.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    FingerSlidersComponent
+    FingerSlidersComponent,
+    ArmComponent,
+    RightArmComponent,
   ],
   imports: [
     BrowserModule,
