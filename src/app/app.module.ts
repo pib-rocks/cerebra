@@ -5,6 +5,8 @@ import { HttpClientModule } from '@angular/common/http'
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
+import { ArmComponent } from './arm/arm.component';
+import { RightArmComponent } from './arm/right-arm/right-arm.component';
 import { FingerSlidersComponent } from './finger-sliders/finger-sliders.component';
 import { HandComponent } from './hand/hand.component';
 
@@ -12,7 +14,9 @@ import { HandComponent } from './hand/hand.component';
   declarations: [
     AppComponent,
     FingerSlidersComponent,
-    HandComponent
+    HandComponent,
+    ArmComponent,
+    RightArmComponent
   ],
   imports: [
     BrowserModule,
