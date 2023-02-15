@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "celebra2": {
+    "cerebra2": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -13,7 +13,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/celebra2",
+            "outputPath": "dist/cerebra2",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": [
@@ -62,10 +62,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "celebra2:build:production"
+              "browserTarget": "cerebra2:build:production"
             },
             "development": {
-              "browserTarget": "celebra2:build:development"
+              "browserTarget": "cerebra2:build:development"
             }
           },
           "options": {
@@ -76,7 +76,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "celebra2:build"
+            "browserTarget": "cerebra2:build"
           }
         },
         "test": {
