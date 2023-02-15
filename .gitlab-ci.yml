@@ -1,0 +1,15 @@
+stages:
+  - init
+  - build_image
+  - test
+  - static_analysis
+  - build
+  - deploy_dev
+  - robot
+  - deploy_stable
+
+init:
+  stage: init
+  tags: ["lea"]
+  script:
+    - echo pipeline initialized
