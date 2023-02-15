@@ -1,9 +1,12 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { ArmComponent } from './arm/arm.component';
+import { HandComponent } from './hand/hand.component';
 
 const routes: Routes = [
-  {path: "arm", component: ArmComponent}
+  {path: '', component: HandComponent, pathMatch: 'full'},
+  {path: "arm", component: ArmComponent},
+
 ];
 
 @NgModule({

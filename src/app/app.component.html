@@ -6,24 +6,23 @@
 
   <ul class="nav nav-tabs my-1" id="myTab" role="tablist">
     <li class="nav-item" role="presentation">
-      <button class="nav-link active" id="hands-tab" data-bs-toggle="tab" data-bs-target="#hands" type="button" role="tab" aria-controls="hands" aria-selected="true">Hands</button>
+      <button class="nav-link active" id="hands-tab" data-bs-toggle="tab" data-bs-target="#hands" routerLink="" type="button" role="tab" aria-controls="hands" aria-selected="true">Hands</button>
     </li>
     <li class="nav-item" role="presentation">
-      <button class="nav-link" id="arms-tab" data-bs-toggle="tab" data-bs-target="#arms" type="button" role="tab" aria-controls="arms" aria-selected="false">Arms</button>
+      <button class="nav-link" id="arms-tab" data-bs-toggle="tab" data-bs-target="#arms" type="button" routerLink="arm" role="tab" aria-controls="arms" aria-selected="false">Arms</button>
     </li>
     <li class="nav-item" role="presentation">
       <button class="nav-link" id="head-tab" data-bs-toggle="tab" data-bs-target="#head" type="button" role="tab" aria-controls="head" aria-selected="false">Head</button>
     </li>
   </ul>
   <div class="tab-content" id="myTabContent">
-    <div class="tab-pane fade show active" id="hands" role="tabpanel" aria-labelledby="hands-tab">
-      <app-hand></app-hand>
-    </div>
-    <div class="tab-pane fade" id="arms" role="tabpanel" aria-labelledby="arms-tab">placeholder</div>
-    <div class="tab-pane fade" id="head" role="tabpanel" aria-labelledby="head-tab">placeholder</div>
+    <div class="tab-pane fade show active" id="hands" role="tabpanel" aria-labelledby="hands-tab"></div>
+    <div class="tab-pane fade" id="arms" role="tabpanel" aria-labelledby="arms-tab"></div>
+    <div class="tab-pane fade" id="head" role="tabpanel" aria-labelledby="head-tab"></div>
   </div>
 </div>
-
-<router-outlet></router-outlet>
+<div class="container-fluid">
+  <router-outlet></router-outlet>
+</div>
 
 
