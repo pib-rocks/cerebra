@@ -5,7 +5,7 @@ import { HandComponent } from './hand/hand.component';
 
 const routes: Routes = [
   {path: '', component: HandComponent, pathMatch: 'full'},
-  {path: "arm", component: ArmComponent},
+  {path: "arm/:side", component: ArmComponent},
 
 ];
 
