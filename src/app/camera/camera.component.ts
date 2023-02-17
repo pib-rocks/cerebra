@@ -10,7 +10,7 @@ import { Subject } from 'rxjs';
 export class CameraComponent {
   componentName = "Live view";
 
-  @Input() sliderTrigger$ = new Subject<string>();
+  sliderTrigger$ = new Subject<string>();
   refreshRateControl = new FormControl(0.5);
 
 

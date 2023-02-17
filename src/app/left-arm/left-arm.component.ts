@@ -1,16 +1,15 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
-import { ActivatedRoute, Params } from '@angular/router';
+import { ActivatedRoute, Params, Router } from '@angular/router';
 import { debounceTime, Subject } from 'rxjs';
 
 @Component({
-  selector: 'app-arm',
-  templateUrl: './arm.component.html',
-  styleUrls: ['./arm.component.css']
+  selector: 'app-left-arm',
+  templateUrl: './left-arm.component.html',
+  styleUrls: ['./left-arm.component.css']
 })
-export class ArmComponent implements OnInit{
-
-  constructor(private route: ActivatedRoute){}
+export class LeftArmComponent {
+  constructor(){}
 
   sliders: FormGroup = new FormGroup({
     SidePosition: new FormControl(0),
@@ -26,10 +25,7 @@ export class ArmComponent implements OnInit{
   side!: string;
 
   ngOnInit(): void {
-    this.route.params.subscribe((params: Params) => {
-      this.side = params['side'];
-      console.log(this.side);
-    });
+    console.log('Component initialized');
     this.sliderTrigger$.pipe(debounceTime(1000)).subscribe(value => {
       console.log(value);
     });
