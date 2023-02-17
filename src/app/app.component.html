@@ -15,14 +15,9 @@
       <button class="nav-link" id="arms-tab" data-bs-toggle="tab" data-bs-target="#arms" type="button" routerLinkActive="active" routerLink="arm/right" role="tab" aria-controls="arms" aria-selected="false">Right Arm</button>
     </li>
     <li class="nav-item" role="presentation">
-      <button class="nav-link" id="head-tab" data-bs-toggle="tab" data-bs-target="#head" type="button" role="tab" aria-controls="head" aria-selected="false">Head</button>
+      <button class="nav-link" id="camera-tab" data-bs-toggle="tab" data-bs-target="#camera" type="button" routerLinkActive="active" routerLink="camera" role="tab" aria-controls="camera" aria-selected="false">Camera</button>
     </li>
   </ul>
-  <div class="tab-content" id="myTabContent">
-    <div class="tab-pane fade show active" id="hands" role="tabpanel" aria-labelledby="hands-tab"></div>
-    <div class="tab-pane fade" id="arms" role="tabpanel" aria-labelledby="arms-tab"></div>
-    <div class="tab-pane fade" id="head" role="tabpanel" aria-labelledby="head-tab"></div>
-  </div>
 </div>
 <div class="container-fluid">
   <router-outlet></router-outlet>

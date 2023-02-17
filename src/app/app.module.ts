@@ -8,13 +8,15 @@ import { AppComponent } from './app.component';
 import { ArmComponent } from './arm/arm.component';
 import { FingerSlidersComponent } from './finger-sliders/finger-sliders.component';
 import { HandComponent } from './hand/hand.component';
+import { CameraComponent } from './camera/camera.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     FingerSlidersComponent,
     HandComponent,
-    ArmComponent
+    ArmComponent,
+    CameraComponent
   ],
   imports: [
     BrowserModule,
