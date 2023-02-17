@@ -28,7 +28,6 @@
               "src/scss/custom.css"
             ],
             "scripts": [
-              "node_modules/bootstrap/dist/js/bootstrap.js"
             ]
           },
           "configurations": {
