@@ -1,5 +1,18 @@
+stages:
+  - init
+  - sonar-scan
+  # - dependencies
+  # - build_image
+  # - test
+  # - build
+  # - deploy_dev
+  # - robot
+  # - deploy_stable
+
 sonarqube-check:
-  image:
+  stage: sonar-scan
+  tags: ["lea"]
+  image: 
     name: sonarsource/sonar-scanner-cli:latest
     entrypoint: [""]
   variables:
@@ -9,25 +22,65 @@ sonarqube-check:
     key: "${CI_JOB_NAME}"
     paths:
       - .sonar/cache
-  script:
+  script: 
     - sonar-scanner
   allow_failure: true
   only:
     - merge_requests
-    - master # or the name of your main branch
+    - master
     - develop
-stages:
-  - init
-  - build_image
-  - test
-  - static_analysis
-  - build
-  - deploy_dev
-  - robot
-  - deploy_stable
 
 init:
   stage: init
   tags: ["lea"]
+  only:
+    - develop
   script:
     - echo pipeline initialized
+
+# install_dependencies:
+#   image: node:18-alpine
+#   stage: dependencies
+#   script:
+#     - npm install
+#   only:
+#     - merge_requests
+#     - develop
+#   cache:
+#     key:
+#       files:
+#         - package-lock.json
+#     paths:
+#       - node_modules
+#   tags: ["lea"]
+
+# static_analysis:
+#   image: node:18-alpine
+#   stage: test
+#   script:
+#     - npm link @angular/cli
+#     - ng lint
+#   only:
+#     - merge_requests
+#     - develop
+#   cache:
+#     key:
+#       files:
+#         - package-lock.json
+#     paths:
+#       - node_modules
+#     policy: pull
+#   tags: ["lea"]
+
+# test:
+#   image: trion/ng-cli-karma
+#   stage: test
+#   allow_failure: false
+#   script:
+#   - ng test --progress false --watch false
+#   only:
+#     - merge_requests
+#     - develop
+#   tags: ["lea"]
+
+

@@ -9,7 +9,7 @@ import { Fingers } from '../shared/fingers';
   templateUrl: './finger-sliders.component.html',
   styleUrls: ['./finger-sliders.component.css']
 })
-export class FingerSlidersComponent implements OnInit {
+export class FingerSlidersComponent {
   readonly MAX_RANGE = 1000;
   readonly MIN_RANGE = -1000;
   readonly INIT_VALUE = 0;
@@ -34,61 +34,4 @@ export class FingerSlidersComponent implements OnInit {
   initialValues = this.sliders.value;
 
   constructor(private fb: FormBuilder, private http: HttpClient) {}
-
-  ngOnInit(): void {
-    this.get();
-    /** 
-    this.sliderTrigger$.pipe(
-      debounceTime(100)
-    ).subscribe(f => this.updateFinger(f));
-    */
-   this.sliderTrigger$.pipe(debounceTime(100)).subscribe(value => {
-    this.sendRequestToServer(value);
-   });
-  }
-
-  get() {
-    this.http.get<Fingers>(
-      `${this.URL}/init/${this.componentName}`,
-      {responseType: 'json'}
-    ).subscribe(json => this.sliders.setValue(json));
-  }
-
-  /** 
-  updateFinger(fingerName: string) {
-    let finger =
-    {
-      [fingerName]: this.sliders.get(fingerName)
-        ? this.sliders.get(fingerName)?.value
-        : this.sliders.get('thumbGroup')?.get(fingerName)?.value
-    }
-
-    this.http.patch(
-      `${this.URL}/${this.componentName}-hand`,
-      finger,
-      {responseType: 'json'}
-      ).subscribe(res => console.warn(res));
-  }
-
-  updateAll() {
-    this.http.put(
-      `${this.URL}/${this.componentName}-hand`,
-      this.sliders.value,
-      {responseType: 'json'}
-      ).subscribe(res => console.warn(res));
-  }
-*/
-  sendRequestToServer(fingerName: string){
-    let finger = this.sliders.get(fingerName) ? this.sliders.get(fingerName)?.value : this.sliders.get('thumbGroup')?.get(fingerName)?.value;
-    this.http.get(`${this.URL}/${fingerName}/${finger}` ,{responseType: 'text'}).subscribe(data => {
-      
-      this.message = data;
-  });
-
-  }
-
-  reset() {
-    this.sliders.reset(this.initialValues);
-    //this.updateAll();
-  }
 }

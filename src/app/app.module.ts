@@ -5,18 +5,22 @@ import { HttpClientModule } from '@angular/common/http'
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { ArmComponent } from './arm/arm.component';
-import { RightArmComponent } from './arm/right-arm/right-arm.component';
 import { FingerSlidersComponent } from './finger-sliders/finger-sliders.component';
 import { HandComponent } from './hand/hand.component';
+import { RouteReuseStrategy } from '@angular/router';
+import { CustomRouteReuseStrategy } from './shared/CustomRouteReuseStrategy';
+import { CameraComponent } from './camera/camera.component';
+import { LeftArmComponent } from './left-arm/left-arm.component';
+import { RightArmComponent } from './right-arm/right-arm.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     FingerSlidersComponent,
-    RightArmComponent,
     HandComponent,
-    ArmComponent
+    CameraComponent,
+    LeftArmComponent,
+    RightArmComponent,
   ],
   imports: [
     BrowserModule,
@@ -24,7 +28,8 @@ import { HandComponent } from './hand/hand.component';
     ReactiveFormsModule,
     HttpClientModule
   ],
-  providers: [],
+  providers: [
+  ],
   bootstrap: [AppComponent]
 })
-export class AppModule { }
+export class AppModule {}
