@@ -1,13 +1,67 @@
 stages:
   - init
-  - sonar-scan
   # - dependencies
-  # - build_image
-  # - test
-  # - build
-  # - deploy_dev
-  # - robot
-  # - deploy_stable
+  - test
+  - sonar-scan
+  - build
+  # - deploy
+
+variables:
+  IMAGE: node:18-bullseye
+
+init:
+  stage: init
+  tags: ["lea"]
+  script:
+    - echo "pipeline initialized"
+  only:
+    # - merge_requests
+    # - develop
+    # - master
+    - PR-80
+
+static_analysis:
+  image: ${IMAGE}
+  stage: test
+  allow_failure: true
+  script:
+    - echo "runing static analysis"
+    - npm link @angular/cli
+    - ng lint
+  only:
+    # - merge_requests
+    # - develop
+    # - master
+    - PR-80
+  cache:
+    key:
+      files:
+        - package-lock.json
+    paths:
+      - node_modules
+    policy: pull
+  tags: ["lea"]
+
+run_tests:
+  image: ${IMAGE}
+  stage: test
+  allow_failure: false
+  before_script:
+    - echo "runing unit tests"
+    - apt-get update
+    - wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+    - apt install -y ./google-chrome*.deb;
+    - export CHROME_BIN=/usr/bin/google-chrome
+  script:
+    # - npm ci
+    - npm link @angular/cli
+    - ng test --code-coverage --watch=false --browsers=NoSandbox
+  only:
+    # - merge_requests
+    # - develop
+    # - master
+    - PR-80
+  tags: ["lea"]
 
 sonarqube-check:
   stage: sonar-scan
@@ -23,64 +77,27 @@ sonarqube-check:
     paths:
       - .sonar/cache
   script: 
+    - echo "runing sonarqube check"
     - sonar-scanner
   allow_failure: true
   only:
-    - merge_requests
-    - master
-    - develop
+    # - merge_requests
+    # - develop
+    # - master
+    - PR-80
 
-init:
-  stage: init
-  tags: ["lea"]
-  only:
-    - develop
+build:
+  stage: build
+  image: ${IMAGE}
   script:
-    - echo pipeline initialized
-
-# install_dependencies:
-#   image: node:18-alpine
-#   stage: dependencies
-#   script:
-#     - npm install
-#   only:
-#     - merge_requests
-#     - develop
-#   cache:
-#     key:
-#       files:
-#         - package-lock.json
-#     paths:
-#       - node_modules
-#   tags: ["lea"]
-
-# static_analysis:
-#   image: node:18-alpine
-#   stage: test
-#   script:
-#     - npm link @angular/cli
-#     - ng lint
-#   only:
-#     - merge_requests
-#     - develop
-#   cache:
-#     key:
-#       files:
-#         - package-lock.json
-#     paths:
-#       - node_modules
-#     policy: pull
-#   tags: ["lea"]
-
-# test:
-#   image: trion/ng-cli-karma
-#   stage: test
-#   allow_failure: false
-#   script:
-#   - ng test --progress false --watch false
-#   only:
-#     - merge_requests
-#     - develop
-#   tags: ["lea"]
-
-
+    - npm link @angular/cli
+    - ng build --configuration production
+    - ls -la ./dist/cerebra2
+  artifacts:
+    expire_in: 12 hrs
+    paths:
+    - $CI_PROJECT_DIR/dist
+  only:
+    - master
+    - PR-80
+  tags: ["lea"]
