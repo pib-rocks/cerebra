@@ -6,7 +6,10 @@
 
   <ul class="nav nav-tabs my-1" id="myTab" role="tablist">
     <li class="nav-item" role="presentation">
-      <button class="nav-link" id="hands-tab" data-bs-toggle="tab" data-bs-target="#hands" [routerLinkActiveOptions]="{exact: true}" routerLinkActive="active" routerLink="" type="button" role="tab" aria-controls="hands" aria-selected="true">Hands</button>
+      <button class="nav-link" id="hands-tab" data-bs-toggle="tab" data-bs-target="#hands" [routerLinkActiveOptions]="{exact: true}" routerLinkActive="active" routerLink="hand/left" type="button" role="tab" aria-controls="hands" aria-selected="true">Left Hand</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="hands-tab" data-bs-toggle="tab" data-bs-target="#hands"  routerLinkActive="active" routerLink="hand/right" type="button" role="tab" aria-controls="hands" aria-selected="true">Right Hand</button>
     </li>
     <li class="nav-item" role="presentation">
       <button class="nav-link" id="arms-tab" data-bs-toggle="tab" data-bs-target="#arms" type="button" routerLinkActive="active" routerLink="arm/left" role="tab" aria-controls="arms" aria-selected="false">Left Arm</button>
@@ -22,5 +25,3 @@
 <div class="container-fluid">
   <router-outlet></router-outlet>
 </div>
-
-

@@ -12,7 +12,7 @@ export class CameraComponent {
 
   sliderTrigger$ = new Subject<string>();
   refreshRateControl = new FormControl(0.5);
-  selectedSize: string = '480p';
+  selectedSize = '480p';
 
   setActive(event: MouseEvent) {
     const target = event.target as HTMLAnchorElement;
