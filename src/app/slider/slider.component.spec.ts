@@ -5,7 +5,7 @@ import * as ROSLIB from 'roslib';
 
 import { SliderComponent } from './slider.component';
 
-fdescribe('FingerSliderComponent', () => {
+fdescribe('SliderComponent', () => {
   let component: SliderComponent;
   let fixture: ComponentFixture<SliderComponent>;
 
@@ -35,10 +35,6 @@ fdescribe('FingerSliderComponent', () => {
     expect(slider.min).toBe('-1000');
   });
 
-  xit('should have a topic', () => {
-    expect(component.topicName).toBeTruthy();
-  });
-
   it('should call sendMessage() on input', () => {
     spyOn(component, 'sendMessage');
     const slider = fixture.nativeElement.querySelector('input[type="range"]');
@@ -55,7 +51,7 @@ fdescribe('FingerSliderComponent', () => {
     const json = JSON.parse(jsonStr);
     const value = Number(json["data"]);
 
-    component.messageReceiver.next(value);
+    component.messageReceiver$.next(value);
 
     fixture.detectChanges();
     expect(slider.value).toBe('50');

@@ -33,7 +33,7 @@ export class RosService {
     });
   }
 
-  subscribeTopic(topicName: string, receiver: Subject<number>) {
+  subscribeTopic(topicName: string, receiver$: Subject<number>) {
     if (this.ros.isConnected) {
       const topic = new ROSLIB.Topic({
         ros: this.ros,
@@ -46,7 +46,7 @@ export class RosService {
         console.log('Get message from ' + topicName + ': ' + jsonStr);
         const json = JSON.parse(jsonStr);
         const value = Number(json["data"]);
-        receiver.next(value);
+        receiver$.next(value);
       })
 
       this.topics.push(topic);

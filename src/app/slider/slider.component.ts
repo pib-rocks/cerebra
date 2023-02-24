@@ -17,20 +17,20 @@ export class SliderComponent implements OnInit {
   @Input() labelName = '';
 
   @Input() sliderTrigger$ = new Subject<string>();
-  messageReceiver = new Subject<number>();
+  messageReceiver$ = new Subject<number>();
 
   formControl: FormControl = new FormControl(this.currentValue);
-
 
   constructor(private cdRef: ChangeDetectorRef, private rosService: RosService) {}
 
   ngOnInit(): void {
+    this.messageReceiver$.subscribe(value => {
+      this.formControl.setValue(this.getValueWithinRange(value));
+    });
+
     this.rosService.isInitialized$.subscribe((isInitialized: any) => {
       if (isInitialized) {
-        this.messageReceiver.subscribe(value => {
-          this.formControl.setValue(this.getValueWithinRange(value));
-        });
-        this.rosService.subscribeTopic(this.topicName, this.messageReceiver);
+        this.rosService.subscribeTopic(this.topicName, this.messageReceiver$);
       }
     })
   }
