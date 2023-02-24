@@ -34,12 +34,12 @@ fdescribe('CameraComponent', () => {
   it('should have a maximum range at 1', () => {
     const slider = fixture.nativeElement.querySelector('#refreshRate');
     expect(slider.max).toBe('1');
-  })
+  });
 
   it('should have a mininum range at 0.1', () => {
     const slider = fixture.nativeElement.querySelector('#refreshRate');
     expect(slider.min).toBe('0.1');
-  })
+  });
 
   it('should display an image that is loaded', (done: DoneFn) => {
     const imgElement = fixture.nativeElement.querySelector('img');
