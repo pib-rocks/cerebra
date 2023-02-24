@@ -9,7 +9,5 @@ import { Router } from '@angular/router';
 export class AppComponent {
   title = 'cerebra2';
   constructor(private router: Router){}
-  routeToLeftArm(){
-    this.router.navigate(['/arm/left'])
-  }
+
 }

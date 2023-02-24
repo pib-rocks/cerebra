@@ -8,8 +8,8 @@ import { AppComponent } from './app.component';
 import { SliderComponent } from './slider/slider.component';
 import { HandComponent } from './hand/hand.component';
 import { CameraComponent } from './camera/camera.component';
-import { LeftArmComponent } from './left-arm/left-arm.component';
-import { RightArmComponent } from './right-arm/right-arm.component';
+import { ArmSliderComponent } from './arm-slider/arm-slider.component';
+import { ArmComponent } from './arm/arm.component';
 
 @NgModule({
   declarations: [
@@ -17,8 +17,8 @@ import { RightArmComponent } from './right-arm/right-arm.component';
     SliderComponent,
     HandComponent,
     CameraComponent,
-    LeftArmComponent,
-    RightArmComponent,
+    ArmSliderComponent,
+    ArmComponent,
   ],
   imports: [
     BrowserModule,

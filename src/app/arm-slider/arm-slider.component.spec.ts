@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { LeftArmComponent } from './left-arm.component';
+import { LeftArmComponent } from './arm-slider.component';
 
 describe('LeftArmComponent', () => {
   let component: LeftArmComponent;
