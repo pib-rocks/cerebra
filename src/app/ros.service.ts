@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
-import { FormControl } from '@angular/forms';
 import * as ROSLIB from 'roslib';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -10,13 +9,11 @@ export class RosService {
   private isInitializedSubject = new BehaviorSubject<boolean>(false);
   isInitialized$ = this.isInitializedSubject.asObservable();
 
-  private static rosService: RosService = new RosService();
-
   private ros: ROSLIB.Ros;
 
   private topics: ROSLIB.Topic[] = [];
 
-  private constructor() {
+  constructor() {
     this.ros = new ROSLIB.Ros({
       url: 'ws://192.168.220.38:9090',
     });
@@ -36,20 +33,20 @@ export class RosService {
     });
   }
 
-  subscribe(topicName: string, formControl: FormControl) {
+  subscribeTopic(topicName: string, receiver: Subject<number>) {
     if (this.ros.isConnected) {
       const topic = new ROSLIB.Topic({
         ros: this.ros,
-        name: '/' + topicName,
+        name: topicName,
         messageType: 'std_msgs/String'
       });
 
       topic.subscribe((message) => {
         const jsonStr = JSON.stringify(message);
-        console.log('Get message from /' + topicName + ': ' + jsonStr);
+        console.log('Get message from ' + topicName + ': ' + jsonStr);
         const json = JSON.parse(jsonStr);
         const value = Number(json["data"]);
-        formControl.setValue(value);
+        receiver.next(value);
       })
 
       this.topics.push(topic);
@@ -57,10 +54,10 @@ export class RosService {
   }
 
   sendMessage(topicName: string, value: number) {
-    console.log('Send message to /' + topicName + ': data: ' + value);
     const message = new ROSLIB.Message({
       data: String(value)
     });
+    console.log('Send message to ' + topicName + ': ' + JSON.stringify(message));
     this.getTopicByName(topicName).publish(message);
   }
 
@@ -70,8 +67,8 @@ export class RosService {
     return filteredTopics.length > 0
       ? filteredTopics[0]
       : new ROSLIB.Topic({
-        ros: this.ros!,
-        name: '/' + topicName,
+        ros: this.ros,
+        name: topicName,
         messageType: 'std_msgs/String'
       });
   }
@@ -82,11 +79,11 @@ export class RosService {
   }
 
   isSubscribed(topicName: string): boolean {
-    const filteredTopics = this.topics.filter(t => t.name === "/" + topicName);
+    const filteredTopics = this.topics.filter(t => t.name === topicName);
     return filteredTopics.length > 0
   }
 
-  static get Instance() {
-    return RosService.rosService;
+  get Ros() {
+    return this.ros;
   }
 }

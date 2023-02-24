@@ -7,7 +7,6 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { SliderComponent } from './slider/slider.component';
 import { HandComponent } from './hand/hand.component';
-import { RouteReuseStrategy } from '@angular/router';
 import { CameraComponent } from './camera/camera.component';
 import { LeftArmComponent } from './left-arm/left-arm.component';
 import { RightArmComponent } from './right-arm/right-arm.component';
