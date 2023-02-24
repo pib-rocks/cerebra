@@ -1,6 +1,6 @@
 stages:
   - init
-  # - dependencies
+  - dependencies
   - test
   - sonar-scan
   - build
@@ -14,11 +14,9 @@ init:
   tags: ["lea"]
   script:
     - echo "pipeline initialized"
-  only:
-    # - merge_requests
-    # - develop
-    # - master
-    - PR-80
+  rules:
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"
+    - if: $CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "master"
 
 static_analysis:
   image: ${IMAGE}
@@ -28,11 +26,10 @@ static_analysis:
     - echo "runing static analysis"
     - npm link @angular/cli
     - ng lint
-  only:
-    # - merge_requests
-    # - develop
-    # - master
-    - PR-80
+
+  rules:
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"
+    - if: $CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "master"
   cache:
     key:
       files:
@@ -53,14 +50,15 @@ run_tests:
     - apt install -y ./google-chrome*.deb;
     - export CHROME_BIN=/usr/bin/google-chrome
   script:
-    # - npm ci
+    - npm ci
     - npm link @angular/cli
     - ng test --code-coverage --watch=false --browsers=NoSandbox
-  only:
-    # - merge_requests
-    # - develop
-    # - master
-    - PR-80
+  artifacts:
+    paths:
+    - $CI_PROJECT_DIR/coverage
+  rules:
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"
+    - if: $CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "master"
   tags: ["lea"]
 
 sonarqube-check:
@@ -78,13 +76,12 @@ sonarqube-check:
       - .sonar/cache
   script: 
     - echo "runing sonarqube check"
+    - ls -la ./coverage
     - sonar-scanner
   allow_failure: true
-  only:
-    # - merge_requests
-    # - develop
-    # - master
-    - PR-80
+  rules:
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"
+    - if: $CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "master"
 
 build:
   stage: build
@@ -97,7 +94,7 @@ build:
     expire_in: 12 hrs
     paths:
     - $CI_PROJECT_DIR/dist
-  only:
-    - master
-    - PR-80
+  rules:
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"
+    - if: $CI_COMMIT_BRANCH == "master"
   tags: ["lea"]
