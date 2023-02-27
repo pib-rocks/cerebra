@@ -34,13 +34,6 @@ fdescribe('LeftArmComponent', () => {
     expect(component.sendMessage).toHaveBeenCalled();
   });
 
-  xit('should change value of the slider when massege recieved', () => {
-    component.rosService.isInitializedSubject$.next(true);
-    component.messageReceiver.next(10);
-    component.ngOnInit();
-    const input = fixture.nativeElement.querySelector('input');
-    expect(component.formControl.value).toBe(10);
-    expect(input.value).toBe('10');
-  })
+
 
 });

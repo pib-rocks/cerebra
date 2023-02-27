@@ -1,6 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { Subject } from 'rxjs';
+import { RosService } from '../shared/ros.service';
 
 @Component({
   selector: 'app-slider',
