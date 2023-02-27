@@ -10,27 +10,27 @@ import { RosService } from '../shared/ros.service';
 })
 export class SliderComponent implements OnInit {
 
-  @Input() maxRange = 1000;
-  @Input() minRange = -1000;
-  @Input() currentValue = 0;
+  maxRange = 1000;
+  minRange = -1000;
+  currentValue = 0;
   @Input() topicName = '';
   @Input() labelName = '';
 
   @Input() sliderTrigger$ = new Subject<string>();
-  messageReceiver = new Subject<number>();
+  messageReceiver$ = new Subject<number>();
 
   formControl: FormControl = new FormControl(this.currentValue);
 
-
-  constructor(private rosService: RosService) {}
+  constructor( private rosService: RosService) {}
 
   ngOnInit(): void {
+    this.messageReceiver$.subscribe(value => {
+      this.formControl.setValue(this.getValueWithinRange(value));
+    });
+
     this.rosService.isInitialized$.subscribe((isInitialized: any) => {
       if (isInitialized) {
-        this.messageReceiver.subscribe(value => {
-          this.formControl.setValue(this.getValueWithinRange(value));
-        });
-        this.rosService.subscribeTopic(this.topicName, this.messageReceiver);
+        this.rosService.subscribeTopic(this.topicName, this.messageReceiver$);
       }
     })
   }

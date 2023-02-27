@@ -18,7 +18,6 @@ export class RosService {
       url: 'ws://192.168.220.38:9090',
     });
 
-    console.log('Connecting to ros');
     this.ros.on('connection', () => {
       console.log('Connected to ROS');
       this.isInitializedSubject.next(true);
@@ -33,7 +32,7 @@ export class RosService {
     });
   }
 
-  subscribeTopic(topicName: string, receiver: Subject<number>) {
+  subscribeTopic(topicName: string, receiver$: Subject<number>) {
     if (this.ros.isConnected) {
       const topic = this.createTopic(topicName);
 
@@ -42,7 +41,7 @@ export class RosService {
         console.log('Get message from ' + topicName + ': ' + jsonStr);
         const json = JSON.parse(jsonStr);
         const value = Number(json["data"]);
-        receiver.next(value);
+        receiver$.next(value);
       })
 
       this.topics.push(topic);

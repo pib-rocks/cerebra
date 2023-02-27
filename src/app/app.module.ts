@@ -8,7 +8,6 @@ import { AppComponent } from './app.component';
 import { SliderComponent } from './slider/slider.component';
 import { HandComponent } from './hand/hand.component';
 import { CameraComponent } from './camera/camera.component';
-import { ArmSliderComponent } from './arm-slider/arm-slider.component';
 import { ArmComponent } from './arm/arm.component';
 
 @NgModule({
@@ -17,7 +16,6 @@ import { ArmComponent } from './arm/arm.component';
     SliderComponent,
     HandComponent,
     CameraComponent,
-    ArmSliderComponent,
     ArmComponent,
   ],
   imports: [

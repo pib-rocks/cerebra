@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, Input, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { ActivatedRoute, Params } from '@angular/router';
 
 @Component({
@@ -10,7 +10,7 @@ export class HandComponent implements OnInit {
 
   @Input() side = "Left";
 
-  constructor(private route: ActivatedRoute) {}
+  constructor(private route: ActivatedRoute,private cdRef: ChangeDetectorRef) {}
 
   leftFingers = [
     {topic: "/thumb_left_stretch", label:"Thumb"},
@@ -36,7 +36,16 @@ export class HandComponent implements OnInit {
       })
     }
 
-    reset() {
+    reset(event: MouseEvent) {
       console.log("reset");
+      const target = event.target as HTMLButtonElement;
+      const sliders = target.parentElement?.parentElement?.querySelectorAll("app-slider");
+      const slidersArray: Element[] = [];
+      sliders?.forEach(slider => slidersArray.push(slider));
+      for(const slider of slidersArray) {
+        const input = slider.children[1] as HTMLInputElement;
+        input.value = '0';
+        input.dispatchEvent(new Event('input'));
+      }
     }
 }
