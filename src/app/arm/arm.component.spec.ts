@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { RightArmComponent } from './arm.component';
+import { ArmComponent } from './arm.component';
 
-describe('RightArmComponent', () => {
-  let component: RightArmComponent;
-  let fixture: ComponentFixture<RightArmComponent>;
+describe('ArmComponent', () => {
+  let component: ArmComponent;
+  let fixture: ComponentFixture<ArmComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ RightArmComponent ]
+      declarations: [ ArmComponent ]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(RightArmComponent);
+    fixture = TestBed.createComponent(ArmComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
@@ -20,4 +20,6 @@ describe('RightArmComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  
 });

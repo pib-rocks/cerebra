@@ -1,7 +1,6 @@
-import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { Subject } from 'rxjs';
-import { RosService } from '../ros.service';
 
 @Component({
   selector: 'app-slider',
@@ -22,7 +21,7 @@ export class SliderComponent implements OnInit {
   formControl: FormControl = new FormControl(this.currentValue);
 
 
-  constructor(private cdRef: ChangeDetectorRef, private rosService: RosService) {}
+  constructor(private rosService: RosService) {}
 
   ngOnInit(): void {
     this.rosService.isInitialized$.subscribe((isInitialized: any) => {

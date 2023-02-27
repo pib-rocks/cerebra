@@ -1,8 +1,7 @@
-import { ChangeDetectorRef, Component, Input } from '@angular/core';
-import { FormControl, FormGroup } from '@angular/forms';
-import { ActivatedRoute, Params, Router } from '@angular/router';
-import { debounceTime, Subject } from 'rxjs';
-import { RosService } from '../ros.service';
+import { Component, Input } from '@angular/core';
+import { FormControl } from '@angular/forms';
+import {  Subject } from 'rxjs';
+import { RosService } from '../shared/ros.service';
 
 @Component({
   selector: 'app-arm-slider',
@@ -10,9 +9,9 @@ import { RosService } from '../ros.service';
   styleUrls: ['./arm-slider.component.css']
 })
 export class ArmSliderComponent {
-  @Input() maxRange = 1000;
-  @Input() minRange = -1000;
-  @Input() currentValue = 0;
+  maxRange = 1000;
+  minRange = -1000;
+  currentValue = 0;
   @Input() topicName = '';
   @Input() labelName = '';
 

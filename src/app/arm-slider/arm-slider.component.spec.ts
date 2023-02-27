@@ -1,18 +1,21 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ReactiveFormsModule } from '@angular/forms';
 
-import { LeftArmComponent } from './arm-slider.component';
+import { ArmSliderComponent } from './arm-slider.component';
 
-describe('LeftArmComponent', () => {
-  let component: LeftArmComponent;
-  let fixture: ComponentFixture<LeftArmComponent>;
+fdescribe('LeftArmComponent', () => {
+  let component: ArmSliderComponent;
+  let fixture: ComponentFixture<ArmSliderComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ LeftArmComponent ]
+      declarations: [ ArmSliderComponent ],
+      imports: [ ReactiveFormsModule ]
+
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(LeftArmComponent);
+    fixture = TestBed.createComponent(ArmSliderComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
@@ -20,4 +23,24 @@ describe('LeftArmComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('should call sendMessage when the input event is triggered', () => {
+    spyOn(component, 'sendMessage');
+
+    const input = fixture.nativeElement.querySelector('input');
+    input.dispatchEvent(new Event('input'));
+    input.value = 10;
+    console.log(input.value);
+    expect(component.sendMessage).toHaveBeenCalled();
+  });
+
+  xit('should change value of the slider when massege recieved', () => {
+    component.rosService.isInitializedSubject$.next(true);
+    component.messageReceiver.next(10);
+    component.ngOnInit();
+    const input = fixture.nativeElement.querySelector('input');
+    expect(component.formControl.value).toBe(10);
+    expect(input.value).toBe('10');
+  })
+
 });
