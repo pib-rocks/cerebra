@@ -46,14 +46,9 @@ fdescribe('SliderComponent', () => {
   it('should change value after receiving a message', () => {
     const slider = fixture.nativeElement.querySelector('input[type="range"]');
 
-    const message: ROSLIB.Message = {data:'50'};
-    const jsonStr = JSON.stringify(message);
-    const json = JSON.parse(jsonStr);
-    const value = Number(json["data"]);
-
-    component.messageReceiver$.next(value);
+    component.messageReceiver$.next(500);
 
     fixture.detectChanges();
-    expect(slider.value).toBe('50');
+    expect(slider.value).toBe('500');
   });
 });
