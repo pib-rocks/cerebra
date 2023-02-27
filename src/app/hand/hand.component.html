@@ -2,16 +2,16 @@
   <div class="row">
     <div class="col">
       <h2>{{side | titlecase}} Hand</h2>
-      <div class="ng-container" *ngIf="side === 'left'">
-        <div class="ng-container" *ngFor="let f of leftFingers" #leftContainer>
+      <ng-container  *ngIf="side === 'left'">
+        <ng-container *ngFor="let f of leftFingers" #leftContainer>
           <app-slider [topicName]="f.topic" [labelName]="f.label"></app-slider>
-        </div>
-      </div>
-      <div class="ng-container" *ngIf="side === 'right'">
-        <div class="ng-container" *ngFor="let f of rightFingers" #rightContainer>
+        </ng-container>
+      </ng-container>
+      <ng-container  *ngIf="side === 'right'">
+        <ng-container  *ngFor="let f of rightFingers" #rightContainer>
           <app-slider [topicName]="f.topic" [labelName]="f.label"></app-slider>
-        </div>
-      </div>
+        </ng-container>
+      </ng-container>
       <div class="p-8"></div>
     </div>
     <div class="col">

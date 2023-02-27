@@ -1,7 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { FormControl, FormGroup } from '@angular/forms';
 import { ActivatedRoute, Params } from '@angular/router';
-import { debounceTime, Subject } from 'rxjs';
 
 @Component({
   selector: 'app-right-arm',

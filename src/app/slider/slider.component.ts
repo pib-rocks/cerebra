@@ -1,7 +1,7 @@
-import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { Subject } from 'rxjs';
-import { RosService } from '../ros.service';
+import { RosService } from '../shared/ros.service';
 
 @Component({
   selector: 'app-slider',
@@ -10,9 +10,9 @@ import { RosService } from '../ros.service';
 })
 export class SliderComponent implements OnInit {
 
-  @Input() maxRange = 1000;
-  @Input() minRange = -1000;
-  @Input() currentValue = 0;
+  maxRange = 1000;
+  minRange = -1000;
+  currentValue = 0;
   @Input() topicName = '';
   @Input() labelName = '';
 
@@ -21,7 +21,7 @@ export class SliderComponent implements OnInit {
 
   formControl: FormControl = new FormControl(this.currentValue);
 
-  constructor(private cdRef: ChangeDetectorRef, private rosService: RosService) {}
+  constructor( private rosService: RosService) {}
 
   ngOnInit(): void {
     this.messageReceiver$.subscribe(value => {
