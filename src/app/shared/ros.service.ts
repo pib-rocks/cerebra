@@ -34,11 +34,7 @@ export class RosService {
 
   subscribeTopic(topicName: string, receiver$: Subject<number>) {
     if (this.ros.isConnected) {
-      const topic = new ROSLIB.Topic({
-        ros: this.ros,
-        name: topicName,
-        messageType: 'std_msgs/String'
-      });
+      const topic = this.createTopic(topicName);
 
       topic.subscribe((message) => {
         const jsonStr = JSON.stringify(message);
@@ -50,6 +46,14 @@ export class RosService {
 
       this.topics.push(topic);
     }
+  }
+
+  public createTopic(topicName: string) {
+    return new ROSLIB.Topic({
+      ros: this.ros,
+      name: topicName,
+      messageType: 'std_msgs/String'
+    });
   }
 
   sendMessage(topicName: string, value: number) {

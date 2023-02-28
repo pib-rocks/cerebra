@@ -1,0 +1,21 @@
+<div class="container-fluid">
+    <div class="row">
+      <div class="col">
+        <h2>{{side | titlecase}} Arm</h2>
+        <ng-container *ngIf="side === 'left'">
+          <ng-container *ngFor="let f of leftArm">
+            <app-slider [topicName]="f.topic" [labelName]="f.label | titlecase"></app-slider>
+          </ng-container>
+        </ng-container>
+        <ng-container *ngIf="side === 'right'">
+          <ng-container *ngFor="let f of rightArm">
+            <app-slider [topicName]="f.topic" [labelName]="f.label | titlecase "></app-slider>
+          </ng-container>
+        </ng-container>
+        <div class="p-8"></div>
+      </div>
+      <div class="col">
+      </div>
+    </div>
+  </div>
+  
