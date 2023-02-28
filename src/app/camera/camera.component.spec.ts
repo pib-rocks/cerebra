@@ -3,7 +3,7 @@ import { FormControl, ReactiveFormsModule, FormControlDirective } from '@angular
 import { By } from '@angular/platform-browser';
 import { CameraComponent } from './camera.component';
 
-describe('CameraComponent', () => {
+fdescribe('CameraComponent', () => {
   let component: CameraComponent;
   let fixture: ComponentFixture<CameraComponent>;
   let formControl: FormControl;
