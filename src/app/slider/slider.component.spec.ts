@@ -1,9 +1,7 @@
-import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { ComponentFixture, TestBed,  } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
 import { By } from '@angular/platform-browser';
-import * as ROSLIB from 'roslib';
-import { Observable } from 'rxjs';
-import { RosService } from '../ros.service';
+import { RosService } from '../shared/ros.service';
 
 import { SliderComponent } from './slider.component';
 
