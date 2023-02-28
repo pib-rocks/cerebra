@@ -23,7 +23,7 @@ export class RosService {
       this.isInitializedSubject.next(true);
     });
 
-    this.ros.on('error', (error: any) => {
+    this.ros.on('error', (error: string) => {
       console.log('Error connecting to ROSBridge server:', error);
     });
 

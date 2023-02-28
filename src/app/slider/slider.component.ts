@@ -28,7 +28,7 @@ export class SliderComponent implements OnInit {
       this.formControl.setValue(this.getValueWithinRange(value));
     });
 
-    this.rosService.isInitialized$.subscribe((isInitialized: any) => {
+    this.rosService.isInitialized$.subscribe((isInitialized: boolean) => {
       if (isInitialized) {
         this.rosService.subscribeTopic(this.topicName, this.messageReceiver$);
       }

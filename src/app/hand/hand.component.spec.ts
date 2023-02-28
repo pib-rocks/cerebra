@@ -36,4 +36,30 @@ fdescribe('HandComponent', () => {
       expect(slider.componentInstance.topicName).toBeTruthy();
     }
   });
+
+  it('should call reset() and set all slider values to 0 after clicking reset button', () => {
+    component.side = 'left';
+    fixture.detectChanges();
+
+    const sliders = fixture.debugElement.queryAll(By.css('app-slider'));
+    for (const slider of sliders) {
+      const input = slider.children[1];
+      spyOn(input.nativeElement, 'dispatchEvent');
+    }
+
+    spyOn(component, 'reset').and.callThrough();
+
+    const button = fixture.nativeElement.querySelector('#resetButton');
+    spyOn(button, 'dispatchEvent').and.callThrough();
+    button.dispatchEvent(new MouseEvent('click'));
+    fixture.detectChanges();
+    expect(button.dispatchEvent).toHaveBeenCalledWith(new MouseEvent('click'));
+    expect(component.reset).toHaveBeenCalled();
+
+    for (const slider of sliders) {
+      const input = slider.children[1];
+      expect(input.nativeElement.value).toBe("0");
+      expect(input.nativeElement.dispatchEvent).toHaveBeenCalledWith(new Event('input'));
+    }
+  })
 });
