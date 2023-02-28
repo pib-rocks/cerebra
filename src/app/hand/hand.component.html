@@ -1,15 +1,34 @@
 <div class="container-fluid">
   <div class="row">
     <div class="col">
+      <div class="form-check form-switch my-2">
+        <input class="form-check-input" type="checkbox" id="switch" [formControl]="switchControl" (input)="switchView()">
+        <label class="form-check-label" for="switch">Control fingers individually</label>
+      </div>
+
       <h2>{{side | titlecase}} Hand</h2>
-      <ng-container  *ngIf="side === 'left'">
-        <ng-container *ngFor="let f of leftFingers" #leftContainer>
-          <app-slider [topicName]="f.topic" [labelName]="f.label"></app-slider>
+      <ng-container *ngIf="switchControl.value === true">
+        <ng-container *ngIf="side === 'left'">
+          <ng-container *ngFor="let f of leftFingers" #leftContainer>
+            <app-slider [topicName]="f.topic" [labelName]="f.label"></app-slider>
+          </ng-container>
+        </ng-container>
+        <ng-container *ngIf="side === 'right'">
+          <ng-container  *ngFor="let f of rightFingers" #rightContainer>
+            <app-slider [topicName]="f.topic" [labelName]="f.label"></app-slider>
+          </ng-container>
         </ng-container>
       </ng-container>
-      <ng-container  *ngIf="side === 'right'">
-        <ng-container  *ngFor="let f of rightFingers" #rightContainer>
-          <app-slider [topicName]="f.topic" [labelName]="f.label"></app-slider>
+      <ng-container *ngIf="switchControl.value === false">
+        <ng-container *ngIf="side === 'left'">
+          <ng-container *ngFor="let h of leftHand" #leftContainer>
+            <app-slider [topicName]="h.topic" [labelName]="h.label" [isGroup]="true" groupSide="left"></app-slider>
+          </ng-container>
+        </ng-container>
+        <ng-container *ngIf="side === 'right'">
+          <ng-container  *ngFor="let h of rightHand" #rightContainer>
+            <app-slider [topicName]="h.topic" [labelName]="h.label" [isGroup]="true" groupSide="right"></app-slider>
+          </ng-container>
         </ng-container>
       </ng-container>
       <div class="p-8"></div>
@@ -18,6 +37,6 @@
     </div>
   </div>
   <div>
-    <button type="button" class="btn btn-primary my-4" (click)="reset($event)" id="resetButton">Reset</button>
+    <button type="button" class="btn btn-primary my-4" (click)="reset()" id="resetButton">Reset</button>
   </div>
 </div>

@@ -3,7 +3,7 @@ import { FormControl, ReactiveFormsModule, FormControlDirective } from '@angular
 import { By } from '@angular/platform-browser';
 import { CameraComponent } from './camera.component';
 
-describe('CameraComponent', () => {
+fdescribe('CameraComponent', () => {
   let component: CameraComponent;
   let fixture: ComponentFixture<CameraComponent>;
   let formControl: FormControl;
@@ -70,5 +70,9 @@ describe('CameraComponent', () => {
     expect(JSON.stringify(dropdownItem.classes)).toContain('active');
     expect(JSON.stringify(dropdownItems[0].classes)).not.toContain('active');
     expect(component.selectedSize).toEqual(dropdownItem.nativeElement.textContent.split(' ')[0]);
+  })
+
+  it('should have 480p as default size', () => {
+    expect(component.selectedSize).toBe('480p');
   })
 });
