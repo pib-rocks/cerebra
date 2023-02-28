@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, ElementRef, Input, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 import { ActivatedRoute, Params } from '@angular/router';
 
 @Component({
@@ -37,7 +37,6 @@ export class HandComponent implements OnInit {
     }
 
     reset(event: MouseEvent) {
-      console.log("reset");
       const target = event.target as HTMLButtonElement;
       const sliders = target.parentElement?.parentElement?.querySelectorAll("app-slider");
       const slidersArray: Element[] = [];

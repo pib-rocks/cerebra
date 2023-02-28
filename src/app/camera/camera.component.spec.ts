@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, tick, fakeAsync, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed, tick, fakeAsync } from '@angular/core/testing';
 import { FormControl, ReactiveFormsModule, FormControlDirective } from '@angular/forms';
 import { By } from '@angular/platform-browser';
 import { CameraComponent } from './camera.component';
@@ -60,4 +60,15 @@ fdescribe('CameraComponent', () => {
     tick();
     expect(slider.value).toBe(formControl.value + '');
   }));
+
+  it('should set dropdown item active after being selected ', () => {
+    spyOn(component, 'setActive').and.callThrough();
+    const dropdownItems = fixture.debugElement.queryAll(By.css('.dropdown-item'));
+    const dropdownItem = dropdownItems[1];
+    dropdownItem.nativeElement.dispatchEvent(new Event('click'));
+    fixture.detectChanges();
+    expect(JSON.stringify(dropdownItem.classes)).toContain('active');
+    expect(JSON.stringify(dropdownItems[0].classes)).not.toContain('active');
+    expect(component.selectedSize).toEqual(dropdownItem.nativeElement.textContent.split(' ')[0]);
+  })
 });
