@@ -1,5 +1,6 @@
-import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { ActivatedRoute, Params } from '@angular/router';
+import { SliderComponent } from '../slider/slider.component';
 
 @Component({
   selector: 'app-hand',
@@ -9,6 +10,8 @@ import { ActivatedRoute, Params } from '@angular/router';
 export class HandComponent implements OnInit {
 
   @Input() side = "Left";
+  @ViewChildren(SliderComponent) childComponents!: QueryList<SliderComponent>;
+
 
   constructor(private route: ActivatedRoute,private cdRef: ChangeDetectorRef) {}
 
@@ -36,15 +39,11 @@ export class HandComponent implements OnInit {
       })
     }
 
-    reset(event: MouseEvent) {
-      const target = event.target as HTMLButtonElement;
-      const sliders = target.parentElement?.parentElement?.querySelectorAll("app-slider");
-      const slidersArray: Element[] = [];
-      sliders?.forEach(slider => slidersArray.push(slider));
-      for(const slider of slidersArray) {
-        const input = slider.children[1] as HTMLInputElement;
-        input.value = '0';
-        input.dispatchEvent(new Event('input'));
+    reset() {
+        this.childComponents.forEach(child => {
+          child.formControl.setValue(0);
+          child.sendMessage();
+        });
       }
     }
-}
+

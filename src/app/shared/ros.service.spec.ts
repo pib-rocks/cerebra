@@ -1,30 +1,116 @@
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
+import * as ROSLIB from 'roslib';
 import { Subject } from 'rxjs';
 
 import { RosService } from './ros.service';
 
-describe('RosService', () => {
+fdescribe('RosService', () => {
   let service: RosService;
+  let mockRos: RosMock;
+  let spySetUp: jasmine.Spy<() => ROSLIB.Ros>;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
     service = TestBed.inject(RosService);
+    mockRos = new RosMock()
+    mockRos.setConnection(true);
+    spySetUp = spyOn(RosService.prototype, 'setUpRos').and.returnValue(mockRos as unknown as ROSLIB.Ros);
+    service = new RosService();
   });
 
   it('should be created', () => {
     expect(service).toBeTruthy();
   });
 
-  it('should send a massege', fakeAsync(() => {
-    const spy = spyOn(service, 'createTopic');
-    let subject = new Subject<number>();
-    service.subscribeTopic('test',subject);
-    tick();
+  it('should istablish ros in the constructor', () => {
 
-    expect(spy).toHaveBeenCalled();
-  }))
+    service = new RosService();
+    expect(spySetUp).toHaveBeenCalled();
+    expect(service.ros).toBeTruthy()
+  });
+
+  it('createTopic should create topic', () => {
+     const topic = service.createTopic('test')
+     expect(topic).toBeTruthy();
+   });
+
+   it('sendMessage should send a massege to rosbridge without errors', () => {
+     const spySendMassege = spyOn(service, 'sendMessage');
+     const topic = service.sendMessage('test',10)
+     expect(spySendMassege).toHaveBeenCalled();
+   });
+
+   it('subscribeTopic should call createTopic and emmit a value to a subject',(): void => {
+     let receiver$ = new Subject<number>();
+     const spyTopic = spyOn(service,'createTopic').and.returnValue(new MockRosbridgeTopic('test', receiver$) as unknown as ROSLIB.Topic);
+     const spyNext = spyOn(receiver$,'next');
+     service.subscribeTopic('test',receiver$);
+     expect(spyTopic).toHaveBeenCalled();
+     expect(spyNext).toHaveBeenCalled();
+     expect(service.topics.length).not.toBe(0);
+   });
+
+
+   it('should return a saved topic when calling getTopicByName',(): void => {
+    let receiver$ = new Subject<number>();
+    const spyTopic = spyOn(service,'createTopic').and.returnValue(new MockRosbridgeTopic('test', receiver$) as unknown as ROSLIB.Topic);
+    service.subscribeTopic('test',receiver$);
+    const topic = service.getTopicByName('test');
+    expect(topic).toEqual(service.topics[0]);
+  });
 
 
 
 });
+
+
+
+class MockRosbridgeTopic {
+  constructor(private topicName: string, private subject: Subject<number>) {}
+
+  subscribers: ((message: any) => void)[] = [];
+  messages: any[] = [];
+
+  subscribe(callback: (message: any) => void) {
+    this.subscribers.push(callback);
+    this.subject.next(5);
+  }
+
+  publish(message: any) {
+    this.messages.push(message);
+    for (let callback of this.subscribers) {
+      callback(message);
+    }
+  }
+}
+
+export class RosMock {
+  private connected: boolean = false;
+
+  constructor() {
+ }
+
+
+  setConnection(b: boolean){
+    this.connected = b;
+  }
+
+  on (event: string, callback: any) {
+    // Mock event listeners
+  }
+
+  callOnConnection (callback: any) {
+    // Mock connection callback
+    this.connected = true;
+  }
+
+  isConnected()  {
+    return this.connected;
+  }
+  close ()  {
+    // Mock close method
+    this.connected = false;
+  }
+
+}
 

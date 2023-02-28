@@ -1,5 +1,6 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, QueryList, ViewChildren } from '@angular/core';
 import { ActivatedRoute, Params } from '@angular/router';
+import { SliderComponent } from '../slider/slider.component';
 
 @Component({
   selector: 'app-right-arm',
@@ -8,7 +9,9 @@ import { ActivatedRoute, Params } from '@angular/router';
 })
 export class ArmComponent {
   @Input() side = "Left";
-
+    
+  @ViewChildren(SliderComponent) childComponents!: QueryList<SliderComponent>;
+  
   constructor(private route: ActivatedRoute) {}
 
   leftArm = [
@@ -29,5 +32,12 @@ export class ArmComponent {
       this.route.params.subscribe((params: Params) => {
         this.side = params['side'];
       })
+    }
+
+    reset() {
+      this.childComponents.forEach(child => {
+        child.formControl.setValue(0);
+        child.sendMessage();
+      });
     }
 }

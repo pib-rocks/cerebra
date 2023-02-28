@@ -32,7 +32,6 @@ fdescribe('HandComponent', () => {
     const sliders = fixture.debugElement.queryAll(By.css('app-slider'));
     expect(sliders.length).toBe(6);
     for (const slider of sliders) {
-      console.log(slider.componentInstance.topicName);
       expect(slider.componentInstance.topicName).toBeTruthy();
     }
   });

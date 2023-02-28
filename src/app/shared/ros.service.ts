@@ -9,15 +9,12 @@ export class RosService {
   private isInitializedSubject = new BehaviorSubject<boolean>(false);
   isInitialized$ = this.isInitializedSubject.asObservable();
 
-  private ros: ROSLIB.Ros;
+  public ros: ROSLIB.Ros;
 
-  private topics: ROSLIB.Topic[] = [];
+  public topics: ROSLIB.Topic[] = [];
 
   constructor() {
-    this.ros = new ROSLIB.Ros({
-      url: 'ws://192.168.220.38:9090',
-    });
-
+    this.ros = this.setUpRos();
     this.ros.on('connection', () => {
       console.log('Connected to ROS');
       this.isInitializedSubject.next(true);
@@ -35,7 +32,7 @@ export class RosService {
   subscribeTopic(topicName: string, receiver$: Subject<number>) {
     if (this.ros.isConnected) {
       const topic = this.createTopic(topicName);
-
+      this.topics.push(topic);
       topic.subscribe((message) => {
         const jsonStr = JSON.stringify(message);
         console.log('Get message from ' + topicName + ': ' + jsonStr);
@@ -43,8 +40,6 @@ export class RosService {
         const value = Number(json["data"]);
         receiver$.next(value);
       })
-
-      this.topics.push(topic);
     }
   }
 
@@ -69,24 +64,12 @@ export class RosService {
 
     return filteredTopics.length > 0
       ? filteredTopics[0]
-      : new ROSLIB.Topic({
-        ros: this.ros,
-        name: topicName,
-        messageType: 'std_msgs/String'
-      });
+      : this.createTopic(topicName);
   }
 
-  retrieveLastValue(topicName: string): number {
-    //To-Do
-    return 0;
-  }
-
-  isSubscribed(topicName: string): boolean {
-    const filteredTopics = this.topics.filter(t => t.name === topicName);
-    return filteredTopics.length > 0
-  }
-
-  get Ros() {
-    return this.ros;
+  setUpRos(){
+    return new ROSLIB.Ros({
+      url: 'ws://192.168.220.38:9090',
+    });
   }
 }
