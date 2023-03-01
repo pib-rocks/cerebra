@@ -71,4 +71,8 @@ fdescribe('CameraComponent', () => {
     expect(JSON.stringify(dropdownItems[0].classes)).not.toContain('active');
     expect(component.selectedSize).toEqual(dropdownItem.nativeElement.textContent.split(' ')[0]);
   })
+
+  it('should have 480p as default size', () => {
+    expect(component.selectedSize).toBe('480p');
+  })
 });

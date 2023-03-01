@@ -26,11 +26,11 @@ fdescribe('HandComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should contain 6 sliders with their own topic', () => {
+  it('should contain 2 sliders with their own topic', () => {
     component.side = 'left';
     fixture.detectChanges();
     const sliders = fixture.debugElement.queryAll(By.css('app-slider'));
-    expect(sliders.length).toBe(6);
+    expect(sliders.length).toBe(2);
     for (const slider of sliders) {
       expect(slider.componentInstance.topicName).toBeTruthy();
     }
@@ -42,8 +42,7 @@ fdescribe('HandComponent', () => {
 
     const sliders = fixture.debugElement.queryAll(By.css('app-slider'));
     for (const slider of sliders) {
-      const input = slider.children[1];
-      spyOn(input.nativeElement, 'dispatchEvent');
+      spyOn(slider.componentInstance, 'sendMessage');
     }
 
     spyOn(component, 'reset').and.callThrough();
@@ -58,7 +57,31 @@ fdescribe('HandComponent', () => {
     for (const slider of sliders) {
       const input = slider.children[1];
       expect(input.nativeElement.value).toBe("0");
-      expect(input.nativeElement.dispatchEvent).toHaveBeenCalledWith(new Event('input'));
+      expect(slider.componentInstance.sendMessage).toHaveBeenCalledWith();
     }
   })
+
+  it('should send value of index finger to all finger topics', () => {
+    component.side = 'left';
+    component.switchControl.setValue(true);
+    fixture.detectChanges();
+    const checkInput = fixture.debugElement.query(By.css('.form-check-input'));
+    spyOn(checkInput.componentInstance, 'switchView').and.callThrough();
+    const sliders = fixture.debugElement.queryAll(By.css('app-slider'));
+    for (const slider of sliders) {
+      spyOn(slider.componentInstance, 'sendMessage');
+    }
+
+    sliders.filter(slider => slider.componentInstance.labelName === "Index finger")[0]
+      .children[1].componentInstance.formControl.setValue(500);
+
+    checkInput.nativeElement.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    expect(checkInput.componentInstance.switchView).toHaveBeenCalled();
+
+    component.childComponents.forEach(child => {
+      expect(child.formControl.value).toBe(500);
+      expect(child.sendMessage).toHaveBeenCalled();
+    });
+  });
 });

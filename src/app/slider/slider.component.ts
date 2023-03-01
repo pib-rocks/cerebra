@@ -1,6 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { Subject } from 'rxjs';
+import { FingerService } from '../shared/finger.service';
 import { RosService } from '../shared/ros.service';
 
 @Component({
@@ -9,19 +10,20 @@ import { RosService } from '../shared/ros.service';
   styleUrls: ['./slider.component.css']
 })
 export class SliderComponent implements OnInit {
-
   maxRange = 1000;
   minRange = -1000;
   currentValue = 0;
   @Input() topicName = '';
   @Input() labelName = '';
+  @Input() groupSide = 'left';
+  @Input() isGroup = false;
 
   @Input() sliderTrigger$ = new Subject<string>();
   messageReceiver$ = new Subject<number>();
 
   formControl: FormControl = new FormControl(this.currentValue);
 
-  constructor( private rosService: RosService) {}
+  constructor(private rosService: RosService, private fingerService: FingerService) {}
 
   ngOnInit(): void {
     this.messageReceiver$.subscribe(value => {
@@ -36,7 +38,12 @@ export class SliderComponent implements OnInit {
   }
 
   sendMessage() {
-    this.rosService.sendMessage(this.topicName, this.formControl.value);
+    if (this.isGroup && this.labelName === "Open/Close all fingers") {
+      const fingerTopics = this.fingerService.getFingerTopics(this.groupSide);
+      fingerTopics.forEach(t => this.rosService.sendMessage(t, this.formControl.value));
+    } else {
+      this.rosService.sendMessage(this.topicName, this.formControl.value);
+    }
   }
 
   getValueWithinRange(value: number) {
