@@ -13,12 +13,14 @@ export class SliderComponent implements OnInit {
   maxRange = 1000;
   minRange = -1000;
   currentValue = 0;
+
   @Input() topicName = '';
   @Input() labelName = '';
   @Input() groupSide = 'left';
   @Input() isGroup = false;
-
   @Input() sliderTrigger$ = new Subject<string>();
+
+  isCombinedSlider = false;
   messageReceiver$ = new Subject<number>();
 
   formControl: FormControl = new FormControl(this.currentValue);
@@ -26,19 +28,21 @@ export class SliderComponent implements OnInit {
   constructor(private rosService: RosService, private fingerService: FingerService) {}
 
   ngOnInit(): void {
+    this.isCombinedSlider = this.isGroup && this.labelName === "Open/Close all fingers";
+
     this.messageReceiver$.subscribe(value => {
-      this.formControl.setValue(this.getValueWithinRange(value));
+        this.formControl.setValue(this.getValueWithinRange(value));
     });
 
     this.rosService.isInitialized$.subscribe((isInitialized: boolean) => {
       if (isInitialized) {
-        this.rosService.subscribeTopic(this.topicName, this.messageReceiver$);
+          this.rosService.subscribeTopic(this.topicName, this.messageReceiver$);
       }
     })
   }
 
   sendMessage() {
-    if (this.isGroup && this.labelName === "Open/Close all fingers") {
+    if (this.isCombinedSlider) {
       const fingerTopics = this.fingerService.getFingerTopics(this.groupSide);
       fingerTopics.forEach(t => this.rosService.sendMessage(t, this.formControl.value));
     } else {
