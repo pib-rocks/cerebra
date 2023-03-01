@@ -28,13 +28,19 @@ module.exports = function (config) {
       dir: require('path').join(__dirname, './coverage/cerebra2'),
       subdir: '.',
       reporters: [
+        { type: 'lcov' },
         { type: 'html' },
-        { type: 'text-summary' },
-        { type: 'lcov' }
+        { type: 'text-summary' }
       ]
     },
     reporters: ['progress', 'kjhtml'],
     browsers: ['Chrome'],
+    customLaunchers: {
+      NoSandbox: {
+          base: 'ChromeHeadless',
+          flags: ['--no-sandbox']
+      }
+    },
     restartOnFileChange: true
   });
 };
