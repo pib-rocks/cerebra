@@ -36,8 +36,10 @@ export class ArmComponent {
 
     reset() {
       this.childComponents.forEach(child => {
-        child.formControl.setValue(0);
-        child.sendMessage();
+        if (child.formControl.value != 0){
+          child.formControl.setValue(0);
+          child.sendMessage();
+        }
       });
     }
 }
