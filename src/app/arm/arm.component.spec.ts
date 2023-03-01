@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
+import { By } from '@angular/platform-browser';
 import { AppRoutingModule } from '../app-routing.module';
 import { SliderComponent } from '../slider/slider.component';
 
@@ -29,8 +30,30 @@ fdescribe('ArmComponent', () => {
     component.side = 'left';
     fixture.detectChanges();
     const childComponents = fixture.nativeElement.querySelectorAll('app-slider');
+    console.log(childComponents);
     expect(childComponents.length).toBe(4);
   });
+
+  it('should call reset() and set all slider values to 0 after clicking reset button', () => {
+    component.side = 'left';
+    fixture.detectChanges();
+    const childComponents = fixture.debugElement.queryAll(By.css('app-slider'));
+    let spies: jasmine.Spy<any>[] = [];
+    for (const childComponent of childComponents) {
+      spies.push(spyOn(childComponent.componentInstance, 'sendMessage'));
+    }
+    const button = fixture.debugElement.query(By.css('#resetButton'));
+    console.log(button);
+    const clickSpy = spyOn(component,'reset').and.callThrough();
+    button.nativeElement.click();
+    expect(clickSpy).toHaveBeenCalled();
+    for ( let child of childComponents){
+      expect(child.componentInstance.formControl.value).toBe(0);
+    }
+    for( let spy of spies){
+      expect(spy).toHaveBeenCalled();
+    }
+  })
 
   
 });
