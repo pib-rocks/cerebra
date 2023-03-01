@@ -31,11 +31,7 @@ export class SliderComponent implements OnInit {
     this.isCombinedSlider = this.isGroup && this.labelName === "Open/Close all fingers";
 
     this.messageReceiver$.subscribe(value => {
-      if (this.isCombinedSlider) {
         this.formControl.setValue(this.getValueWithinRange(value));
-      } else {
-        this.formControl.setValue(this.getValueWithinRange(value));
-      }
     });
 
     this.rosService.isInitialized$.subscribe((isInitialized: boolean) => {

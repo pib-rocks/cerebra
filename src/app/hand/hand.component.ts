@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Input, OnInit, QueryList, ViewChildren } from '@angular/core';
+import { Component, Input, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { ActivatedRoute, Params } from '@angular/router';
 import { SliderComponent } from '../slider/slider.component';
@@ -13,9 +13,10 @@ export class HandComponent implements OnInit {
 
   @Input() side = "Left";
 
-  constructor(private route: ActivatedRoute, private cdRef: ChangeDetectorRef) { }
+  constructor(private route: ActivatedRoute) { }
 
-  switchControl = new FormControl(false);
+  leftSwitchControl = new FormControl(false);
+  rightSwitchControl = new FormControl(false);
 
   leftHand = [
     { topic: "/index_left_stretch", label: "Open/Close all fingers" },
@@ -58,8 +59,9 @@ export class HandComponent implements OnInit {
     })
   }
 
-  switchView() {
-    if (this.switchControl.value === true) {
+  switchView(side: string) {
+    const switchControl = side === 'left' ? this.leftSwitchControl : this.rightSwitchControl;
+    if (switchControl.value === true) {
       const indexFinger = this.childComponents.filter(child => child.labelName === "Index finger")[0];
       this.childComponents.filter(child => child.labelName !== "Thumb opposition").forEach(child => {
         child.formControl.setValue(indexFinger.formControl.value);

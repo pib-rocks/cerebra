@@ -63,7 +63,7 @@ fdescribe('HandComponent', () => {
 
   it('should send value of index finger to all finger topics after switching to 2 sliders', () => {
     component.side = 'left';
-    component.switchControl.setValue(true);
+    component.leftSwitchControl.setValue(true);
     fixture.detectChanges();
     const checkInput = fixture.debugElement.query(By.css('.form-check-input'));
     spyOn(checkInput.componentInstance, 'switchView').and.callThrough();
