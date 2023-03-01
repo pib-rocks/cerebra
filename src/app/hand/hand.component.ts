@@ -12,6 +12,8 @@ export class HandComponent implements OnInit {
   @ViewChildren(SliderComponent) childComponents!: QueryList<SliderComponent>;
 
   @Input() side = "Left";
+  @ViewChildren(SliderComponent) childComponents!: QueryList<SliderComponent>;
+
 
   constructor(private route: ActivatedRoute, private cdRef: ChangeDetectorRef) { }
 

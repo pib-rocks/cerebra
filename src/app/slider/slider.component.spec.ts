@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed,  } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
 import { By } from '@angular/platform-browser';
 import { FingerService } from '../shared/finger.service';
