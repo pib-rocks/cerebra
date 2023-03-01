@@ -52,8 +52,7 @@ fdescribe('SliderComponent', () => {
   });
 
   it('should call sendMessage() to all finger topics on input from combined slider', () => {
-    component.isGroup = true;
-    component.labelName = 'Open/Close all fingers';
+    component.isCombinedSlider = true;
     component.groupSide = 'left';
     component.formControl.setValue(500);
     fixture.detectChanges();

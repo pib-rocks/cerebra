@@ -61,16 +61,15 @@ fdescribe('HandComponent', () => {
     }
   })
 
-  it('should send value of index finger to all finger topics', () => {
+  it('should send value of index finger to all finger topics after switching to 2 sliders', () => {
     component.side = 'left';
     component.switchControl.setValue(true);
     fixture.detectChanges();
     const checkInput = fixture.debugElement.query(By.css('.form-check-input'));
     spyOn(checkInput.componentInstance, 'switchView').and.callThrough();
     const sliders = fixture.debugElement.queryAll(By.css('app-slider'));
-    for (const slider of sliders) {
-      spyOn(slider.componentInstance, 'sendMessage');
-    }
+    sliders.filter(slider => slider.children[1].componentInstance.labelName !== 'Thumb Opposition')
+      .forEach(slider => spyOn(slider.componentInstance, 'sendMessage'));
 
     sliders.filter(slider => slider.componentInstance.labelName === "Index finger")[0]
       .children[1].componentInstance.formControl.setValue(500);
@@ -79,7 +78,7 @@ fdescribe('HandComponent', () => {
     fixture.detectChanges();
     expect(checkInput.componentInstance.switchView).toHaveBeenCalled();
 
-    component.childComponents.forEach(child => {
+    component.childComponents.filter(child => child.labelName !== 'Thumb opposition').forEach(child => {
       expect(child.formControl.value).toBe(500);
       expect(child.sendMessage).toHaveBeenCalled();
     });

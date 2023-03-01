@@ -12,8 +12,6 @@ export class HandComponent implements OnInit {
   @ViewChildren(SliderComponent) childComponents!: QueryList<SliderComponent>;
 
   @Input() side = "Left";
-  @ViewChildren(SliderComponent) childComponents!: QueryList<SliderComponent>;
-
 
   constructor(private route: ActivatedRoute, private cdRef: ChangeDetectorRef) { }
 
@@ -63,7 +61,7 @@ export class HandComponent implements OnInit {
   switchView() {
     if (this.switchControl.value === true) {
       const indexFinger = this.childComponents.filter(child => child.labelName === "Index finger")[0];
-      this.childComponents.forEach(child => {
+      this.childComponents.filter(child => child.labelName !== "Thumb opposition").forEach(child => {
         child.formControl.setValue(indexFinger.formControl.value);
         child.sendMessage();
       })
