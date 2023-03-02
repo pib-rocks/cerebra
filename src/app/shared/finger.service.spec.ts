@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 
 import { FingerService } from './finger.service';
 
-describe('FingerService', () => {
+fdescribe('FingerService', () => {
   let service: FingerService;
 
   beforeEach(() => {

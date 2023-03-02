@@ -1,4 +1,4 @@
-import { Component, Input, QueryList, ViewChildren } from '@angular/core';
+import { Component, Input, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { ActivatedRoute, Params } from '@angular/router';
 import { SliderComponent } from '../slider/slider.component';
 
@@ -7,9 +7,8 @@ import { SliderComponent } from '../slider/slider.component';
   templateUrl: './arm.component.html',
   styleUrls: ['./arm.component.css']
 })
-export class ArmComponent {
+export class ArmComponent implements OnInit {
   @Input() side = "Left";
-    
   @ViewChildren(SliderComponent) childComponents!: QueryList<SliderComponent>;
   
   constructor(private route: ActivatedRoute) {}

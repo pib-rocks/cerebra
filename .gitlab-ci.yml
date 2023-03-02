@@ -21,7 +21,7 @@ init:
 static_analysis:
   image: ${IMAGE}
   stage: test
-  allow_failure: true
+  allow_failure: false
   script:
     - echo "runing static analysis"
     - npm link @angular/cli

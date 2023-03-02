@@ -49,7 +49,7 @@ fdescribe('HandComponent', () => {
 
     const button = fixture.nativeElement.querySelector('#resetButton');
     spyOn(button, 'dispatchEvent').and.callThrough();
-    for (let c of sliders){
+    for (const c of sliders){
       c.componentInstance.formControl.setValue(10);
     }
     button.dispatchEvent(new MouseEvent('click'));
