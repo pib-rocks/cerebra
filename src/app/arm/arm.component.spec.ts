@@ -38,22 +38,22 @@ fdescribe('ArmComponent', () => {
     component.side = 'left';
     fixture.detectChanges();
     const childComponents = fixture.debugElement.queryAll(By.css('app-slider'));
-    let spies: jasmine.Spy<any>[] = [];
+    const spies: jasmine.Spy<any>[] = [];
     for (const childComponent of childComponents) {
       spies.push(spyOn(childComponent.componentInstance, 'sendMessage'));
     }
     const button = fixture.debugElement.query(By.css('#resetButton'));
     console.log(button);
     const clickSpy = spyOn(component,'reset').and.callThrough();
-    for (let c of childComponents){
+    for (const c of childComponents){
       c.componentInstance.formControl.setValue(10);
     }
     button.nativeElement.click();
     expect(clickSpy).toHaveBeenCalled();
-    for ( let child of childComponents){
+    for (const child of childComponents){
       expect(child.componentInstance.formControl.value).toBe(0);
     }
-    for( let spy of spies){
+    for(const spy of spies){
       expect(spy).toHaveBeenCalled();
     }
   })
