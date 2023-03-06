@@ -98,8 +98,8 @@ it('should open dialog when the button has been clicked', () => {
   expect(spyModal).toHaveBeenCalled();
 })
 it('should return dismiss reason by clicking on a backdrop', fakeAsync(() => {
-  const spyPopup = spyOn(component,'openPopup').and.callThrough();
-  const spyModal = spyOn(modalService,'open').and.callThrough();
+  spyOn(component,'openPopup').and.callThrough();
+  spyOn(modalService,'open').and.callThrough();
   const button = fixture.debugElement.query(By.css('#dialogBtn'));
   button.nativeElement.click();
   modalService.dismissAll(ModalDismissReasons.BACKDROP_CLICK);
@@ -108,8 +108,8 @@ it('should return dismiss reason by clicking on a backdrop', fakeAsync(() => {
 }));
 
 it('should return dismiss reason by pressing ESC', fakeAsync(() => {
-  const spyPopup = spyOn(component,'openPopup').and.callThrough();
-  const spyModal = spyOn(modalService,'open').and.callThrough();
+  spyOn(component,'openPopup').and.callThrough();
+  spyOn(modalService,'open').and.callThrough();
   const button = fixture.debugElement.query(By.css('#dialogBtn'));
   button.nativeElement.click();
   modalService.dismissAll(ModalDismissReasons.ESC);

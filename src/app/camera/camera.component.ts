@@ -8,8 +8,6 @@ import { Subject } from 'rxjs';
 })
 export class CameraComponent {
 
-  constructor() {}
-
   @ViewChild('videoElement') videoElement: any;
   navigator!: Navigator;
   stream!: MediaStream;
