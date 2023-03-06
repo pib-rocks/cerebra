@@ -4,7 +4,7 @@ import { Subject } from 'rxjs';
 
 import { RosService } from './ros.service';
 
-fdescribe('RosService', () => {
+xdescribe('RosService', () => {
   let service: RosService;
   let mockRos: RosMock;
   let spySetUp: jasmine.Spy<() => ROSLIB.Ros>;

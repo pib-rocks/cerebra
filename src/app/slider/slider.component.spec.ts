@@ -1,8 +1,12 @@
 import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
 import { By } from '@angular/platform-browser';
+<<<<<<< HEAD
 import { ModalDismissReasons, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { FingerService } from '../shared/finger.service';
+=======
+import { MotorService } from '../shared/motor.service';
+>>>>>>> 31f6fe6 (refactor: use a single topic for all messages and sliders)
 import { RosService } from '../shared/ros.service';
 
 import { SliderComponent } from './slider.component';
@@ -11,22 +15,30 @@ fdescribe('SliderComponent', () => {
   let component: SliderComponent;
   let fixture: ComponentFixture<SliderComponent>;
   let rosService: RosService;
+<<<<<<< HEAD
   let fingerService: FingerService;
   let modalService: NgbModal;
+=======
+  let fingerService: MotorService;
+>>>>>>> 31f6fe6 (refactor: use a single topic for all messages and sliders)
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [ SliderComponent ],
       imports: [ ReactiveFormsModule ],
-      providers: [ RosService, FingerService ]
+      providers: [ RosService, MotorService ]
     })
     .compileComponents();
 
     fixture = TestBed.createComponent(SliderComponent);
     component = fixture.componentInstance;
     rosService = TestBed.inject(RosService);
+<<<<<<< HEAD
     fingerService = TestBed.inject(FingerService);
     modalService = TestBed.inject(NgbModal);
+=======
+    fingerService = TestBed.inject(MotorService);
+>>>>>>> 31f6fe6 (refactor: use a single topic for all messages and sliders)
     fixture.detectChanges();
   });
 
@@ -57,9 +69,9 @@ fdescribe('SliderComponent', () => {
   it('should call sendMessage() to all finger topics on input from combined slider', () => {
     component.isCombinedSlider = true;
     component.groupSide = 'left';
-    component.silderFormControl.setValue(500);
+    component.sliderFormControl.setValue(500);
     fixture.detectChanges();
-    const fingerTopics = fingerService.getFingerTopics(component.groupSide);
+    const fingerTopics = fingerService.getMotorNames(component.groupSide);
     spyOn(component, 'sendMessage').and.callThrough();
     spyOn(rosService, 'sendMessage');
 
@@ -67,25 +79,53 @@ fdescribe('SliderComponent', () => {
     slider.dispatchEvent(new Event('input'));
     expect(component.sendMessage).toHaveBeenCalled();
     fingerTopics.forEach(t => {
-      expect(rosService.sendMessage).toHaveBeenCalledWith(t, 500);
+      expect(rosService.sendMessage).toHaveBeenCalledWith(t);
     })
   });
 
   it('should change value after receiving a message', () => {
     const slider = fixture.nativeElement.querySelector('input[type="range"]');
+<<<<<<< HEAD
 
     component.messageReceiver$.next(500);
-    
+
+=======
+    const json = {
+      motor: "thumb_left_stretch",
+      value: '500'
+    }
+    component.messageReceiver$.next(json);
+
+>>>>>>> 31f6fe6 (refactor: use a single topic for all messages and sliders)
     fixture.detectChanges();
     expect(slider.value).toBe('500');
   });
 
   it('should set a valid value after receiving a message', () => {
     const slider = fixture.nativeElement.querySelector('input[type="range"]');
+<<<<<<< HEAD
     component.messageReceiver$.next(5000);
     fixture.detectChanges();
     expect(slider.value).toBe(String(component.maxRange.value));
     component.messageReceiver$.next(-5000);
+=======
+
+    let json = {
+      motor: "thumb_left_stretch",
+      value: '5000'
+    }
+
+    component.messageReceiver$.next(json);
+    fixture.detectChanges();
+    expect(slider.value).toBe(String(component.maxRange));
+
+    json = {
+      motor: "thumb_left_stretch",
+      value: '-5000'
+    }
+
+    component.messageReceiver$.next(json);
+>>>>>>> 31f6fe6 (refactor: use a single topic for all messages and sliders)
     fixture.detectChanges();
     expect(slider.value).toBe(String(component.minRange.value));
   });

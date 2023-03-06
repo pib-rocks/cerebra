@@ -1,7 +1,8 @@
 import { Component, Input, OnInit, TemplateRef } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { debounceTime, Subject } from 'rxjs';
-import { FingerService } from '../shared/finger.service';
+import { Subject } from 'rxjs';
+import { Message } from '../shared/message';
+import { MotorService } from '../shared/motor.service';
 import { RosService } from '../shared/ros.service';
 import { ModalDismissReasons, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 @Component({
@@ -17,7 +18,7 @@ export class SliderComponent implements OnInit {
   degreeMax: FormControl = new FormControl(0);
   degreeMin: FormControl = new FormControl(0);
 
-  @Input() topicName = '';
+  @Input() motorName = '';
   @Input() labelName = '';
   @Input() groupSide = 'left';
   @Input() isGroup = false;
@@ -26,38 +27,68 @@ export class SliderComponent implements OnInit {
   closeResult!: string;
 
   isCombinedSlider = false;
-  messageReceiver$ = new Subject<number>();
+  messageReceiver$ = new Subject<Message>();
 
   motorFormControl: FormControl = new FormControl(true);
-  silderFormControl: FormControl = new FormControl(0);
+  sliderFormControl: FormControl = new FormControl(0);
   velocityFormControl: FormControl = new FormControl(0);
   accelerationFormControl: FormControl = new FormControl(0);
   decelerationFormControl: FormControl = new FormControl(0);
   periodFormControl: FormControl = new FormControl(0);
-  
 
-  constructor(private rosService: RosService, private fingerService: FingerService, private modalService: NgbModal) { }
+
+  constructor(private rosService: RosService, private motorService: MotorService, private modalService: NgbModal) { }
 
   ngOnInit(): void {
     this.isCombinedSlider = this.isGroup && this.labelName === "Open/Close all fingers";
 
-    this.messageReceiver$.subscribe(value => {
-      this.silderFormControl.setValue(this.getValueWithinRange(value));
+    this.messageReceiver$.subscribe(json => {
+      const value = json.value;
+      console.log('set value for ' + json['motor']);
+      this.sliderFormControl.setValue(this.getValueWithinRange(Number(value)));
     });
 
     this.rosService.isInitialized$.subscribe((isInitialized: boolean) => {
       if (isInitialized) {
-        this.rosService.subscribeTopic(this.topicName, this.messageReceiver$);
+        console.log('register ' + this.motorName);
+        this.rosService.registerMotor(this.motorName, this.messageReceiver$);
       }
     })
   }
 
   sendMessage() {
     if (this.isCombinedSlider) {
-      const fingerTopics = this.fingerService.getFingerTopics(this.groupSide);
-      fingerTopics.forEach(t => this.rosService.sendMessage(t, this.silderFormControl.value));
+      const motorNames = this.motorService.getMotorNames(this.groupSide);
+
+      motorNames.forEach(mn => {
+        const message: Message = {
+          motor: mn,
+          value: this.sliderFormControl.value,
+          pule_widths_min: "",
+          pule_widths_max: "",
+          rotation_range_min: "",
+          rotation_range_max: "",
+          velocity: "",
+          acceleration: "",
+          deceleration: "",
+          period: ""
+        }
+        this.rosService.sendMessage(message);
+      });
     } else {
-      this.rosService.sendMessage(this.topicName, this.silderFormControl.value);
+      const message: Message = {
+        motor: this.motorName,
+        value: this.sliderFormControl.value,
+        pule_widths_min: "",
+        pule_widths_max: "",
+        rotation_range_min: "",
+        rotation_range_max: "",
+        velocity: "",
+        acceleration: "",
+        deceleration: "",
+        period: ""
+      }
+      this.rosService.sendMessage(message);
     }
   }
 
@@ -83,9 +114,9 @@ export class SliderComponent implements OnInit {
   }
 
   openPopup(content: TemplateRef<any>) {
-    this.modalService.open(content, { ariaLabelledBy: 'modal-basic-title', size: 'xl' }).result.then((result) => {
+    this.modalService.open(content, { ariaLabelledBy: 'modal-basic-title', size: 'xl' }).result.then((result: any) => {
       this.closeResult = `Closed with: ${result}`;
-    }, (reason) => {
+    }, (reason: any) => {
       this.closeResult = `Dismissed ${this.getDismissReason(reason)}`;
       console.log(this.closeResult);
     });
@@ -100,11 +131,4 @@ export class SliderComponent implements OnInit {
       return `with: ${reason}`;
     }
   }
-
-  sendSettingsMassege(formControl: FormControl){
-    formControl.valueChanges.pipe(debounceTime(1000)).subscribe(value => {
-      this.rosService.sendMessage(this.topicName,value);
-    })
-  }
-
 }

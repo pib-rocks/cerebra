@@ -10,7 +10,7 @@ import { SliderComponent } from '../slider/slider.component';
 export class ArmComponent implements OnInit {
   @Input() side = "Left";
   @ViewChildren(SliderComponent) childComponents!: QueryList<SliderComponent>;
-  
+
   constructor(private route: ActivatedRoute) {}
 
   leftArm = [
@@ -35,8 +35,8 @@ export class ArmComponent implements OnInit {
 
     reset() {
       this.childComponents.forEach(child => {
-        if (child.silderFormControl.value != 0){
-          child.silderFormControl.setValue(0);
+        if (child.sliderFormControl.value != 0){
+          child.sliderFormControl.setValue(0);
           child.sendMessage();
         }
       });

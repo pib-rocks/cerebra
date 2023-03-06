@@ -1,19 +1,13 @@
-<label for="{{topicName}}" class="form-label"
+<label for="{{motorName}}" class="form-label"
   style="font-family: Open Sans, Arial, Helvetica, sans-serif;">{{labelName}}: {{silderFormControl.value}}
 </label>
 <div>
   <input  (change)="turnTheMotorOnAndOff($event)" type="checkbox" [formControl]="motorFormControl">
   <label  style="display:inline"> Motor</label>
   <button id="dialogBtn" class="bi bi-gear btn btn-outline-primary" style="margin-left: 10px; border: 0;" (click)="openPopup(content)"></button>
-  <input id="{{topicName}}" type="range" min="{{minRange.value}}" max="{{maxRange.value}}" class="form-range"
-    (input)="sendMessage()" [formControl]="silderFormControl" #{{topicName}}>
+  <input id="{{motorName}}" type="range" min="{{minRange.value}}" max="{{maxRange.value}}" class="form-range"
+    (input)="sendMessage()" [formControl]="silderFormControl" #{{motorName}}>
 </div>
-
-
-
-
-
-
 
 <ng-template #content let-modal>
   <div class="modal-header">Motor Settings

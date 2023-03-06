@@ -9,12 +9,12 @@
         <h2>{{side | titlecase}} Hand</h2>
         <ng-container *ngIf="leftSwitchControl.value === true">
           <ng-container *ngFor="let f of leftFingers" #leftContainer>
-            <app-slider [topicName]="f.topic" [labelName]="f.label"></app-slider>
+            <app-slider [motorName]="f.motor" [labelName]="f.label"></app-slider>
           </ng-container>
         </ng-container>
         <ng-container *ngIf="leftSwitchControl.value === false">
             <ng-container *ngFor="let h of leftHand" #leftContainer>
-              <app-slider [topicName]="h.topic" [labelName]="h.label" [isGroup]="true" groupSide="left"></app-slider>
+              <app-slider [motorName]="h.motor" [labelName]="h.label" [isGroup]="true" groupSide="left"></app-slider>
           </ng-container>
         </ng-container>
       </ng-container>
@@ -27,12 +27,12 @@
         <h2>{{side | titlecase}} Hand</h2>
         <ng-container *ngIf="rightSwitchControl.value === true">
           <ng-container *ngFor="let f of rightFingers" #rightContainer>
-            <app-slider [topicName]="f.topic" [labelName]="f.label"></app-slider>
+            <app-slider [motorName]="f.motor" [labelName]="f.label"></app-slider>
           </ng-container>
         </ng-container>
         <ng-container *ngIf="rightSwitchControl.value === false">
             <ng-container *ngFor="let h of rightHand" #rightContainer>
-              <app-slider [topicName]="h.topic" [labelName]="h.label" [isGroup]="true" groupSide="right"></app-slider>
+              <app-slider [motorName]="h.motor" [labelName]="h.label" [isGroup]="true" groupSide="right"></app-slider>
           </ng-container>
         </ng-container>
       </ng-container>

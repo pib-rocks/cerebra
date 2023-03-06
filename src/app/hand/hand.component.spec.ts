@@ -82,7 +82,7 @@ fdescribe('HandComponent', () => {
     expect(checkInput.componentInstance.switchView).toHaveBeenCalled();
 
     component.childComponents.filter(child => child.labelName !== 'Thumb opposition').forEach(child => {
-      expect(child.silderFormControl.value).toBe(500);
+      expect(child.sliderFormControl.value).toBe(500);
       expect(child.sendMessage).toHaveBeenCalled();
     });
   });

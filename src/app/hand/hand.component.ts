@@ -19,31 +19,31 @@ export class HandComponent implements OnInit {
   rightSwitchControl = new FormControl(false);
 
   leftHand = [
-    { topic: "/index_left_stretch", label: "Open/Close all fingers" },
-    { topic: "/thumb_left_opposition", label: "Thumb opposition" }
+    { motor: "index_left_stretch", label: "Open/Close all fingers" },
+    { motor: "thumb_left_opposition", label: "Thumb opposition" }
   ]
 
   leftFingers = [
-    { topic: "/thumb_left_stretch", label: "Thumb" },
-    { topic: "/thumb_left_opposition", label: "Thumb opposition" },
-    { topic: "/index_left_stretch", label: "Index finger" },
-    { topic: "/middle_left_stretch", label: "Middle finger" },
-    { topic: "/ring_left_stretch", label: "Ring finger" },
-    { topic: "/pinky_left_stretch", label: "Pinky finger" }
+    { motor: "thumb_left_stretch", label: "Thumb" },
+    { motor: "thumb_left_opposition", label: "Thumb opposition" },
+    { motor: "index_left_stretch", label: "Index finger" },
+    { motor: "middle_left_stretch", label: "Middle finger" },
+    { motor: "ring_left_stretch", label: "Ring finger" },
+    { motor: "pinky_left_stretch", label: "Pinky finger" }
   ]
 
   rightHand = [
-    { topic: "/index_right_stretch", label: "Open/Close all fingers" },
-    { topic: "/thumb_right_opposition", label: "Thumb opposition" }
+    { motor: "index_right_stretch", label: "Open/Close all fingers" },
+    { motor: "thumb_right_opposition", label: "Thumb opposition" }
   ]
 
   rightFingers = [
-    { topic: "/thumb_right_stretch", label: "Thumb" },
-    { topic: "/thumb_right_opposition", label: "Thumb opposition" },
-    { topic: "/index_right_stretch", label: "Index finger" },
-    { topic: "/middle_right_stretch", label: "Middle finger" },
-    { topic: "/ring_right_stretch", label: "Ring finger" },
-    { topic: "/pinky_right_stretch", label: "Pinky finger" }
+    { motor: "thumb_right_stretch", label: "Thumb" },
+    { motor: "thumb_right_opposition", label: "Thumb opposition" },
+    { motor: "index_right_stretch", label: "Index finger" },
+    { motor: "middle_right_stretch", label: "Middle finger" },
+    { motor: "ring_right_stretch", label: "Ring finger" },
+    { motor: "pinky_right_stretch", label: "Pinky finger" }
   ]
 
   ngOnInit(): void {
@@ -54,8 +54,8 @@ export class HandComponent implements OnInit {
 
   reset() {
     this.childComponents.forEach(child => {
-      if(child.silderFormControl.value != 0){
-        child.silderFormControl.setValue("0");
+      if(child.sliderFormControl.value != 0){
+        child.sliderFormControl.setValue("0");
         child.sendMessage();
       }
     })
@@ -65,10 +65,17 @@ export class HandComponent implements OnInit {
     const switchControl = side === 'left' ? this.leftSwitchControl : this.rightSwitchControl;
     if (switchControl.value === true) {
       const indexFinger = this.childComponents.filter(child => child.labelName === "Index finger")[0];
-      this.childComponents.filter(child => child.labelName !== "Thumb opposition").forEach(child => {
-        child.silderFormControl.setValue(indexFinger.silderFormControl.value);
+      const thumbOppo = this.childComponents.filter(child => child.labelName === "Thumb opposition")[0];
+      this.childComponents.forEach(child => {
+        child.sliderFormControl.setValue(child.labelName == "Thumb opposition"
+          ? thumbOppo.sliderFormControl.value
+          : indexFinger.sliderFormControl.value);
         child.sendMessage();
-      })
+      });
+    } else {
+      this.childComponents.forEach(child => {
+        child.sendMessage();
+      });
     }
   }
 }

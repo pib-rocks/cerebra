@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import * as ROSLIB from 'roslib';
 import { BehaviorSubject, Subject } from 'rxjs';
+import { Message } from './message';
+import { Motor } from './motor';
 
 @Injectable({
   providedIn: 'root'
@@ -9,15 +11,35 @@ export class RosService {
   private isInitializedSubject = new BehaviorSubject<boolean>(false);
   isInitialized$ = this.isInitializedSubject.asObservable();
 
-  public ros: ROSLIB.Ros;
-
-  public topics: ROSLIB.Topic[] = [];
+  private ros: ROSLIB.Ros;
+  private topic?: ROSLIB.Topic;
+  private readonly topicName = '/motor_settings';
+  private motors: Motor[] = [];
 
   constructor() {
     this.ros = this.setUpRos();
     this.ros.on('connection', () => {
       console.log('Connected to ROS');
       this.isInitializedSubject.next(true);
+      this.topic = new ROSLIB.Topic({
+        ros: this.ros,
+        name: this.topicName,
+        messageType: 'std_msgs/String'
+      });
+
+      this.topic.subscribe((message) => {
+        const jsonStr = JSON.stringify(message);
+        const json = JSON.parse(jsonStr);
+        const jsonArray = JSON.parse(json['data']);
+        const jsonObject = jsonArray.reduce((key: object, value: object) => {
+          return {...key, ...value};
+        }, {});
+        console.log('Received message for ' + jsonObject['motor'] + ': ' + JSON.stringify(jsonObject));
+        const receivers$ = this.getReceiversByMotorName(jsonObject['motor']);
+        receivers$.forEach(r => {
+          r.next(jsonObject);
+        });
+      })
     });
 
     this.ros.on('error', (error: string) => {
@@ -29,42 +51,43 @@ export class RosService {
     });
   }
 
-  subscribeTopic(topicName: string, receiver$: Subject<number>) {
+  registerMotor(motorName: string, motorReceiver$: Subject<Message>) {
+    let isRegistered = false;
     if (this.ros.isConnected) {
-      const topic = this.createTopic(topicName);
-      this.topics.push(topic);
-      topic.subscribe((message) => {
-        const jsonStr = JSON.stringify(message);
-        console.log('Get message from ' + topicName + ': ' + jsonStr);
-        const json = JSON.parse(jsonStr);
-        const value = Number(json["data"]);
-        receiver$.next(value);
-      })
+      this.motors.forEach(m => {
+        if (m.motor === motorName) {
+          m.receiver$ = motorReceiver$;
+          isRegistered = true;
+        }
+      });
+
+      if (!isRegistered) {
+        const motor: Motor = {
+          motor: motorName,
+          receiver$: motorReceiver$
+        }
+        this.motors.push(motor);
+      }
     }
+    console.log(this.motors);
   }
 
-  public createTopic(topicName: string) {
-    return new ROSLIB.Topic({
-      ros: this.ros,
-      name: topicName,
-      messageType: 'std_msgs/String'
-    });
+  sendMessage(msg: Message) {
+    const json = JSON.parse(JSON.stringify(msg));
+    const parameters = Object.keys(json).map(key => ({[key]: json[key]}));
+    const message = new ROSLIB.Message(
+      {data: JSON.stringify(parameters)}
+    );
+    this.topic?.publish(message);
+    console.log('Sent message' + JSON.stringify(message));
   }
 
-  sendMessage(topicName: string, value: number) {
-    const message = new ROSLIB.Message({
-      data: String(value)
-    });
-    console.log('Send message to ' + topicName + ': ' + JSON.stringify(message));
-    this.getTopicByName(topicName).publish(message);
-  }
+  getReceiversByMotorName(motorName: string): Subject<Message>[] {
+    const foundMotors = this.motors.filter(m => m.motor === motorName);
 
-  getTopicByName(topicName: string): ROSLIB.Topic {
-    const filteredTopics = this.topics.filter(topic => topic.name === topicName);
-
-    return filteredTopics.length > 0
-      ? filteredTopics[0]
-      : this.createTopic(topicName);
+    return foundMotors.length > 0
+      ? foundMotors.map(m => m['receiver$'])
+      : [];
   }
 
   setUpRos(){
