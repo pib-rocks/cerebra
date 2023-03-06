@@ -35,8 +35,8 @@ export class ArmComponent implements OnInit {
 
     reset() {
       this.childComponents.forEach(child => {
-        if (child.formControl.value != 0){
-          child.formControl.setValue(0);
+        if (child.silderFormControl.value != 0){
+          child.silderFormControl.setValue(0);
           child.sendMessage();
         }
       });

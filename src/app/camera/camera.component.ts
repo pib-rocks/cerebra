@@ -1,13 +1,20 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { Subject } from 'rxjs';
-
 @Component({
   selector: 'app-camera',
   templateUrl: './camera.component.html',
   styleUrls: ['./camera.component.css']
 })
 export class CameraComponent {
+
+  constructor() {}
+
+  @ViewChild('videoElement') videoElement: any;
+  navigator!: Navigator;
+  stream!: MediaStream;
+
+
   componentName = "Live view";
 
   sliderTrigger$ = new Subject<string>();
@@ -23,4 +30,29 @@ export class CameraComponent {
     target.classList.add('active');
     this.selectedSize = target.textContent ?  target.textContent.split(' ')[0] : '';
   }
+
+  startCamera() {
+    this.navigator = <Navigator>navigator;
+    this.navigator.mediaDevices.enumerateDevices()
+      .then(devices => {
+        const videoDevices = devices.filter(device => device.kind === 'videoinput');
+        const deviceId = videoDevices[0].deviceId;
+        const constraints = { video: { deviceId: { exact: deviceId } } };
+        return this.navigator.mediaDevices.getUserMedia(constraints);
+      })
+      .then(stream => {
+        this.stream = stream;
+        this.videoElement.nativeElement.srcObject = stream;
+        this.videoElement.nativeElement.play();
+      })
+      .catch(err => console.error(err));
+  }
+
+  stopCamera() {
+    if (this.stream) {
+      this.stream.getTracks().forEach(track => track.stop());
+      this.videoElement.nativeElement.srcObject = null;
+    }
+  }
+
 }

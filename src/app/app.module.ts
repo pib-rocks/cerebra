@@ -9,6 +9,9 @@ import { SliderComponent } from './slider/slider.component';
 import { HandComponent } from './hand/hand.component';
 import { CameraComponent } from './camera/camera.component';
 import { ArmComponent } from './arm/arm.component';
+import { MatDialogModule } from '@angular/material/dialog';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { MatSliderModule } from '@angular/material/slider';
 
 @NgModule({
   declarations: [
@@ -22,7 +25,10 @@ import { ArmComponent } from './arm/arm.component';
     BrowserModule,
     AppRoutingModule,
     ReactiveFormsModule,
-    HttpClientModule
+    HttpClientModule,
+    MatDialogModule,
+    NgbModule,
+    MatSliderModule
   ],
   providers: [
   ],
