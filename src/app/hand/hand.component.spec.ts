@@ -50,7 +50,7 @@ fdescribe('HandComponent', () => {
     const button = fixture.nativeElement.querySelector('#resetButton');
     spyOn(button, 'dispatchEvent').and.callThrough();
     for (const c of sliders){
-      c.componentInstance.formControl.setValue(10);
+      c.componentInstance.silderFormControl.setValue(10);
     }
     button.dispatchEvent(new MouseEvent('click'));
     fixture.detectChanges();
@@ -58,7 +58,7 @@ fdescribe('HandComponent', () => {
     expect(component.reset).toHaveBeenCalled();
 
     for (const slider of sliders) {
-      const input = slider.children[1];
+      const input = slider.children[1].children[3];
       expect(input.nativeElement.value).toBe("0");
       expect(slider.componentInstance.sendMessage).toHaveBeenCalledWith();
     }
@@ -75,14 +75,14 @@ fdescribe('HandComponent', () => {
       .forEach(slider => spyOn(slider.componentInstance, 'sendMessage'));
 
     sliders.filter(slider => slider.componentInstance.labelName === "Index finger")[0]
-      .children[1].componentInstance.formControl.setValue(500);
+      .children[1].componentInstance.silderFormControl.setValue(500);
 
     checkInput.nativeElement.dispatchEvent(new Event('input'));
     fixture.detectChanges();
     expect(checkInput.componentInstance.switchView).toHaveBeenCalled();
 
     component.childComponents.filter(child => child.labelName !== 'Thumb opposition').forEach(child => {
-      expect(child.formControl.value).toBe(500);
+      expect(child.silderFormControl.value).toBe(500);
       expect(child.sendMessage).toHaveBeenCalled();
     });
   });

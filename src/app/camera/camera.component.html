@@ -8,7 +8,9 @@
 
     </div>
     <div class="col">
-      <img class="center-block my-3" src="https://picsum.photos/640/480" alt="" id="image">
+      <video #videoElement></video>
+        <button (click)="startCamera()">Start Camera</button>
+        <button (click)="stopCamera()">Stop Camera</button>
     </div>
     <div class="col">
       <label for="refreshRate" class="form-label my-3" style="font-family: Open Sans, Arial, Helvetica, sans-serif;">

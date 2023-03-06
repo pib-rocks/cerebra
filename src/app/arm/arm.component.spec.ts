@@ -45,13 +45,13 @@ fdescribe('ArmComponent', () => {
     const button = fixture.debugElement.query(By.css('#resetButton'));
     console.log(button);
     const clickSpy = spyOn(component,'reset').and.callThrough();
-    for (const c of childComponents){
-      c.componentInstance.formControl.setValue(10);
+    for (let c of childComponents){
+      c.componentInstance.silderFormControl.setValue(10);
     }
     button.nativeElement.click();
     expect(clickSpy).toHaveBeenCalled();
-    for (const child of childComponents){
-      expect(child.componentInstance.formControl.value).toBe(0);
+    for ( let child of childComponents){
+      expect(child.componentInstance.silderFormControl.value).toBe(0);
     }
     for(const spy of spies){
       expect(spy).toHaveBeenCalled();
