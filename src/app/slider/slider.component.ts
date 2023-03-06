@@ -5,6 +5,7 @@ import { Message } from '../shared/message';
 import { MotorService } from '../shared/motor.service';
 import { RosService } from '../shared/ros.service';
 import { ModalDismissReasons, NgbModal } from '@ng-bootstrap/ng-bootstrap';
+
 @Component({
   selector: 'app-slider',
   templateUrl: './slider.component.html',
@@ -114,9 +115,9 @@ export class SliderComponent implements OnInit {
   }
 
   openPopup(content: TemplateRef<any>) {
-    this.modalService.open(content, { ariaLabelledBy: 'modal-basic-title', size: 'xl' }).result.then((result: any) => {
+    this.modalService.open(content, { ariaLabelledBy: 'modal-basic-title', size: 'xl' }).result.then((result) => {
       this.closeResult = `Closed with: ${result}`;
-    }, (reason: any) => {
+    }, (reason) => {
       this.closeResult = `Dismissed ${this.getDismissReason(reason)}`;
       console.log(this.closeResult);
     });
