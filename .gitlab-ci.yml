@@ -1,13 +1,17 @@
 stages:
   - init
-  - dependencies
   - test
   - sonar-scan
   - build
-  # - deploy
+  - prepare-artifact
+  - deploy
 
 variables:
   IMAGE: node:18-bullseye
+  USER: cerebra2
+  # SSH_DEV_HOST: 192.168.220.38
+  NGINX_DIR: /etc/nginx/html
+  PROJECT_DIR: /cerebra
 
 init:
   stage: init
@@ -15,8 +19,9 @@ init:
   script:
     - echo "pipeline initialized"
   rules:
-    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"
-    - if: $CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "master"
+    # - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"
+    # - if: $CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "master"
+    - if: $CI_COMMIT_BRANCH == "PR-92"
 
 static_analysis:
   image: ${IMAGE}
@@ -26,10 +31,10 @@ static_analysis:
     - echo "runing static analysis"
     - npm link @angular/cli
     - ng lint
-
   rules:
-    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"
-    - if: $CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "master"
+    # - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"
+    # - if: $CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "master"
+    - if: $CI_COMMIT_BRANCH == "PR-92"
   cache:
     key:
       files:
@@ -57,8 +62,9 @@ run_tests:
     paths:
     - $CI_PROJECT_DIR/coverage
   rules:
-    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"
-    - if: $CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "master"
+    # - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"
+    # - if: $CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "master"
+    - if: $CI_COMMIT_BRANCH == "PR-92"
   tags: ["lea"]
 
 sonarqube-check:
@@ -80,21 +86,38 @@ sonarqube-check:
     - sonar-scanner
   allow_failure: true
   rules:
-    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"
-    - if: $CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "master"
+    # - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"
+    # - if: $CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "master"
+    - if: $CI_COMMIT_BRANCH == "PR-92"
 
-build:
+build_app:
   stage: build
   image: ${IMAGE}
   script:
     - npm link @angular/cli
     - ng build --configuration production
-    - ls -la ./dist/cerebra2
+    - echo "$CI_PROJECT_DIR"
+    - ls -la ./dist/cerebra
   artifacts:
     expire_in: 12 hrs
     paths:
-    - $CI_PROJECT_DIR/dist
+      - dist/cerebra/
   rules:
-    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"
-    - if: $CI_COMMIT_BRANCH == "master"
+    # - if: $CI_COMMIT_BRANCH == "master"
+    - if: $CI_COMMIT_BRANCH == "PR-92"
+  tags: ["lea"]
+
+rearrange_build_artifacts:
+  stage: prepare-artifact
+  needs: [build_app]
+  script:
+    - mkdir -p cerebra && mv dist/cerebra/* cerebra/
+    - rm -rf ./dist
+    - ls -la ./cerebra
+  artifacts:
+    paths:
+      - cerebra/
+  rules:
+    # - if: $CI_COMMIT_BRANCH == "master"
+    - if: $CI_COMMIT_BRANCH == "PR-92"
   tags: ["lea"]
