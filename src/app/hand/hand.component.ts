@@ -1,7 +1,7 @@
 import { Component, ElementRef, Input, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { ActivatedRoute, Params } from '@angular/router';
-import { debounceTime, Subject, timeout } from 'rxjs';
+import { Subject } from 'rxjs';
 import { SliderComponent } from '../slider/slider.component';
 
 @Component({
