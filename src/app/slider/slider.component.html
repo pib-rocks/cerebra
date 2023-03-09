@@ -31,9 +31,9 @@
     <ul>
       <li class="horizontalList">Degree min/max (°/100):</li>
       <br class="overlappingBr">
-      <li class="horizontalList"><input type="number" value="0" name="DegreeMin" (input)="sendSettingMessage()"></li>
+      <li class="horizontalList"><input type="number" value="0" name="DegreeMin" (input)="sendSettingMessage()" [formControl]="degreeMin" ></li>
       <br class="overlappingBr">
-      <li class="horizontalList"><input type="number" value="0" name="DegreeMax" (input)="sendSettingMessage()" ></li>
+      <li class="horizontalList"><input type="number" value="0" name="DegreeMax" (input)="sendSettingMessage()" [formControl]="degreeMax"></li>
     </ul>
   </div>
   <div class="h-100 d-flex align-items-center justify-content-center">
