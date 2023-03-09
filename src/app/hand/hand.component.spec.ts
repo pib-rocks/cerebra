@@ -6,7 +6,7 @@ import { SliderComponent } from '../slider/slider.component';
 
 import { HandComponent } from './hand.component';
 
-fdescribe('HandComponent', () => {
+describe('HandComponent', () => {
   let component: HandComponent;
   let fixture: ComponentFixture<HandComponent>;
 
@@ -32,7 +32,8 @@ fdescribe('HandComponent', () => {
     const sliders = fixture.debugElement.queryAll(By.css('app-slider'));
     expect(sliders.length).toBe(2);
     for (const slider of sliders) {
-      expect(slider.componentInstance.topicName).toBeTruthy();
+      console.log(slider.componentInstance);
+      expect(slider.componentInstance.motorName).toBeTruthy();
     }
   });
 
@@ -50,7 +51,7 @@ fdescribe('HandComponent', () => {
     const button = fixture.nativeElement.querySelector('#resetButton');
     spyOn(button, 'dispatchEvent').and.callThrough();
     for (const c of sliders){
-      c.componentInstance.silderFormControl.setValue(10);
+      c.componentInstance.sliderFormControl.setValue(10);
     }
     button.dispatchEvent(new MouseEvent('click'));
     fixture.detectChanges();
@@ -60,7 +61,7 @@ fdescribe('HandComponent', () => {
     for (const slider of sliders) {
       const input = slider.children[1].children[3];
       expect(input.nativeElement.value).toBe("0");
-      expect(slider.componentInstance.sendMessage).toHaveBeenCalledWith();
+      expect(slider.componentInstance.sendMessage).toHaveBeenCalled();
     }
   })
 
@@ -72,18 +73,17 @@ fdescribe('HandComponent', () => {
     spyOn(checkInput.componentInstance, 'switchView').and.callThrough();
     const sliders = fixture.debugElement.queryAll(By.css('app-slider'));
     sliders.filter(slider => slider.children[1].componentInstance.labelName !== 'Thumb Opposition')
-      .forEach(slider => spyOn(slider.componentInstance, 'sendMessage'));
-
-    sliders.filter(slider => slider.componentInstance.labelName === "Index finger")[0]
-      .children[1].componentInstance.silderFormControl.setValue(500);
+      .forEach(slider => spyOn(slider.componentInstance, 'sendAllMessagesCombined'));
+      sliders.filter(slider => slider.componentInstance.labelName === "Index finger")[0].componentInstance.sliderFormControl.setValue(500);
 
     checkInput.nativeElement.dispatchEvent(new Event('input'));
     fixture.detectChanges();
     expect(checkInput.componentInstance.switchView).toHaveBeenCalled();
 
     component.childComponents.filter(child => child.labelName !== 'Thumb opposition').forEach(child => {
-      expect(child.silderFormControl.value).toBe(500);
-      expect(child.sendMessage).toHaveBeenCalled();
+      console.log('slider from control' + child.sliderFormControl.value)
+      expect(child.sliderFormControl.value).toBe(500);
+      expect(child.sendAllMessagesCombined).toHaveBeenCalled();
     });
   });
 });

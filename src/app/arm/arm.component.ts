@@ -10,14 +10,14 @@ import { SliderComponent } from '../slider/slider.component';
 export class ArmComponent implements OnInit {
   @Input() side = "Left";
   @ViewChildren(SliderComponent) childComponents!: QueryList<SliderComponent>;
-  
+
   constructor(private route: ActivatedRoute) {}
 
   leftArm = [
     {topic: "/upper_arm_left_rotation", label:"Upper arm rotation"},
     {topic: "/ellbow_left", label:"Ellbow Position"},
     {topic: "/lower_arm_left_rotation", label:"Lower arm rotation"},
-    {topic: "/wrist_left", label:"Middle finger"},
+    {topic: "/wrist_left", label:"wrist_left"},
   ]
 
   rightArm = [
@@ -35,8 +35,8 @@ export class ArmComponent implements OnInit {
 
     reset() {
       this.childComponents.forEach(child => {
-        if (child.silderFormControl.value != 0){
-          child.silderFormControl.setValue(0);
+        if (child.sliderFormControl.value != 0){
+          child.sliderFormControl.setValue(0);
           child.sendMessage();
         }
       });

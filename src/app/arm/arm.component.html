@@ -4,12 +4,12 @@
         <h2>{{side | titlecase}} Arm</h2>
         <ng-container *ngIf="side === 'left'">
           <ng-container *ngFor="let f of leftArm">
-            <app-slider [topicName]="f.topic" [labelName]="f.label | titlecase"></app-slider>
+            <app-slider [motorName]="f.topic" [labelName]="f.label | titlecase"></app-slider>
           </ng-container>
         </ng-container>
         <ng-container *ngIf="side === 'right'">
           <ng-container *ngFor="let f of rightArm">
-            <app-slider [topicName]="f.topic" [labelName]="f.label | titlecase "></app-slider>
+            <app-slider [motorName]="f.topic" [labelName]="f.label | titlecase "></app-slider>
           </ng-container>
         </ng-container>
         <div class="p-8"></div>
@@ -21,4 +21,3 @@
       <button id="resetButton" class="btn btn-primary my-4" (click)="reset()">Reset</button>
     </div>
   </div>
-  

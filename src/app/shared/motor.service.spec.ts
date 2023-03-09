@@ -1,13 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 
-import { FingerService } from './finger.service';
+import { MotorService } from './motor.service';
 
-fdescribe('FingerService', () => {
-  let service: FingerService;
+describe('MotorService', () => {
+  let service: MotorService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(FingerService);
+    service = TestBed.inject(MotorService);
   });
 
   it('should be created', () => {

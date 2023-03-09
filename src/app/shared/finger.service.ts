@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 @Injectable({
   providedIn: 'root'
 })
-export class FingerService {
+export class MotorService {
 
   leftFingers = [
     "/thumb_left_stretch",
