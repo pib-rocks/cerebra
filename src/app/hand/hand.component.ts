@@ -1,6 +1,7 @@
-import { Component, Input, OnInit, QueryList, ViewChildren } from '@angular/core';
+import { Component, ElementRef, Input, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { ActivatedRoute, Params } from '@angular/router';
+import { debounceTime, Subject, timeout } from 'rxjs';
 import { SliderComponent } from '../slider/slider.component';
 
 @Component({
@@ -10,6 +11,8 @@ import { SliderComponent } from '../slider/slider.component';
 })
 export class HandComponent implements OnInit {
   @ViewChildren(SliderComponent) childComponents!: QueryList<SliderComponent>;
+  @ViewChild('myInput', { static: false }) myInput!: ElementRef<HTMLInputElement>;
+  dummySubject$: Subject<string> = new Subject()
 
   @Input() side = "Left";
 
@@ -54,7 +57,7 @@ export class HandComponent implements OnInit {
 
   reset() {
     this.childComponents.forEach(child => {
-      if(child.sliderFormControl.value != 0){
+      if (child.sliderFormControl.value != 0) {
         child.sliderFormControl.setValue("0");
         child.sendMessage();
       }
@@ -66,16 +69,47 @@ export class HandComponent implements OnInit {
     if (switchControl.value === true) {
       const indexFinger = this.childComponents.filter(child => child.labelName === "Index finger")[0];
       const thumbOppo = this.childComponents.filter(child => child.labelName === "Thumb opposition")[0];
+      console.log('switchView childComponents length')
+      console.log(this.childComponents.length);
       this.childComponents.forEach(child => {
         child.sliderFormControl.setValue(child.labelName == "Thumb opposition"
           ? thumbOppo.sliderFormControl.value
           : indexFinger.sliderFormControl.value);
-        child.sendMessage();
+          child.motorFormControl.setValue(child.labelName == "Thumb opposition"
+          ? thumbOppo.motorFormControl.value
+          : indexFinger.motorFormControl.value);
+          child.velocityFormControl.setValue(child.labelName == "Thumb opposition"
+          ? thumbOppo.velocityFormControl.value
+          : indexFinger.velocityFormControl.value);
+        child.accelerationFormControl.setValue(child.labelName == "Thumb opposition"
+          ? thumbOppo.accelerationFormControl.value
+          : indexFinger.accelerationFormControl.value);
+        child.decelerationFormControl.setValue(child.labelName == "Thumb opposition"
+          ? thumbOppo.decelerationFormControl.value
+          : indexFinger.decelerationFormControl.value);
+        child.periodFormControl.setValue(child.labelName == "Thumb opposition"
+          ? thumbOppo.periodFormControl.value
+          : indexFinger.periodFormControl.value);
+        child.plureMaxRange.setValue(child.labelName == "Thumb opposition"
+          ? thumbOppo.plureMaxRange.value
+          : indexFinger.plureMaxRange.value);
+        child.plureMinRange.setValue(child.labelName == "Thumb opposition"
+          ? thumbOppo.plureMinRange.value
+          : indexFinger.plureMinRange.value);
+        child.degreeMax.setValue(child.labelName == "Thumb opposition"
+          ? thumbOppo.degreeMax.value
+          : indexFinger.degreeMax.value);
+        child.degreeMin.setValue(child.labelName == "Thumb opposition"
+          ? thumbOppo.degreeMin.value
+          : indexFinger.degreeMin.value);
+        child.sendAllMessagesCombined();
       });
     } else {
       this.childComponents.forEach(child => {
-        child.sendMessage();
+        child.sendAllMessagesCombined();
       });
     }
   }
+
+
 }

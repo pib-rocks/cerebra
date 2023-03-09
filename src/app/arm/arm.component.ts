@@ -17,7 +17,7 @@ export class ArmComponent implements OnInit {
     {topic: "/upper_arm_left_rotation", label:"Upper arm rotation"},
     {topic: "/ellbow_left", label:"Ellbow Position"},
     {topic: "/lower_arm_left_rotation", label:"Lower arm rotation"},
-    {topic: "/wrist_left", label:"Middle finger"},
+    {topic: "/wrist_left", label:"wrist_left"},
   ]
 
   rightArm = [

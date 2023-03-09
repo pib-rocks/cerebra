@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, TemplateRef } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, TemplateRef } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { Message } from '../shared/message';
@@ -13,17 +13,16 @@ import { ModalDismissReasons, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 })
 export class SliderComponent implements OnInit {
 
+  maxSliderValue = 9000;
+  minSliderValue = -9000;
 
-  maxRange: FormControl = new FormControl(1000);
-  minRange: FormControl = new FormControl(-1000);
-  degreeMax: FormControl = new FormControl(0);
-  degreeMin: FormControl = new FormControl(0);
 
   @Input() motorName = '';
   @Input() labelName = '';
   @Input() groupSide = 'left';
   @Input() isGroup = false;
   @Input() sliderTrigger$ = new Subject<string>();
+  eventSubject$ = new Subject<Event>();
 
   closeResult!: string;
 
@@ -36,6 +35,10 @@ export class SliderComponent implements OnInit {
   accelerationFormControl: FormControl = new FormControl(0);
   decelerationFormControl: FormControl = new FormControl(0);
   periodFormControl: FormControl = new FormControl(0);
+  plureMaxRange: FormControl = new FormControl(65535);
+  plureMinRange: FormControl = new FormControl(1);
+  degreeMax: FormControl = new FormControl(0);
+  degreeMin: FormControl = new FormControl(0);
 
 
   constructor(private rosService: RosService, private motorService: MotorService, private modalService: NgbModal) { }
@@ -45,8 +48,37 @@ export class SliderComponent implements OnInit {
 
     this.messageReceiver$.subscribe(json => {
       const value = json.value;
-      console.log('set value for ' + json['motor']);
-      this.sliderFormControl.setValue(this.getValueWithinRange(Number(value)));
+
+      if (value) {
+        this.sliderFormControl.setValue(this.getValueWithinRange(Number(value)));
+      }
+      if ((typeof json.turnedOn !== 'undefined')) {
+        this.motorFormControl.setValue(json.turnedOn);
+      }
+      if ((typeof json.acceleration !== 'undefined')) {
+        this.accelerationFormControl.setValue(json.acceleration);
+      }
+      if ((typeof json.deceleration !== 'undefined')) {
+        this.decelerationFormControl.setValue(json.deceleration);
+      }
+      if ((typeof json.period !== 'undefined')) {
+        this.periodFormControl.setValue(json.period);
+      }
+      if ((typeof json.pule_widths_max !== 'undefined')) {
+        this.plureMaxRange.setValue(json.pule_widths_max);
+      }
+      if ((typeof json.pule_widths_min !== 'undefined')) {
+        this.plureMinRange.setValue(json.pule_widths_min);
+      }
+      if ((typeof json.rotation_range_max !== 'undefined')) {
+        this.degreeMax.setValue(json.rotation_range_max);
+      }
+      if ((typeof json.rotation_range_min !== 'undefined')) {
+        this.degreeMin.setValue(json.rotation_range_min);
+      }
+      if ((typeof json.velocity !== 'undefined')) {
+        this.velocityFormControl.setValue(json.velocity);
+      }
     });
 
     this.rosService.isInitialized$.subscribe((isInitialized: boolean) => {
@@ -58,21 +90,15 @@ export class SliderComponent implements OnInit {
   }
 
   sendMessage() {
+    let motorNames: string[] = []
+
     if (this.isCombinedSlider) {
-      const motorNames = this.motorService.getMotorNames(this.groupSide);
+      motorNames = this.motorService.getMotorHandNames(this.groupSide);
 
       motorNames.forEach(mn => {
         const message: Message = {
           motor: mn,
           value: this.sliderFormControl.value,
-          pule_widths_min: "",
-          pule_widths_max: "",
-          rotation_range_min: "",
-          rotation_range_max: "",
-          velocity: "",
-          acceleration: "",
-          deceleration: "",
-          period: ""
         }
         this.rosService.sendMessage(message);
       });
@@ -80,37 +106,75 @@ export class SliderComponent implements OnInit {
       const message: Message = {
         motor: this.motorName,
         value: this.sliderFormControl.value,
-        pule_widths_min: "",
-        pule_widths_max: "",
-        rotation_range_min: "",
-        rotation_range_max: "",
-        velocity: "",
-        acceleration: "",
-        deceleration: "",
-        period: ""
       }
+      this.rosService.sendMessage(message);
+    }
+  }
+
+  sendSettingMessage() {
+    let motorNames: string[] = []
+    if (this.isCombinedSlider) {
+      motorNames = this.motorService.getMotorHandNames(this.groupSide);
+      motorNames.forEach(mn => {
+        const message: Message = {
+          motor: mn,
+          pule_widths_min: this.plureMinRange.value,
+          pule_widths_max: this.plureMaxRange.value,
+          rotation_range_min: this.degreeMin.value,
+          rotation_range_max: this.degreeMax.value,
+          velocity: this.velocityFormControl.value,
+          acceleration: this.accelerationFormControl.value,
+          deceleration: this.decelerationFormControl.value,
+          period: this.periodFormControl.value
+        }
+        this.rosService.sendMessage(message);
+      });
+    } else {
+      const message: Message = {
+          motor: this.motorName,
+          pule_widths_min: this.plureMinRange.value,
+          pule_widths_max: this.plureMaxRange.value,
+          rotation_range_min: this.degreeMin.value,
+          rotation_range_max: this.degreeMax.value,
+          velocity: this.velocityFormControl.value,
+          acceleration: this.accelerationFormControl.value,
+          deceleration: this.decelerationFormControl.value,
+          period: this.periodFormControl.value
+        }
       this.rosService.sendMessage(message);
     }
   }
 
   getValueWithinRange(value: number) {
     let validVal;
-    if (value > this.maxRange.value) {
-      validVal = this.maxRange.value;
-    } else if (value < this.minRange.value) {
-      validVal = this.minRange.value;
+    if (value > this.maxSliderValue) {
+      validVal = this.maxSliderValue;
+    } else if (value < this.minSliderValue) {
+      validVal = this.minSliderValue;
     } else {
       validVal = value;
     }
     return validVal;
   }
 
-  turnTheMotorOnAndOff(event: Event) {
-    const isChecked = (<HTMLInputElement>event.target).checked;
-    if (isChecked) {
-      console.log('the motor is turned on');
+  turnTheMotorOnAndOff() {
+    let motorNames: string[] = []
+    if (this.isCombinedSlider) {
+      motorNames = this.motorService.getMotorHandNames(this.groupSide);
+
+      motorNames.forEach(mn => {
+        const message: Message = {
+          motor: mn,
+          turnedOn: this.motorFormControl.value
+        }
+        this.rosService.sendMessage(message);
+      });
     } else {
-      console.log('the motor is turned off');
+      const message: Message = {
+        motor: this.motorName,
+        turnedOn: this.motorFormControl.value
+      }
+      this.rosService.sendMessage(message);
     }
   }
 
@@ -130,6 +194,44 @@ export class SliderComponent implements OnInit {
       return 'by clicking on a backdrop';
     } else {
       return `with: ${reason}`;
+    }
+  }
+
+  sendAllMessagesCombined() {
+    let motorNames: string[] = []
+    if (this.isCombinedSlider) {
+      motorNames = this.motorService.getMotorHandNames(this.groupSide);
+      motorNames.forEach(mn => {
+        const message: Message = {
+          motor: mn,
+          value: this.sliderFormControl.value,
+          turnedOn: this.motorFormControl.value,
+          pule_widths_min: this.plureMinRange.value,
+          pule_widths_max: this.plureMaxRange.value,
+          rotation_range_min: this.degreeMin.value,
+          rotation_range_max: this.degreeMax.value,
+          velocity: this.velocityFormControl.value,
+          acceleration: this.accelerationFormControl.value,
+          deceleration: this.decelerationFormControl.value,
+          period: this.periodFormControl.value
+        }
+        this.rosService.sendMessage(message);
+      });
+    } else {
+      const message: Message = {
+          motor: this.motorName,
+          value: this.sliderFormControl.value,
+          turnedOn: this.motorFormControl.value,
+          pule_widths_min: this.plureMinRange.value,
+          pule_widths_max: this.plureMaxRange.value,
+          rotation_range_min: this.degreeMin.value,
+          rotation_range_max: this.degreeMax.value,
+          velocity: this.velocityFormControl.value,
+          acceleration: this.accelerationFormControl.value,
+          deceleration: this.decelerationFormControl.value,
+          period: this.periodFormControl.value
+        }
+      this.rosService.sendMessage(message);
     }
   }
 }

@@ -6,7 +6,7 @@ import { SliderComponent } from '../slider/slider.component';
 
 import { ArmComponent } from './arm.component';
 
-fdescribe('ArmComponent', () => {
+describe('ArmComponent', () => {
   let component: ArmComponent;
   let fixture: ComponentFixture<ArmComponent>;
 
@@ -40,21 +40,21 @@ fdescribe('ArmComponent', () => {
     const childComponents = fixture.debugElement.queryAll(By.css('app-slider'));
     const spies: jasmine.Spy<any>[] = [];
     for (const childComponent of childComponents) {
-      spies.push(spyOn(childComponent.componentInstance, 'sendMessage'));
+      spyOn(childComponent.componentInstance, 'sendMessage');
     }
     const button = fixture.debugElement.query(By.css('#resetButton'));
     console.log(button);
     const clickSpy = spyOn(component,'reset').and.callThrough();
     for (const c of childComponents){
-      c.componentInstance.silderFormControl.setValue(10);
+      c.componentInstance.sliderFormControl.setValue(10);
     }
     button.nativeElement.click();
     expect(clickSpy).toHaveBeenCalled();
     for (const child of childComponents){
-      expect(child.componentInstance.silderFormControl.value).toBe(0);
+      expect(child.componentInstance.sliderFormControl.value).toBe(0);
     }
-    for(const spy of spies){
-      expect(spy).toHaveBeenCalled();
+    for(const spy of childComponents){
+      expect(spy.componentInstance.sendMessage).toHaveBeenCalled();
     }
   })
 

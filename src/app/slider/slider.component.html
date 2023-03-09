@@ -2,16 +2,16 @@
   style="font-family: Open Sans, Arial, Helvetica, sans-serif;">{{labelName}}: {{sliderFormControl.value}}
 </label>
 <div>
-  <input  (change)="turnTheMotorOnAndOff($event)" type="checkbox" [formControl]="motorFormControl">
+  <input id="checkbox" (change)="turnTheMotorOnAndOff()" type="checkbox" [formControl]="motorFormControl">
   <label  style="display:inline"> Motor</label>
   <button id="dialogBtn" class="bi bi-gear btn btn-outline-primary" style="margin-left: 10px; border: 0;" (click)="openPopup(content)"></button>
-  <input id="{{motorName}}" type="range" min="{{minRange.value}}" max="{{maxRange.value}}" class="form-range"
+  <input id="{{motorName}}" type="range" min={{minSliderValue}} max={{maxSliderValue}} class="form-range"
     (input)="sendMessage()" [formControl]="sliderFormControl" #{{motorName}}>
 </div>
 
 
 
-<ng-template #content let-modal>
+<ng-template #content let-modal id="ng-template">
   <div class="modal-header">Motor Settings
     <button   type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')"
       class="bi bi-x btn btn-outline-dark"></button>
@@ -20,9 +20,9 @@
     <ul>
       <li class="horizontalList">Pulse Width min/max (μs):</li>
       <br class="overlappingBr">
-      <li class="horizontalList"><input type="number" value="0" name="PluseMin" [formControl]="minRange"></li>
+      <li class="horizontalList"><input type="number" value="1" name="PluseMin" [formControl]="plureMinRange" (input)="sendSettingMessage()"></li>
       <br class="overlappingBr">
-      <li class="horizontalList"><input type="number" value="0" name="PluseMax" [formControl]="maxRange"></li>
+      <li class="horizontalList"><input type="number" value="65535" name="PluseMax" [formControl]="plureMaxRange" (input)="sendSettingMessage()"></li>
     </ul>
   </div>
 
@@ -31,9 +31,9 @@
     <ul>
       <li class="horizontalList">Degree min/max (°/100):</li>
       <br class="overlappingBr">
-      <li class="horizontalList"><input type="number" value="0" name="DegreeMin"></li>
+      <li class="horizontalList"><input type="number" value="0" name="DegreeMin" (input)="sendSettingMessage()"></li>
       <br class="overlappingBr">
-      <li class="horizontalList"><input type="number" value="0" name="DegreeMax"></li>
+      <li class="horizontalList"><input type="number" value="0" name="DegreeMax" (input)="sendSettingMessage()" ></li>
     </ul>
   </div>
   <div class="h-100 d-flex align-items-center justify-content-center">
@@ -45,13 +45,13 @@
           </li>
           <br><br><br><br>
           <li>
-            <input type="range" min="0" max="1000000" step="1" class="form-range rotateRange"
-              [value]="velocityFormControl.value" [formControl]="velocityFormControl">
+            <input type="range" min="0" max="500000" step="1" class="form-range rotateRange"
+              [value]="velocityFormControl.value" [formControl]="velocityFormControl" (input)="sendSettingMessage()">
           </li>
           <br><br><br><br>
           <li>
-            <input type="number" min="0" max="1000000" [value]="velocityFormControl.value" name="Velocity"
-              [formControl]="velocityFormControl">
+            <input type="number" min="0" max="500000" [value]="velocityFormControl.value" name="Velocity"
+              [formControl]="velocityFormControl" (input)="sendSettingMessage()">
           </li>
         </ul>
       </li>
@@ -65,13 +65,13 @@
           </li>
           <br><br><br><br>
           <li>
-            <input type="range" min="0" max="1000000" step="1" class="form-range rotateRange"
-              [value]="accelerationFormControl.value" [formControl]="accelerationFormControl">
+            <input type="range" min="0" max="500000" step="1" class="form-range rotateRange"
+              [value]="accelerationFormControl.value" [formControl]="accelerationFormControl" (input)="sendSettingMessage()">
           </li>
           <br><br><br><br>
           <li>
-            <input type="number" min="0" max="1000000" [value]="accelerationFormControl.value" name="Acceleration"
-              [formControl]="accelerationFormControl">
+            <input type="number" min="0" max="500000" [value]="accelerationFormControl.value" name="Acceleration"
+              [formControl]="accelerationFormControl" (input)="sendSettingMessage()">
           </li>
         </ul>
       </li>
@@ -86,13 +86,13 @@
           </li>
           <br><br><br><br>
           <li>
-            <input type="range" min="0" max="1000000" step="1" class="form-range rotateRange"
-              [value]="decelerationFormControl.value" [formControl]="decelerationFormControl">
+            <input type="range" min="0" max="500000" step="1" class="form-range rotateRange"
+              [value]="decelerationFormControl.value" [formControl]="decelerationFormControl" (input)="sendSettingMessage()">
           </li>
           <br><br><br><br>
           <li>
-            <input type="number" min="0" max="1000000" [value]="decelerationFormControl.value" name="Deceleration"
-              [formControl]="decelerationFormControl">
+            <input type="number" min="0" max="500000" [value]="decelerationFormControl.value" name="Deceleration"
+              [formControl]="decelerationFormControl" (input)="sendSettingMessage()">
           </li>
         </ul>
       </li>
@@ -106,12 +106,12 @@
           </li>
           <br><br><br><br>
           <li>
-            <input type="range" min="0" max="1000000" step="1" class="form-range rotateRange"
-              [value]="periodFormControl.value" [formControl]="periodFormControl">
+            <input type="range" min="0" max="65535" step="1" class="form-range rotateRange"
+              [value]="periodFormControl.value" [formControl]="periodFormControl" (input)="sendSettingMessage()">
           </li>
           <br><br><br><br>
           <li>
-            <input type="number" min="0" max="1000000" [value]="periodFormControl.value" name="Period" [formControl]="periodFormControl">
+            <input type="number" min="1" max="65535" [value]="periodFormControl.value" name="Period" [formControl]="periodFormControl" (input)="sendSettingMessage()">
           </li>
         </ul>
       </li>

@@ -11,8 +11,8 @@ export class RosService {
   private isInitializedSubject = new BehaviorSubject<boolean>(false);
   isInitialized$ = this.isInitializedSubject.asObservable();
 
-  private ros: ROSLIB.Ros;
-  private topic?: ROSLIB.Topic;
+  private ros!: ROSLIB.Ros;
+  private topic!: ROSLIB.Topic;
   private readonly topicName = '/motor_settings';
   private motors: Motor[] = [];
 
@@ -21,27 +21,9 @@ export class RosService {
     this.ros.on('connection', () => {
       console.log('Connected to ROS');
       this.isInitializedSubject.next(true);
-      this.topic = new ROSLIB.Topic({
-        ros: this.ros,
-        name: this.topicName,
-        messageType: 'std_msgs/String'
-      });
-
-      this.topic.subscribe((message) => {
-        const jsonStr = JSON.stringify(message);
-        const json = JSON.parse(jsonStr);
-        const jsonArray = JSON.parse(json['data']);
-        const jsonObject = jsonArray.reduce((key: object, value: object) => {
-          return {...key, ...value};
-        }, {});
-        console.log('Received message for ' + jsonObject['motor'] + ': ' + JSON.stringify(jsonObject));
-        const receivers$ = this.getReceiversByMotorName(jsonObject['motor']);
-        receivers$.forEach(r => {
-          r.next(jsonObject);
-        });
-      })
+      this.topic = this.createTopic();
+      this.subscribeTopic()
     });
-
     this.ros.on('error', (error: string) => {
       console.log('Error connecting to ROSBridge server:', error);
     });
@@ -69,7 +51,6 @@ export class RosService {
         this.motors.push(motor);
       }
     }
-    console.log(this.motors);
   }
 
   sendMessage(msg: Message) {
@@ -84,7 +65,6 @@ export class RosService {
 
   getReceiversByMotorName(motorName: string): Subject<Message>[] {
     const foundMotors = this.motors.filter(m => m.motor === motorName);
-
     return foundMotors.length > 0
       ? foundMotors.map(m => m['receiver$'])
       : [];
@@ -95,4 +75,39 @@ export class RosService {
       url: 'ws://192.168.220.38:9090',
     });
   }
+
+  subscribeTopic(){
+    this.topic.subscribe((message) => {
+      const jsonStr = JSON.stringify(message);
+      const json = JSON.parse(jsonStr);
+      const jsonArray = JSON.parse(json['data']);
+      const jsonObject = jsonArray.reduce((key: object, value: object) => {
+        return {...key, ...value};
+      }, {});
+      console.log('Received message for ' + jsonObject['motor'] + ': ' + JSON.stringify(jsonObject));
+      const receivers$ = this.getReceiversByMotorName(jsonObject['motor']);
+      receivers$.forEach(r => {
+        r.next(jsonObject);
+      });
+    })
+  }
+
+  get Ros(): ROSLIB.Ros{
+    return this.ros;
+  }
+
+  get Topic(): ROSLIB.Topic{
+    return this.topic;
+  }
+
+  createTopic(): ROSLIB.Topic {
+    return new ROSLIB.Topic({
+      ros: this.ros,
+      name: this.topicName,
+      messageType: 'std_msgs/String'
+    });
+  }
+
 }
+
+

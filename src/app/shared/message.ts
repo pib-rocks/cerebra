@@ -1,6 +1,7 @@
 export interface Message {
   motor: string,
-  value: string,
+  value?: string,
+  turnedOn?: boolean,
   pule_widths_min?: string,
   pule_widths_max?: string,
   rotation_range_min?: string,

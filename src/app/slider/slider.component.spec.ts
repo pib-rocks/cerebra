@@ -2,17 +2,19 @@ import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testin
 import { ReactiveFormsModule } from '@angular/forms';
 import { By } from '@angular/platform-browser';
 import { ModalDismissReasons, NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { Message } from 'roslib';
 import { MotorService } from '../shared/motor.service';
 import { RosService } from '../shared/ros.service';
 
 import { SliderComponent } from './slider.component';
 
-fdescribe('SliderComponent', () => {
+describe('SliderComponent', () => {
   let component: SliderComponent;
   let fixture: ComponentFixture<SliderComponent>;
   let rosService: RosService;
   let modalService: NgbModal;
   let fingerService: MotorService;
+  let motorService: MotorService;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -27,6 +29,7 @@ fdescribe('SliderComponent', () => {
     rosService = TestBed.inject(RosService);
     modalService = TestBed.inject(NgbModal);
     fingerService = TestBed.inject(MotorService);
+    motorService = TestBed.inject(MotorService);
     fixture.detectChanges();
   });
 
@@ -36,12 +39,12 @@ fdescribe('SliderComponent', () => {
 
   it('should have a maximum range at 1000', () => {
     const slider = fixture.debugElement.queryAll(By.css('input'))[1].nativeElement;
-    expect(slider.max).toBe('1000');
+    expect(slider.max).toBe('9000');
   });
 
   it('should have a mininum range at -1000', () => {
     const slider = fixture.debugElement.queryAll(By.css('input'))[1].nativeElement;
-    expect(slider.min).toBe('-1000');
+    expect(slider.min).toBe('-9000');
   });
 
   it('should call sendMessage() on input', () => {
@@ -54,21 +57,40 @@ fdescribe('SliderComponent', () => {
     expect(rosService.sendMessage).toHaveBeenCalled();
   });
 
+  it('should set a valid value after receiving a message', () => {
+    const slider = fixture.nativeElement.querySelector('input[type="range"]');
+
+    let json = {
+      motor: "thumb_left_stretch",
+      value: '50000'
+    }
+
+    component.messageReceiver$.next(json);
+    fixture.detectChanges();
+    expect(slider.value).toBe(String(component.maxSliderValue));
+
+    json = {
+      motor: "thumb_left_stretch",
+      value: '-50000'
+    }
+
+    component.messageReceiver$.next(json);
+    fixture.detectChanges();
+    expect(slider.value).toBe(String(component.minSliderValue));
+  });
+
   it('should call sendMessage() to all finger topics on input from combined slider', () => {
     component.isCombinedSlider = true;
     component.groupSide = 'left';
     component.sliderFormControl.setValue(500);
     fixture.detectChanges();
-    const fingerTopics = fingerService.getMotorNames(component.groupSide);
+    const fingerTopics = fingerService.getMotorHandNames(component.groupSide);
     spyOn(component, 'sendMessage').and.callThrough();
     spyOn(rosService, 'sendMessage');
 
     const slider = fixture.nativeElement.querySelector('input[type="range"]');
     slider.dispatchEvent(new Event('input'));
     expect(component.sendMessage).toHaveBeenCalled();
-    fingerTopics.forEach(t => {
-      expect(rosService.sendMessage).toHaveBeenCalledWith(t);
-    })
   });
 
   it('should change value after receiving a message', () => {
@@ -83,27 +105,7 @@ fdescribe('SliderComponent', () => {
     expect(slider.value).toBe('500');
   });
 
-  it('should set a valid value after receiving a message', () => {
-    const slider = fixture.nativeElement.querySelector('input[type="range"]');
 
-    let json = {
-      motor: "thumb_left_stretch",
-      value: '5000'
-    }
-
-    component.messageReceiver$.next(json);
-    fixture.detectChanges();
-    expect(slider.value).toBe(String(component.maxRange));
-
-    json = {
-      motor: "thumb_left_stretch",
-      value: '-5000'
-    }
-
-    component.messageReceiver$.next(json);
-    fixture.detectChanges();
-    expect(slider.value).toBe(String(component.minRange.value));
-  });
 it('should open dialog when the button has been clicked', () => {
   const spyPopup = spyOn(component,'openPopup').and.callThrough();
   const spyModal = spyOn(modalService,'open');
@@ -132,14 +134,75 @@ it('should return dismiss reason by pressing ESC', fakeAsync(() => {
   expect(component.closeResult).toBe('Dismissed by pressing ESC');
 }));
 
-it('should print the status of the motor to the console when checking the checkbox', () => {
+it('should turn the motor on/off on checking the checkbox', () => {
   const spyMotor = spyOn(component,'turnTheMotorOnAndOff').and.callThrough();
-  const spyConsole = spyOn(console,'log');
-  const input = fixture.debugElement.query(By.css('input')).nativeElement;
-  const mockEvent = new Event('change');
-  input.dispatchEvent(mockEvent);
-  expect(spyMotor).toHaveBeenCalledOnceWith(mockEvent);
-  expect(spyConsole).toHaveBeenCalledWith('the motor is turned on');
+  const spySendMassege = spyOn(rosService,'sendMessage');
+  const checkbox = fixture.debugElement.query(By.css('#checkbox'));
+  checkbox.nativeElement.dispatchEvent(new Event('change'));
+  expect(spyMotor).toHaveBeenCalled();
+  expect(spySendMassege).toHaveBeenCalled();
+  
+  const spyMotorNames = spyOn(motorService,'getMotorHandNames').and.callThrough();
+  component.isCombinedSlider = true;
+  component.groupSide = 'left';
+  fixture.detectChanges();
+  component.turnTheMotorOnAndOff();
+  expect(motorService.getMotorHandNames).toHaveBeenCalledWith('left');
+  expect(rosService.sendMessage).toHaveBeenCalledTimes(6);
+})
+
+it('should send a settings message when changing a value of the setting', () => {
+  const spySendMassege = spyOn(rosService,'sendMessage');
+  const message: Message = {
+    motor: component.motorName,
+    pule_widths_min: component.plureMinRange.value,
+    pule_widths_max: component.plureMaxRange.value,
+    rotation_range_min: component.degreeMin.value,
+    rotation_range_max: component.degreeMax.value,
+    velocity: component.velocityFormControl.value,
+    acceleration: component.accelerationFormControl.value,
+    deceleration: component.decelerationFormControl.value,
+    period: component.periodFormControl.value
+  }
+  component.sendSettingMessage();
+  expect(rosService.sendMessage).toHaveBeenCalledWith(jasmine.objectContaining(message));
+
+  const spyMotorNames = spyOn(motorService,'getMotorHandNames').and.callThrough();
+  component.isCombinedSlider = true;
+  component.groupSide = 'left';
+  fixture.detectChanges();
+  component.sendSettingMessage();
+  expect(motorService.getMotorHandNames).toHaveBeenCalledWith('left');
+  expect(rosService.sendMessage).toHaveBeenCalledTimes(6);
+
+})
+
+it('should send a combined massege with all values', () => {
+  const spySendMassege = spyOn(rosService,'sendMessage');
+  const message: Message = {
+    motor: component.motorName,
+    value: component.sliderFormControl.value,
+    turnedOn: component.motorFormControl.value,
+    pule_widths_min: component.plureMinRange.value,
+    pule_widths_max: component.plureMaxRange.value,
+    rotation_range_min: component.degreeMin.value,
+    rotation_range_max: component.degreeMax.value,
+    velocity: component.velocityFormControl.value,
+    acceleration: component.accelerationFormControl.value,
+    deceleration: component.decelerationFormControl.value,
+    period: component.periodFormControl.value
+  }
+  component.sendAllMessagesCombined();
+  expect(rosService.sendMessage).toHaveBeenCalledWith(jasmine.objectContaining(message));
+
+  const spyMotorNames = spyOn(motorService,'getMotorHandNames').and.callThrough();
+  component.isCombinedSlider = true;
+  component.groupSide = 'left';
+  fixture.detectChanges();
+  component.sendAllMessagesCombined();
+  expect(motorService.getMotorHandNames).toHaveBeenCalledWith('left');
+  expect(rosService.sendMessage).toHaveBeenCalledTimes(6);
+
 })
 
 });
