@@ -20,22 +20,25 @@
     <ul>
       <li class="horizontalList">Pulse Width min/max (μs):</li>
       <br class="overlappingBr">
-      <li class="horizontalList"><input type="number" value="1" name="PluseMin" [formControl]="plureMinRange" (input)="sendSettingMessage()"></li>
+      <li class="horizontalList"><input type="number" value="1" name="PluseMin" min="0" max="65535" [formControl]="pulseMinRange" (input)="sendSettingMessage()"></li>
       <br class="overlappingBr">
-      <li class="horizontalList"><input type="number" value="65535" name="PluseMax" [formControl]="plureMaxRange" (input)="sendSettingMessage()"></li>
+      <li class="horizontalList"><input type="number" value="65535" name="PluseMax" min="0" max="65535" [formControl]="pulseMaxRange" (input)="sendSettingMessage()"></li>
     </ul>
   </div>
-
-
+  <span *ngIf="!pulseMaxRange.valid && pulseMaxRange.touched || !pulseMinRange.valid && pulseMinRange.touched" style="color: red;" class="h-100 d-flex align-items-center justify-content-center">min pulse can not be greater than max pulse</span>
+  <span *ngIf="!pulseMaxRange.valid && pulseMaxRange.touched || !pulseMinRange.valid && pulseMinRange.touched" style="color: red;" class="h-100 d-flex align-items-center justify-content-center">max and min pulse must be between 0 and 65535μs</span>
   <div class="h-100 d-flex align-items-center justify-content-center">
     <ul>
       <li class="horizontalList">Degree min/max (°/100):</li>
       <br class="overlappingBr">
-      <li class="horizontalList"><input type="number" value="0" name="DegreeMin" (input)="sendSettingMessage()" [formControl]="degreeMin" ></li>
+      <li class="horizontalList"><input type="number" value="0" name="DegreeMin" max="9000" min="-9000" (input)="sendSettingMessage()" [formControl]="degreeMin" ></li>
       <br class="overlappingBr">
-      <li class="horizontalList"><input type="number" value="0" name="DegreeMax" (input)="sendSettingMessage()" [formControl]="degreeMax"></li>
+      <li class="horizontalList"><input type="number" value="0" name="DegreeMax" max="9000" min="-9000" (input)="sendSettingMessage()" [formControl]="degreeMax"></li>
     </ul>
   </div>
+  <span *ngIf="!degreeMax.valid && degreeMax.touched || !degreeMin.valid && degreeMin.touched" style="color: red;" class="h-100 d-flex align-items-center justify-content-center">min rotation range can not be greater than max rotation range</span>
+  <span *ngIf="!degreeMax.valid && degreeMax.touched || !degreeMin.valid && degreeMin.touched" style="color: red;" class="h-100 d-flex align-items-center justify-content-center">max and min rotation range must be between -9000 and 9000</span>
+
   <div class="h-100 d-flex align-items-center justify-content-center">
     <ul>
       <li class="horizontalList">
@@ -52,6 +55,9 @@
           <li>
             <input type="number" min="0" max="500000" [value]="velocityFormControl.value" name="Velocity"
               [formControl]="velocityFormControl" (input)="sendSettingMessage()">
+          </li>
+          <li *ngIf="!velocityFormControl.valid && velocityFormControl.touched" style="color: red; font-size: 8px;">
+            Velocity can not be minus or greater than 500000
           </li>
         </ul>
       </li>
@@ -72,6 +78,9 @@
           <li>
             <input type="number" min="0" max="500000" [value]="accelerationFormControl.value" name="Acceleration"
               [formControl]="accelerationFormControl" (input)="sendSettingMessage()">
+          </li>
+          <li *ngIf="!accelerationFormControl.valid && accelerationFormControl.touched" style="color: red; font-size: 8px;">
+            Acceleration can not be minus or greater than 500000
           </li>
         </ul>
       </li>
@@ -94,6 +103,9 @@
             <input type="number" min="0" max="500000" [value]="decelerationFormControl.value" name="Deceleration"
               [formControl]="decelerationFormControl" (input)="sendSettingMessage()">
           </li>
+          <li *ngIf="!decelerationFormControl.valid && decelerationFormControl.touched" style="color: red; font-size: 8px;">
+            Deceleration can not be minus or greater than 500000
+          </li>
         </ul>
       </li>
       <br class="overlappingBr"><br class="overlappingBr"><br class="overlappingBr"><br class="overlappingBr"><br
@@ -113,11 +125,13 @@
           <li>
             <input type="number" min="1" max="65535" [value]="periodFormControl.value" name="Period" [formControl]="periodFormControl" (input)="sendSettingMessage()">
           </li>
+          <li *ngIf="!periodFormControl.valid && periodFormControl.touched" style="color: red; font-size: 8px;">
+            Period can not be greater than 65535μs or smaller than 1
+          </li>
         </ul>
       </li>
     </ul>
   </div>
-
 
   <div class="modal-footer">
     <button type="button" class="btn btn-outline-dark" (click)="modal.dismiss('Cross click')">Close</button>

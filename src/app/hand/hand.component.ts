@@ -90,12 +90,12 @@ export class HandComponent implements OnInit {
         child.periodFormControl.setValue(child.labelName == "Thumb opposition"
           ? thumbOppo.periodFormControl.value
           : indexFinger.periodFormControl.value);
-        child.plureMaxRange.setValue(child.labelName == "Thumb opposition"
-          ? thumbOppo.plureMaxRange.value
-          : indexFinger.plureMaxRange.value);
-        child.plureMinRange.setValue(child.labelName == "Thumb opposition"
-          ? thumbOppo.plureMinRange.value
-          : indexFinger.plureMinRange.value);
+        child.pulseMaxRange.setValue(child.labelName == "Thumb opposition"
+          ? thumbOppo.pulseMaxRange.value
+          : indexFinger.pulseMaxRange.value);
+        child.pulseMinRange.setValue(child.labelName == "Thumb opposition"
+          ? thumbOppo.pulseMinRange.value
+          : indexFinger.pulseMinRange.value);
         child.degreeMax.setValue(child.labelName == "Thumb opposition"
           ? thumbOppo.degreeMax.value
           : indexFinger.degreeMax.value);
