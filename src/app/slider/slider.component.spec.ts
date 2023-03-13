@@ -1,10 +1,11 @@
 import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
-import { ReactiveFormsModule } from '@angular/forms';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { By } from '@angular/platform-browser';
 import { ModalDismissReasons, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { Message } from 'roslib';
 import { MotorService } from '../shared/motor.service';
 import { RosService } from '../shared/ros.service';
+import { compareValuesValidator } from '../shared/validators';
 
 import { SliderComponent } from './slider.component';
 
@@ -155,8 +156,8 @@ it('should send a settings message when changing a value of the setting', () => 
   const spySendMassege = spyOn(rosService,'sendMessage');
   const message: Message = {
     motor: component.motorName,
-    pule_widths_min: component.plureMinRange.value,
-    pule_widths_max: component.plureMaxRange.value,
+    pule_widths_min: component.pulseMinRange.value,
+    pule_widths_max: component.pulseMaxRange.value,
     rotation_range_min: component.degreeMin.value,
     rotation_range_max: component.degreeMax.value,
     velocity: component.velocityFormControl.value,
@@ -177,14 +178,14 @@ it('should send a settings message when changing a value of the setting', () => 
 
 })
 
-it('should send a combined massege with all values', () => {
+it('should send a combined massege with all values if all inputs are valid', () => {
   const spySendMassege = spyOn(rosService,'sendMessage');
   const message: Message = {
     motor: component.motorName,
     value: component.sliderFormControl.value,
     turnedOn: component.motorFormControl.value,
-    pule_widths_min: component.plureMinRange.value,
-    pule_widths_max: component.plureMaxRange.value,
+    pule_widths_min: component.pulseMinRange.value,
+    pule_widths_max: component.pulseMaxRange.value,
     rotation_range_min: component.degreeMin.value,
     rotation_range_max: component.degreeMax.value,
     velocity: component.velocityFormControl.value,
@@ -202,7 +203,50 @@ it('should send a combined massege with all values', () => {
   component.sendAllMessagesCombined();
   expect(motorService.getMotorHandNames).toHaveBeenCalledWith('left');
   expect(rosService.sendMessage).toHaveBeenCalledTimes(6);
+});
 
+it('should send a combined massege with all values if not all inputs are valid', () => {
+  const spySendMassege = spyOn(rosService,'sendMessage');
+  const message: Message = {
+    motor: component.motorName,
+    value: component.sliderFormControl.value,
+    turnedOn: component.motorFormControl.value,
+  }
+  component.pulseMinRange.setValue(10);
+  component.pulseMaxRange.setValue(5);
+  component.sendAllMessagesCombined();
+  expect(rosService.sendMessage).toHaveBeenCalledWith(jasmine.objectContaining(message));
+  const spyMotorNames = spyOn(motorService,'getMotorHandNames').and.callThrough();
+  component.isCombinedSlider = true;
+  component.groupSide = 'left';
+  fixture.detectChanges();
+  component.sendAllMessagesCombined();
+  expect(motorService.getMotorHandNames).toHaveBeenCalledWith('left');
+  expect(rosService.sendMessage).toHaveBeenCalledTimes(6);
 })
+
+it('should return null if control1 is greater than control2', () => {
+  const formcontrol1 = new FormControl(0);
+  const formControl2 = new FormControl(0);
+  formcontrol1.addValidators(compareValuesValidator(formcontrol1,formControl2));
+  formControl2.addValidators(compareValuesValidator(formcontrol1,formControl2));
+  formcontrol1.setValue(10);
+  formControl2.setValue(20);
+  expect(formcontrol1.valid).toBe(true);
+  expect(formControl2.valid).toBe(true);
+
+});
+
+it('should return an error if control1 is not greater than control2', () => {
+  const formcontrol1 = new FormControl(0);
+  const formControl2 = new FormControl(0);
+  formcontrol1.addValidators(compareValuesValidator(formcontrol1,formControl2));
+  formControl2.addValidators(compareValuesValidator(formcontrol1,formControl2));
+  formcontrol1.setValue(20);
+  formControl2.setValue(10);
+  expect(formcontrol1.valid).toBe(false);
+  expect(formControl2.valid).toBe(false);
+  expect(formcontrol1.hasError('notGreaterThan')).toBe(true);
+});
 
 });
