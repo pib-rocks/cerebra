@@ -5,7 +5,7 @@ import { ModalDismissReasons, NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { Message } from 'roslib';
 import { MotorService } from '../shared/motor.service';
 import { RosService } from '../shared/ros.service';
-import { compareValuesValidator } from '../shared/validators';
+import { compareValuesDegreeValidator, compareValuesPulseValidator } from '../shared/validators';
 
 import { SliderComponent } from './slider.component';
 
@@ -225,11 +225,11 @@ it('should send a combined massege with all values if not all inputs are valid',
   expect(rosService.sendMessage).toHaveBeenCalledTimes(6);
 })
 
-it('should return null if control1 is greater than control2', () => {
+it('should return null if max pulse is greater than min pulse', () => {
   const formcontrol1 = new FormControl(0);
   const formControl2 = new FormControl(0);
-  formcontrol1.addValidators(compareValuesValidator(formcontrol1,formControl2));
-  formControl2.addValidators(compareValuesValidator(formcontrol1,formControl2));
+  formcontrol1.addValidators(compareValuesPulseValidator(formcontrol1,formControl2));
+  formControl2.addValidators(compareValuesPulseValidator(formcontrol1,formControl2));
   formcontrol1.setValue(10);
   formControl2.setValue(20);
   expect(formcontrol1.valid).toBe(true);
@@ -237,16 +237,65 @@ it('should return null if control1 is greater than control2', () => {
 
 });
 
-it('should return an error if control1 is not greater than control2', () => {
+it('should return an error if max pulse is not greater than min pulse', () => {
   const formcontrol1 = new FormControl(0);
   const formControl2 = new FormControl(0);
-  formcontrol1.addValidators(compareValuesValidator(formcontrol1,formControl2));
-  formControl2.addValidators(compareValuesValidator(formcontrol1,formControl2));
+  formcontrol1.addValidators(compareValuesPulseValidator(formcontrol1,formControl2));
+  formControl2.addValidators(compareValuesPulseValidator(formcontrol1,formControl2));
   formcontrol1.setValue(20);
   formControl2.setValue(10);
   expect(formcontrol1.valid).toBe(false);
   expect(formControl2.valid).toBe(false);
   expect(formcontrol1.hasError('notGreaterThan')).toBe(true);
+});
+
+it('should return an error if max or min pulse are not greater than 0', () => {
+  const formcontrol1 = new FormControl(0);
+  const formControl2 = new FormControl(0);
+  formcontrol1.addValidators(compareValuesPulseValidator(formcontrol1,formControl2));
+  formControl2.addValidators(compareValuesPulseValidator(formcontrol1,formControl2));
+  formcontrol1.setValue(-10);
+  formControl2.setValue(20);
+  expect(formcontrol1.valid).toBe(false);
+  expect(formControl2.valid).toBe(false);
+  expect(formcontrol1.hasError('error')).toBe(true);
+});
+
+
+it('should return null if max degree is greater than min degree', () => {
+  const formcontrol1 = new FormControl(0);
+  const formControl2 = new FormControl(0);
+  formcontrol1.addValidators(compareValuesDegreeValidator(formcontrol1,formControl2));
+  formControl2.addValidators(compareValuesDegreeValidator(formcontrol1,formControl2));
+  formcontrol1.setValue(10);
+  formControl2.setValue(20);
+  expect(formcontrol1.valid).toBe(true);
+  expect(formControl2.valid).toBe(true);
+
+});
+
+it('should return an error if max degree is not greater than min degree', () => {
+  const formcontrol1 = new FormControl(0);
+  const formControl2 = new FormControl(0);
+  formcontrol1.addValidators(compareValuesDegreeValidator(formcontrol1,formControl2));
+  formControl2.addValidators(compareValuesDegreeValidator(formcontrol1,formControl2));
+  formcontrol1.setValue(20);
+  formControl2.setValue(10);
+  expect(formcontrol1.valid).toBe(false);
+  expect(formControl2.valid).toBe(false);
+  expect(formcontrol1.hasError('notGreaterThan')).toBe(true);
+});
+
+it('should return an error if max or min pulse are not greater than -9000', () => {
+  const formcontrol1 = new FormControl(0);
+  const formControl2 = new FormControl(0);
+  formcontrol1.addValidators(compareValuesDegreeValidator(formcontrol1,formControl2));
+  formControl2.addValidators(compareValuesDegreeValidator(formcontrol1,formControl2));
+  formcontrol1.setValue(-90000);
+  formControl2.setValue(20);
+  expect(formcontrol1.valid).toBe(false);
+  expect(formControl2.valid).toBe(false);
+  expect(formcontrol1.hasError('error')).toBe(true);
 });
 
 });
