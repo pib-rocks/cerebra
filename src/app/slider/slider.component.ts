@@ -5,7 +5,7 @@ import { Message } from '../shared/message';
 import { MotorService } from '../shared/motor.service';
 import { RosService } from '../shared/ros.service';
 import { ModalDismissReasons, NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { compareValuesValidator } from '../shared/validators';
+import { compareValuesDegreeValidator, compareValuesPulseValidator } from '../shared/validators';
 
 @Component({
   selector: 'app-slider',
@@ -45,10 +45,10 @@ export class SliderComponent implements OnInit {
   constructor(private rosService: RosService, private motorService: MotorService, private modalService: NgbModal) { }
 
   ngOnInit(): void {
-    this.pulseMaxRange.setValidators(compareValuesValidator(this.pulseMinRange, this.pulseMaxRange));
-    this.pulseMinRange.setValidators(compareValuesValidator(this.pulseMinRange, this.pulseMaxRange));
-    this.degreeMax.setValidators(compareValuesValidator(this.degreeMin, this.degreeMax));
-    this.degreeMin.setValidators(compareValuesValidator(this.degreeMin, this.degreeMax));
+    this.pulseMaxRange.setValidators([ Validators.min(0), Validators.max(65535), compareValuesPulseValidator(this.pulseMinRange, this.pulseMaxRange)]);
+    this.pulseMinRange.setValidators([Validators.min(0), Validators.max(65535), compareValuesPulseValidator(this.pulseMinRange, this.pulseMaxRange)]);
+    this.degreeMax.setValidators([compareValuesDegreeValidator(this.degreeMin, this.degreeMax), Validators.min(-9000), Validators.max(9000)]);
+    this.degreeMin.setValidators([compareValuesDegreeValidator(this.degreeMin, this.degreeMax), Validators.min(-9000), Validators.max(9000)]);
     this.isCombinedSlider = this.isGroup && this.labelName === "Open/Close all fingers";
 
     this.messageReceiver$.subscribe(json => {
