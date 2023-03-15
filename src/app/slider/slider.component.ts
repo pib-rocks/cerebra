@@ -5,7 +5,7 @@ import { Message } from '../shared/message';
 import { MotorService } from '../shared/motor.service';
 import { RosService } from '../shared/ros.service';
 import { ModalDismissReasons, NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { compareValuesDegreeValidator, compareValuesPulseValidator } from '../shared/validators';
+import { compareValuesDegreeValidator, compareValuesPulseValidator, notNullValidator } from '../shared/validators';
 
 @Component({
   selector: 'app-slider',
@@ -32,10 +32,10 @@ export class SliderComponent implements OnInit {
 
   motorFormControl: FormControl = new FormControl(true);
   sliderFormControl: FormControl = new FormControl(0);
-  velocityFormControl: FormControl = new FormControl(0);
-  accelerationFormControl: FormControl = new FormControl(0);
-  decelerationFormControl: FormControl = new FormControl(0);
-  periodFormControl: FormControl = new FormControl(1);
+  velocityFormControl: FormControl = new FormControl(0,notNullValidator);
+  accelerationFormControl: FormControl = new FormControl(0,notNullValidator);
+  decelerationFormControl: FormControl = new FormControl(0,notNullValidator);
+  periodFormControl: FormControl = new FormControl(1,notNullValidator);
   pulseMaxRange: FormControl = new FormControl(65535);
   pulseMinRange: FormControl = new FormControl(0);
   degreeMax: FormControl = new FormControl(9000);
@@ -45,10 +45,10 @@ export class SliderComponent implements OnInit {
   constructor(private rosService: RosService, private motorService: MotorService, private modalService: NgbModal) { }
 
   ngOnInit(): void {
-    this.pulseMaxRange.setValidators([ Validators.min(0), Validators.max(65535), compareValuesPulseValidator(this.pulseMinRange, this.pulseMaxRange)]);
-    this.pulseMinRange.setValidators([Validators.min(0), Validators.max(65535), compareValuesPulseValidator(this.pulseMinRange, this.pulseMaxRange)]);
-    this.degreeMax.setValidators([compareValuesDegreeValidator(this.degreeMin, this.degreeMax), Validators.min(-9000), Validators.max(9000)]);
-    this.degreeMin.setValidators([compareValuesDegreeValidator(this.degreeMin, this.degreeMax), Validators.min(-9000), Validators.max(9000)]);
+    this.pulseMaxRange.setValidators([ Validators.min(0), Validators.max(65535), compareValuesPulseValidator(this.pulseMinRange, this.pulseMaxRange),notNullValidator]);
+    this.pulseMinRange.setValidators([Validators.min(0), Validators.max(65535), compareValuesPulseValidator(this.pulseMinRange, this.pulseMaxRange),notNullValidator]);
+    this.degreeMax.setValidators([compareValuesDegreeValidator(this.degreeMin, this.degreeMax), Validators.min(-9000), Validators.max(9000),notNullValidator]);
+    this.degreeMin.setValidators([compareValuesDegreeValidator(this.degreeMin, this.degreeMax), Validators.min(-9000), Validators.max(9000),notNullValidator]);
     this.isCombinedSlider = this.isGroup && this.labelName === "Open/Close all fingers";
 
     this.messageReceiver$.subscribe(json => {
