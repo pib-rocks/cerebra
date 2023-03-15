@@ -57,7 +57,7 @@
               [formControl]="velocityFormControl" (input)="sendSettingMessage()">
           </li>
           <li *ngIf="!velocityFormControl.valid && velocityFormControl.touched" style="color: red; font-size: 8px;">
-            Velocity can not be minus or greater than 500000
+            Velocity can not be empty, minus or greater than 500000
           </li>
         </ul>
       </li>
@@ -80,7 +80,7 @@
               [formControl]="accelerationFormControl" (input)="sendSettingMessage()">
           </li>
           <li *ngIf="!accelerationFormControl.valid && accelerationFormControl.touched" style="color: red; font-size: 8px;">
-            Acceleration can not be minus or greater than 500000
+            Acceleration can not be empty, minus or greater than 500000
           </li>
         </ul>
       </li>
@@ -104,7 +104,7 @@
               [formControl]="decelerationFormControl" (input)="sendSettingMessage()">
           </li>
           <li *ngIf="!decelerationFormControl.valid && decelerationFormControl.touched" style="color: red; font-size: 8px;">
-            Deceleration can not be minus or greater than 500000
+            Deceleration can not be empty, minus or greater than 500000
           </li>
         </ul>
       </li>
@@ -118,7 +118,7 @@
           </li>
           <br><br><br><br>
           <li>
-            <input type="range" min="0" max="65535" step="1" class="form-range rotateRange"
+            <input type="range" min="1" max="65535" step="1" class="form-range rotateRange"
               [value]="periodFormControl.value" [formControl]="periodFormControl" (input)="sendSettingMessage()">
           </li>
           <br><br><br><br>
@@ -126,7 +126,7 @@
             <input type="number" min="1" max="65535" [value]="periodFormControl.value" name="Period" [formControl]="periodFormControl" (input)="sendSettingMessage()">
           </li>
           <li *ngIf="!periodFormControl.valid && periodFormControl.touched" style="color: red; font-size: 8px;">
-            Period can not be greater than 65535μs or smaller than 1
+            Period can not be empty, greater than 65535μs or smaller than 1
           </li>
         </ul>
       </li>

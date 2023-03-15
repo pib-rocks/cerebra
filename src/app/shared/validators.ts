@@ -35,3 +35,8 @@ export function compareValuesDegreeValidator(control1: FormControl, control2: Fo
     }
   };
 }
+
+export function notNullValidator(control: AbstractControl): { [key: string]: any } | null {
+  const isNotNull = control.value !== null;
+  return isNotNull ? null : { 'nullValue': true };
+}
