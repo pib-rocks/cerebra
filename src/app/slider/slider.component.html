@@ -25,8 +25,10 @@
       <li class="horizontalList"><input type="number" value="65535" name="PluseMax" min="0" max="65535" [formControl]="pulseMaxRange" (input)="sendSettingMessage()"></li>
     </ul>
   </div>
-  <span *ngIf="!pulseMaxRange.valid && pulseMaxRange.touched || !pulseMinRange.valid && pulseMinRange.touched" style="color: red;" class="h-100 d-flex align-items-center justify-content-center">min pulse can not be greater than max pulse</span>
-  <span *ngIf="!pulseMaxRange.valid && pulseMaxRange.touched || !pulseMinRange.valid && pulseMinRange.touched" style="color: red;" class="h-100 d-flex align-items-center justify-content-center">max and min pulse must be between 0 and 65535μs</span>
+  <span *ngIf="(pulseMinRange.hasError('notGreaterThan') || pulseMaxRange.hasError('notGreaterThan') && (pulseMaxRange.touched || pulseMinRange.touched))" style="color: red;" class="h-100 d-flex align-items-center justify-content-center">min pulse can not be greater than max pulse</span>
+  <span *ngIf="(pulseMinRange.hasError('max') || pulseMinRange.hasError('min') && pulseMinRange.touched)" style="color: red;" class="h-100 d-flex align-items-center justify-content-center">pulse width must be between 0 and 65535 μs</span>
+  <span *ngIf="(pulseMaxRange.hasError('max') || pulseMaxRange.hasError('min') && pulseMaxRange.touched)" style="color: red;" class="h-100 d-flex align-items-center justify-content-center">pulse width must be between 0 and 65535 μs</span>
+  <span *ngIf="(pulseMinRange.hasError('nullValue') || pulseMaxRange.hasError('nullValue') && (pulseMaxRange.touched || pulseMinRange.touched))" style="color: red;" class="h-100 d-flex align-items-center justify-content-center">pulse width must not be empty</span>
   <div class="h-100 d-flex align-items-center justify-content-center">
     <ul>
       <li class="horizontalList">Degree min/max (°/100):</li>
@@ -36,8 +38,10 @@
       <li class="horizontalList"><input type="number" value="0" name="DegreeMax" max="9000" min="-9000" (input)="sendSettingMessage()" [formControl]="degreeMax"></li>
     </ul>
   </div>
-  <span *ngIf="!degreeMax.valid && degreeMax.touched || !degreeMin.valid && degreeMin.touched" style="color: red;" class="h-100 d-flex align-items-center justify-content-center">min rotation range can not be greater than max rotation range</span>
-  <span *ngIf="!degreeMax.valid && degreeMax.touched || !degreeMin.valid && degreeMin.touched" style="color: red;" class="h-100 d-flex align-items-center justify-content-center">max and min rotation range must be between -9000 and 9000</span>
+  <span *ngIf="(degreeMin.hasError('notGreaterThan') || degreeMax.hasError('notGreaterThan') && (degreeMax.touched || degreeMin.touched))" style="color: red;" class="h-100 d-flex align-items-center justify-content-center">min degree can not be greater than max degree</span>
+  <span *ngIf="(degreeMin.hasError('max') || degreeMin.hasError('min') && degreeMin.touched)" style="color: red;" class="h-100 d-flex align-items-center justify-content-center">degree must be between -9000 and 9000</span>
+  <span *ngIf="(degreeMax.hasError('max') || degreeMax.hasError('min') && degreeMax.touched)" style="color: red;" class="h-100 d-flex align-items-center justify-content-center">degree width must be between -9000 and 9000</span>
+  <span *ngIf="(degreeMin.hasError('nullValue') || degreeMax.hasError('nullValue') && (degreeMax.touched || degreeMin.touched))" style="color: red;" class="h-100 d-flex align-items-center justify-content-center">degree width must not be empty</span>
 
   <div class="h-100 d-flex align-items-center justify-content-center">
     <ul>

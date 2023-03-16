@@ -1,4 +1,4 @@
-import { AbstractControl, FormControl, ValidatorFn } from "@angular/forms";
+import { AbstractControl, FormControl, ValidationErrors, ValidatorFn } from "@angular/forms";
 
 export function compareValuesPulseValidator(control1: FormControl, control2: FormControl): ValidatorFn {
     return (formControl: AbstractControl) => {
@@ -40,3 +40,4 @@ export function notNullValidator(control: AbstractControl): { [key: string]: any
   const isNotNull = control.value !== null;
   return isNotNull ? null : { 'nullValue': true };
 }
+
