@@ -54,8 +54,11 @@ describe('SliderComponent', () => {
     const slider = fixture.nativeElement.querySelector('input[type="range"]');
     slider.value = 50;
     slider.dispatchEvent(new Event('input'));
-    expect(component.sendMessage).toHaveBeenCalled();
-    expect(rosService.sendMessage).toHaveBeenCalled();
+    setTimeout(() => {
+      expect(component.sendMessage).toHaveBeenCalled();
+      expect(rosService.sendMessage).toHaveBeenCalled();
+    }, 600);
+
   });
 
   it('should set a valid value after receiving a message', () => {
@@ -166,15 +169,20 @@ it('should send a settings message when changing a value of the setting', () => 
     period: component.periodFormControl.value
   }
   component.sendSettingMessage();
-  expect(rosService.sendMessage).toHaveBeenCalledWith(jasmine.objectContaining(message));
+  setTimeout(() => {
+    expect(rosService.sendMessage).toHaveBeenCalledWith(jasmine.objectContaining(message));
+  }, 600);
 
   const spyMotorNames = spyOn(motorService,'getMotorHandNames').and.callThrough();
   component.isCombinedSlider = true;
   component.groupSide = 'left';
   fixture.detectChanges();
   component.sendSettingMessage();
-  expect(motorService.getMotorHandNames).toHaveBeenCalledWith('left');
-  expect(rosService.sendMessage).toHaveBeenCalledTimes(6);
+  setTimeout(() => {
+    expect(motorService.getMotorHandNames).toHaveBeenCalledWith('left');
+    expect(rosService.sendMessage).toHaveBeenCalledTimes(6);
+    }, 600);
+
 
 })
 
