@@ -95,8 +95,7 @@ export class SliderComponent implements OnInit {
   }
 
   sendMessage() {
-    clearTimeout(this.timer);
-    this.timer = setTimeout(() => {
+
       let motorNames: string[] = []
 
       if (this.isCombinedSlider) {
@@ -116,7 +115,7 @@ export class SliderComponent implements OnInit {
         }
         this.rosService.sendMessage(message);
       }
-    }, 500);
+
   }
 
   checkValidity(): boolean {
@@ -127,8 +126,6 @@ export class SliderComponent implements OnInit {
   }
 
   sendSettingMessage() {
-    clearTimeout(this.timer); // clear the previous timer
-    this.timer = setTimeout(() => {
       if (this.checkValidity()) {
         let motorNames: string[] = []
         if (this.isCombinedSlider) {
@@ -162,7 +159,6 @@ export class SliderComponent implements OnInit {
           this.rosService.sendMessage(message);
         }
       }
-    }, 500);
   }
 
   getValueWithinRange(value: number) {
@@ -276,6 +272,20 @@ export class SliderComponent implements OnInit {
 
     }
   }
+
+  inputSendMsg(){
+    clearTimeout(this.timer);
+    this.timer = setTimeout(() => {
+    this.sendMessage();
+    },500);
+  }
+
+  inputSendSettingsMsg(){
+    clearTimeout(this.timer);
+    this.timer = setTimeout(() => {
+    this.sendSettingMessage();
+  },500);
+}
 
 
 
