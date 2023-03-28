@@ -48,17 +48,49 @@ describe('SliderComponent', () => {
     expect(slider.min).toBe('-9000');
   });
 
-  it('should call sendMessage() on input', () => {
+  it('should call sendMessage() of rosService when calling sendMessage()', () => {
     spyOn(component, 'sendMessage').and.callThrough();
     spyOn(rosService, 'sendMessage');
+    //const slider = fixture.nativeElement.querySelector('input[type="range"]');
+    //slider.value = 50;
+    //slider.dispatchEvent(new Event('input'));
+    component.sendMessage();
+    expect(component.sendMessage).toHaveBeenCalled();
+    expect(rosService.sendMessage).toHaveBeenCalled();
+  });
+
+  it('should call sendMessage() in inputSendMsg() on input event', () => {
+    spyOn(component, 'inputSendMsg').and.callThrough();
+    spyOn(component, 'sendMessage');
     const slider = fixture.nativeElement.querySelector('input[type="range"]');
     slider.value = 50;
     slider.dispatchEvent(new Event('input'));
     setTimeout(() => {
-      expect(component.sendMessage).toHaveBeenCalled();
-      expect(rosService.sendMessage).toHaveBeenCalled();
-    }, 600);
+    expect(component.inputSendMsg).toHaveBeenCalled();
+    expect(component.sendMessage).toHaveBeenCalled();
+  },600);
+  });
 
+  it('should call sendSettingsMessage() in inputSendSettingsMsg() on input event', () => {
+    spyOn(component, 'inputSendSettingsMsg').and.callThrough();
+    spyOn(component, 'sendSettingMessage');
+    component.inputSendSettingsMsg();
+    setTimeout(() => {
+    expect(component.inputSendSettingsMsg).toHaveBeenCalled();
+    expect(component.sendSettingMessage).toHaveBeenCalled();
+  },600);
+  });
+
+  it('should call sendMessage() to all finger topics on input from combined slider', () => {
+    component.isCombinedSlider = true;
+    component.groupSide = 'left';
+    component.sliderFormControl.setValue(500);
+    fixture.detectChanges();
+    fingerService.getMotorHandNames(component.groupSide);
+    spyOn(component, 'sendMessage').and.callThrough();
+    spyOn(rosService, 'sendMessage');
+    component.sendMessage();
+    expect(rosService.sendMessage).toHaveBeenCalledTimes(5);
   });
 
   it('should set a valid value after receiving a message', () => {
@@ -83,19 +115,7 @@ describe('SliderComponent', () => {
     expect(slider.value).toBe(String(component.minSliderValue));
   });
 
-  it('should call sendMessage() to all finger topics on input from combined slider', () => {
-    component.isCombinedSlider = true;
-    component.groupSide = 'left';
-    component.sliderFormControl.setValue(500);
-    fixture.detectChanges();
-    const fingerTopics = fingerService.getMotorHandNames(component.groupSide);
-    spyOn(component, 'sendMessage').and.callThrough();
-    spyOn(rosService, 'sendMessage');
 
-    const slider = fixture.nativeElement.querySelector('input[type="range"]');
-    slider.dispatchEvent(new Event('input'));
-    expect(component.sendMessage).toHaveBeenCalled();
-  });
 
   it('should change value after receiving a message', () => {
     const slider = fixture.nativeElement.querySelector('input[type="range"]');
@@ -169,20 +189,15 @@ it('should send a settings message when changing a value of the setting', () => 
     period: component.periodFormControl.value
   }
   component.sendSettingMessage();
-  setTimeout(() => {
-    expect(rosService.sendMessage).toHaveBeenCalledWith(jasmine.objectContaining(message));
-  }, 600);
+  expect(rosService.sendMessage).toHaveBeenCalledWith(jasmine.objectContaining(message));
 
   const spyMotorNames = spyOn(motorService,'getMotorHandNames').and.callThrough();
   component.isCombinedSlider = true;
   component.groupSide = 'left';
   fixture.detectChanges();
   component.sendSettingMessage();
-  setTimeout(() => {
-    expect(motorService.getMotorHandNames).toHaveBeenCalledWith('left');
-    expect(rosService.sendMessage).toHaveBeenCalledTimes(6);
-    }, 600);
-
+  expect(motorService.getMotorHandNames).toHaveBeenCalledWith('left');
+  expect(rosService.sendMessage).toHaveBeenCalledTimes(6);
 
 })
 
