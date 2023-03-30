@@ -1,0 +1,20 @@
+<div class="h-100 d-flex align-items-center justify-content-center">
+    <div id="div-parent">
+        <div class="form-check form-switch my-2">
+            <input class="form-check-input" type="checkbox" id="checkbox" (change)="sendVoiceActivationFlag()" [formControl]="activationFlag">
+            <label for="">Activate voice assistant</label>
+        </div>
+        <form [formGroup]="voiceFormGroup"(ngSubmit)="updateVoiceSettings()">
+            <label for="">Personality</label><br>
+            <textarea rows="5" cols="50" formControlName="personality"></textarea>
+            <br>
+            <input type="number" step="0.01" style="width: 50px; margin-right: 10px;" min="0" formControlName="threshold"> 
+            <label for="">Pause threshhold</label>
+            <br>
+            <span *ngIf="voiceFormGroup.get('threshold')?.hasError('min')" class="error">threshhold must not be minus</span>
+            <span *ngIf="voiceFormGroup.get('threshold')?.hasError('required')" class="error">threshhold must not be empty</span>
+            <br>
+            <input class="btn btn-primary" type="submit" value="update" id="updateBtn">
+        </form>
+    </div>
+</div>

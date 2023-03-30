@@ -36,6 +36,10 @@ describe('RosService', () => {
     expect(spytopic).toHaveBeenCalled();
    });
 
+   it('createTopic should create topic', () => {
+    expect(spytopic).toHaveBeenCalled();
+   });
+
    it('sendMessage should send a massege to rosbridge without errors', () => {
     service = new RosService();
     (service as any).topic = new ROSLIB.Topic({ros: mockRos as unknown as ROSLIB.Ros,name: 'test', messageType: 'std_msgs/String'});
@@ -45,7 +49,6 @@ describe('RosService', () => {
      service.sendMessage(message);
      expect(spySendMassege).toHaveBeenCalled();
      expect(spyPublish).toHaveBeenCalled();
-
    });
 
    it('subscribeTopic should emmit a value to a subject',(): void => {

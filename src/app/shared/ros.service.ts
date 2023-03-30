@@ -3,6 +3,7 @@ import * as ROSLIB from 'roslib';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { Message } from './message';
 import { Motor } from './motor';
+import { VoiceAssistant } from './voice-assistant';
 
 @Injectable({
   providedIn: 'root'
@@ -13,7 +14,10 @@ export class RosService {
 
   private ros!: ROSLIB.Ros;
   private topic!: ROSLIB.Topic;
+  private voiceTopic!: ROSLIB.Topic;
   private readonly topicName = '/motor_settings';
+  private readonly topicVoiceName = '/cerebra_voice_settings';
+
   private motors: Motor[] = [];
 
   constructor() {
@@ -22,6 +26,7 @@ export class RosService {
       console.log('Connected to ROS');
       this.isInitializedSubject.next(true);
       this.topic = this.createTopic();
+      this.voiceTopic = this.createVoiceSettingsTopic();
       this.subscribeTopic()
     });
     this.ros.on('error', (error: string) => {
@@ -53,14 +58,19 @@ export class RosService {
     }
   }
 
-  sendMessage(msg: Message) {
+  sendMessage(msg: Message | VoiceAssistant) {
     const json = JSON.parse(JSON.stringify(msg));
     const parameters = Object.keys(json).map(key => ({[key]: json[key]}));
     const message = new ROSLIB.Message(
       {data: JSON.stringify(parameters)}
     );
-    this.topic?.publish(message);
-    console.log('Sent message' + JSON.stringify(message));
+    if ( 'motor' in msg){
+      this.topic?.publish(message);
+      console.log('Sent message ' + JSON.stringify(message));
+    } else {
+      this.voiceTopic.publish(message);
+      console.log('Sent message ' + JSON.stringify(message));
+    }
   }
 
   getReceiversByMotorName(motorName: string): Subject<Message>[] {
@@ -104,6 +114,14 @@ export class RosService {
     return new ROSLIB.Topic({
       ros: this.ros,
       name: this.topicName,
+      messageType: 'std_msgs/String'
+    });
+  }
+
+  createVoiceSettingsTopic(): ROSLIB.Topic {
+    return new ROSLIB.Topic({
+      ros: this.ros,
+      name: this.topicVoiceName,
       messageType: 'std_msgs/String'
     });
   }
