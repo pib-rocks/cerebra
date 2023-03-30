@@ -1,0 +1,14 @@
+#div-parent {
+    position: relative;
+    display: inline-block;
+}
+
+#submit {
+    bottom:0;
+    right:0;
+    position:absolute;
+}
+
+.error {
+    color: red;
+}
