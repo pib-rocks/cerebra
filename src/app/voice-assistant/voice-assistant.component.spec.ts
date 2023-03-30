@@ -33,7 +33,7 @@ describe('VoiceAssistantComponent', () => {
     spyOn(component,'updateVoiceSettings').and.callThrough();
     spyOn(rosService, 'sendMessage');
     component.voiceFormGroup.get('personality')?.setValue('test');
-    component.voiceFormGroup.get('threshold')?.setValue(10);
+    component.voiceFormGroup.get('threshold')?.setValue(1.5);
     updateBtn.nativeElement.click();
     expect(component.updateVoiceSettings).toHaveBeenCalled();
     expect(rosService.sendMessage).toHaveBeenCalled();
