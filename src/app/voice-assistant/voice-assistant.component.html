@@ -8,7 +8,7 @@
             <label for="">Personality</label><br>
             <textarea rows="5" cols="50" formControlName="personality"></textarea>
             <br>
-            <input type="number" step="0.01" style="width: 50px; margin-right: 10px;" min="0" formControlName="threshold"> 
+            <input type="number" step="0.01" style="width: 60px; margin-right: 10px;" min="0" formControlName="threshold"> 
             <label for="">Pause threshhold</label>
             <br>
             <span *ngIf="voiceFormGroup.get('threshold')?.hasError('min')" class="error">threshhold must not be minus</span>
