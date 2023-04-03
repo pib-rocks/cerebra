@@ -4,6 +4,7 @@ import { BehaviorSubject, Subject } from 'rxjs';
 import { Message } from './message';
 import { Motor } from './motor';
 import { VoiceAssistant } from './voice-assistant';
+import { CurrentMessage } from './currentMessage';
 
 @Injectable({
   providedIn: 'root'
@@ -11,12 +12,14 @@ import { VoiceAssistant } from './voice-assistant';
 export class RosService {
   private isInitializedSubject = new BehaviorSubject<boolean>(false);
   isInitialized$ = this.isInitializedSubject.asObservable();
-
+  currentReceiver$: Subject<CurrentMessage> = new Subject<CurrentMessage>;
   private ros!: ROSLIB.Ros;
   private topic!: ROSLIB.Topic;
   private voiceTopic!: ROSLIB.Topic;
+  private currentTopic!: ROSLIB.Topic;
   private readonly topicName = '/motor_settings';
   private readonly topicVoiceName = '/cerebra_voice_settings';
+  private readonly topicCurrentName = '/cerebra_voice_settings';
 
   private motors: Motor[] = [];
 
@@ -27,7 +30,9 @@ export class RosService {
       this.isInitializedSubject.next(true);
       this.topic = this.createTopic();
       this.voiceTopic = this.createVoiceSettingsTopic();
-      this.subscribeTopic()
+      this.currentTopic = this.createCurrentTopic();
+      this.subscribeTopic();
+      this.subscribeCurrentTopic();
     });
     this.ros.on('error', (error: string) => {
       console.log('Error connecting to ROSBridge server:', error);
@@ -58,15 +63,21 @@ export class RosService {
     }
   }
 
-  sendMessage(msg: Message | VoiceAssistant) {
+  sendMessage(msg: Message | VoiceAssistant | CurrentMessage) {
     const json = JSON.parse(JSON.stringify(msg));
-    const parameters = Object.keys(json).map(key => ({[key]: json[key]}));
+    const parameters = Object.keys(json).map(key => ({ [key]: json[key] }));
     const message = new ROSLIB.Message(
-      {data: JSON.stringify(parameters)}
+      { data: JSON.stringify(parameters) }
     );
-    if ( 'motor' in msg){
-      this.topic?.publish(message);
-      console.log('Sent message ' + JSON.stringify(message));
+    if ('motor' in msg) {
+      console.log(msg);
+      if ('currentValue' in msg) {
+        this.currentTopic?.publish(message);
+        console.log('Sent message ' + JSON.stringify(message));
+      } else {
+        this.topic?.publish(message);
+        console.log('Sent message ' + JSON.stringify(message));
+      }
     } else {
       this.voiceTopic.publish(message);
       console.log('Sent message ' + JSON.stringify(message));
@@ -80,19 +91,19 @@ export class RosService {
       : [];
   }
 
-  setUpRos(){
+  setUpRos() {
     return new ROSLIB.Ros({
       url: 'ws://192.168.220.38:9090',
     });
   }
 
-  subscribeTopic(){
+  subscribeTopic() {
     this.topic.subscribe((message) => {
       const jsonStr = JSON.stringify(message);
       const json = JSON.parse(jsonStr);
       const jsonArray = JSON.parse(json['data']);
       const jsonObject = jsonArray.reduce((key: object, value: object) => {
-        return {...key, ...value};
+        return { ...key, ...value };
       }, {});
       console.log('Received message for ' + jsonObject['motor'] + ': ' + JSON.stringify(jsonObject));
       const receivers$ = this.getReceiversByMotorName(jsonObject['motor']);
@@ -102,11 +113,24 @@ export class RosService {
     })
   }
 
-  get Ros(): ROSLIB.Ros{
+  subscribeCurrentTopic() {
+    this.currentTopic.subscribe((message) => {
+      const jsonStr = JSON.stringify(message);
+      const json = JSON.parse(jsonStr);
+      const jsonArray = JSON.parse(json['data']);
+      const jsonObject = jsonArray.reduce((key: object, value: object) => {
+        return { ...key, ...value };
+      }, {});
+      console.log('Received message for ' + jsonObject['motor'] + ': ' + JSON.stringify(jsonObject));
+      this.currentReceiver$.next(jsonObject);
+    })
+  }
+
+  get Ros(): ROSLIB.Ros {
     return this.ros;
   }
 
-  get Topic(): ROSLIB.Topic{
+  get Topic(): ROSLIB.Topic {
     return this.topic;
   }
 
@@ -122,6 +146,14 @@ export class RosService {
     return new ROSLIB.Topic({
       ros: this.ros,
       name: this.topicVoiceName,
+      messageType: 'std_msgs/String'
+    });
+  }
+
+  createCurrentTopic(): ROSLIB.Topic {
+    return new ROSLIB.Topic({
+      ros: this.ros,
+      name: this.topicCurrentName,
       messageType: 'std_msgs/String'
     });
   }
