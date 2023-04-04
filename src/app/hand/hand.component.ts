@@ -105,7 +105,7 @@ export class HandComponent implements OnInit {
       for (let i = 0; i < this.currentLeft.length; i++) {
         const message: CurrentMessage = {
           motor: this.currentLeft[i]['motor'],
-          currentValue: Math.floor(Math.random() * 100)
+          currentValue: Math.floor(Math.random() * 2000)
         }
 
         this.rosService.sendMessage(message);
@@ -116,7 +116,7 @@ export class HandComponent implements OnInit {
       for (let i = 0; i < this.currentRight.length; i++) {
         const message: CurrentMessage = {
           motor: this.currentRight[i]['motor'],
-          currentValue: Math.floor(Math.random() * 100)
+          currentValue: Math.floor(Math.random() * 2000)
         }
         this.rosService.sendMessage(message);
       }

@@ -5,20 +5,27 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { SliderComponent } from '../slider/slider.component';
 
 import { HandComponent } from './hand.component';
+import { RosService } from '../shared/ros.service';
+import { left } from '@popperjs/core';
+import { CurrentMessage } from '../shared/currentMessage';
 
 describe('HandComponent', () => {
   let component: HandComponent;
   let fixture: ComponentFixture<HandComponent>;
+  let rosService: RosService;
+
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [ HandComponent, SliderComponent ],
-      imports: [ RouterTestingModule, ReactiveFormsModule ]
+      imports: [ RouterTestingModule, ReactiveFormsModule ],
+      providers: [RosService]
     })
     .compileComponents();
 
     fixture = TestBed.createComponent(HandComponent);
     component = fixture.componentInstance;
+    rosService = TestBed.inject(RosService);
     fixture.detectChanges();
   });
 
@@ -86,4 +93,25 @@ describe('HandComponent', () => {
       expect(child.sendAllMessagesCombined).toHaveBeenCalled();
     });
   });
+
+    it('should send dummy values', () => {
+      component.side = 'left';
+      fixture.detectChanges();
+      const dummyBtnLEft = fixture.debugElement.query(By.css('#dummyBtnLeft'));
+      spyOn(rosService,'sendMessage');
+      dummyBtnLEft.nativeElement.click();
+      expect(rosService.sendMessage).toHaveBeenCalledTimes(5);
+
+      component.side = 'right';
+      fixture.detectChanges();
+      const dummyBtnRight = fixture.debugElement.query(By.css('#dummyBtnRight'));
+      dummyBtnRight.nativeElement.click();
+      expect(rosService.sendMessage).toHaveBeenCalledTimes(10);
+
+
+
+      
+  });
+
+
 });

@@ -50,14 +50,14 @@
           <ng-container *ngFor="let obj of currentRight">
             <div [class]="obj['motor']">
               <span class="current">{{obj['value']}} mA</span>
-              <div [style.height]="obj['value']/2 + 'px'" class="color-indicator"
-                [class.color-indicator50-80]="obj['value'] > 50 && obj['value'] < 80"
-                [class.color-indicator80-100]="obj['value'] >= 80">+
+              <div [style.height]="obj['value']/40 + 'px'" class="color-indicator"
+                [class.color-indicator50-80]="obj['value']/20 > 50 && obj['value']/20 < 80"
+                [class.color-indicator80-100]="obj['value']/20 >= 80">
               </div>
             </div>
           </ng-container>
-          <button (click)="sendDummyMessage()" class="btn btn-primary">Dummy Values</button>
         </div>
+        <button *ngIf="side === 'right'" (click)="sendDummyMessage()" class="btn btn-primary" id="dummyBtnRight">Dummy Values</button>
       </div>
       <!--left hand image-->
       <div class="container">
@@ -66,14 +66,14 @@
           <ng-container *ngFor="let obj of currentLeft">
             <div [class]="obj['motor']">
               <span class="current">{{obj['value']}} mA</span>
-              <div [style.height]="obj['value']/2 + 'px'" class="color-indicator"
-                [class.color-indicator50-80]="obj['value'] > 50 && obj['value'] < 80"
-                [class.color-indicator80-100]="obj['value'] >= 80">+
+              <div [style.height]="obj['value']/40 + 'px'" class="color-indicator"
+                [class.color-indicator50-80]="obj['value']/20 > 50 && obj['value']/20 < 80"
+                [class.color-indicator80-100]="obj['value']/20 >= 80">
               </div>
             </div>
           </ng-container>
-          <button (click)="sendDummyMessage()" class="btn btn-primary">Dummy Values</button>
         </div>
+        <button *ngIf="side === 'left'" (click)="sendDummyMessage()" class="btn btn-primary" id="dummyBtnLeft">Dummy Values</button>
       </div>
     </div>
   </div>

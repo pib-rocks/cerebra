@@ -3,24 +3,26 @@
     margin: 0.5rem;
     width: 30px;
     background-color: rgba(41,255,0,1);
-    bottom: 0;
-    left: 0;
+    position: absolute;
+    bottom: -13px;
+    right: -40px;
 }
 
 .color-indicator80-100{
     display: inline-block;
     width: 30px;
-    background-image: linear-gradient(rgba(255,0,0,1) 0%,rgba(41,255,0,1) 100%);
+    background-image: linear-gradient(rgba(255,0,0,1) 0%,rgba(253,252,29,1) 50%, rgba(41,255,0,1) 100%);
 }
 
 .color-indicator50-80{
     display: inline-block;
     width: 30px;
-    background-image: linear-gradient(rgba(255,0,0,1) 0%,rgba(41,255,0,1) 50%);
+    background-image: linear-gradient(rgba(255,0,0,1) 0%,rgba(253,252,29,1) 25%, rgba(41,255,0,1) 50%);
 }
 
 .current{
     border-style: solid; padding: 5px;
+    position: relative;
 }
 
 .container-div{
@@ -28,6 +30,7 @@
     padding-top: 3rem;
     position: relative;
     display: inline-block;
+
 }
 
 .pinky-right {
@@ -45,7 +48,7 @@
 .middle-right {
     position: absolute;
     top: 0%;
-    right: 40%;
+    right: 50%;
 }
 
 .index-right {
@@ -75,7 +78,7 @@
 .index-left {
     position: absolute;
     top: 8%;
-    left: 15%;
+    left: 20%;
 }
 
 .middle-left {

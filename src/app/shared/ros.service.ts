@@ -19,7 +19,7 @@ export class RosService {
   private currentTopic!: ROSLIB.Topic;
   private readonly topicName = '/motor_settings';
   private readonly topicVoiceName = '/cerebra_voice_settings';
-  private readonly topicCurrentName = '/cerebra_voice_settings';
+  private readonly topicCurrentName = '/motor_status';
 
   private motors: Motor[] = [];
 
@@ -70,7 +70,6 @@ export class RosService {
       { data: JSON.stringify(parameters) }
     );
     if ('motor' in msg) {
-      console.log(msg);
       if ('currentValue' in msg) {
         this.currentTopic?.publish(message);
         console.log('Sent message ' + JSON.stringify(message));
