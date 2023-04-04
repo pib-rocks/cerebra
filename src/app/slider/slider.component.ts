@@ -1,6 +1,6 @@
 import { Component, Input, OnInit, TemplateRef } from '@angular/core';
-import { AbstractControl, FormControl, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
-import { debounceTime, Subject } from 'rxjs';
+import { FormControl, Validators } from '@angular/forms';
+import { Subject } from 'rxjs';
 import { Message } from '../shared/message';
 import { MotorService } from '../shared/motor.service';
 import { RosService } from '../shared/ros.service';
@@ -27,7 +27,6 @@ export class SliderComponent implements OnInit {
 
   isCombinedSlider = false;
   messageReceiver$ = new Subject<Message>();
-
   motorFormControl: FormControl = new FormControl(true);
   sliderFormControl: FormControl = new FormControl(0);
   velocityFormControl: FormControl = new FormControl(0, notNullValidator);
@@ -286,7 +285,5 @@ export class SliderComponent implements OnInit {
     this.sendSettingMessage();
   },500);
 }
-
-
 
 }

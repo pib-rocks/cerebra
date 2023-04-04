@@ -1,8 +1,10 @@
-import { Component, ElementRef, Input, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
+import { Component, Input, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { ActivatedRoute, Params } from '@angular/router';
-import { Subject } from 'rxjs';
 import { SliderComponent } from '../slider/slider.component';
+import { RosService } from '../shared/ros.service';
+import { MotorCurrentMessage } from '../shared/currentMessage';
+import { Subject } from 'rxjs';
 
 @Component({
   selector: 'app-hand',
@@ -11,12 +13,13 @@ import { SliderComponent } from '../slider/slider.component';
 })
 export class HandComponent implements OnInit {
   @ViewChildren(SliderComponent) childComponents!: QueryList<SliderComponent>;
-  @ViewChild('myInput', { static: false }) myInput!: ElementRef<HTMLInputElement>;
-  dummySubject$: Subject<string> = new Subject()
 
-  @Input() side = "Left";
+  @Input() side = "left";
+  heightN: number = 100;
+  height: string = this.heightN / 2.3 + 'px';
+  messageReceiver$: Subject<MotorCurrentMessage> = new Subject<MotorCurrentMessage>;
 
-  constructor(private route: ActivatedRoute) { }
+  constructor(private route: ActivatedRoute, private rosService: RosService) { }
 
   leftSwitchControl = new FormControl(false);
   rightSwitchControl = new FormControl(false);
@@ -49,9 +52,39 @@ export class HandComponent implements OnInit {
     { motor: "pinky_right_stretch", label: "Pinky finger" }
   ]
 
+  currentRight = [
+    { motor: 'pinky-right', value: 30 },
+    { motor: 'ring-right', value: 30 },
+    { motor: 'middle-right', value: 30 },
+    { motor: 'index-right', value: 30 },
+    { motor: 'thumb-right', value: 30 }
+  ]
+
+  currentLeft = [
+    { motor: 'pinky-left', value: 30 },
+    { motor: 'ring-left', value: 30 },
+    { motor: 'middle-left', value: 30 },
+    { motor: 'index-left', value: 30 },
+    { motor: 'thumb-left', value: 30 }
+  ]
+
   ngOnInit(): void {
     this.route.params.subscribe((params: Params) => {
       this.side = params['side'];
+    });
+    this.rosService.currentReceiver$.subscribe(message => {
+      for (let i = 0; i < this.currentLeft.length; i++) {
+        if (message['motor'] === this.currentLeft[i]['motor']) {
+          console.log('current value' + message['currentValue']);
+          this.currentLeft[i]['value'] = message['currentValue'];
+        }
+      }
+      for (let i = 0; i < this.currentRight.length; i++) {
+        if (message['motor'] === this.currentRight[i]['motor']) {
+          console.log('current value' + message['currentValue']);
+          this.currentRight[i]['value'] = message['currentValue'];
+        }
+      }
     })
   }
 
@@ -62,6 +95,29 @@ export class HandComponent implements OnInit {
         child.sendMessage();
       }
     })
+  }
+
+  sendDummyMessage() {
+    if (this.side === 'left') {
+      for (let i = 0; i < this.currentLeft.length; i++) {
+        const message: MotorCurrentMessage = {
+          motor: this.currentLeft[i]['motor'],
+          currentValue: Math.floor(Math.random() * 2000)
+        }
+
+        this.rosService.sendMessage(message);
+      }
+    }
+
+    if (this.side === 'right') {
+      for (let i = 0; i < this.currentRight.length; i++) {
+        const message: MotorCurrentMessage = {
+          motor: this.currentRight[i]['motor'],
+          currentValue: Math.floor(Math.random() * 2000)
+        }
+        this.rosService.sendMessage(message);
+      }
+    }
   }
 
   switchView(side: string) {
@@ -75,10 +131,10 @@ export class HandComponent implements OnInit {
         child.sliderFormControl.setValue(child.labelName == "Thumb opposition"
           ? thumbOppo.sliderFormControl.value
           : indexFinger.sliderFormControl.value);
-          child.motorFormControl.setValue(child.labelName == "Thumb opposition"
+        child.motorFormControl.setValue(child.labelName == "Thumb opposition"
           ? thumbOppo.motorFormControl.value
           : indexFinger.motorFormControl.value);
-          child.velocityFormControl.setValue(child.labelName == "Thumb opposition"
+        child.velocityFormControl.setValue(child.labelName == "Thumb opposition"
           ? thumbOppo.velocityFormControl.value
           : indexFinger.velocityFormControl.value);
         child.accelerationFormControl.setValue(child.labelName == "Thumb opposition"
