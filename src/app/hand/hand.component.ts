@@ -128,36 +128,30 @@ export class HandComponent implements OnInit {
       console.log('switchView childComponents length')
       console.log(this.childComponents.length);
       this.childComponents.forEach(child => {
-        child.sliderFormControl.setValue(child.labelName == "Thumb opposition"
-          ? thumbOppo.sliderFormControl.value
-          : indexFinger.sliderFormControl.value);
-        child.motorFormControl.setValue(child.labelName == "Thumb opposition"
-          ? thumbOppo.motorFormControl.value
-          : indexFinger.motorFormControl.value);
-        child.velocityFormControl.setValue(child.labelName == "Thumb opposition"
-          ? thumbOppo.velocityFormControl.value
-          : indexFinger.velocityFormControl.value);
-        child.accelerationFormControl.setValue(child.labelName == "Thumb opposition"
-          ? thumbOppo.accelerationFormControl.value
-          : indexFinger.accelerationFormControl.value);
-        child.decelerationFormControl.setValue(child.labelName == "Thumb opposition"
-          ? thumbOppo.decelerationFormControl.value
-          : indexFinger.decelerationFormControl.value);
-        child.periodFormControl.setValue(child.labelName == "Thumb opposition"
-          ? thumbOppo.periodFormControl.value
-          : indexFinger.periodFormControl.value);
-        child.pulseMaxRange.setValue(child.labelName == "Thumb opposition"
-          ? thumbOppo.pulseMaxRange.value
-          : indexFinger.pulseMaxRange.value);
-        child.pulseMinRange.setValue(child.labelName == "Thumb opposition"
-          ? thumbOppo.pulseMinRange.value
-          : indexFinger.pulseMinRange.value);
-        child.degreeMax.setValue(child.labelName == "Thumb opposition"
-          ? thumbOppo.degreeMax.value
-          : indexFinger.degreeMax.value);
-        child.degreeMin.setValue(child.labelName == "Thumb opposition"
-          ? thumbOppo.degreeMin.value
-          : indexFinger.degreeMin.value);
+        if(child.labelName != "Thumb opposition") {
+        child.sliderFormControl.setValue(indexFinger.sliderFormControl.value);
+        child.motorFormControl.setValue(indexFinger.motorFormControl.value);
+        child.velocityFormControl.setValue(indexFinger.velocityFormControl.value);
+        child.accelerationFormControl.setValue(indexFinger.accelerationFormControl.value);
+        child.decelerationFormControl.setValue(indexFinger.decelerationFormControl.value);
+        child.periodFormControl.setValue(indexFinger.periodFormControl.value);
+        child.pulseMaxRange.setValue(indexFinger.pulseMaxRange.value);
+        child.pulseMinRange.setValue(indexFinger.pulseMinRange.value);
+        child.degreeMax.setValue(indexFinger.degreeMax.value);
+        child.degreeMin.setValue(indexFinger.degreeMin.value);
+      } else {
+          child.sliderFormControl.setValue(thumbOppo.sliderFormControl.value)
+          child.motorFormControl.setValue(thumbOppo.motorFormControl.value)
+          child.velocityFormControl.setValue(thumbOppo.velocityFormControl.value)
+          child.accelerationFormControl.setValue(thumbOppo.accelerationFormControl.value)
+          child.decelerationFormControl.setValue(thumbOppo.decelerationFormControl.value)
+          child.periodFormControl.setValue(thumbOppo.periodFormControl.value)
+          child.pulseMaxRange.setValue(thumbOppo.pulseMaxRange.value)
+          child.pulseMinRange.setValue(thumbOppo.pulseMinRange.value)
+          child.degreeMax.setValue(thumbOppo.degreeMax.value)
+          child.degreeMin.setValue(thumbOppo.degreeMin.value)
+
+        }
         child.sendAllMessagesCombined();
       });
     } else {
