@@ -7,7 +7,7 @@ import { SliderComponent } from '../slider/slider.component';
 import { HandComponent } from './hand.component';
 import { RosService } from '../shared/ros.service';
 import { left } from '@popperjs/core';
-import { CurrentMessage } from '../shared/currentMessage';
+import { MotorCurrentMessage } from '../shared/currentMessage';
 
 describe('HandComponent', () => {
   let component: HandComponent;

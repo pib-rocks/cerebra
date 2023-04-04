@@ -4,7 +4,7 @@ import { BehaviorSubject, Subject } from 'rxjs';
 import { Message } from './message';
 import { Motor } from './motor';
 import { VoiceAssistant } from './voice-assistant';
-import { CurrentMessage } from './currentMessage';
+import { MotorCurrentMessage } from './currentMessage';
 
 @Injectable({
   providedIn: 'root'
@@ -12,7 +12,7 @@ import { CurrentMessage } from './currentMessage';
 export class RosService {
   private isInitializedSubject = new BehaviorSubject<boolean>(false);
   isInitialized$ = this.isInitializedSubject.asObservable();
-  currentReceiver$: Subject<CurrentMessage> = new Subject<CurrentMessage>;
+  currentReceiver$: Subject<MotorCurrentMessage> = new Subject<MotorCurrentMessage>;
   private ros!: ROSLIB.Ros;
   private topic!: ROSLIB.Topic;
   private voiceTopic!: ROSLIB.Topic;
@@ -63,7 +63,7 @@ export class RosService {
     }
   }
 
-  sendMessage(msg: Message | VoiceAssistant | CurrentMessage) {
+  sendMessage(msg: Message | VoiceAssistant | MotorCurrentMessage) {
     const json = JSON.parse(JSON.stringify(msg));
     const parameters = Object.keys(json).map(key => ({ [key]: json[key] }));
     const message = new ROSLIB.Message(

@@ -3,7 +3,7 @@ import { FormControl } from '@angular/forms';
 import { ActivatedRoute, Params } from '@angular/router';
 import { SliderComponent } from '../slider/slider.component';
 import { RosService } from '../shared/ros.service';
-import { CurrentMessage } from '../shared/currentMessage';
+import { MotorCurrentMessage } from '../shared/currentMessage';
 import { Subject } from 'rxjs';
 
 @Component({
@@ -17,7 +17,7 @@ export class HandComponent implements OnInit {
   @Input() side = "left";
   heightN: number = 100;
   height: string = this.heightN / 2.3 + 'px';
-  messageReceiver$: Subject<CurrentMessage> = new Subject<CurrentMessage>;
+  messageReceiver$: Subject<MotorCurrentMessage> = new Subject<MotorCurrentMessage>;
 
   constructor(private route: ActivatedRoute, private rosService: RosService) { }
 
@@ -86,9 +86,6 @@ export class HandComponent implements OnInit {
         }
       }
     })
-    for (let i = 0; i < this.currentRight.length; i++) {
-
-    }
   }
 
   reset() {
@@ -103,7 +100,7 @@ export class HandComponent implements OnInit {
   sendDummyMessage() {
     if (this.side === 'left') {
       for (let i = 0; i < this.currentLeft.length; i++) {
-        const message: CurrentMessage = {
+        const message: MotorCurrentMessage = {
           motor: this.currentLeft[i]['motor'],
           currentValue: Math.floor(Math.random() * 2000)
         }
@@ -114,7 +111,7 @@ export class HandComponent implements OnInit {
 
     if (this.side === 'right') {
       for (let i = 0; i < this.currentRight.length; i++) {
-        const message: CurrentMessage = {
+        const message: MotorCurrentMessage = {
           motor: this.currentRight[i]['motor'],
           currentValue: Math.floor(Math.random() * 2000)
         }
