@@ -1,5 +1,6 @@
 export interface VoiceAssistant {
     activationFlag?: boolean,
     personality?: string,
-    threshold?: number
+    threshold?: number,
+    gender?: string
 }

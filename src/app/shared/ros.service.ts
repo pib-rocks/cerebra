@@ -14,9 +14,9 @@ export class RosService {
   isInitialized$ = this.isInitializedSubject.asObservable();
   currentReceiver$: Subject<MotorCurrentMessage> = new Subject<MotorCurrentMessage>;
   private ros!: ROSLIB.Ros;
-  private topic!: ROSLIB.Topic;
-  private voiceTopic!: ROSLIB.Topic;
-  private currentTopic!: ROSLIB.Topic;
+  private messageTopic!: ROSLIB.Topic;
+  private voiceAssistantTopic!: ROSLIB.Topic;
+  private motorCurrentTopic!: ROSLIB.Topic;
   private readonly topicName = '/motor_settings';
   private readonly topicVoiceName = '/cerebra_voice_settings';
   private readonly topicCurrentName = '/motor_status';
@@ -28,9 +28,9 @@ export class RosService {
     this.ros.on('connection', () => {
       console.log('Connected to ROS');
       this.isInitializedSubject.next(true);
-      this.topic = this.createTopic();
-      this.voiceTopic = this.createVoiceSettingsTopic();
-      this.currentTopic = this.createCurrentTopic();
+      this.messageTopic = this.createMessageTopic();
+      this.voiceAssistantTopic = this.createVoiceSettingsTopic();
+      this.motorCurrentTopic = this.createCurrentTopic();
       this.subscribeTopic();
       this.subscribeCurrentTopic();
     });
@@ -64,6 +64,7 @@ export class RosService {
   }
 
   sendMessage(msg: Message | VoiceAssistant | MotorCurrentMessage) {
+
     const json = JSON.parse(JSON.stringify(msg));
     const parameters = Object.keys(json).map(key => ({ [key]: json[key] }));
     const message = new ROSLIB.Message(
@@ -71,14 +72,15 @@ export class RosService {
     );
     if ('motor' in msg) {
       if ('currentValue' in msg) {
-        this.currentTopic?.publish(message);
+        
+        this.motorCurrentTopic?.publish(message);
         console.log('Sent message ' + JSON.stringify(message));
       } else {
-        this.topic?.publish(message);
+        this.messageTopic?.publish(message);
         console.log('Sent message ' + JSON.stringify(message));
       }
     } else {
-      this.voiceTopic.publish(message);
+      this.voiceAssistantTopic.publish(message);
       console.log('Sent message ' + JSON.stringify(message));
     }
   }
@@ -97,7 +99,7 @@ export class RosService {
   }
 
   subscribeTopic() {
-    this.topic.subscribe((message) => {
+    this.messageTopic.subscribe((message) => {
       const jsonStr = JSON.stringify(message);
       const json = JSON.parse(jsonStr);
       const jsonArray = JSON.parse(json['data']);
@@ -113,7 +115,7 @@ export class RosService {
   }
 
   subscribeCurrentTopic() {
-    this.currentTopic.subscribe((message) => {
+    this.motorCurrentTopic.subscribe((message) => {
       const jsonStr = JSON.stringify(message);
       const json = JSON.parse(jsonStr);
       const jsonArray = JSON.parse(json['data']);
@@ -130,16 +132,17 @@ export class RosService {
   }
 
   get Topic(): ROSLIB.Topic {
-    return this.topic;
+    return this.messageTopic;
   }
 
-  createTopic(): ROSLIB.Topic {
+  createMessageTopic(): ROSLIB.Topic {
     return new ROSLIB.Topic({
       ros: this.ros,
       name: this.topicName,
       messageType: 'std_msgs/String'
     });
   }
+
 
   createVoiceSettingsTopic(): ROSLIB.Topic {
     return new ROSLIB.Topic({
