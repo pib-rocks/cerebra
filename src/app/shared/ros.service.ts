@@ -29,8 +29,8 @@ export class RosService {
       console.log('Connected to ROS');
       this.isInitializedSubject.next(true);
       this.messageTopic = this.createMessageTopic();
-      this.voiceAssistantTopic = this.createVoiceSettingsTopic();
-      this.motorCurrentTopic = this.createCurrentTopic();
+      this.voiceAssistantTopic = this.createVoiceAssistantTopic();
+      this.motorCurrentTopic = this.createMotorCurrentTopic();
       this.subscribeTopic();
       this.subscribeCurrentTopic();
     });
@@ -144,7 +144,7 @@ export class RosService {
   }
 
 
-  createVoiceSettingsTopic(): ROSLIB.Topic {
+  createVoiceAssistantTopic(): ROSLIB.Topic {
     return new ROSLIB.Topic({
       ros: this.ros,
       name: this.topicVoiceName,
@@ -152,7 +152,7 @@ export class RosService {
     });
   }
 
-  createCurrentTopic(): ROSLIB.Topic {
+  createMotorCurrentTopic(): ROSLIB.Topic {
     return new ROSLIB.Topic({
       ros: this.ros,
       name: this.topicCurrentName,
