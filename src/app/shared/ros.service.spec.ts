@@ -55,9 +55,14 @@ describe('RosService', () => {
      const spySendMassege = spyOn(service, 'sendMessage').and.callThrough();
      const spyPublish = spyOn(service["messageTopic"],'publish');
      const message = {motor: 'test', value: '10'}
+     const json = JSON.parse(JSON.stringify(message));
+     const parameters = Object.keys(json).map(key => ({ [key]: json[key] }));
+     const msg = new ROSLIB.Message(
+       { data: JSON.stringify(parameters) }
+     )
      service.sendMessage(message);
      expect(spySendMassege).toHaveBeenCalled();
-     expect(spyPublish).toHaveBeenCalled();
+     expect(spyPublish).toHaveBeenCalledWith( msg );
    });
 
    it('The motorCurrentTopic should publish the message to rosbridge when calling sendMessage method, Incase the Message is of type MotorCurrentMessage ', () => {
@@ -66,9 +71,14 @@ describe('RosService', () => {
      const spySendMassege = spyOn(service, 'sendMessage').and.callThrough();
      const spyPublish = spyOn(service["motorCurrentTopic"],'publish');
      const message = {motor: 'test',   currentValue: 10}
+     const json = JSON.parse(JSON.stringify(message));
+     const parameters = Object.keys(json).map(key => ({ [key]: json[key] }));
+     const msg = new ROSLIB.Message(
+       { data: JSON.stringify(parameters) }
+     )
      service.sendMessage(message);
      expect(spySendMassege).toHaveBeenCalled();
-     expect(spyPublish).toHaveBeenCalled();
+     expect(spyPublish).toHaveBeenCalledWith( msg );
    });
 
    it('The voiceAssistantTopic should publish the message when the sendMessage method is called, Incase the Message is of type voiceAssistantMessage ', () => {
@@ -77,9 +87,14 @@ describe('RosService', () => {
      const spySendMassege = spyOn(service, 'sendMessage').and.callThrough();
      const spyPublish = spyOn(service["voiceAssistantTopic"],'publish');
      const message = {activationFlag: true, personality: '1',threshold:1.3,gender:'male'}
+     const json = JSON.parse(JSON.stringify(message));
+     const parameters = Object.keys(json).map(key => ({ [key]: json[key] }));
+     const msg = new ROSLIB.Message(
+       { data: JSON.stringify(parameters) }
+     )
      service.sendMessage(message);
      expect(spySendMassege).toHaveBeenCalled();
-     expect(spyPublish).toHaveBeenCalled();
+     expect(spyPublish).toHaveBeenCalledWith( msg );
    });
 
 
