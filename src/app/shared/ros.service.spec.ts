@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import * as ROSLIB from 'roslib';
 import { Subject } from 'rxjs';
 import { Message } from './message';
-
+import { Topic } from 'roslib';
 import { RosService } from './ros.service';
 
 describe('RosService', () => {
@@ -11,16 +11,25 @@ describe('RosService', () => {
   let mockTopic: MockRosbridgeTopic;
   let spySetUp: jasmine.Spy<() => ROSLIB.Ros>;
   let spytopic: jasmine.Spy<() => ROSLIB.Topic>;
+  let roslib : Topic;
+
+
   beforeEach(() => {
-    TestBed.configureTestingModule({});
-    service = TestBed.inject(RosService);
-    mockRos = new RosMock(service)
-    mockRos.setConnection(true);
-    const receiver$ = new Subject<Message>();
-    mockTopic = new MockRosbridgeTopic('test', receiver$);
-    spySetUp = spyOn(RosService.prototype, 'setUpRos').and.returnValue(mockRos as unknown as ROSLIB.Ros);
-    spytopic = spyOn(RosService.prototype, 'createTopic').and.returnValue(mockTopic as unknown as ROSLIB.Topic);
-    service = new RosService();
+
+     TestBed.configureTestingModule({
+   //    providers: [Topic]
+     })
+   
+     service = TestBed.inject(RosService);
+     mockRos = new RosMock(service);
+     mockRos.setConnection(true);
+     const receiver$ = new Subject<Message>();
+     mockTopic = new MockRosbridgeTopic('test', receiver$);
+     spySetUp = spyOn(RosService.prototype, 'setUpRos').and.returnValue(mockRos as unknown as ROSLIB.Ros);
+     spytopic = spyOn(RosService.prototype, 'createMessageTopic').and.returnValue(mockTopic as unknown as ROSLIB.Topic);
+     service = new RosService();
+
+
   });
 
   it('should be created', () => {
@@ -40,20 +49,59 @@ describe('RosService', () => {
     expect(spytopic).toHaveBeenCalled();
    });
 
-   it('sendMessage should send a massege to rosbridge without errors', () => {
+   it('The messageTopic should publish the message to rosbridge when calling sendMessage method, Incase the Message is of type Message', () => {
     service = new RosService();
-    (service as any).topic = new ROSLIB.Topic({ros: mockRos as unknown as ROSLIB.Ros,name: 'test', messageType: 'std_msgs/String'});
+    (service as any).messageTopic = new ROSLIB.Topic({ros: mockRos as unknown as ROSLIB.Ros,name: 'test', messageType: 'std_msgs/String'});
      const spySendMassege = spyOn(service, 'sendMessage').and.callThrough();
-     const spyPublish = spyOn(service.Topic,'publish');
+     const spyPublish = spyOn(service["messageTopic"],'publish');
      const message = {motor: 'test', value: '10'}
+     const json = JSON.parse(JSON.stringify(message));
+     const parameters = Object.keys(json).map(key => ({ [key]: json[key] }));
+     const msg = new ROSLIB.Message(
+       { data: JSON.stringify(parameters) }
+     )
      service.sendMessage(message);
      expect(spySendMassege).toHaveBeenCalled();
-     expect(spyPublish).toHaveBeenCalled();
+     expect(spyPublish).toHaveBeenCalledWith( msg );
    });
+
+   it('The motorCurrentTopic should publish the message to rosbridge when calling sendMessage method, Incase the Message is of type MotorCurrentMessage ', () => {
+    service = new RosService();
+    (service as any).motorCurrentTopic = new ROSLIB.Topic({ros: mockRos as unknown as ROSLIB.Ros,name: 'test', messageType: 'std_msgs/String'});
+     const spySendMassege = spyOn(service, 'sendMessage').and.callThrough();
+     const spyPublish = spyOn(service["motorCurrentTopic"],'publish');
+     const message = {motor: 'test',   currentValue: 10}
+     const json = JSON.parse(JSON.stringify(message));
+     const parameters = Object.keys(json).map(key => ({ [key]: json[key] }));
+     const msg = new ROSLIB.Message(
+       { data: JSON.stringify(parameters) }
+     )
+     service.sendMessage(message);
+     expect(spySendMassege).toHaveBeenCalled();
+     expect(spyPublish).toHaveBeenCalledWith( msg );
+   });
+
+   it('The voiceAssistantTopic should publish the message when the sendMessage method is called, Incase the Message is of type voiceAssistantMessage ', () => {
+    service = new RosService();
+    (service as any).voiceAssistantTopic = new ROSLIB.Topic({ros: mockRos as unknown as ROSLIB.Ros,name: 'test', messageType: 'std_msgs/String'});
+     const spySendMassege = spyOn(service, 'sendMessage').and.callThrough();
+     const spyPublish = spyOn(service["voiceAssistantTopic"],'publish');
+     const message = {activationFlag: true, personality: '1',threshold:1.3,gender:'male'}
+     const json = JSON.parse(JSON.stringify(message));
+     const parameters = Object.keys(json).map(key => ({ [key]: json[key] }));
+     const msg = new ROSLIB.Message(
+       { data: JSON.stringify(parameters) }
+     )
+     service.sendMessage(message);
+     expect(spySendMassege).toHaveBeenCalled();
+     expect(spyPublish).toHaveBeenCalledWith( msg );
+   });
+
+
 
    it('subscribeTopic should emmit a value to a subject',(): void => {
     const receiver$ = new Subject<Message>();
-    (service as any).topic = new MockRosbridgeTopic('test', receiver$) as unknown as ROSLIB.Topic;
+    (service as any).messageTopic = new MockRosbridgeTopic('test', receiver$) as unknown as ROSLIB.Topic;
     const motor = {motor: 'test', receiver$: receiver$ };
     (service as any).motors.push()
     const spyNext = spyOn(motor.receiver$,'next');
@@ -68,6 +116,9 @@ describe('RosService', () => {
     const actualReceiver2$ = service.getReceiversByMotorName('test')[0];
     expect(expectedReceiver).toEqual(actualReceiver2$);
   })
+
+
+
 });
 
 class MockRosbridgeTopic {
@@ -86,12 +137,14 @@ class MockRosbridgeTopic {
   }
 }
 
-export class RosMock {
+export class RosMock  {
 
   service!: RosService;
+
   constructor(service: RosService){
     this.service = service;
   }
+
   private connected: boolean = false;
 
   setConnection(b: boolean){
@@ -99,7 +152,7 @@ export class RosMock {
   }
 
   on () {
-    this.service.createTopic()
+    this.service?.createMessageTopic()
   }
 
   callOnConnection () {

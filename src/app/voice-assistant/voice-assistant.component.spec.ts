@@ -34,9 +34,14 @@ describe('VoiceAssistantComponent', () => {
     spyOn(rosService, 'sendMessage');
     component.voiceFormGroup.get('personality')?.setValue('test');
     component.voiceFormGroup.get('threshold')?.setValue(1.5);
+    component.voiceFormGroup.get('gender')?.setValue('male');
     updateBtn.nativeElement.click();
     expect(component.updateVoiceSettings).toHaveBeenCalled();
-    expect(rosService.sendMessage).toHaveBeenCalled();
+    expect(rosService.sendMessage).toHaveBeenCalledWith({
+      personality: 'test',
+      threshold: 1.5,
+      gender: 'male'
+    });
     expect(component.voiceFormGroup.get('personality')?.value).toBe('');
   });
 
@@ -49,4 +54,26 @@ describe('VoiceAssistantComponent', () => {
     expect(component.sendVoiceActivationFlag).toHaveBeenCalled();
     expect(rosService.sendMessage).toHaveBeenCalled();
   });
+
+
+
+
+
+ it('should not send the values to the server when the form is invalid and inform the user about the error', () => {
+  spyOn(component,'updateVoiceSettings').and.callThrough();
+  spyOn(rosService, 'sendMessage');
+  component.voiceFormGroup.get('personality')?.setValue('test');
+  component.voiceFormGroup.get('gender')?.setValue('male');
+  component.voiceFormGroup.get('threshold')?.setValue(8);  
+  const updateBtn = fixture.debugElement.query(By.css('#updateBtn'));
+  updateBtn.nativeElement.click();
+  fixture.detectChanges();
+  const compiled = fixture.debugElement.nativeElement;
+  expect(component.updateVoiceSettings).toHaveBeenCalled();
+  expect(rosService.sendMessage).not.toHaveBeenCalled();
+  expect(compiled.querySelector('span').textContent).toContain("threshhold must be between 0.1 and 2");
+ })
+
+
+
 });
