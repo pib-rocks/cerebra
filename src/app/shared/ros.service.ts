@@ -94,7 +94,7 @@ export class RosService {
 
   setUpRos() {
     return new ROSLIB.Ros({
-      url: 'ws://192.168.220.38:9090',
+      url: 'ws://192.168.220.110:9090',
     });
   }
 
