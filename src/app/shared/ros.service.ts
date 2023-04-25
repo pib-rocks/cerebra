@@ -24,6 +24,7 @@ export class RosService {
   private motors: Motor[] = [];
 
   constructor() {
+   
     this.ros = this.setUpRos();
     this.ros.on('connection', () => {
       console.log('Connected to ROS');
@@ -42,6 +43,10 @@ export class RosService {
       console.log('Disconnected from ROSBridge server.');
     });
   }
+
+
+
+ 
 
   registerMotor(motorName: string, motorReceiver$: Subject<Message>) {
     let isRegistered = false;

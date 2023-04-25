@@ -22,6 +22,8 @@ export class SliderComponent implements OnInit {
   @Input() labelName = '';
   @Input() groupSide = 'left';
   @Input() isGroup = false;
+  @Input() showCheckBox = true;
+  @Input() showMotorSettingsButton = true;
 
   closeResult!: string;
 
