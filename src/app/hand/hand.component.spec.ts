@@ -66,7 +66,7 @@ describe('HandComponent', () => {
     expect(component.reset).toHaveBeenCalled();
 
     for (const slider of sliders) {
-      const input = slider.children[1].children[3];
+      const input = slider.children[1].children[2];
       expect(input.nativeElement.value).toBe("0");
       expect(slider.componentInstance.sendMessage).toHaveBeenCalled();
     }

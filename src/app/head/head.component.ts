@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { RosService } from '../shared/ros.service';
 import { MotorCurrentMessage } from '../shared/currentMessage';
+import { SliderComponent } from '../slider/slider.component';
 
 @Component({
   selector: 'app-head',
@@ -9,6 +10,7 @@ import { MotorCurrentMessage } from '../shared/currentMessage';
 })
 export class HeadComponent implements OnInit {
 
+  @ViewChildren(SliderComponent) childComponents!: QueryList<SliderComponent>;
 
   constructor(private rosService: RosService){}
 
@@ -23,6 +25,10 @@ export class HeadComponent implements OnInit {
     })
   }
   
+  sliders = [{ name: "tilt_forward_motor", label: "Tilt Forward" },
+  { name: "tilt_sideways_motor", label: "Tilt Sideways" },
+  { name: "turn_head_motor", label: "Head Rotation" }
+]
   tiltForwardMotor =  { name: "tilt_forward_motor", label: "Tilt Forward" }
 
   tiltSideWaysMotor =  { name: "tilt_sideways_motor", label: "Tilt Sideways" }
@@ -42,5 +48,14 @@ export class HeadComponent implements OnInit {
         }
         this.rosService.sendMessage(message);
       }
+    }
+
+    reset() {
+      this.childComponents.forEach(child => {
+        if (child.sliderFormControl.value != 0) {
+          child.sliderFormControl.setValue("0");
+          child.sendMessage();
+        }
+      })
     }
 }

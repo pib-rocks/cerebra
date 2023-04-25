@@ -23,7 +23,7 @@ import { HeadComponent } from './head/head.component';
     CameraComponent,
     ArmComponent,
     VoiceAssistantComponent,
-    HeadComponent,
+    HeadComponent
   ],
   imports: [
     BrowserModule,
