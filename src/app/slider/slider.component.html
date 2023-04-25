@@ -2,9 +2,9 @@
   style="font-family: Open Sans, Arial, Helvetica, sans-serif;">{{labelName}}: {{sliderFormControl.value}}
 </label>
 <div>
-  <input id="checkbox" (change)="turnTheMotorOnAndOff()" type="checkbox" [formControl]="motorFormControl">
+  <input id="checkbox" *ngIf="showCheckBox === true" (change)="turnTheMotorOnAndOff()" type="checkbox" [formControl]="motorFormControl">
   <label  style="display:inline"> Motor</label>
-  <button id="dialogBtn" class="bi bi-gear btn btn-outline-primary" style="margin-left: 10px; border: 0;" (click)="openPopup(content)"></button>
+  <button *ngIf="showMotorSettingsButton === true" id="dialogBtn" class="bi bi-gear btn btn-outline-primary" style="margin-left: 10px; border: 0;" (click)="openPopup(content)"></button>
   <input id="{{motorName}}" type="range" min={{minSliderValue}} max={{maxSliderValue}} class="form-range"
     (input)="inputSendMsg()" [formControl]="sliderFormControl" #{{motorName}}>
 </div>

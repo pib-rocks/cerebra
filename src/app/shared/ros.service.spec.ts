@@ -9,7 +9,7 @@ describe('RosService', () => {
   let service: RosService;
   let mockRos: RosMock;
   let mockTopic: MockRosbridgeTopic;
-  let spySetUp: jasmine.Spy<() => ROSLIB.Ros>;
+  let spySetUpRos: jasmine.Spy<() => ROSLIB.Ros>;
   let spytopic: jasmine.Spy<() => ROSLIB.Topic>;
   let roslib : Topic;
 
@@ -17,7 +17,6 @@ describe('RosService', () => {
   beforeEach(() => {
 
      TestBed.configureTestingModule({
-   //    providers: [Topic]
      })
    
      service = TestBed.inject(RosService);
@@ -25,11 +24,10 @@ describe('RosService', () => {
      mockRos.setConnection(true);
      const receiver$ = new Subject<Message>();
      mockTopic = new MockRosbridgeTopic('test', receiver$);
-     spySetUp = spyOn(RosService.prototype, 'setUpRos').and.returnValue(mockRos as unknown as ROSLIB.Ros);
+
+     spySetUpRos = spyOn(RosService.prototype, 'setUpRos').and.returnValue(mockRos as unknown as ROSLIB.Ros);
      spytopic = spyOn(RosService.prototype, 'createMessageTopic').and.returnValue(mockTopic as unknown as ROSLIB.Topic);
      service = new RosService();
-
-
   });
 
   it('should be created', () => {
@@ -37,7 +35,8 @@ describe('RosService', () => {
   });
 
   it('should istablish ros in the constructor', () => {
-    expect(spySetUp).toHaveBeenCalled();
+
+    expect(spySetUpRos).toHaveBeenCalled();
     expect(service.Ros).toBeTruthy()
   });
 
@@ -45,9 +44,7 @@ describe('RosService', () => {
     expect(spytopic).toHaveBeenCalled();
    });
 
-   it('createTopic should create topic', () => {
-    expect(spytopic).toHaveBeenCalled();
-   });
+   
 
    it('The messageTopic should publish the message to rosbridge when calling sendMessage method, Incase the Message is of type Message', () => {
     service = new RosService();

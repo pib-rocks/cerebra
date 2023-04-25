@@ -1,0 +1,36 @@
+<div class="container-fluid">
+  <div class="row">
+    <div class="col">
+      <h3>Control the Head:</h3>
+      <br>
+      <h4>
+        Tilt forward:
+      </h4>
+
+      <app-slider [motorName]="tiltForwardMotor.name" [labelName]="tiltForwardMotor.label" [isGroup]="true" groupSide="right"></app-slider>
+
+      <h4> Tilt sideways:</h4>
+      <app-slider [motorName]="tiltSideWaysMotor.name" [labelName]="tiltSideWaysMotor.label" [isGroup]="true" [showCheckBox]="false" [showMotorSettingsButton]="false"  groupSide="right"></app-slider>
+
+      <h4>head rotation:</h4>
+      <app-slider [motorName]="turnTheHeadMotor.name" [labelName]="turnTheHeadMotor.label" [isGroup]="true" groupSide="right"></app-slider>
+
+
+    </div>
+    <div class="col">
+      <div class="container-div">
+        <img class="container" style="width: 34rem;" src="../../assets/head.png" alt="">
+        <ng-container *ngFor="let obj of currentConsumptionOfMotors">
+          <div [class]="obj['motor']">
+            <span class="current">{{obj['value']}} mA</span>
+            <div [style.height]="obj['value']/40 + 'px'" class="color-indicator"
+              [class.color-indicator50-80]="obj['value']/20 > 50 && obj['value']/20 < 80"
+              [class.color-indicator80-100]="obj['value']/20 >= 80">
+            </div>
+          </div>
+        </ng-container>
+      </div>
+
+    </div>
+  </div>
+</div>
