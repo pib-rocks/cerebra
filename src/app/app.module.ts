@@ -13,6 +13,7 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { MatSliderModule } from '@angular/material/slider';
 import { VoiceAssistantComponent } from './voice-assistant/voice-assistant.component';
+import { HeadComponent } from './head/head.component';
 
 @NgModule({
   declarations: [
@@ -22,6 +23,7 @@ import { VoiceAssistantComponent } from './voice-assistant/voice-assistant.compo
     CameraComponent,
     ArmComponent,
     VoiceAssistantComponent,
+    HeadComponent
   ],
   imports: [
     BrowserModule,
