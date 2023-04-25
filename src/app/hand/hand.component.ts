@@ -15,8 +15,6 @@ export class HandComponent implements OnInit {
   @ViewChildren(SliderComponent) childComponents!: QueryList<SliderComponent>;
 
   @Input() side = "left";
-  heightN: number = 100;
-  height: string = this.heightN / 2.3 + 'px';
   messageReceiver$: Subject<MotorCurrentMessage> = new Subject<MotorCurrentMessage>;
 
   constructor(private route: ActivatedRoute, private rosService: RosService) { }
@@ -53,19 +51,19 @@ export class HandComponent implements OnInit {
   ]
 
   currentRight = [
-    { motor: 'pinky-right', value: 30 },
-    { motor: 'ring-right', value: 30 },
-    { motor: 'middle-right', value: 30 },
-    { motor: 'index-right', value: 30 },
-    { motor: 'thumb-right', value: 30 }
+    { motor: 'pinky-right', value: 500 },
+    { motor: 'ring-right', value: 100 },
+    { motor: 'middle-right', value: 1000 },
+    { motor: 'index-right', value: 2000 },
+    { motor: 'thumb-right', value: 1500 }
   ]
 
   currentLeft = [
-    { motor: 'pinky-left', value: 30 },
-    { motor: 'ring-left', value: 30 },
-    { motor: 'middle-left', value: 30 },
-    { motor: 'index-left', value: 30 },
-    { motor: 'thumb-left', value: 30 }
+    { motor: 'pinky-left', value: 1600 },
+    { motor: 'ring-left', value: 1000 },
+    { motor: 'middle-left', value: 1700 },
+    { motor: 'index-left', value: 500 },
+    { motor: 'thumb-left', value: 300 }
   ]
 
   ngOnInit(): void {
@@ -104,7 +102,6 @@ export class HandComponent implements OnInit {
           motor: this.currentLeft[i]['motor'],
           currentValue: Math.floor(Math.random() * 2000)
         }
-
         this.rosService.sendMessage(message);
       }
     }
@@ -128,18 +125,18 @@ export class HandComponent implements OnInit {
       console.log('switchView childComponents length')
       console.log(this.childComponents.length);
       this.childComponents.forEach(child => {
-        if(child.labelName != "Thumb opposition") {
-        child.sliderFormControl.setValue(indexFinger.sliderFormControl.value);
-        child.motorFormControl.setValue(indexFinger.motorFormControl.value);
-        child.velocityFormControl.setValue(indexFinger.velocityFormControl.value);
-        child.accelerationFormControl.setValue(indexFinger.accelerationFormControl.value);
-        child.decelerationFormControl.setValue(indexFinger.decelerationFormControl.value);
-        child.periodFormControl.setValue(indexFinger.periodFormControl.value);
-        child.pulseMaxRange.setValue(indexFinger.pulseMaxRange.value);
-        child.pulseMinRange.setValue(indexFinger.pulseMinRange.value);
-        child.degreeMax.setValue(indexFinger.degreeMax.value);
-        child.degreeMin.setValue(indexFinger.degreeMin.value);
-      } else {
+        if (child.labelName != "Thumb opposition") {
+          child.sliderFormControl.setValue(indexFinger.sliderFormControl.value);
+          child.motorFormControl.setValue(indexFinger.motorFormControl.value);
+          child.velocityFormControl.setValue(indexFinger.velocityFormControl.value);
+          child.accelerationFormControl.setValue(indexFinger.accelerationFormControl.value);
+          child.decelerationFormControl.setValue(indexFinger.decelerationFormControl.value);
+          child.periodFormControl.setValue(indexFinger.periodFormControl.value);
+          child.pulseMaxRange.setValue(indexFinger.pulseMaxRange.value);
+          child.pulseMinRange.setValue(indexFinger.pulseMinRange.value);
+          child.degreeMax.setValue(indexFinger.degreeMax.value);
+          child.degreeMin.setValue(indexFinger.degreeMin.value);
+        } else {
           child.sliderFormControl.setValue(thumbOppo.sliderFormControl.value)
           child.motorFormControl.setValue(thumbOppo.motorFormControl.value)
           child.velocityFormControl.setValue(thumbOppo.velocityFormControl.value)

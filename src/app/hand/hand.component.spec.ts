@@ -107,10 +107,6 @@ describe('HandComponent', () => {
       const dummyBtnRight = fixture.debugElement.query(By.css('#dummyBtnRight'));
       dummyBtnRight.nativeElement.click();
       expect(rosService.sendMessage).toHaveBeenCalledTimes(10);
-
-
-
-      
   });
 
 
