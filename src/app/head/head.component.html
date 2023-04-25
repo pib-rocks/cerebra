@@ -1,19 +1,15 @@
 <div class="container-fluid">
   <div class="row">
     <div class="col">
-      <h3>Control the Head:</h3>
+      <h3>Head</h3>
       <br>
-      <h4>
-        Tilt forward:
-      </h4>
+   
 
       <app-slider [motorName]="tiltForwardMotor.name" [labelName]="tiltForwardMotor.label" [isGroup]="true" groupSide="right"></app-slider>
 
-      <h4> Tilt sideways:</h4>
       <app-slider [motorName]="tiltSideWaysMotor.name" [labelName]="tiltSideWaysMotor.label" [isGroup]="true" [showCheckBox]="false" [showMotorSettingsButton]="false"  groupSide="right"></app-slider>
 
-      <h4>head rotation:</h4>
-      <app-slider [motorName]="turnTheHeadMotor.name" [labelName]="turnTheHeadMotor.label" [isGroup]="true" groupSide="right"></app-slider>
+      <app-slider [motorName]="turnHeadMotor.name" [labelName]="turnHeadMotor.label" [isGroup]="true" groupSide="right"></app-slider>
 
 
     </div>
@@ -30,7 +26,7 @@
           </div>
         </ng-container>
       </div>
-
+      <button  (click)="sendDummyMessage()" class="btn btn-primary" id="dummyBtnRight">Dummy Values</button>
     </div>
   </div>
 </div>

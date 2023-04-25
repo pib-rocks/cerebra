@@ -1,7 +1,7 @@
 .currentConsumption{
     position: absolute;
     right: 4%;
-    bottom:39%;
+    bottom:35%;
 }
 
 .secondCurrentCnsumption{
@@ -9,7 +9,6 @@
     right: 10%;
     bottom:5%;
 }
-
 
 
 .current{
