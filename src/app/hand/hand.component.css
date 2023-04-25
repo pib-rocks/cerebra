@@ -30,7 +30,6 @@
     padding-top: 3rem;
     position: relative;
     display: inline-block;
-
 }
 
 .pinky-right {
@@ -69,11 +68,6 @@
     left: 0%;
 }
 
-.thumb-left {
-    position: absolute;
-    top: 40%;
-    left: 0%;
-}
 
 .index-left {
     position: absolute;
