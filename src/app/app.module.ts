@@ -14,6 +14,7 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { MatSliderModule } from '@angular/material/slider';
 import { VoiceAssistantComponent } from './voice-assistant/voice-assistant.component';
 import { HeadComponent } from './head/head.component';
+import { ProgramComponent } from './program/program.component';
 
 @NgModule({
   declarations: [
@@ -23,7 +24,8 @@ import { HeadComponent } from './head/head.component';
     CameraComponent,
     ArmComponent,
     VoiceAssistantComponent,
-    HeadComponent
+    HeadComponent,
+    ProgramComponent
   ],
   imports: [
     BrowserModule,
