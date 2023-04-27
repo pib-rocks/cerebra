@@ -367,7 +367,7 @@ export class ProgramComponent implements AfterViewInit {
 </xml>`;
 
   ngAfterViewInit() {
-    const workspace = Blockly.inject('blocklyDiv', {
+    Blockly.inject('blocklyDiv', {
       toolbox: this.toolbox
     });
   }
