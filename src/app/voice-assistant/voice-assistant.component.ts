@@ -23,19 +23,15 @@ export class VoiceAssistantComponent{
 
 
   updateVoiceSettings(){
-
-    console.log(this.voiceFormGroup.value);
     if (this.voiceFormGroup.valid){
       const msg: VoiceAssistant = {
         personality: this.voiceFormGroup.get('personality')?.value,
         threshold: this.voiceFormGroup.get('threshold')?.value,
         gender: this.voiceFormGroup.get('gender')?.value
       }
-      console.log(this.rosService);
       this.rosService.sendMessage(msg);
       this.voiceFormGroup.get('personality')?.setValue('');
     }
-
 
   }
 

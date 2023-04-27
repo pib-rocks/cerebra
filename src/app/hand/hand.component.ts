@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
+import { Component, Input, OnInit, QueryList, ViewChild, ViewChildren , isDevMode} from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { ActivatedRoute, Params } from '@angular/router';
 import { SliderComponent } from '../slider/slider.component';
@@ -67,6 +67,11 @@ export class HandComponent implements OnInit {
   ]
 
   ngOnInit(): void {
+    if(isDevMode()){
+      console.log('Development!');
+    } else {
+      console.log('Production!');
+    }
     this.route.params.subscribe((params: Params) => {
       this.side = params['side'];
     });
