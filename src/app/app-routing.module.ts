@@ -8,6 +8,7 @@ import { HeadComponent } from './head/head.component';
 import { ProgramComponent } from './program/program.component';
 
 const routes: Routes = [
+  { path: '**', component: HeadComponent },
   {path: '', redirectTo: 'head', pathMatch: 'full'},
   {path: 'hand/:side', component: HandComponent, pathMatch: 'full'},
   {path: "arm/:side", component: ArmComponent},
