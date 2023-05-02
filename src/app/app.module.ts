@@ -1,19 +1,20 @@
-import { NgModule } from '@angular/core';
-import { ReactiveFormsModule } from '@angular/forms';
-import { BrowserModule } from '@angular/platform-browser';
-import { HttpClientModule } from '@angular/common/http'
+import { NgModule } from "@angular/core";
+import { ReactiveFormsModule } from "@angular/forms";
+import { BrowserModule } from "@angular/platform-browser";
+import { HttpClientModule } from "@angular/common/http";
 
-import { AppRoutingModule } from './app-routing.module';
-import { AppComponent } from './app.component';
-import { SliderComponent } from './slider/slider.component';
-import { HandComponent } from './hand/hand.component';
-import { CameraComponent } from './camera/camera.component';
-import { ArmComponent } from './arm/arm.component';
-import { MatDialogModule } from '@angular/material/dialog';
-import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
-import { MatSliderModule } from '@angular/material/slider';
-import { VoiceAssistantComponent } from './voice-assistant/voice-assistant.component';
-import { HeadComponent } from './head/head.component';
+import { AppRoutingModule } from "./app-routing.module";
+import { AppComponent } from "./app.component";
+import { SliderComponent } from "./slider/slider.component";
+import { HandComponent } from "./hand/hand.component";
+import { CameraComponent } from "./camera/camera.component";
+import { ArmComponent } from "./arm/arm.component";
+import { MatDialogModule } from "@angular/material/dialog";
+import { NgbModule } from "@ng-bootstrap/ng-bootstrap";
+import { MatSliderModule } from "@angular/material/slider";
+import { VoiceAssistantComponent } from "./voice-assistant/voice-assistant.component";
+import { HeadComponent } from "./head/head.component";
+import { ProgramComponent } from "./program/program.component";
 
 @NgModule({
   declarations: [
@@ -23,7 +24,8 @@ import { HeadComponent } from './head/head.component';
     CameraComponent,
     ArmComponent,
     VoiceAssistantComponent,
-    HeadComponent
+    HeadComponent,
+    ProgramComponent,
   ],
   imports: [
     BrowserModule,
@@ -32,10 +34,9 @@ import { HeadComponent } from './head/head.component';
     HttpClientModule,
     MatDialogModule,
     NgbModule,
-    MatSliderModule
+    MatSliderModule,
   ],
-  providers: [
-  ],
-  bootstrap: [AppComponent]
+  providers: [],
+  bootstrap: [AppComponent],
 })
 export class AppModule {}

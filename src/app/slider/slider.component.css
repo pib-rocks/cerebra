@@ -1,35 +1,34 @@
-label {display: block}
-
-
-input[type=number]::-webkit-inner-spin-button, 
-input[type=number]::-webkit-outer-spin-button {  
-
-   opacity: 1;
-
+label {
+  display: block;
 }
 
-.horizontalList{
-   float: left;
-   padding: 16px;
-   border: 5;
- }
-
- ul{
-      list-style-type: none;
- }
-
- .rotateRange{
-   transform: rotate(-90deg);
- }
-.overlappingBr{
-   display: none;
-}
- @media only screen and (max-width: 1000px) {
-   .overlappingBr{
-       display: block;
-   }
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  opacity: 1;
 }
 
-.centered{
-   padding-left: 18px;
+.horizontalList {
+  float: left;
+  padding: 16px;
+  border: 5;
+}
+
+ul {
+  list-style-type: none;
+}
+
+.rotateRange {
+  transform: rotate(-90deg);
+}
+.overlappingBr {
+  display: none;
+}
+@media only screen and (max-width: 1000px) {
+  .overlappingBr {
+    display: block;
+  }
+}
+
+.centered {
+  padding-left: 18px;
 }
