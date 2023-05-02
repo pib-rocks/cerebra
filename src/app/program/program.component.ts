@@ -1,13 +1,12 @@
-import { AfterViewInit, Component } from '@angular/core';
-import * as Blockly from 'blockly';
+import { AfterViewInit, Component } from "@angular/core";
+import * as Blockly from "blockly";
 @Component({
-  selector: 'app-program',
-  templateUrl: './program.component.html',
-  styleUrls: ['./program.component.css']
+  selector: "app-program",
+  templateUrl: "./program.component.html",
+  styleUrls: ["./program.component.css"],
 })
 export class ProgramComponent implements AfterViewInit {
-  toolbox:string =
-  `<xml xmlns="http://www.w3.org/1999/xhtml" id="toolbox" style="display: none;">
+  toolbox: string = `<xml xmlns="http://www.w3.org/1999/xhtml" id="toolbox" style="display: none;">
     <category name="Logic" colour="#5C81A6">
         <block type="controls_if"></block>
         <block type="logic_compare">
@@ -367,8 +366,8 @@ export class ProgramComponent implements AfterViewInit {
 </xml>`;
 
   ngAfterViewInit() {
-    Blockly.inject('blocklyDiv', {
-      toolbox: this.toolbox
+    Blockly.inject("blocklyDiv", {
+      toolbox: this.toolbox,
     });
   }
 }

@@ -1,36 +1,137 @@
-<div class="container-fluid">
-  <a>
-    <img src="../assets/pib-Logo.png" alt="" class="img-fluid d-inline-block my-2"
-      width="117" height="24" style="cursor: pointer;" title="https://pib.rocks/">
-  </a>
+<div class="wrapper">
+  <div class="sidebar-wrapper">
+    <aside class="main-sidebar sidebar-light-primary elevation-4">
+      <a class="brand-link">
+        <img
+          src="../assets/pib-Logo.png"
+          alt=""
+          class="img-fluid d-inline-block my-2"
+          width="117"
+          height="24"
+          style="cursor: pointer"
+          title="https://pib.rocks/"
+        />
+        <span style="font-family: cursive; color: #e6007e">cerebra</span>
+      </a>
+      <div class="sidebar mt-12">
+        <nav class="mt-12">
+          <ul
+            class="nav nav-pills nav-sidebar flex-column"
+            data-widget="treeview"
+            role="menu"
+            data-accordion="false"
+          >
+            <li class="nav-item menu-open">
+              <ul class="nav nav-treeview">
+                <li class="nav-item" role="presentation">
+                  <a
+                    class="nav-link"
+                    [routerLinkActiveOptions]="{ exact: true }"
+                    routerLinkActive="active"
+                    routerLink="head"
+                    ><i class="far fa-circle nav-icon"></i>
 
-  <ul class="nav nav-tabs my-1" id="myTab" role="tablist">
-    <li class="nav-item" role="presentation">
-      <button class="nav-link" [routerLinkActiveOptions]="{exact: true}" routerLinkActive="active" routerLink="head">Head</button>
-    </li>
-    <li class="nav-item" role="presentation">
-      <button class="nav-link" routerLinkActive="active" routerLinkActive="active" routerLink="hand/left">Left Hand</button>
-    </li>
-    <li class="nav-item" role="presentation">
-      <button class="nav-link" routerLinkActive="active" routerLink="hand/right">Right Hand</button>
-    </li>
-    <li class="nav-item" role="presentation">
-      <button class="nav-link" routerLinkActive="active" routerLink="arm/left">Left Arm</button>
-    </li>
-    <li class="nav-item" role="presentation">
-      <button class="nav-link" routerLinkActive="active" routerLink="arm/right">Right Arm</button>
-    </li>
-    <li class="nav-item" role="presentation">
-      <button class="nav-link" routerLinkActive="active" routerLink="camera">Camera</button>
-    </li>
-    <li class="nav-item" role="presentation">
-      <button class="nav-link"routerLinkActive="active" routerLink="voice">Voice Assistant</button>
-    </li>
-    <li class="nav-item" role="presentation">
-      <button class="nav-link"routerLinkActive="active" routerLink="program">Program</button>
-    </li>
-  </ul>
-</div>
-<div class="container-fluid">
-  <router-outlet></router-outlet>
+                    <p>Head</p>
+                  </a>
+                </li>
+
+                <li class="nav-item" role="presentation">
+                  <a
+                    class="nav-link"
+                    routerLinkActive="active"
+                    routerLink="hand/left"
+                    ><i class="far fa-circle nav-icon"></i>
+
+                    <p>Left Hand</p>
+                  </a>
+                </li>
+
+                <li class="nav-item" role="presentation">
+                  <a
+                    class="nav-link"
+                    routerLinkActive="active"
+                    routerLink="hand/right"
+                    ><i class="far fa-circle nav-icon"></i>
+
+                    <p>Right Hand</p>
+                  </a>
+                </li>
+
+                <li class="nav-item" role="presentation">
+                  <a
+                    class="nav-link"
+                    routerLinkActive="active"
+                    routerLink="arm/left"
+                    ><i class="far fa-circle nav-icon"></i>
+
+                    <p>Left Arm</p>
+                  </a>
+                </li>
+
+                <li class="nav-item" role="presentation">
+                  <a
+                    class="nav-link"
+                    routerLinkActive="active"
+                    routerLink="arm/right"
+                  >
+                    <i class="far fa-circle nav-icon"></i>
+
+                    <p>Right Arm</p>
+                  </a>
+                </li>
+
+                <li class="nav-item" role="presentation">
+                  <a
+                    class="nav-link"
+                    routerLinkActive="active"
+                    routerLink="camera"
+                  >
+                    <i class="far fa-circle nav-icon"></i>
+
+                    <p>Camera</p>
+                  </a>
+                </li>
+
+                <li class="nav-item" role="presentation">
+                  <a
+                    class="nav-link"
+                    routerLinkActive="active"
+                    routerLink="voice"
+                  >
+                    <i class="far fa-circle nav-icon"></i>
+
+                    <p>Voice Assistant</p>
+                  </a>
+                </li>
+
+                <li class="nav-item" role="presentation">
+                  <a
+                    class="nav-link"
+                    routerLinkActive="active"
+                    routerLink="program"
+                  >
+                    <i class="far fa-circle nav-icon"></i>
+
+                    <p>Program</p>
+                  </a>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </aside>
+  </div>
+  <div class="content-wrapper" style="background-color: white">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-1" style="padding: 0; width: 45px">
+          <button class="btn bi bi-list" data-widget="pushmenu"></button>
+        </div>
+        <div class="col">
+          <router-outlet></router-outlet>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

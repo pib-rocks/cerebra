@@ -1,0 +1,9 @@
+[class*="sidebar-light-"] .nav-treeview > .nav-item > .nav-link,
+[class*="sidebar-light-"] .nav-treeview > .nav-item {
+  color: #e6007e;
+}
+
+[class*="sidebar-light-"] .nav-treeview > .nav-item > .nav-link.active,
+[class*="sidebar-light-"] .nav-treeview > .nav-item.active {
+  color: black;
+}
