@@ -1,14 +1,9 @@
-import {
-  Component,
-  Input,
-  OnInit,
-  QueryList,
-  ViewChildren,
-} from "@angular/core";
-import { ActivatedRoute, Params } from "@angular/router";
-import { SliderComponent } from "../slider/slider.component";
-import { MotorCurrentMessage } from "../shared/currentMessage";
-import { RosService } from "../shared/ros.service";
+import { Component, Input, OnInit, QueryList, ViewChildren } from '@angular/core';
+import { ActivatedRoute, Params } from '@angular/router';
+import { SliderComponent } from '../slider/slider.component';
+import { MotorCurrentMessage } from '../shared/currentMessage';
+import { RosService } from '../shared/ros.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: "app-right-arm",
@@ -19,13 +14,16 @@ export class ArmComponent implements OnInit {
   @Input() side = "Left";
   @ViewChildren(SliderComponent) childComponents!: QueryList<SliderComponent>;
 
-  constructor(private rosService: RosService, private route: ActivatedRoute) {}
+  constructor(private rosService: RosService, private route: ActivatedRoute, private router: Router) { }
 
   ngOnInit(): void {
     this.route.params.subscribe((params: Params) => {
-      this.side = params["side"];
-    });
-    this.rosService.currentReceiver$.subscribe((message) => {
+      this.side = params['side'];
+    })
+    if (!(this.side === 'right' || this.side ==='left')){
+      this.router.navigate(['/head']);
+    }
+    this.rosService.currentReceiver$.subscribe(message => {
       for (let i = 0; i < this.currentLeft.length; i++) {
         if (message["motor"] === this.currentLeft[i]["motor"]) {
           console.log("current value" + message["currentValue"]);

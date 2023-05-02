@@ -1,18 +1,11 @@
-import {
-  Component,
-  Input,
-  OnInit,
-  QueryList,
-  ViewChild,
-  ViewChildren,
-  isDevMode,
-} from "@angular/core";
-import { FormControl } from "@angular/forms";
-import { ActivatedRoute, Params } from "@angular/router";
-import { SliderComponent } from "../slider/slider.component";
-import { RosService } from "../shared/ros.service";
-import { MotorCurrentMessage } from "../shared/currentMessage";
-import { Subject } from "rxjs";
+import { Component, Input, OnInit, QueryList, ViewChild, ViewChildren , isDevMode} from '@angular/core';
+import { FormControl } from '@angular/forms';
+import { ActivatedRoute, Params } from '@angular/router';
+import { SliderComponent } from '../slider/slider.component';
+import { RosService } from '../shared/ros.service';
+import { MotorCurrentMessage } from '../shared/currentMessage';
+import { Subject } from 'rxjs';
+import { Router } from '@angular/router';
 
 @Component({
   selector: "app-hand",
@@ -26,7 +19,7 @@ export class HandComponent implements OnInit {
   messageReceiver$: Subject<MotorCurrentMessage> =
     new Subject<MotorCurrentMessage>();
 
-  constructor(private route: ActivatedRoute, private rosService: RosService) {}
+  constructor(private route: ActivatedRoute, private rosService: RosService, private router: Router) { }
 
   leftSwitchControl = new FormControl(false);
   rightSwitchControl = new FormControl(false);
@@ -76,15 +69,13 @@ export class HandComponent implements OnInit {
   ];
 
   ngOnInit(): void {
-    if (isDevMode()) {
-      console.log("Development!");
-    } else {
-      console.log("Production!");
-    }
     this.route.params.subscribe((params: Params) => {
       this.side = params["side"];
     });
-    this.rosService.currentReceiver$.subscribe((message) => {
+    if (!(this.side === 'right' || this.side ==='left')){
+      this.router.navigate(['/head']);
+    }
+    this.rosService.currentReceiver$.subscribe(message => {
       for (let i = 0; i < this.currentLeft.length; i++) {
         if (message["motor"] === this.currentLeft[i]["motor"]) {
           console.log("current value" + message["currentValue"]);
