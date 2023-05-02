@@ -1,165 +1,154 @@
 <div class="wrapper">
-	<div class="sidebar-wrapper">
-		<!-- Main Sidebar Container -->
-		<aside class="main-sidebar sidebar-light-primary elevation-4">
+  <div class="sidebar-wrapper w-2">
+    <!-- Main Sidebar Container -->
+    <aside class="main-sidebar sidebar-light-primary elevation-4 w-2">
+      <!-- Brand Logo -->
 
-			<!-- Brand Logo -->
-
-
-
-
-			<a class="brand-link">
-
-				<img src="../assets/pib-Logo.png" alt=""
-
-    class="img-fluid d-inline-block my-2"
-
-    width="117"
-
-     height="24"
-
-     style="cursor: pointer"
-
-      title="https://pib.rocks/"
-
-     />
-
+      <a class="brand-link">
+        <img
+          src="../assets/pib-Logo.png"
+          alt=""
+          class="img-fluid d-inline-block my-2"
+          width="117"
+          height="24"
+          style="cursor: pointer"
+          title="https://pib.rocks/"
+        />
       </a>
 
+      <div class="sidebar mt-2">
+        <!-- Sidebar -->
 
+        <!-- Sidebar user panel (optional) -->
 
+        <!-- Sidebar Menu -->
 
-				<div class="sidebar mt-12">
-
-					<!-- Sidebar -->
-
-
-
-
-					<!-- Sidebar user panel (optional) -->
-
-
-
-					<!-- Sidebar Menu -->
-
-					<nav class="mt-12">
-
-						<ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu"
-							data-accordion="false">
-
-							<!-- Add icons to the links using the .nav-icon class
+        <nav class="mt-12">
+          <ul
+            class="nav nav-pills nav-sidebar flex-column"
+            data-widget="treeview"
+            role="menu"
+            data-accordion="false"
+          >
+            <!-- Add icons to the links using the .nav-icon class
       
                          with font-awesome or any other icon font library -->
 
-							<li class="nav-item menu-open">
+            <li class="nav-item menu-open">
+              <ul class="nav nav-treeview">
+                <li class="nav-item" role="presentation">
+                  <a
+                    class="nav-link"
+                    [routerLinkActiveOptions]="{ exact: true }"
+                    routerLinkActive="active"
+                    routerLink="head"
+                    ><i class="far fa-circle nav-icon"></i>
 
-								<ul class="nav nav-treeview">
+                    <p>Head</p></a
+                  >
+                </li>
 
-									<li class="nav-item" role="presentation">
+                <li class="nav-item" role="presentation">
+                  <a
+                    class="nav-link"
+                    routerLinkActive="active"
+                    routerLink="hand/left"
+                    ><i class="far fa-circle nav-icon"></i>
 
-										<a class="nav-link" [routerLinkActiveOptions]="{ exact: true }"
-											routerLinkActive="active"
-											routerLink="head"><i class="far fa-circle nav-icon"></i>
+                    <p>Left Hand</p>
+                  </a>
+                </li>
 
-											<p>Head</p></a>
+                <li class="nav-item" role="presentation">
+                  <a
+                    class="nav-link"
+                    routerLinkActive="active"
+                    routerLink="hand/right"
+                    ><i class="far fa-circle nav-icon"></i>
 
-									</li>
+                    <p>Right Hand</p></a
+                  >
+                </li>
 
-									<li class="nav-item" role="presentation">
+                <li class="nav-item" role="presentation">
+                  <a
+                    class="nav-link"
+                    routerLinkActive="active"
+                    routerLink="arm/left"
+                    ><i class="far fa-circle nav-icon"></i>
 
-										<a class="nav-link" routerLinkActive="active"
-											routerLink="hand/left"><i class="far fa-circle nav-icon"></i>
+                    <p>Left Arm</p></a
+                  >
+                </li>
 
-											<p>Left Hand</p>
+                <li class="nav-item" role="presentation">
+                  <a
+                    class="nav-link"
+                    routerLinkActive="active"
+                    routerLink="arm/right"
+                  >
+                    <i class="far fa-circle nav-icon"></i>
 
-										</a>
+                    <p>Right Arm</p></a
+                  >
+                </li>
 
-									</li>
+                <li class="nav-item" role="presentation">
+                  <a
+                    class="nav-link"
+                    routerLinkActive="active"
+                    routerLink="camera"
+                  >
+                    <i class="far fa-circle nav-icon"></i>
 
-									<li class="nav-item" role="presentation">
+                    <p>Camera</p></a
+                  >
+                </li>
 
-										<a class="nav-link" routerLinkActive="active"
-											routerLink="hand/right"><i class="far fa-circle nav-icon"></i>
+                <li class="nav-item" role="presentation">
+                  <a
+                    class="nav-link"
+                    routerLinkActive="active"
+                    routerLink="voice"
+                  >
+                    <i class="far fa-circle nav-icon"></i>
 
-											<p>Right Hand</p></a>
+                    <p>Voice Assistant</p></a
+                  >
+                </li>
 
-									</li>
+                <li class="nav-item" role="presentation">
+                  <a
+                    class="nav-link"
+                    routerLinkActive="active"
+                    routerLink="program"
+                  >
+                    <i class="far fa-circle nav-icon"></i>
 
-									<li class="nav-item" role="presentation">
+                    <p>Program</p></a
+                  >
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </nav>
 
-										<a class="nav-link" routerLinkActive="active"
-											routerLink="arm/left"><i class="far fa-circle nav-icon"></i>
+        <!-- /.sidebar-menu -->
+      </div>
 
-											<p>Left Arm</p></a>
-
-									</li>
-
-									<li class="nav-item" role="presentation">
-
-										<a class="nav-link" routerLinkActive="active" routerLink="arm/right">
-
-											<i class="far fa-circle nav-icon"></i>
-
-											<p>Right Arm</p></a>
-
-									</li>
-
-									<li class="nav-item" role="presentation">
-
-										<a class="nav-link" routerLinkActive="active" routerLink="camera">
-
-											<i class="far fa-circle nav-icon"></i>
-
-											<p>Camera</p></a>
-
-									</li>
-
-									<li class="nav-item" role="presentation">
-
-										<a class="nav-link" routerLinkActive="active" routerLink="voice">
-
-											<i class="far fa-circle nav-icon"></i>
-
-											<p>Voice Assistant</p></a>
-
-									</li>
-
-									<li class="nav-item" role="presentation">
-
-										<a class="nav-link" routerLinkActive="active" routerLink="program">
-
-											<i class="far fa-circle nav-icon"></i>
-
-											<p>Program</p></a>
-
-									</li>
-
-								</ul>
-
-							</li>
-
-						</ul>
-
-					</nav>
-
-					<!-- /.sidebar-menu -->
-
-				</div>
-
-				<!-- /.sidebar -->
-
-		</aside>
-	</div>
-	<div class="content-wrapper" style="background-color: white;">
-		<div class="container-fluid">
-			<div class="row">
-				<div class="col-1" style="padding: 0; width: 45px;">
-					<button class="btn  bi bi-list" data-widget="pushmenu"></button>
-				</div>
-				<div class="col">
-					<router-outlet></router-outlet>
-				</div>
-			</div>
-		</div>
-	</div>
+      <!-- /.sidebar -->
+    </aside>
+  </div>
+  <div class="content-wrapper" style="background-color: white">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-1" style="padding: 0; width: 45px">
+          <button class="btn bi bi-list" data-widget="pushmenu"></button>
+        </div>
+        <div class="col">
+          <router-outlet></router-outlet>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
