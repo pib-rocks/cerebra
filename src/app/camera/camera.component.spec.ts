@@ -1,20 +1,28 @@
-import { ComponentFixture, TestBed, tick, fakeAsync } from '@angular/core/testing';
-import { FormControl, ReactiveFormsModule, FormControlDirective } from '@angular/forms';
-import { By } from '@angular/platform-browser';
-import { CameraComponent } from './camera.component';
+import {
+  ComponentFixture,
+  TestBed,
+  tick,
+  fakeAsync,
+} from "@angular/core/testing";
+import {
+  FormControl,
+  ReactiveFormsModule,
+  FormControlDirective,
+} from "@angular/forms";
+import { By } from "@angular/platform-browser";
+import { CameraComponent } from "./camera.component";
 
-describe('CameraComponent', () => {
+describe("CameraComponent", () => {
   let component: CameraComponent;
   let fixture: ComponentFixture<CameraComponent>;
   let formControl: FormControl;
 
-  beforeEach(async() => {
+  beforeEach(async () => {
     TestBed.configureTestingModule({
-      declarations: [ CameraComponent ],
+      declarations: [CameraComponent],
       imports: [ReactiveFormsModule],
-      providers: [FormControlDirective]
-    })
-    .compileComponents();
+      providers: [FormControlDirective],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(CameraComponent);
     component = fixture.componentInstance;
@@ -22,23 +30,23 @@ describe('CameraComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it("should create", () => {
     expect(component).toBeTruthy();
   });
 
-  it('should have a silder step of 0.05', () => {
-    const slider = fixture.nativeElement.querySelector('#refreshRate');
-    expect(slider.step).toBe('0.05');
+  it("should have a silder step of 0.05", () => {
+    const slider = fixture.nativeElement.querySelector("#refreshRate");
+    expect(slider.step).toBe("0.05");
   });
 
-  it('should have a maximum range at 1', () => {
-    const slider = fixture.nativeElement.querySelector('#refreshRate');
-    expect(slider.max).toBe('1');
+  it("should have a maximum range at 1", () => {
+    const slider = fixture.nativeElement.querySelector("#refreshRate");
+    expect(slider.max).toBe("1");
   });
 
-  it('should have a mininum range at 0.1', () => {
-    const slider = fixture.nativeElement.querySelector('#refreshRate');
-    expect(slider.min).toBe('0.1');
+  it("should have a mininum range at 0.1", () => {
+    const slider = fixture.nativeElement.querySelector("#refreshRate");
+    expect(slider.min).toBe("0.1");
   });
 
   /** 
@@ -53,27 +61,32 @@ describe('CameraComponent', () => {
     };
   });
 */
-  it('should bind slider to a FormControl', fakeAsync(() => {
-    const slider = fixture.debugElement.nativeElement.querySelector('#refreshRate');
-    expect(slider.value).toBe(formControl.value + '');
+  it("should bind slider to a FormControl", fakeAsync(() => {
+    const slider =
+      fixture.debugElement.nativeElement.querySelector("#refreshRate");
+    expect(slider.value).toBe(formControl.value + "");
     slider.value = slider.value - 0.05;
-    slider.dispatchEvent(new Event('input'));
+    slider.dispatchEvent(new Event("input"));
     tick();
-    expect(slider.value).toBe(formControl.value + '');
+    expect(slider.value).toBe(formControl.value + "");
   }));
 
-  it('should set dropdown item active after being selected ', () => {
-    spyOn(component, 'setActive').and.callThrough();
-    const dropdownItems = fixture.debugElement.queryAll(By.css('.dropdown-item'));
+  it("should set dropdown item active after being selected ", () => {
+    spyOn(component, "setActive").and.callThrough();
+    const dropdownItems = fixture.debugElement.queryAll(
+      By.css(".dropdown-item")
+    );
     const dropdownItem = dropdownItems[1];
-    dropdownItem.nativeElement.dispatchEvent(new Event('click'));
+    dropdownItem.nativeElement.dispatchEvent(new Event("click"));
     fixture.detectChanges();
-    expect(JSON.stringify(dropdownItem.classes)).toContain('active');
-    expect(JSON.stringify(dropdownItems[0].classes)).not.toContain('active');
-    expect(component.selectedSize).toEqual(dropdownItem.nativeElement.textContent.split(' ')[0]);
-  })
+    expect(JSON.stringify(dropdownItem.classes)).toContain("active");
+    expect(JSON.stringify(dropdownItems[0].classes)).not.toContain("active");
+    expect(component.selectedSize).toEqual(
+      dropdownItem.nativeElement.textContent.split(" ")[0]
+    );
+  });
 
-  it('should have 480p as default size', () => {
-    expect(component.selectedSize).toBe('480p');
-  })
+  it("should have 480p as default size", () => {
+    expect(component.selectedSize).toBe("480p");
+  });
 });
