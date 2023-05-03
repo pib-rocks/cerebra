@@ -1,4 +1,4 @@
-import { Injectable } from "@angular/core";
+import { Injectable, isDevMode } from "@angular/core";
 import * as ROSLIB from "roslib";
 import { BehaviorSubject, Subject } from "rxjs";
 import { Message } from "./message";
@@ -88,8 +88,14 @@ export class RosService {
   }
 
   setUpRos() {
+    let rosUrl: string;
+    if (isDevMode()) {
+      rosUrl = "192.168.220.38";
+    } else {
+      rosUrl = window.location.hostname;
+    }
     return new ROSLIB.Ros({
-      url: "ws://192.168.220.38:9090",
+      url: `ws://${rosUrl}:9090`,
     });
   }
 
