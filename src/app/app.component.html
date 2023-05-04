@@ -127,20 +127,15 @@
   <div class="content-wrapper" style="background-color: white">
     <div class="container-fluid">
       <div class="row">
-        <div class="col-1" style="padding: 0; width: 45px">
-          <button class="btn bi bi-list" data-widget="pushmenu"></button>
+        <div style="padding: 0; width: 45px">
+          <button
+            id="hamburger-button"
+            class="btn bi bi-list"
+            data-widget="pushmenu"
+          ></button>
         </div>
 
-        <button
-          type="button"
-          class="btn btn-secondary me-2"
-          data-bs-toggle="tooltip"
-          data-bs-placement="top"
-          title="Tooltip on top"
-        >
-          Tooltip on top
-        </button>
-        <div class="col">
+        <div>
           <router-outlet></router-outlet>
         </div>
       </div>
