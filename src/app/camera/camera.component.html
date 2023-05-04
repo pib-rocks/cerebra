@@ -7,8 +7,10 @@
     <div class="col"></div>
     <div class="col">
       <video #videoElement></video>
-      <button (click)="startCamera()">Start Camera</button>
-      <button (click)="stopCamera()">Stop Camera</button>
+      <button id="startCamerabutton" (click)="startCamera()">
+        Start Camera
+      </button>
+      <button id="stopCamerabutton" (click)="stopCamera()">Stop Camera</button>
     </div>
     <div class="col">
       <label
@@ -19,6 +21,7 @@
         Refresh rate: {{ refreshRateControl.value }}s
       </label>
       <input
+        id="refreshRateSlider"
         id="refreshRate"
         type="range"
         min="0.1"
@@ -30,7 +33,7 @@
         [formControl]="refreshRateControl"
       />
 
-      <div class="dropdown my-4">
+      <div class="dropdown my-4" id="dropdownbutton">
         <a
           class="btn btn-primary dropdown-toggle"
           href="#"
