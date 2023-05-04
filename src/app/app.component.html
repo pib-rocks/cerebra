@@ -23,61 +23,69 @@
           >
             <li class="nav-item menu-open">
               <ul class="nav nav-treeview">
-                <li class="nav-item" role="presentation">
+                <li class="nav-item dropdown">
                   <a
-                    class="nav-link"
-                    [routerLinkActiveOptions]="{ exact: true }"
-                    routerLinkActive="active"
-                    routerLink="head"
-                    ><i class="far fa-circle nav-icon"></i>
-
-                    <p>Head</p>
-                  </a>
-                </li>
-
-                <li class="nav-item" role="presentation">
-                  <a
-                    class="nav-link"
-                    routerLinkActive="active"
-                    routerLink="hand/left"
-                    ><i class="far fa-circle nav-icon"></i>
-
-                    <p>Left Hand</p>
-                  </a>
-                </li>
-
-                <li class="nav-item" role="presentation">
-                  <a
-                    class="nav-link"
-                    routerLinkActive="active"
-                    routerLink="hand/right"
-                    ><i class="far fa-circle nav-icon"></i>
-
-                    <p>Right Hand</p>
-                  </a>
-                </li>
-
-                <li class="nav-item" role="presentation">
-                  <a
-                    class="nav-link"
-                    routerLinkActive="active"
-                    routerLink="arm/left"
-                    ><i class="far fa-circle nav-icon"></i>
-
-                    <p>Left Arm</p>
-                  </a>
-                </li>
-
-                <li class="nav-item" role="presentation">
-                  <a
-                    class="nav-link"
-                    routerLinkActive="active"
-                    routerLink="arm/right"
+                    class="nav-link dropdown-toggle"
+                    href="#"
+                    role="button"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
                   >
-                    <i class="far fa-circle nav-icon"></i>
-
-                    <p>Right Arm</p>
+                    Joint Controls
                   </a>
+
+                  <ul class="nav nav-treeview px-3">
+                    <li class="nav-item" role="presentation">
+                      <a
+                        class="nav-link"
+                        [routerLinkActiveOptions]="{ exact: true }"
+                        routerLinkActive="active"
+                        routerLink="head"
+                      >
+                        <p>Head</p>
+                      </a>
+                    </li>
+
+                    <li class="nav-item" role="presentation">
+                      <a
+                        class="nav-link"
+                        routerLinkActive="active"
+                        routerLink="hand/left"
+                      >
+                        <p>Left Hand</p>
+                      </a>
+                    </li>
+
+                    <li class="nav-item" role="presentation">
+                      <a
+                        class="nav-link"
+                        routerLinkActive="active"
+                        routerLink="hand/right"
+                      >
+                        <p>Right Hand</p>
+                      </a>
+                    </li>
+
+                    <li class="nav-item" role="presentation">
+                      <a
+                        class="nav-link"
+                        routerLinkActive="active"
+                        routerLink="arm/left"
+                      >
+                        <p>Left Arm</p>
+                      </a>
+                    </li>
+
+                    <li class="nav-item" role="presentation">
+                      <a
+                        class="nav-link"
+                        routerLinkActive="active"
+                        routerLink="arm/right"
+                      >
+                        <p>Right Arm</p>
+                      </a>
+                    </li>
+                  </ul>
                 </li>
 
                 <li class="nav-item" role="presentation">
@@ -86,8 +94,6 @@
                     routerLinkActive="active"
                     routerLink="camera"
                   >
-                    <i class="far fa-circle nav-icon"></i>
-
                     <p>Camera</p>
                   </a>
                 </li>
@@ -98,8 +104,6 @@
                     routerLinkActive="active"
                     routerLink="voice"
                   >
-                    <i class="far fa-circle nav-icon"></i>
-
                     <p>Voice Assistant</p>
                   </a>
                 </li>
@@ -110,8 +114,6 @@
                     routerLinkActive="active"
                     routerLink="program"
                   >
-                    <i class="far fa-circle nav-icon"></i>
-
                     <p>Program</p>
                   </a>
                 </li>
@@ -128,6 +130,16 @@
         <div class="col-1" style="padding: 0; width: 45px">
           <button class="btn bi bi-list" data-widget="pushmenu"></button>
         </div>
+
+        <button
+          type="button"
+          class="btn btn-secondary me-2"
+          data-bs-toggle="tooltip"
+          data-bs-placement="top"
+          title="Tooltip on top"
+        >
+          Tooltip on top
+        </button>
         <div class="col">
           <router-outlet></router-outlet>
         </div>
