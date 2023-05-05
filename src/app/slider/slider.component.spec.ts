@@ -139,7 +139,10 @@ describe("SliderComponent", () => {
   it("should open dialog when the button has been clicked", () => {
     const spyPopup = spyOn(component, "openPopup").and.callThrough();
     const spyModal = spyOn(modalService, "open");
-    const button = fixture.debugElement.query(By.css("#dialogBtn"));
+    const motorName = component.motorName;
+    const button = fixture.debugElement.query(
+      By.css("#dialogBtn_" + motorName)
+    );
     button.nativeElement.click();
     expect(spyPopup).toHaveBeenCalled();
     expect(spyModal).toHaveBeenCalled();
@@ -147,7 +150,10 @@ describe("SliderComponent", () => {
   it("should return dismiss reason by clicking on a backdrop", fakeAsync(() => {
     spyOn(component, "openPopup").and.callThrough();
     spyOn(modalService, "open").and.callThrough();
-    const button = fixture.debugElement.query(By.css("#dialogBtn"));
+    const motorName = component.motorName;
+    const button = fixture.debugElement.query(
+      By.css("#dialogBtn_" + motorName)
+    );
     button.nativeElement.click();
     modalService.dismissAll(ModalDismissReasons.BACKDROP_CLICK);
     tick(1000);
@@ -157,7 +163,10 @@ describe("SliderComponent", () => {
   it("should return dismiss reason by pressing ESC", fakeAsync(() => {
     spyOn(component, "openPopup").and.callThrough();
     spyOn(modalService, "open").and.callThrough();
-    const button = fixture.debugElement.query(By.css("#dialogBtn"));
+    const motorName = component.motorName;
+    const button = fixture.debugElement.query(
+      By.css("#dialogBtn_" + motorName)
+    );
     button.nativeElement.click();
     modalService.dismissAll(ModalDismissReasons.ESC);
     tick(1000);
@@ -167,7 +176,10 @@ describe("SliderComponent", () => {
   it("should turn the motor on/off on checking the checkbox", () => {
     const spyMotor = spyOn(component, "turnTheMotorOnAndOff").and.callThrough();
     const spySendMassege = spyOn(rosService, "sendMessage");
-    const checkbox = fixture.debugElement.query(By.css("#checkbox"));
+    const motorName = component.motorName;
+    const checkbox = fixture.debugElement.query(
+      By.css("#checkbox_" + motorName)
+    );
     checkbox.nativeElement.dispatchEvent(new Event("change"));
     expect(spyMotor).toHaveBeenCalled();
     expect(spySendMassege).toHaveBeenCalled();

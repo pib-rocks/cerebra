@@ -7,7 +7,7 @@
 <div>
   <div style="display: inline-block" *ngIf="showCheckBox === true">
     <input
-      id="checkbox"
+      id="checkbox_{{ motorName }}"
       (change)="turnTheMotorOnAndOff()"
       type="checkbox"
       [formControl]="motorFormControl"
@@ -16,13 +16,13 @@
   </div>
   <button
     *ngIf="showMotorSettingsButton === true"
-    id="dialogBtn"
+    id="dialogBtn_{{ motorName }}"
     class="bi bi-gear btn btn-outline-primary"
     style="margin-left: 10px; border: 0"
     (click)="openPopup(content)"
   ></button>
   <input
-    id="{{ motorName }}"
+    id="slider_{{ motorName }}"
     type="range"
     min="{{ minSliderValue }}"
     max="{{ maxSliderValue }}"
