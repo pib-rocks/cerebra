@@ -21,149 +21,86 @@
             role="menu"
             routerLinkActive="show"
           >
-            <ng-container *ngIf="jointControlNavItem === true">
-              <li class="nav-item menu-open">
-                <a
-                  id="joint-control-nav"
-                  class="nav-link dropdown-toggle"
-                  href="#"
-                  role="button"
-                  aria-expanded="false"
-                >
-                  <p>Joint Control</p>
-                </a>
+            <li
+              [ngClass]="
+                isCurrentPathInJointControlNavItem
+                  ? 'nav-item menu-open'
+                  : 'nav-item'
+              "
+            >
+              <a
+                id="joint-control-nav"
+                class="nav-link dropdown-toggle"
+                href="#"
+                role="button"
+                aria-expanded="false"
+              >
+                <p>Joint Control</p>
+              </a>
 
-                <ul class="nav nav-treeview px-3">
-                  <li class="nav-item" role="presentation">
-                    <a
-                      id="head-nav"
-                      class="nav-link"
-                      [routerLinkActiveOptions]="{ exact: true }"
-                      routerLinkActive="active"
-                      routerLink="head"
-                    >
-                      <p>Head</p>
-                    </a>
-                  </li>
+              <ul
+                class="nav nav-treeview px-3"
+                [ngStyle]="{
+                  display: isCurrentPathInJointControlNavItem ? 'block' : 'none'
+                }"
+              >
+                <li class="nav-item" role="presentation">
+                  <a
+                    id="head-nav"
+                    class="nav-link"
+                    [routerLinkActiveOptions]="{ exact: true }"
+                    routerLinkActive="active"
+                    routerLink="head"
+                  >
+                    <p>Head</p>
+                  </a>
+                </li>
 
-                  <li class="nav-item" role="presentation">
-                    <a
-                      id="left-hand-nav"
-                      class="nav-link"
-                      routerLinkActive="active"
-                      routerLink="hand/left"
-                    >
-                      <p>Left Hand</p>
-                    </a>
-                  </li>
+                <li class="nav-item" role="presentation">
+                  <a
+                    id="left-hand-nav"
+                    class="nav-link"
+                    routerLinkActive="active"
+                    routerLink="hand/left"
+                  >
+                    <p>Left Hand</p>
+                  </a>
+                </li>
 
-                  <li class="nav-item" role="presentation">
-                    <a
-                      id="right-hand-nav"
-                      class="nav-link"
-                      routerLinkActive="active"
-                      routerLink="hand/right"
-                    >
-                      <p>Right Hand</p>
-                    </a>
-                  </li>
+                <li class="nav-item" role="presentation">
+                  <a
+                    id="right-hand-nav"
+                    class="nav-link"
+                    routerLinkActive="active"
+                    routerLink="hand/right"
+                  >
+                    <p>Right Hand</p>
+                  </a>
+                </li>
 
-                  <li class="nav-item" role="presentation">
-                    <a
-                      id="left-arm-nav"
-                      class="nav-link"
-                      routerLinkActive="active"
-                      routerLink="arm/left"
-                    >
-                      <p>Left Arm</p>
-                    </a>
-                  </li>
+                <li class="nav-item" role="presentation">
+                  <a
+                    id="left-arm-nav"
+                    class="nav-link"
+                    routerLinkActive="active"
+                    routerLink="arm/left"
+                  >
+                    <p>Left Arm</p>
+                  </a>
+                </li>
 
-                  <li class="nav-item" role="presentation">
-                    <a
-                      id="right-arm-nav"
-                      class="nav-link"
-                      routerLinkActive="active"
-                      routerLink="arm/right"
-                    >
-                      <p>Right Arm</p>
-                    </a>
-                  </li>
-                </ul>
-              </li>
-            </ng-container>
-
-            <ng-container *ngIf="jointControlNavItem === false">
-              <li class="nav-item">
-                <a
-                  id="joint-control-nav"
-                  class="nav-link dropdown-toggle"
-                  href="#"
-                  role="button"
-                  aria-expanded="false"
-                >
-                  <p>Joint Control</p>
-                </a>
-
-                <ul class="nav nav-treeview px-3">
-                  <li class="nav-item" role="presentation">
-                    <a
-                      id="head-nav"
-                      class="nav-link"
-                      [routerLinkActiveOptions]="{ exact: true }"
-                      routerLinkActive="active"
-                      routerLink="head"
-                    >
-                      <p>Head</p>
-                    </a>
-                  </li>
-
-                  <li class="nav-item" role="presentation">
-                    <a
-                      id="left-hand-nav"
-                      class="nav-link"
-                      routerLinkActive="active"
-                      routerLink="hand/left"
-                    >
-                      <p>Left Hand</p>
-                    </a>
-                  </li>
-
-                  <li class="nav-item" role="presentation">
-                    <a
-                      id="right-hand-nav"
-                      class="nav-link"
-                      routerLinkActive="active"
-                      routerLink="hand/right"
-                    >
-                      <p>Right Hand</p>
-                    </a>
-                  </li>
-
-                  <li class="nav-item" role="presentation">
-                    <a
-                      id="left-arm-nav"
-                      class="nav-link"
-                      routerLinkActive="active"
-                      routerLink="arm/left"
-                    >
-                      <p>Left Arm</p>
-                    </a>
-                  </li>
-
-                  <li class="nav-item" role="presentation">
-                    <a
-                      id="right-arm-nav"
-                      class="nav-link"
-                      routerLinkActive="active"
-                      routerLink="arm/right"
-                    >
-                      <p>Right Arm</p>
-                    </a>
-                  </li>
-                </ul>
-              </li>
-            </ng-container>
+                <li class="nav-item" role="presentation">
+                  <a
+                    id="right-arm-nav"
+                    class="nav-link"
+                    routerLinkActive="active"
+                    routerLink="arm/right"
+                  >
+                    <p>Right Arm</p>
+                  </a>
+                </li>
+              </ul>
+            </li>
 
             <li class="nav-item" role="presentation">
               <a

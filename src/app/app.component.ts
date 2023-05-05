@@ -9,7 +9,7 @@ import { NavigationEnd, Router } from "@angular/router";
 export class AppComponent implements OnInit {
   currentRoute: string = "";
   title = "cerebra";
-  jointControlNavItem = false;
+  isCurrentPathInJointControlNavItem = false;
   jointControlNavItemGroup = [
     "/",
     "/head",
@@ -25,7 +25,6 @@ export class AppComponent implements OnInit {
     this.router.events.subscribe((event) => {
       if (event instanceof NavigationEnd) {
         this.currentRoute = event.url;
-        console.log(this.currentRoute);
         this.checkIfThecurrentRouteInJointControlNavItem(this.currentRoute);
       }
     });
@@ -33,9 +32,10 @@ export class AppComponent implements OnInit {
 
   checkIfThecurrentRouteInJointControlNavItem(route: string) {
     if (this.jointControlNavItemGroup.includes(route)) {
-      this.jointControlNavItem = true;
+      this.isCurrentPathInJointControlNavItem = true;
     } else {
-      this.jointControlNavItem = false;
+      this.isCurrentPathInJointControlNavItem = false;
     }
+    console.log(this.isCurrentPathInJointControlNavItem);
   }
 }

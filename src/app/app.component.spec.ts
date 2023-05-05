@@ -31,12 +31,12 @@ describe("AppComponent", () => {
   it(`the joint control should be open'`, () => {
     const routeInJointControl = "/arm/left";
     component.checkIfThecurrentRouteInJointControlNavItem(routeInJointControl);
-    expect(component.jointControlNavItem).toBe(true);
+    expect(component.isCurrentPathInJointControlNavItem).toBe(true);
   });
 
   it(`the joint control should be closed''`, () => {
     const routeOutJointControl = "/program";
     component.checkIfThecurrentRouteInJointControlNavItem(routeOutJointControl);
-    expect(component.jointControlNavItem).toBe(false);
+    expect(component.isCurrentPathInJointControlNavItem).toBe(false);
   });
 });
