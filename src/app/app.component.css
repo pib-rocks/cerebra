@@ -7,3 +7,9 @@
 [class*="sidebar-light-"] .nav-treeview > .nav-item.active {
   color: black;
 }
+
+[class*="sidebar-light-"] .nav-treeview > .nav-item > .nav-link.active,
+[class*="sidebar-light-"] .nav-treeview > .nav-item.active {
+  background-color: #007bff;
+  color: #fff;
+}
