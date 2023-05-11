@@ -1,11 +1,37 @@
 import { AfterViewInit, Component } from "@angular/core";
 import * as Blockly from "blockly";
+import { MatDialog } from "@angular/material/dialog";
+import { DialogContentComponent } from "./dialog-content/dialog-content.component";
+import { pythonGenerator } from "blockly/python";
+
 @Component({
   selector: "app-program",
   templateUrl: "./program.component.html",
   styleUrls: ["./program.component.css"],
 })
 export class ProgramComponent implements AfterViewInit {
+  showFloatingMenu = false;
+  closeResult!: string;
+  workspace: any;
+
+  showFloatingMenuItems() {
+    this.showFloatingMenu = !this.showFloatingMenu;
+  }
+
+  constructor(public dialog: MatDialog) {}
+
+  openDialog() {
+    const pythonCode = pythonGenerator.workspaceToCode(this.workspace);
+    const dialogRef = this.dialog.open(DialogContentComponent, {
+      height: "500px",
+      width: "700px",
+      data: {
+        name: pythonCode,
+      },
+    });
+    dialogRef.afterClosed().subscribe((result) => {});
+  }
+
   toolbox: string = `<xml xmlns="http://www.w3.org/1999/xhtml" id="toolbox" style="display: none;">
     <category name="Logic" colour="#5C81A6">
         <block type="controls_if"></block>
@@ -366,7 +392,7 @@ export class ProgramComponent implements AfterViewInit {
 </xml>`;
 
   ngAfterViewInit() {
-    Blockly.inject("blocklyDiv", {
+    this.workspace = Blockly.inject("blocklyDiv", {
       toolbox: this.toolbox,
     });
   }

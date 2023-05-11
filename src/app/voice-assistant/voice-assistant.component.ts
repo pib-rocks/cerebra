@@ -15,9 +15,9 @@ export class VoiceAssistantComponent {
     gender: new FormControl("male"),
   });
 
-  activationFlag: FormControl = new FormControl(false);
-
   constructor(private rosService: RosService) {}
+
+  activationFlag: FormControl = new FormControl(false);
 
   updateVoiceSettings() {
     if (this.voiceFormGroup.valid) {
