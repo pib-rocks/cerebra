@@ -15,6 +15,9 @@ import { MatSliderModule } from "@angular/material/slider";
 import { VoiceAssistantComponent } from "./voice-assistant/voice-assistant.component";
 import { HeadComponent } from "./head/head.component";
 import { ProgramComponent } from "./program/program.component";
+import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
+
+import { DialogContentComponent } from "./program/dialog-content/dialog-content.component";
 
 @NgModule({
   declarations: [
@@ -26,6 +29,7 @@ import { ProgramComponent } from "./program/program.component";
     VoiceAssistantComponent,
     HeadComponent,
     ProgramComponent,
+    DialogContentComponent,
   ],
   imports: [
     BrowserModule,
@@ -35,8 +39,10 @@ import { ProgramComponent } from "./program/program.component";
     MatDialogModule,
     NgbModule,
     MatSliderModule,
+    BrowserAnimationsModule,
   ],
   providers: [],
   bootstrap: [AppComponent],
+  entryComponents: [MatDialogModule],
 })
 export class AppModule {}
