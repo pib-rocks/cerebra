@@ -7,5 +7,5 @@ import { MAT_DIALOG_DATA } from "@angular/material/dialog";
   styleUrls: ["./dialog-content.component.css"],
 })
 export class DialogContentComponent {
-  constructor(@Inject(MAT_DIALOG_DATA) public data: { name: string }) {}
+  constructor(@Inject(MAT_DIALOG_DATA) public data: { name: JSON }) {}
 }

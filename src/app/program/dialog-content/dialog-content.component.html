@@ -1,7 +1,9 @@
-<h2 mat-dialog-title>Python Code</h2>
-<mat-dialog-content class="mat-typography">
-  <p style="white-space: pre-wrap">{{ data.name }}</p>
-</mat-dialog-content>
-<mat-dialog-actions class="end">
-  <button mat-button mat-dialog-close class="btn btn-danger">Close</button>
-</mat-dialog-actions>
+<div id="div1">
+  <h2 mat-dialog-title>Json Code</h2>
+  <mat-dialog-content class="mat-typography">
+    <pre>{{ data.name | json }}</pre>
+  </mat-dialog-content>
+  <mat-dialog-actions class="end">
+    <button mat-button mat-dialog-close class="btn btn-danger">Close</button>
+  </mat-dialog-actions>
+</div>

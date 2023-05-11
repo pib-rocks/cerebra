@@ -21,12 +21,10 @@ export class ProgramComponent implements AfterViewInit {
   constructor(public dialog: MatDialog) {}
 
   openDialog() {
-    const pythonCode = pythonGenerator.workspaceToCode(this.workspace);
+    var json = Blockly.serialization.workspaces.save(this.workspace);
     const dialogRef = this.dialog.open(DialogContentComponent, {
-      height: "500px",
-      width: "700px",
       data: {
-        name: pythonCode,
+        name: json,
       },
     });
     dialogRef.afterClosed().subscribe((result) => {});
