@@ -1,6 +1,8 @@
 import { Component, ViewChild } from "@angular/core";
 import { FormControl } from "@angular/forms";
 import { Subject } from "rxjs";
+import * as ROSLIB from "roslib";
+import { RosService } from "../shared/ros.service";
 @Component({
   selector: "app-camera",
   templateUrl: "./camera.component.html",
@@ -16,6 +18,47 @@ export class CameraComponent {
   sliderTrigger$ = new Subject<string>();
   refreshRateControl = new FormControl(0.5);
   selectedSize = "480p";
+
+  private imageTopic!: ROSLIB.Topic;
+  private imageSrc: string = "";
+  private rbServer: ROSLIB.Ros;
+
+  constructor(private rosService: RosService) {
+    this.rbServer = rosService.setUpRos();
+  }
+
+  ngOnInit(): void {
+    this.rbServer = new ROSLIB.Ros({
+      url: "ws://192.168.220.110:9090",
+    });
+    this.rbServer.on("connection", function () {
+      console.log("Connected to ROSBridge server.");
+    });
+
+    this.rbServer.on("error", function (error) {
+      console.log("Error connecting to ROSBridge server: ", error);
+    });
+
+    this.rbServer.on("close", function () {
+      console.log("Connection to ROSBridge server closed.");
+    });
+
+    this.imageTopic = new ROSLIB.Topic({
+      ros: this.rbServer,
+
+      name: "/camera/left/image_raw",
+
+      messageType: "sensor_msgs/Image",
+    });
+
+    this.imageTopic.subscribe((message) => {
+      console.log(typeof (<any>message).data);
+
+      const imageData = "data:image/jpeg;base64," + (<any>message).data;
+
+      this.imageSrc = imageData;
+    });
+  }
 
   setActive(event: MouseEvent) {
     const target = event.target as HTMLAnchorElement;
