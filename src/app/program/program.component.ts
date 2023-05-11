@@ -28,7 +28,9 @@ export class ProgramComponent implements AfterViewInit {
         name: this.json,
       },
     });
-    dialogRef.afterClosed().subscribe((result) => {});
+    dialogRef.afterClosed().subscribe((result) => {
+      console.log("");
+    });
   }
 
   toolbox: string = `<xml xmlns="http://www.w3.org/1999/xhtml" id="toolbox" style="display: none;">
