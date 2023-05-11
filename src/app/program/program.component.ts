@@ -13,6 +13,7 @@ export class ProgramComponent implements AfterViewInit {
   showFloatingMenu = false;
   closeResult!: string;
   workspace: any;
+  json: any;
 
   showFloatingMenuItems() {
     this.showFloatingMenu = !this.showFloatingMenu;
@@ -21,10 +22,10 @@ export class ProgramComponent implements AfterViewInit {
   constructor(public dialog: MatDialog) {}
 
   openDialog() {
-    var json = Blockly.serialization.workspaces.save(this.workspace);
+    this.json = Blockly.serialization.workspaces.save(this.workspace);
     const dialogRef = this.dialog.open(DialogContentComponent, {
       data: {
-        name: json,
+        name: this.json,
       },
     });
     dialogRef.afterClosed().subscribe((result) => {});
