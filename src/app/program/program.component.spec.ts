@@ -7,19 +7,15 @@ import { By } from "@angular/platform-browser";
 describe("ProgramComponent", () => {
   let component: ProgramComponent;
   let fixture: ComponentFixture<ProgramComponent>;
-  // let isClassEnabledVariable: boolean;
-  // let matdialog: MatDialog;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [ProgramComponent],
       imports: [MatDialogModule],
-      // imports: [MatDialogModule],
       providers: [MatDialog],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ProgramComponent);
-    // matdialog = TestBed.inject(MatDialog);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
