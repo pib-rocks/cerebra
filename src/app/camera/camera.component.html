@@ -33,37 +33,33 @@
         [formControl]="refreshRateControl"
       />
 
-      <div class="dropdown my-4" id="dropdownbutton">
-        <a
-          class="btn btn-primary dropdown-toggle"
-          href="#"
-          role="button"
-          data-bs-toggle="dropdown"
-          aria-expanded="false"
-        >
+      <div ngbDropdown class="d-inline-block">
+        <button type="button" class="btn" id="dropdownbutton" ngbDropdownToggle>
           Select size ({{ selectedSize }})
-        </a>
-        <ul class="dropdown-menu">
-          <li>
-            <a
-              class="dropdown-item active"
-              routerLink="./"
-              aria-current="true"
-              (click)="setActive($event)"
-              >480p (640 x 480)</a
-            >
-          </li>
-          <li>
-            <a class="dropdown-item" routerLink="./" (click)="setActive($event)"
-              >720p (1280 x 720)</a
-            >
-          </li>
-          <li>
-            <a class="dropdown-item" routerLink="./" (click)="setActive($event)"
-              >1080p (1920 x 1080)</a
-            >
-          </li>
-        </ul>
+        </button>
+        <div ngbDropdownMenu aria-labelledby="dropdownbutton">
+          <button
+            id="dropdownbutton-item-480px"
+            ngbDropdownItem
+            (click)="setActive('480p')"
+          >
+            480p (640 x 480)
+          </button>
+          <button
+            id="dropdownbutton-item-720px"
+            ngbDropdownItem
+            (click)="setActive('720p')"
+          >
+            720p (1280 x 720)
+          </button>
+          <button
+            id="dropdownbutton-item-1080px"
+            ngbDropdownItem
+            (click)="setActive('1080p')"
+          >
+            1080p (1920 x 1080)
+          </button>
+        </div>
       </div>
     </div>
   </div>

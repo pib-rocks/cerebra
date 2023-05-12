@@ -3,6 +3,7 @@ import { FormControl } from "@angular/forms";
 import { Subject } from "rxjs";
 import * as ROSLIB from "roslib";
 import { RosService } from "../shared/ros.service";
+
 @Component({
   selector: "app-camera",
   templateUrl: "./camera.component.html",
@@ -60,18 +61,8 @@ export class CameraComponent {
     });
   }
 
-  setActive(event: MouseEvent) {
-    const target = event.target as HTMLAnchorElement;
-
-    const items = target.parentElement?.parentElement?.querySelectorAll(
-      ".dropdown-item"
-    ) as NodeListOf<HTMLAnchorElement>;
-    items.forEach((item) => item.classList.remove("active"));
-
-    target.classList.add("active");
-    this.selectedSize = target.textContent
-      ? target.textContent.split(" ")[0]
-      : "";
+  setActive(resolutionsize: string) {
+    this.selectedSize = resolutionsize;
   }
 
   startCamera() {
