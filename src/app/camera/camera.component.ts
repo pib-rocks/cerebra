@@ -22,6 +22,7 @@ export class CameraComponent implements OnInit {
       console.log(message);
     })
     this.refrechRate();
+    this.setSize(640, 480);
   }
 
   imageSrc!: string;  
