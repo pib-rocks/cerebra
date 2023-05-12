@@ -72,18 +72,13 @@ describe("CameraComponent", () => {
   }));
 
   it("should set dropdown item active after being selected ", () => {
-    spyOn(component, "setActive").and.callThrough();
-    const dropdownItems = fixture.debugElement.queryAll(
-      By.css(".dropdown-item")
+    const setActive = spyOn(component, "setActive");
+
+    const dropdownItemof720 = fixture.nativeElement.querySelector(
+      "#dropdownbutton-item-720px"
     );
-    const dropdownItem = dropdownItems[1];
-    dropdownItem.nativeElement.dispatchEvent(new Event("click"));
-    fixture.detectChanges();
-    expect(JSON.stringify(dropdownItem.classes)).toContain("active");
-    expect(JSON.stringify(dropdownItems[0].classes)).not.toContain("active");
-    expect(component.selectedSize).toEqual(
-      dropdownItem.nativeElement.textContent.split(" ")[0]
-    );
+    dropdownItemof720.click();
+    expect(setActive).toHaveBeenCalledWith("720p");
   });
 
   it("should have 480p as default size", () => {

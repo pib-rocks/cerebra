@@ -38,13 +38,25 @@
           Select size ({{ selectedSize }})
         </button>
         <div ngbDropdownMenu aria-labelledby="dropdownbutton">
-          <button ngbDropdownItem (click)="setActive('480p')">
+          <button
+            id="dropdownbutton-item-480px"
+            ngbDropdownItem
+            (click)="setActive('480p')"
+          >
             480p (640 x 480)
           </button>
-          <button ngbDropdownItem (click)="setActive('720p')">
+          <button
+            id="dropdownbutton-item-720px"
+            ngbDropdownItem
+            (click)="setActive('720p')"
+          >
             720p (1280 x 720)
           </button>
-          <button ngbDropdownItem (click)="setActive('1080p')">
+          <button
+            id="dropdownbutton-item-1080px"
+            ngbDropdownItem
+            (click)="setActive('1080p')"
+          >
             1080p (1920 x 1080)
           </button>
         </div>
