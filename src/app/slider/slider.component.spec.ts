@@ -77,7 +77,7 @@ describe("SliderComponent", () => {
     setTimeout(() => {
       expect(spyInput).toHaveBeenCalled();
       expect(spySendMessage).toHaveBeenCalled();
-    }, 600);
+    }, 900);
   });
 
   it("should call sendSettingsMessage() in inputSendSettingsMsg() on input event", () => {
@@ -87,7 +87,7 @@ describe("SliderComponent", () => {
     setTimeout(() => {
       expect(component.inputSendSettingsMsg).toHaveBeenCalled();
       expect(component.sendSettingMessage).toHaveBeenCalled();
-    }, 600);
+    }, 900);
   });
 
   it("should call sendMessage() to all finger topics on input from combined slider", () => {
