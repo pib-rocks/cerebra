@@ -26,6 +26,7 @@
               "src/scss/custom.css"
             ],
             "scripts": [
+              "node_modules/popper.js/dist/popper.js",
               "node_modules/jquery/dist/jquery.min.js",
               "node_modules/bootstrap/dist/js/bootstrap.min.js",
               "node_modules/admin-lte/dist/js/adminlte.min.js"
