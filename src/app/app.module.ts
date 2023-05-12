@@ -16,7 +16,7 @@ import { VoiceAssistantComponent } from "./voice-assistant/voice-assistant.compo
 import { HeadComponent } from "./head/head.component";
 import { ProgramComponent } from "./program/program.component";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
-
+import { NgbDropdownModule } from "@ng-bootstrap/ng-bootstrap";
 import { DialogContentComponent } from "./program/dialog-content/dialog-content.component";
 
 @NgModule({
@@ -40,6 +40,7 @@ import { DialogContentComponent } from "./program/dialog-content/dialog-content.
     NgbModule,
     MatSliderModule,
     BrowserAnimationsModule,
+    NgbDropdownModule,
   ],
   providers: [],
   bootstrap: [AppComponent],
