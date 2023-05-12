@@ -57,7 +57,7 @@ export class CameraComponent implements OnInit {
 
   stopCamera(){
     this.rosService.unsubscribeCameraTopic();
-    this.imageSrc = '../../assets/pib-Logo.png'
+    //this.imageSrc = '../../assets/pib-Logo.png'
 
   }
 
