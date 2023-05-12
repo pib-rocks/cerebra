@@ -1,6 +1,6 @@
 <div class="wrapper">
   <div class="sidebar-wrapper">
-    <aside class="main-sidebar sidebar-light-primary elevation-4">
+    <aside class="main-sidebar sidebar-light-primary elevation-4 sidebar">
       <a class="brand-link">
         <img
           src="../assets/pib-Logo.png"
@@ -19,105 +19,121 @@
             class="nav nav-pills nav-sidebar flex-column"
             data-widget="treeview"
             role="menu"
-            data-accordion="false"
+            routerLinkActive="show"
           >
-            <li class="nav-item menu-open">
-              <ul class="nav nav-treeview">
-                <li class="nav-item dropdown">
-                  <a
-                    class="nav-link dropdown-toggle"
-                    href="#"
-                    role="button"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                  >
-                    Joint Controls
-                  </a>
+            <li
+              [ngClass]="
+                isCurrentPathInJointControlNavItem
+                  ? 'nav-item menu-open'
+                  : 'nav-item'
+              "
+              role="presentation"
+            >
+              <a
+                id="joint-control-nav"
+                class="nav-link dropdown-toggle"
+                href="#"
+                role="button"
+                aria-expanded="false"
+              >
+                <p>Joint Control</p>
+              </a>
 
-                  <ul class="nav nav-treeview px-3">
-                    <li class="nav-item" role="presentation">
-                      <a
-                        class="nav-link"
-                        [routerLinkActiveOptions]="{ exact: true }"
-                        routerLinkActive="active"
-                        routerLink="head"
-                      >
-                        <p>Head</p>
-                      </a>
-                    </li>
-
-                    <li class="nav-item" role="presentation">
-                      <a
-                        class="nav-link"
-                        routerLinkActive="active"
-                        routerLink="hand/left"
-                      >
-                        <p>Left Hand</p>
-                      </a>
-                    </li>
-
-                    <li class="nav-item" role="presentation">
-                      <a
-                        class="nav-link"
-                        routerLinkActive="active"
-                        routerLink="hand/right"
-                      >
-                        <p>Right Hand</p>
-                      </a>
-                    </li>
-
-                    <li class="nav-item" role="presentation">
-                      <a
-                        class="nav-link"
-                        routerLinkActive="active"
-                        routerLink="arm/left"
-                      >
-                        <p>Left Arm</p>
-                      </a>
-                    </li>
-
-                    <li class="nav-item" role="presentation">
-                      <a
-                        class="nav-link"
-                        routerLinkActive="active"
-                        routerLink="arm/right"
-                      >
-                        <p>Right Arm</p>
-                      </a>
-                    </li>
-                  </ul>
-                </li>
-
+              <ul
+                class="nav nav-treeview px-3"
+                [ngStyle]="{
+                  display: isCurrentPathInJointControlNavItem ? 'block' : 'none'
+                }"
+              >
                 <li class="nav-item" role="presentation">
                   <a
+                    id="head-nav"
                     class="nav-link"
+                    [routerLinkActiveOptions]="{ exact: true }"
                     routerLinkActive="active"
-                    routerLink="camera"
+                    routerLink="head"
                   >
-                    <p>Camera</p>
+                    <p>Head</p>
                   </a>
                 </li>
 
                 <li class="nav-item" role="presentation">
                   <a
+                    id="left-hand-nav"
                     class="nav-link"
                     routerLinkActive="active"
-                    routerLink="voice"
+                    routerLink="hand/left"
                   >
-                    <p>Voice Assistant</p>
+                    <p>Left Hand</p>
                   </a>
                 </li>
 
                 <li class="nav-item" role="presentation">
                   <a
+                    id="right-hand-nav"
                     class="nav-link"
                     routerLinkActive="active"
-                    routerLink="program"
+                    routerLink="hand/right"
                   >
-                    <p>Program</p>
+                    <p>Right Hand</p>
+                  </a>
+                </li>
+
+                <li class="nav-item" role="presentation">
+                  <a
+                    id="left-arm-nav"
+                    class="nav-link"
+                    routerLinkActive="active"
+                    routerLink="arm/left"
+                  >
+                    <p>Left Arm</p>
+                  </a>
+                </li>
+
+                <li class="nav-item" role="presentation">
+                  <a
+                    id="right-arm-nav"
+                    class="nav-link"
+                    routerLinkActive="active"
+                    routerLink="arm/right"
+                  >
+                    <p>Right Arm</p>
                   </a>
                 </li>
               </ul>
+            </li>
+
+            <li class="nav-item" role="presentation">
+              <a
+                id="camera-nav"
+                class="nav-link"
+                routerLinkActive="active"
+                routerLink="camera"
+              >
+                <p>Camera</p>
+              </a>
+            </li>
+
+            <li class="nav-item" role="presentation">
+              <a
+                id="voice-assistant-nav"
+                class="nav-link"
+                routerLinkActive="active"
+                routerLink="voice"
+              >
+                <p>Voice Assistant</p>
+              </a>
+            </li>
+
+            <li class="nav-item" role="presentation">
+              <a
+                id="program-nav"
+                class="nav-link"
+                routerLinkActive="active"
+                routerLink="program"
+              >
+                <p>Program</p>
+              </a>
             </li>
           </ul>
         </nav>
@@ -127,20 +143,15 @@
   <div class="content-wrapper" style="background-color: white">
     <div class="container-fluid">
       <div class="row">
-        <div class="col-1" style="padding: 0; width: 45px">
-          <button class="btn bi bi-list" data-widget="pushmenu"></button>
+        <div style="padding: 0; width: 45px">
+          <button
+            id="hamburger-button"
+            class="btn bi bi-list"
+            data-widget="pushmenu"
+          ></button>
         </div>
 
-        <button
-          type="button"
-          class="btn btn-secondary me-2"
-          data-bs-toggle="tooltip"
-          data-bs-placement="top"
-          title="Tooltip on top"
-        >
-          Tooltip on top
-        </button>
-        <div class="col">
+        <div>
           <router-outlet></router-outlet>
         </div>
       </div>

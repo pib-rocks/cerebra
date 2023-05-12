@@ -1,14 +1,18 @@
+<div *ngIf="isLoading">
+  <div class="spinner-border" role="status">
+    <span class="sr-only">Loading...</span>
+  </div>
+</div>
 <div class="container-fluid">
-  <div class="d-flex justify-content-center">
+  <div >
     <h2>{{ componentName }}</h2>
   </div>
 
   <div class="row">
-    <div class="col"></div>
     <div class="col">
-      <video #videoElement></video>
-      <button (click)="startCamera()">Start Camera</button>
+      <img [src]="imageSrc" alt="camera" width="100%">
       <button (click)="stopCamera()">Stop Camera</button>
+      <button (click)="startCamera()">Start Camera</button>
     </div>
     <div class="col">
       <label
@@ -19,6 +23,7 @@
         Refresh rate: {{ refreshRateControl.value }}s
       </label>
       <input
+        id="refreshRateSlider"
         id="refreshRate"
         type="range"
         min="0.1"
@@ -26,42 +31,40 @@
         value="0.5"
         step="0.05"
         class="form-range"
-        (input)="sliderTrigger$.next('')"
         [formControl]="refreshRateControl"
+        (input)="inputRefrechRate()"
       />
 
-      <div class="dropdown my-4">
-        <a
-          class="btn btn-primary dropdown-toggle"
-          href="#"
-          role="button"
-          data-bs-toggle="dropdown"
-          aria-expanded="false"
-        >
+      <div ngbDropdown class="d-inline-block">
+        <button type="button" class="btn" id="dropdownbutton" ngbDropdownToggle>
           Select size ({{ selectedSize }})
-        </a>
-        <ul class="dropdown-menu">
-          <li>
-            <a
-              class="dropdown-item active"
-              routerLink="./"
-              aria-current="true"
-              (click)="setActive($event)"
-              >480p (640 x 480)</a
-            >
-          </li>
-          <li>
-            <a class="dropdown-item" routerLink="./" (click)="setActive($event)"
-              >720p (1280 x 720)</a
-            >
-          </li>
-          <li>
-            <a class="dropdown-item" routerLink="./" (click)="setActive($event)"
-              >1080p (1920 x 1080)</a
-            >
-          </li>
-        </ul>
+        </button>
+        <div ngbDropdownMenu aria-labelledby="dropdownbutton">
+          <button
+            id="dropdownbutton-item-480px"
+            ngbDropdownItem
+            (click)="setSize(640, 480)"
+          >
+            480p (640 x 480)
+          </button>
+          <button
+            id="dropdownbutton-item-720px"
+            ngbDropdownItem
+            (click)="setSize(1280, 720)"
+          >
+            720p (1280 x 720)
+          </button>
+          <button
+            id="dropdownbutton-item-1080px"
+            ngbDropdownItem
+            (click)="setSize(1920, 1080)"
+          >
+            1080p (1920 x 1080)
+          </button>
+        </div>
       </div>
     </div>
   </div>
+
+
 </div>

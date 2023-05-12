@@ -7,7 +7,7 @@
 <div>
   <div style="display: inline-block" *ngIf="showCheckBox === true">
     <input
-      id="checkbox"
+      id="checkbox_{{ motorName }}"
       (change)="turnTheMotorOnAndOff()"
       type="checkbox"
       [formControl]="motorFormControl"
@@ -16,13 +16,13 @@
   </div>
   <button
     *ngIf="showMotorSettingsButton === true"
-    id="dialogBtn"
+    id="dialogBtn_{{ motorName }}"
     class="bi bi-gear btn btn-outline-primary"
     style="margin-left: 10px; border: 0"
     (click)="openPopup(content)"
   ></button>
   <input
-    id="{{ motorName }}"
+    id="slider_{{ motorName }}"
     type="range"
     min="{{ minSliderValue }}"
     max="{{ maxSliderValue }}"
@@ -37,6 +37,7 @@
   <div class="modal-header">
     Motor Settings
     <button
+      id="x-button"
       type="button"
       class="close"
       aria-label="Close"
@@ -50,6 +51,7 @@
       <br class="overlappingBr" />
       <li class="horizontalList" id="pulseMinRange">
         <input
+          id="pulseMinRangeInput"
           type="number"
           value="1"
           name="PluseMin"
@@ -60,8 +62,9 @@
         />
       </li>
       <br class="overlappingBr" />
-      <li class="horizontalList">
+      <li class="horizontalList" id="pulseMaxRange">
         <input
+          id="pulseMaxRangeInput"
           type="number"
           value="65535"
           name="PluseMax"
@@ -115,8 +118,9 @@
     <ul>
       <li class="horizontalList">Degree min/max (°/100):</li>
       <br class="overlappingBr" />
-      <li class="horizontalList">
+      <li class="horizontalList" id="degreeMinRange">
         <input
+          id="degreeMinRangeInput"
           type="number"
           value="0"
           name="DegreeMin"
@@ -127,8 +131,9 @@
         />
       </li>
       <br class="overlappingBr" />
-      <li class="horizontalList">
+      <li class="horizontalList" id="degreeMaxRange">
         <input
+          id="degreeMaxRangeInput"
           type="number"
           value="0"
           name="DegreeMax"
@@ -187,6 +192,7 @@
           <br /><br /><br /><br />
           <li>
             <input
+              id="velocitySlider"
               type="range"
               min="0"
               max="500000"
@@ -200,6 +206,7 @@
           <br /><br /><br /><br />
           <li>
             <input
+              id="velocityId"
               type="number"
               min="0"
               max="500000"
@@ -230,6 +237,7 @@
           <br /><br /><br /><br />
           <li>
             <input
+              id="accelarationSlider"
               type="range"
               min="0"
               max="500000"
@@ -243,6 +251,7 @@
           <br /><br /><br /><br />
           <li>
             <input
+              id="accelarationInput"
               type="number"
               min="0"
               max="500000"
@@ -276,6 +285,7 @@
           <br /><br /><br /><br />
           <li>
             <input
+              id="decelerationSlider"
               type="range"
               min="0"
               max="500000"
@@ -289,6 +299,7 @@
           <br /><br /><br /><br />
           <li>
             <input
+              id="decelerationInput"
               type="number"
               min="0"
               max="500000"
@@ -321,6 +332,7 @@
           <br /><br /><br /><br />
           <li>
             <input
+              id="periodSlider"
               type="range"
               min="1"
               max="65535"
@@ -334,6 +346,7 @@
           <br /><br /><br /><br />
           <li>
             <input
+              id="periodInput"
               type="number"
               min="1"
               max="65535"
@@ -356,6 +369,7 @@
 
   <div class="modal-footer">
     <button
+      id="closeButton"
       type="button"
       class="btn btn-outline-dark"
       (click)="modal.dismiss('Cross click')"
