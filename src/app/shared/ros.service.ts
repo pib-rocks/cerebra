@@ -21,6 +21,8 @@ export class RosService {
   private motorCurrentTopic!: ROSLIB.Topic;
   private cameraTopic!: ROSLIB.Topic;
   private timerPeriodPublisher!: ROSLIB.Topic;
+  private previewSizePublisher!: ROSLIB.Topic;
+  private qualityFactorPublisher!: ROSLIB.Topic;
 
   private readonly topicName = "/motor_settings";
   private readonly topicVoiceName = "/cerebra_voice_settings";
@@ -39,9 +41,12 @@ export class RosService {
       this.voiceAssistantTopic = this.createVoiceAssistantTopic();
       this.motorCurrentTopic = this.createMotorCurrentTopic();
       this.cameraTopic = this.createCameraTopic();
+      this.previewSizePublisher = this.createPreviewSizePublisher()
+
+
+    this.qualityFactorPublisher = this.createQualityFactorPublisher();
       this.subscribeTopic();
       this.subscribeCurrentTopic();
-      this.subscribeCameraTopic();
     });
     this.ros.on("error", (error: string) => {
       console.log("Error connecting to ROSBridge server:", error);
@@ -50,10 +55,20 @@ export class RosService {
     this.ros.on("close", () => {
       console.log("Disconnected from ROSBridge server.");
     });
-    this.timerPeriodPublisher = new ROSLIB.Topic({
+    this.timerPeriodPublisher = this.createTimePeriodPublisher();
+  }
+  createTimePeriodPublisher(): ROSLIB.Topic<ROSLIB.Message> {
+    return new ROSLIB.Topic({
       ros: this.ros,
       name: 'timer_period_topic',
       messageType: 'std_msgs/Float64'
+    });
+  }
+  createPreviewSizePublisher(): ROSLIB.Topic<ROSLIB.Message> {
+    return new ROSLIB.Topic({
+      ros: this.ros,
+      name: 'size_topic',
+      messageType: 'std_msgs/Int32MultiArray'
     });
   }
 
@@ -157,6 +172,10 @@ export class RosService {
     });
   }
 
+  unsubscribeCameraTopic() {
+    this.cameraTopic.unsubscribe();
+}
+
   get Ros(): ROSLIB.Ros {
     return this.ros;
   }
@@ -203,6 +222,34 @@ export class RosService {
     }
     const message = new ROSLIB.Message({ data: period });
     this.timerPeriodPublisher.publish(message);
+  }
+
+  setPreviewSize(width: number, height: number) {
+    if (!this.previewSizePublisher) {
+      console.error('ROS is not connected.');
+      return;
+    }
+
+    const message = new ROSLIB.Message({ data: [width, height] });
+    this.previewSizePublisher.publish(message);
+  }
+
+  setQualityFactor(factor: number){
+    if (!this.qualityFactorPublisher) {
+        console.error('ROS is not connected.');
+        return;
+    }
+
+    const message = new ROSLIB.Message({ data: factor });
+    this.qualityFactorPublisher.publish(message);
+}
+
+  createQualityFactorPublisher() {
+    return new ROSLIB.Topic({
+      ros: this.ros,
+      name: 'timer_period_topic',
+      messageType: 'std_msgs/Float64'
+    });
   }
   
 }

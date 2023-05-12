@@ -11,13 +11,15 @@ import { RosService } from "../shared/ros.service";
 })
 export class CameraComponent implements OnInit {
   timer:any = null;
-  constructor(private rosService: RosService){}
+  isLoading = false;
+  constructor(private rosService: RosService){  }
   ngOnInit(): void {
+
     this.imageSrc = '../../assets/pib-Logo.png'
     this.rosService.cameraReceiver$.subscribe(message => {
       this.imageSrc = 'data:image/jpeg;base64,' + message;
       console.log('-------------------------');
-      console.log(this.imageSrc);
+      console.log(message);
     })
     this.refrechRate();
   }
@@ -29,8 +31,13 @@ export class CameraComponent implements OnInit {
 
   private imageTopic!: ROSLIB.Topic;
   
-  setActive(resolutionsize: string) {
-    this.selectedSize = resolutionsize;
+  setSize(width: number, height: number) {
+    this.selectedSize = height+ 'p';
+    this.isLoading = true; 
+    this.rosService.setPreviewSize(width, height);
+    setTimeout(() => {
+      this.isLoading = false;  // Stop the spinner
+    }, 1500);
   }
 
   refrechRate(){
@@ -41,6 +48,16 @@ export class CameraComponent implements OnInit {
     this.timer = setTimeout(() => {
       this.refrechRate();
     }, 500);
+  }
+
+  startCamera(){
+    this.rosService.subscribeCameraTopic();
+  }
+
+  stopCamera(){
+    this.rosService.unsubscribeCameraTopic();
+    this.imageSrc = '../../assets/pib-Logo.png'
+
   }
 
 }
