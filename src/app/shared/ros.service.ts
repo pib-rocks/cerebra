@@ -14,13 +14,21 @@ export class RosService {
   isInitialized$ = this.isInitializedSubject.asObservable();
   currentReceiver$: Subject<MotorCurrentMessage> =
     new Subject<MotorCurrentMessage>();
+  cameraReceiver$: Subject<string> = new Subject<string>;
   private ros!: ROSLIB.Ros;
   private messageTopic!: ROSLIB.Topic;
   private voiceAssistantTopic!: ROSLIB.Topic;
   private motorCurrentTopic!: ROSLIB.Topic;
+  private cameraTopic!: ROSLIB.Topic;
+  private timerPeriodPublisher!: ROSLIB.Topic;
+  private previewSizePublisher!: ROSLIB.Topic;
+  private qualityFactorPublisher!: ROSLIB.Topic;
+
   private readonly topicName = "/motor_settings";
   private readonly topicVoiceName = "/cerebra_voice_settings";
   private readonly topicCurrentName = "/motor_status";
+  private readonly topicCameratName = "/camera_topic";
+
 
   private motors: Motor[] = [];
 
@@ -32,6 +40,11 @@ export class RosService {
       this.messageTopic = this.createMessageTopic();
       this.voiceAssistantTopic = this.createVoiceAssistantTopic();
       this.motorCurrentTopic = this.createMotorCurrentTopic();
+      this.cameraTopic = this.createCameraTopic();
+      this.previewSizePublisher = this.createPreviewSizePublisher()
+
+
+    this.qualityFactorPublisher = this.createQualityFactorPublisher();
       this.subscribeTopic();
       this.subscribeCurrentTopic();
     });
@@ -41,6 +54,21 @@ export class RosService {
 
     this.ros.on("close", () => {
       console.log("Disconnected from ROSBridge server.");
+    });
+    this.timerPeriodPublisher = this.createTimePeriodPublisher();
+  }
+  createTimePeriodPublisher(): ROSLIB.Topic<ROSLIB.Message> {
+    return new ROSLIB.Topic({
+      ros: this.ros,
+      name: 'timer_period_topic',
+      messageType: 'std_msgs/Float64'
+    });
+  }
+  createPreviewSizePublisher(): ROSLIB.Topic<ROSLIB.Message> {
+    return new ROSLIB.Topic({
+      ros: this.ros,
+      name: 'size_topic',
+      messageType: 'std_msgs/Int32MultiArray'
     });
   }
 
@@ -138,6 +166,16 @@ export class RosService {
     });
   }
 
+  subscribeCameraTopic() {
+    this.cameraTopic.subscribe((message: any) => {
+      this.cameraReceiver$.next(message.data);
+    });
+  }
+
+  unsubscribeCameraTopic() {
+    this.cameraTopic.unsubscribe();
+}
+
   get Ros(): ROSLIB.Ros {
     return this.ros;
   }
@@ -169,4 +207,49 @@ export class RosService {
       messageType: "std_msgs/String",
     });
   }
+
+  createCameraTopic(): ROSLIB.Topic {
+    return new ROSLIB.Topic({
+      ros : this.ros,
+      name : this.topicCameratName,
+      messageType : 'std_msgs/String'
+    });
+  }
+  setTimerPeriod(period: number | null) {
+    if (!this.timerPeriodPublisher) {
+      console.error('ROS is not connected.');
+      return;
+    }
+    const message = new ROSLIB.Message({ data: period });
+    this.timerPeriodPublisher.publish(message);
+  }
+
+  setPreviewSize(width: number, height: number) {
+    if (!this.previewSizePublisher) {
+      console.error('ROS is not connected.');
+      return;
+    }
+
+    const message = new ROSLIB.Message({ data: [width, height] });
+    this.previewSizePublisher.publish(message);
+  }
+
+  setQualityFactor(factor: number){
+    if (!this.qualityFactorPublisher) {
+        console.error('ROS is not connected.');
+        return;
+    }
+
+    const message = new ROSLIB.Message({ data: factor });
+    this.qualityFactorPublisher.publish(message);
+}
+
+  createQualityFactorPublisher() {
+    return new ROSLIB.Topic({
+      ros: this.ros,
+      name: 'timer_period_topic',
+      messageType: 'std_msgs/Float64'
+    });
+  }
+  
 }

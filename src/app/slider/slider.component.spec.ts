@@ -69,14 +69,14 @@ describe("SliderComponent", () => {
   });
 
   it("should call sendMessage() in inputSendMsg() on input event", () => {
-    spyOn(component, "inputSendMsg").and.callThrough();
-    spyOn(component, "sendMessage");
+    const spyInput = spyOn(component, "inputSendMsg").and.callThrough();
+    const spySendMessage = spyOn(component, "sendMessage");
     const slider = fixture.nativeElement.querySelector('input[type="range"]');
     slider.value = 50;
     slider.dispatchEvent(new Event("input"));
     setTimeout(() => {
-      expect(component.inputSendMsg).toHaveBeenCalled();
-      expect(component.sendMessage).toHaveBeenCalled();
+      expect(spyInput).toHaveBeenCalled();
+      expect(spySendMessage).toHaveBeenCalled();
     }, 600);
   });
 
