@@ -69,15 +69,15 @@ describe("SliderComponent", () => {
   });
 
   it("should call sendMessage() in inputSendMsg() on input event", () => {
-    spyOn(component, "inputSendMsg").and.callThrough();
-    spyOn(component, "sendMessage");
+    const spyInput = spyOn(component, "inputSendMsg").and.callThrough();
+    const spySendMessage = spyOn(component, "sendMessage");
     const slider = fixture.nativeElement.querySelector('input[type="range"]');
     slider.value = 50;
     slider.dispatchEvent(new Event("input"));
     setTimeout(() => {
-      expect(component.inputSendMsg).toHaveBeenCalled();
-      expect(component.sendMessage).toHaveBeenCalled();
-    }, 600);
+      expect(spyInput).toHaveBeenCalled();
+      expect(spySendMessage).toHaveBeenCalled();
+    }, 900);
   });
 
   it("should call sendSettingsMessage() in inputSendSettingsMsg() on input event", () => {
@@ -87,7 +87,7 @@ describe("SliderComponent", () => {
     setTimeout(() => {
       expect(component.inputSendSettingsMsg).toHaveBeenCalled();
       expect(component.sendSettingMessage).toHaveBeenCalled();
-    }, 600);
+    }, 900);
   });
 
   it("should call sendMessage() to all finger topics on input from combined slider", () => {

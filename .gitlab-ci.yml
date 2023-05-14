@@ -4,7 +4,6 @@ stages:
   - sonar-scan
   - build
   - prepare-artifact
-  - deploy
 
 variables:
   IMAGE: node:18-bullseye
@@ -88,9 +87,9 @@ build_app:
   stage: build
   image: ${IMAGE}
   script:
+    - echo "runing the build"
     - npm link @angular/cli
     - ng build --configuration production
-    - echo "$CI_PROJECT_DIR"
   artifacts:
     expire_in: 12 hrs
     paths:
@@ -103,6 +102,7 @@ rearrange_build_artifacts:
   stage: prepare-artifact
   needs: [build_app]
   script:
+    - echo "preparing the build artifact"
     - mkdir -p cerebra && mv dist/cerebra/* cerebra/
     - rm -rf ./dist
   artifacts:
