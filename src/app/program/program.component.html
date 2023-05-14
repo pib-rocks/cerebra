@@ -1,26 +1,10 @@
-<div class="h-100 d-flex custom-div">
-  <div id="blocklyDiv" style="height: 95vh; width: 100vw"></div>
-
-  <div class="floatingButtonWrap">
-    <div class="floatingButtonInner">
-      <div class="floatingButton">
-        <div (click)="showFloatingMenuItems()">
-          <i class="bi bi-plus-circle-fill"></i>
-        </div>
-      </div>
-
-      <ul
-        [class.floatingMenu]="showFloatingMenu"
-        [class.floatingMenuDisabled]="!showFloatingMenu"
-      >
-        <!-- class="floatingMenu" -->
-        <li>
-          <a (click)="openDialog()" id="savebutton"
-            >Save code
-            <i class="bi bi-save"></i>
-          </a>
-        </li>
-      </ul>
-    </div>
+<div>
+  <div class="first-div">
+    <button (click)="openDialog()" id="savebutton" class="btn btn-primary">
+      Save
+    </button>
+  </div>
+  <div class="h-100 d-flex custom-div">
+    <div id="blocklyDiv" style="height: 90vh; width: 100vw"></div>
   </div>
 </div>
