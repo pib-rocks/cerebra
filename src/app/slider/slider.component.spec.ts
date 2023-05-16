@@ -68,27 +68,37 @@ describe("SliderComponent", () => {
     expect(rosService.sendMessage).toHaveBeenCalled();
   });
 
-  it("should call sendMessage() in inputSendMsg() on input event", () => {
+  it("should call sendMessage() in inputSendMsg() on input event", fakeAsync(() => {
+    spyOn(window, 'clearTimeout');
+    spyOn(window, 'setTimeout');
     const spyInput = spyOn(component, "inputSendMsg").and.callThrough();
     const spySendMessage = spyOn(component, "sendMessage");
     const slider = fixture.nativeElement.querySelector('input[type="range"]');
     slider.value = 50;
     slider.dispatchEvent(new Event("input"));
-    setTimeout(() => {
-      expect(spyInput).toHaveBeenCalled();
-      expect(spySendMessage).toHaveBeenCalled();
-    }, 900);
-  });
+    tick(500);
+    expect(window.clearTimeout).toHaveBeenCalled();
+    expect(window.setTimeout).toHaveBeenCalledWith(jasmine.any(Function), 500);
+    const timeoutCallback = (window.setTimeout as unknown as jasmine.Spy).calls.mostRecent().args[0];
+    timeoutCallback();
+    expect(component.inputSendMsg).toHaveBeenCalled();
+    expect(component.sendMessage).toHaveBeenCalled();
+  }));
 
-  it("should call sendSettingsMessage() in inputSendSettingsMsg() on input event", () => {
+  it("should call sendSettingsMessage() in inputSendSettingsMsg() on input event", fakeAsync (() => {
+    spyOn(window, 'clearTimeout');
+    spyOn(window, 'setTimeout');
     spyOn(component, "inputSendSettingsMsg").and.callThrough();
     spyOn(component, "sendSettingMessage");
     component.inputSendSettingsMsg();
-    setTimeout(() => {
-      expect(component.inputSendSettingsMsg).toHaveBeenCalled();
-      expect(component.sendSettingMessage).toHaveBeenCalled();
-    }, 900);
-  });
+    tick(500);
+    expect(window.clearTimeout).toHaveBeenCalled();
+    expect(window.setTimeout).toHaveBeenCalledWith(jasmine.any(Function), 500);
+    const timeoutCallback = (window.setTimeout as unknown as jasmine.Spy).calls.mostRecent().args[0];
+    timeoutCallback();
+    expect(component.inputSendSettingsMsg).toHaveBeenCalled();
+    expect(component.sendSettingMessage).toHaveBeenCalled();
+  }));
 
   it("should call sendMessage() to all finger topics on input from combined slider", () => {
     component.isCombinedSlider = true;

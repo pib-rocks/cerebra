@@ -2,7 +2,6 @@ import { TestBed } from "@angular/core/testing";
 import * as ROSLIB from "roslib";
 import { Subject } from "rxjs";
 import { Message } from "./message";
-import { Topic } from "roslib";
 import { RosService } from "./ros.service";
 
 describe("RosService", () => {
@@ -11,8 +10,12 @@ describe("RosService", () => {
   let mockTopic: MockRosbridgeTopic;
   let spySetUpRos: jasmine.Spy<() => ROSLIB.Ros>;
   let spytopic: jasmine.Spy<() => ROSLIB.Topic>;
-  let roslib: Topic;
-
+  let spyVoiceTopic: jasmine.Spy<() => ROSLIB.Topic>;
+  let spyMotorCurrentTopic: jasmine.Spy<() => ROSLIB.Topic>;
+  let spyCameraTopic: jasmine.Spy<() => ROSLIB.Topic>;
+  let spySize: jasmine.Spy<() => ROSLIB.Topic>;
+  let spySubscribeTopic: jasmine.Spy<() => void>;
+  let spySubscribeCurrentTopic: jasmine.Spy<() => void>;
   beforeEach(() => {
     TestBed.configureTestingModule({});
 
@@ -29,6 +32,37 @@ describe("RosService", () => {
       RosService.prototype,
       "createMessageTopic"
     ).and.returnValue(mockTopic as unknown as ROSLIB.Topic);
+
+    spyVoiceTopic = spyOn(
+      RosService.prototype,
+      "createVoiceAssistantTopic"
+    ).and.returnValue(mockTopic as unknown as ROSLIB.Topic);
+
+    spyMotorCurrentTopic = spyOn(
+      RosService.prototype,
+      "createMotorCurrentTopic"
+    ).and.returnValue(mockTopic as unknown as ROSLIB.Topic);
+
+    spyCameraTopic = spyOn(
+      RosService.prototype,
+      "createCameraTopic"
+    ).and.returnValue(mockTopic as unknown as ROSLIB.Topic);
+
+    spySize = spyOn(
+      RosService.prototype,
+      "createPreviewSizePublisher"
+    ).and.returnValue(mockTopic as unknown as ROSLIB.Topic);
+
+    spySubscribeTopic = spyOn(
+      RosService.prototype,
+      "subscribeTopic"
+    ).and.callThrough();
+
+    spySubscribeCurrentTopic = spyOn(
+      RosService.prototype,
+      "subscribeCurrentTopic"
+    );
+
     service = new RosService();
   });
 
@@ -41,8 +75,29 @@ describe("RosService", () => {
     expect(service.Ros).toBeTruthy();
   });
 
+  xit("should subscribe motor topic", () => {
+    mockRos.on()
+    expect(spySubscribeTopic).toHaveBeenCalled()
+  });
+
   it("createTopic should create topic", () => {
     expect(spytopic).toHaveBeenCalled();
+  });
+
+  it("createVoiceTopic should create voice topic", () => {
+    expect(spyVoiceTopic).toHaveBeenCalled();
+  });
+
+  it("createPreviewSizePublisher should create preview size topic", () => {
+    expect(spySize).toHaveBeenCalled();
+  });
+
+  it("createTopic should create motor current topic", () => {
+    expect(spyMotorCurrentTopic).toHaveBeenCalled();
+  });
+
+  it("createCameraTopic should create camera topic", () => {
+    expect(spyCameraTopic).toHaveBeenCalled();
   });
 
   it("The messageTopic should publish the message to rosbridge when calling sendMessage method, Incase the Message is of type Message", () => {
@@ -124,10 +179,14 @@ describe("RosService", () => {
     const actualReceiver2$ = service.getReceiversByMotorName("test")[0];
     expect(expectedReceiver).toEqual(actualReceiver2$);
   });
+
+
+
+
 });
 
 class MockRosbridgeTopic {
-  constructor(private topicName: string, private subject: Subject<Message>) {}
+  constructor(private topicName: string, private subject: Subject<Message>) { }
   subscribers: ((message: any) => void)[] = [];
   messages: any[] = [];
   subscribe(callback: (message: any) => void) {
@@ -157,6 +216,10 @@ export class RosMock {
 
   on() {
     this.service?.createMessageTopic();
+    this.service?.createVoiceAssistantTopic();
+    this.service?.createMotorCurrentTopic();
+    this.service?.createCameraTopic();
+    this.service?.createPreviewSizePublisher();
   }
 
   callOnConnection() {
