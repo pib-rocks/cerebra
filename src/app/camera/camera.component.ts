@@ -27,6 +27,7 @@ export class CameraComponent implements OnInit {
   imageSrc!: string;  
   componentName = "Live view";
   refreshRateControl = new FormControl(0.1);
+  qualityFactorControl = new FormControl(90);
   selectedSize = "480p";
 
   private imageTopic!: ROSLIB.Topic;
@@ -57,7 +58,20 @@ export class CameraComponent implements OnInit {
   stopCamera(){
     this.rosService.unsubscribeCameraTopic();
     //this.imageSrc = '../../assets/pib-Logo.png'
-
   }
 
+  inputQualityFactor(){
+    clearTimeout(this.timer);
+    this.timer = setTimeout(() => {
+      this.setQulityFactor();
+    }, 500);
+}
+  setQulityFactor(){
+    console.log(this.qualityFactorControl.value)
+  this.rosService.setQualityFactor(this.qualityFactorControl.value);
+  }
+
+  qualityFactor(q: number){
+    this.rosService.setQualityFactor(q);
+  }
 }
