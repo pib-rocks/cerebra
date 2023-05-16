@@ -42,9 +42,8 @@ export class RosService {
       this.motorCurrentTopic = this.createMotorCurrentTopic();
       this.cameraTopic = this.createCameraTopic();
       this.previewSizePublisher = this.createPreviewSizePublisher()
-
-
-    this.qualityFactorPublisher = this.createQualityFactorPublisher();
+      this.timerPeriodPublisher = this.createTimePeriodPublisher();
+      this.qualityFactorPublisher = this.createQualityFactorPublisher();
       this.subscribeTopic();
       this.subscribeCurrentTopic();
     });
@@ -55,7 +54,6 @@ export class RosService {
     this.ros.on("close", () => {
       console.log("Disconnected from ROSBridge server.");
     });
-    this.timerPeriodPublisher = this.createTimePeriodPublisher();
   }
   createTimePeriodPublisher(): ROSLIB.Topic<ROSLIB.Message> {
     return new ROSLIB.Topic({

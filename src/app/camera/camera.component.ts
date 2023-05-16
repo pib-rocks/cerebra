@@ -14,15 +14,14 @@ export class CameraComponent implements OnInit {
   isLoading = false;
   constructor(private rosService: RosService){  }
   ngOnInit(): void {
-
+    this.refrechRate();
+    this.rosService.setPreviewSize(640, 480);
     this.imageSrc = '../../assets/pib-Logo.png'
     this.rosService.cameraReceiver$.subscribe(message => {
       this.imageSrc = 'data:image/jpeg;base64,' + message;
       console.log('-------------------------');
       console.log(message);
     })
-    this.refrechRate();
-    this.setSize(640, 480);
   }
 
   imageSrc!: string;  
