@@ -232,7 +232,7 @@ export class RosService {
     this.previewSizePublisher.publish(message);
   }
 
-  setQualityFactor(factor: number){
+  setQualityFactor(factor: number | null){
     if (!this.qualityFactorPublisher) {
         console.error('ROS is not connected.');
         return;
@@ -245,8 +245,8 @@ export class RosService {
   createQualityFactorPublisher() {
     return new ROSLIB.Topic({
       ros: this.ros,
-      name: 'timer_period_topic',
-      messageType: 'std_msgs/Float64'
+      name: 'quality_factor_topic',
+      messageType: 'std_msgs/Int32'
     });
   }
   
