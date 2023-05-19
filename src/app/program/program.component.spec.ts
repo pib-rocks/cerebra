@@ -1,8 +1,17 @@
-import { ComponentFixture, TestBed } from "@angular/core/testing";
+import {
+  ComponentFixture,
+  TestBed,
+  fakeAsync,
+  flush,
+  flushMicrotasks,
+  async,
+  tick,
+} from "@angular/core/testing";
 import { MatDialog } from "@angular/material/dialog";
 import { ProgramComponent } from "./program.component";
 import { MatDialogModule } from "@angular/material/dialog";
 import { By } from "@angular/platform-browser";
+import * as Blockly from "blockly";
 
 describe("ProgramComponent", () => {
   let component: ProgramComponent;
@@ -22,6 +31,27 @@ describe("ProgramComponent", () => {
 
   it("should create", () => {
     expect(component).toBeTruthy();
+  });
+
+  it("expect workspace variable to be initialized after the ngOnInit is called", () => {
+    component.ngOnInit();
+    expect(component.workspace).toBeDefined();
+    expect(component.observer).toBeDefined();
+  });
+
+  it("resized function is called when the width of the element is changed", () => {
+    const spyOnresizeBlocklyMethod = spyOn(
+      component,
+      "resizeBlockly"
+    ).and.callThrough();
+    fixture.nativeElement.querySelector("#blocklyDiv").style.width = "500px";
+    fixture.detectChanges();
+
+    setTimeout(() => {
+      fixture.whenStable().then(() => {
+        expect(spyOnresizeBlocklyMethod).toHaveBeenCalled();
+      });
+    }, 1000);
   });
 
   it("should change the class of the showFloatingMenu variable when the method showFloatingMenuItems is called ", () => {

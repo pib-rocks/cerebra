@@ -36,6 +36,5 @@ export class AppComponent implements OnInit {
     } else {
       this.isCurrentPathInJointControlNavItem = false;
     }
-    console.log(this.isCurrentPathInJointControlNavItem);
   }
 }
