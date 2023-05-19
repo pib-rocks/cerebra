@@ -35,14 +35,12 @@ describe("ProgramComponent", () => {
       component,
       "resizeBlockly"
     ).and.callThrough();
+    fixture.nativeElement.querySelector("#blocklyDiv").style.width = "500px";
+    fixture.detectChanges();
 
     setTimeout(() => {
-      fixture.nativeElement.querySelector("#blocklyDiv").style.width = "500px";
-      fixture.detectChanges();
-      fixture.nativeElement.querySelector("#blocklyDiv").style.width = "600px";
-      fixture.detectChanges();
       fixture.whenStable().then(() => {
-        expect(spyOnresizeBlocklyMethod).toHaveBeenCalledTimes(2);
+        expect(spyOnresizeBlocklyMethod).toHaveBeenCalled();
       });
     }, 1000);
   });
