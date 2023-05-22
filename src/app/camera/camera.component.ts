@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from "@angular/core";
+import { Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { FormControl } from "@angular/forms";
 import { Subject } from "rxjs";
 import * as ROSLIB from "roslib";
@@ -9,10 +9,11 @@ import { RosService } from "../shared/ros.service";
   templateUrl: "./camera.component.html",
   styleUrls: ["./camera.component.css"],
 })
-export class CameraComponent implements OnInit {
+export class CameraComponent implements OnInit, OnDestroy {
   timer:any = null;
   isLoading = false;
   constructor(private rosService: RosService){  }
+
   ngOnInit(): void {
     this.refrechRate();
     this.rosService.setPreviewSize(640, 480);
@@ -22,6 +23,10 @@ export class CameraComponent implements OnInit {
       console.log('-------------------------');
       console.log(message);
     })
+  }
+
+  ngOnDestroy(): void {
+    this.stopCamera();
   }
 
   imageSrc!: string;  

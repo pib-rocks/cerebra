@@ -9,3 +9,7 @@ video {
   color: white;
   background-color: #e6007e;
 }
+
+.qualityFactor{
+  transform: rotate(180deg);
+}
