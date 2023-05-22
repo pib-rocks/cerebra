@@ -113,13 +113,10 @@ rearrange_build_artifacts:
     - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "develop"
   tags: ["lea"]
 
-
-
-
- deploy-cerebra-on-pibrocks:
-   image: ${IMAGE}
-   stage: deploy-cerebra-on-pibrocks
-   needs: [rearrange_build_artifacts]
-   script:
-      - zip -r cerebra-latest.zip cerebra
-      - ls -lk cerebra-latest.zip
+deploy-cerebra-on-pibrocks:
+  image: ${IMAGE}
+  stage: deploy-cerebra-on-pibrocks
+  needs: [rearrange_build_artifacts]
+  script:
+    - zip -r cerebra-latest.zip cerebra
+    - ls -lk cerebra-latest.zip
