@@ -120,7 +120,7 @@ deploy-cerebra-on-pibrocks:
     - apk add git
     - apk add openssh
     - apk add --no-cache lftp
-  variable:
+  variables:
     - USER: pib.rocks
     - HOST: ssh.starto.de
   script:
