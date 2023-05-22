@@ -10,13 +10,12 @@ import { HandComponent } from "./hand/hand.component";
 import { CameraComponent } from "./camera/camera.component";
 import { ArmComponent } from "./arm/arm.component";
 import { MatDialogModule } from "@angular/material/dialog";
-import { NgbModule } from "@ng-bootstrap/ng-bootstrap";
+import { NgbModule, NgbDropdownModule } from "@ng-bootstrap/ng-bootstrap";
 import { MatSliderModule } from "@angular/material/slider";
 import { VoiceAssistantComponent } from "./voice-assistant/voice-assistant.component";
 import { HeadComponent } from "./head/head.component";
 import { ProgramComponent } from "./program/program.component";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
-import { NgbDropdownModule } from "@ng-bootstrap/ng-bootstrap";
 import { DialogContentComponent } from "./program/dialog-content/dialog-content.component";
 
 @NgModule({

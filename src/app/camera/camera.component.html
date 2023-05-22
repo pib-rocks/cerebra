@@ -24,6 +24,14 @@
       <label for="refreshRate" class="form-label my-3" style="font-family: Open Sans, Arial, Helvetica, sans-serif">
         Quality Factor: {{ qualityFactorControl.value }}
       </label>
+      <input id="refreshRateSlider" id="refreshRate" type="range" min="10" max="90" step="10" class="form-range"
+        [formControl]="qualityFactorControl" (input)="inputQualityFactor()" />
+
+
+
+      <label for="refreshRate" class="form-label my-3" style="font-family: Open Sans, Arial, Helvetica, sans-serif">
+        Quality Factor: {{ qualityFactorControl.value }}
+      </label>
       <input id="refreshRateSlider" id="refreshRate" type="range" min="10" max="90" step="10" class="form-range qualityFactor"
         [formControl]="qualityFactorControl" (input)="inputQualityFactor()" />
       <div ngbDropdown class="d-inline-block">

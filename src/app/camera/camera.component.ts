@@ -13,7 +13,6 @@ export class CameraComponent implements OnInit, OnDestroy {
   timer:any = null;
   isLoading = false;
   constructor(private rosService: RosService){  }
-
   ngOnInit(): void {
     this.refrechRate();
     this.rosService.setPreviewSize(640, 480);
