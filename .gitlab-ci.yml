@@ -4,6 +4,7 @@ stages:
   - sonar-scan
   - build
   - prepare-artifact
+  - deploy-cerebra-on-pibrocks
 
 variables:
   IMAGE: node:18-bullseye
@@ -56,7 +57,7 @@ run_tests:
     - ng test --code-coverage --watch=false --browsers=NoSandbox
   artifacts:
     paths:
-    - $CI_PROJECT_DIR/coverage
+      - $CI_PROJECT_DIR/coverage
   rules:
     - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop"
     - if: $CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "master"
@@ -65,17 +66,17 @@ run_tests:
 sonarqube-check:
   stage: sonar-scan
   tags: ["lea"]
-  image: 
+  image:
     name: sonarsource/sonar-scanner-cli:latest
     entrypoint: [""]
   variables:
-    SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # Defines the location of the analysis task cache
-    GIT_DEPTH: "0"  # Tells git to fetch all the branches of the project, required by the analysis task
+    SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar" # Defines the location of the analysis task cache
+    GIT_DEPTH: "0" # Tells git to fetch all the branches of the project, required by the analysis task
   cache:
     key: "${CI_JOB_NAME}"
     paths:
       - .sonar/cache
-  script: 
+  script:
     - echo "runing sonarqube check"
     - sonar-scanner
   allow_failure: true
@@ -111,3 +112,14 @@ rearrange_build_artifacts:
   rules:
     - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "develop"
   tags: ["lea"]
+
+
+
+
+ deploy-cerebra-on-pibrocks:
+   image: ${IMAGE}
+   stage: deploy-cerebra-on-pibrocks
+   needs: [rearrange_build_artifacts]
+   script:
+      - zip -r cerebra-latest.zip cerebra
+      - ls -lk cerebra-latest.zip
