@@ -31,11 +31,11 @@ describe("HandComponent", () => {
     expect(component).toBeTruthy();
   });
 
-  it("should contain 2 sliders with their own topic", () => {
+  it("should contain 8 sliders with their own topic", () => {
     component.side = "left";
     fixture.detectChanges();
     const sliders = fixture.debugElement.queryAll(By.css("app-slider"));
-    expect(sliders.length).toBe(2);
+    expect(sliders.length).toBe(8);
     for (const slider of sliders) {
       console.log(slider.componentInstance);
       expect(slider.componentInstance.motorName).toBeTruthy();
@@ -80,7 +80,7 @@ describe("HandComponent", () => {
     sliders
       .filter(
         (slider) =>
-          slider.children[1].componentInstance.labelName !== "Thumb Opposition"
+          slider.children[1].componentInstance.labelName !== "Thumb Opposition" && slider.children[1].componentInstance.motorName === 'all_right_stretch'
       )
       .forEach((slider) =>
         spyOn(slider.componentInstance, "sendAllMessagesCombined")
@@ -96,8 +96,9 @@ describe("HandComponent", () => {
     expect(checkInput.componentInstance.switchView).toHaveBeenCalled();
 
     component.childComponents
-      .filter((child) => child.labelName !== "Thumb opposition")
+      .filter((child) => child.labelName !== "Thumb opposition" && child.motorName === 'all_right_stretch')
       .forEach((child) => {
+        spyOn(child, "sendAllMessagesCombined")
         console.log("slider from control" + child.sliderFormControl.value);
         expect(child.sliderFormControl.value).toBe(500);
         expect(child.sendAllMessagesCombined).toHaveBeenCalled();

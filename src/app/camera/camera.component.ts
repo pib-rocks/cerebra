@@ -1,6 +1,5 @@
-import { Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
+import { Component, OnDestroy, OnInit } from "@angular/core";
 import { FormControl } from "@angular/forms";
-import { Subject } from "rxjs";
 import * as ROSLIB from "roslib";
 import { RosService } from "../shared/ros.service";
 
@@ -25,6 +24,7 @@ export class CameraComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    console.log('+++++++++++++');
     this.stopCamera();
   }
 
