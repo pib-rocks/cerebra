@@ -117,9 +117,10 @@ deploy-cerebra-on-pibrocks:
   image: ${IMAGE}
   stage: deploy-cerebra-on-pibrocks
   before_script:
-    - apk add git
-    - apk add openssh
-    - apk add --no-cache lftp
+    - apt-get update
+    - apt-get add git
+    - apt-get install openssh-client
+    - apt-get install lftp
   variables:
     USER: "pib.rocks"
     HOST: "ssh.starto.de"
@@ -130,7 +131,6 @@ deploy-cerebra-on-pibrocks:
     - echo "preparing the build artifact"
     - mkdir -p cerebra && mv dist/cerebra/* cerebra/
     - rm -rf ./dist
-    - apt-get update
     - apt install -y zip unzip
     - zip -r cerebra-latest.zip cerebra
     - ls -lk cerebra-latest.zip
