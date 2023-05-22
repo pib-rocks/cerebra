@@ -118,7 +118,7 @@ deploy-cerebra-on-pibrocks:
   stage: deploy-cerebra-on-pibrocks
   before_script:
     - apt-get update
-    - apt-get add git
+    - sudo apt-get install git
     - apt-get install openssh-client
     - apt-get install lftp
   variables:
