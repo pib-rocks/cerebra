@@ -124,7 +124,7 @@ deploy-cerebra-on-pibrocks:
     - mkdir -p cerebra && mv dist/cerebra/* cerebra/
     - rm -rf ./dist
     - apt-get update
-    - apt install zip unzip
+    - apt install -y zip unzip
     - zip -r cerebra-latest.zip cerebra
     - ls -lk cerebra-latest.zip
   tags: ["lea"]
