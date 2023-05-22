@@ -125,3 +125,4 @@ deploy-cerebra-on-pibrocks:
     - rm -rf ./dist
     - zip -r cerebra-latest.zip cerebra
     - ls -lk cerebra-latest.zip
+  tags: ["lea"]
