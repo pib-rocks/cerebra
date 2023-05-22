@@ -116,7 +116,12 @@ rearrange_build_artifacts:
 deploy-cerebra-on-pibrocks:
   image: ${IMAGE}
   stage: deploy-cerebra-on-pibrocks
-  needs: [rearrange_build_artifacts]
   script:
+    - echo "runing the build"
+    - npm link @angular/cli
+    - ng build --configuration production
+    - echo "preparing the build artifact"
+    - mkdir -p cerebra && mv dist/cerebra/* cerebra/
+    - rm -rf ./dist
     - zip -r cerebra-latest.zip cerebra
     - ls -lk cerebra-latest.zip
