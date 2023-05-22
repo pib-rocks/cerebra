@@ -121,8 +121,8 @@ deploy-cerebra-on-pibrocks:
     - apk add openssh
     - apk add --no-cache lftp
   variables:
-    - USER: pib.rocks
-    - HOST: ssh.starto.de
+    - USER: "pib.rocks"
+    - HOST: "ssh.starto.de"
   script:
     - echo "runing the build"
     - npm link @angular/cli
