@@ -37,7 +37,7 @@ export class HandComponent implements OnInit {
   rightSwitchControl = new FormControl(false);
 
   leftHand = [
-    { motor: "index_left_stretch", label: "Open/Close all fingers" },
+    { motor: "all_left_stretch", label: "Open/Close all fingers" },
     { motor: "thumb_left_opposition", label: "Thumb opposition" },
   ];
 
@@ -51,7 +51,7 @@ export class HandComponent implements OnInit {
   ];
 
   rightHand = [
-    { motor: "index_right_stretch", label: "Open/Close all fingers" },
+    { motor: "all_right_stretch", label: "Open/Close all fingers" },
     { motor: "thumb_right_opposition", label: "Thumb opposition" },
   ];
 

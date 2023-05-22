@@ -24,6 +24,27 @@ describe("ProgramComponent", () => {
     expect(component).toBeTruthy();
   });
 
+  it("expect workspace variable to be initialized after the ngOnInit is called", () => {
+    component.ngOnInit();
+    expect(component.workspace).toBeDefined();
+    expect(component.observer).toBeDefined();
+  });
+
+  it("resized function is called when the width of the element is changed", () => {
+    const spyOnresizeBlocklyMethod = spyOn(
+      component,
+      "resizeBlockly"
+    ).and.callThrough();
+    fixture.nativeElement.querySelector("#blocklyDiv").style.width = "500px";
+    fixture.detectChanges();
+
+    setTimeout(() => {
+      fixture.whenStable().then(() => {
+        expect(spyOnresizeBlocklyMethod).toHaveBeenCalled();
+      });
+    }, 1000);
+  });
+
   it("should change the class of the showFloatingMenu variable when the method showFloatingMenuItems is called ", () => {
     component.showFloatingMenuItems();
     expect(component.showFloatingMenu).toBe(true);
