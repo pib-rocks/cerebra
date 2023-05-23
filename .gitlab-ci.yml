@@ -139,6 +139,7 @@ deploy-cerebra-on-pibrocks:
     - cd cerebrazipfolder && ls -l
     - ls -lk cerebra-latest.zip
     - pwd
+    - ssh-keyscan -H $HOST
     - mkdir /root/.ssh
     - chmod 700 /root/.ssh
     - touch /root/.ssh/known_hosts
