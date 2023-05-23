@@ -124,6 +124,8 @@ deploy-cerebra-on-pibrocks:
   variables:
     USER: "pib.rocks"
     HOST: "ssh.starto.de"
+    SOURCE: ""
+    DESTINATION: ""
   script:
     - echo "running the build"
     - npm link @angular/cli
@@ -133,6 +135,8 @@ deploy-cerebra-on-pibrocks:
     - rm -rf ./dist
     - apt install -y zip unzip
     - zip -r cerebra-latest.zip cerebra
+    - mkdir cerebrazipfolder && mv cerebra-latest.zip /cerebrazipfolder
+    - cd /cerebrazipfolder && ls -l
     - ls -lk cerebra-latest.zip
     - pwd
     # - mkdir /root/.ssh
@@ -140,5 +144,5 @@ deploy-cerebra-on-pibrocks:
     # - touch /root/.ssh/known_hosts
     # - chmod 600 /root/.ssh/known_hosts
     # - ssh-keyscan -H $HOST >> /root/.ssh/known_hosts
-    - lftp -e "echo walid quit" -u $USER,$PASSWORD sftp://$HOST -p 22
+    - lftp -e "mirror -e -P 4 --transfer-all --reverse -X .* --verbose site/ www/; quit" -u $USER,$PASSWORD sftp://$HOST -p 22
   tags: ["lea"]
