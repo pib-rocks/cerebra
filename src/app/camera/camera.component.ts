@@ -24,7 +24,6 @@ export class CameraComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    console.log('+++++++++++++');
     this.stopCamera();
   }
 
@@ -64,18 +63,4 @@ export class CameraComponent implements OnInit, OnDestroy {
     //this.imageSrc = '../../assets/pib-Logo.png'
   }
 
-  inputQualityFactor(){
-    clearTimeout(this.timer);
-    this.timer = setTimeout(() => {
-      this.setQulityFactor();
-    }, 500);
-}
-  setQulityFactor(){
-    console.log(this.qualityFactorControl.value)
-  this.rosService.setQualityFactor(this.qualityFactorControl.value);
-  }
-
-  qualityFactor(q: number){
-    this.rosService.setQualityFactor(q);
-  }
 }
