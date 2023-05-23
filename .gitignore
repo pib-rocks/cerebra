@@ -6,6 +6,7 @@
 /out-tsc
 /bazel-out
 /coverage
+/.scannerwork
 
 # Node
 /node_modules
@@ -43,3 +44,5 @@ testem.log
 Thumbs.db
 
 .editorconfig
+.scannerwork/.sonar_lock
+.scannerwork/report-task.txt

@@ -1,0 +1,111 @@
+.container-div {
+  padding-left: 5rem;
+  padding-top: 3rem;
+  position: relative;
+  display: inline-block;
+}
+
+.color-indicator {
+  display: inline-flex;
+  margin: 0.5rem;
+  width: 30px;
+  background-color: rgba(41, 255, 0, 1);
+  position: absolute;
+  bottom: -13px;
+  right: -40px;
+}
+
+.color-indicator80-100 {
+  display: inline-block;
+  width: 30px;
+  background-image: linear-gradient(
+    rgba(255, 0, 0, 1) 0%,
+    rgba(253, 252, 29, 1) 50%,
+    rgba(41, 255, 0, 1) 100%
+  );
+}
+
+.color-indicator50-80 {
+  display: inline-block;
+  width: 30px;
+  background-image: linear-gradient(
+    rgba(255, 0, 0, 1) 0%,
+    rgba(253, 252, 29, 1) 25%,
+    rgba(41, 255, 0, 1) 50%
+  );
+}
+
+.current {
+  border-style: solid;
+  padding: 5px;
+  position: relative;
+}
+
+.shoulder_vertical_left {
+  position: absolute;
+  top: 10%;
+  right: 30%;
+}
+
+.shoulder_horizontal_left {
+  position: absolute;
+  top: 20%;
+  right: 28%;
+}
+
+.upper_arm_left_rotation {
+  position: absolute;
+  top: 30%;
+  right: 25%;
+}
+.ellbow_left {
+  position: absolute;
+  top: 45%;
+  right: 20%;
+}
+
+.lower_arm_left_rotation {
+  position: absolute;
+  bottom: 25%;
+  left: 28%;
+}
+
+.wrist_left {
+  position: absolute;
+  bottom: 5%;
+  left: 28%;
+}
+
+.wrist_right {
+  position: absolute;
+  bottom: 5%;
+  right: 20%;
+}
+
+.lower_arm_right_rotation {
+  position: absolute;
+  bottom: 25%;
+  right: 16%;
+}
+
+.ellbow_right {
+  position: absolute;
+  top: 50%;
+  right: 55%;
+}
+
+.upper_arm_right_rotation {
+  position: absolute;
+  top: 40%;
+  left: 30%;
+}
+.shoulder_horizontal_right {
+  position: absolute;
+  top: 25%;
+  left: 35%;
+}
+.shoulder_vertical_right {
+  position: absolute;
+  top: 12%;
+  left: 35%;
+}

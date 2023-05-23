@@ -1,13 +1,66 @@
 stages:
   - init
+  - test
   - sonar-scan
-  # - dependencies
-  # - build_image
-  # - test
-  # - build
-  # - deploy_dev
-  # - robot
-  # - deploy_stable
+  - build
+  - prepare-artifact
+
+variables:
+  IMAGE: node:18-bullseye
+  USER: cerebra2
+  NGINX_DIR: /etc/nginx/html
+  PROJECT_DIR: /cerebra
+
+init:
+  stage: init
+  tags: ["lea"]
+  script:
+    - echo "pipeline initialized"
+  rules:
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"
+    - if: $CI_COMMIT_BRANCH
+
+static_analysis:
+  image: ${IMAGE}
+  stage: test
+  allow_failure: false
+  script:
+    - echo "runing static analysis"
+    - npm link @angular/cli
+    - ng lint
+  rules:
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"
+    - if: $CI_COMMIT_BRANCH
+  cache:
+    key:
+      files:
+        - package-lock.json
+    paths:
+      - node_modules
+    policy: pull
+  tags: ["lea"]
+
+run_tests:
+  image: ${IMAGE}
+  stage: test
+  allow_failure: false
+  before_script:
+    - echo "runing unit tests"
+    - apt-get update
+    - wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+    - apt install -y ./google-chrome*.deb;
+    - export CHROME_BIN=/usr/bin/google-chrome
+  script:
+    - npm ci
+    - npm link @angular/cli
+    - ng test --code-coverage --watch=false --browsers=NoSandbox
+  artifacts:
+    paths:
+    - $CI_PROJECT_DIR/coverage
+  rules:
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"
+    - if: $CI_COMMIT_BRANCH
+  tags: ["lea"]
 
 sonarqube-check:
   stage: sonar-scan
@@ -23,64 +76,38 @@ sonarqube-check:
     paths:
       - .sonar/cache
   script: 
+    - echo "runing sonarqube check"
     - sonar-scanner
   allow_failure: true
-  only:
-    - merge_requests
-    - master
-    - develop
+  rules:
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"
+    - if: $CI_COMMIT_BRANCH
 
-init:
-  stage: init
-  tags: ["lea"]
-  only:
-    - develop
+build_app:
+  stage: build
+  image: ${IMAGE}
   script:
-    - echo pipeline initialized
+    - echo "runing the build"
+    - npm link @angular/cli
+    - ng build --configuration production
+  artifacts:
+    expire_in: 12 hrs
+    paths:
+      - dist/cerebra/
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+  tags: ["lea"]
 
-# install_dependencies:
-#   image: node:18-alpine
-#   stage: dependencies
-#   script:
-#     - npm install
-#   only:
-#     - merge_requests
-#     - develop
-#   cache:
-#     key:
-#       files:
-#         - package-lock.json
-#     paths:
-#       - node_modules
-#   tags: ["lea"]
-
-# static_analysis:
-#   image: node:18-alpine
-#   stage: test
-#   script:
-#     - npm link @angular/cli
-#     - ng lint
-#   only:
-#     - merge_requests
-#     - develop
-#   cache:
-#     key:
-#       files:
-#         - package-lock.json
-#     paths:
-#       - node_modules
-#     policy: pull
-#   tags: ["lea"]
-
-# test:
-#   image: trion/ng-cli-karma
-#   stage: test
-#   allow_failure: false
-#   script:
-#   - ng test --progress false --watch false
-#   only:
-#     - merge_requests
-#     - develop
-#   tags: ["lea"]
-
-
+rearrange_build_artifacts:
+  stage: prepare-artifact
+  needs: [build_app]
+  script:
+    - echo "preparing the build artifact"
+    - mkdir -p cerebra && mv dist/cerebra/* cerebra/
+    - rm -rf ./dist
+  artifacts:
+    paths:
+      - cerebra/
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+  tags: ["lea"]

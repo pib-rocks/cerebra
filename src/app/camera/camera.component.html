@@ -1,33 +1,45 @@
+<div *ngIf="isLoading">
+  <div class="spinner-border" role="status">
+    <span class="sr-only">Loading...</span>
+  </div>
+</div>
 <div class="container-fluid">
-  <div class="d-flex justify-content-center">
-    <h2>{{componentName}}</h2>
+  <div>
+    <h2>{{ componentName }}</h2>
   </div>
 
   <div class="row">
     <div class="col">
-
+      <img [src]="imageSrc" alt="camera" width="100%">
+      <button (click)="stopCamera()" id="stopCamera">Stop Camera</button>
+      <button (click)="startCamera()" id="startCamera">Start Camera</button>
     </div>
     <div class="col">
-      <img class="center-block my-3" src="https://picsum.photos/640/480" alt="">
-    </div>
-    <div class="col">
-      <label for="refreshRate" class="form-label my-3" style="font-family: Open Sans, Arial, Helvetica, sans-serif;">
-        Refresh rate: {{refreshRateControl.value}}s
+      <label for="refreshRate" class="form-label my-3" style="font-family: Open Sans, Arial, Helvetica, sans-serif">
+        Refresh rate: {{ refreshRateControl.value }}s
       </label>
-      <input id="refreshRate" type="range" min="0.1" max="1" value="0.5" step="0.05" class="form-range"
-        (input)="sliderTrigger$.next('')" [formControl]="refreshRateControl">
+      <input id="refreshRateSlider" id="refreshRate" type="range" min="0.1" max="1" value="0.5" step="0.05"
+        class="form-range" [formControl]="refreshRateControl" (input)="inputRefrechRate()" />
+      <div ngbDropdown class="d-inline-block">
 
-      <div class="dropdown my-4">
-        <a class="btn btn-primary dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
-          aria-expanded="false">
-          Select size
-        </a>
-        <ul class="dropdown-menu">
-          <li><a class="dropdown-item" href="camera" aria-current="true">480p (640 x 480)</a></li>
-          <li><a class="dropdown-item" href="camera">720p (1280 x 720)</a></li>
-          <li><a class="dropdown-item" href="camera">1080p (1920 x 1080)</a></li>
-        </ul>
+        <br>
+        <button type="button" class="btn" id="dropdownbutton" ngbDropdownToggle>
+          Select size ({{ selectedSize }})
+        </button>
+        <div ngbDropdownMenu aria-labelledby="dropdownbutton">
+          <button id="dropdownbutton-item-480px" ngbDropdownItem (click)="setSize(640, 480)">
+            480p (640 x 480)
+          </button>
+          <button id="dropdownbutton-item-720px" ngbDropdownItem (click)="setSize(1280, 720)">
+            720p (1280 x 720)
+          </button>
+          <button id="dropdownbutton-item-1080px" ngbDropdownItem (click)="setSize(1920, 1080)">
+            1080p (1920 x 1080)
+          </button>
+        </div>
       </div>
     </div>
   </div>
+
+
 </div>

@@ -1,35 +1,48 @@
-import { NgModule } from '@angular/core';
-import { ReactiveFormsModule } from '@angular/forms';
-import { BrowserModule } from '@angular/platform-browser';
-import { HttpClientModule } from '@angular/common/http'
+import { NgModule } from "@angular/core";
+import { ReactiveFormsModule } from "@angular/forms";
+import { BrowserModule } from "@angular/platform-browser";
+import { HttpClientModule } from "@angular/common/http";
 
-import { AppRoutingModule } from './app-routing.module';
-import { AppComponent } from './app.component';
-import { FingerSlidersComponent } from './finger-sliders/finger-sliders.component';
-import { HandComponent } from './hand/hand.component';
-import { RouteReuseStrategy } from '@angular/router';
-import { CustomRouteReuseStrategy } from './shared/CustomRouteReuseStrategy';
-import { CameraComponent } from './camera/camera.component';
-import { LeftArmComponent } from './left-arm/left-arm.component';
-import { RightArmComponent } from './right-arm/right-arm.component';
+import { AppRoutingModule } from "./app-routing.module";
+import { AppComponent } from "./app.component";
+import { SliderComponent } from "./slider/slider.component";
+import { HandComponent } from "./hand/hand.component";
+import { CameraComponent } from "./camera/camera.component";
+import { ArmComponent } from "./arm/arm.component";
+import { MatDialogModule } from "@angular/material/dialog";
+import { NgbModule, NgbDropdownModule } from "@ng-bootstrap/ng-bootstrap";
+import { MatSliderModule } from "@angular/material/slider";
+import { VoiceAssistantComponent } from "./voice-assistant/voice-assistant.component";
+import { HeadComponent } from "./head/head.component";
+import { ProgramComponent } from "./program/program.component";
+import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
+import { DialogContentComponent } from "./program/dialog-content/dialog-content.component";
 
 @NgModule({
   declarations: [
     AppComponent,
-    FingerSlidersComponent,
+    SliderComponent,
     HandComponent,
     CameraComponent,
-    LeftArmComponent,
-    RightArmComponent,
+    ArmComponent,
+    VoiceAssistantComponent,
+    HeadComponent,
+    ProgramComponent,
+    DialogContentComponent,
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     ReactiveFormsModule,
-    HttpClientModule
+    HttpClientModule,
+    MatDialogModule,
+    NgbModule,
+    MatSliderModule,
+    BrowserAnimationsModule,
+    NgbDropdownModule,
   ],
-  providers: [
-  ],
-  bootstrap: [AppComponent]
+  providers: [],
+  bootstrap: [AppComponent],
+  entryComponents: [MatDialogModule],
 })
 export class AppModule {}
