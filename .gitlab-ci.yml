@@ -134,10 +134,10 @@ deploy-cerebra-on-pibrocks:
     - mkdir -p cerebra && mv dist/cerebra/* cerebra/
     - rm -rf ./dist
     - apt install -y zip unzip
-    - zip -r cerebra-latest2.zip cerebra
-    - mkdir cerebrazipfolder && mv cerebra-latest2.zip cerebrazipfolder
+    - zip -r cerebra-latest.zip cerebra
+    - mkdir cerebrazipfolder && mv cerebra-latest.zip cerebrazipfolder
     - cd cerebrazipfolder && ls -l
-    - ls -lk cerebra-latest2.zip
+    - ls -lk cerebra-latest.zip
     - pwd
     - mkdir /root/.ssh
     - echo "$PIB_ROCKS_PASSWORD"
