@@ -15,9 +15,9 @@ import { By } from "@angular/platform-browser";
 describe("CameraComponent", () => {
   let component: CameraComponent;
   let fixture: ComponentFixture<CameraComponent>;
-  let formControl: FormControl;
   let rosService: RosService;
-  let timer: { clearTimeout: any; setTimeout: { calls: { argsFor: (arg0: number) => any[]; }; }; };
+  let spyUnsubscribeCamera: jasmine.Spy<() => void>
+
 
   beforeEach(async () => {
     TestBed.configureTestingModule({
@@ -28,10 +28,11 @@ describe("CameraComponent", () => {
     rosService = TestBed.inject(RosService);
     fixture = TestBed.createComponent(CameraComponent);
     component = fixture.componentInstance;
-    formControl = component.refreshRateControl;
-    timer = jasmine.createSpyObj('timer', ['clearTimeout', 'setTimeout']);
     fixture.detectChanges();
+    spyUnsubscribeCamera = spyOn(rosService,'unsubscribeCameraTopic')
+
   });
+
 
   it("should create", () => {
     expect(component).toBeTruthy();
@@ -117,16 +118,15 @@ describe("CameraComponent", () => {
   });
 
   it("should stop the camera when i click on the stop camera button", () => {
-    const spy = spyOn(component, 'stopCamera')
     const stopBtn = fixture.debugElement.query(By.css("#stopCamera"));
     stopBtn.nativeElement.click()
-    expect(spy).toHaveBeenCalled()
+    expect(spyUnsubscribeCamera).toHaveBeenCalled();
   });
 
-  it("stopCamera should unsubscribe to the camera topic", () => {
-    const spySubscribe = spyOn(rosService,'unsubscribeCameraTopic')
-    component.stopCamera();
-    expect(spySubscribe).toHaveBeenCalled();
+
+  it("stopCamera should get called when OnDestroy is called", () => {
+    component.ngOnDestroy();
+    expect(spyUnsubscribeCamera).toHaveBeenCalled();
   });
 
 });

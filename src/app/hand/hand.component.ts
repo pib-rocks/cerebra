@@ -26,11 +26,14 @@ export class HandComponent implements OnInit {
   @Input() side = "left";
   messageReceiver$: Subject<MotorCurrentMessage> =
     new Subject<MotorCurrentMessage>();
+  displayAll!: string;
+  displayIndividuall!: string;
 
   constructor(
     private route: ActivatedRoute,
     private rosService: RosService,
     private router: Router
+    
   ) {}
 
   leftSwitchControl = new FormControl(false);
@@ -62,6 +65,7 @@ export class HandComponent implements OnInit {
     { motor: "middle_right_stretch", label: "Middle finger" },
     { motor: "ring_right_stretch", label: "Ring finger" },
     { motor: "pinky_right_stretch", label: "Pinky finger" },
+    
   ];
 
   currentRight = [
@@ -81,6 +85,7 @@ export class HandComponent implements OnInit {
   ];
 
   ngOnInit(): void {
+    this.displayIndividuall = 'none'
     this.route.params.subscribe((params: Params) => {
       this.side = params["side"];
     });
@@ -138,6 +143,8 @@ export class HandComponent implements OnInit {
     const switchControl =
       side === "left" ? this.leftSwitchControl : this.rightSwitchControl;
     if (switchControl.value === true) {
+      this.displayAll = 'block';
+      this.displayIndividuall = 'none';
       const indexFinger = this.childComponents.filter(
         (child) => child.labelName === "Index finger"
       )[0];
@@ -146,6 +153,7 @@ export class HandComponent implements OnInit {
       )[0];
       console.log("switchView childComponents length");
       console.log(this.childComponents.length);
+      let calledOposite = false;
       this.childComponents.forEach((child) => {
         if (child.labelName != "Thumb opposition") {
           child.sliderFormControl.setValue(indexFinger.sliderFormControl.value);
@@ -182,12 +190,53 @@ export class HandComponent implements OnInit {
           child.degreeMax.setValue(thumbOppo.degreeMax.value);
           child.degreeMin.setValue(thumbOppo.degreeMin.value);
         }
-        child.sendAllMessagesCombined();
+
+        if (side === 'right') {
+          if(child.motorName === 'all_right_stretch'){
+            child.sendAllMessagesCombined();
+          }
+          if(child.motorName.includes('right_opposition') && !calledOposite){
+            calledOposite = true;
+            child.sendAllMessagesCombined();
+          }
+        }
+        if(side === 'left'){
+          if(child.motorName === 'all_left_stretch'){
+            child.sendAllMessagesCombined();
+          }
+          if(child.motorName.includes('left_opposition') && !calledOposite){
+            calledOposite = true;
+            child.sendAllMessagesCombined();
+          }
+        }
       });
+      
     } else {
-      this.childComponents.forEach((child) => {
-        child.sendAllMessagesCombined();
-      });
+      this.displayAll = 'none';
+      this.displayIndividuall = 'block';
+      let calledOposite = false;
+      if(side === 'right') {
+        this.childComponents.forEach((child) => {
+          if(child.motorName === 'all_right_stretch'){
+          child.sendAllMessagesCombined();
+        }
+        if(child.motorName.includes('right_opposition') && !calledOposite){
+          calledOposite = true;
+          child.sendAllMessagesCombined();
+        }
+        });
+      } else {
+        this.childComponents.forEach((child) => {
+          if(child.motorName === 'all_left_stretch'){
+          child.sendAllMessagesCombined();
+        }
+        if(child.motorName.includes('left_opposition') && !calledOposite){
+          calledOposite = true;
+          child.sendAllMessagesCombined();
+        }
+        });
+      }
+
     }
   }
 }

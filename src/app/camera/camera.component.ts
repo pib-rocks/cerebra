@@ -1,6 +1,5 @@
-import { Component, OnInit, ViewChild } from "@angular/core";
+import { Component, OnDestroy, OnInit } from "@angular/core";
 import { FormControl } from "@angular/forms";
-import { Subject } from "rxjs";
 import * as ROSLIB from "roslib";
 import { RosService } from "../shared/ros.service";
 
@@ -9,7 +8,7 @@ import { RosService } from "../shared/ros.service";
   templateUrl: "./camera.component.html",
   styleUrls: ["./camera.component.css"],
 })
-export class CameraComponent implements OnInit {
+export class CameraComponent implements OnInit, OnDestroy {
   timer:any = null;
   isLoading = false;
   constructor(private rosService: RosService){  }
@@ -24,9 +23,14 @@ export class CameraComponent implements OnInit {
     })
   }
 
+  ngOnDestroy(): void {
+    this.stopCamera();
+  }
+
   imageSrc!: string;  
   componentName = "Live view";
   refreshRateControl = new FormControl(0.1);
+  qualityFactorControl = new FormControl(90);
   selectedSize = "480p";
 
   private imageTopic!: ROSLIB.Topic;
@@ -57,7 +61,6 @@ export class CameraComponent implements OnInit {
   stopCamera(){
     this.rosService.unsubscribeCameraTopic();
     //this.imageSrc = '../../assets/pib-Logo.png'
-
   }
 
 }
