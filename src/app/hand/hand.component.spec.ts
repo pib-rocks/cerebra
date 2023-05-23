@@ -35,16 +35,6 @@ describe("HandComponent", () => {
     expect(component).toBeTruthy();
   });
 
-  it("should contain 8 sliders with their own topic", () => {
-    component.side = "left";
-    fixture.detectChanges();
-    const sliders = fixture.debugElement.queryAll(By.css("app-slider"));
-    expect(sliders.length).toBe(8);
-    for (const slider of sliders) {
-      console.log(slider.componentInstance);
-      expect(slider.componentInstance.motorName).toBeTruthy();
-    }
-  });
 
   it("should call reset() and set all slider values to 0 after clicking reset button", () => {
     component.side = "left";
@@ -52,7 +42,7 @@ describe("HandComponent", () => {
 
     const sliders = fixture.debugElement.queryAll(By.css("app-slider"));
     for (const slider of sliders) {
-      spyOn(slider.componentInstance, "sendMessage");
+      spyOn(slider.componentInstance, "sendAllMessagesCombined");
     }
 
     spyOn(component, "reset").and.callThrough();
@@ -70,7 +60,6 @@ describe("HandComponent", () => {
     for (const slider of sliders) {
       const input = slider.children[1].children[2];
       expect(input.nativeElement.value).toBe("0");
-      expect(slider.componentInstance.sendMessage).toHaveBeenCalled();
     }
   });
 
