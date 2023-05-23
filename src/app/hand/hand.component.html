@@ -8,12 +8,11 @@
           <label class="form-check-label" for="switch">Control fingers individually</label>
         </div>
         <h2>{{ side | titlecase }} Hand</h2>
+        <app-slider [motorName]="thumbOppositionLeft.motor" [labelName]="thumbOppositionLeft.label" [isGroup]="true"  groupSide="left"></app-slider>
           <div *ngFor="let f of leftFingers" #leftContainer>
             <app-slider [motorName]="f.motor" [labelName]="f.label" [style.display]="displayIndividuall"></app-slider>
           </div>
-          <ng-container *ngFor="let h of leftHand" #leftContainer>
-            <app-slider [motorName]="h.motor" [labelName]="h.label" [isGroup]="true" [style.display]="displayAll" groupSide="left"></app-slider>
-          </ng-container>
+            <app-slider [motorName]="allFingersLeft.motor" [labelName]="allFingersLeft.label" [isGroup]="true" [style.display]="displayAll" groupSide="left"></app-slider>
         </ng-container>
 
       <ng-container *ngIf="side === 'right'">
@@ -23,12 +22,11 @@
           <label class="form-check-label" for="switch">Control fingers individually</label>
         </div>
         <h2>{{ side | titlecase }} Hand</h2>
+        <app-slider [motorName]="thumbOppositionRight.motor" [labelName]="thumbOppositionRight.label" [isGroup]="true" groupSide="right" ></app-slider>
           <ng-container *ngFor="let f of rightFingers" #rightContainer>
             <app-slider [motorName]="f.motor" [labelName]="f.label" [style.display]="displayIndividuall"></app-slider>
           </ng-container>
-          <ng-container *ngFor="let h of rightHand" #rightContainer>
-            <app-slider [motorName]="h.motor" [labelName]="h.label" [isGroup]="true" groupSide="right" [style.display]="displayAll"></app-slider>
-          </ng-container>
+          <app-slider [motorName]="allFingersRight.motor" [labelName]="allFingersRight.label" [isGroup]="true" groupSide="right" [style.display]="displayAll"></app-slider>  
         </ng-container>
       <div>
         <button id="resetButton" type="button" class="btn btn-primary my-4" (click)="reset()" id="resetButton">

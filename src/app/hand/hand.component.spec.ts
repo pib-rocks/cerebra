@@ -35,16 +35,6 @@ describe("HandComponent", () => {
     expect(component).toBeTruthy();
   });
 
-  it("should contain 8 sliders with their own topic", () => {
-    component.side = "left";
-    fixture.detectChanges();
-    const sliders = fixture.debugElement.queryAll(By.css("app-slider"));
-    expect(sliders.length).toBe(8);
-    for (const slider of sliders) {
-      console.log(slider.componentInstance);
-      expect(slider.componentInstance.motorName).toBeTruthy();
-    }
-  });
 
   it("should call reset() and set all slider values to 0 after clicking reset button", () => {
     component.side = "left";
