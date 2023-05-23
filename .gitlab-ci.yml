@@ -135,10 +135,10 @@ deploy-cerebra-on-pibrocks:
     - echo "preparing the build artifact"
     - mkdir -p cerebra && mv dist/cerebra/* cerebra/
     - rm -rf ./dist
-    - zip -r cerebra-latest.zip cerebra
-    - mkdir cerebrazipfolder && mv cerebra-latest.zip cerebrazipfolder
+    - zip -r $FILENAME cerebra
+    - mkdir cerebrazipfolder && mv $FILENAME cerebrazipfolder
     - cd cerebrazipfolder && ls -l
-    - ls -lk cerebra-latest.zip
+    - ls -lk $FILENAME
     - mkdir /root/.ssh
     - echo $PIB_ROCKS_PASSWORD
     - chmod 700 /root/.ssh
