@@ -17,8 +17,8 @@ init:
   script:
     - echo "pipeline initialized"
   rules:
-    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop"
-    - if: $CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "master"
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"
+    - if: $CI_COMMIT_BRANCH
 
 static_analysis:
   image: ${IMAGE}
@@ -29,8 +29,8 @@ static_analysis:
     - npm link @angular/cli
     - ng lint
   rules:
-    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop"
-    - if: $CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "master"
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"
+    - if: $CI_COMMIT_BRANCH
   cache:
     key:
       files:
@@ -58,8 +58,8 @@ run_tests:
     paths:
     - $CI_PROJECT_DIR/coverage
   rules:
-    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop"
-    - if: $CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "master"
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"
+    - if: $CI_COMMIT_BRANCH
   tags: ["lea"]
 
 sonarqube-check:
@@ -80,8 +80,8 @@ sonarqube-check:
     - sonar-scanner
   allow_failure: true
   rules:
-    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop"
-    - if: $CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "master"
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"
+    - if: $CI_COMMIT_BRANCH
 
 build_app:
   stage: build
@@ -95,7 +95,7 @@ build_app:
     paths:
       - dist/cerebra/
   rules:
-    - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "develop"
+    - if: $CI_COMMIT_BRANCH == "master"
   tags: ["lea"]
 
 rearrange_build_artifacts:
@@ -109,5 +109,5 @@ rearrange_build_artifacts:
     paths:
       - cerebra/
   rules:
-    - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "develop"
+    - if: $CI_COMMIT_BRANCH == "master"
   tags: ["lea"]
