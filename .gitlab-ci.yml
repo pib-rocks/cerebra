@@ -128,6 +128,8 @@ deploy-cerebra-on-pibrocks:
     SOURCE: "/builds/lea-labs/cerebra2/cerebrazipfolder/"
     DESTINATION: "/STRATO-apps/wordpress_01/app/wp-content/uploads/pib_data/"
     FILENAME: "cerebra-latest.zip"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
   script:
     - echo "running the build"
     - npm link @angular/cli
@@ -137,17 +139,11 @@ deploy-cerebra-on-pibrocks:
     - rm -rf ./dist
     - zip -r $FILENAME cerebra
     - mkdir cerebrazipfolder && mv $FILENAME cerebrazipfolder
-    - cd cerebrazipfolder && ls -l
-    - ls -lk $FILENAME
+    - cd cerebrazipfolder
     - mkdir /root/.ssh
-    - echo $PIB_ROCKS_PASSWORD
     - chmod 700 /root/.ssh
     - touch /root/.ssh/known_hosts
     - chmod 600 /root/.ssh/known_hosts
     - ssh-keyscan -H $HOST >> /root/.ssh/known_hosts
     - lftp -d -e "mirror -P 4 --transfer-all --reverse  -X .* --verbose $SOURCE $DESTINATION; quit" -u "$USER","$PIB_ROCKS_PASSWORD" sftp://"$USER"@"$HOST" -p 22
-
-    # - lftp -d -e "cd STRATO-apps/wordpress_01/app/wp-content/uploads/pib_data && pwd && ls && quit" -u $USER,$PIB_ROCKS_PASSWORD sftp://ssh.strato.de -p 22
-    # - lftp -e "cd STRATO-apps/wordpress_01/app/wp-content/uploads/pib_data && pwd && ls && quit" -u "pib.rocks","pDAJ4dZCA79/YxUi" sftp://pib.rocks@ssh.strato.de -p 22
-    # - lftp -e "ls" -u $USER,$PASSWORD sftp://$USER -p 22
   tags: ["lea"]
