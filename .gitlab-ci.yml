@@ -124,7 +124,7 @@ deploy-cerebra-on-pibrocks:
   variables:
     USER: "pib.rocks"
     HOST: "ssh.strato.de"
-    SOURCE: "/builds/lea-labs/cerebra2/cerebrazipfolder"
+    SOURCE: "/builds/lea-labs/cerebra2/cerebrazipfolder/cerebra-latest2.zip"
     DESTINATION: "/STRATO-apps/wordpress_01/app/wp-content/uploads/pib_data"
   script:
     - echo "running the build"
