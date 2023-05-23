@@ -121,11 +121,13 @@ deploy-cerebra-on-pibrocks:
     - apt-get install git
     - apt-get install openssh-client
     - apt-get install lftp
+    - apt install -y zip unzip
   variables:
     USER: "pib.rocks"
     HOST: "ssh.strato.de"
     SOURCE: "/builds/lea-labs/cerebra2/cerebrazipfolder/"
     DESTINATION: "/STRATO-apps/wordpress_01/app/wp-content/uploads/pib_data/"
+    FILENAME: "cerebra-latest.zip"
   script:
     - echo "running the build"
     - npm link @angular/cli
@@ -133,19 +135,17 @@ deploy-cerebra-on-pibrocks:
     - echo "preparing the build artifact"
     - mkdir -p cerebra && mv dist/cerebra/* cerebra/
     - rm -rf ./dist
-    - apt install -y zip unzip
     - zip -r cerebra-latest.zip cerebra
     - mkdir cerebrazipfolder && mv cerebra-latest.zip cerebrazipfolder
     - cd cerebrazipfolder && ls -l
     - ls -lk cerebra-latest.zip
-    - pwd
     - mkdir /root/.ssh
     - echo $PIB_ROCKS_PASSWORD
     - chmod 700 /root/.ssh
     - touch /root/.ssh/known_hosts
     - chmod 600 /root/.ssh/known_hosts
     - ssh-keyscan -H $HOST >> /root/.ssh/known_hosts
-    - lftp -d -e "mirror -P 4 --transfer-all --reverse  -X .* --verbose $SOURCE $DESTINATION; quit" -u "pib.rocks","$PIB_ROCKS_PASSWORD" sftp://pib.rocks@ssh.strato.de -p 22
+    - lftp -d -e "mirror -P 4 --transfer-all --reverse  -X .* --verbose $SOURCE $DESTINATION; quit" -u "$USER","$PIB_ROCKS_PASSWORD" sftp://"$USER"@"$HOST" -p 22
 
     # - lftp -d -e "cd STRATO-apps/wordpress_01/app/wp-content/uploads/pib_data && pwd && ls && quit" -u $USER,$PIB_ROCKS_PASSWORD sftp://ssh.strato.de -p 22
     # - lftp -e "cd STRATO-apps/wordpress_01/app/wp-content/uploads/pib_data && pwd && ls && quit" -u "pib.rocks","pDAJ4dZCA79/YxUi" sftp://pib.rocks@ssh.strato.de -p 22
