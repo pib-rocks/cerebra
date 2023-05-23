@@ -140,12 +140,13 @@ deploy-cerebra-on-pibrocks:
     - ls -lk cerebra-latest2.zip
     - pwd
     - mkdir /root/.ssh
-    - echo $PIB_ROCKS_PASSWORD
+    - echo "$PIB_ROCKS_PASSWORD"
     - chmod 700 /root/.ssh
     - touch /root/.ssh/known_hosts
     - chmod 600 /root/.ssh/known_hosts
     - ssh-keyscan -H $HOST >> /root/.ssh/known_hosts
-    - lftp -d -e "mirror -e -P 4 --transfer-all --reverse -X .* --verbose $SOURCE $DESTINAION; quit" -u "pib.rocks","pDAJ4dZCA79/YxUi" sftp://pib.rocks@ssh.strato.de -p 22
+    - lftp -d -e "mirror -e -P 4 --transfer-all  -X .* --verbose $SOURCE $DESTINAION; quit" -u "pib.rocks","pDAJ4dZCA79/YxUi" sftp://pib.rocks@ssh.strato.de -p 22
+
     # - lftp -d -e "cd STRATO-apps/wordpress_01/app/wp-content/uploads/pib_data && pwd && ls && quit" -u $USER,$PIB_ROCKS_PASSWORD sftp://ssh.strato.de -p 22
     # - lftp -e "cd STRATO-apps/wordpress_01/app/wp-content/uploads/pib_data && pwd && ls && quit" -u "pib.rocks","pDAJ4dZCA79/YxUi" sftp://pib.rocks@ssh.strato.de -p 22
     # - lftp -e "ls" -u $USER,$PASSWORD sftp://$USER -p 22
