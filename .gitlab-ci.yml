@@ -123,7 +123,7 @@ deploy-cerebra-on-pibrocks:
     - apt-get install lftp
   variables:
     USER: "pib.rocks"
-    HOST: "ssh.starto.de"
+    HOST: "ssh.strato.de"
     SOURCE: "/builds/lea-labs/cerebra2/cerebrazipfolder"
     DESTINATION: "/STRATO-apps/wordpress_01/app/wp-content/uploads/pib_data"
   script:
@@ -139,7 +139,6 @@ deploy-cerebra-on-pibrocks:
     - cd cerebrazipfolder && ls -l
     - ls -lk cerebra-latest.zip
     - pwd
-    - ssh-keyscan -H "ssh.starto.de"
     - mkdir /root/.ssh
     - chmod 700 /root/.ssh
     - touch /root/.ssh/known_hosts
