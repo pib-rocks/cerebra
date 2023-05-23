@@ -124,8 +124,8 @@ deploy-cerebra-on-pibrocks:
   variables:
     USER: "pib.rocks"
     HOST: "ssh.starto.de"
-    SOURCE: ""
-    DESTINATION: ""
+    SOURCE: "/builds/lea-labs/cerebra2/cerebrazipfolder"
+    DESTINATION: "/STRATO-apps/wordpress_01/app/wp-content/uploads/pib_data"
   script:
     - echo "running the build"
     - npm link @angular/cli
@@ -135,7 +135,7 @@ deploy-cerebra-on-pibrocks:
     - rm -rf ./dist
     - apt install -y zip unzip
     - zip -r cerebra-latest.zip cerebra
-    - mkdir cerebrazipfolder && mv cerebra-latest.zip /cerebrazipfolder
+    - mkdir cerebrazipfolder && mv cerebra-latest.zip cerebrazipfolder
     - cd cerebrazipfolder && ls -l
     - ls -lk cerebra-latest.zip
     - pwd
