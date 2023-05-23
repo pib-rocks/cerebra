@@ -39,34 +39,28 @@ export class HandComponent implements OnInit {
   leftSwitchControl = new FormControl(false);
   rightSwitchControl = new FormControl(false);
 
-  leftHand = [
-    { motor: "all_left_stretch", label: "Open/Close all fingers" },
-    { motor: "thumb_left_opposition", label: "Thumb opposition" },
-  ];
 
   leftFingers = [
     { motor: "thumb_left_stretch", label: "Thumb" },
-    { motor: "thumb_left_opposition", label: "Thumb opposition" },
     { motor: "index_left_stretch", label: "Index finger" },
     { motor: "middle_left_stretch", label: "Middle finger" },
     { motor: "ring_left_stretch", label: "Ring finger" },
     { motor: "pinky_left_stretch", label: "Pinky finger" },
   ];
 
-  rightHand = [
-    { motor: "all_right_stretch", label: "Open/Close all fingers" },
-    { motor: "thumb_right_opposition", label: "Thumb opposition" },
-  ];
+  thumbOppositionLeft = { motor: "thumb_left_opposition", label: "Thumb opposition" };
+   allFingersLeft = { motor: "all_left_stretch", label: "Open/Close all fingers" };
+
 
   rightFingers = [
     { motor: "thumb_right_stretch", label: "Thumb" },
-    { motor: "thumb_right_opposition", label: "Thumb opposition" },
     { motor: "index_right_stretch", label: "Index finger" },
     { motor: "middle_right_stretch", label: "Middle finger" },
     { motor: "ring_right_stretch", label: "Ring finger" },
     { motor: "pinky_right_stretch", label: "Pinky finger" },
-    
   ];
+  thumbOppositionRight = { motor: "thumb_right_opposition", label: "Thumb opposition" };
+  allFingersRight = { motor: "all_right_stretch", label: "Open/Close all fingers" };
 
   currentRight = [
     { motor: "pinky-right", value: 500 },
