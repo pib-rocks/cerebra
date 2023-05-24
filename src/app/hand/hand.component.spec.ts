@@ -48,7 +48,7 @@ describe("HandComponent", () => {
     component.leftSwitchControl.setValue(true);
     component.rightSwitchControl.setValue(false);
     sliders.filter(child => !child.componentInstance.motorName.includes('all')).forEach((child) => {
-        spyOn(child.componentInstance,'sendAllMessagesCombined')
+        spyOn(child.componentInstance,'sendMessage')
     });
     fixture.detectChanges();
 
@@ -71,7 +71,7 @@ describe("HandComponent", () => {
     component.leftSwitchControl.setValue(false);
     component.rightSwitchControl.setValue(true);
     sliders.filter(child => !child.componentInstance.motorName.includes('all')).forEach((child) => {
-        spyOn(child.componentInstance,'sendAllMessagesCombined')
+        spyOn(child.componentInstance,'sendMessage')
     });
     fixture.detectChanges();
 
@@ -95,7 +95,7 @@ describe("HandComponent", () => {
     component.leftSwitchControl.setValue(false);
     component.rightSwitchControl.setValue(false);
     sliders.filter(child => child.componentInstance.motorName.includes('all') || child.componentInstance.motorName.includes('opposition')).forEach((child) => {
-        spyOn(child.componentInstance,'sendAllMessagesCombined')
+        spyOn(child.componentInstance,'sendMessage')
     });
     fixture.detectChanges();
 
@@ -118,7 +118,7 @@ describe("HandComponent", () => {
     component.leftSwitchControl.setValue(false);
     component.rightSwitchControl.setValue(false);
     sliders.filter(child => child.componentInstance.motorName.includes('all') || child.componentInstance.motorName.includes('opposition')).forEach((child) => {
-        spyOn(child.componentInstance,'sendAllMessagesCombined')
+        spyOn(child.componentInstance,'sendMessage')
     });
     fixture.detectChanges();
 

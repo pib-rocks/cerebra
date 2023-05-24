@@ -104,6 +104,25 @@ describe("CameraComponent", () => {
     expect(component.inputRefrechRate).toHaveBeenCalled();
   }));
 
+
+  it("should call refrechRate() in inputRefrechRate() on input event", fakeAsync(() => {
+    spyOn(window, 'clearTimeout');
+    spyOn(window, 'setTimeout');
+    spyOn(component,'inputQualityFactor').and.callThrough();
+    spyOn(component,'setQualityFactor');
+    const slider = fixture.nativeElement.querySelector("#qualityFactorSlider");
+    slider.value = 50;
+    slider.dispatchEvent(new Event("input"));
+    tick(500);
+    expect(window.clearTimeout).toHaveBeenCalled();
+    expect(window.setTimeout).toHaveBeenCalledWith(jasmine.any(Function), 500);
+    const timeoutCallback = (window.setTimeout as unknown as jasmine.Spy).calls.mostRecent().args[0];
+    timeoutCallback();
+    expect(component.inputQualityFactor).toHaveBeenCalled();
+    expect(component.setQualityFactor).toHaveBeenCalled();
+  }));
+
+
   it("should start the camera when i click on the start camera button", () => {
     const spyStartCamera = spyOn(component, 'startCamera')
     const startBtn = fixture.debugElement.query(By.css("#startCamera"));
