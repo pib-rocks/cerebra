@@ -96,7 +96,7 @@ build_app:
     paths:
       - dist/cerebra/
   rules:
-    - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "develop"
+    - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "develop"  || $CI_COMMIT_BRANCH == "PR-139"
   tags: ["lea"]
 
 rearrange_build_artifacts:
@@ -110,11 +110,12 @@ rearrange_build_artifacts:
     paths:
       - cerebra/
   rules:
-    - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "develop"
+    - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "PR-139"
   tags: ["lea"]
 
 deploy-cerebra-on-pibrocks:
   image: ${IMAGE}
+  needs: [rearrange_build_artifacts]
   stage: deploy-cerebra-on-pibrocks
   variables:
     USER: "pib.rocks"
@@ -122,26 +123,21 @@ deploy-cerebra-on-pibrocks:
     SOURCE: "/builds/lea-labs/cerebra2/cerebrazipfolder/"
     DESTINATION: "/STRATO-apps/wordpress_01/app/wp-content/uploads/pib_data/"
     FILENAME: "cerebra-latest.zip"
-    PIB_ROCKS_VARIABLE: "false"
   before_script:
     - apt-get update
     - apt-get install git
     - apt-get install openssh-client
     - apt-get install lftp
     - apt install -y zip unzip
-    - echo $PIB_ROCKS_VARIABLE
-    - echo $PIB_ROCKS_SCHEDULE
-    # - $PIB_ROCKS_VARIABLE = $PIB_ROCKS_SCHEDULE
-    # - echo $PIB_ROCKS_VARIABLE
   rules:
     - if: ($CI_PIPELINE_SOURCE == "schedule") && ($PIB_ROCKS_SCHEDULE == "true")
   script:
-    - echo "running the build"
-    - npm link @angular/cli
-    - ng build --configuration production
-    - echo "preparing the build artifact"
-    - mkdir -p cerebra && mv dist/cerebra/* cerebra/
-    - rm -rf ./dist
+    # - echo "running the build"
+    # - npm link @angular/cli
+    # - ng build --configuration production
+    # - echo "preparing the build artifact"
+    # - mkdir -p cerebra && mv dist/cerebra/* cerebra/
+    # - rm -rf ./dist
     - zip -r $FILENAME cerebra
     - mkdir cerebrazipfolder && mv $FILENAME cerebrazipfolder
     - cd cerebrazipfolder
