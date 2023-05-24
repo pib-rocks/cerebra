@@ -131,11 +131,10 @@ deploy-cerebra-on-pibrocks:
     - apt install -y zip unzip
     - echo $PIB_ROCKS_VARIABLE
     - echo $PIB_ROCKS_SCHEDULE
-    - $PIB_ROCKS_VARIABLE = $PIB_ROCKS_SCHEDULE
-    - echo $PIB_ROCKS_VARIABLE
+    # - $PIB_ROCKS_VARIABLE = $PIB_ROCKS_SCHEDULE
+    # - echo $PIB_ROCKS_VARIABLE
   rules:
-    - if: ($CI_PIPELINE_SOURCE == "schedule")
-    # && ($PIB_ROCKS_VARIABLE == "true")
+    - if: ($CI_PIPELINE_SOURCE == "schedule") && ($PIB_ROCKS_SCHEDULE == "true")
   script:
     - echo "running the build"
     - npm link @angular/cli
