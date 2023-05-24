@@ -15,6 +15,7 @@ export class CameraComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.refrechRate();
     this.rosService.setPreviewSize(640, 480);
+    this.rosService.setQualityFactor(80);
     this.imageSrc = '../../assets/pib-Logo.png'
     this.rosService.cameraReceiver$.subscribe(message => {
       this.imageSrc = 'data:image/jpeg;base64,' + message;
@@ -30,7 +31,7 @@ export class CameraComponent implements OnInit, OnDestroy {
   imageSrc!: string;  
   componentName = "Live view";
   refreshRateControl = new FormControl(0.1);
-  qualityFactorControl = new FormControl(90);
+  qualityFactorControl = new FormControl(80);
   selectedSize = "480p";
 
   private imageTopic!: ROSLIB.Topic;
@@ -62,5 +63,13 @@ export class CameraComponent implements OnInit, OnDestroy {
     this.rosService.unsubscribeCameraTopic();
     //this.imageSrc = '../../assets/pib-Logo.png'
   }
-
+  inputQualityFactor(){
+    clearTimeout(this.timer);
+    this.timer = setTimeout(() => {
+      this.setQualityFactor();
+    }, 500);
+}
+  setQualityFactor(){
+  this.rosService.setQualityFactor(this.qualityFactorControl.value);
+  }
 }

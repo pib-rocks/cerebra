@@ -3,9 +3,7 @@ import {
   Input,
   OnInit,
   QueryList,
-  ViewChild,
   ViewChildren,
-  isDevMode,
 } from "@angular/core";
 import { FormControl } from "@angular/forms";
 import { ActivatedRoute, Params } from "@angular/router";
