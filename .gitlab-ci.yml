@@ -18,8 +18,7 @@ init:
   script:
     - echo "pipeline initialized"
   rules:
-    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"
-    - if: $CI_COMMIT_BRANCH
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master" || $CI_COMMIT_BRANCH
 
 static_analysis:
   image: ${IMAGE}
@@ -30,8 +29,7 @@ static_analysis:
     - npm link @angular/cli
     - ng lint
   rules:
-    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"
-    - if: $CI_COMMIT_BRANCH
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master" || $CI_COMMIT_BRANCH
   cache:
     key:
       files:
@@ -59,7 +57,7 @@ run_tests:
     paths:
       - $CI_PROJECT_DIR/coverage
   rules:
-    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop"  || $CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop"  || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master" || $CI_COMMIT_BRANCH
   tags: ["lea"]
 
 sonarqube-check:
