@@ -28,6 +28,7 @@ export class HandComponent implements OnInit {
     new Subject<MotorCurrentMessage>();
   displayAll!: string;
   displayIndividuall!: string;
+  
 
   constructor(
     private route: ActivatedRoute,
@@ -103,10 +104,28 @@ export class HandComponent implements OnInit {
   }
 
   reset() {
+    let calledOposite = false;
     this.childComponents.forEach((child) => {
       if (child.sliderFormControl.value != 0) {
         child.sliderFormControl.setValue("0");
-        child.sendMessage();
+        if (this.side === 'right') {
+          if(child.motorName === 'all_right_stretch'){
+            child.sendAllMessagesCombined();
+          }
+          if(child.motorName.includes('right_opposition') && !calledOposite){
+            calledOposite = true;
+            child.sendAllMessagesCombined();
+          }
+        }
+        if(this.side === 'left'){
+          if(child.motorName === 'all_left_stretch'){
+            child.sendAllMessagesCombined();
+          }
+          if(child.motorName.includes('left_opposition') && !calledOposite){
+            calledOposite = true;
+            child.sendAllMessagesCombined();
+          }
+        }
       }
     });
   }

@@ -42,7 +42,7 @@ describe("HandComponent", () => {
 
     const sliders = fixture.debugElement.queryAll(By.css("app-slider"));
     for (const slider of sliders) {
-      spyOn(slider.componentInstance, "sendMessage");
+      spyOn(slider.componentInstance, "sendAllMessagesCombined");
     }
 
     spyOn(component, "reset").and.callThrough();
@@ -60,7 +60,6 @@ describe("HandComponent", () => {
     for (const slider of sliders) {
       const input = slider.children[1].children[2];
       expect(input.nativeElement.value).toBe("0");
-      expect(slider.componentInstance.sendMessage).toHaveBeenCalled();
     }
   });
 
