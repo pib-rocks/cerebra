@@ -116,20 +116,24 @@ rearrange_build_artifacts:
 deploy-cerebra-on-pibrocks:
   image: ${IMAGE}
   stage: deploy-cerebra-on-pibrocks
-  before_script:
-    - apt-get update
-    - apt-get install git
-    - apt-get install openssh-client
-    - apt-get install lftp
-    - apt install -y zip unzip
   variables:
     USER: "pib.rocks"
     HOST: "ssh.strato.de"
     SOURCE: "/builds/lea-labs/cerebra2/cerebrazipfolder/"
     DESTINATION: "/STRATO-apps/wordpress_01/app/wp-content/uploads/pib_data/"
     FILENAME: "cerebra-latest.zip"
+    PIB_ROCKS_VARIABLE: "false"
+  before_script:
+    - apt-get update
+    - apt-get install git
+    - apt-get install openssh-client
+    - apt-get install lftp
+    - apt install -y zip unzip
+    - echo $PIB_ROCKS_VARIABLE
+    - PIB_ROCKS_VARIABLE = PIB_ROCKS_SCHEDULE
+    - echo $PIB_ROCKS_VARIABLE
   rules:
-    - if: $CI_PIPELINE_SOURCE == "schedule"
+    - if: $CI_PIPELINE_SOURCE == "schedule" && $PIB_ROCKS_VARIABLE == true
   script:
     - echo "running the build"
     - npm link @angular/cli
