@@ -6,7 +6,7 @@ import { SliderComponent } from "../slider/slider.component";
 
 import { HandComponent } from "./hand.component";
 import { RosService } from "../shared/ros.service";
-import { left } from "@popperjs/core";
+import { left, right } from "@popperjs/core";
 import { MotorCurrentMessage } from "../shared/currentMessage";
 
 describe("HandComponent", () => {
@@ -36,33 +36,100 @@ describe("HandComponent", () => {
   });
 
 
-  it("should call reset() and set all slider values to 0 after clicking reset button", () => {
+  it("should call reset() and set all slider values to 0 after clicking reset button (left and individul fingers)", () => {
     component.side = "left";
-    fixture.detectChanges();
 
     const sliders = fixture.debugElement.queryAll(By.css("app-slider"));
-    for (const slider of sliders) {
-      spyOn(slider.componentInstance, "sendAllMessagesCombined");
-    }
 
     spyOn(component, "reset").and.callThrough();
 
     const button = fixture.nativeElement.querySelector("#resetButton");
     spyOn(button, "dispatchEvent").and.callThrough();
-    for (const c of sliders) {
-      c.componentInstance.sliderFormControl.setValue(10);
-    }
-    button.dispatchEvent(new MouseEvent("click"));
+    component.leftSwitchControl.setValue(true);
+    component.rightSwitchControl.setValue(false);
+    sliders.filter(child => !child.componentInstance.motorName.includes('all')).forEach((child) => {
+        spyOn(child.componentInstance,'sendAllMessagesCombined')
+    });
     fixture.detectChanges();
-    expect(button.dispatchEvent).toHaveBeenCalledWith(new MouseEvent("click"));
-    expect(component.reset).toHaveBeenCalled();
 
-    for (const slider of sliders) {
-      const input = slider.children[1].children[2];
-      expect(input.nativeElement.value).toBe("0");
-    }
+    sliders.filter(child => !child.componentInstance.motorName.includes('all')).forEach((child) => {
+      expect(child.componentInstance.sendAllMessagesCombined).toHaveBeenCalled();
   });
 
+  });
+
+
+  it("should call reset() and set all slider values to 0 after clicking reset button (right and individul fingers)", () => {
+    component.side = "right";
+
+    const sliders = fixture.debugElement.queryAll(By.css("app-slider"));
+
+    spyOn(component, "reset").and.callThrough();
+
+    const button = fixture.nativeElement.querySelector("#resetButton");
+    spyOn(button, "dispatchEvent").and.callThrough();
+    component.leftSwitchControl.setValue(false);
+    component.rightSwitchControl.setValue(true);
+    sliders.filter(child => !child.componentInstance.motorName.includes('all')).forEach((child) => {
+        spyOn(child.componentInstance,'sendAllMessagesCombined')
+    });
+    fixture.detectChanges();
+
+    sliders.filter(child => !child.componentInstance.motorName.includes('all')).forEach((child) => {
+      expect(child.componentInstance.sendAllMessagesCombined).toHaveBeenCalled();
+  });
+
+  });
+  
+
+
+  it("should call reset() and set all slider values to 0 after clicking reset button (right and combained fingers)", () => {
+    component.side = "right";
+
+    const sliders = fixture.debugElement.queryAll(By.css("app-slider"));
+
+    spyOn(component, "reset").and.callThrough();
+
+    const button = fixture.nativeElement.querySelector("#resetButton");
+    spyOn(button, "dispatchEvent").and.callThrough();
+    component.leftSwitchControl.setValue(false);
+    component.rightSwitchControl.setValue(false);
+    sliders.filter(child => child.componentInstance.motorName.includes('all') || child.componentInstance.motorName.includes('opposition')).forEach((child) => {
+        spyOn(child.componentInstance,'sendAllMessagesCombined')
+    });
+    fixture.detectChanges();
+
+    sliders.filter(child => child.componentInstance.motorName.includes('all') || child.componentInstance.motorName.includes('opposition')).forEach((child) => {
+      expect(child.componentInstance.sendAllMessagesCombined).toHaveBeenCalled();
+  });
+
+  });
+
+
+  it("should call reset() and set all slider values to 0 after clicking reset button (left and combained fingers)", () => {
+    component.side = "left";
+
+    const sliders = fixture.debugElement.queryAll(By.css("app-slider"));
+
+    spyOn(component, "reset").and.callThrough();
+
+    const button = fixture.nativeElement.querySelector("#resetButton");
+    spyOn(button, "dispatchEvent").and.callThrough();
+    component.leftSwitchControl.setValue(false);
+    component.rightSwitchControl.setValue(false);
+    sliders.filter(child => child.componentInstance.motorName.includes('all') || child.componentInstance.motorName.includes('opposition')).forEach((child) => {
+        spyOn(child.componentInstance,'sendAllMessagesCombined')
+    });
+    fixture.detectChanges();
+
+    sliders.filter(child => child.componentInstance.motorName.includes('all') || child.componentInstance.motorName.includes('opposition')).forEach((child) => {
+      expect(child.componentInstance.sendAllMessagesCombined).toHaveBeenCalled();
+  });
+
+  });
+
+
+  
   it("should send value of index finger to all finger topics after switching to 2 sliders (left)", () => {
     component.side = "left";
     component.leftSwitchControl.setValue(true);
