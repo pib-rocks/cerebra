@@ -130,6 +130,7 @@ deploy-cerebra-on-pibrocks:
     - apt-get install lftp
     - apt install -y zip unzip
     - echo $PIB_ROCKS_VARIABLE
+    - echo $PIB_ROCKS_SCHEDULE
     - $PIB_ROCKS_VARIABLE = $PIB_ROCKS_SCHEDULE
     - echo $PIB_ROCKS_VARIABLE
   rules:
