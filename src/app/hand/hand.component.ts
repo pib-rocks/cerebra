@@ -85,16 +85,16 @@ export class HandComponent implements OnInit {
       this.router.navigate(["/head"]);
     }
     this.rosService.currentReceiver$.subscribe((message) => {
-      for (let i = 0; i < this.currentLeft.length; i++) {
-        if (message["motor"] === this.currentLeft[i]["motor"]) {
+      for (const cl of this.currentLeft) {
+        if (message["motor"] === cl["motor"]) {
           console.log("current value" + message["currentValue"]);
-          this.currentLeft[i]["value"] = message["currentValue"];
+          cl["value"] = message["currentValue"];
         }
       }
-      for (let i = 0; i < this.currentRight.length; i++) {
-        if (message["motor"] === this.currentRight[i]["motor"]) {
+      for (const cr of this.currentRight) {
+        if (message["motor"] === cr["motor"]) {
           console.log("current value" + message["currentValue"]);
-          this.currentRight[i]["value"] = message["currentValue"];
+          cr["value"] = message["currentValue"];
         }
       }
     });
@@ -122,9 +122,9 @@ export class HandComponent implements OnInit {
 
   sendDummyMessage() {
     if (this.side === "left") {
-      for (let i = 0; i < this.currentLeft.length; i++) {
+      for (const cl of this.currentLeft) {
         const message: MotorCurrentMessage = {
-          motor: this.currentLeft[i]["motor"],
+          motor: cl["motor"],
           currentValue: Math.floor(Math.random() * 2000),
         };
         this.rosService.sendSliderMessage(message);
@@ -132,9 +132,9 @@ export class HandComponent implements OnInit {
     }
 
     if (this.side === "right") {
-      for (let i = 0; i < this.currentRight.length; i++) {
+      for (const cr of this.currentRight) {
         const message: MotorCurrentMessage = {
-          motor: this.currentRight[i]["motor"],
+          motor: cr["motor"],
           currentValue: Math.floor(Math.random() * 2000),
         };
         this.rosService.sendSliderMessage(message);

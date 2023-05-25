@@ -252,11 +252,6 @@ fixture.detectChanges();
   expect(component.displayIndividual).toBe('block');
   });
 
-
-
-
-
-
   it("should send dummy values", () => {
     component.side = "left";
     fixture.detectChanges();

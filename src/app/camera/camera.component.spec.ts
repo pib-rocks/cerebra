@@ -61,7 +61,7 @@ describe("CameraComponent", () => {
   });
 
   it("refreh rate should be set to 0.1 when the component is instantiated", () => {
-    const spy = spyOn(component, 'setRefrechRate')
+    const spy = spyOn(component, 'setRefreshRate')
     component.ngOnInit()
     expect(spy).toHaveBeenCalled();
   });
@@ -88,19 +88,19 @@ describe("CameraComponent", () => {
   it("should call refrechRate() in inputRefrechRate() on input event", fakeAsync(() => {
     spyOn(window, 'clearTimeout');
     spyOn(window, 'setTimeout');
-    spyOn(component,'inputRefrechRate').and.callThrough();
-    spyOn(component,'setRefrechRate');
+    spyOn(component,'inputRefreshRate').and.callThrough();
+    spyOn(component,'setRefreshRate');
     const slider = fixture.nativeElement.querySelector("#refreshRate");
     slider.value = 1;
     slider.dispatchEvent(new Event("input"));
-    component.inputRefrechRate();
+    component.inputRefreshRate();
     tick(500);
     expect(window.clearTimeout).toHaveBeenCalled();
     expect(window.setTimeout).toHaveBeenCalledWith(jasmine.any(Function), 500);
     const timeoutCallback = (window.setTimeout as unknown as jasmine.Spy).calls.mostRecent().args[0];
     timeoutCallback();
-    expect(component.setRefrechRate).toHaveBeenCalled();
-    expect(component.inputRefrechRate).toHaveBeenCalled();
+    expect(component.setRefreshRate).toHaveBeenCalled();
+    expect(component.inputRefreshRate).toHaveBeenCalled();
   }));
 
 

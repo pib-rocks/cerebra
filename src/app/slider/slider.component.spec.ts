@@ -227,9 +227,10 @@ describe("SliderComponent", () => {
     component.groupSide = "left";
     fixture.detectChanges();
     component.sendSettingMessage();
-    expect(motorService.getMotorHandNames).toHaveBeenCalledWith("left");
+    expect(spyMotorNames).toHaveBeenCalledWith("left");
     expect(rosService.sendSliderMessage).toHaveBeenCalledTimes(6);
   });
+
 
 
   it("should send a combined massege with all values if all inputs are valid", () => {
@@ -264,7 +265,12 @@ describe("SliderComponent", () => {
   });
 
 
+
   it("should send a combined massege with all values if not all inputs are valid", () => {
+    const spyMotorNames = spyOn(
+      motorService,
+      "getMotorHandNames"
+    ).and.callThrough();
     const message: Message = {
       motor: component.motorName,
       value: component.sliderFormControl.value,
@@ -276,17 +282,15 @@ describe("SliderComponent", () => {
     expect(rosService.sendSliderMessage).toHaveBeenCalledWith(
       jasmine.objectContaining(message)
     );
-    const spyMotorNames = spyOn(
-      motorService,
-      "getMotorHandNames"
-    ).and.callThrough();
+
     component.isCombinedSlider = true;
     component.groupSide = "left";
     fixture.detectChanges();
     component.sendAllMessagesCombined();
-    expect(motorService.getMotorHandNames).toHaveBeenCalledWith("left");
+    expect(spyMotorNames).toHaveBeenCalledWith("left");
     expect(rosService.sendSliderMessage).toHaveBeenCalledTimes(6);
   });
+
 
 
   it("should return null if max pulse is greater than min pulse", () => {
