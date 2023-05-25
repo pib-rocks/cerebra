@@ -1,9 +1,8 @@
 import { Component, Input, OnInit, QueryList, ViewChildren } from '@angular/core';
-import { ActivatedRoute, Params } from '@angular/router';
+import { ActivatedRoute, Params,Router } from '@angular/router';
 import { SliderComponent } from '../slider/slider.component';
 import { MotorCurrentMessage } from '../shared/currentMessage';
 import { RosService } from '../shared/ros.service';
-import { Router } from '@angular/router';
 
 @Component({
   selector: "app-right-arm",
@@ -90,7 +89,7 @@ export class ArmComponent implements OnInit {
           motor: this.currentLeft[i]["motor"],
           currentValue: Math.floor(Math.random() * 4000),
         };
-        this.rosService.sendMessage(message);
+        this.rosService.sendSliderMessage(message);
       }
     }
 
@@ -100,7 +99,7 @@ export class ArmComponent implements OnInit {
           motor: this.currentRight[i]["motor"],
           currentValue: Math.floor(Math.random() * 4000),
         };
-        this.rosService.sendMessage(message);
+        this.rosService.sendSliderMessage(message);
       }
     }
   }

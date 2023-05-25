@@ -65,14 +65,14 @@ describe("ArmComponent", () => {
     component.side = "left";
     fixture.detectChanges();
     const dummyBtnLEft = fixture.debugElement.query(By.css("#dummyBtnLeft"));
-    spyOn(rosService, "sendMessage");
+    spyOn(rosService, "sendSliderMessage");
     dummyBtnLEft.nativeElement.click();
-    expect(rosService.sendMessage).toHaveBeenCalledTimes(6);
+    expect(rosService.sendSliderMessage).toHaveBeenCalledTimes(6);
 
     component.side = "right";
     fixture.detectChanges();
     const dummyBtnRight = fixture.debugElement.query(By.css("#dummyBtnRight"));
     dummyBtnRight.nativeElement.click();
-    expect(rosService.sendMessage).toHaveBeenCalledTimes(12);
+    expect(rosService.sendSliderMessage).toHaveBeenCalledTimes(12);
   });
 });

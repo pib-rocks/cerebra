@@ -40,7 +40,7 @@ describe("RosService", () => {
 
     spyMotorCurrentTopic = spyOn(
       RosService.prototype,
-      "createMotorCurrentTopic"
+      "createMotorCurrentConsumptionTopic"
     ).and.returnValue(mockTopic as unknown as ROSLIB.Topic);
 
     spyCameraTopic = spyOn(
@@ -55,14 +55,8 @@ describe("RosService", () => {
 
     spySubscribeTopic = spyOn(
       RosService.prototype,
-      "subscribeTopic"
+      "subscribeSliderTopic"
     ).and.callThrough();
-
-    spySubscribeCurrentTopic = spyOn(
-      RosService.prototype,
-      "subscribeCurrentTopic"
-    );
-
     service = new RosService();
   });
 
@@ -107,13 +101,13 @@ describe("RosService", () => {
       name: "test",
       messageType: "std_msgs/String",
     });
-    const spySendMassege = spyOn(service, "sendMessage").and.callThrough();
-    const spyPublish = spyOn(service["messageTopic"], "publish");
+    const spySendMassege = spyOn(service, "sendSliderMessage").and.callThrough();
+    const spyPublish = spyOn(service["sliderMessageTopic"], "publish");
     const message = { motor: "test", value: "10" };
     const json = JSON.parse(JSON.stringify(message));
     const parameters = Object.keys(json).map((key) => ({ [key]: json[key] }));
     const msg = new ROSLIB.Message({ data: JSON.stringify(parameters) });
-    service.sendMessage(message);
+    service.sendSliderMessage(message);
     expect(spySendMassege).toHaveBeenCalled();
     expect(spyPublish).toHaveBeenCalledWith(msg);
   });
@@ -125,13 +119,13 @@ describe("RosService", () => {
       name: "test",
       messageType: "std_msgs/String",
     });
-    const spySendMassege = spyOn(service, "sendMessage").and.callThrough();
-    const spyPublish = spyOn(service["motorCurrentTopic"], "publish");
+    const spySendMassege = spyOn(service, "sendSliderMessage").and.callThrough();
+    const spyPublish = spyOn(service["motorCurrentConsumptionTopic"], "publish");
     const message = { motor: "test", currentValue: 10 };
     const json = JSON.parse(JSON.stringify(message));
     const parameters = Object.keys(json).map((key) => ({ [key]: json[key] }));
     const msg = new ROSLIB.Message({ data: JSON.stringify(parameters) });
-    service.sendMessage(message);
+    service.sendSliderMessage(message);
     expect(spySendMassege).toHaveBeenCalled();
     expect(spyPublish).toHaveBeenCalledWith(msg);
   });
@@ -143,7 +137,7 @@ describe("RosService", () => {
       name: "test",
       messageType: "std_msgs/String",
     });
-    const spySendMassege = spyOn(service, "sendMessage").and.callThrough();
+    const spySendMassege = spyOn(service, "sendSliderMessage").and.callThrough();
     const spyPublish = spyOn(service["voiceAssistantTopic"], "publish");
     const message = {
       activationFlag: true,
@@ -154,7 +148,7 @@ describe("RosService", () => {
     const json = JSON.parse(JSON.stringify(message));
     const parameters = Object.keys(json).map((key) => ({ [key]: json[key] }));
     const msg = new ROSLIB.Message({ data: JSON.stringify(parameters) });
-    service.sendMessage(message);
+    service.sendSliderMessage(message);
     expect(spySendMassege).toHaveBeenCalled();
     expect(spyPublish).toHaveBeenCalledWith(msg);
   });
@@ -168,7 +162,7 @@ describe("RosService", () => {
     const motor = { motor: "test", receiver$: receiver$ };
     (service as any).motors.push();
     const spyNext = spyOn(motor.receiver$, "next");
-    service.subscribeTopic();
+    service.subscribeSliderTopic();
     expect(spyNext).toHaveBeenCalled();
   });
 
@@ -217,7 +211,7 @@ export class RosMock {
   on() {
     this.service?.createMessageTopic();
     this.service?.createVoiceAssistantTopic();
-    this.service?.createMotorCurrentTopic();
+    this.service?.createMotorCurrentConsumptionTopic();
     this.service?.createCameraTopic();
     this.service?.createPreviewSizePublisher();
   }

@@ -6,12 +6,11 @@ import {
   ViewChildren,
 } from "@angular/core";
 import { FormControl } from "@angular/forms";
-import { ActivatedRoute, Params } from "@angular/router";
+import { ActivatedRoute, Params,Router } from "@angular/router";
 import { SliderComponent } from "../slider/slider.component";
 import { RosService } from "../shared/ros.service";
 import { MotorCurrentMessage } from "../shared/currentMessage";
 import { Subject } from "rxjs";
-import { Router } from "@angular/router";
 
 @Component({
   selector: "app-hand",
@@ -128,7 +127,7 @@ export class HandComponent implements OnInit {
           motor: this.currentLeft[i]["motor"],
           currentValue: Math.floor(Math.random() * 2000),
         };
-        this.rosService.sendMessage(message);
+        this.rosService.sendSliderMessage(message);
       }
     }
 
@@ -138,7 +137,7 @@ export class HandComponent implements OnInit {
           motor: this.currentRight[i]["motor"],
           currentValue: Math.floor(Math.random() * 2000),
         };
-        this.rosService.sendMessage(message);
+        this.rosService.sendSliderMessage(message);
       }
     }
   }

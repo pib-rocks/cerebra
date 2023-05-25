@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
-import { MatDialog } from "@angular/material/dialog";
+import { MatDialog, MatDialogModule } from "@angular/material/dialog";
 import { ProgramComponent } from "./program.component";
-import { MatDialogModule } from "@angular/material/dialog";
 import { By } from "@angular/platform-browser";
 
 describe("ProgramComponent", () => {

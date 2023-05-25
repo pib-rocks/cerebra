@@ -46,7 +46,7 @@ export class HeadComponent implements OnInit {
         motor: this.currentConsumptionOfMotors[i]["motor"],
         currentValue: Math.floor(Math.random() * 2000),
       };
-      this.rosService.sendMessage(message);
+      this.rosService.sendSliderMessage(message);
     }
   }
 

@@ -134,14 +134,14 @@ export class SliderComponent implements OnInit {
           motor: mn,
           value: this.sliderFormControl.value,
         };
-        this.rosService.sendMessage(message);
+        this.rosService.sendSliderMessage(message);
       });
     } else {
       const message: Message = {
         motor: this.motorName,
         value: this.sliderFormControl.value,
       };
-      this.rosService.sendMessage(message);
+      this.rosService.sendSliderMessage(message);
     }
   }
 
@@ -175,7 +175,7 @@ export class SliderComponent implements OnInit {
             deceleration: this.decelerationFormControl.value,
             period: this.periodFormControl.value,
           };
-          this.rosService.sendMessage(message);
+          this.rosService.sendSliderMessage(message);
         });
       } else {
         const message: Message = {
@@ -189,7 +189,7 @@ export class SliderComponent implements OnInit {
           deceleration: this.decelerationFormControl.value,
           period: this.periodFormControl.value,
         };
-        this.rosService.sendMessage(message);
+        this.rosService.sendSliderMessage(message);
       }
     }
   }
@@ -216,14 +216,14 @@ export class SliderComponent implements OnInit {
           motor: mn,
           turnedOn: this.motorFormControl.value,
         };
-        this.rosService.sendMessage(message);
+        this.rosService.sendSliderMessage(message);
       });
     } else {
       const message: Message = {
         motor: this.motorName,
         turnedOn: this.motorFormControl.value,
       };
-      this.rosService.sendMessage(message);
+      this.rosService.sendSliderMessage(message);
     }
   }
 
@@ -270,7 +270,7 @@ export class SliderComponent implements OnInit {
             deceleration: this.decelerationFormControl.value,
             period: this.periodFormControl.value,
           };
-          this.rosService.sendMessage(message);
+          this.rosService.sendSliderMessage(message);
         });
       } else {
         const message: Message = {
@@ -286,7 +286,7 @@ export class SliderComponent implements OnInit {
           deceleration: this.decelerationFormControl.value,
           period: this.periodFormControl.value,
         };
-        this.rosService.sendMessage(message);
+        this.rosService.sendSliderMessage(message);
       }
     } else {
       if (this.isCombinedSlider) {
@@ -297,7 +297,7 @@ export class SliderComponent implements OnInit {
             value: this.sliderFormControl.value,
             turnedOn: this.motorFormControl.value,
           };
-          this.rosService.sendMessage(message);
+          this.rosService.sendSliderMessage(message);
         });
       } else {
         const message: Message = {
@@ -305,7 +305,7 @@ export class SliderComponent implements OnInit {
           value: this.sliderFormControl.value,
           turnedOn: this.motorFormControl.value,
         };
-        this.rosService.sendMessage(message);
+        this.rosService.sendSliderMessage(message);
       }
     }
   }

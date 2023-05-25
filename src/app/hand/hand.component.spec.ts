@@ -6,8 +6,7 @@ import { SliderComponent } from "../slider/slider.component";
 
 import { HandComponent } from "./hand.component";
 import { RosService } from "../shared/ros.service";
-import { left, right } from "@popperjs/core";
-import { MotorCurrentMessage } from "../shared/currentMessage";
+
 
 describe("HandComponent", () => {
   let component: HandComponent;
@@ -262,14 +261,14 @@ fixture.detectChanges();
     component.side = "left";
     fixture.detectChanges();
     const dummyBtnLEft = fixture.debugElement.query(By.css("#dummyBtnLeft"));
-    spyOn(rosService, "sendMessage");
+    spyOn(rosService, "sendSliderMessage");
     dummyBtnLEft.nativeElement.click();
-    expect(rosService.sendMessage).toHaveBeenCalledTimes(5);
+    expect(rosService.sendSliderMessage).toHaveBeenCalledTimes(5);
 
     component.side = "right";
     fixture.detectChanges();
     const dummyBtnRight = fixture.debugElement.query(By.css("#dummyBtnRight"));
     dummyBtnRight.nativeElement.click();
-    expect(rosService.sendMessage).toHaveBeenCalledTimes(10);
+    expect(rosService.sendSliderMessage).toHaveBeenCalledTimes(10);
   });
 });

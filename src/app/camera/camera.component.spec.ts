@@ -5,7 +5,6 @@ import {
   tick,
 } from "@angular/core/testing";
 import {
-  FormControl,
   ReactiveFormsModule,
 } from "@angular/forms";
 import { CameraComponent } from "./camera.component";
