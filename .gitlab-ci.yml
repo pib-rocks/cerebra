@@ -4,6 +4,7 @@ stages:
   - sonar-scan
   - build
   - prepare-artifact
+  - deploy-cerebra-on-pibrocks
 
 variables:
   IMAGE: node:18-bullseye
@@ -17,8 +18,7 @@ init:
   script:
     - echo "pipeline initialized"
   rules:
-    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"
-    - if: $CI_COMMIT_BRANCH
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master" || $CI_COMMIT_BRANCH
 
 static_analysis:
   image: ${IMAGE}
@@ -29,8 +29,7 @@ static_analysis:
     - npm link @angular/cli
     - ng lint
   rules:
-    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"
-    - if: $CI_COMMIT_BRANCH
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master" || $CI_COMMIT_BRANCH
   cache:
     key:
       files:
@@ -56,32 +55,30 @@ run_tests:
     - ng test --code-coverage --watch=false --browsers=NoSandbox
   artifacts:
     paths:
-    - $CI_PROJECT_DIR/coverage
+      - $CI_PROJECT_DIR/coverage
   rules:
-    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"
-    - if: $CI_COMMIT_BRANCH
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop"  || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master" || $CI_COMMIT_BRANCH
   tags: ["lea"]
 
 sonarqube-check:
   stage: sonar-scan
   tags: ["lea"]
-  image: 
+  image:
     name: sonarsource/sonar-scanner-cli:latest
     entrypoint: [""]
   variables:
-    SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # Defines the location of the analysis task cache
-    GIT_DEPTH: "0"  # Tells git to fetch all the branches of the project, required by the analysis task
+    SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar" # Defines the location of the analysis task cache
+    GIT_DEPTH: "0" # Tells git to fetch all the branches of the project, required by the analysis task
   cache:
     key: "${CI_JOB_NAME}"
     paths:
       - .sonar/cache
-  script: 
+  script:
     - echo "runing sonarqube check"
     - sonar-scanner
   allow_failure: true
   rules:
-    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"
-    - if: $CI_COMMIT_BRANCH
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master" || $CI_COMMIT_BRANCH
 
 build_app:
   stage: build
@@ -110,4 +107,35 @@ rearrange_build_artifacts:
       - cerebra/
   rules:
     - if: $CI_COMMIT_BRANCH == "master"
+  tags: ["lea"]
+
+deploy-cerebra-on-pibrocks:
+  image: ${IMAGE}
+  needs: [rearrange_build_artifacts, run_tests]
+  stage: deploy-cerebra-on-pibrocks
+  variables:
+    USER: "pib.rocks"
+    HOST: "ssh.strato.de"
+    SOURCE: "/builds/lea-labs/cerebra2/cerebrazipfolder/"
+    DESTINATION: "/STRATO-apps/wordpress_01/app/wp-content/uploads/pib_data/"
+    FILENAME: "cerebra-latest.zip"
+  before_script:
+    - apt-get update
+    - apt-get install git
+    - apt-get install openssh-client
+    - apt-get install lftp
+    - apt-get install -y zip unzip
+  rules:
+    - if: ($CI_PIPELINE_SOURCE == "schedule") && ($PIB_ROCKS_SCHEDULE == "true") &&  $CI_COMMIT_BRANCH == "master"
+  script:
+    - zip -r $FILENAME cerebra
+    # put cerebra zip in cerebrazipfolder to transfer the whole file contents to pib-rocks server with the lftp command
+    - mkdir cerebrazipfolder && mv $FILENAME cerebrazipfolder
+    - cd cerebrazipfolder
+    - mkdir /root/.ssh
+    - chmod 700 /root/.ssh
+    - touch /root/.ssh/known_hosts
+    - chmod 600 /root/.ssh/known_hosts
+    - ssh-keyscan -H $HOST >> /root/.ssh/known_hosts
+    - lftp  -e "mirror --transfer-all --reverse  -X .* --verbose $SOURCE $DESTINATION; quit" -u "$USER","$PIB_ROCKS_PASSWORD" sftp://"$USER"@"$HOST" -p 22
   tags: ["lea"]
