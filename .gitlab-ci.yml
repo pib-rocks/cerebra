@@ -124,7 +124,7 @@ deploy-cerebra-on-pibrocks:
     - apt-get install git
     - apt-get install openssh-client
     - apt-get install lftp
-    - apt-get install zip unzip
+    - apt-get install -y zip unzip
   rules:
     - if: ($CI_PIPELINE_SOURCE == "schedule") && ($PIB_ROCKS_SCHEDULE == "true") && ( $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "PR-139" )
   script:
