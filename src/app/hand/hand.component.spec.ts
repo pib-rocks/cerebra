@@ -222,7 +222,7 @@ fixture.detectChanges();
     expect(child.componentInstance.sendAllMessagesCombined).toHaveBeenCalled();
   })
   expect(component.displayAll).toBe('none');
-  expect(component.displayIndividuall).toBe('block');
+  expect(component.displayIndividual).toBe('block');
   });
 
   it("should set all values to the value of the all_stretch slider (right)", () => {
@@ -249,7 +249,7 @@ fixture.detectChanges();
     expect(child.componentInstance.sendAllMessagesCombined).toHaveBeenCalled();
   })
   expect(component.displayAll).toBe('none');
-  expect(component.displayIndividuall).toBe('block');
+  expect(component.displayIndividual).toBe('block');
   });
 
 

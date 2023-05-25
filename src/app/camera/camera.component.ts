@@ -13,7 +13,7 @@ export class CameraComponent implements OnInit, OnDestroy {
   isLoading = false;
   constructor(private rosService: RosService){  }
   ngOnInit(): void {
-    this.refrechRate();
+    this.setRefrechRate();
     this.rosService.setPreviewSize(640, 480);
     this.rosService.setQualityFactor(80);
     this.imageSrc = '../../assets/pib-Logo.png'
@@ -45,13 +45,13 @@ export class CameraComponent implements OnInit, OnDestroy {
     }, 1500);
   }
 
-  refrechRate(){
+  setRefrechRate(){
     this.rosService.setTimerPeriod(this.refreshRateControl.value);
   }
   inputRefrechRate() {
     clearTimeout(this.timer);
     this.timer = setTimeout(() => {
-      this.refrechRate();
+      this.setRefrechRate();
     }, 500);
   }
 

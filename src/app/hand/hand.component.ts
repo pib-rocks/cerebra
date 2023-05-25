@@ -24,7 +24,7 @@ export class HandComponent implements OnInit {
   messageReceiver$: Subject<MotorCurrentMessage> =
     new Subject<MotorCurrentMessage>();
   displayAll!: string;
-  displayIndividuall!: string;
+  displayIndividual!: string;
   
 
   constructor(
@@ -77,7 +77,7 @@ export class HandComponent implements OnInit {
   ];
 
   ngOnInit(): void {
-    this.displayIndividuall = 'none'
+    this.displayIndividual = 'none'
     this.route.params.subscribe((params: Params) => {
       this.side = params["side"];
     });
@@ -147,7 +147,7 @@ export class HandComponent implements OnInit {
       side === "left" ? this.leftSwitchControl : this.rightSwitchControl;
     if (switchControl.value === true) {
       this.displayAll = 'block';
-      this.displayIndividuall = 'none';
+      this.displayIndividual = 'none';
       const indexFinger = this.childComponents.filter(
         (child) => child.labelName === "Index finger"
       )[0];
@@ -173,8 +173,8 @@ export class HandComponent implements OnInit {
           child.periodFormControl.setValue(indexFinger.periodFormControl.value);
           child.pulseMaxRange.setValue(indexFinger.pulseMaxRange.value);
           child.pulseMinRange.setValue(indexFinger.pulseMinRange.value);
-          child.degreeMax.setValue(indexFinger.degreeMax.value);
-          child.degreeMin.setValue(indexFinger.degreeMin.value);
+          child.degreeMaxFormcontrol.setValue(indexFinger.degreeMaxFormcontrol.value);
+          child.degreeMinFormcontrol.setValue(indexFinger.degreeMinFormcontrol.value);
         } else {
           child.sliderFormControl.setValue(thumbOppo.sliderFormControl.value);
           child.motorFormControl.setValue(thumbOppo.motorFormControl.value);
@@ -190,8 +190,8 @@ export class HandComponent implements OnInit {
           child.periodFormControl.setValue(thumbOppo.periodFormControl.value);
           child.pulseMaxRange.setValue(thumbOppo.pulseMaxRange.value);
           child.pulseMinRange.setValue(thumbOppo.pulseMinRange.value);
-          child.degreeMax.setValue(thumbOppo.degreeMax.value);
-          child.degreeMin.setValue(thumbOppo.degreeMin.value);
+          child.degreeMaxFormcontrol.setValue(thumbOppo.degreeMaxFormcontrol.value);
+          child.degreeMinFormcontrol.setValue(thumbOppo.degreeMinFormcontrol.value);
         }
 
         if (side === 'right') {
@@ -216,7 +216,7 @@ export class HandComponent implements OnInit {
       
     } else {
       this.displayAll = 'none';
-      this.displayIndividuall = 'block';
+      this.displayIndividual = 'block';
       let calledOposite = false;
       if(side === 'right') {
         this.childComponents.forEach((child) => {

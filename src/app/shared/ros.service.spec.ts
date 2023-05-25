@@ -96,13 +96,13 @@ describe("RosService", () => {
 
   it("The messageTopic should publish the message to rosbridge when calling sendMessage method, Incase the Message is of type Message", () => {
     service = new RosService();
-    (service as any).messageTopic = new ROSLIB.Topic({
+    (service as any).sliderMessageTopic = new ROSLIB.Topic({
       ros: mockRos as unknown as ROSLIB.Ros,
       name: "test",
       messageType: "std_msgs/String",
     });
     const spySendMassege = spyOn(service, "sendSliderMessage").and.callThrough();
-    const spyPublish = spyOn(service["sliderMessageTopic"], "publish");
+    const spyPublish = spyOn(service['sliderMessageTopic'], "publish");
     const message = { motor: "test", value: "10" };
     const json = JSON.parse(JSON.stringify(message));
     const parameters = Object.keys(json).map((key) => ({ [key]: json[key] }));
@@ -114,13 +114,13 @@ describe("RosService", () => {
 
   it("The motorCurrentTopic should publish the message to rosbridge when calling sendMessage method, Incase the Message is of type MotorCurrentMessage ", () => {
     service = new RosService();
-    (service as any).motorCurrentTopic = new ROSLIB.Topic({
+    (service as any).motorCurrentConsumptionTopic = new ROSLIB.Topic({
       ros: mockRos as unknown as ROSLIB.Ros,
       name: "test",
       messageType: "std_msgs/String",
     });
     const spySendMassege = spyOn(service, "sendSliderMessage").and.callThrough();
-    const spyPublish = spyOn(service["motorCurrentConsumptionTopic"], "publish");
+    const spyPublish = spyOn(service['motorCurrentConsumptionTopic'], "publish");
     const message = { motor: "test", currentValue: 10 };
     const json = JSON.parse(JSON.stringify(message));
     const parameters = Object.keys(json).map((key) => ({ [key]: json[key] }));
@@ -155,7 +155,7 @@ describe("RosService", () => {
 
   it("subscribeTopic should emmit a value to a subject", (): void => {
     const receiver$ = new Subject<Message>();
-    (service as any).messageTopic = new MockRosbridgeTopic(
+    (service as any).sliderMessageTopic = new MockRosbridgeTopic(
       "test",
       receiver$
     ) as unknown as ROSLIB.Topic;

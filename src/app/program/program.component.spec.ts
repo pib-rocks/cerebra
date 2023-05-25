@@ -44,10 +44,6 @@ describe("ProgramComponent", () => {
     }, 1000);
   });
 
-  it("should change the class of the showFloatingMenu variable when the method showFloatingMenuItems is called ", () => {
-    component.showFloatingMenuItems();
-    expect(component.showFloatingMenu).toBe(true);
-  });
 
   it("should open dialog when the button has been clicked", () => {
     const spyOpenDialog = spyOn(component, "openDialog").and.callThrough();

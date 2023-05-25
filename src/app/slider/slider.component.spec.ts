@@ -16,6 +16,8 @@ import {
 } from "../shared/validators";
 
 import { SliderComponent } from "./slider.component";
+import { VoiceAssistant } from "../shared/voice-assistant";
+import { MotorCurrentMessage } from "../shared/currentMessage";
 
 describe("SliderComponent", () => {
   let component: SliderComponent;
@@ -24,6 +26,7 @@ describe("SliderComponent", () => {
   let modalService: NgbModal;
   let fingerService: MotorService;
   let motorService: MotorService;
+  let  spySendMassege: jasmine.Spy<(msg: Message | VoiceAssistant | MotorCurrentMessage) => void>
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -38,6 +41,7 @@ describe("SliderComponent", () => {
     modalService = TestBed.inject(NgbModal);
     fingerService = TestBed.inject(MotorService);
     motorService = TestBed.inject(MotorService);
+    spySendMassege = spyOn(rosService, "sendSliderMessage");
     fixture.detectChanges();
   });
 
@@ -59,7 +63,6 @@ describe("SliderComponent", () => {
 
   it("should call sendMessage() of rosService when calling sendMessage()", () => {
     spyOn(component, "sendMessage").and.callThrough();
-    spyOn(rosService, "sendSliderMessage");
     component.sendMessage();
     expect(component.sendMessage).toHaveBeenCalled();
     expect(rosService.sendSliderMessage).toHaveBeenCalled();
@@ -105,7 +108,6 @@ describe("SliderComponent", () => {
     fixture.detectChanges();
     fingerService.getMotorHandNames(component.groupSide);
     spyOn(component, "sendMessage").and.callThrough();
-    spyOn(rosService, "sendSliderMessage");
     component.sendMessage();
     expect(rosService.sendSliderMessage).toHaveBeenCalledTimes(5);
   });
@@ -182,14 +184,14 @@ describe("SliderComponent", () => {
   }));
 
   it("should turn the motor on/off on checking the checkbox", () => {
-    const spyMotor = spyOn(component, "turnTheMotorOnAndOff").and.callThrough();
-    const spySendMassege = spyOn(rosService, "sendSliderMessage");
+    spyOn(component, "turnTheMotorOnAndOff").and.callThrough();
+    spyOn(motorService, "getMotorHandNames").and.callThrough();
     const motorName = component.motorName;
     const checkbox = fixture.debugElement.query(
       By.css("#checkbox_" + motorName)
     );
     checkbox.nativeElement.dispatchEvent(new Event("change"));
-    expect(spyMotor).toHaveBeenCalled();
+    expect(component.turnTheMotorOnAndOff).toHaveBeenCalled();
     expect(spySendMassege).toHaveBeenCalled();
 
     component.isCombinedSlider = true;
@@ -205,8 +207,8 @@ describe("SliderComponent", () => {
       motor: component.motorName,
       pule_widths_min: component.pulseMinRange.value,
       pule_widths_max: component.pulseMaxRange.value,
-      rotation_range_min: component.degreeMin.value,
-      rotation_range_max: component.degreeMax.value,
+      rotation_range_min: component.degreeMinFormcontrol.value,
+      rotation_range_max: component.degreeMaxFormcontrol.value,
       velocity: component.velocityFormControl.value,
       acceleration: component.accelerationFormControl.value,
       deceleration: component.decelerationFormControl.value,
@@ -216,6 +218,11 @@ describe("SliderComponent", () => {
     expect(rosService.sendSliderMessage).toHaveBeenCalledWith(
       jasmine.objectContaining(message)
     );
+
+    const spyMotorNames = spyOn(
+      motorService,
+      "getMotorHandNames"
+    ).and.callThrough();
     component.isCombinedSlider = true;
     component.groupSide = "left";
     fixture.detectChanges();
@@ -224,6 +231,7 @@ describe("SliderComponent", () => {
     expect(rosService.sendSliderMessage).toHaveBeenCalledTimes(6);
   });
 
+
   it("should send a combined massege with all values if all inputs are valid", () => {
     const message: Message = {
       motor: component.motorName,
@@ -231,8 +239,8 @@ describe("SliderComponent", () => {
       turnedOn: component.motorFormControl.value,
       pule_widths_min: component.pulseMinRange.value,
       pule_widths_max: component.pulseMaxRange.value,
-      rotation_range_min: component.degreeMin.value,
-      rotation_range_max: component.degreeMax.value,
+      rotation_range_min: component.degreeMinFormcontrol.value,
+      rotation_range_max: component.degreeMaxFormcontrol.value,
       velocity: component.velocityFormControl.value,
       acceleration: component.accelerationFormControl.value,
       deceleration: component.decelerationFormControl.value,
@@ -242,6 +250,11 @@ describe("SliderComponent", () => {
     expect(rosService.sendSliderMessage).toHaveBeenCalledWith(
       jasmine.objectContaining(message)
     );
+
+    const spyMotorNames = spyOn(
+      motorService,
+      "getMotorHandNames"
+    ).and.callThrough();
     component.isCombinedSlider = true;
     component.groupSide = "left";
     fixture.detectChanges();
@@ -249,6 +262,7 @@ describe("SliderComponent", () => {
     expect(motorService.getMotorHandNames).toHaveBeenCalledWith("left");
     expect(rosService.sendSliderMessage).toHaveBeenCalledTimes(6);
   });
+
 
   it("should send a combined massege with all values if not all inputs are valid", () => {
     const message: Message = {
@@ -262,7 +276,10 @@ describe("SliderComponent", () => {
     expect(rosService.sendSliderMessage).toHaveBeenCalledWith(
       jasmine.objectContaining(message)
     );
-
+    const spyMotorNames = spyOn(
+      motorService,
+      "getMotorHandNames"
+    ).and.callThrough();
     component.isCombinedSlider = true;
     component.groupSide = "left";
     fixture.detectChanges();
@@ -270,6 +287,7 @@ describe("SliderComponent", () => {
     expect(motorService.getMotorHandNames).toHaveBeenCalledWith("left");
     expect(rosService.sendSliderMessage).toHaveBeenCalledTimes(6);
   });
+
 
   it("should return null if max pulse is greater than min pulse", () => {
     const formcontrol1 = new FormControl(0);
