@@ -92,7 +92,7 @@ build_app:
     paths:
       - dist/cerebra/
   rules:
-    - if: $CI_COMMIT_BRANCH == "master" ||   $CI_COMMIT_BRANCH == "PR-139"
+    - if: $CI_COMMIT_BRANCH == "master"
   tags: ["lea"]
 
 rearrange_build_artifacts:
@@ -106,7 +106,7 @@ rearrange_build_artifacts:
     paths:
       - cerebra/
   rules:
-    - if: $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "PR-139"
+    - if: $CI_COMMIT_BRANCH == "master"
   tags: ["lea"]
 
 deploy-cerebra-on-pibrocks:
@@ -126,7 +126,7 @@ deploy-cerebra-on-pibrocks:
     - apt-get install lftp
     - apt-get install -y zip unzip
   rules:
-    - if: ($CI_PIPELINE_SOURCE == "schedule") && ($PIB_ROCKS_SCHEDULE == "true") && ( $CI_COMMIT_BRANCH == "master" || $CI_COMMIT_BRANCH == "PR-139" )
+    - if: ($CI_PIPELINE_SOURCE == "schedule") && ($PIB_ROCKS_SCHEDULE == "true") &&  $CI_COMMIT_BRANCH == "master"
   script:
     - zip -r $FILENAME cerebra
     # put cerebra zip in cerebrazipfolder to transfer the whole file contents to pib-rocks server with the lftp command
