@@ -3,9 +3,7 @@ import {
   Input,
   OnInit,
   QueryList,
-  ViewChild,
   ViewChildren,
-  isDevMode,
 } from "@angular/core";
 import { FormControl } from "@angular/forms";
 import { ActivatedRoute, Params } from "@angular/router";
@@ -28,6 +26,7 @@ export class HandComponent implements OnInit {
     new Subject<MotorCurrentMessage>();
   displayAll!: string;
   displayIndividuall!: string;
+  
 
   constructor(
     private route: ActivatedRoute,
@@ -103,12 +102,23 @@ export class HandComponent implements OnInit {
   }
 
   reset() {
-    this.childComponents.forEach((child) => {
-      if (child.sliderFormControl.value != 0) {
-        child.sliderFormControl.setValue("0");
-        child.sendMessage();
-      }
-    });
+    if (this.leftSwitchControl.value || this.rightSwitchControl.value){
+      console.log(this.leftSwitchControl.value || this.rightSwitchControl.value)
+      this.childComponents.filter(child => !child.motorName.includes('all')).forEach((child) => {
+        if (child.sliderFormControl.value != 0) {
+          child.sliderFormControl.setValue("0");
+          child.sendAllMessagesCombined();
+        }
+      });
+    } else {
+      this.childComponents.filter(child => child.motorName.includes('all') || child.motorName.includes('opposition')).forEach((child) => {
+        if (child.sliderFormControl.value != 0) {
+          child.sliderFormControl.setValue("0");
+          child.sendAllMessagesCombined();
+        }
+      });
+    }
+    
   }
 
   sendDummyMessage() {
