@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
-import { MatDialog } from "@angular/material/dialog";
+import { MatDialog, MatDialogModule } from "@angular/material/dialog";
 import { ProgramComponent } from "./program.component";
-import { MatDialogModule } from "@angular/material/dialog";
 import { By } from "@angular/platform-browser";
 
 describe("ProgramComponent", () => {
@@ -45,10 +44,6 @@ describe("ProgramComponent", () => {
     }, 1000);
   });
 
-  it("should change the class of the showFloatingMenu variable when the method showFloatingMenuItems is called ", () => {
-    component.showFloatingMenuItems();
-    expect(component.showFloatingMenu).toBe(true);
-  });
 
   it("should open dialog when the button has been clicked", () => {
     const spyOpenDialog = spyOn(component, "openDialog").and.callThrough();

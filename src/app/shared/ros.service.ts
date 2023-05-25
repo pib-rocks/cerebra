@@ -16,9 +16,9 @@ export class RosService {
     new Subject<MotorCurrentMessage>();
   cameraReceiver$: Subject<string> = new Subject<string>;
   private ros!: ROSLIB.Ros;
-  private messageTopic!: ROSLIB.Topic;
+  private sliderMessageTopic!: ROSLIB.Topic;
   private voiceAssistantTopic!: ROSLIB.Topic;
-  private motorCurrentTopic!: ROSLIB.Topic;
+  private motorCurrentConsumptionTopic!: ROSLIB.Topic;
   private cameraTopic!: ROSLIB.Topic;
   private timerPeriodPublisher!: ROSLIB.Topic;
   private previewSizePublisher!: ROSLIB.Topic;
@@ -37,15 +37,15 @@ export class RosService {
     this.ros.on("connection", () => {
       console.log("Connected to ROS");
       this.isInitializedSubject.next(true);
-      this.messageTopic = this.createMessageTopic();
+      this.sliderMessageTopic = this.createMessageTopic();
       this.voiceAssistantTopic = this.createVoiceAssistantTopic();
-      this.motorCurrentTopic = this.createMotorCurrentTopic();
+      this.motorCurrentConsumptionTopic = this.createMotorCurrentConsumptionTopic();
       this.cameraTopic = this.createCameraTopic();
       this.previewSizePublisher = this.createPreviewSizePublisher()
       this.timerPeriodPublisher = this.createTimePeriodPublisher();
       this.qualityFactorPublisher = this.createQualityFactorPublisher();
-      this.subscribeTopic();
-      this.subscribeCurrentTopic();
+      this.subscribeSliderTopic();
+      this.subscribeCurrentConsumptionTopic();
     });
     this.ros.on("error", (error: string) => {
       console.log("Error connecting to ROSBridge server:", error);
@@ -90,16 +90,16 @@ export class RosService {
     }
   }
 
-  sendMessage(msg: Message | VoiceAssistant | MotorCurrentMessage) {
+  sendSliderMessage(msg: Message | VoiceAssistant | MotorCurrentMessage) {
     const json = JSON.parse(JSON.stringify(msg));
     const parameters = Object.keys(json).map((key) => ({ [key]: json[key] }));
     const message = new ROSLIB.Message({ data: JSON.stringify(parameters) });
     if ("motor" in msg) {
       if ("currentValue" in msg) {
-        this.motorCurrentTopic?.publish(message);
+        this.motorCurrentConsumptionTopic?.publish(message);
         console.log("Sent message " + JSON.stringify(message));
       } else {
-        this.messageTopic?.publish(message);
+        this.sliderMessageTopic?.publish(message);
         console.log("Sent message " + JSON.stringify(message));
       }
     } else {
@@ -125,8 +125,8 @@ export class RosService {
     });
   }
 
-  subscribeTopic() {
-    this.messageTopic.subscribe((message) => {
+  subscribeSliderTopic() {
+    this.sliderMessageTopic.subscribe((message) => {
       const jsonStr = JSON.stringify(message);
       const json = JSON.parse(jsonStr);
       const jsonArray = JSON.parse(json["data"]);
@@ -146,8 +146,8 @@ export class RosService {
     });
   }
 
-  subscribeCurrentTopic() {
-    this.motorCurrentTopic.subscribe((message) => {
+  subscribeCurrentConsumptionTopic() {
+    this.motorCurrentConsumptionTopic.subscribe((message) => {
       const jsonStr = JSON.stringify(message);
       const json = JSON.parse(jsonStr);
       const jsonArray = JSON.parse(json["data"]);
@@ -179,7 +179,7 @@ export class RosService {
   }
 
   get Topic(): ROSLIB.Topic {
-    return this.messageTopic;
+    return this.sliderMessageTopic;
   }
 
   createMessageTopic(): ROSLIB.Topic {
@@ -198,7 +198,7 @@ export class RosService {
     });
   }
 
-  createMotorCurrentTopic(): ROSLIB.Topic {
+  createMotorCurrentConsumptionTopic(): ROSLIB.Topic {
     return new ROSLIB.Topic({
       ros: this.ros,
       name: this.topicCurrentName,

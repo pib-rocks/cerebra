@@ -1,9 +1,8 @@
 import { Component, Input, OnInit, QueryList, ViewChildren } from '@angular/core';
-import { ActivatedRoute, Params } from '@angular/router';
+import { ActivatedRoute, Params,Router } from '@angular/router';
 import { SliderComponent } from '../slider/slider.component';
 import { MotorCurrentMessage } from '../shared/currentMessage';
 import { RosService } from '../shared/ros.service';
-import { Router } from '@angular/router';
 
 @Component({
   selector: "app-right-arm",
@@ -12,7 +11,7 @@ import { Router } from '@angular/router';
 })
 export class ArmComponent implements OnInit {
   @Input() side = "Left";
-  @ViewChildren(SliderComponent) childComponents!: QueryList<SliderComponent>;
+  @ViewChildren(SliderComponent) childSilderComponents!: QueryList<SliderComponent>;
 
   constructor(private rosService: RosService, private route: ActivatedRoute, private router: Router) { }
 
@@ -24,16 +23,16 @@ export class ArmComponent implements OnInit {
       this.router.navigate(['/head']);
     }
     this.rosService.currentReceiver$.subscribe(message => {
-      for (let i = 0; i < this.currentLeft.length; i++) {
-        if (message["motor"] === this.currentLeft[i]["motor"]) {
+      for (const cl of this.currentLeft) {
+        if (message["motor"] === cl["motor"]) {
           console.log("current value" + message["currentValue"]);
-          this.currentLeft[i]["value"] = message["currentValue"];
+          cl["value"] = message["currentValue"];
         }
       }
-      for (let i = 0; i < this.currentRight.length; i++) {
-        if (message["motor"] === this.currentRight[i]["motor"]) {
+      for (const cr of this.currentRight) {
+        if (message["motor"] === cr["motor"]) {
           console.log("current value" + message["currentValue"]);
-          this.currentRight[i]["value"] = message["currentValue"];
+          cr["value"] = message["currentValue"];
         }
       }
     });
@@ -76,7 +75,7 @@ export class ArmComponent implements OnInit {
   ];
 
   reset() {
-    this.childComponents.forEach((child) => {
+    this.childSilderComponents.forEach((child) => {
       if (child.sliderFormControl.value != 0) {
         child.sliderFormControl.setValue(0);
         child.sendMessage();
@@ -85,22 +84,22 @@ export class ArmComponent implements OnInit {
   }
   sendDummyMessage() {
     if (this.side === "left") {
-      for (let i = 0; i < this.currentLeft.length; i++) {
+      for (const cl of this.currentLeft) {
         const message: MotorCurrentMessage = {
-          motor: this.currentLeft[i]["motor"],
+          motor: cl["motor"],
           currentValue: Math.floor(Math.random() * 4000),
         };
-        this.rosService.sendMessage(message);
+        this.rosService.sendSliderMessage(message);
       }
     }
 
     if (this.side === "right") {
-      for (let i = 0; i < this.currentRight.length; i++) {
+      for (const cr of this.currentRight) {
         const message: MotorCurrentMessage = {
-          motor: this.currentRight[i]["motor"],
+          motor: cr["motor"],
           currentValue: Math.floor(Math.random() * 4000),
         };
-        this.rosService.sendMessage(message);
+        this.rosService.sendSliderMessage(message);
       }
     }
   }

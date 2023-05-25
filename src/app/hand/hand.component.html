@@ -10,7 +10,7 @@
         <h2>{{ side | titlecase }} Hand</h2>
         <app-slider [motorName]="thumbOppositionLeft.motor" [labelName]="thumbOppositionLeft.label" [isGroup]="true"  groupSide="left"></app-slider>
           <div *ngFor="let f of leftFingers" #leftContainer>
-            <app-slider [motorName]="f.motor" [labelName]="f.label" [style.display]="displayIndividuall"></app-slider>
+            <app-slider [motorName]="f.motor" [labelName]="f.label" [style.display]="displayIndividual"></app-slider>
           </div>
             <app-slider [motorName]="allFingersLeft.motor" [labelName]="allFingersLeft.label" [isGroup]="true" [style.display]="displayAll" groupSide="left"></app-slider>
         </ng-container>
@@ -24,7 +24,7 @@
         <h2>{{ side | titlecase }} Hand</h2>
         <app-slider [motorName]="thumbOppositionRight.motor" [labelName]="thumbOppositionRight.label" [isGroup]="true" groupSide="right" ></app-slider>
           <ng-container *ngFor="let f of rightFingers" #rightContainer>
-            <app-slider [motorName]="f.motor" [labelName]="f.label" [style.display]="displayIndividuall"></app-slider>
+            <app-slider [motorName]="f.motor" [labelName]="f.label" [style.display]="displayIndividual"></app-slider>
           </ng-container>
           <app-slider [motorName]="allFingersRight.motor" [labelName]="allFingersRight.label" [isGroup]="true" groupSide="right" [style.display]="displayAll"></app-slider>  
         </ng-container>

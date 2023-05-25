@@ -17,17 +17,12 @@ import { toolbox } from "./blockly";
   styleUrls: ["./program.component.css"],
 })
 export class ProgramComponent implements OnInit, OnDestroy, AfterViewInit {
-  showFloatingMenu = false;
   closeResult!: string;
   workspace: any;
   json: any;
 
   observer!: ResizeObserver;
   @ViewChild("blocklyDiv") blocklyDiv!: ElementRef<HTMLDivElement>;
-
-  showFloatingMenuItems() {
-    this.showFloatingMenu = !this.showFloatingMenu;
-  }
 
   constructor(public dialog: MatDialog) {}
 

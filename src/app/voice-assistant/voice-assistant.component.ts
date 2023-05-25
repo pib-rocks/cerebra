@@ -26,7 +26,7 @@ export class VoiceAssistantComponent {
         threshold: this.voiceFormGroup.get("threshold")?.value,
         gender: this.voiceFormGroup.get("gender")?.value,
       };
-      this.rosService.sendMessage(msg);
+      this.rosService.sendSliderMessage(msg);
       this.voiceFormGroup.get("personality")?.setValue("");
     }
   }
@@ -35,6 +35,6 @@ export class VoiceAssistantComponent {
     const msg: VoiceAssistant = {
       activationFlag: this.activationFlag.value,
     };
-    this.rosService.sendMessage(msg);
+    this.rosService.sendSliderMessage(msg);
   }
 }

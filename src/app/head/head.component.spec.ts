@@ -31,9 +31,9 @@ describe("HeadComponent", () => {
   it("should send dummy values", () => {
     fixture.detectChanges();
     const dummyBtnLEft = fixture.debugElement.query(By.css("#dummyBtn"));
-    spyOn(rosService, "sendMessage");
+    spyOn(rosService, "sendSliderMessage");
     dummyBtnLEft.nativeElement.click();
-    expect(rosService.sendMessage).toHaveBeenCalledTimes(2);
+    expect(rosService.sendSliderMessage).toHaveBeenCalledTimes(2);
   });
 
   it("should call reset() and set all slider values to 0 after clicking reset button", () => {
