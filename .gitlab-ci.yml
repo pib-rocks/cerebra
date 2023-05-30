@@ -147,8 +147,8 @@ deploy-onshape-stls-files-on-pibrocks:
   before_script:
     - apt-get update
     - apt-get install git
-    - apt install python3-pip
-    - pip install onshape-to-robot
+    - apt-get install -y python3-pip
+    - pip install -y onshape-to-robot
   script:
     - mkdir on-shape-files
     - cp config.json on-shape-files
