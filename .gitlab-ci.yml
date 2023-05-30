@@ -19,7 +19,7 @@ init:
   script:
     - echo "pipeline initialized"
   rules:
-    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master" || $CI_COMMIT_BRANCH
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master" || $CI_COMMIT_BRANCH == "master"
 
 static_analysis:
   image: ${IMAGE}
@@ -30,7 +30,7 @@ static_analysis:
     - npm link @angular/cli
     - ng lint
   rules:
-    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master" || $CI_COMMIT_BRANCH
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master" || $CI_COMMIT_BRANCH == "master"
   cache:
     key:
       files:
@@ -58,7 +58,7 @@ run_tests:
     paths:
       - $CI_PROJECT_DIR/coverage
   rules:
-    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop"  || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master" || $CI_COMMIT_BRANCH
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop"  || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master" || $CI_COMMIT_BRANCH == "master"
   tags: ["lea"]
 
 sonarqube-check:
@@ -79,7 +79,7 @@ sonarqube-check:
     - sonar-scanner
   allow_failure: true
   rules:
-    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master" || $CI_COMMIT_BRANCH
+    - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master" || $CI_COMMIT_BRANCH == "master"
 
 build_app:
   stage: build
