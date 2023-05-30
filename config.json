@@ -1,0 +1,12 @@
+{
+  "onshape_api": "https://cad.onshape.com",
+  "onshape_access_key": "2SkzuCHIiKMxyNn7OwrsHesa",
+  "onshape_secret_key": "AytjsIlWzjEDNpIWptM9Ud2hm9HMegFYUKVtPsCn843wvPPX",
+  "documentId": "775cd57fa655e34e0a8b6d93",
+  "workspaceId": "92febd01e0f8e0ca52763848",
+  "assemblyName": "URDF",
+  "robotName": "Pib",
+  "packageName": "pib_test/meshes/",
+  "outputFormat": "urdf",
+  "addDummyBaseLink": "true"
+}
