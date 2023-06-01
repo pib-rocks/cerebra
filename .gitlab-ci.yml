@@ -127,7 +127,7 @@ deploy-cerebra-on-pibrocks:
     - apt-get install lftp
     - apt-get install -y zip unzip
   rules:
-    - if: ($CI_PIPELINE_SOURCE == "schedule") && ($PIB_ROCKS_SCHEDULE == "true") &&  $CI_COMMIT_BRANCH == "master"
+    - if: ($CI_PIPELINE_SOURCE == "schedule") && ($PIB_ROCKS_CEREBRA_SCHEDULE == "true") &&  $CI_COMMIT_BRANCH == "master"
   script:
     - zip -r $FILENAME cerebra
     # put cerebra zip in cerebrazipfolder to transfer the whole file contents to pib-rocks server with the lftp command
@@ -161,25 +161,27 @@ deploy-onshape-stls-files-on-pibrocks:
     - pip install ipython
     - apt-get install -y zip unzip
     - apt-get install lftp
+  rules:
+    - if: ($CI_PIPELINE_SOURCE == "schedule") && ($PIB_ROCKS_STL_FILES_SCHEDULE == "true") &&  $CI_COMMIT_BRANCH == "PR-142"
   script:
-    - mkdir stl-files
-    - cp onshape.py stl-files
-    - cd stl-files
-    #create directory new-folder
     - mkdir new-folder
-    # create directory pib-stls-latest inside new-folder directory
-    - mkdir new-folder/pib-stls-latest
-    # create four subdirectories (A-Head, B-Body, C-Arm and D-Hand_Fingers) in new-folder/pib-stls-lates
-    - mkdir new-folder/pib-stls-latest/A-Head new-folder/pib-stls-latest/B-Body new-folder/pib-stls-latest/C-Arm new-folder/pib-stls-latest/D-Hand_Fingers
+    - cp onshape.py new-folder
+    - cd new-folder
+    #create directory stl-files
+    - mkdir stl-files githubrepo
+    # create directory pib-stls-latest inside stl-files directory
+    - mkdir stl-files/pib-stls-latest
+    # create four subdirectories (A-Head, B-Body, C-Arm and D-Hand_Fingers) in stl-files/pib-stls-lates
+    - mkdir stl-files/pib-stls-latest/A-Head stl-files/pib-stls-latest/B-Body stl-files/pib-stls-latest/C-Arm stl-files/pib-stls-latest/D-Hand_Fingers
     # run the onshape.py script
     - python3 onshape.py "$ON_SHAPE_ACCESS_KEY" "$ON_SHAPE_SECRET_KEY"
     # The following commands move all stl files that are generated after executing the python coding to the specific subdirectory
     # Each file will be moved to the specific subdirectory depending on the first letter of the filename
-    - mv A??-*.stl new-folder/pib-stls-latest/A-Head
-    - mv B??-*.stl new-folder/pib-stls-latest/B-Body
-    - mv C??-*.stl new-folder/pib-stls-latest/C-Arm
-    - mv D??-*.stl new-folder/pib-stls-latest/D-Hand_Fingers
-    - cd new-folder
+    - mv A??-*.stl stl-files/pib-stls-latest/A-Head
+    - mv B??-*.stl stl-files/pib-stls-latest/B-Body
+    - mv C??-*.stl stl-files/pib-stls-latest/C-Arm
+    - mv D??-*.stl stl-files/pib-stls-latest/D-Hand_Fingers
+    - cd stl-files
     # generate the zip file the will be transferred to the pib.rocks server
     - zip -r pib-stls-latest.zip pib-stls-latest
     # gather the SSH host keys and save them in /root/.ssh/known_hosts
@@ -189,7 +191,12 @@ deploy-onshape-stls-files-on-pibrocks:
     - chmod 600 /root/.ssh/known_hosts
     - ssh-keyscan -H $HOST >> /root/.ssh/known_hosts
     # delete the directory
+    - cp pib-stls-latest ../githubrepo
+    - ls -lk
     - rm -r pib-stls-latest
+    - ls -lk
+    - cd ../githubrepo
+    - ls -lk
     # transfer the files to the server
     - lftp  -e "mirror --transfer-all --reverse  -X .* --verbose $SOURCE $DESTINATION; quit" -u "$USER","$PIB_ROCKS_PASSWORD" sftp://"$USER"@"$HOST" -p 22
 
