@@ -152,7 +152,7 @@ deploy-onshape-stls-files-on-pibrocks:
   script:
     - mkdir on-shape-files
     - cp onshape.py pib-stls-latest
-    - cd on-shape-files
+    - cd pib-stls-latest
     - ls -lk
     - python3 onshape.py
 
