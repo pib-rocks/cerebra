@@ -151,9 +151,9 @@ deploy-onshape-stls-files-on-pibrocks:
     - pip install onshape-to-robot
   script:
     - mkdir on-shape-files
-    - cp config.json on-shape-files
+    - cp onshape.py pib-stls-latest
     - cd on-shape-files
-    - onshape-to-robot /builds/lea-labs/cerebra2/on-shape-files/
+    - python onshape.py
     - ls -lk
 
   tags: ["lea"]
