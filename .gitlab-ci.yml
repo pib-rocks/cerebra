@@ -133,11 +133,13 @@ deploy-cerebra-on-pibrocks:
     # put cerebra zip in cerebrazipfolder to transfer the whole file contents to pib-rocks server with the lftp command
     - mkdir cerebrazipfolder && mv $FILENAME cerebrazipfolder
     - cd cerebrazipfolder
+    # gather the SSH host keys and save them in /root/.ssh/known_hosts
     - mkdir /root/.ssh
     - chmod 700 /root/.ssh
     - touch /root/.ssh/known_hosts
     - chmod 600 /root/.ssh/known_hosts
     - ssh-keyscan -H $HOST >> /root/.ssh/known_hosts
+    # transfer the files to the server
     - lftp  -e "mirror --transfer-all --reverse  -X .* --verbose $SOURCE $DESTINATION; quit" -u "$USER","$PIB_ROCKS_PASSWORD" sftp://"$USER"@"$HOST" -p 22
   tags: ["lea"]
 
@@ -163,25 +165,32 @@ deploy-onshape-stls-files-on-pibrocks:
     - mkdir stl-files
     - cp onshape.py stl-files
     - cd stl-files
+    #create directory new-folder
     - mkdir new-folder
+    # create directory pib-stls-latest inside new-folder directory
     - mkdir new-folder/pib-stls-latest
-    - mkdir new-folder/pib-stls-latest/A-Head
-    - mkdir new-folder/pib-stls-latest/B-Body
-    - mkdir new-folder/pib-stls-latest/C-Arm
-    - mkdir new-folder/pib-stls-latest/D-Hand_Fingers
+    # create four subdirectories (A-Head, B-Body, C-Arm and D-Hand_Fingers) in new-folder/pib-stls-lates
+    - mkdir new-folder/pib-stls-latest/A-Head new-folder/pib-stls-latest/B-Body new-folder/pib-stls-latest/C-Arm new-folder/pib-stls-latest/D-Hand_Fingers
+    # run the onshape.py script
     - python3 onshape.py "$ON_SHAPE_ACCESS_KEY" "$ON_SHAPE_SECRET_KEY"
+    # The following commands move all stl files that are generated after executing the python coding to the specific subdirectory
+    # Each file will be moved to the specific subdirectory depending on the first letter of the filename
     - mv A??-*.stl new-folder/pib-stls-latest/A-Head
     - mv B??-*.stl new-folder/pib-stls-latest/B-Body
     - mv C??-*.stl new-folder/pib-stls-latest/C-Arm
     - mv D??-*.stl new-folder/pib-stls-latest/D-Hand_Fingers
     - cd new-folder
+    # generate the zip file the will be transferred to the pib.rocks server
     - zip -r pib-stls-latest.zip pib-stls-latest
+    # gather the SSH host keys and save them in /root/.ssh/known_hosts
     - mkdir /root/.ssh
     - chmod 700 /root/.ssh
     - touch /root/.ssh/known_hosts
     - chmod 600 /root/.ssh/known_hosts
     - ssh-keyscan -H $HOST >> /root/.ssh/known_hosts
+    # delete the directory
     - rm -r pib-stls-latest
+    # transfer the files to the server
     - lftp  -e "mirror --transfer-all --reverse  -X .* --verbose $SOURCE $DESTINATION; quit" -u "$USER","$PIB_ROCKS_PASSWORD" sftp://"$USER"@"$HOST" -p 22
 
   tags: ["lea"]

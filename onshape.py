@@ -94,7 +94,5 @@ def exportSTL(url: str, name: str, elementId: str):
       f.write(response.data.encode())
         
 
- 
-if listParts:
-  for i in range(len(partResponse)):
-    exportSTL(url, partResponse[i]["name"],partResponse[i]["elementId"])
+for i in range(len(partResponse)):
+  exportSTL(url, partResponse[i]["name"],partResponse[i]["elementId"])
