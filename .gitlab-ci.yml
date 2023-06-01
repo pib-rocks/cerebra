@@ -147,7 +147,7 @@ deploy-onshape-stls-files-on-pibrocks:
   variables:
     USER: "pib.rocks"
     HOST: "ssh.strato.de"
-    SOURCE: "/builds/lea-labs/cerebra2/cerebrazipfolder/"
+    SOURCE: "/builds/lea-labs/cerebra2/stl-files/new-folder/"
     DESTINATION: "/STRATO-apps/wordpress_01/app/wp-content/uploads/pib_data/"
     FILENAME: "cerebra-latest.zip"
   before_script:
@@ -161,21 +161,19 @@ deploy-onshape-stls-files-on-pibrocks:
     - mkdir stl-files
     - cp onshape.py stl-files
     - cd stl-files
-    # - python3 onshape.py "$ON_SHAPE_ACCESS_KEY" "$ON_SHAPE_SECRET_KEY"
     - mkdir new-folder
+    - mkdir new-folder/pib-stls-latest
+    - mkdir new-folder/pib-stls-latest/A-Head
+    - mkdir new-folder/pib-stls-latest/B-Body
+    - mkdir new-folder/pib-stls-latest/C-Arm
+    - mkdir new-folder/pib-stls-latest/D-Hand_Fingers
+    - python3 onshape.py "$ON_SHAPE_ACCESS_KEY" "$ON_SHAPE_SECRET_KEY"
+    - mv A??-*.stl new-folder/pib-stls-latest/A-Head
+    - mv B??-*.stl new-folder/pib-stls-latest/B-Body
+    - mv C??-*.stl new-folder/pib-stls-latest/C-Arm
+    - mv D??-*.stl new-folder/pib-stls-latest/D-Hand_Fingers
     - cd new-folder
-    - pwd
-    # - mkdir new-folder/pib-stls-latest
-    # - mkdir new-folder/pib-stls-latest/A-Head
-    # - mkdir new-folder/pib-stls-latest/B-Body
-    # - mkdir new-folder/pib-stls-latest/C-Arm
-    # - mkdir new-folder/pib-stls-latest/D-Hand_Fingers
-    # - mv A??-*.stl new-folder/pib-stls-latest/A-Head
-    # - mv B??-*.stl new-folder/pib-stls-latest/B-Body
-    # - mv C??-*.stl new-folder/pib-stls-latest/C-Arm
-    # - mv D??-*.stl new-folder/pib-stls-latest/D-Hand_Fingers
-    # - cd new-folder
-    # - zip -r “pib-stls-latest.zip” pib-stls-latest
-    # - lftp  -e "mirror --transfer-all --reverse  -X .* --verbose $SOURCE $DESTINATION; quit" -u "$USER","$PIB_ROCKS_PASSWORD" sftp://"$USER"@"$HOST" -p 22
+    - zip -r “pib-stls-latest.zip” pib-stls-latest
+    - lftp  -e "mirror --transfer-all --reverse  -X .* --verbose $SOURCE $DESTINATION; quit" -u "$USER","$PIB_ROCKS_PASSWORD" sftp://"$USER"@"$HOST" -p 22
 
   tags: ["lea"]
