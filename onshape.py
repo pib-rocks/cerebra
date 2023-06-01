@@ -94,8 +94,7 @@ def exportSTL(url: str, name: str, elementId: str):
     file = name +'.stl'
     with open(file, 'wb') as f:
       f.write(response.data.encode())
-  else:
-    print("not found "+ name)  
+        
 
  
 if listParts:
