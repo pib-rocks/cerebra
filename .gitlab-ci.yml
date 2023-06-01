@@ -157,5 +157,6 @@ deploy-onshape-stls-files-on-pibrocks:
     - cd pib-stls-latest
     - ls -lk
     - python3 onshape.py
+    - ls -lk
 
   tags: ["lea"]
