@@ -153,6 +153,7 @@ deploy-onshape-stls-files-on-pibrocks:
     - apt-get update
     - apt-get install git
     - apt-get install -y python3-pip
+    - apt-get install python3
     - pip install onshape-client
     - apt-get install openssh-client
     - pip install ipython
@@ -168,7 +169,7 @@ deploy-onshape-stls-files-on-pibrocks:
     - mkdir new-folder/pib-stls-latest/B-Body
     - mkdir new-folder/pib-stls-latest/C-Arm
     - mkdir new-folder/pib-stls-latest/D-Hand_Fingers
-    - python onshape.py "$ON_SHAPE_ACCESS_KEY" "$ON_SHAPE_SECRET_KEY"
+    - python3 onshape.py "$ON_SHAPE_ACCESS_KEY" "$ON_SHAPE_SECRET_KEY"
     - mv A??-*.stl new-folder/pib-stls-latest/A-Head
     - mv B??-*.stl new-folder/pib-stls-latest/B-Body
     - mv C??-*.stl new-folder/pib-stls-latest/C-Arm
