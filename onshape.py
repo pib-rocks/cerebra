@@ -2,10 +2,15 @@ from onshape_client.client import Client
 from onshape_client.onshape_url import OnshapeElement
 import json
 import sys
+import re
+
 
 access = sys.argv[1]
 secret = sys.argv[2]
-
+patternOne = r"A\d{2}-"
+patternTwo = r"B\d{2}-"
+patternThree = r"C\d{2}-"
+patternFour = r"D\d{2}-"
 #@markdown Chage the base if using an enterprise (i.e. "https://ptc.onshape.com")
 base = 'https://cad.onshape.com' #@param {type:"string"}
 
@@ -85,8 +90,10 @@ def exportSTL(url: str, name: str, elementId: str):
   response = client.api_client.request(method, url=base + fixed_url, query_params=params, headers=headers, body=payload)
    
   file = name +'.stl'
-  with open(file, 'wb') as f:
-    f.write(response.data.encode()) 
+  if re.match(patternOne, name) and re.match(patternTwo, name) and re.match(patternThree, name) and re.match(patternFour, name):
+    with open(file, 'wb') as f:
+      f.write(response.data.encode())
+   
 
     
 
