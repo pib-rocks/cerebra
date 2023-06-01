@@ -40,8 +40,7 @@ else:
 #@title Get Parts in Document
 #@markdown Function `getPartsInDocument(url: str)` returns JSON of all parts in a document. The URL can be any element from the document.
 url = 'https://cad.onshape.com/documents/775cd57fa655e34e0a8b6d93/w/fff5b717a5ab3fbb93f6263c/e/2469ee3a35b80be2cc7edd03' #@param {type:"string"}
-showResponse = False#@param {type:"boolean"}
-listParts = True#@param {type:"boolean"}
+
 
 
 
