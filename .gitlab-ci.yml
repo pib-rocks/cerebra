@@ -164,12 +164,12 @@ deploy-onshape-stls-files-on-pibrocks:
     - cp onshape.py stl-files
     - cd stl-files
     - mkdir new-folder
-    - rmdir new-folder
     - mkdir new-folder/pib-stls-latest
     - mkdir new-folder/pib-stls-latest/A-Head
     - mkdir new-folder/pib-stls-latest/B-Body
     - mkdir new-folder/pib-stls-latest/C-Arm
     - mkdir new-folder/pib-stls-latest/D-Hand_Fingers
+    - rmdir new-folder
     - python3 onshape.py "$ON_SHAPE_ACCESS_KEY" "$ON_SHAPE_SECRET_KEY"
     - mv A??-*.stl new-folder/pib-stls-latest/A-Head
     - mv B??-*.stl new-folder/pib-stls-latest/B-Body
