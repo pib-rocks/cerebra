@@ -148,12 +148,11 @@ deploy-onshape-stls-files-on-pibrocks:
     - apt-get update
     - apt-get install git
     - apt-get install -y python3-pip
-    - pip install onshape-to-robot
   script:
     - mkdir on-shape-files
     - cp onshape.py pib-stls-latest
     - cd on-shape-files
-    - python onshape.py
+    - python3 onshape.py
     - ls -lk
 
   tags: ["lea"]
