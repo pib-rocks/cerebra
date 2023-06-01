@@ -156,7 +156,7 @@ deploy-onshape-stls-files-on-pibrocks:
     - cp onshape.py pib-stls-latest
     - cd pib-stls-latest
     - ls -lk
-    - python3 onshape.py
+    - python3 onshape.py "$ON_SHAPE_ACCESS_KEY" "$ON_SHAPE_SECRET_KEY"
     - ls -lk
 
   tags: ["lea"]
