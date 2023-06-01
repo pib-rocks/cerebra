@@ -149,7 +149,6 @@ deploy-onshape-stls-files-on-pibrocks:
     HOST: "ssh.strato.de"
     SOURCE: "/builds/lea-labs/cerebra2/stl-files/new-folder/"
     DESTINATION: "/STRATO-apps/wordpress_01/app/wp-content/uploads/pib_data/"
-    FILENAME: "cerebra-latest.zip"
   before_script:
     - apt-get update
     - apt-get install git
