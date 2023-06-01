@@ -176,7 +176,6 @@ deploy-onshape-stls-files-on-pibrocks:
     - mv D??-*.stl new-folder/pib-stls-latest/D-Hand_Fingers
     - cd new-folder
     - zip -r “pib-stls-latest.zip” pib-stls-latest
-    - ls -lk
     - mkdir /root/.ssh
     - chmod 700 /root/.ssh
     - touch /root/.ssh/known_hosts
