@@ -155,7 +155,10 @@ deploy-onshape-stls-files-on-pibrocks:
     - apt-get install -y python3-pip
     - apt-get install python3
     - pip install onshape-client
+    - apt-get install openssh-client
     - pip install ipython
+    - apt-get install -y zip unzip
+    - apt-get install lftp
   script:
     - mkdir stl-files
     - cp onshape.py stl-files
@@ -175,6 +178,11 @@ deploy-onshape-stls-files-on-pibrocks:
     - zip -r “pib-stls-latest.zip” pib-stls-latest
     - rm pib-stls-latest
     - ls -lk
+    - mkdir /root/.ssh
+    - chmod 700 /root/.ssh
+    - touch /root/.ssh/known_hosts
+    - chmod 600 /root/.ssh/known_hosts
+    - ssh-keyscan -H $HOST >> /root/.ssh/known_hosts
     - lftp  -e "mirror --transfer-all --reverse  -X .* --verbose $SOURCE $DESTINATION; quit" -u "$USER","$PIB_ROCKS_PASSWORD" sftp://"$USER"@"$HOST" -p 22
 
   tags: ["lea"]
