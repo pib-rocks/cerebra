@@ -161,8 +161,8 @@ deploy-onshape-stls-files-on-pibrocks:
     - pip install ipython
     - apt-get install -y zip unzip
     - apt-get install lftp
-  rules:
-    - if: ($CI_PIPELINE_SOURCE == "schedule") && ($PIB_ROCKS_STL_FILES_SCHEDULE == "true") &&  $CI_COMMIT_BRANCH == "PR-142"
+  # rules:
+  #   - if: ($CI_PIPELINE_SOURCE == "schedule") && ($PIB_ROCKS_STL_FILES_SCHEDULE == "true") &&  $CI_COMMIT_BRANCH == "PR-142"
   script:
     - mkdir new-folder
     - cp onshape.py new-folder
