@@ -153,7 +153,6 @@ deploy-onshape-stls-files-on-pibrocks:
     - mkdir on-shape-files
     - cp config.json on-shape-files
     - cd on-shape-files
-    - pwd
     - onshape-to-robot /builds/lea-labs/cerebra2/on-shape-files/
     - ls -lk
 
