@@ -173,6 +173,8 @@ deploy-onshape-stls-files-on-pibrocks:
     - mv D??-*.stl new-folder/pib-stls-latest/D-Hand_Fingers
     - cd new-folder
     - zip -r “pib-stls-latest.zip” pib-stls-latest
+    - rm pib-stls-latest
+    - ls -lk
     - lftp  -e "mirror --transfer-all --reverse  -X .* --verbose $SOURCE $DESTINATION; quit" -u "$USER","$PIB_ROCKS_PASSWORD" sftp://"$USER"@"$HOST" -p 22
 
   tags: ["lea"]
