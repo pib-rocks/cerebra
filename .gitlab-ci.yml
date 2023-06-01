@@ -150,7 +150,7 @@ deploy-onshape-stls-files-on-pibrocks:
     - apt-get install -y python3-pip
     - apt-get install python3
   script:
-    - mkdir on-shape-files
+    - mkdir pib-stls-latest
     - cp onshape.py pib-stls-latest
     - cd pib-stls-latest
     - ls -lk
