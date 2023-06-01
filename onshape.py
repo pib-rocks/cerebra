@@ -1,11 +1,10 @@
-access = '2SkzuCHIiKMxyNn7OwrsHesa'
-secret = 'AytjsIlWzjEDNpIWptM9Ud2hm9HMegFYUKVtPsCn843wvPPX'
-
-
-
 from onshape_client.client import Client
 from onshape_client.onshape_url import OnshapeElement
 import json
+import sys
+
+access = sys.argv[1]
+secret = sys.argv[2]
 
 #@markdown Chage the base if using an enterprise (i.e. "https://ptc.onshape.com")
 base = 'https://cad.onshape.com' #@param {type:"string"}
