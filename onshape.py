@@ -74,30 +74,30 @@ partResponse = getPartsInDocument(url)
 
 
 def exportSTL(url: str, name: str, elementId: str):
-  fixed_url = '/api/partstudios/d/did/w/wid/e/eid/stl'
-  element = OnshapeElement(url)
-  method = 'GET'
 
-  params = {}
-  payload = {}
-  headers = {'Accept': 'application/vnd.onshape.v1+octet-stream',
+  if re.match(patternOne, name) or re.match(patternTwo, name) or re.match(patternThree, name) or re.match(patternFour, name):
+    
+    fixed_url = '/api/partstudios/d/did/w/wid/e/eid/stl'
+    element = OnshapeElement(url)
+    method = 'GET'
+    params = {}
+    payload = {}
+    headers = {'Accept': 'application/vnd.onshape.v1+octet-stream',
             'Content-Type': 'application/json'}
 
-  fixed_url = fixed_url.replace('did', "775cd57fa655e34e0a8b6d93")
-  fixed_url = fixed_url.replace('wid', "fff5b717a5ab3fbb93f6263c")
-  fixed_url = fixed_url.replace('eid', elementId)
-
-  response = client.api_client.request(method, url=base + fixed_url, query_params=params, headers=headers, body=payload)
+    fixed_url = fixed_url.replace('did', "775cd57fa655e34e0a8b6d93")
+    fixed_url = fixed_url.replace('wid', "fff5b717a5ab3fbb93f6263c")
+    fixed_url = fixed_url.replace('eid', elementId)
+     
+    response = client.api_client.request(method, url=base + fixed_url, query_params=params, headers=headers, body=payload)
    
-  file = name +'.stl'
-  if re.match(patternOne, name) and re.match(patternTwo, name) and re.match(patternThree, name) and re.match(patternFour, name):
+    file = name +'.stl'
     with open(file, 'wb') as f:
       f.write(response.data.encode())
-   
+  else:
+    print("not found "+ name)  
 
-    
-
+ 
 if listParts:
-  print(len(partResponse))
   for i in range(len(partResponse)):
     exportSTL(url, partResponse[i]["name"],partResponse[i]["elementId"])
