@@ -7,10 +7,8 @@ import re
 
 access = sys.argv[1]
 secret = sys.argv[2]
-patternOne = r"A\d{2}-"
-patternTwo = r"B\d{2}-"
-patternThree = r"C\d{2}-"
-patternFour = r"D\d{2}-"
+pattern = r"^[ABCD]\d{2}-"
+
 #@markdown Chage the base if using an enterprise (i.e. "https://ptc.onshape.com")
 base = 'https://cad.onshape.com' #@param {type:"string"}
 
@@ -75,7 +73,7 @@ partResponse = getPartsInDocument(url)
 
 def exportSTL(url: str, name: str, elementId: str):
 
-  if re.match(patternOne, name) or re.match(patternTwo, name) or re.match(patternThree, name) or re.match(patternFour, name):
+  if re.match(pattern, name):
     
     fixed_url = '/api/partstudios/d/did/w/wid/e/eid/stl'
     element = OnshapeElement(url)
