@@ -164,6 +164,7 @@ deploy-onshape-stls-files-on-pibrocks:
     - cp onshape.py stl-files
     - cd stl-files
     - mkdir new-folder
+    - rmdir new-folder
     - mkdir new-folder/pib-stls-latest
     - mkdir new-folder/pib-stls-latest/A-Head
     - mkdir new-folder/pib-stls-latest/B-Body
