@@ -92,7 +92,7 @@ build_app:
     paths:
       - dist/cerebra/
   rules:
-    - if: $CI_COMMIT_BRANCH == "master" ||  $CI_COMMIT_BRANCH
+    - if: $CI_COMMIT_BRANCH == "master"
   tags: ["lea"]
 
 rearrange_build_artifacts:
@@ -106,7 +106,7 @@ rearrange_build_artifacts:
     paths:
       - cerebra/
   rules:
-    - if: $CI_COMMIT_BRANCH == "master" ||  $CI_COMMIT_BRANCH
+    - if: $CI_COMMIT_BRANCH == "master"
   tags: ["lea"]
 
 deploy-cerebra-on-pibrocks:
