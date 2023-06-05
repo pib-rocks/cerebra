@@ -125,7 +125,7 @@ deploy-cerebra-on-pibrocks:
     - apt-get install lftp
     - apt-get install -y zip unzip
   rules:
-    - if: ($CI_PIPELINE_SOURCE == "schedule") && ($PIB_ROCKS_SCHEDULE == "true") &&  $CI_COMMIT_BRANCH== "PR-142"
+    - if: ($CI_PIPELINE_SOURCE == "schedule") && ($PIB_ROCKS_SCHEDULE == "true") &&  $CI_COMMIT_BRANCH== "master"
   script:
     - zip -r $FILENAME cerebra
     - mkdir /root/.ssh
