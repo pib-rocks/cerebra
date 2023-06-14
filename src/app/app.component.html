@@ -6,12 +6,12 @@
           src="../assets/pib-Logo.png"
           alt=""
           class="img-fluid d-inline-block my-2"
-          width="117"
-          height="24"
+          width="250"
+          
           style="cursor: pointer"
           title="https://pib.rocks/"
         />
-        <span style="font-family: cursive; color: #e6007e">cerebra</span>
+        <span style="font-family: cursive; color: #e6007e"></span>
       </a>
       <div class="sidebar mt-12">
         <nav class="mt-12">
@@ -31,11 +31,12 @@
             >
               <a
                 id="joint-control-nav"
-                class="nav-link dropdown-toggle"
+                class="nav-link dropdown-toggle sidebar-btn"
                 href="#"
                 role="button"
                 aria-expanded="false"
               >
+              <img src="../assets/icon-joint-control.png" alt="icons" class="icons">
                 <p>Joint Control</p>
               </a>
 
@@ -48,7 +49,7 @@
                 <li class="nav-item" role="presentation">
                   <a
                     id="head-nav"
-                    class="nav-link"
+                    class="nav-link sidebar-btn"
                     [routerLinkActiveOptions]="{ exact: true }"
                     routerLinkActive="active"
                     routerLink="head"
@@ -60,7 +61,7 @@
                 <li class="nav-item" role="presentation">
                   <a
                     id="left-hand-nav"
-                    class="nav-link"
+                    class="nav-link sidebar-btn"
                     routerLinkActive="active"
                     routerLink="hand/left"
                   >
@@ -71,7 +72,7 @@
                 <li class="nav-item" role="presentation">
                   <a
                     id="right-hand-nav"
-                    class="nav-link"
+                    class="nav-link sidebar-btn"
                     routerLinkActive="active"
                     routerLink="hand/right"
                   >
@@ -82,7 +83,7 @@
                 <li class="nav-item" role="presentation">
                   <a
                     id="left-arm-nav"
-                    class="nav-link"
+                    class="nav-link sidebar-btn"
                     routerLinkActive="active"
                     routerLink="arm/left"
                   >
@@ -93,7 +94,7 @@
                 <li class="nav-item" role="presentation">
                   <a
                     id="right-arm-nav"
-                    class="nav-link"
+                    class="nav-link sidebar-btn"
                     routerLinkActive="active"
                     routerLink="arm/right"
                   >
@@ -106,10 +107,13 @@
             <li class="nav-item" role="presentation">
               <a
                 id="camera-nav"
-                class="nav-link"
+                class="nav-link sidebar-btn"
                 routerLinkActive="active"
                 routerLink="camera"
               >
+              <svg width="35px" height="35px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M4 6H16C16.55 6 17 6.45 17 7V10.5L21 6.5V17.5L17 13.5V17C17 17.55 16.55 18 16 18H4C3.45 18 3 17.55 3 17V7C3 6.45 3.45 6 4 6Z"/>
+                </svg>
                 <p>Camera</p>
               </a>
             </li>
@@ -117,10 +121,12 @@
             <li class="nav-item" role="presentation">
               <a
                 id="voice-assistant-nav"
-                class="nav-link"
+                class="nav-link sidebar-btn"
                 routerLinkActive="active"
                 routerLink="voice"
               >
+              <!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
+              <svg width="35px" height="35px" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><defs></defs><circle class="a" cx="14.3548" cy="19.496" r="4.934"/><path class="a" d="M24.7339,33.2758v1.6906a1.641,1.641,0,0,1-1.6447,1.6446H6.1447A1.641,1.641,0,0,1,4.5,34.9664V33.2758c2.1586-7.0207,18.973-5.8163,20.2339,0Z"/><path class="a" d="M25.258,20.877v5.0323"/><path class="a" d="M29.8186,16.2116V30.5745"/><path class="a" d="M34.3791,11.3891V35.3972"/><path class="a" d="M43.5,20.877v5.0323"/><path class="a" d="M38.94,16.2116V30.5745"/></svg>
                 <p>Voice Assistant</p>
               </a>
             </li>
@@ -128,10 +134,11 @@
             <li class="nav-item" role="presentation">
               <a
                 id="program-nav"
-                class="nav-link"
+                class="nav-link sidebar-btn"
                 routerLinkActive="active"
                 routerLink="program"
               >
+              <img src="../assets/icon-program.png" alt="icons" class="icons">
                 <p>Program</p>
               </a>
             </li>
@@ -150,6 +157,7 @@
             data-widget="pushmenu"
           ></button>
         </div>
+        
         <div>
           <router-outlet></router-outlet>
         </div>

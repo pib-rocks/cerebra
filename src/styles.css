@@ -1,0 +1,14 @@
+@font-face {
+    font-family: 'MyFont';
+    src: url('/assets/Roboto/Roboto-Bold.ttf');
+  }
+
+  @font-face {
+    font-family: 'Font';
+    src: url('/assets/Roboto/Roboto-ThinItalic.ttf');
+  }
+  @import "~bootstrap-icons/font/bootstrap-icons.css";
+
+  *{
+    background-color: black !important;
+  }
