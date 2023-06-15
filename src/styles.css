@@ -1,14 +1,15 @@
+html{
+    background-color: rgb(0, 0, 0);
+  }
 @font-face {
-    font-family: 'MyFont';
-    src: url('/assets/Roboto/Roboto-Bold.ttf');
+    font-family: 'Titillium';
+    src: url('/assets/Titillium_Web/TitilliumWeb-Bold.ttf');
   }
 
   @font-face {
     font-family: 'Font';
     src: url('/assets/Roboto/Roboto-ThinItalic.ttf');
   }
-  @import "~bootstrap-icons/font/bootstrap-icons.css";
 
-  *{
-    background-color: black !important;
-  }
+@import "~bootstrap-icons/font/bootstrap-icons.css";
+
