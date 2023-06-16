@@ -39,16 +39,6 @@
   color: #e6007e !important;
 }
 
-.icons {
-  margin: 10px;
-  fill:#0094de;
-  stroke:#0094de;
-}
-
-p{
-  font-family: Font;
-}
-
 .a{fill:none;stroke:#0094de;stroke-linecap:round;stroke-linejoin:round;}
 
 svg path{
