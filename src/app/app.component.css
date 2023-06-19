@@ -1,6 +1,3 @@
-
-
-
 .main-sidebar {
   background-color: #041939;
 }
@@ -11,81 +8,78 @@
 
 .nav-link.sidebar-btn {
   margin: 10px 10px 10px 8px;
-
   font-family: Titillium;
-
   font-size: 16px;
-
   font-weight: bold;
-
   letter-spacing: 0.4px;
-
   text-align: left;
-
-  color: #0094de ;
-
-
+  color: #0094de;
   font-stretch: normal;
-
   font-style: normal;
-
   line-height: normal;
-
   letter-spacing: 0.4px;
   text-transform: uppercase;
 }
 
 .nav-link.sidebar-btn:hover {
-  color: #e6007e !important;
+  color: #e6007e;
 }
 
 .icons {
   margin: 10px;
-  fill:#0094de;
-  stroke:#0094de;
+  fill: #0094de;
+  stroke: #0094de;
 }
 
-p{
+p {
   font-family: Font;
 }
 
-.a{fill:none;stroke:#0094de;stroke-linecap:round;stroke-linejoin:round;}
+.a {
+  fill: none;
+  stroke: #0094de;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
 
-svg path{
+svg path {
   fill: #0094de;
   stroke: #0094de;
 
 }
 
-.btn-active{
+.btn-active {
   color: white;
   border-bottom: #e6007e solid 5px;
 }
 
-.btn-active svg path, .btn-active .a{
+.btn-active svg path,
+.btn-active .a {
   fill: #e6007e;
   stroke: #e6007e;
 }
 
-.nav-link.btn-active{
+.nav-link.btn-active {
   color: white !important;
 }
 
-.menu-open{
+.menu-open {
   color: #0094de;
 }
 
-.nav-sidebar>.nav-item.menu-open>.nav-link, [class*=sidebar-light-] .nav-sidebar>.nav-link {
+.nav-sidebar>.nav-item.menu-open>.nav-link,
+[class*=sidebar-light-] .nav-sidebar>.nav-link {
   color: #ffffff;
   border-bottom: #e6007e solid 5px;
 }
 
-.nav-sidebar>.nav-item.menu-open>.nav-link, [class*=sidebar-light-] .nav-sidebar>.nav-link>svg>path{
+.nav-sidebar>.nav-item.menu-open>.nav-link,
+[class*=sidebar-light-] .nav-sidebar>.nav-link>svg>path {
   fill: #e6007e;
   stroke: #e6007e;
 }
 
-.menu-is-opening svg path{
+.menu-is-opening svg path {
   fill: #e6007e;
   stroke: #e6007e;
 }
