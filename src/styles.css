@@ -1,5 +1,5 @@
 html{
-    background-color: rgb(0, 0, 0);
+  background-image: url("assets/bg-gesamt.png");
   }
 @font-face {
     font-family: 'Titillium';
@@ -12,4 +12,9 @@ html{
   }
 
 @import "~bootstrap-icons/font/bootstrap-icons.css";
+
+*{
+  margin: 0;
+  padding: 0;
+}
 

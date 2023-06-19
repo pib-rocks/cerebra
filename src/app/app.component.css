@@ -89,3 +89,12 @@ svg path{
   fill: #e6007e;
   stroke: #e6007e;
 }
+
+.content-wrapper{
+  background-image: url("../assets/bg-gesamt.png");
+  background-size: 100% auto;
+}
+
+.bi-list{
+  color: white;
+}

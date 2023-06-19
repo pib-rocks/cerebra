@@ -109,3 +109,23 @@
   top: 12%;
   left: 35%;
 }
+
+
+
+*{
+  margin: 0;
+  padding: 0;
+}
+
+ul li a {
+  color: #0094df;
+  padding: 1rem;
+  font-family: Titillium;
+}
+
+ul li {
+  background-image: linear-gradient(to top, #1e304d, #000);
+  width: 160px;
+  border: none;
+  border-bottom: 1px solid #0094df;
+}
