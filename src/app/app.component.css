@@ -21,17 +21,7 @@
 }
 
 .nav-link.sidebar-btn:hover {
-  color: #e6007e;
-}
-
-.icons {
-  margin: 10px;
-  fill: #0094de;
-  stroke: #0094de;
-}
-
-p {
-  font-family: Font;
+  color: #e6007e !important;
 }
 
 .a {
