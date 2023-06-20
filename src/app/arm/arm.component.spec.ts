@@ -6,6 +6,8 @@ import { SliderComponent } from "../slider/slider.component";
 
 import { ArmComponent } from "./arm.component";
 import { RosService } from "../shared/ros.service";
+import { NavBarComponent } from "../nav-bar/nav-bar.component";
+import { RouterTestingModule } from "@angular/router/testing";
 
 describe("ArmComponent", () => {
   let component: ArmComponent;
@@ -14,8 +16,8 @@ describe("ArmComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ArmComponent, SliderComponent],
-      imports: [AppRoutingModule, ReactiveFormsModule],
+      declarations: [ArmComponent, SliderComponent, NavBarComponent],
+      imports: [AppRoutingModule, ReactiveFormsModule, RouterTestingModule],
       providers: [RosService],
     }).compileComponents();
 

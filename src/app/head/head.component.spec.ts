@@ -5,6 +5,8 @@ import { RosService } from "../shared/ros.service";
 import { By } from "@angular/platform-browser";
 import { SliderComponent } from "../slider/slider.component";
 import { ReactiveFormsModule } from "@angular/forms";
+import { NavBarComponent } from "../nav-bar/nav-bar.component";
+import { RouterTestingModule } from "@angular/router/testing";
 
 describe("HeadComponent", () => {
   let component: HeadComponent;
@@ -13,8 +15,8 @@ describe("HeadComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [HeadComponent, SliderComponent],
-      imports: [ReactiveFormsModule],
+      declarations: [HeadComponent, SliderComponent, NavBarComponent],
+      imports: [ReactiveFormsModule, RouterTestingModule],
       providers: [RosService],
     }).compileComponents();
 

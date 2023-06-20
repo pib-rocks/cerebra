@@ -6,6 +6,7 @@ import { SliderComponent } from "../slider/slider.component";
 
 import { HandComponent } from "./hand.component";
 import { RosService } from "../shared/ros.service";
+import { NavBarComponent } from "../nav-bar/nav-bar.component";
 
 
 describe("HandComponent", () => {
@@ -15,7 +16,7 @@ describe("HandComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [HandComponent, SliderComponent],
+      declarations: [HandComponent, SliderComponent, NavBarComponent],
       imports: [RouterTestingModule, ReactiveFormsModule],
       providers: [RosService],
     }).compileComponents();

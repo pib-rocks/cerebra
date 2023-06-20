@@ -33,7 +33,8 @@
 }
 
 .nav-pills .nav-link.sidebar-btn:hover {
-  color: #e6007e;
+  color: white;
+  border-bottom: #e6007e solid 5px;
 }
 
 .icons {
@@ -104,4 +105,5 @@ svg path {
 
 .btn {
   padding: 0;
+  color: white;
 }
