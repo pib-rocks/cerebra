@@ -1,95 +1,29 @@
-<nav class="navbar navbar-expand-lg">
-  <div class="collapse navbar-collapse navbar-div" id="navbarSupportedContent">
-    <ul class="navbar-nav mr-auto">
-      <li class="nav-item">
-        <a id="head-nav" class="nav-link sidebar-btn" [routerLinkActiveOptions]="{ exact: true }"
-        routerLinkActive="btn-active" [routerLink]="['/head']">
-        Head
-      </a>
-      </li>
-      <li class="nav-item">
-        <a id="head-nav" class="nav-link sidebar-btn"
-        routerLinkActive="btn-active" [routerLink]="['/hand/left']">
-        Left Hand
-      </a>
-    </li>
-      <li class="nav-item">
-        <a id="right-hand-nav" class="nav-link sidebar-btn" routerLinkActive="btn-active"
-        [routerLink]="['/hand/right']">
-        Right Hand
-      </a>
-      </li>
-      <li class="nav-item">
-        <a id="left-arm-nav" class="nav-link sidebar-btn" routerLinkActive="btn-active" [routerLink]="['/arm/left']">
-          Left Arm
-        </a>
-      </li>
-      <li class="nav-item">
-        <a id="right-arm-nav" class="nav-link sidebar-btn" routerLinkActive="btn-active"
-        [routerLink]="['/arm/right']">
-        Right Arm
-      </a>
-      </li>
-    </ul>
-  </div>
-</nav>
-
+<app-nav-bar></app-nav-bar>
 <div class="container">
   <div class="row">
     <div class="col">
       <h3>Head</h3>
-      <app-slider
-        [motorName]="turnHeadMotor.name"
-        [labelName]="turnHeadMotor.label"
-      ></app-slider>
-      <app-slider
-        [motorName]="tiltForwardMotor.name"
-        [labelName]="tiltForwardMotor.label"
-      ></app-slider>
-      <app-slider
-        [motorName]="tiltSideWaysMotor.name"
-        [labelName]="tiltSideWaysMotor.label"
-        [showMotorSettingsButton]="false"
-        [showCheckBox]="false"
-      ></app-slider>
-      <button
-        id="resetButton"
-        type="button"
-        class="btn btn-primary my-4"
-        (click)="reset()"
-        id="resetButton"
-      >
+      <app-slider [motorName]="turnHeadMotor.name" [labelName]="turnHeadMotor.label"></app-slider>
+      <app-slider [motorName]="tiltForwardMotor.name" [labelName]="tiltForwardMotor.label"></app-slider>
+      <app-slider [motorName]="tiltSideWaysMotor.name" [labelName]="tiltSideWaysMotor.label"
+        [showMotorSettingsButton]="false" [showCheckBox]="false"></app-slider>
+      <button id="resetButton" type="button" class="btn btn-primary my-4" (click)="reset()" id="resetButton">
         Reset
       </button>
     </div>
     <div class="col">
       <div class="container-div">
-        <img
-          class="container"
-          style="width: 34rem"
-          src="../../assets/head.png"
-          alt=""
-        />
+        <img class="container" style="width: 34rem" src="../../assets/head.png" alt="" />
         <ng-container *ngFor="let obj of currentConsumptionOfMotors">
           <div [class]="obj['motor']">
             <span class="current">{{ obj["value"] }} mA</span>
-            <div
-              [style.height]="obj['value'] / 40 + 'px'"
-              class="color-indicator"
-              [class.color-indicator50-80]="
+            <div [style.height]="obj['value'] / 40 + 'px'" class="color-indicator" [class.color-indicator50-80]="
                 obj['value'] / 20 > 50 && obj['value'] / 20 < 80
-              "
-              [class.color-indicator80-100]="obj['value'] / 20 >= 80"
-            ></div>
+              " [class.color-indicator80-100]="obj['value'] / 20 >= 80"></div>
           </div>
         </ng-container>
       </div>
-      <button
-        id="dummyValuesButton"
-        (click)="sendDummyMessage()"
-        class="btn btn-primary"
-        id="dummyBtn"
-      >
+      <button id="dummyValuesButton" (click)="sendDummyMessage()" class="btn btn-primary" id="dummyBtn">
         Dummy Values
       </button>
     </div>
