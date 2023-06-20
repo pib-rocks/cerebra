@@ -25,7 +25,22 @@
   
   }
   
-  ul li.navbar-btn-active, ul li.navbar-btn-active a {
+  ul li.navbar-btn-active{
+    background-image: linear-gradient(to top, #000, #1e304d);
+    width: 160px;
+    border: none;
+    border-left: 1px solid #0094df;
+    border-top: 3px solid #e6007e;
+    border-right: 3px solid #0094df;
+    z-index: 1;
+  }
+
+  ul li.navbar-btn-active a{
+    color: white;
+    z-index: 1;
+  }
+
+  .nav-tabs .nav-link:hover{
     background-image: linear-gradient(to top, #000, #1e304d);
     width: 160px;
     border: none;
@@ -33,10 +48,11 @@
     border-top: 3px solid #e6007e;
     border-right: 3px solid #0094df;
     color: white;
-    z-index: 1;
   }
-  
- .nav-tabs .nav-link:hover{
-    border-color: #e6007e;
-    border-bottom: 0;
- }
+
+  ul li.navbar-btn-active:hover{
+    background-image: linear-gradient(to top, #000, #1e304d);
+    width: 160px;
+    border: none;
+  }
+
