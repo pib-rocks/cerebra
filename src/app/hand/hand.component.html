@@ -5,38 +5,39 @@
 <div class="container-fluid">
   <div class="row">
     <div class="col">
+      <button id="home-position-btn" type="button" class="my-4 float-end  btn" (click)="reset()">
+        <img src="../../assets/icon-home-position.png" alt="" width="19px" height="24px">
+        Home position
+      </button>
       <ng-container *ngIf="side === 'left'">
-        <div class="form-check form-switch my-2">
-          <input class="form-check-input" type="checkbox" id="leftSwitch" [formControl]="leftSwitchControl"
-            (input)="switchView('left')" />
-          <label class="form-check-label" for="switch">Control fingers individually</label>
+        <div class="form-check form-switch my-4 ">
+          <input class="form-check-input" type="checkbox" id="flexSwitchCheckChecked2" [formControl]="leftSwitchControl" (input)="switchView('left')" >
+          <label class="form-check-label" for="flexSwitchCheckChecked2"><span>Control fingers individuall</span></label>
         </div>
         <h2>{{ side | titlecase }} Hand</h2>
-        <app-slider [motorName]="thumbOppositionLeft.motor" [labelName]="thumbOppositionLeft.label" [isGroup]="true"  groupSide="left"></app-slider>
-          <div *ngFor="let f of leftFingers" #leftContainer>
-            <app-slider [motorName]="f.motor" [labelName]="f.label" [style.display]="displayIndividual"></app-slider>
-          </div>
-            <app-slider [motorName]="allFingersLeft.motor" [labelName]="allFingersLeft.label" [isGroup]="true" [style.display]="displayAll" groupSide="left"></app-slider>
-        </ng-container>
+        <app-slider [motorName]="thumbOppositionLeft.motor" [labelName]="thumbOppositionLeft.label" [isGroup]="true"
+          groupSide="left"></app-slider>
+        <div *ngFor="let f of leftFingers" #leftContainer>
+          <app-slider [motorName]="f.motor" [labelName]="f.label" [style.display]="displayIndividual"></app-slider>
+        </div>
+        <app-slider [motorName]="allFingersLeft.motor" [labelName]="allFingersLeft.label" [isGroup]="true"
+          [style.display]="displayAll" groupSide="left"></app-slider>
+      </ng-container>
 
       <ng-container *ngIf="side === 'right'">
-        <div class="form-check form-switch my-2">
-          <input class="form-check-input" type="checkbox" id="rightSwitch" [formControl]="rightSwitchControl"
-            (input)="switchView('right')" />
-          <label class="form-check-label" for="switch">Control fingers individually</label>
+        <div class="form-check form-switch mt-3">
+          <input class="form-check-input" type="checkbox" id="flexSwitchCheckChecked2" [formControl]="rightSwitchControl" (input)="switchView('right')">
+          <label class="form-check-label" for="flexSwitchCheckChecked2"><span>Control fingers individuall</span></label>
         </div>
         <h2>{{ side | titlecase }} Hand</h2>
-        <app-slider [motorName]="thumbOppositionRight.motor" [labelName]="thumbOppositionRight.label" [isGroup]="true" groupSide="right" ></app-slider>
-          <ng-container *ngFor="let f of rightFingers" #rightContainer>
-            <app-slider [motorName]="f.motor" [labelName]="f.label" [style.display]="displayIndividual"></app-slider>
-          </ng-container>
-          <app-slider [motorName]="allFingersRight.motor" [labelName]="allFingersRight.label" [isGroup]="true" groupSide="right" [style.display]="displayAll"></app-slider>  
+        <app-slider [motorName]="thumbOppositionRight.motor" [labelName]="thumbOppositionRight.label" [isGroup]="true"
+          groupSide="right"></app-slider>
+        <ng-container *ngFor="let f of rightFingers" #rightContainer>
+          <app-slider [motorName]="f.motor" [labelName]="f.label" [style.display]="displayIndividual"></app-slider>
         </ng-container>
-      <div>
-        <button id="resetButton" type="button" class="btn btn-primary my-4" (click)="reset()" id="resetButton">
-          Reset
-        </button>
-      </div>
+        <app-slider [motorName]="allFingersRight.motor" [labelName]="allFingersRight.label" [isGroup]="true"
+          groupSide="right" [style.display]="displayAll"></app-slider>
+      </ng-container>
     </div>
     <div class="col">
       <!--right hand image-->

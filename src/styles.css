@@ -4,6 +4,14 @@ html{
 @font-face {
     font-family: 'Titillium';
     src: url('/assets/Titillium_Web/TitilliumWeb-Bold.ttf');
+    font-weight: bold;
+
+  }
+
+  @font-face {
+    font-family: 'Titillium';
+    src: url('/assets/Titillium_Web/TitilliumWeb-Regular.ttf');
+    font-weight: normal;
   }
 
   @font-face {
@@ -18,3 +26,13 @@ html{
   padding: 0;
 }
 
+.btn{
+  border: 1px solid white;
+  color: white;
+  font-family: Titillium;
+}
+
+.btn:hover{
+  border: 1px solid #e6007e;
+  color: #e6007e;
+}

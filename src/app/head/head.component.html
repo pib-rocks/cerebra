@@ -3,13 +3,15 @@
   <div class="row">
     <div class="col">
       <h3>Head</h3>
+      <button id="home-position-btn" type="button" class="my-4 float-end  btn" (click)="reset()">
+        <img src="../../assets/icon-home-position.png" alt="" width="19px" height="24px">
+        Home position
+      </button>
       <app-slider [motorName]="turnHeadMotor.name" [labelName]="turnHeadMotor.label"></app-slider>
       <app-slider [motorName]="tiltForwardMotor.name" [labelName]="tiltForwardMotor.label"></app-slider>
       <app-slider [motorName]="tiltSideWaysMotor.name" [labelName]="tiltSideWaysMotor.label"
         [showMotorSettingsButton]="false" [showCheckBox]="false"></app-slider>
-      <button id="resetButton" type="button" class="btn btn-primary my-4" (click)="reset()" id="resetButton">
-        Reset
-      </button>
+
     </div>
     <div class="col">
       <div class="container-div">

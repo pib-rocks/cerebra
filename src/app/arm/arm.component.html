@@ -4,6 +4,10 @@
 <div class="container-fluid">
   <div class="row">
     <div class="col">
+      <button id="home-position-btn" type="button" class="my-4 float-end  btn" (click)="reset()">
+        <img src="../../assets/icon-home-position.png" alt="" width="19px" height="24px">
+        Home position
+      </button>
       <h2>{{ side | titlecase }} Arm</h2>
       <ng-container *ngIf="side === 'left'">
         <ng-container *ngFor="let f of leftArm">
@@ -21,11 +25,6 @@
           ></app-slider>
         </ng-container>
       </ng-container>
-      <div>
-        <button id="resetButton" class="btn btn-primary my-4" (click)="reset()">
-          Reset
-        </button>
-      </div>
     </div>
 
     <!--right hand image-->
