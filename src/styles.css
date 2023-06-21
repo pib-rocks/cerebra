@@ -1,20 +1,30 @@
-html{
-  background-image: url("assets/bg-gesamt.png");
-  }
 @font-face {
-    font-family: 'Titillium';
-    src: url('/assets/Titillium_Web/TitilliumWeb-Bold.ttf');
-  }
+  font-family: 'Titillium';
+  src: url('/assets/Titillium_Web/TitilliumWeb-Bold.ttf');
+  font-weight: bold;
 
-  @font-face {
-    font-family: 'Font';
-    src: url('/assets/Roboto/Roboto-ThinItalic.ttf');
-  }
+}
+
+@font-face {
+  font-family: 'Titillium';
+  src: url('/assets/Titillium_Web/TitilliumWeb-Regular.ttf');
+  font-weight: normal;
+}
 
 @import "~bootstrap-icons/font/bootstrap-icons.css";
 
-*{
+* {
   margin: 0;
   padding: 0;
 }
 
+.btn {
+  border: 1px solid white;
+  color: white;
+  font-family: Titillium;
+}
+
+.btn:hover {
+  border: 1px solid #e6007e;
+  color: #e6007e;
+}
