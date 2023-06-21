@@ -8,27 +8,15 @@
 
 .nav-link.sidebar-btn {
   margin: 10px 10px 10px 8px;
-
   font-family: Titillium;
-
   font-size: 16px;
-
   font-weight: bold;
-
   letter-spacing: 0.4px;
-
   text-align: left;
-
   color: #0094de;
-
-
   font-stretch: normal;
-
   font-style: normal;
-
   line-height: normal;
-
-  letter-spacing: 0.4px;
   text-transform: uppercase;
 }
 
@@ -36,23 +24,13 @@
   color: white;
   border-bottom: #e6007e solid 5px;
 }
-
-.icons {
-  margin: 10px;
-  fill: #0094de;
-  stroke: #0094de;
-}
-
-p {
-  font-family: Font;
-}
-
 .a {
   fill: none;
   stroke: #0094de;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
+
 
 svg path {
   fill: #0094de;
@@ -101,9 +79,8 @@ svg path {
   background-size: 100% auto;
 }
 
-
-
 .btn {
   padding: 0;
   color: white;
+  border: none;
 }
