@@ -18,7 +18,10 @@
     text-transform: uppercase;
     z-index: 1;
     font-size: 16px;
+  }
 
+  ul li:hover {
+    margin-top: 17px;
   }
 
   ul li.navbar-btn-active {
@@ -27,9 +30,10 @@
     border: none;
     border-left: 1px solid #0094df;
     border-top: 3px solid #e6007e;
-    border-right: 3px solid #0094df;
+    border-right: 1px solid #0094df;
     color: white;
     margin-bottom: -1px;
+    margin-top: 17px;
   }
 
   ul li.navbar-btn-active a {
@@ -43,8 +47,9 @@
     border: none;
     border-left: 1px solid #0094df;
     border-top: 3px solid #e6007e;
-    border-right: 3px solid #0094df;
+    border-right: 1px solid #0094df;
     color: white;
+
   }
 
   ul li.navbar-btn-active:hover {

@@ -4,7 +4,7 @@
   style="font-family: Open Sans, Arial, Helvetica, sans-serif"
   >{{ labelName }}: {{ sliderFormControl.value }}
 </label>
-<div>
+<div id="test">
   <div style="display: inline-block" *ngIf="showCheckBox === true">
     <input
       id="checkbox_{{ motorName }}"
@@ -28,8 +28,8 @@
     max="{{ maxSliderValue }}"
     class="form-range"
     (input)="inputSendMsg()"
+    #rangeSlider
     [formControl]="sliderFormControl"
-    #{{motorName}}
   />
 </div>
 

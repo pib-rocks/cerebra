@@ -28,3 +28,24 @@
   border: 1px solid #e6007e;
   color: #e6007e;
 }
+
+
+.irs--flat .irs-bar {
+  top: 25px;
+  height: 12px;
+  background-color: #e6007e !important;
+}
+
+.irs-single{
+  background-color: #e6007e !important;
+}
+
+.irs--flat .irs-max{
+  background-color: #344a69;
+  color: white;
+}
+
+.irs--flat .irs-min{
+  background-color: #344a69;
+  color: white;
+}
