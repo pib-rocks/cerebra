@@ -41,12 +41,14 @@ describe("HeadComponent", () => {
   it("should call reset() and set all slider values to 0 after clicking reset button", () => {
     const sliders = fixture.debugElement.queryAll(By.css("app-slider"));
     for (const slider of sliders) {
+      console.log('---------------------------------**************************');
+      console.log(slider.children)
       spyOn(slider.componentInstance, "sendMessage");
     }
 
     spyOn(component, "reset").and.callThrough();
 
-    const button = fixture.nativeElement.querySelector("#resetButton");
+    const button = fixture.nativeElement.querySelector("#home-position-btn");
     spyOn(button, "dispatchEvent").and.callThrough();
     for (const c of sliders) {
       c.componentInstance.sliderFormControl.setValue(10);
@@ -58,7 +60,7 @@ describe("HeadComponent", () => {
 
     for (const slider of sliders) {
       if (slider.componentInstance.showMotorSettingsButton === true) {
-        const input = slider.children[1].children[2];
+        const input = slider.children[5].children[1];
         expect(input.nativeElement.value).toBe("0");
         expect(slider.componentInstance.sendMessage).toHaveBeenCalled();
       }

@@ -43,7 +43,7 @@ describe("HandComponent", () => {
 
     spyOn(component, "reset").and.callThrough();
 
-    const button = fixture.nativeElement.querySelector("#resetButton");
+    const button = fixture.nativeElement.querySelector("#home-position-btn");
     spyOn(button, "dispatchEvent").and.callThrough();
     component.leftSwitchControl.setValue(true);
     component.rightSwitchControl.setValue(false);
@@ -66,7 +66,7 @@ describe("HandComponent", () => {
 
     spyOn(component, "reset").and.callThrough();
 
-    const button = fixture.nativeElement.querySelector("#resetButton");
+    const button = fixture.nativeElement.querySelector("#home-position-btn");
     spyOn(button, "dispatchEvent").and.callThrough();
     component.leftSwitchControl.setValue(false);
     component.rightSwitchControl.setValue(true);
@@ -90,7 +90,7 @@ describe("HandComponent", () => {
 
     spyOn(component, "reset").and.callThrough();
 
-    const button = fixture.nativeElement.querySelector("#resetButton");
+    const button = fixture.nativeElement.querySelector("#home-position-btn");
     spyOn(button, "dispatchEvent").and.callThrough();
     component.leftSwitchControl.setValue(false);
     component.rightSwitchControl.setValue(false);
@@ -113,7 +113,7 @@ describe("HandComponent", () => {
 
     spyOn(component, "reset").and.callThrough();
 
-    const button = fixture.nativeElement.querySelector("#resetButton");
+    const button = fixture.nativeElement.querySelector("#home-position-btn");
     spyOn(button, "dispatchEvent").and.callThrough();
     component.leftSwitchControl.setValue(false);
     component.rightSwitchControl.setValue(false);

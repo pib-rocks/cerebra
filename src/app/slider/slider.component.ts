@@ -135,7 +135,9 @@ export class SliderComponent implements OnInit, AfterViewInit  {
 
     setValue() {
       const val = Number((this.sliderFormControl.value - -9000) * 100 / (9000 - -9000));
-      this.bubblePosition = val;
+      setTimeout(() => {
+        this.bubblePosition = val;
+      },0);
       this.bubbleFormControl.setValue(this.sliderFormControl.value);
       const newPosition = 10 - (val * 0.2);
       this.bubbleElement.nativeElement.style.left = `calc(${val}% + (${newPosition}px))`;

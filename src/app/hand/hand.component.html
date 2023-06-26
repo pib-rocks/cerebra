@@ -11,8 +11,8 @@
       </button>
       <ng-container *ngIf="side === 'left'">
         <div class="form-check form-switch my-4 ">
-          <input class="form-check-input" type="checkbox" id="flexSwitchCheckChecked2" [formControl]="leftSwitchControl" (input)="switchView('left')" >
-          <label class="form-check-label" for="flexSwitchCheckChecked2"><span>Control fingers individuall</span></label>
+          <input class="form-check-input" type="checkbox" id="leftSwitch" [formControl]="leftSwitchControl" (input)="switchView('left')" >
+          <label class="form-check-label" for="leftSwitch"><span>Control fingers individuall</span></label>
         </div>
         <h2>{{ side | titlecase }} Hand</h2>
         <app-slider [motorName]="thumbOppositionLeft.motor" [labelName]="thumbOppositionLeft.label" [isGroup]="true"
@@ -26,8 +26,8 @@
 
       <ng-container *ngIf="side === 'right'">
         <div class="form-check form-switch my-4">
-          <input class="form-check-input" type="checkbox" id="flexSwitchCheckChecked2" [formControl]="rightSwitchControl" (input)="switchView('right')">
-          <label class="form-check-label" for="flexSwitchCheckChecked2"><span>Control fingers individuall</span></label>
+          <input class="form-check-input" type="checkbox" id="rightSwitch" [formControl]="rightSwitchControl" (input)="switchView('right')">
+          <label class="form-check-label" for="rightSwitch"><span>Control fingers individuall</span></label>
         </div>
         <h2>{{ side | titlecase }} Hand</h2>
         <app-slider [motorName]="thumbOppositionRight.motor" [labelName]="thumbOppositionRight.label" [isGroup]="true"

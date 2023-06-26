@@ -48,7 +48,7 @@ describe("ArmComponent", () => {
     for (const childComponent of childComponents) {
       spyOn(childComponent.componentInstance, "sendMessage");
     }
-    const button = fixture.debugElement.query(By.css("#resetButton"));
+    const button = fixture.debugElement.query(By.css("#home-position-btn"));
     console.log(button);
     const clickSpy = spyOn(component, "reset").and.callThrough();
     for (const c of childComponents) {
