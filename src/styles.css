@@ -28,3 +28,10 @@
   border: 1px solid #e6007e;
   color: #e6007e;
 }
+.myCustomModalClass {
+  z-index: 1050 !important;
+}
+
+.myCustomBackdropClass {
+  z-index: 1040 !important;
+}
