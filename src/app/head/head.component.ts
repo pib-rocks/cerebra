@@ -53,7 +53,7 @@ export class HeadComponent implements OnInit {
   reset() {
     this.childComponents.forEach((child) => {
       if (child.sliderFormControl.value != 0) {
-        child.sliderFormControl.setValue("0");
+        child.setSliderValue(0);
         child.sendMessage();
       }
     });

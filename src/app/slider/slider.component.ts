@@ -31,6 +31,7 @@ export class SliderComponent implements OnInit, AfterViewInit  {
   closeResult!: string;
   @ViewChild('bubble') bubbleElement!: ElementRef;
   @ViewChild('range') sliderElem!: ElementRef;
+  @ViewChild('bubbleInput') bubbleInput!: ElementRef;
   bubbleFormControl: FormControl = new FormControl(0);
   isInputVisible = false;
 
@@ -128,32 +129,48 @@ export class SliderComponent implements OnInit, AfterViewInit  {
     });
   }
 
+  ngAfterViewInit() {
+    this.setValue();
+  }
 
-    ngAfterViewInit() {
-      this.setValue();
-    }
+  setValue() {
+    const val = Number((this.sliderFormControl.value - -9000) * 100 / (9000 - -9000));
+    setTimeout(() => {
+      this.bubblePosition = val;
+    },0);
+    this.bubbleFormControl.setValue(this.sliderFormControl.value);
+    const newPosition = 10 - (val * 0.2);
+    this.bubbleElement.nativeElement.style.left = `calc(${val}% + (${newPosition}px))`;
+    this.sliderElem.nativeElement.style.setProperty("--pos-relative", val.toString(10)+'%');
+  }
 
-    setValue() {
-      const val = Number((this.sliderFormControl.value - -9000) * 100 / (9000 - -9000));
-      setTimeout(() => {
-        this.bubblePosition = val;
-      },0);
-      this.bubbleFormControl.setValue(this.sliderFormControl.value);
-      const newPosition = 10 - (val * 0.2);
-      this.bubbleElement.nativeElement.style.left = `calc(${val}% + (${newPosition}px))`;
-      this.sliderElem.nativeElement.style.setProperty("--pos-relative", val.toString(10)+'%');
-    }
+  setSliderValue(value: number) {
+    this.sliderFormControl.setValue(value);
+    this.setValue();
+  }
   
-    toggleInputVisibility() {
-      if(this.sliderFormControl.value !== null){
-        this.isInputVisible = !this.isInputVisible;
-        this.sliderFormControl.setValue(this.bubbleFormControl.value);
-        this.setValue();
-      } else{
-        this.isInputVisible = !this.isInputVisible;
-      }
-
+  toggleInputVisibility() {
+    if(this.sliderFormControl.value !== null){
+      this.isInputVisible = !this.isInputVisible;
+      this.setSliderValue(this.bubbleFormControl.value);
+      setTimeout(()=>{
+        this.bubbleInput.nativeElement.focus();
+        this.bubbleInput.nativeElement.select();
+      }, 0)
+    } else{
+      this.isInputVisible = !this.isInputVisible;
     }
+  }
+
+  toggleInputUnvisible() {
+    if(this.sliderFormControl.value !== null){
+      this.isInputVisible = !this.isInputVisible;
+      this.setSliderValue(this.bubbleFormControl.value);
+      this.inputSendMsg();
+    } else{
+      this.isInputVisible = !this.isInputVisible;
+    }
+  }
 
   sendMessage() {
     let motorNames: string[] = [];
@@ -342,7 +359,7 @@ export class SliderComponent implements OnInit, AfterViewInit  {
     }
   }
 
-  inputSendMsg() {
+  inputSendMsg(): void {
     if(this.sliderFormControl.value !== null){
       clearTimeout(this.timer);
       this.timer = setTimeout(() => {

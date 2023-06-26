@@ -77,7 +77,7 @@ export class ArmComponent implements OnInit {
   reset() {
     this.childSilderComponents.forEach((child) => {
       if (child.sliderFormControl.value != 0) {
-        child.sliderFormControl.setValue(0);
+        child.setSliderValue(0);
         child.sendMessage();
       }
     });

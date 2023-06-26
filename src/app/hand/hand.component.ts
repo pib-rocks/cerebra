@@ -105,14 +105,14 @@ export class HandComponent implements OnInit {
       console.log(this.leftSwitchControl.value || this.rightSwitchControl.value)
       this.childComponents.filter(child => !child.motorName.includes('all')).forEach((child) => {
         if (child.sliderFormControl.value != 0) {
-          child.sliderFormControl.setValue("0");
+          child.setSliderValue(0);
           child.sendAllMessagesCombined();
         }
       });
     } else {
       this.childComponents.filter(child => child.motorName.includes('all') || child.motorName.includes('opposition')).forEach((child) => {
         if (child.sliderFormControl.value != 0) {
-          child.sliderFormControl.setValue("0");
+          child.setSliderValue(0);
           child.sendAllMessagesCombined();
         }
       });
