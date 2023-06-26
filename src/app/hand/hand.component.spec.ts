@@ -134,7 +134,7 @@ describe("HandComponent", () => {
     component.side = "left";
     component.leftSwitchControl.setValue(true);
     fixture.detectChanges();
-    const checkInput = fixture.debugElement.query(By.css(".form-check-input"));
+    const checkInput = fixture.debugElement.query(By.css(".custom-control-input"));
     spyOn(checkInput.componentInstance, "switchView").and.callThrough();
     const sliders = fixture.debugElement.queryAll(By.css("app-slider"));
     sliders
@@ -168,7 +168,7 @@ describe("HandComponent", () => {
     component.side = "right";
     component.rightSwitchControl.setValue(true);
     fixture.detectChanges();
-    const checkInput = fixture.debugElement.query(By.css(".form-check-input"));
+    const checkInput = fixture.debugElement.query(By.css(".custom-control-input"));
     spyOn(checkInput.componentInstance, "switchView").and.callThrough();
     const sliders = fixture.debugElement.queryAll(By.css("app-slider"));
     sliders

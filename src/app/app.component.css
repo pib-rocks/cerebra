@@ -80,9 +80,3 @@ svg path {
   background-image: url("../assets/bg-gesamt.png");
   background-size: 100% auto;
 }
-
-.btn {
-  padding: 0;
-  color: white;
-  border: none;
-}
