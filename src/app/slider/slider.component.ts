@@ -29,7 +29,10 @@ export class SliderComponent implements OnInit, AfterViewInit  {
   @Input() showMotorSettingsButton = true;
 
   closeResult!: string;
-  @ViewChild('rangeSlider') rangeSlider!: ElementRef;
+  @ViewChild('bubble') bubbleElement!: ElementRef;
+  @ViewChild('range') sliderElem!: ElementRef;
+  bubbleFormControl: FormControl = new FormControl(0);
+  isInputVisible = false;
 
   isCombinedSlider = false;
   messageReceiver$ = new Subject<Message>();
@@ -126,11 +129,26 @@ export class SliderComponent implements OnInit, AfterViewInit  {
 
 
     ngAfterViewInit() {
-        $(this.rangeSlider.nativeElement).ionRangeSlider({
-            min: 0,
-            max: 100,
-            from: 50,
-        });
+      this.setValue();
+    }
+
+    setValue() {
+      const val = Number((this.sliderFormControl.value - -9000) * 100 / (9000 - -9000));
+      this.bubbleFormControl.setValue(this.sliderFormControl.value);
+      const newPosition = 10 - (val * 0.2);
+      this.bubbleElement.nativeElement.style.left = `calc(${val}% + (${newPosition}px))`;
+      this.sliderElem.nativeElement.style.setProperty("--pos-relative", val.toString(10)+'%');
+    }
+  
+    toggleInputVisibility() {
+      if(this.sliderFormControl.value !== null){
+        this.isInputVisible = !this.isInputVisible;
+        this.sliderFormControl.setValue(this.bubbleFormControl.value);
+        this.setValue();
+      } else{
+        this.isInputVisible = !this.isInputVisible;
+      }
+
     }
 
   sendMessage() {
@@ -321,10 +339,12 @@ export class SliderComponent implements OnInit, AfterViewInit  {
   }
 
   inputSendMsg() {
-    clearTimeout(this.timer);
-    this.timer = setTimeout(() => {
-      this.sendMessage();
-    }, 500);
+    if(this.sliderFormControl.value !== null){
+      clearTimeout(this.timer);
+      this.timer = setTimeout(() => {
+        this.sendMessage();
+      }, 500);
+    }
   }
 
   inputSendSettingsMsg() {

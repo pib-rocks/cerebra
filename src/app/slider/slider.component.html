@@ -21,16 +21,14 @@
     style="margin-left: 10px; border: 0"
     (click)="openPopup(content)"
   ></button>
-  <input
-    id="slider_{{ motorName }}"
-    type="range"
-    min="{{ minSliderValue }}"
-    max="{{ maxSliderValue }}"
-    class="form-range"
-    (input)="inputSendMsg()"
-    #rangeSlider
-    [formControl]="sliderFormControl"
-  />
+  <div class="range-wrap">
+    <div class="range-value" #bubble>
+        <span class="bubble-span"  *ngIf="!isInputVisible" id="slider_{{ motorName }}" (dblclick)="toggleInputVisibility()" >{{bubbleFormControl.value}}°</span>
+        <input class="bubble-input"     min="{{ minSliderValue }}" max="{{ maxSliderValue }}" *ngIf="isInputVisible" [formControl]="bubbleFormControl" (blur)="toggleInputVisibility()" (input)="inputSendMsg()">
+    </div>
+    <input id="range" type="range"  min="{{ minSliderValue }}" max="{{ maxSliderValue }}" step="1" [formControl]="sliderFormControl" (input)="setValue(); inputSendMsg()" #range>
+</div>
+
 </div>
 
 <ng-template #content let-modal id="ng-template">

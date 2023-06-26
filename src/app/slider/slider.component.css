@@ -33,3 +33,119 @@ ul {
   padding-left: 18px;
 }
 
+input[type=range] {
+  margin: 20px 0;
+  width: 100%;
+}
+
+input[type=range]:focus {
+  outline: none;
+}
+
+.range-wrap{
+  position: relative;
+}
+.range-value{
+  position: absolute;
+  top: -40%;
+  left: 1%;
+}
+
+.range-value .bubble-span:before{
+  content: "";
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-top: 10px solid #e10072;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  margin-top: -1px;
+}
+
+.range-wrap .range-value .bubble-input:before{
+  content: "";
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-top: 10px solid #e10072;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  margin-top: -1px;
+}
+
+
+input[type=range] {
+  --pos-relative:0;
+  -webkit-appearance: none;
+  width: 100%;
+  height: 20px;
+  background: lightgray;
+  outline: none;
+  -webkit-transition: opacity .2s;
+  transition: opacity .2s;
+}
+
+input[type=range]::-moz-range-thumb {
+  width: 3px;
+  height: 23px;
+  background: #e10072;
+  cursor: pointer;
+}
+
+input[type=range]::-moz-range-progress {
+  height: 20px;
+  background-color: #e10072;
+}
+
+input[type=range]::-ms-fill-lower {
+  background-color: #e10072;
+}
+
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 3px;
+  height: 23px;
+  background: #6b0337;
+  cursor: pointer;
+}
+
+input[type=range]::-webkit-slider-runnable-track {
+  background:linear-gradient(to right, #e10072, #e10072 var(--pos-relative), lightgray var(--pos-relative), lightgray);
+}
+
+
+.range-value .bubble-input{
+  width: 30px;
+  height: 24px;
+  line-height: 24px;
+  text-align: center;
+  background: #e10072;
+  color: #fff;
+  font-size: 12px;
+  display: block;
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, 0);
+  border-radius: 6px;
+}
+
+.range-value .bubble-span{
+  width: 30px;
+  height: 24px;
+  line-height: 24px;
+  text-align: center;
+  background: #e10072;
+  color: #fff;
+  font-size: 12px;
+  display: block;
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, 0);
+  border-radius: 6px;
+}
