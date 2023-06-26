@@ -47,6 +47,7 @@ export class SliderComponent implements OnInit, AfterViewInit  {
   degreeMaxFormcontrol: FormControl = new FormControl(9000);
   degreeMinFormcontrol: FormControl = new FormControl(-9000);
   timer: any = null;
+  bubblePosition!: number;
 
   constructor(
     private rosService: RosService,
@@ -134,6 +135,7 @@ export class SliderComponent implements OnInit, AfterViewInit  {
 
     setValue() {
       const val = Number((this.sliderFormControl.value - -9000) * 100 / (9000 - -9000));
+      this.bubblePosition = val;
       this.bubbleFormControl.setValue(this.sliderFormControl.value);
       const newPosition = 10 - (val * 0.2);
       this.bubbleElement.nativeElement.style.left = `calc(${val}% + (${newPosition}px))`;
