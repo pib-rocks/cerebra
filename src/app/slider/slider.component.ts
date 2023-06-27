@@ -10,13 +10,12 @@ import {
   compareValuesPulseValidator,
   notNullValidator,
 } from "../shared/validators";
-declare var $: any;
 @Component({
   selector: "app-slider",
   templateUrl: "./slider.component.html",
   styleUrls: ["./slider.component.css"],
 })
-export class SliderComponent implements OnInit, AfterViewInit  {
+export class SliderComponent implements OnInit  {
   maxSliderValue = 9000;
   minSliderValue = -9000;
 
@@ -123,15 +122,6 @@ export class SliderComponent implements OnInit, AfterViewInit  {
       }
     });
   }
-
-
-    ngAfterViewInit() {
-        $(this.rangeSlider.nativeElement).ionRangeSlider({
-            min: 0,
-            max: 100,
-            from: 50,
-        });
-    }
 
   sendMessage() {
     let motorNames: string[] = [];

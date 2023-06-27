@@ -11,7 +11,7 @@
       </button>
       <ng-container *ngIf="side === 'left'">
         <div class="form-check form-switch my-4 ">
-          <input class="form-check-input" type="checkbox" id="flexSwitchCheckChecked2" [formControl]="leftSwitchControl" (input)="switchView('left')" >
+          <input class="form-check-input" type="checkbox" id="leftSwitch" [formControl]="leftSwitchControl" (input)="switchView('left')" >
           <label class="form-check-label" for="flexSwitchCheckChecked2"><span>Control fingers individuall</span></label>
         </div>
         <h2>{{ side | titlecase }} Hand</h2>
@@ -26,7 +26,7 @@
 
       <ng-container *ngIf="side === 'right'">
         <div class="form-check form-switch my-4">
-          <input class="form-check-input" type="checkbox" id="flexSwitchCheckChecked2" [formControl]="rightSwitchControl" (input)="switchView('right')">
+          <input class="form-check-input" type="checkbox" id="rightSwitch" [formControl]="rightSwitchControl" (input)="switchView('right')">
           <label class="form-check-label" for="flexSwitchCheckChecked2"><span>Control fingers individuall</span></label>
         </div>
         <h2>{{ side | titlecase }} Hand</h2>

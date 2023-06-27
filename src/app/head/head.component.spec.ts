@@ -46,7 +46,7 @@ describe("HeadComponent", () => {
 
     spyOn(component, "reset").and.callThrough();
 
-    const button = fixture.nativeElement.querySelector("#resetButton");
+    const button = fixture.nativeElement.querySelector("#home-position-btn");
     spyOn(button, "dispatchEvent").and.callThrough();
     for (const c of sliders) {
       c.componentInstance.sliderFormControl.setValue(10);
