@@ -159,7 +159,8 @@ export class HandComponent implements OnInit {
       let calledOposite = false;
       this.childComponents.forEach((child) => {
         if (child.labelName != "Thumb opposition") {
-          child.sliderFormControl.setValue(indexFinger.sliderFormControl.value);
+          // child.sliderFormControl.setValue(indexFinger.sliderFormControl.value);
+          child.setSliderValue(indexFinger.sliderFormControl.value);
           child.motorFormControl.setValue(indexFinger.motorFormControl.value);
           child.velocityFormControl.setValue(
             indexFinger.velocityFormControl.value
@@ -176,7 +177,8 @@ export class HandComponent implements OnInit {
           child.degreeMaxFormcontrol.setValue(indexFinger.degreeMaxFormcontrol.value);
           child.degreeMinFormcontrol.setValue(indexFinger.degreeMinFormcontrol.value);
         } else {
-          child.sliderFormControl.setValue(thumbOppo.sliderFormControl.value);
+          // child.sliderFormControl.setValue(thumbOppo.sliderFormControl.value);
+          child.setSliderValue(thumbOppo.sliderFormControl.value);
           child.motorFormControl.setValue(thumbOppo.motorFormControl.value);
           child.velocityFormControl.setValue(
             thumbOppo.velocityFormControl.value
