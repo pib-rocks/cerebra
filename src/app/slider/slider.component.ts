@@ -57,6 +57,13 @@ export class SliderComponent implements OnInit, AfterViewInit  {
   ) { }
 
   ngOnInit(): void {
+    this.bubbleFormControl.setValidators([
+      Validators.min(-9000),
+      Validators.max(9000),
+      Validators.pattern("^-?[0-9]*$"),
+      Validators.required,
+      notNullValidator,
+    ]);
     this.pulseMaxRange.setValidators([
       Validators.min(0),
       Validators.max(65535),
@@ -165,8 +172,24 @@ export class SliderComponent implements OnInit, AfterViewInit  {
   toggleInputUnvisible() {
     if(this.sliderFormControl.value !== null){
       this.isInputVisible = !this.isInputVisible;
-      this.setSliderValue(this.bubbleFormControl.value);
-      this.inputSendMsg();
+      if(this.bubbleFormControl.hasError('min')) {
+        this.setSliderValue(this.minSliderValue);
+        this.inputSendMsg();
+      }
+      else if(this.bubbleFormControl.hasError('max')) {
+        this.setSliderValue(this.maxSliderValue);
+        this.inputSendMsg();
+      }
+      else if(this.bubbleFormControl.hasError('required')) {
+        this.bubbleFormControl.setValue(this.sliderFormControl.value);
+      }
+      else if(this.bubbleFormControl.hasError('pattern')) {
+        this.bubbleFormControl.setValue(this.sliderFormControl.value);
+      }
+      else {
+        this.setSliderValue(this.bubbleFormControl.value);
+        this.inputSendMsg();
+      }
     } else{
       this.isInputVisible = !this.isInputVisible;
     }
