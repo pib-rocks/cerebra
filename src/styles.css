@@ -14,7 +14,7 @@
 .btn {
   border: 1px solid white;
   color: white;
-  font-family: Titillium;
+  font-family: Titillium, sans-serif;
 }
 
 .btn:hover {
@@ -38,7 +38,7 @@
 
 .custom-control-label {
   color:white;
-  font-family: 'Titillium';
+  font-family: Titillium, sans-serif;
   font-weight: normal !important;
   font-size: 16px;
 }

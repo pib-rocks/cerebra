@@ -1,7 +1,7 @@
   ul li a {
     color: #0094df;
     padding: 1rem;
-    font-family: Titillium;
+    font-family: Titillium, sans-serif;
     font-weight: bold;
     text-align: center;
   }
