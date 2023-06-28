@@ -11,13 +11,6 @@
 
 }
 
-@import "~bootstrap-icons/font/bootstrap-icons.css";
-
-* {
-  margin: 0;
-  padding: 0;
-}
-
 .btn {
   border: 1px solid white;
   color: white;
@@ -30,25 +23,6 @@
   color: white;
 }
 
-.irs--flat .irs-bar {
-  top: 25px;
-  height: 12px;
-  background-color: #e6007e !important;
-}
-
-.irs-single{
-  background-color: #e6007e !important;
-}
-
-.irs--flat .irs-max{
-  background-color: #344a69;
-  color: white;
-}
-
-.irs--flat .irs-min{
-  background-color: #344a69;
-  color: white;
-}
 .custom-switch.custom-switch-pib  .custom-control-label::before {
   background-color: transparent;
   border-color: white;
@@ -57,7 +31,6 @@
 .custom-switch.custom-switch-pib .custom-control-input:checked~.custom-control-label::after {
   background-color: #e6007e;
 }
-
 
 .custom-switch.custom-switch-pib .custom-control-input~.custom-control-label::after {
   background-color: gray;
