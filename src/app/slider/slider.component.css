@@ -123,7 +123,7 @@ input[type=range]:hover {
 
 
 .range-value .bubble-input{
-  width: 30px;
+  width: 40px;
   height: 24px;
   line-height: 24px;
   text-align: center;
@@ -138,7 +138,8 @@ input[type=range]:hover {
 }
 
 .range-value .bubble-span{
-  width: 30px;
+  width: fit-content;
+  min-width: 30px;
   height: 24px;
   line-height: 24px;
   text-align: center;
