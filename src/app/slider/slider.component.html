@@ -33,7 +33,7 @@
   </div>
   <span *ngIf="bubblePosition > 8" class="bubble-span-min">{{ minSliderValue }}°</span>
   <span *ngIf="bubblePosition < 92" class="bubble-span-max">{{ maxSliderValue }}°</span>
-  <input id="range" class="range" type="range" min="{{ minSliderValue }}" max="{{ maxSliderValue }}" step="1"
+  <input id="slider_{{ motorName }}" class="range" type="range" min="{{ minSliderValue }}" max="{{ maxSliderValue }}" step="1"
     [formControl]="sliderFormControl" (input)="setValue(); inputSendMsg()" #range />
   <span *ngIf="bubbleFormControl.hasError('pattern')
     " style="color: red" class="h-100 d-flex align-items-center justify-content-center">only numbers are acceptable
