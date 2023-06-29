@@ -8,7 +8,7 @@
 
 .nav-link.sidebar-btn {
   margin: 10px 10px 10px 8px;
-  font-family: Titillium;
+  font-family: Titillium, sans-serif;
   font-size: 16px;
   font-weight: bold;
   letter-spacing: 0.4px;
@@ -20,8 +20,10 @@
   text-transform: uppercase;
 }
 
-.nav-link.sidebar-btn:hover {
-  color: #e6007e !important;
+.nav-pills .nav-link.sidebar-btn:hover {
+  color: white;
+  border-bottom: #e6007e solid 5px;
+  padding-bottom: 3px;
 }
 
 .a {
@@ -40,6 +42,7 @@ svg path {
 .btn-active {
   color: white;
   border-bottom: #e6007e solid 5px;
+  padding-bottom: 3px;
 }
 
 .btn-active svg path,
@@ -48,8 +51,8 @@ svg path {
   stroke: #e6007e;
 }
 
-.nav-link.btn-active {
-  color: white !important;
+.nav-link.sidebar-btn.btn-active {
+  color: white;
 }
 
 .menu-open {
@@ -71,4 +74,9 @@ svg path {
 .menu-is-opening svg path {
   fill: #e6007e;
   stroke: #e6007e;
+}
+
+.content-wrapper {
+  background-image: url("../assets/bg-gesamt.png");
+  background-size: 100% auto;
 }

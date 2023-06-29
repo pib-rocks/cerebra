@@ -17,6 +17,7 @@ import { HeadComponent } from "./head/head.component";
 import { ProgramComponent } from "./program/program.component";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { DialogContentComponent } from "./program/dialog-content/dialog-content.component";
+import { NavBarComponent } from "./nav-bar/nav-bar.component";
 
 @NgModule({
   declarations: [
@@ -29,6 +30,7 @@ import { DialogContentComponent } from "./program/dialog-content/dialog-content.
     HeadComponent,
     ProgramComponent,
     DialogContentComponent,
+    NavBarComponent,
   ],
   imports: [
     BrowserModule,

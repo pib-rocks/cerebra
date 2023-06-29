@@ -6,6 +6,7 @@ import { SliderComponent } from "../slider/slider.component";
 
 import { HandComponent } from "./hand.component";
 import { RosService } from "../shared/ros.service";
+import { NavBarComponent } from "../nav-bar/nav-bar.component";
 
 
 describe("HandComponent", () => {
@@ -15,7 +16,7 @@ describe("HandComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [HandComponent, SliderComponent],
+      declarations: [HandComponent, SliderComponent, NavBarComponent],
       imports: [RouterTestingModule, ReactiveFormsModule],
       providers: [RosService],
     }).compileComponents();
@@ -42,7 +43,7 @@ describe("HandComponent", () => {
 
     spyOn(component, "reset").and.callThrough();
 
-    const button = fixture.nativeElement.querySelector("#resetButton");
+    const button = fixture.nativeElement.querySelector("#home-position-btn");
     spyOn(button, "dispatchEvent").and.callThrough();
     component.leftSwitchControl.setValue(true);
     component.rightSwitchControl.setValue(false);
@@ -65,7 +66,7 @@ describe("HandComponent", () => {
 
     spyOn(component, "reset").and.callThrough();
 
-    const button = fixture.nativeElement.querySelector("#resetButton");
+    const button = fixture.nativeElement.querySelector("#home-position-btn");
     spyOn(button, "dispatchEvent").and.callThrough();
     component.leftSwitchControl.setValue(false);
     component.rightSwitchControl.setValue(true);
@@ -89,7 +90,7 @@ describe("HandComponent", () => {
 
     spyOn(component, "reset").and.callThrough();
 
-    const button = fixture.nativeElement.querySelector("#resetButton");
+    const button = fixture.nativeElement.querySelector("#home-position-btn");
     spyOn(button, "dispatchEvent").and.callThrough();
     component.leftSwitchControl.setValue(false);
     component.rightSwitchControl.setValue(false);
@@ -112,7 +113,7 @@ describe("HandComponent", () => {
 
     spyOn(component, "reset").and.callThrough();
 
-    const button = fixture.nativeElement.querySelector("#resetButton");
+    const button = fixture.nativeElement.querySelector("#home-position-btn");
     spyOn(button, "dispatchEvent").and.callThrough();
     component.leftSwitchControl.setValue(false);
     component.rightSwitchControl.setValue(false);
@@ -133,7 +134,7 @@ describe("HandComponent", () => {
     component.side = "left";
     component.leftSwitchControl.setValue(true);
     fixture.detectChanges();
-    const checkInput = fixture.debugElement.query(By.css(".form-check-input"));
+    const checkInput = fixture.debugElement.query(By.css(".custom-control-input"));
     spyOn(checkInput.componentInstance, "switchView").and.callThrough();
     const sliders = fixture.debugElement.queryAll(By.css("app-slider"));
     sliders
@@ -167,7 +168,7 @@ describe("HandComponent", () => {
     component.side = "right";
     component.rightSwitchControl.setValue(true);
     fixture.detectChanges();
-    const checkInput = fixture.debugElement.query(By.css(".form-check-input"));
+    const checkInput = fixture.debugElement.query(By.css(".custom-control-input"));
     spyOn(checkInput.componentInstance, "switchView").and.callThrough();
     const sliders = fixture.debugElement.queryAll(By.css("app-slider"));
     sliders

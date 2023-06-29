@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, TemplateRef } from "@angular/core";
+import { Component, ElementRef, Input, OnInit, TemplateRef, ViewChild } from "@angular/core";
 import { FormControl, Validators } from "@angular/forms";
 import { Subject } from "rxjs";
 import { Message } from "../shared/message";
@@ -10,13 +10,12 @@ import {
   compareValuesPulseValidator,
   notNullValidator,
 } from "../shared/validators";
-
 @Component({
   selector: "app-slider",
   templateUrl: "./slider.component.html",
   styleUrls: ["./slider.component.css"],
 })
-export class SliderComponent implements OnInit {
+export class SliderComponent implements OnInit  {
   maxSliderValue = 9000;
   minSliderValue = -9000;
 
@@ -29,6 +28,7 @@ export class SliderComponent implements OnInit {
   @Input() showMotorSettingsButton = true;
 
   closeResult!: string;
+  @ViewChild('rangeSlider') rangeSlider!: ElementRef;
 
   isCombinedSlider = false;
   messageReceiver$ = new Subject<Message>();
