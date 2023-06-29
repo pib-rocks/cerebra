@@ -13,11 +13,23 @@
 <br>
 <div class="range-wrap">
   <div class="range-value" #bubble>
-    <input class="bubble-input" min="{{ minSliderValue }}" max="{{ maxSliderValue }}" *ngIf="isInputVisible"
-      [formControl]="bubbleFormControl" (blur)="toggleInputUnvisible()" (keydown.enter)="toggleInputUnvisible()" #bubbleInput />
-    <span class="bubble-span" *ngIf="!isInputVisible" (dblclick)="toggleInputVisibility();">
+    <input class="bubble-input"
+      id="bubble_input_{{ motorName }}"
+      min="{{ minSliderValue }}"
+      max="{{ maxSliderValue }}"
+      *ngIf="isInputVisible"
+      [formControl]="bubbleFormControl"
+      (blur)="toggleInputUnvisible()"
+      (keydown.enter)="toggleInputUnvisible()"
+      #bubbleInput
+    />
+    <div class="bubble-span"
+      id="bubble_span_{{ motorName }}"
+      *ngIf="!isInputVisible"
+      (dblclick)="toggleInputVisibility();"
+    >
       {{bubbleFormControl.value}}°
-    </span>
+    </div>
   </div>
   <span *ngIf="bubblePosition > 8" class="bubble-span-min">{{ minSliderValue }}°</span>
   <span *ngIf="bubblePosition < 92" class="bubble-span-max">{{ maxSliderValue }}°</span>
