@@ -102,8 +102,6 @@
   right: 5%;
 }
 
-
-
 .form-switch .form-check-input:checked {
   background-color: transparent;
   background-image: url("../../assets/knob.png");
@@ -116,6 +114,6 @@
   border: 2px solid white;
 }
 
-span {
+.form-check-label span {
   color: white;
 }

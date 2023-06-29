@@ -10,7 +10,6 @@ import {
   compareValuesPulseValidator,
   notNullValidator,
 } from "../shared/validators";
-declare var $: any;
 @Component({
   selector: "app-slider",
   templateUrl: "./slider.component.html",
