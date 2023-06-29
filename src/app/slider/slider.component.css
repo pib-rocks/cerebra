@@ -1,11 +1,4 @@
-label {
-  display: block;
-}
 
-input[type="number"]::-webkit-inner-spin-button,
-input[type="number"]::-webkit-outer-spin-button {
-  opacity: 1;
-}
 
 .horizontalList {
   float: left;
@@ -33,16 +26,16 @@ ul {
   padding-left: 18px;
 }
 
-input[type=range] {
+.range {
   margin: 20px 0;
   width: 100%;
 }
 
-input[type=range]:focus {
+.range:focus {
   outline: none;
 }
 
-input[type=range]:hover {
+.range:hover {
   cursor: pointer;
 }
 
@@ -163,9 +156,8 @@ input[type=range]:hover {
   font-size: 12px;
   display: block;
   position: absolute;
-  left: 2%;
+  left: 0;
   top: -25%;
-  transform: translate(-50%, 0);
   border-radius: 6px;
 }
 
@@ -179,9 +171,8 @@ input[type=range]:hover {
   font-size: 12px;
   display: inline-block;
   position: absolute;
-  right: -5%;
+  right: 0;
   top: -25%;
-  transform: translate(-50%, 0);
   border-radius: 6px;
 }
 
