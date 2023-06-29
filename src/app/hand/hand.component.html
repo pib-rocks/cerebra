@@ -12,7 +12,7 @@
       <ng-container *ngIf="side === 'left'">
         <div class="form-check form-switch my-4 ">
           <input class="form-check-input" type="checkbox" id="leftSwitch" [formControl]="leftSwitchControl" (input)="switchView('left')" >
-          <label class="form-check-label" for="leftSwitch"><span>Control fingers individuall</span></label>
+          <label class="form-check-label" for="leftSwitch"><span>Control fingers individually</span></label>
         </div>
         <h2>{{ side | titlecase }} Hand</h2>
         <app-slider [motorName]="thumbOppositionLeft.motor" [labelName]="thumbOppositionLeft.label" [isGroup]="true"
