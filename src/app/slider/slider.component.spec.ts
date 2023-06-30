@@ -386,4 +386,76 @@ describe("SliderComponent", () => {
     expect(formControl2.valid).toBe(false);
     expect(formcontrol1.hasError("error")).toBe(true);
   });
+
+  it("should make input element visible",(done) => {
+    const mockElementRef = jasmine.createSpyObj('ElementRef', [''], { nativeElement: { focus: () => {}, select: () => {} } });
+    spyOn(mockElementRef.nativeElement, 'focus');
+    spyOn(mockElementRef.nativeElement, 'select');
+    component.sliderFormControl.setValue(500);
+    component.isInputVisible = false;
+    component.bubbleInput = mockElementRef;
+    component.toggleInputVisible();
+    expect(component.isInputVisible).toBeTrue();
+    setTimeout(() => {
+      expect(mockElementRef.nativeElement.focus).toHaveBeenCalled();
+      expect(mockElementRef.nativeElement.select).toHaveBeenCalled();
+      done();
+    }, 0);
+  })
+
+  it("should make input element unvisible", () => {
+    component.sliderFormControl.setValue(null);
+    component.toggleInputVisible();
+    expect(component.isInputVisible).toBeTrue();
+  })
+
+  it("should toggle input unvisible", () => {
+    spyOn(component, 'setSliderValue');
+    spyOn(component,'inputSendMsg')
+    component.bubbleFormControl.setValue(500);
+    component.isInputVisible = true;
+    component.toggleInputUnvisible();
+    expect(component.setSliderValue).toHaveBeenCalled();
+    expect(component.inputSendMsg).toHaveBeenCalled();
+  } )
+
+  it("should toggle input unvisible min validation", () => {
+    spyOn(component, 'setSliderValue');
+    spyOn(component,'inputSendMsg')
+    component.bubbleFormControl.setValue(-5000000);
+    component.isInputVisible = true;
+    component.toggleInputUnvisible();
+    expect(component.bubbleFormControl.hasError('min')).toBeTrue;
+    expect(component.setSliderValue).toHaveBeenCalledWith(component.minSliderValue);
+    expect(component.inputSendMsg).toHaveBeenCalled();
+  } )
+
+  it("should toggle input unvisible max validation", () => {
+    spyOn(component, 'setSliderValue');
+    spyOn(component,'inputSendMsg')
+    component.bubbleFormControl.setValue(5000000);
+    component.isInputVisible = true;
+    component.toggleInputUnvisible();
+    expect(component.bubbleFormControl.hasError('max')).toBeTrue;
+    expect(component.setSliderValue).toHaveBeenCalledWith(component.maxSliderValue);
+    expect(component.inputSendMsg).toHaveBeenCalled();
+  } )
+
+  it("should toggle input unvisible required validation", () => {
+    component.bubbleFormControl.setValue(null);
+    component.isInputVisible = true;
+    component.toggleInputUnvisible();
+    expect(component.bubbleFormControl.hasError('required')).toBeTrue;
+    expect(component.isInputVisible).toBeFalse();
+  } )
+
+  it("should toggle input unvisible pattern validation", () => {
+    spyOn(component, 'setValue');
+    component.bubbleFormControl.setValue('test');
+    component.isInputVisible = true;
+    component.toggleInputUnvisible();
+    expect(component.bubbleFormControl.hasError('pattern')).toBeTrue;
+  } )
 });
+
+

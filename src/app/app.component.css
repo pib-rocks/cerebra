@@ -23,7 +23,7 @@
 .nav-pills .nav-link.sidebar-btn:hover {
   margin: 10px 10px 10px 8px;
   color: white;
-  border-bottom: #e6007e solid 5px;
+  border-bottom: #e10072 solid 5px;
   padding-bottom: 3px;
 }
 
@@ -44,14 +44,14 @@ svg path {
 .btn-active {
   margin: 10px 10px 10px 8px;
   color: white;
-  border-bottom: #e6007e solid 5px;
+  border-bottom: #e10072 solid 5px;
   padding-bottom: 3px;
 }
 
 .btn-active svg path,
 .btn-active .a {
-  fill: #e6007e;
-  stroke: #e6007e;
+  fill: #e10072;
+  stroke: #e10072;
 }
 
 .nav-link.sidebar-btn.btn-active {
@@ -65,18 +65,18 @@ svg path {
 .nav-sidebar>.nav-item.menu-open>.nav-link,
 [class*=sidebar-light-] .nav-sidebar>.nav-link {
   color: #ffffff;
-  border-bottom: #e6007e solid 5px;
+  border-bottom: #e10072 solid 5px;
 }
 
 .nav-sidebar>.nav-item.menu-open>.nav-link,
 [class*=sidebar-light-] .nav-sidebar>.nav-link>svg>path {
-  fill: #e6007e;
-  stroke: #e6007e;
+  fill: #e10072;
+  stroke: #e10072;
 }
 
 .menu-is-opening svg path {
-  fill: #e6007e;
-  stroke: #e6007e;
+  fill: #e10072;
+  stroke: #e10072;
 }
 
 .content-wrapper {

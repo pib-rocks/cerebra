@@ -1,17 +1,22 @@
-<label for="{{ motorName }}" class="form-label" style="font-family: Open Sans, Arial, Helvetica, sans-serif">{{
-  labelName }}: {{ sliderFormControl.value }}
-</label>
-<br>
-<div *ngIf="showCheckBox === true" class="float-end">
-  <input id="checkbox_{{ motorName }}" (change)="turnTheMotorOnAndOff()" type="checkbox"
-    [formControl]="motorFormControl" />
-  <label style="display: inline"> Motor</label>
-  <button *ngIf="showMotorSettingsButton === true" id="dialogBtn_{{ motorName }}"
-  class="bi bi-gear btn btn-outline-primary" style="margin-left: 10px; border: 0" (click)="openPopup(content)"></button>
+<div class="d-flex justify-content-between">
+  <label for="{{ motorName }}" class="form-label" style="font-family: Open Sans, Arial, Helvetica, sans-serif">{{
+    labelName }}: {{ sliderFormControl.value }}
+  </label>
+  <div class="d-flex align-items-center">
+    <div class="form-check d-inline" *ngIf="showCheckBox === true">
+      <input class="form-check-input" id="checkbox_{{ motorName }}" type="checkbox"
+        [formControl]="motorFormControl"
+        (change)="turnTheMotorOnAndOff()">
+      <label class="form-check-label" for="checkbox_{{ motorName }}">
+        Active
+      </label>
+    </div>
+    <button *ngIf="showMotorSettingsButton === true" id="dialogBtn_{{ motorName }}"
+      class="bi bi-gear btn btn-outline-primary" style="margin-left: 10px; border: 0" (click)="openPopup(content)">
+    </button>
+  </div>
 </div>
-<br>
-<br>
-<br>
+
 <div class="range-wrap">
   <div class="range-value" #bubble>
     <input class="bubble-input"
@@ -23,31 +28,19 @@
       (blur)="toggleInputUnvisible()"
       (keydown.enter)="toggleInputUnvisible()"
       #bubbleInput
-    />
+    >
     <div class="bubble-span"
       id="bubble_span_{{ motorName }}"
       *ngIf="!isInputVisible"
-      (dblclick)="toggleInputVisibility();"
+      (dblclick)="toggleInputVisible();"
     >
       {{bubbleFormControl.value}}°
     </div>
   </div>
   <span *ngIf="bubblePosition > 8" class="bubble-span-min">{{ minSliderValue }}°</span>
   <span *ngIf="bubblePosition < 92" class="bubble-span-max">{{ maxSliderValue }}°</span>
-  <input id="range" class="range" type="range" min="{{ minSliderValue }}" max="{{ maxSliderValue }}" step="1"
-    [formControl]="sliderFormControl" (input)="setValue(); inputSendMsg()" #range />
-  <span *ngIf="bubbleFormControl.hasError('pattern')
-    " style="color: red" class="h-100 d-flex align-items-center justify-content-center">only numbers are acceptable
-  </span>
-  <span *ngIf="bubbleFormControl.hasError('required')
-    " style="color: red" class="h-100 d-flex align-items-center justify-content-center">can not be empty
-  </span>
-  <span *ngIf="bubbleFormControl.hasError('max')
-    " style="color: red" class="h-100 d-flex align-items-center justify-content-center">can not be more than 9000
-  </span>
-  <span *ngIf="bubbleFormControl.hasError('min')
-    " style="color: red" class="h-100 d-flex align-items-center justify-content-center">can not be less than -9000
-  </span>
+  <input id="slider_{{ motorName }}" class="range" type="range" min="{{ minSliderValue }}" max="{{ maxSliderValue }}" step="1"
+    [formControl]="sliderFormControl" (input)="setValue(); inputSendMsg()" #range>
 </div>
 
 <ng-template #content let-modal id="ng-template">

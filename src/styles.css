@@ -20,7 +20,7 @@
 .btn {
   border: 1px solid white;
   color: white;
-  font-family: Titillium;
+  font-family: Titillium, sans-serif;
 }
 
 .btn:hover {

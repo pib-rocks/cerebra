@@ -153,9 +153,6 @@ export class HandComponent implements OnInit {
       const indexFinger = this.childComponents.filter(
         (child) => child.labelName === "Index finger"
       )[0];
-      const thumbOppo = this.childComponents.filter(
-        (child) => child.labelName === "Thumb opposition"
-      )[0];
       this.childComponents.forEach((child) => {
         if (child.labelName != "Thumb opposition") {
           child.sliderFormControl.setValue(indexFinger.sliderFormControl.value);

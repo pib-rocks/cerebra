@@ -10,7 +10,6 @@ import {
   compareValuesPulseValidator,
   notNullValidator,
 } from "../shared/validators";
-declare var $: any;
 @Component({
   selector: "app-slider",
   templateUrl: "./slider.component.html",
@@ -156,7 +155,7 @@ export class SliderComponent implements OnInit, AfterViewInit  {
     this.setValue();
   }
   
-  toggleInputVisibility() {
+  toggleInputVisible() {
     if(this.sliderFormControl.value !== null){
       this.isInputVisible = !this.isInputVisible;
       this.setSliderValue(this.bubbleFormControl.value);
