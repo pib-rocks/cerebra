@@ -155,7 +155,7 @@ export class SliderComponent implements OnInit, AfterViewInit  {
     this.setValue();
   }
   
-  toggleInputVisibility() {
+  toggleInputVisible() {
     if(this.sliderFormControl.value !== null){
       this.isInputVisible = !this.isInputVisible;
       this.setSliderValue(this.bubbleFormControl.value);
