@@ -8,7 +8,7 @@
 
 .nav-link.sidebar-btn {
   margin: 10px 10px 10px 8px;
-  font-family: Titillium;
+  font-family: Titillium, sans-serif;
   font-size: 16px;
   font-weight: bold;
   letter-spacing: 0.4px;
@@ -33,7 +33,6 @@
   stroke-linecap: round;
   stroke-linejoin: round;
 }
-
 
 svg path {
   fill: #0094de;
@@ -82,10 +81,4 @@ svg path {
 .content-wrapper {
   background-image: url("../assets/bg-gesamt.png");
   background-size: 100% auto;
-}
-
-.btn {
-  padding: 0;
-  color: white;
-  border: none;
 }

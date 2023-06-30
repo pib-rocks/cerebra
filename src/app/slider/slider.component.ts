@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, Input, OnInit, TemplateRef, ViewChild } from "@angular/core";
+import { Component, ElementRef, Input, OnInit, TemplateRef, ViewChild } from "@angular/core";
 import { FormControl, Validators } from "@angular/forms";
 import { Subject } from "rxjs";
 import { Message } from "../shared/message";
@@ -15,7 +15,7 @@ import {
   templateUrl: "./slider.component.html",
   styleUrls: ["./slider.component.css"],
 })
-export class SliderComponent implements OnInit, AfterViewInit  {
+export class SliderComponent implements OnInit  {
   maxSliderValue = 9000;
   minSliderValue = -9000;
 
