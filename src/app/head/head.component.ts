@@ -15,10 +15,10 @@ export class HeadComponent implements OnInit {
 
   ngOnInit(): void {
     this.rosService.currentReceiver$.subscribe((message) => {
-      for (let i = 0; i < this.currentConsumptionOfMotors.length; i++) {
-        if (message["motor"] === this.currentConsumptionOfMotors[i]["motor"]) {
+      for (const cc of this.currentConsumptionOfMotors) {
+        if (message["motor"] === cc["motor"]) {
           console.log("current value" + message["currentValue"]);
-          this.currentConsumptionOfMotors[i]["value"] = message["currentValue"];
+          cc["value"] = message["currentValue"];
         }
       }
     });
@@ -41,12 +41,12 @@ export class HeadComponent implements OnInit {
   ];
 
   sendDummyMessage() {
-    for (let i = 0; i < this.currentConsumptionOfMotors.length; i++) {
+    for (const cc of this.currentConsumptionOfMotors) {
       const message: MotorCurrentMessage = {
-        motor: this.currentConsumptionOfMotors[i]["motor"],
+        motor: cc["motor"],
         currentValue: Math.floor(Math.random() * 2000),
       };
-      this.rosService.sendMessage(message);
+      this.rosService.sendSliderMessage(message);
     }
   }
 

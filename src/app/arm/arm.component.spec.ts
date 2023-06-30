@@ -6,6 +6,8 @@ import { SliderComponent } from "../slider/slider.component";
 
 import { ArmComponent } from "./arm.component";
 import { RosService } from "../shared/ros.service";
+import { NavBarComponent } from "../nav-bar/nav-bar.component";
+import { RouterTestingModule } from "@angular/router/testing";
 
 describe("ArmComponent", () => {
   let component: ArmComponent;
@@ -14,8 +16,8 @@ describe("ArmComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ArmComponent, SliderComponent],
-      imports: [AppRoutingModule, ReactiveFormsModule],
+      declarations: [ArmComponent, SliderComponent, NavBarComponent],
+      imports: [AppRoutingModule, ReactiveFormsModule, RouterTestingModule],
       providers: [RosService],
     }).compileComponents();
 
@@ -46,7 +48,7 @@ describe("ArmComponent", () => {
     for (const childComponent of childComponents) {
       spyOn(childComponent.componentInstance, "sendMessage");
     }
-    const button = fixture.debugElement.query(By.css("#resetButton"));
+    const button = fixture.debugElement.query(By.css("#home-position-btn"));
     console.log(button);
     const clickSpy = spyOn(component, "reset").and.callThrough();
     for (const c of childComponents) {
@@ -65,14 +67,14 @@ describe("ArmComponent", () => {
     component.side = "left";
     fixture.detectChanges();
     const dummyBtnLEft = fixture.debugElement.query(By.css("#dummyBtnLeft"));
-    spyOn(rosService, "sendMessage");
+    spyOn(rosService, "sendSliderMessage");
     dummyBtnLEft.nativeElement.click();
-    expect(rosService.sendMessage).toHaveBeenCalledTimes(6);
+    expect(rosService.sendSliderMessage).toHaveBeenCalledTimes(6);
 
     component.side = "right";
     fixture.detectChanges();
     const dummyBtnRight = fixture.debugElement.query(By.css("#dummyBtnRight"));
     dummyBtnRight.nativeElement.click();
-    expect(rosService.sendMessage).toHaveBeenCalledTimes(12);
+    expect(rosService.sendSliderMessage).toHaveBeenCalledTimes(12);
   });
 });

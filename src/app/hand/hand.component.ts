@@ -6,12 +6,11 @@ import {
   ViewChildren,
 } from "@angular/core";
 import { FormControl } from "@angular/forms";
-import { ActivatedRoute, Params } from "@angular/router";
+import { ActivatedRoute, Params,Router } from "@angular/router";
 import { SliderComponent } from "../slider/slider.component";
 import { RosService } from "../shared/ros.service";
 import { MotorCurrentMessage } from "../shared/currentMessage";
 import { Subject } from "rxjs";
-import { Router } from "@angular/router";
 
 @Component({
   selector: "app-hand",
@@ -25,7 +24,7 @@ export class HandComponent implements OnInit {
   messageReceiver$: Subject<MotorCurrentMessage> =
     new Subject<MotorCurrentMessage>();
   displayAll!: string;
-  displayIndividuall!: string;
+  displayIndividual!: string;
   
 
   constructor(
@@ -78,7 +77,7 @@ export class HandComponent implements OnInit {
   ];
 
   ngOnInit(): void {
-    this.displayIndividuall = 'none'
+    this.displayIndividual = 'none'
     this.route.params.subscribe((params: Params) => {
       this.side = params["side"];
     });
@@ -86,16 +85,16 @@ export class HandComponent implements OnInit {
       this.router.navigate(["/head"]);
     }
     this.rosService.currentReceiver$.subscribe((message) => {
-      for (let i = 0; i < this.currentLeft.length; i++) {
-        if (message["motor"] === this.currentLeft[i]["motor"]) {
+      for (const cl of this.currentLeft) {
+        if (message["motor"] === cl["motor"]) {
           console.log("current value" + message["currentValue"]);
-          this.currentLeft[i]["value"] = message["currentValue"];
+          cl["value"] = message["currentValue"];
         }
       }
-      for (let i = 0; i < this.currentRight.length; i++) {
-        if (message["motor"] === this.currentRight[i]["motor"]) {
+      for (const cr of this.currentRight) {
+        if (message["motor"] === cr["motor"]) {
           console.log("current value" + message["currentValue"]);
-          this.currentRight[i]["value"] = message["currentValue"];
+          cr["value"] = message["currentValue"];
         }
       }
     });
@@ -123,22 +122,22 @@ export class HandComponent implements OnInit {
 
   sendDummyMessage() {
     if (this.side === "left") {
-      for (let i = 0; i < this.currentLeft.length; i++) {
+      for (const cl of this.currentLeft) {
         const message: MotorCurrentMessage = {
-          motor: this.currentLeft[i]["motor"],
+          motor: cl["motor"],
           currentValue: Math.floor(Math.random() * 2000),
         };
-        this.rosService.sendMessage(message);
+        this.rosService.sendSliderMessage(message);
       }
     }
 
     if (this.side === "right") {
-      for (let i = 0; i < this.currentRight.length; i++) {
+      for (const cr of this.currentRight) {
         const message: MotorCurrentMessage = {
-          motor: this.currentRight[i]["motor"],
+          motor: cr["motor"],
           currentValue: Math.floor(Math.random() * 2000),
         };
-        this.rosService.sendMessage(message);
+        this.rosService.sendSliderMessage(message);
       }
     }
   }
@@ -148,7 +147,7 @@ export class HandComponent implements OnInit {
       side === "left" ? this.leftSwitchControl : this.rightSwitchControl;
     if (switchControl.value === true) {
       this.displayAll = 'block';
-      this.displayIndividuall = 'none';
+      this.displayIndividual = 'none';
       const indexFinger = this.childComponents.filter(
         (child) => child.labelName === "Index finger"
       )[0];
@@ -174,8 +173,8 @@ export class HandComponent implements OnInit {
           child.periodFormControl.setValue(indexFinger.periodFormControl.value);
           child.pulseMaxRange.setValue(indexFinger.pulseMaxRange.value);
           child.pulseMinRange.setValue(indexFinger.pulseMinRange.value);
-          child.degreeMax.setValue(indexFinger.degreeMax.value);
-          child.degreeMin.setValue(indexFinger.degreeMin.value);
+          child.degreeMaxFormcontrol.setValue(indexFinger.degreeMaxFormcontrol.value);
+          child.degreeMinFormcontrol.setValue(indexFinger.degreeMinFormcontrol.value);
         } else {
           child.sliderFormControl.setValue(thumbOppo.sliderFormControl.value);
           child.motorFormControl.setValue(thumbOppo.motorFormControl.value);
@@ -191,8 +190,8 @@ export class HandComponent implements OnInit {
           child.periodFormControl.setValue(thumbOppo.periodFormControl.value);
           child.pulseMaxRange.setValue(thumbOppo.pulseMaxRange.value);
           child.pulseMinRange.setValue(thumbOppo.pulseMinRange.value);
-          child.degreeMax.setValue(thumbOppo.degreeMax.value);
-          child.degreeMin.setValue(thumbOppo.degreeMin.value);
+          child.degreeMaxFormcontrol.setValue(thumbOppo.degreeMaxFormcontrol.value);
+          child.degreeMinFormcontrol.setValue(thumbOppo.degreeMinFormcontrol.value);
         }
 
         if (side === 'right') {
@@ -217,7 +216,7 @@ export class HandComponent implements OnInit {
       
     } else {
       this.displayAll = 'none';
-      this.displayIndividuall = 'block';
+      this.displayIndividual = 'block';
       let calledOposite = false;
       if(side === 'right') {
         this.childComponents.forEach((child) => {

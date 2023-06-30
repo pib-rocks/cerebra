@@ -28,8 +28,8 @@
     max="{{ maxSliderValue }}"
     class="form-range"
     (input)="inputSendMsg()"
+    #rangeSlider
     [formControl]="sliderFormControl"
-    #{{motorName}}
   />
 </div>
 
@@ -127,7 +127,7 @@
           max="9000"
           min="-9000"
           (input)="inputSendSettingsMsg()"
-          [formControl]="degreeMin"
+          [formControl]="degreeMinFormcontrol"
         />
       </li>
       <br class="overlappingBr" />
@@ -140,16 +140,16 @@
           max="9000"
           min="-9000"
           (input)="inputSendSettingsMsg()"
-          [formControl]="degreeMax"
+          [formControl]="degreeMaxFormcontrol"
         />
       </li>
     </ul>
   </div>
   <span
     *ngIf="
-      degreeMin.hasError('notGreaterThan') ||
-      (degreeMax.hasError('notGreaterThan') &&
-        (degreeMax.touched || degreeMin.touched))
+    degreeMinFormcontrol.hasError('notGreaterThan') ||
+      (degreeMaxFormcontrol.hasError('notGreaterThan') &&
+        (degreeMaxFormcontrol.touched || degreeMinFormcontrol.touched))
     "
     style="color: red"
     class="h-100 d-flex align-items-center justify-content-center"
@@ -157,8 +157,8 @@
   >
   <span
     *ngIf="
-      degreeMin.hasError('max') ||
-      (degreeMin.hasError('min') && degreeMin.touched)
+    degreeMinFormcontrol.hasError('max') ||
+      (degreeMinFormcontrol.hasError('min') && degreeMinFormcontrol.touched)
     "
     style="color: red"
     class="h-100 d-flex align-items-center justify-content-center"
@@ -166,8 +166,8 @@
   >
   <span
     *ngIf="
-      degreeMax.hasError('max') ||
-      (degreeMax.hasError('min') && degreeMax.touched)
+    degreeMaxFormcontrol.hasError('max') ||
+      (degreeMaxFormcontrol.hasError('min') && degreeMaxFormcontrol.touched)
     "
     style="color: red"
     class="h-100 d-flex align-items-center justify-content-center"
@@ -175,9 +175,9 @@
   >
   <span
     *ngIf="
-      degreeMin.hasError('nullValue') ||
-      (degreeMax.hasError('nullValue') &&
-        (degreeMax.touched || degreeMin.touched))
+    degreeMinFormcontrol.hasError('nullValue') ||
+      (degreeMaxFormcontrol.hasError('nullValue') &&
+        (degreeMaxFormcontrol.touched || degreeMinFormcontrol.touched))
     "
     style="color: red"
     class="h-100 d-flex align-items-center justify-content-center"

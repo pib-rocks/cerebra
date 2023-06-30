@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, TemplateRef } from "@angular/core";
+import { Component, ElementRef, Input, OnInit, TemplateRef, ViewChild } from "@angular/core";
 import { FormControl, Validators } from "@angular/forms";
 import { Subject } from "rxjs";
 import { Message } from "../shared/message";
@@ -10,13 +10,12 @@ import {
   compareValuesPulseValidator,
   notNullValidator,
 } from "../shared/validators";
-
 @Component({
   selector: "app-slider",
   templateUrl: "./slider.component.html",
   styleUrls: ["./slider.component.css"],
 })
-export class SliderComponent implements OnInit {
+export class SliderComponent implements OnInit  {
   maxSliderValue = 9000;
   minSliderValue = -9000;
 
@@ -29,6 +28,7 @@ export class SliderComponent implements OnInit {
   @Input() showMotorSettingsButton = true;
 
   closeResult!: string;
+  @ViewChild('rangeSlider') rangeSlider!: ElementRef;
 
   isCombinedSlider = false;
   messageReceiver$ = new Subject<Message>();
@@ -40,15 +40,15 @@ export class SliderComponent implements OnInit {
   periodFormControl: FormControl = new FormControl(1, notNullValidator);
   pulseMaxRange: FormControl = new FormControl(65535);
   pulseMinRange: FormControl = new FormControl(0);
-  degreeMax: FormControl = new FormControl(9000);
-  degreeMin: FormControl = new FormControl(-9000);
+  degreeMaxFormcontrol: FormControl = new FormControl(9000);
+  degreeMinFormcontrol: FormControl = new FormControl(-9000);
   timer: any = null;
 
   constructor(
     private rosService: RosService,
     private motorService: MotorService,
     private modalService: NgbModal
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.pulseMaxRange.setValidators([
@@ -63,14 +63,14 @@ export class SliderComponent implements OnInit {
       compareValuesPulseValidator(this.pulseMinRange, this.pulseMaxRange),
       notNullValidator,
     ]);
-    this.degreeMax.setValidators([
-      compareValuesDegreeValidator(this.degreeMin, this.degreeMax),
+    this.degreeMaxFormcontrol.setValidators([
+      compareValuesDegreeValidator(this.degreeMinFormcontrol, this.degreeMaxFormcontrol),
       Validators.min(-9000),
       Validators.max(9000),
       notNullValidator,
     ]);
-    this.degreeMin.setValidators([
-      compareValuesDegreeValidator(this.degreeMin, this.degreeMax),
+    this.degreeMinFormcontrol.setValidators([
+      compareValuesDegreeValidator(this.degreeMinFormcontrol, this.degreeMaxFormcontrol),
       Validators.min(-9000),
       Validators.max(9000),
       notNullValidator,
@@ -105,10 +105,10 @@ export class SliderComponent implements OnInit {
         this.pulseMinRange.setValue(json.pule_widths_min);
       }
       if (typeof json.rotation_range_max !== "undefined") {
-        this.degreeMax.setValue(json.rotation_range_max);
+        this.degreeMaxFormcontrol.setValue(json.rotation_range_max);
       }
       if (typeof json.rotation_range_min !== "undefined") {
-        this.degreeMin.setValue(json.rotation_range_min);
+        this.degreeMinFormcontrol.setValue(json.rotation_range_min);
       }
       if (typeof json.velocity !== "undefined") {
         this.velocityFormControl.setValue(json.velocity);
@@ -134,14 +134,14 @@ export class SliderComponent implements OnInit {
           motor: mn,
           value: this.sliderFormControl.value,
         };
-        this.rosService.sendMessage(message);
+        this.rosService.sendSliderMessage(message);
       });
     } else {
       const message: Message = {
         motor: this.motorName,
         value: this.sliderFormControl.value,
       };
-      this.rosService.sendMessage(message);
+      this.rosService.sendSliderMessage(message);
     }
   }
 
@@ -153,8 +153,8 @@ export class SliderComponent implements OnInit {
       this.periodFormControl.valid &&
       this.pulseMaxRange.valid &&
       this.pulseMinRange.valid &&
-      this.degreeMax.valid &&
-      this.degreeMin.valid
+      this.degreeMaxFormcontrol.valid &&
+      this.degreeMinFormcontrol.valid
     );
   }
 
@@ -168,28 +168,28 @@ export class SliderComponent implements OnInit {
             motor: mn,
             pule_widths_min: this.pulseMinRange.value,
             pule_widths_max: this.pulseMaxRange.value,
-            rotation_range_min: this.degreeMin.value,
-            rotation_range_max: this.degreeMax.value,
+            rotation_range_min: this.degreeMinFormcontrol.value,
+            rotation_range_max: this.degreeMaxFormcontrol.value,
             velocity: this.velocityFormControl.value,
             acceleration: this.accelerationFormControl.value,
             deceleration: this.decelerationFormControl.value,
             period: this.periodFormControl.value,
           };
-          this.rosService.sendMessage(message);
+          this.rosService.sendSliderMessage(message);
         });
       } else {
         const message: Message = {
           motor: this.motorName,
           pule_widths_min: this.pulseMinRange.value,
           pule_widths_max: this.pulseMaxRange.value,
-          rotation_range_min: this.degreeMin.value,
-          rotation_range_max: this.degreeMax.value,
+          rotation_range_min: this.degreeMinFormcontrol.value,
+          rotation_range_max: this.degreeMaxFormcontrol.value,
           velocity: this.velocityFormControl.value,
           acceleration: this.accelerationFormControl.value,
           deceleration: this.decelerationFormControl.value,
           period: this.periodFormControl.value,
         };
-        this.rosService.sendMessage(message);
+        this.rosService.sendSliderMessage(message);
       }
     }
   }
@@ -216,14 +216,14 @@ export class SliderComponent implements OnInit {
           motor: mn,
           turnedOn: this.motorFormControl.value,
         };
-        this.rosService.sendMessage(message);
+        this.rosService.sendSliderMessage(message);
       });
     } else {
       const message: Message = {
         motor: this.motorName,
         turnedOn: this.motorFormControl.value,
       };
-      this.rosService.sendMessage(message);
+      this.rosService.sendSliderMessage(message);
     }
   }
 
@@ -263,14 +263,14 @@ export class SliderComponent implements OnInit {
             turnedOn: this.motorFormControl.value,
             pule_widths_min: this.pulseMinRange.value,
             pule_widths_max: this.pulseMaxRange.value,
-            rotation_range_min: this.degreeMin.value,
-            rotation_range_max: this.degreeMax.value,
+            rotation_range_min: this.degreeMinFormcontrol.value,
+            rotation_range_max: this.degreeMaxFormcontrol.value,
             velocity: this.velocityFormControl.value,
             acceleration: this.accelerationFormControl.value,
             deceleration: this.decelerationFormControl.value,
             period: this.periodFormControl.value,
           };
-          this.rosService.sendMessage(message);
+          this.rosService.sendSliderMessage(message);
         });
       } else {
         const message: Message = {
@@ -279,14 +279,14 @@ export class SliderComponent implements OnInit {
           turnedOn: this.motorFormControl.value,
           pule_widths_min: this.pulseMinRange.value,
           pule_widths_max: this.pulseMaxRange.value,
-          rotation_range_min: this.degreeMin.value,
-          rotation_range_max: this.degreeMax.value,
+          rotation_range_min: this.degreeMinFormcontrol.value,
+          rotation_range_max: this.degreeMaxFormcontrol.value,
           velocity: this.velocityFormControl.value,
           acceleration: this.accelerationFormControl.value,
           deceleration: this.decelerationFormControl.value,
           period: this.periodFormControl.value,
         };
-        this.rosService.sendMessage(message);
+        this.rosService.sendSliderMessage(message);
       }
     } else {
       if (this.isCombinedSlider) {
@@ -297,7 +297,7 @@ export class SliderComponent implements OnInit {
             value: this.sliderFormControl.value,
             turnedOn: this.motorFormControl.value,
           };
-          this.rosService.sendMessage(message);
+          this.rosService.sendSliderMessage(message);
         });
       } else {
         const message: Message = {
@@ -305,7 +305,7 @@ export class SliderComponent implements OnInit {
           value: this.sliderFormControl.value,
           turnedOn: this.motorFormControl.value,
         };
-        this.rosService.sendMessage(message);
+        this.rosService.sendSliderMessage(message);
       }
     }
   }

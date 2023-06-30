@@ -116,7 +116,6 @@ deploy-cerebra-on-pibrocks:
   variables:
     USER: "pib.rocks"
     HOST: "ssh.strato.de"
-    SOURCE: "/builds/lea-labs/cerebra2/cerebrazipfolder/"
     DESTINATION: "/STRATO-apps/wordpress_01/app/wp-content/uploads/pib_data/"
     FILENAME: "cerebra-latest.zip"
   before_script:
@@ -126,16 +125,13 @@ deploy-cerebra-on-pibrocks:
     - apt-get install lftp
     - apt-get install -y zip unzip
   rules:
-    - if: ($CI_PIPELINE_SOURCE == "schedule") && ($PIB_ROCKS_SCHEDULE == "true") &&  $CI_COMMIT_BRANCH == "master"
+    - if: ($CI_PIPELINE_SOURCE == "schedule") && ($PIB_ROCKS_SCHEDULE == "true") &&  $CI_COMMIT_BRANCH== "master"
   script:
     - zip -r $FILENAME cerebra
-    # put cerebra zip in cerebrazipfolder to transfer the whole file contents to pib-rocks server with the lftp command
-    - mkdir cerebrazipfolder && mv $FILENAME cerebrazipfolder
-    - cd cerebrazipfolder
     - mkdir /root/.ssh
     - chmod 700 /root/.ssh
     - touch /root/.ssh/known_hosts
     - chmod 600 /root/.ssh/known_hosts
     - ssh-keyscan -H $HOST >> /root/.ssh/known_hosts
-    - lftp  -e "mirror --transfer-all --reverse  -X .* --verbose $SOURCE $DESTINATION; quit" -u "$USER","$PIB_ROCKS_PASSWORD" sftp://"$USER"@"$HOST" -p 22
+    - lftp  -e "mirror --file=cerebra-latest.zip --reverse  -X .* --verbose --target-directory=$DESTINATION; quit" -u "$USER","$PIB_ROCKS_PASSWORD" sftp://"$USER"@"$HOST" -p 22
   tags: ["lea"]

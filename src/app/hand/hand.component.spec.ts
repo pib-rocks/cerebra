@@ -6,8 +6,8 @@ import { SliderComponent } from "../slider/slider.component";
 
 import { HandComponent } from "./hand.component";
 import { RosService } from "../shared/ros.service";
-import { left, right } from "@popperjs/core";
-import { MotorCurrentMessage } from "../shared/currentMessage";
+import { NavBarComponent } from "../nav-bar/nav-bar.component";
+
 
 describe("HandComponent", () => {
   let component: HandComponent;
@@ -16,7 +16,7 @@ describe("HandComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [HandComponent, SliderComponent],
+      declarations: [HandComponent, SliderComponent, NavBarComponent],
       imports: [RouterTestingModule, ReactiveFormsModule],
       providers: [RosService],
     }).compileComponents();
@@ -43,7 +43,7 @@ describe("HandComponent", () => {
 
     spyOn(component, "reset").and.callThrough();
 
-    const button = fixture.nativeElement.querySelector("#resetButton");
+    const button = fixture.nativeElement.querySelector("#home-position-btn");
     spyOn(button, "dispatchEvent").and.callThrough();
     component.leftSwitchControl.setValue(true);
     component.rightSwitchControl.setValue(false);
@@ -66,7 +66,7 @@ describe("HandComponent", () => {
 
     spyOn(component, "reset").and.callThrough();
 
-    const button = fixture.nativeElement.querySelector("#resetButton");
+    const button = fixture.nativeElement.querySelector("#home-position-btn");
     spyOn(button, "dispatchEvent").and.callThrough();
     component.leftSwitchControl.setValue(false);
     component.rightSwitchControl.setValue(true);
@@ -90,7 +90,7 @@ describe("HandComponent", () => {
 
     spyOn(component, "reset").and.callThrough();
 
-    const button = fixture.nativeElement.querySelector("#resetButton");
+    const button = fixture.nativeElement.querySelector("#home-position-btn");
     spyOn(button, "dispatchEvent").and.callThrough();
     component.leftSwitchControl.setValue(false);
     component.rightSwitchControl.setValue(false);
@@ -113,7 +113,7 @@ describe("HandComponent", () => {
 
     spyOn(component, "reset").and.callThrough();
 
-    const button = fixture.nativeElement.querySelector("#resetButton");
+    const button = fixture.nativeElement.querySelector("#home-position-btn");
     spyOn(button, "dispatchEvent").and.callThrough();
     component.leftSwitchControl.setValue(false);
     component.rightSwitchControl.setValue(false);
@@ -134,7 +134,7 @@ describe("HandComponent", () => {
     component.side = "left";
     component.leftSwitchControl.setValue(true);
     fixture.detectChanges();
-    const checkInput = fixture.debugElement.query(By.css(".form-check-input"));
+    const checkInput = fixture.debugElement.query(By.css(".custom-control-input"));
     spyOn(checkInput.componentInstance, "switchView").and.callThrough();
     const sliders = fixture.debugElement.queryAll(By.css("app-slider"));
     sliders
@@ -168,7 +168,7 @@ describe("HandComponent", () => {
     component.side = "right";
     component.rightSwitchControl.setValue(true);
     fixture.detectChanges();
-    const checkInput = fixture.debugElement.query(By.css(".form-check-input"));
+    const checkInput = fixture.debugElement.query(By.css(".custom-control-input"));
     spyOn(checkInput.componentInstance, "switchView").and.callThrough();
     const sliders = fixture.debugElement.queryAll(By.css("app-slider"));
     sliders
@@ -223,7 +223,7 @@ fixture.detectChanges();
     expect(child.componentInstance.sendAllMessagesCombined).toHaveBeenCalled();
   })
   expect(component.displayAll).toBe('none');
-  expect(component.displayIndividuall).toBe('block');
+  expect(component.displayIndividual).toBe('block');
   });
 
   it("should set all values to the value of the all_stretch slider (right)", () => {
@@ -250,26 +250,21 @@ fixture.detectChanges();
     expect(child.componentInstance.sendAllMessagesCombined).toHaveBeenCalled();
   })
   expect(component.displayAll).toBe('none');
-  expect(component.displayIndividuall).toBe('block');
+  expect(component.displayIndividual).toBe('block');
   });
-
-
-
-
-
 
   it("should send dummy values", () => {
     component.side = "left";
     fixture.detectChanges();
     const dummyBtnLEft = fixture.debugElement.query(By.css("#dummyBtnLeft"));
-    spyOn(rosService, "sendMessage");
+    spyOn(rosService, "sendSliderMessage");
     dummyBtnLEft.nativeElement.click();
-    expect(rosService.sendMessage).toHaveBeenCalledTimes(5);
+    expect(rosService.sendSliderMessage).toHaveBeenCalledTimes(5);
 
     component.side = "right";
     fixture.detectChanges();
     const dummyBtnRight = fixture.debugElement.query(By.css("#dummyBtnRight"));
     dummyBtnRight.nativeElement.click();
-    expect(rosService.sendMessage).toHaveBeenCalledTimes(10);
+    expect(rosService.sendSliderMessage).toHaveBeenCalledTimes(10);
   });
 });
