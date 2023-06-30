@@ -177,3 +177,7 @@ label {
 .range-wrap .range::-webkit-slider-runnable-track {
   background:linear-gradient(to right, #e10072, #e10072 var(--pos-relative), #324c71 var(--pos-relative), #324c71);
 }
+
+.overlay {
+  z-index: 9;
+}

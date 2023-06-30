@@ -19,7 +19,7 @@
 
 <div class="range-wrap">
   <div class="range-value" #bubble>
-    <input class="bubble-input"
+    <input class="bubble-input overlay"
       id="bubble_input_{{ motorName }}"
       min="{{ minSliderValue }}"
       max="{{ maxSliderValue }}"
@@ -29,7 +29,7 @@
       (keydown.enter)="toggleInputUnvisible()"
       #bubbleInput
     >
-    <div class="bubble-span"
+    <div class="bubble-span overlay"
       id="bubble_span_{{ motorName }}"
       *ngIf="!isInputVisible"
       (dblclick)="toggleInputVisible();"
