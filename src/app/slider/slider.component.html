@@ -1,14 +1,15 @@
 <label for="{{ motorName }}" class="form-label" style="font-family: Open Sans, Arial, Helvetica, sans-serif">{{
   labelName }}: {{ sliderFormControl.value }}
 </label>
-
-<div style="display: inline-block" *ngIf="showCheckBox === true">
+<br>
+<div *ngIf="showCheckBox === true" class="float-end">
   <input id="checkbox_{{ motorName }}" (change)="turnTheMotorOnAndOff()" type="checkbox"
     [formControl]="motorFormControl" />
   <label style="display: inline"> Motor</label>
-</div>
-<button *ngIf="showMotorSettingsButton === true" id="dialogBtn_{{ motorName }}"
+  <button *ngIf="showMotorSettingsButton === true" id="dialogBtn_{{ motorName }}"
   class="bi bi-gear btn btn-outline-primary" style="margin-left: 10px; border: 0" (click)="openPopup(content)"></button>
+</div>
+<br>
 <br>
 <br>
 <div class="range-wrap">

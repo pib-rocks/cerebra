@@ -68,8 +68,6 @@ ul {
   width: 0;
   height: 0;
   border-top: 10px solid #e10072;
-  border-left: 5px solid transparent;
-  border-right: 5px solid transparent;
   top: 100%;
   left: 50%;
   margin-left: -5px;

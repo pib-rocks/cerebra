@@ -21,6 +21,7 @@
 }
 
 .nav-pills .nav-link.sidebar-btn:hover {
+  margin: 10px 10px 10px 8px;
   color: white;
   border-bottom: #e6007e solid 5px;
   padding-bottom: 3px;
@@ -41,6 +42,7 @@ svg path {
 }
 
 .btn-active {
+  margin: 10px 10px 10px 8px;
   color: white;
   border-bottom: #e6007e solid 5px;
   padding-bottom: 3px;
