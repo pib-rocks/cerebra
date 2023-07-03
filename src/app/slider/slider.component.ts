@@ -1,4 +1,4 @@
-import { Component, ElementRef, Input, OnInit, TemplateRef, ViewChild } from "@angular/core";
+import { AfterViewInit, Component, ElementRef, Input, OnInit, TemplateRef, ViewChild } from "@angular/core";
 import { FormControl, Validators } from "@angular/forms";
 import { Subject } from "rxjs";
 import { Message } from "../shared/message";
@@ -15,11 +15,8 @@ import {
   templateUrl: "./slider.component.html",
   styleUrls: ["./slider.component.css"],
 })
-export class SliderComponent implements OnInit  {
-  maxSliderValue = 9000;
-  minSliderValue = -9000;
+export class SliderComponent implements OnInit, AfterViewInit {
 
-  value: number = 300;
   @Input() motorName = "";
   @Input() labelName = "";
   @Input() groupSide = "left";
@@ -27,27 +24,30 @@ export class SliderComponent implements OnInit  {
   @Input() showCheckBox = true;
   @Input() showMotorSettingsButton = true;
 
-  closeResult!: string;
   @ViewChild('bubble') bubbleElement!: ElementRef;
-  @ViewChild('range') sliderElem!: ElementRef;
   @ViewChild('bubbleInput') bubbleInput!: ElementRef;
-  bubbleFormControl: FormControl = new FormControl(0);
-  isInputVisible = false;
+  @ViewChild('range') sliderElem!: ElementRef;
 
+  bubblePosition!: number;
+  closeResult!: string;
   isCombinedSlider = false;
+  isInputVisible = false;
+  maxSliderValue = 9000;
+  minSliderValue = -9000;
   messageReceiver$ = new Subject<Message>();
-  motorFormControl: FormControl = new FormControl(true);
-  sliderFormControl: FormControl = new FormControl(0);
-  velocityFormControl: FormControl = new FormControl(0, notNullValidator);
+  timer: any = null;
+
   accelerationFormControl: FormControl = new FormControl(0, notNullValidator);
+  bubbleFormControl: FormControl = new FormControl(0);
   decelerationFormControl: FormControl = new FormControl(0, notNullValidator);
+  degreeMaxFormcontrol: FormControl = new FormControl(9000);
+  degreeMinFormcontrol: FormControl = new FormControl(-9000);
+  motorFormControl: FormControl = new FormControl(true);
   periodFormControl: FormControl = new FormControl(1, notNullValidator);
   pulseMaxRange: FormControl = new FormControl(65535);
   pulseMinRange: FormControl = new FormControl(0);
-  degreeMaxFormcontrol: FormControl = new FormControl(9000);
-  degreeMinFormcontrol: FormControl = new FormControl(-9000);
-  timer: any = null;
-  bubblePosition!: number;
+  sliderFormControl: FormControl = new FormControl(0);
+  velocityFormControl: FormControl = new FormControl(0, notNullValidator);
 
   constructor(
     private rosService: RosService,
@@ -125,7 +125,7 @@ export class SliderComponent implements OnInit  {
       if (typeof json.velocity !== "undefined") {
         this.velocityFormControl.setValue(json.velocity);
       }
-      this.setValue();
+      this.setThumbPosition();
     });
 
     this.rosService.isInitialized$.subscribe((isInitialized: boolean) => {
@@ -137,10 +137,10 @@ export class SliderComponent implements OnInit  {
   }
 
   ngAfterViewInit() {
-    this.setValue();
+    this.setThumbPosition();
   }
 
-  setValue() {
+  setThumbPosition() {
     const val = Number((this.sliderFormControl.value - -9000) * 100 / (9000 - -9000));
     setTimeout(() => {
       this.bubblePosition = val;
@@ -152,7 +152,7 @@ export class SliderComponent implements OnInit  {
 
   setSliderValue(value: number) {
     this.sliderFormControl.setValue(value);
-    this.setValue();
+    this.setThumbPosition();
   }
   
   toggleInputVisible() {

@@ -45,7 +45,7 @@
     max="{{ maxSliderValue }}"
     step="1"
     [formControl]="sliderFormControl"
-    (input)="setValue(); inputSendMsg()"
+    (input)="setThumbPosition(); inputSendMsg()"
     #range
   >
 </div>

@@ -224,6 +224,6 @@ export class HandComponent implements OnInit {
         });
       }
     }
-    this.childComponents.forEach(child => child.setValue());
+    this.childComponents.forEach(child => child.setThumbPosition());
   }
 }

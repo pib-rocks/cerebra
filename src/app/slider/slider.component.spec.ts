@@ -157,6 +157,7 @@ describe("SliderComponent", () => {
     expect(spyPopup).toHaveBeenCalled();
     expect(spyModal).toHaveBeenCalled();
   });
+
   it("should return dismiss reason by clicking on a backdrop", fakeAsync(() => {
     spyOn(component, "openPopup").and.callThrough();
     spyOn(modalService, "open").and.callThrough();
@@ -231,8 +232,6 @@ describe("SliderComponent", () => {
     expect(rosService.sendSliderMessage).toHaveBeenCalledTimes(6);
   });
 
-
-
   it("should send a combined massege with all values if all inputs are valid", () => {
     const message: Message = {
       motor: component.motorName,
@@ -251,8 +250,7 @@ describe("SliderComponent", () => {
     expect(rosService.sendSliderMessage).toHaveBeenCalledWith(
       jasmine.objectContaining(message)
     );
-
-    const spyMotorNames = spyOn(
+    spyOn(
       motorService,
       "getMotorHandNames"
     ).and.callThrough();
@@ -263,8 +261,6 @@ describe("SliderComponent", () => {
     expect(motorService.getMotorHandNames).toHaveBeenCalledWith("left");
     expect(rosService.sendSliderMessage).toHaveBeenCalledTimes(6);
   });
-
-
 
   it("should send a combined massege with all values if not all inputs are valid", () => {
     const spyMotorNames = spyOn(
@@ -290,8 +286,6 @@ describe("SliderComponent", () => {
     expect(spyMotorNames).toHaveBeenCalledWith("left");
     expect(rosService.sendSliderMessage).toHaveBeenCalledTimes(6);
   });
-
-
 
   it("should return null if max pulse is greater than min pulse", () => {
     const formcontrol1 = new FormControl(0);
@@ -388,7 +382,7 @@ describe("SliderComponent", () => {
   });
 
   it("should make input element visible",(done) => {
-    const mockElementRef = jasmine.createSpyObj('ElementRef', [''], { nativeElement: { focus: () => {}, select: () => {} } });
+    const mockElementRef = jasmine.createSpyObj('ElementRef', [''], { nativeElement: { focus: () => { console.log("focus called"); }, select: () => { console.log("select called"); } } });
     spyOn(mockElementRef.nativeElement, 'focus');
     spyOn(mockElementRef.nativeElement, 'select');
     component.sliderFormControl.setValue(500);
@@ -450,7 +444,7 @@ describe("SliderComponent", () => {
   } )
 
   it("should toggle input unvisible pattern validation", () => {
-    spyOn(component, 'setValue');
+    spyOn(component, 'setThumbPosition');
     component.bubbleFormControl.setValue('test');
     component.isInputVisible = true;
     component.toggleInputUnvisible();
