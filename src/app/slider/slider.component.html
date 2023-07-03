@@ -1,5 +1,5 @@
 <div class="d-flex justify-content-between">
-  <label for="{{ motorName }}" class="form-label" style="font-family: Open Sans, Arial, Helvetica, sans-serif">{{
+  <label for="{{ motorName }}" class="form-label">{{
     labelName }}: {{ sliderFormControl.value }}
   </label>
   <div class="d-flex align-items-center">
@@ -39,8 +39,15 @@
   </div>
   <span *ngIf="bubblePosition > 8" class="bubble-span-min">{{ minSliderValue }}°</span>
   <span *ngIf="bubblePosition < 92" class="bubble-span-max">{{ maxSliderValue }}°</span>
-  <input id="slider_{{ motorName }}" class="range" type="range" min="{{ minSliderValue }}" max="{{ maxSliderValue }}" step="1"
-    [formControl]="sliderFormControl" (input)="setValue(); inputSendMsg()" #range>
+  <input class="range" type="range"
+    id="slider_{{ motorName }}"
+    min="{{ minSliderValue }}"
+    max="{{ maxSliderValue }}"
+    step="1"
+    [formControl]="sliderFormControl"
+    (input)="setValue(); inputSendMsg()"
+    #range
+  >
 </div>
 
 <ng-template #content let-modal id="ng-template">

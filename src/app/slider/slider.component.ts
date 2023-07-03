@@ -125,6 +125,7 @@ export class SliderComponent implements OnInit  {
       if (typeof json.velocity !== "undefined") {
         this.velocityFormControl.setValue(json.velocity);
       }
+      this.setValue();
     });
 
     this.rosService.isInitialized$.subscribe((isInitialized: boolean) => {
@@ -145,8 +146,7 @@ export class SliderComponent implements OnInit  {
       this.bubblePosition = val;
     },0);
     this.bubbleFormControl.setValue(this.sliderFormControl.value);
-    const newPosition = 10 - (val * 0.2);
-    this.bubbleElement.nativeElement.style.left = `calc(${val}% + (${newPosition}px))`;
+    this.bubbleElement.nativeElement.style.left = `calc(${val}%)`;
     this.sliderElem.nativeElement.style.setProperty("--pos-relative", val.toString(10)+'%');
   }
 

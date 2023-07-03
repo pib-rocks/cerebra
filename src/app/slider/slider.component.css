@@ -16,6 +16,11 @@
 
 label {
   color: #fff;
+  font-family: Titillium, sans-serif;
+}
+
+label.form-label {
+  font-size: 16px;
 }
 
 .overlappingBr {
@@ -79,6 +84,7 @@ label {
   left: 50%;
   transform: translate(-50%, 0);
   border-radius: 6px;
+  padding: 0 2px;
 }
 
 .range-wrap .bubble-span-min{
