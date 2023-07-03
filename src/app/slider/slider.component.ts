@@ -1,6 +1,6 @@
 import { AfterViewInit, Component, ElementRef, Input, OnInit, TemplateRef, ViewChild } from "@angular/core";
 import { FormControl, Validators } from "@angular/forms";
-import { Subject } from "rxjs";
+import { Subject, pairwise } from "rxjs";
 import { Message } from "../shared/message";
 import { MotorService } from "../shared/motor.service";
 import { RosService } from "../shared/ros.service";
@@ -35,6 +35,7 @@ export class SliderComponent implements OnInit, AfterViewInit {
   maxSliderValue = 9000;
   minSliderValue = -9000;
   messageReceiver$ = new Subject<Message>();
+  oldValue: number = 0;
   timer: any = null;
 
   accelerationFormControl: FormControl = new FormControl(0, notNullValidator);
@@ -169,27 +170,35 @@ export class SliderComponent implements OnInit, AfterViewInit {
   }
 
   toggleInputUnvisible() {
-    if(this.sliderFormControl.value !== null){
-      this.isInputVisible = !this.isInputVisible;
-      if(this.bubbleFormControl.hasError('min')) {
-        this.setSliderValue(this.minSliderValue);
-        this.inputSendMsg();
-      }
-      else if(this.bubbleFormControl.hasError('max')) {
-        this.setSliderValue(this.maxSliderValue);
-        this.inputSendMsg();
-      }
-      else if(this.bubbleFormControl.hasError('required')) {
-        this.bubbleFormControl.setValue(this.sliderFormControl.value);
-      }
-      else if(this.bubbleFormControl.hasError('pattern')) {
-        this.bubbleFormControl.setValue(this.sliderFormControl.value);
-      }
-      else {
-        this.setSliderValue(this.bubbleFormControl.value);
-        this.inputSendMsg();
-      }
-    } else{
+
+    console.log("sliderFormControl", this.sliderFormControl.value);
+    console.log("bubbleFormControl", this.bubbleFormControl.value);
+
+    console.log("dirty", this.bubbleFormControl.dirty);
+
+    if (this.bubbleFormControl.value !== this.sliderFormControl.value) {
+      if(this.sliderFormControl.value !== null){
+        this.isInputVisible = !this.isInputVisible;
+        if(this.bubbleFormControl.hasError('min')) {
+          this.setSliderValue(this.minSliderValue);
+          this.inputSendMsg();
+        }
+        else if(this.bubbleFormControl.hasError('max')) {
+          this.setSliderValue(this.maxSliderValue);
+          this.inputSendMsg();
+        }
+        else if(this.bubbleFormControl.hasError('required')) {
+          this.bubbleFormControl.setValue(this.sliderFormControl.value);
+        }
+        else if(this.bubbleFormControl.hasError('pattern')) {
+          this.bubbleFormControl.setValue(this.sliderFormControl.value);
+        }
+        else {
+          this.setSliderValue(this.bubbleFormControl.value);
+          this.inputSendMsg();
+        }
+      } 
+    } else {
       this.isInputVisible = !this.isInputVisible;
     }
   }
