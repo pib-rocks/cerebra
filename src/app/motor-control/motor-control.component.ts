@@ -1,6 +1,6 @@
 import { AfterViewInit, Component, ElementRef, Input, OnInit, TemplateRef, ViewChild } from "@angular/core";
 import { FormControl, Validators } from "@angular/forms";
-import { Subject, pairwise } from "rxjs";
+import { Subject } from "rxjs";
 import { Message } from "../shared/message";
 import { MotorService } from "../shared/motor.service";
 import { RosService } from "../shared/ros.service";
@@ -11,11 +11,11 @@ import {
   notNullValidator,
 } from "../shared/validators";
 @Component({
-  selector: "app-slider",
-  templateUrl: "./slider.component.html",
-  styleUrls: ["./slider.component.css"],
+  selector: "app-motor-control",
+  templateUrl: "./motor-control.component.html",
+  styleUrls: ["./motor-control.component.css"],
 })
-export class SliderComponent implements OnInit, AfterViewInit {
+export class MotorControlComponent implements OnInit, AfterViewInit {
 
   @Input() motorName = "";
   @Input() labelName = "";

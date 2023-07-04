@@ -8,20 +8,20 @@
           Home position
         </button>
       </div>
-      <app-slider
+      <app-motor-control
         [motorName]="turnHeadMotor.name"
         [labelName]="turnHeadMotor.label">
-      </app-slider>
-      <app-slider 
+      </app-motor-control>
+      <app-motor-control 
         [motorName]="tiltForwardMotor.name"
         [labelName]="tiltForwardMotor.label">
-      </app-slider>
-      <app-slider
+      </app-motor-control>
+      <app-motor-control
         [motorName]="tiltSideWaysMotor.name"
         [labelName]="tiltSideWaysMotor.label"
         [showMotorSettingsButton]="false"
         [showCheckBox]="false">
-      </app-slider>
+      </app-motor-control>
     </div>
     <div class="col">
       <div class="container-div">

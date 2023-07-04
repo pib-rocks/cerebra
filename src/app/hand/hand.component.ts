@@ -7,7 +7,7 @@ import {
 } from "@angular/core";
 import { FormControl } from "@angular/forms";
 import { ActivatedRoute, Params, Router } from "@angular/router";
-import { SliderComponent } from "../slider/slider.component";
+import { MotorControlComponent } from "../motor-control/motor-control.component";
 import { RosService } from "../shared/ros.service";
 import { MotorCurrentMessage } from "../shared/currentMessage";
 import { Subject } from "rxjs";
@@ -18,7 +18,7 @@ import { Subject } from "rxjs";
   styleUrls: ["./hand.component.css"],
 })
 export class HandComponent implements OnInit {
-  @ViewChildren(SliderComponent) childComponents!: QueryList<SliderComponent>;
+  @ViewChildren(MotorControlComponent) childComponents!: QueryList<MotorControlComponent>;
 
   @Input() side = "left";
   messageReceiver$: Subject<MotorCurrentMessage> =

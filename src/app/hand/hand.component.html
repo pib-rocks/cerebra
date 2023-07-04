@@ -12,14 +12,14 @@
             (input)="switchView(side)" />
           <label class="custom-control-label" for="leftSwitch">Control fingers individually</label>
         </div>
-        <app-slider [motorName]="thumbOppositionLeft.motor" [labelName]="thumbOppositionLeft.label" [isGroup]="true"
+        <app-motor-control [motorName]="thumbOppositionLeft.motor" [labelName]="thumbOppositionLeft.label" [isGroup]="true"
           groupSide="left">
-        </app-slider>
+        </app-motor-control>
         <div *ngFor="let f of leftFingers" #leftContainer>
-          <app-slider [motorName]="f.motor" [labelName]="f.label" [style.display]="displayIndividual"></app-slider>
+          <app-motor-control [motorName]="f.motor" [labelName]="f.label" [style.display]="displayIndividual"></app-motor-control>
         </div>
-        <app-slider [motorName]="allFingersLeft.motor" [labelName]="allFingersLeft.label" [isGroup]="true"
-          [style.display]="displayAll" groupSide="left"></app-slider>
+        <app-motor-control [motorName]="allFingersLeft.motor" [labelName]="allFingersLeft.label" [isGroup]="true"
+          [style.display]="displayAll" groupSide="left"></app-motor-control>
       </ng-container>
 
       <ng-container *ngIf="side === 'right'">
@@ -28,13 +28,13 @@
             (input)="switchView(side)" />
           <label class="custom-control-label" for="rightSwitch">Control fingers individually</label>
         </div>
-        <app-slider [motorName]="thumbOppositionRight.motor" [labelName]="thumbOppositionRight.label" [isGroup]="true"
-          groupSide="right"></app-slider>
+        <app-motor-control [motorName]="thumbOppositionRight.motor" [labelName]="thumbOppositionRight.label" [isGroup]="true"
+          groupSide="right"></app-motor-control>
         <ng-container *ngFor="let f of rightFingers" #rightContainer>
-          <app-slider [motorName]="f.motor" [labelName]="f.label" [style.display]="displayIndividual"></app-slider>
+          <app-motor-control [motorName]="f.motor" [labelName]="f.label" [style.display]="displayIndividual"></app-motor-control>
         </ng-container>
-        <app-slider [motorName]="allFingersRight.motor" [labelName]="allFingersRight.label" [isGroup]="true"
-          groupSide="right" [style.display]="displayAll"></app-slider>
+        <app-motor-control [motorName]="allFingersRight.motor" [labelName]="allFingersRight.label" [isGroup]="true"
+          groupSide="right" [style.display]="displayAll"></app-motor-control>
       </ng-container>
     </div>
     <div class="col">

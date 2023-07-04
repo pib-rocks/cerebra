@@ -1,7 +1,7 @@
 import { Component, OnInit, QueryList, ViewChildren } from "@angular/core";
 import { RosService } from "../shared/ros.service";
 import { MotorCurrentMessage } from "../shared/currentMessage";
-import { SliderComponent } from "../slider/slider.component";
+import { MotorControlComponent } from "../motor-control/motor-control.component";
 
 @Component({
   selector: "app-head",
@@ -9,7 +9,7 @@ import { SliderComponent } from "../slider/slider.component";
   styleUrls: ["./head.component.css"],
 })
 export class HeadComponent implements OnInit {
-  @ViewChildren(SliderComponent) childComponents!: QueryList<SliderComponent>;
+  @ViewChildren(MotorControlComponent) childComponents!: QueryList<MotorControlComponent>;
 
   constructor(private rosService: RosService) {}
 

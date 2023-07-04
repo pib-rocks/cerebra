@@ -10,18 +10,18 @@
       </div>
       <div *ngIf="side === 'left'">
         <ng-container *ngFor="let f of leftArm">
-          <app-slider
+          <app-motor-control
             [motorName]="f.topic"
             [labelName]="f.label | titlecase"
-          ></app-slider>
+          ></app-motor-control>
         </ng-container>
       </div>
       <div *ngIf="side === 'right'">
         <ng-container *ngFor="let f of rightArm">
-          <app-slider
+          <app-motor-control
             [motorName]="f.topic"
             [labelName]="f.label | titlecase"
-          ></app-slider>
+          ></app-motor-control>
         </ng-container>
       </div>
     </div>

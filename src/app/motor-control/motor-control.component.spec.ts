@@ -15,13 +15,13 @@ import {
   compareValuesPulseValidator,
 } from "../shared/validators";
 
-import { SliderComponent } from "./slider.component";
+import { MotorControlComponent } from "./motor-control.component";
 import { VoiceAssistant } from "../shared/voice-assistant";
 import { MotorCurrentMessage } from "../shared/currentMessage";
 
-describe("SliderComponent", () => {
-  let component: SliderComponent;
-  let fixture: ComponentFixture<SliderComponent>;
+describe("MotorControlComponent", () => {
+  let component: MotorControlComponent;
+  let fixture: ComponentFixture<MotorControlComponent>;
   let rosService: RosService;
   let modalService: NgbModal;
   let fingerService: MotorService;
@@ -30,12 +30,12 @@ describe("SliderComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [SliderComponent],
+      declarations: [MotorControlComponent],
       imports: [ReactiveFormsModule],
       providers: [RosService, MotorService],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(SliderComponent);
+    fixture = TestBed.createComponent(MotorControlComponent);
     component = fixture.componentInstance;
     rosService = TestBed.inject(RosService);
     modalService = TestBed.inject(NgbModal);
