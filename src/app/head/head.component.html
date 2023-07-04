@@ -1,19 +1,27 @@
 <app-nav-bar></app-nav-bar>
-<div class="container">
+<div class="container-fluid">
   <div class="row">
     <div class="col">
-      <h3>Head</h3>
-      <button id="home-position-btn" type="button" class="my-4 float-end  btn" (click)="reset()">
-        <img src="../../assets/icon-home-position.png" alt="" width="19px" height="24px">
-        Home position
-      </button>
-      <br>
-      <br>
-      <app-slider [motorName]="turnHeadMotor.name" [labelName]="turnHeadMotor.label"></app-slider>
-      <app-slider [motorName]="tiltForwardMotor.name" [labelName]="tiltForwardMotor.label"></app-slider>
-      <app-slider [motorName]="tiltSideWaysMotor.name" [labelName]="tiltSideWaysMotor.label"
-        [showMotorSettingsButton]="false" [showCheckBox]="false"></app-slider>
-
+      <div class="d-flex flex-row-reverse">
+        <button id="home-position-btn" type="button" class="mt-3 btn" (click)="reset()">
+          <img src="../../assets/icon-home-position.png" alt="" width="19px" height="24px">
+          Home position
+        </button>
+      </div>
+      <app-motor-control
+        [motorName]="turnHeadMotor.name"
+        [labelName]="turnHeadMotor.label">
+      </app-motor-control>
+      <app-motor-control 
+        [motorName]="tiltForwardMotor.name"
+        [labelName]="tiltForwardMotor.label">
+      </app-motor-control>
+      <app-motor-control
+        [motorName]="tiltSideWaysMotor.name"
+        [labelName]="tiltSideWaysMotor.label"
+        [showMotorSettingsButton]="false"
+        [showCheckBox]="false">
+      </app-motor-control>
     </div>
     <div class="col">
       <div class="container-div">
