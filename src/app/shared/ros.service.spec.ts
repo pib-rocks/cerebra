@@ -50,7 +50,7 @@ describe("RosService", () => {
 
     spySize = spyOn(
       RosService.prototype,
-      "createPreviewSizePublisher"
+      "createPreviewSizeTopic"
     ).and.returnValue(mockTopic as unknown as ROSLIB.Topic);
 
     spySubscribeTopic = spyOn(
@@ -213,7 +213,7 @@ export class RosMock {
     this.service?.createVoiceAssistantTopic();
     this.service?.createMotorCurrentConsumptionTopic();
     this.service?.createCameraTopic();
-    this.service?.createPreviewSizePublisher();
+    this.service?.createPreviewSizeTopic();
   }
 
   callOnConnection() {
