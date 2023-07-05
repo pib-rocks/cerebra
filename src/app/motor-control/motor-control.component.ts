@@ -34,6 +34,8 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
   isInputVisible = false;
   maxSliderValue = 9000;
   minSliderValue = -9000;
+  maxBubblePosition = 92;
+  minBubblePosition = 8;
   messageReceiver$ = new Subject<Message>();
   oldValue: number = 0;
   timer: any = null;
@@ -139,6 +141,11 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit() {
     this.setThumbPosition();
+    const sliderWidth = document.getElementById("slider_"+this.motorName)?.clientWidth;
+    if (sliderWidth !== undefined) {
+      this.minBubblePosition = 60*100/sliderWidth;
+      this.maxBubblePosition = (sliderWidth-60)*100/sliderWidth;
+    }
   }
 
   setThumbPosition() {
