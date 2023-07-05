@@ -36,6 +36,8 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
   minSliderValue = -9000;
   maxBubblePosition = 92;
   minBubblePosition = 8;
+  // the number of pixels from the edges of the slider at which the gray bubbles disappear
+  pixelsFromEdge = 60;
   messageReceiver$ = new Subject<Message>();
   oldValue: number = 0;
   timer: any = null;
@@ -143,8 +145,8 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
     this.setThumbPosition();
     const sliderWidth = document.getElementById("slider_"+this.motorName)?.clientWidth;
     if (sliderWidth !== undefined) {
-      this.minBubblePosition = 60*100/sliderWidth;
-      this.maxBubblePosition = (sliderWidth-60)*100/sliderWidth;
+      this.minBubblePosition = this.pixelsFromEdge*100/sliderWidth;
+      this.maxBubblePosition = (sliderWidth-this.pixelsFromEdge)*100/sliderWidth;
     }
   }
 
