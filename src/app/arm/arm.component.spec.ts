@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { ReactiveFormsModule } from "@angular/forms";
 import { By } from "@angular/platform-browser";
 import { AppRoutingModule } from "../app-routing.module";
-import { SliderComponent } from "../slider/slider.component";
+import { MotorControlComponent } from "../motor-control/motor-control.component";
 
 import { ArmComponent } from "./arm.component";
 import { RosService } from "../shared/ros.service";
@@ -16,7 +16,7 @@ describe("ArmComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ArmComponent, SliderComponent, NavBarComponent],
+      declarations: [ArmComponent, MotorControlComponent, NavBarComponent],
       imports: [AppRoutingModule, ReactiveFormsModule, RouterTestingModule],
       providers: [RosService],
     }).compileComponents();
@@ -35,7 +35,7 @@ describe("ArmComponent", () => {
     component.side = "left";
     fixture.detectChanges();
     const childComponents =
-      fixture.nativeElement.querySelectorAll("app-slider");
+      fixture.nativeElement.querySelectorAll("app-motor-control");
     console.log(childComponents);
     expect(childComponents.length).toBe(6);
   });
@@ -43,7 +43,7 @@ describe("ArmComponent", () => {
   it("should call reset() and set all slider values to 0 after clicking reset button", () => {
     component.side = "left";
     fixture.detectChanges();
-    const childComponents = fixture.debugElement.queryAll(By.css("app-slider"));
+    const childComponents = fixture.debugElement.queryAll(By.css("app-motor-control"));
     const spies: jasmine.Spy<any>[] = [];
     for (const childComponent of childComponents) {
       spyOn(childComponent.componentInstance, "sendMessage");

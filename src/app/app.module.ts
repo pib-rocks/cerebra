@@ -5,7 +5,7 @@ import { HttpClientModule } from "@angular/common/http";
 
 import { AppRoutingModule } from "./app-routing.module";
 import { AppComponent } from "./app.component";
-import { SliderComponent } from "./slider/slider.component";
+import { MotorControlComponent } from "./motor-control/motor-control.component";
 import { HandComponent } from "./hand/hand.component";
 import { CameraComponent } from "./camera/camera.component";
 import { ArmComponent } from "./arm/arm.component";
@@ -22,7 +22,7 @@ import { NavBarComponent } from "./nav-bar/nav-bar.component";
 @NgModule({
   declarations: [
     AppComponent,
-    SliderComponent,
+    MotorControlComponent,
     HandComponent,
     CameraComponent,
     ArmComponent,
