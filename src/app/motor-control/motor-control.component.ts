@@ -34,6 +34,10 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
   isInputVisible = false;
   maxSliderValue = 9000;
   minSliderValue = -9000;
+  maxBubblePosition = 92;
+  minBubblePosition = 8;
+  // the number of pixels from the edges of the slider at which the gray bubbles disappear
+  pixelsFromEdge = 60;
   messageReceiver$ = new Subject<Message>();
   oldValue: number = 0;
   timer: any = null;
@@ -139,6 +143,11 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit() {
     this.setThumbPosition();
+    const sliderWidth = document.getElementById("slider_"+this.motorName)?.clientWidth;
+    if (sliderWidth !== undefined) {
+      this.minBubblePosition = this.pixelsFromEdge*100/sliderWidth;
+      this.maxBubblePosition = (sliderWidth-this.pixelsFromEdge)*100/sliderWidth;
+    }
   }
 
   setThumbPosition() {
@@ -170,12 +179,6 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
   }
 
   toggleInputUnvisible() {
-
-    console.log("sliderFormControl", this.sliderFormControl.value);
-    console.log("bubbleFormControl", this.bubbleFormControl.value);
-
-    console.log("dirty", this.bubbleFormControl.dirty);
-
     if (this.bubbleFormControl.value !== this.sliderFormControl.value) {
       if(this.sliderFormControl.value !== null){
         this.isInputVisible = !this.isInputVisible;

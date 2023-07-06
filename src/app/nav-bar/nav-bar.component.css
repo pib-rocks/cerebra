@@ -1,63 +1,47 @@
-  ul li a {
-    color: #0094df;
-    padding: 1rem;
-    font-family: Titillium, sans-serif;
-    font-weight: bold;
-    text-align: center;
-  }
+a {
+  font-family: Titillium, sans-serif;
+  font-weight: bold;
+  text-align: center;
+  text-transform: uppercase;
+  font-size: 16px;
+}
 
-  .nav-tabs {
-    border: none;
-    border-bottom: 1px solid #0094df;
-  }
+.nav-link {
+  padding-top: 14px;
+}
 
-  ul li {
-    background-image: linear-gradient(to top, #1e304d, #000);
-    width: 160px;
-    margin-top: 20px;
-    text-transform: uppercase;
-    z-index: 1;
-    font-size: 16px;
-  }
+.nav-tabs {
+  border-bottom: 1px solid #0094df;
+  margin-top: 20px;
+}
 
-  ul li:hover {
-    margin-top: 17px;
-  }
+.nav-tabs .nav-item {
+  width: 160px;
+  height: 50px;
+  background-image: linear-gradient(to top, #1e304d, #000);
+}
 
-  ul li.navbar-btn-active {
-    background-image: linear-gradient(to top, #000, #1e304d);
-    width: 160px;
-    border: none;
-    border-left: 1px solid #0094df;
-    border-top: 3px solid #e10072;
-    border-right: 1px solid #0094df;
-    color: white;
-    margin-bottom: -1px;
-    margin-top: 17px;
-  }
+.nav-tabs .nav-item a {
+  border: none;
+  color: #0094df;
+}
 
-  ul li.navbar-btn-active a {
-    color: white;
-    z-index: 1;
-  }
+.nav-tabs .nav-item a:hover, .nav-tabs .navbar-btn-active a {
+  color: white;
+}
 
-  .nav-tabs .nav-link:hover {
-    background-image: linear-gradient(to top, #000, #1e304d);
-    width: 160px;
-    border: none;
-    border-left: 1px solid #0094df;
-    border-top: 3px solid #e10072;
-    border-right: 1px solid #0094df;
-    color: white;
+.nav-tabs .navbar-btn-active {
+  height: 51px;
+  margin-bottom: -1px;
+}
 
-  }
+.nav-tabs .nav-item:hover, .nav-tabs .navbar-btn-active {
+  background-image: linear-gradient(to top, #000, #1e304d);
+  border-left: 1px solid #0094df;
+  border-top: 4px solid #e10072;
+  border-right: 1px solid #0094df;
+}
 
-  ul li.navbar-btn-active:hover {
-    background-image: linear-gradient(to top, #000, #1e304d);
-    width: 160px;
-    border: none;
-  }
-
-  .nav-tabs .nav-link {
-    border: none;
-  }
+.nav-tabs .nav-item:hover .nav-link, .nav-tabs .navbar-btn-active .nav-link {
+  padding-top: 10px;
+}

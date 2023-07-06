@@ -37,8 +37,8 @@
       {{bubbleFormControl.value}}°
     </div>
   </div>
-  <span *ngIf="bubblePosition > 8" class="bubble-span-min">{{ minSliderValue }}°</span>
-  <span *ngIf="bubblePosition < 92" class="bubble-span-max">{{ maxSliderValue }}°</span>
+  <span *ngIf="bubblePosition >= minBubblePosition" class="bubble-span-min">{{ minSliderValue }}°</span>
+  <span *ngIf="bubblePosition <= maxBubblePosition" class="bubble-span-max">{{ maxSliderValue }}°</span>
   <input class="range" type="range"
     id="slider_{{ motorName }}"
     min="{{ minSliderValue }}"
