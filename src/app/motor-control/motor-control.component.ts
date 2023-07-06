@@ -90,24 +90,32 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
     this.isCombinedSlider = this.labelName === "Open/Close all fingers";
     if (this.isCombinedSlider) {
       this.rosService.sharedValue$.subscribe(value => {
-        if (!Number.isNaN(value)) {
+        if (!Number.isNaN(value) && Number.isFinite(value)) {
           this.sliderFormControl.setValue(value);
           setTimeout(() => {
             this.setThumbPosition();
           }, 0);
         }
+        if (value === true || value === false){
+          this.motorFormControl.setValue(value);
+        }
       });
     }
     this.messageReceiver$.subscribe((json) => {
       const value = json.value;
+      const motorCheckbox = json.turnedOn;
       if (json.motor === 'index_right_stretch' || json.motor === 'index_left_stretch') {
         this.rosService.updateSharedValue(this.getValueWithinRange(Number(value)));
       }
-      if (value !== "undefined") {
+      if(motorCheckbox === true || motorCheckbox === false){
+        this.rosService.updateSharedValue(motorCheckbox);
+      }
+      if (value) {
         this.sliderFormControl.setValue(
           this.getValueWithinRange(Number(value))
         );
       }
+
       if (typeof json.turnedOn !== "undefined") {
         this.motorFormControl.setValue(json.turnedOn);
       }

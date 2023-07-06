@@ -27,7 +27,7 @@ export class RosService {
   private timerPeriodTopic!: ROSLIB.Topic;
   private previewSizeTopic!: ROSLIB.Topic;
   private qualityFactorTopic!: ROSLIB.Topic;
-  private sharedAllFingersValueSource = new BehaviorSubject<number>(0);
+  private sharedAllFingersValueSource = new BehaviorSubject<number | boolean>(0);
   sharedValue$ = this.sharedAllFingersValueSource.asObservable();
 
   private readonly topicName = "/motor_settings";
@@ -98,7 +98,7 @@ export class RosService {
     }
   }
 
-  updateSharedValue(value: number) {
+  updateSharedValue(value: number | boolean) {
     this.sharedAllFingersValueSource.next(value);
   }
 
