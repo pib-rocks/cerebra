@@ -91,8 +91,6 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
     if (this.isCombinedSlider) {
       this.rosService.sharedValue$.subscribe(value => {
         if (!Number.isNaN(value)) {
-          console.log(value);
-          console.log('****************-------------------');
           this.sliderFormControl.setValue(value);
           setTimeout(() => {
             this.setThumbPosition();
