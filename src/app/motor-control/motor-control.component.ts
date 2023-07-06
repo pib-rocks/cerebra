@@ -19,7 +19,6 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
   maxSliderValue = 9000;
   minSliderValue = -9000;
 
-  value: number = 300;
   @Input() motorName = "";
   @Input() labelName = "";
   @Input() groupSide = "left";
