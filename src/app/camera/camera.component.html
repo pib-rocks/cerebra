@@ -11,10 +11,23 @@
   <div class="row">
     <div class="col">
       <img [src]="imageSrc" alt="camera" width="100%">
-      <button (click)="stopCamera()" id="stopCamera">Stop Camera</button>
-      <button (click)="startCamera()" id="startCamera">Start Camera</button>
+
+      <div class="custom-control custom-switch custom-switch-pib my-4 cameraIcon" id="cameraToggle">
+        <input class="custom-control-input" type="checkbox" id="toggleCamera" [formControl]="toggleCamera"
+          (input)="toggleCameraState()" />
+        <label class="custom-control-label" for="toggleCamera"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px">
+          <path d="M140-160q-24 0-42-18t-18-42v-520q0-24 18-42t42-18h520q24 0 42 18t18 42v215l160-160v410L720-435v215q0 24-18 42t-42 18H140Z"/>
+          <path d="M880-275 720-435v111L244-800h416q24 0 42 18t18 42v215l160-160v410ZM848-27 39-836l42-42L890-69l-42 42ZM159-800l561 561v19q0 24-18 42t-42 18H140q-24 0-42-18t-18-42v-520q0-24 18-42t42-18h19Z"/>
+        </svg></label>
+      </div>
+ 
+      
     </div>
     <div class="col">
+      <button type="button" class="btn cameraIcon" id="videosettings">
+        <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M475.217-151.869h-317.13q-37.783 0-64.392-26.609-26.608-26.609-26.608-64.392v-474.26q0-37.783 26.608-64.392 26.609-26.609 64.392-26.609h634.261q37.782 0 64.391 26.609 26.609 26.609 26.609 64.392V-520h-91v-197.13H158.087v474.26h317.13v91.001ZM373.304-296.652v-366.696L658.565-480 373.304-296.652ZM708.5-32.587l-12.478-61.195q-11.044-4.522-21.066-9.903-10.021-5.38-20.304-12.663l-58.956 18.479-43.109-73.261 47.195-40.718q-2.239-12.804-2.119-24.565.119-11.761 2.119-24.565l-47.195-40.718 43.109-73.021 58.956 18.239q10.283-7.283 20.304-12.544 10.022-5.261 21.066-9.782L708.5-440h85.978l12.239 61.196q11.044 4.521 21.066 10.163 10.021 5.641 20.304 14.163l59.196-20.239 42.869 75.021-46.956 40.718q2.239 11.043 2.119 23.565-.119 12.522-2.119 23.565l46.956 40.718-42.869 73.26-59.196-18.478q-10.283 7.283-20.304 12.663-10.022 5.38-21.066 9.903l-12.239 61.195H708.5Zm42.87-125.5q32.043 0 55.184-23.141 23.142-23.142 23.142-55.185 0-32.043-23.142-55.065Q783.413-314.5 751.37-314.5q-32.044 0-55.066 23.022-23.021 23.022-23.021 55.065t23.021 55.185q23.022 23.141 55.066 23.141Z"/></svg>
+        Video settings
+      </button>
       <label for="refreshRate" class="form-label my-3" style="font-family: Open Sans, Arial, Helvetica, sans-serif">
         Refresh rate: {{ refreshRateControl.value }}s
       </label>
@@ -27,20 +40,20 @@
         [formControl]="qualityFactorControl" (input)="inputQualityFactor()" />
 
       <div ngbDropdown class="d-inline-block">
-
         <br>
-        <button type="button" class="btn" id="dropdownbutton" ngbDropdownToggle>
-          Select size ({{ selectedSize }})
+        <button type="button" class="btn cameraIcon" id="dropdownbutton" ngbDropdownToggle>
+          <svg class="cameraIcon" xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M185.087-105.869q-32.507 0-55.862-23.356-23.356-23.355-23.356-55.862V-352h79.218v166.913H352v79.218H185.087Zm422.913 0v-79.218h166.913V-352h79.783v166.913q0 32.507-23.521 55.862-23.522 23.356-56.262 23.356H608ZM105.869-608v-166.913q0-32.74 23.356-56.262 23.355-23.521 55.862-23.521H352v79.783H185.087V-608h-79.218Zm669.044 0v-166.913H608v-79.783h166.913q32.74 0 56.262 23.521 23.521 23.522 23.521 56.262V-608h-79.783Z"/></svg>
+          {{ selectedSize }}
         </button>
         <div ngbDropdownMenu aria-labelledby="dropdownbutton">
           <button id="dropdownbutton-item-480px" ngbDropdownItem (click)="setSize(640, 480)">
-            480p (640 x 480)
+            480p (SD)
           </button>
           <button id="dropdownbutton-item-720px" ngbDropdownItem (click)="setSize(1280, 720)">
-            720p (1280 x 720)
+            720p (HD)
           </button>
           <button id="dropdownbutton-item-1080px" ngbDropdownItem (click)="setSize(1920, 1080)">
-            1080p (1920 x 1080)
+            1080p (FHD)
           </button>
         </div>
       </div>

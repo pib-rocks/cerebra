@@ -11,6 +11,9 @@ import { RosService } from "../shared/ros.service";
 export class CameraComponent implements OnInit, OnDestroy {
   timer:any = null;
   isLoading = false;
+  isCameraActive = false;
+  toggleCamera = new FormControl(false);
+  resolution = 'SD';
   constructor(private rosService: RosService){  }
   ngOnInit(): void {
     this.setRefreshRate();
@@ -32,12 +35,22 @@ export class CameraComponent implements OnInit, OnDestroy {
   componentName = "Live view";
   refreshRateControl = new FormControl(0.1);
   qualityFactorControl = new FormControl(80);
-  selectedSize = "480p";
+  selectedSize = "480p (SD)";
 
   private imageTopic!: ROSLIB.Topic;
   
   setSize(width: number, height: number) {
-    this.selectedSize = height+ 'p';
+    this.resolution = 'SD'
+    if(height != null){
+      if(height >= 1080){
+        this.resolution = 'FHD';
+      }else if(height >= 720){
+        this.resolution = 'HD';
+      }else{
+        this.resolution = 'SD';
+      }
+    }
+    this.selectedSize = height+ 'p' + ' ' + '(' + this.resolution + ')';
     this.isLoading = true; 
     this.rosService.setPreviewSize(width, height);
     setTimeout(() => {
@@ -63,6 +76,16 @@ export class CameraComponent implements OnInit, OnDestroy {
     this.rosService.unsubscribeCameraTopic();
     //this.imageSrc = '../../assets/pib-Logo.png'
   }
+
+  toggleCameraState(){
+    if(!this.isCameraActive){
+      this.startCamera();
+    }else{
+      this.stopCamera();
+    }
+    this.isCameraActive = !this.isCameraActive;
+  }
+
   inputQualityFactor(){
     clearTimeout(this.timer);
     this.timer = setTimeout(() => {

@@ -5,11 +5,24 @@ video {
   object-fit: cover;
 }
 
-#dropdownbutton {
-  color: white;
-  background-color: #e6007e;
-}
-
 .qualityFactor{
   transform: rotate(180deg);
+}
+
+.cameraIcon {
+  border: none !important;
+}
+.cameraIcon path {
+  fill: #ffffff;
+  stroke: #ffffff;
+}
+
+.cameraIcon:hover, .cameraIcon path:hover {
+  color: #e6007e;
+  background-color: transparent;
+}
+
+#cameraToggle path:hover {
+  fill: #e6007e;
+  stroke: #e6007e;
 }
