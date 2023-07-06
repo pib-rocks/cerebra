@@ -90,11 +90,16 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
     ]);
     this.isCombinedSlider = this.labelName === "Open/Close all fingers";
     if (this.isCombinedSlider) {
-      this.rosService.sharedValue$.subscribe(value => { this.sliderFormControl.setValue(value);
-        setTimeout(() => {
-          this.setThumbPosition();
-        },0);  
-        });
+      this.rosService.sharedValue$.subscribe(value => {
+        if (!Number.isNaN(value)) {
+          console.log(value);
+          console.log('****************-------------------');
+          this.sliderFormControl.setValue(value);
+          setTimeout(() => {
+            this.setThumbPosition();
+          }, 0);
+        }
+      });
     }
     this.messageReceiver$.subscribe((json) => {
       const value = json.value;
