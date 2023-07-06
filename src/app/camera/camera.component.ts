@@ -36,6 +36,8 @@ export class CameraComponent implements OnInit, OnDestroy {
   refreshRateControl = new FormControl(0.1);
   qualityFactorControl = new FormControl(80);
   selectedSize = "480p (SD)";
+  cameraActiveIcon = "M880-275 720-435v111L244-800h416q24 0 42 18t18 42v215l160-160v410ZM848-27 39-836l42-42L890-69l-42 42ZM159-800l561 561v19q0 24-18 42t-42 18H140q-24 0-42-18t-18-42v-520q0-24 18-42t42-18h19Z";
+
 
   private imageTopic!: ROSLIB.Topic;
   
@@ -84,6 +86,15 @@ export class CameraComponent implements OnInit, OnDestroy {
       this.stopCamera();
     }
     this.isCameraActive = !this.isCameraActive;
+    this.changeCameraIcon();
+  }
+
+  changeCameraIcon(){
+    if(this.isCameraActive){
+      this.cameraActiveIcon = "M140-160q-24 0-42-18t-18-42v-520q0-24 18-42t42-18h520q24 0 42 18t18 42v215l160-160v410L720-435v215q0 24-18 42t-42 18H140Z";
+    }else{
+      this.cameraActiveIcon = "M880-275 720-435v111L244-800h416q24 0 42 18t18 42v215l160-160v410ZM848-27 39-836l42-42L890-69l-42 42ZM159-800l561 561v19q0 24-18 42t-42 18H140q-24 0-42-18t-18-42v-520q0-24 18-42t42-18h19Z";
+    }
   }
 
   inputQualityFactor(){
