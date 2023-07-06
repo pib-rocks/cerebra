@@ -179,12 +179,6 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
   }
 
   toggleInputUnvisible() {
-
-    console.log("sliderFormControl", this.sliderFormControl.value);
-    console.log("bubbleFormControl", this.bubbleFormControl.value);
-
-    console.log("dirty", this.bubbleFormControl.dirty);
-
     if (this.bubbleFormControl.value !== this.sliderFormControl.value) {
       if(this.sliderFormControl.value !== null){
         this.isInputVisible = !this.isInputVisible;
