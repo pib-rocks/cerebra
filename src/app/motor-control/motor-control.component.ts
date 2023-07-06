@@ -131,6 +131,7 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
         this.velocityFormControl.setValue(json.velocity);
       }
       this.setThumbPosition();
+      this.setMinAndMaxBubblePositions();
     });
 
     this.rosService.isInitialized$.subscribe((isInitialized: boolean) => {
@@ -143,8 +144,12 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit() {
     this.setThumbPosition();
+    this.setMinAndMaxBubblePositions();
+  }
+
+  setMinAndMaxBubblePositions() {
     const sliderWidth = document.getElementById("slider_"+this.motorName)?.clientWidth;
-    if (sliderWidth !== undefined) {
+    if (sliderWidth !== undefined && sliderWidth !== 0) {
       this.minBubblePosition = this.pixelsFromEdge*100/sliderWidth;
       this.maxBubblePosition = (sliderWidth-this.pixelsFromEdge)*100/sliderWidth;
     }
