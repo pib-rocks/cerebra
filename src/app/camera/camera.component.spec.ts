@@ -32,7 +32,6 @@ describe("CameraComponent", () => {
 
   });
 
-
   it("should create", () => {
     expect(component).toBeTruthy();
   });
@@ -51,7 +50,6 @@ describe("CameraComponent", () => {
     const slider = fixture.nativeElement.querySelector("#refreshRate");
     expect(slider.min).toBe("0.1");
   });
-
 
   it("should subscribe to the message receiver when the component is instantiated", () => {
     const receiver$ = rosService.cameraReceiver$;
@@ -75,10 +73,11 @@ describe("CameraComponent", () => {
   it("setsize should send the size message via setPreviewSize method in rosService",fakeAsync ( () => {
     spyOn(component,'setSize').and.callThrough();
     spyOn(rosService,'setPreviewSize');
-    const width = 100;
-    const height = 200;
+    const width = 640;
+    const height = 480;
+    const resolution = 'SD'
     component.setSize(width, height);
-    expect(component.selectedSize).toBe(height + 'p');
+    expect(component.selectedSize).toBe(height + 'p' + ' ' + '(' + resolution + ')');
     expect(component.isLoading).toBeTrue();
     expect(rosService.setPreviewSize).toHaveBeenCalledWith(width, height);
     tick(1500);
@@ -103,7 +102,6 @@ describe("CameraComponent", () => {
     expect(component.inputRefreshRate).toHaveBeenCalled();
   }));
 
-
   it("should call refrechRate() in inputRefrechRate() on input event", fakeAsync(() => {
     spyOn(window, 'clearTimeout');
     spyOn(window, 'setTimeout');
@@ -121,12 +119,14 @@ describe("CameraComponent", () => {
     expect(component.setQualityFactor).toHaveBeenCalled();
   }));
 
-
-  it("should start the camera when i click on the start camera button", () => {
-    const spyStartCamera = spyOn(component, 'startCamera')
-    const startBtn = fixture.debugElement.query(By.css("#startCamera"));
-    startBtn.nativeElement.click()
+  it("should toggle the camera when i click on the camera icon", () => {
+    const spyStartCamera = spyOn(component, 'startCamera');
+    const spyStopCamera = spyOn(component, 'stopCamera');
+    const toggleBtn = fixture.debugElement.query(By.css("#toggleCamera"));
+    toggleBtn.nativeElement.click()
     expect(spyStartCamera).toHaveBeenCalled();
+    toggleBtn.nativeElement.click()
+    expect(spyStopCamera).toHaveBeenCalled();
   });
 
   it("startCamera should subscribe to the camera topic", () => {
@@ -134,13 +134,6 @@ describe("CameraComponent", () => {
     component.startCamera();
     expect(spySubscribe).toHaveBeenCalled();
   });
-
-  it("should stop the camera when i click on the stop camera button", () => {
-    const stopBtn = fixture.debugElement.query(By.css("#stopCamera"));
-    stopBtn.nativeElement.click()
-    expect(spyUnsubscribeCamera).toHaveBeenCalled();
-  });
-
 
   it("stopCamera should get called when OnDestroy is called", () => {
     component.ngOnDestroy();

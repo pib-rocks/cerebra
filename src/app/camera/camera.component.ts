@@ -52,7 +52,7 @@ export class CameraComponent implements OnInit, OnDestroy {
         this.resolution = 'SD';
       }
     }
-    this.selectedSize = height+ 'p' + ' ' + '(' + this.resolution + ')';
+    this.selectedSize = height + 'p' + ' ' + '(' + this.resolution + ')';
     this.isLoading = true; 
     this.rosService.setPreviewSize(width, height);
     setTimeout(() => {
