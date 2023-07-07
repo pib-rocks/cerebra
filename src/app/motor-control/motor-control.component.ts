@@ -87,29 +87,34 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
       Validators.max(9000),
       notNullValidator,
     ]);
-    this.isCombinedSlider = this.labelName === "Open/Close all fingers";
+    this.isCombinedSlider = this.motorName === "all_right_stretch" || this.motorName === "all_left_stretch";
     if (this.isCombinedSlider) {
       this.rosService.sharedValue$.subscribe(value => {
         if (!Number.isNaN(value) && Number.isFinite(value)) {
-          this.sliderFormControl.setValue(value);
+          this.sliderFormControl.setValue(this.getValueWithinRange(Number(value)));
           setTimeout(() => {
             this.setThumbPosition();
           }, 0);
         }
-        if (value === true || value === false){
+        if (value === true || value === false) {
           this.motorFormControl.setValue(value);
         }
       });
     }
     this.messageReceiver$.subscribe((json) => {
-      const value = json.value;
+      const value: any = json.value;
       const motorCheckbox = json.turnedOn;
-      if (json.motor === 'index_right_stretch' || json.motor === 'index_left_stretch') {
-        this.rosService.updateSharedValue(this.getValueWithinRange(Number(value)));
+      const motor = json.motor;
+      if (motor === 'index_right_stretch' || motor === 'index_left_stretch') {
+        if (!Number.isNaN(value) && Number.isFinite(value)) {
+          this.rosService.updateSharedValue(value);
+        }
+        if (motorCheckbox === true || motorCheckbox === false) {
+          console.log('called;')
+          this.rosService.updateSharedValue(motorCheckbox);
+        }
       }
-      if(motorCheckbox === true || motorCheckbox === false){
-        this.rosService.updateSharedValue(motorCheckbox);
-      }
+
       if (value) {
         this.sliderFormControl.setValue(
           this.getValueWithinRange(Number(value))
