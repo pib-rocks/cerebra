@@ -106,6 +106,7 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
       const motorCheckbox = json.turnedOn;
       const motor = json.motor;
       if (motor === 'index_right_stretch' || motor === 'index_left_stretch') {
+        console.log('called');
         if (!Number.isNaN(value) && Number.isFinite(value)) {
           this.rosService.updateSharedValue(value);
         }
@@ -115,37 +116,37 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
         }
       }
 
-      if (value) {
+      if (value !== undefined) {
         this.sliderFormControl.setValue(
           this.getValueWithinRange(Number(value))
         );
       }
 
-      if (typeof json.turnedOn !== "undefined") {
+      if (json.turnedOn !== undefined) {
         this.motorFormControl.setValue(json.turnedOn);
       }
-      if (typeof json.acceleration !== "undefined") {
+      if (json.acceleration !== undefined) {
         this.accelerationFormControl.setValue(json.acceleration);
       }
-      if (typeof json.deceleration !== "undefined") {
+      if (json.deceleration !== undefined) {
         this.decelerationFormControl.setValue(json.deceleration);
       }
-      if (typeof json.period !== "undefined") {
+      if (json.period !== undefined) {
         this.periodFormControl.setValue(json.period);
       }
-      if (typeof json.pule_widths_max !== "undefined") {
+      if (json.pule_widths_max !== undefined) {
         this.pulseMaxRange.setValue(json.pule_widths_max);
       }
-      if (typeof json.pule_widths_min !== "undefined") {
+      if (json.pule_widths_min !== undefined) {
         this.pulseMinRange.setValue(json.pule_widths_min);
       }
-      if (typeof json.rotation_range_max !== "undefined") {
+      if (json.rotation_range_max !== undefined) {
         this.degreeMaxFormcontrol.setValue(json.rotation_range_max);
       }
-      if (typeof json.rotation_range_min !== "undefined") {
+      if (json.rotation_range_min !== undefined) {
         this.degreeMinFormcontrol.setValue(json.rotation_range_min);
       }
-      if (typeof json.velocity !== "undefined") {
+      if (json.velocity !== undefined) {
         this.velocityFormControl.setValue(json.velocity);
       }
       this.setThumbPosition();
