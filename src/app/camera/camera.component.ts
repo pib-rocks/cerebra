@@ -2,6 +2,8 @@ import { Component, OnDestroy, OnInit } from "@angular/core";
 import { FormControl } from "@angular/forms";
 import * as ROSLIB from "roslib";
 import { RosService } from "../shared/ros.service";
+import { SliderComponent } from "../slider/slider.component";
+
 
 @Component({
   selector: "app-camera",
@@ -14,9 +16,11 @@ export class CameraComponent implements OnInit, OnDestroy {
   isCameraActive = false;
   toggleCamera = new FormControl(false);
   resolution = 'SD';
+
+  thumbOppositionLeft = { motor: "thumb_left_opposition", label: "Thumb opposition" };
   constructor(private rosService: RosService){  }
   ngOnInit(): void {
-    this.setRefreshRate();
+    this.setRefreshRate(0.5);
     this.rosService.setPreviewSize(640, 480);
     this.rosService.setQualityFactor(80);
     this.imageSrc = '../../assets/pib-Logo.png'
@@ -33,7 +37,7 @@ export class CameraComponent implements OnInit, OnDestroy {
 
   imageSrc!: string;  
   componentName = "Live view";
-  refreshRateControl = new FormControl(0.1);
+  refreshRateControl = new FormControl(0.5);
   qualityFactorControl = new FormControl(80);
   selectedSize = "480p (SD)";
   cameraActiveIcon = "M880-275 720-435v111L244-800h416q24 0 42 18t18 42v215l160-160v410ZM848-27 39-836l42-42L890-69l-42 42ZM159-800l561 561v19q0 24-18 42t-42 18H140q-24 0-42-18t-18-42v-520q0-24 18-42t42-18h19Z";
@@ -60,13 +64,14 @@ export class CameraComponent implements OnInit, OnDestroy {
     }, 1500);
   }
 
-  setRefreshRate(){
-    this.rosService.setTimerPeriod(this.refreshRateControl.value);
+  setRefreshRate(refreshRate : number){
+    this.rosService.setTimerPeriod(refreshRate);
   }
-  inputRefreshRate() {
+  inputRefreshRate(refreshRate : number) {
+    console.log("refreshRate:" + refreshRate);
     clearTimeout(this.timer);
     this.timer = setTimeout(() => {
-      this.setRefreshRate();
+      this.setRefreshRate(refreshRate);
     }, 500);
   }
 
@@ -105,5 +110,9 @@ export class CameraComponent implements OnInit, OnDestroy {
 }
   setQualityFactor(){
   this.rosService.setQualityFactor(this.qualityFactorControl.value);
+  }
+
+  parentTestFunction(valueString : number){
+    console.log(valueString);
   }
 }
