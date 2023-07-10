@@ -1,32 +1,3 @@
-@media only screen and (max-width: 1000px) {
-  .overlappingBr {
-    display: block;
-  }
-}
-
-.centered {
-  padding-left: 18px;
-}
-
-.horizontalList {
-  float: left;
-  padding: 16px;
-  border: 5;
-}
-
-label {
-  color: #fff;
-  font-family: Titillium, sans-serif;
-}
-
-label.form-label {
-  font-size: 16px;
-}
-
-.overlappingBr {
-  display: none;
-}
-
 .overlay {
   z-index: 9;
 }

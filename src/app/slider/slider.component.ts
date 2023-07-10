@@ -24,7 +24,7 @@ export class SliderComponent {
   @Input() maxValue : number = 100;
   @Input() defaultValue : number = (this.minValue + this.maxValue)/2;
   @Input() step : number = 1;
-  @Input() unitOfMeasurement : string = "°";
+  @Input() unitOfMeasurement : string = "";
 
   
 
@@ -47,7 +47,7 @@ export class SliderComponent {
 
   ngOnInit(): void {
     console.log(this.defaultValue);
-    // Todo: Warten auf BubbleElement weil ansonsten Undefined Fehler
+    // Todo: Dirty code Warten auf BubbleElement weil ansonsten Undefined Fehler
     setTimeout(() => {
       this.setSliderValue(this.getValueWithinRange(Number(this.defaultValue)));
     }, 500);
@@ -82,6 +82,7 @@ export class SliderComponent {
   sendMessage() {
     this.sliderEvent.emit(this.sliderFormControl.value);
   }
+
   toggleInputVisible() {
     if(this.sliderFormControl.value !== null){
       this.isInputVisible = !this.isInputVisible;
@@ -145,9 +146,5 @@ export class SliderComponent {
     this.bubbleElement.nativeElement.style.left = `calc(${val}%)`;
     this.sliderElem.nativeElement.style.setProperty("--pos-relative", val.toString(10)+'%');
   }
-
-
-
-
 
 }

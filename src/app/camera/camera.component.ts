@@ -66,6 +66,7 @@ export class CameraComponent implements OnInit, OnDestroy {
 
   setRefreshRate(refreshRate : number){
     this.rosService.setTimerPeriod(refreshRate);
+    this.refreshRateControl.setValue(refreshRate);
   }
   inputRefreshRate(refreshRate : number) {
     console.log("refreshRate:" + refreshRate);
@@ -108,7 +109,8 @@ export class CameraComponent implements OnInit, OnDestroy {
       this.setQualityFactor(value);
     }, 500);
 }
-  setQualityFactor(value : number){
-  this.rosService.setQualityFactor(value);
+  setQualityFactor(qualityFactor : number){
+  this.rosService.setQualityFactor(qualityFactor);
+  this.qualityFactorControl.setValue(qualityFactor);
   }
 }
