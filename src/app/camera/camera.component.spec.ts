@@ -90,9 +90,8 @@ describe("CameraComponent", () => {
     spyOn(component,'inputRefreshRate').and.callThrough();
     spyOn(component,'setRefreshRate');
     const slider = fixture.nativeElement.querySelector("#refreshRate");
-    slider.value = 1;
-    slider.dispatchEvent(new Event("input"));
-    component.inputRefreshRate();
+    slider.setSliderValue(1);
+    slider.dispatchEvent(new Event("sliderEvent"));
     tick(500);
     expect(window.clearTimeout).toHaveBeenCalled();
     expect(window.setTimeout).toHaveBeenCalledWith(jasmine.any(Function), 500);
