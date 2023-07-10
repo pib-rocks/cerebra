@@ -102,17 +102,13 @@ export class CameraComponent implements OnInit, OnDestroy {
     }
   }
 
-  inputQualityFactor(){
+  inputQualityFactor(value : number){
     clearTimeout(this.timer);
     this.timer = setTimeout(() => {
-      this.setQualityFactor();
+      this.setQualityFactor(value);
     }, 500);
 }
-  setQualityFactor(){
-  this.rosService.setQualityFactor(this.qualityFactorControl.value);
-  }
-
-  parentTestFunction(valueString : number){
-    console.log(valueString);
+  setQualityFactor(value : number){
+  this.rosService.setQualityFactor(value);
   }
 }

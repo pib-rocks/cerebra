@@ -16,19 +16,20 @@ export class SliderComponent {
   @ViewChild('range') sliderElem!: ElementRef;
 
   @Input() sliderName : string = "";
-  @Input() minSliderValue : number = 0;
-  @Input() maxSliderValue = "";
+  @Input() minSliderValue : number = -9000;
+  @Input() maxSliderValue : number = 9000;
   @Input() sliderStep = "";
   @Input() sliderValue = "";
   @Input() minValue : number = 0;
   @Input() maxValue : number = 100;
   @Input() defaultValue : number = (this.minValue + this.maxValue)/2;
   @Input() step : number = 1;
+  @Input() unitOfMeasurement : string = "°";
 
   
 
-  sliderFormControl: FormControl = new FormControl(0);
-  bubbleFormControl: FormControl = new FormControl(0);
+  sliderFormControl: FormControl = new FormControl();
+  bubbleFormControl: FormControl = new FormControl();
 
   timer: any = null;
 
@@ -36,8 +37,8 @@ export class SliderComponent {
   closeResult!: string;
   isCombinedSlider = false;
   isInputVisible = false;
-  maxBubblePosition = 92;
-  minBubblePosition = 8;
+  maxBubblePosition = 100;
+  minBubblePosition = 0;
 
 
   pixelsFromEdge = 60;
@@ -45,22 +46,15 @@ export class SliderComponent {
   oldValue: number = 0;
 
   ngOnInit(): void {
+    console.log(this.defaultValue);
     // Todo: Warten auf BubbleElement weil ansonsten Undefined Fehler
-    // setTimeout(() => {
-    //   this.setSliderValue(this.defaultValue);
-    // }, 500);
-    const value = 0;
-    if (value) {
-      this.sliderFormControl.setValue(
-        this.getValueWithinRange(Number(value))
-      );
-    }
-    
+    setTimeout(() => {
+      this.setSliderValue(this.getValueWithinRange(Number(this.defaultValue)));
+    }, 500);
   }
 
 
   ngAfterViewInit() {
-    this.setSliderValue(this.defaultValue);
     const sliderWidth = document.getElementById("slider_"+this.sliderName)?.clientWidth;
     if (sliderWidth !== undefined) {
       this.minBubblePosition = this.pixelsFromEdge*100/sliderWidth;
@@ -143,7 +137,7 @@ export class SliderComponent {
 
   setThumbPosition() {
     console.log("SliderCom:" + this.sliderFormControl.value);
-    const val = Number((this.sliderFormControl.value - -9000) * 100 / (9000 - -9000));
+    const val = (this.sliderFormControl.value - this.minValue)*100 / (this.maxValue - this.minValue);
     setTimeout(() => {
       this.bubblePosition = val;
     },0);

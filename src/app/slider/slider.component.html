@@ -16,7 +16,7 @@
         *ngIf="!isInputVisible"
         (dblclick)="toggleInputVisible();"
       >
-        {{bubbleFormControl.value}}°
+        {{bubbleFormControl.value}}
       </div>
     </div>
     <span *ngIf="bubblePosition >= minBubblePosition" class="bubble-span-min">{{ minValue }}</span>
