@@ -43,11 +43,6 @@ export class SliderComponent implements OnInit, AfterViewInit {
   ) { }
 
   ngOnInit(): void {
-    // Todo: Dirty code Warten auf BubbleElement weil ansonsten Undefined Fehler
-    setTimeout(() => {
-      this.setSliderValue(this.getValueWithinRange(Number(this.defaultValue)));
-    }, 500);
-
     this.rosService.isInitialized$.subscribe((isInitialized: boolean) => {
       if (isInitialized) {
         console.log("register " + this.sliderName);
@@ -63,6 +58,8 @@ export class SliderComponent implements OnInit, AfterViewInit {
       }
       this.setThumbPosition();
     });
+    this.sliderFormControl.setValue(this.getValueWithinRange(Number(this.defaultValue)));
+    this.bubbleFormControl.setValue(this.getValueWithinRange(Number(this.defaultValue)));
   }
 
 
@@ -72,6 +69,7 @@ export class SliderComponent implements OnInit, AfterViewInit {
       this.minBubblePosition = this.pixelsFromEdge*100/sliderWidth;
       this.maxBubblePosition = (sliderWidth-this.pixelsFromEdge)*100/sliderWidth;
     }
+    this.setThumbPosition();
   }
 
   @Output() sliderEvent = new EventEmitter<number>();
