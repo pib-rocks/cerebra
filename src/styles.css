@@ -46,3 +46,11 @@
 .custom-switch {
   display: inline-block;
 }
+
+.myCustomModalClass {
+  z-index: 1050 !important;
+}
+
+.myCustomBackdropClass {
+  z-index: 1040 !important;
+}

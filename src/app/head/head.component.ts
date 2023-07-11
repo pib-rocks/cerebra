@@ -1,7 +1,7 @@
 import { Component, OnInit, QueryList, ViewChildren } from "@angular/core";
 import { RosService } from "../shared/ros.service";
 import { MotorCurrentMessage } from "../shared/currentMessage";
-import { SliderComponent } from "../slider/slider.component";
+import { MotorControlComponent } from "../motor-control/motor-control.component";
 
 @Component({
   selector: "app-head",
@@ -9,7 +9,7 @@ import { SliderComponent } from "../slider/slider.component";
   styleUrls: ["./head.component.css"],
 })
 export class HeadComponent implements OnInit {
-  @ViewChildren(SliderComponent) childComponents!: QueryList<SliderComponent>;
+  @ViewChildren(MotorControlComponent) childComponents!: QueryList<MotorControlComponent>;
 
   constructor(private rosService: RosService) {}
 
@@ -53,7 +53,7 @@ export class HeadComponent implements OnInit {
   reset() {
     this.childComponents.forEach((child) => {
       if (child.sliderFormControl.value != 0) {
-        child.sliderFormControl.setValue("0");
+        child.setSliderValue(0);
         child.sendMessage();
       }
     });

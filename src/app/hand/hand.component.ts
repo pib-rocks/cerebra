@@ -6,8 +6,8 @@ import {
   ViewChildren,
 } from "@angular/core";
 import { FormControl } from "@angular/forms";
-import { ActivatedRoute, Params,Router } from "@angular/router";
-import { SliderComponent } from "../slider/slider.component";
+import { ActivatedRoute, Params, Router } from "@angular/router";
+import { MotorControlComponent } from "../motor-control/motor-control.component";
 import { RosService } from "../shared/ros.service";
 import { MotorCurrentMessage } from "../shared/currentMessage";
 import { Subject } from "rxjs";
@@ -18,21 +18,21 @@ import { Subject } from "rxjs";
   styleUrls: ["./hand.component.css"],
 })
 export class HandComponent implements OnInit {
-  @ViewChildren(SliderComponent) childComponents!: QueryList<SliderComponent>;
+  @ViewChildren(MotorControlComponent) childComponents!: QueryList<MotorControlComponent>;
 
   @Input() side = "left";
   messageReceiver$: Subject<MotorCurrentMessage> =
     new Subject<MotorCurrentMessage>();
   displayAll!: string;
   displayIndividual!: string;
-  
+
 
   constructor(
     private route: ActivatedRoute,
     private rosService: RosService,
     private router: Router
-    
-  ) {}
+
+  ) { }
 
   leftSwitchControl = new FormControl(false);
   rightSwitchControl = new FormControl(false);
@@ -47,7 +47,7 @@ export class HandComponent implements OnInit {
   ];
 
   thumbOppositionLeft = { motor: "thumb_left_opposition", label: "Thumb opposition" };
-   allFingersLeft = { motor: "all_left_stretch", label: "Open/Close all fingers" };
+  allFingersLeft = { motor: "all_left_stretch", label: "Open/Close all fingers" };
 
 
   rightFingers = [
@@ -101,23 +101,23 @@ export class HandComponent implements OnInit {
   }
 
   reset() {
-    if (this.leftSwitchControl.value || this.rightSwitchControl.value){
+    if (this.leftSwitchControl.value || this.rightSwitchControl.value) {
       console.log(this.leftSwitchControl.value || this.rightSwitchControl.value)
       this.childComponents.filter(child => !child.motorName.includes('all')).forEach((child) => {
         if (child.sliderFormControl.value != 0) {
-          child.sliderFormControl.setValue("0");
+          child.setSliderValue(0);
           child.sendAllMessagesCombined();
         }
       });
     } else {
       this.childComponents.filter(child => child.motorName.includes('all') || child.motorName.includes('opposition')).forEach((child) => {
         if (child.sliderFormControl.value != 0) {
-          child.sliderFormControl.setValue("0");
+          child.setSliderValue(0);
           child.sendAllMessagesCombined();
         }
       });
     }
-    
+
   }
 
   sendDummyMessage() {
@@ -142,7 +142,9 @@ export class HandComponent implements OnInit {
     }
   }
 
+
   switchView(side: string) {
+    let calledOposite = false;
     const switchControl =
       side === "left" ? this.leftSwitchControl : this.rightSwitchControl;
     if (switchControl.value === true) {
@@ -151,12 +153,6 @@ export class HandComponent implements OnInit {
       const indexFinger = this.childComponents.filter(
         (child) => child.labelName === "Index finger"
       )[0];
-      const thumbOppo = this.childComponents.filter(
-        (child) => child.labelName === "Thumb opposition"
-      )[0];
-      console.log("switchView childComponents length");
-      console.log(this.childComponents.length);
-      let calledOposite = false;
       this.childComponents.forEach((child) => {
         if (child.labelName != "Thumb opposition") {
           child.sliderFormControl.setValue(indexFinger.sliderFormControl.value);
@@ -175,71 +171,59 @@ export class HandComponent implements OnInit {
           child.pulseMinRange.setValue(indexFinger.pulseMinRange.value);
           child.degreeMaxFormcontrol.setValue(indexFinger.degreeMaxFormcontrol.value);
           child.degreeMinFormcontrol.setValue(indexFinger.degreeMinFormcontrol.value);
-        } else {
-          child.sliderFormControl.setValue(thumbOppo.sliderFormControl.value);
-          child.motorFormControl.setValue(thumbOppo.motorFormControl.value);
-          child.velocityFormControl.setValue(
-            thumbOppo.velocityFormControl.value
-          );
-          child.accelerationFormControl.setValue(
-            thumbOppo.accelerationFormControl.value
-          );
-          child.decelerationFormControl.setValue(
-            thumbOppo.decelerationFormControl.value
-          );
-          child.periodFormControl.setValue(thumbOppo.periodFormControl.value);
-          child.pulseMaxRange.setValue(thumbOppo.pulseMaxRange.value);
-          child.pulseMinRange.setValue(thumbOppo.pulseMinRange.value);
-          child.degreeMaxFormcontrol.setValue(thumbOppo.degreeMaxFormcontrol.value);
-          child.degreeMinFormcontrol.setValue(thumbOppo.degreeMinFormcontrol.value);
         }
-
         if (side === 'right') {
-          if(child.motorName === 'all_right_stretch'){
+          if (child.motorName === 'all_right_stretch') {
             child.sendAllMessagesCombined();
           }
-          if(child.motorName.includes('right_opposition') && !calledOposite){
+          if (child.motorName.includes('right_opposition') && !calledOposite) {
             calledOposite = true;
             child.sendAllMessagesCombined();
           }
         }
-        if(side === 'left'){
-          if(child.motorName === 'all_left_stretch'){
+        if (side === 'left') {
+          if (child.motorName === 'all_left_stretch') {
             child.sendAllMessagesCombined();
           }
-          if(child.motorName.includes('left_opposition') && !calledOposite){
+          if (child.motorName.includes('left_opposition') && !calledOposite) {
             calledOposite = true;
             child.sendAllMessagesCombined();
           }
         }
-      });
-      
+      })
     } else {
       this.displayAll = 'none';
       this.displayIndividual = 'block';
-      let calledOposite = false;
-      if(side === 'right') {
+      const sliderAll = this.childComponents.filter(
+        (child) => child.labelName === "Open/Close all fingers"
+      )[0];
+      this.childComponents.forEach((child) => {
+        if (child.labelName != "Thumb opposition") {
+          child.sliderFormControl.setValue(sliderAll.sliderFormControl.value);
+        }
+      })
+      if (side === 'right') {
         this.childComponents.forEach((child) => {
-          if(child.motorName === 'all_right_stretch'){
-          child.sendAllMessagesCombined();
-        }
-        if(child.motorName.includes('right_opposition') && !calledOposite){
-          calledOposite = true;
-          child.sendAllMessagesCombined();
-        }
+          if (child.motorName === 'all_right_stretch') {
+            child.sendAllMessagesCombined();
+          }
+          if (child.motorName.includes('right_opposition') && !calledOposite) {
+            calledOposite = true;
+            child.sendAllMessagesCombined();
+          }
         });
       } else {
         this.childComponents.forEach((child) => {
-          if(child.motorName === 'all_left_stretch'){
-          child.sendAllMessagesCombined();
-        }
-        if(child.motorName.includes('left_opposition') && !calledOposite){
-          calledOposite = true;
-          child.sendAllMessagesCombined();
-        }
+          if (child.motorName === 'all_left_stretch') {
+            child.sendAllMessagesCombined();
+          }
+          if (child.motorName.includes('left_opposition') && !calledOposite) {
+            calledOposite = true;
+            child.sendAllMessagesCombined();
+          }
         });
       }
-
     }
+    this.childComponents.forEach(child => child.setThumbPosition());
   }
 }

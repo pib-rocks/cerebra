@@ -1,4 +1,4 @@
-import { Component, ElementRef, Input, OnInit, TemplateRef, ViewChild } from "@angular/core";
+import { AfterViewInit, Component, ElementRef, Input, OnInit, TemplateRef, ViewChild } from "@angular/core";
 import { FormControl, Validators } from "@angular/forms";
 import { Subject } from "rxjs";
 import { Message } from "../shared/message";
@@ -11,15 +11,12 @@ import {
   notNullValidator,
 } from "../shared/validators";
 @Component({
-  selector: "app-slider",
-  templateUrl: "./slider.component.html",
-  styleUrls: ["./slider.component.css"],
+  selector: "app-motor-control",
+  templateUrl: "./motor-control.component.html",
+  styleUrls: ["./motor-control.component.css"],
 })
-export class SliderComponent implements OnInit  {
-  maxSliderValue = 9000;
-  minSliderValue = -9000;
+export class MotorControlComponent implements OnInit, AfterViewInit {
 
-  value: number = 300;
   @Input() motorName = "";
   @Input() labelName = "";
   @Input() groupSide = "left";
@@ -27,22 +24,35 @@ export class SliderComponent implements OnInit  {
   @Input() showCheckBox = true;
   @Input() showMotorSettingsButton = true;
 
-  closeResult!: string;
-  @ViewChild('rangeSlider') rangeSlider!: ElementRef;
+  @ViewChild('bubble') bubbleElement!: ElementRef;
+  @ViewChild('bubbleInput') bubbleInput!: ElementRef;
+  @ViewChild('range') sliderElem!: ElementRef;
 
+  bubblePosition!: number;
+  closeResult!: string;
   isCombinedSlider = false;
+  isInputVisible = false;
+  maxSliderValue = 9000;
+  minSliderValue = -9000;
+  maxBubblePosition = 92;
+  minBubblePosition = 8;
+  // the number of pixels from the edges of the slider at which the gray bubbles disappear
+  pixelsFromEdge = 60;
   messageReceiver$ = new Subject<Message>();
-  motorFormControl: FormControl = new FormControl(true);
-  sliderFormControl: FormControl = new FormControl(0);
-  velocityFormControl: FormControl = new FormControl(0, notNullValidator);
+  oldValue: number = 0;
+  timer: any = null;
+
   accelerationFormControl: FormControl = new FormControl(0, notNullValidator);
+  bubbleFormControl: FormControl = new FormControl(0);
   decelerationFormControl: FormControl = new FormControl(0, notNullValidator);
+  degreeMaxFormcontrol: FormControl = new FormControl(9000);
+  degreeMinFormcontrol: FormControl = new FormControl(-9000);
+  motorFormControl: FormControl = new FormControl(true);
   periodFormControl: FormControl = new FormControl(1, notNullValidator);
   pulseMaxRange: FormControl = new FormControl(65535);
   pulseMinRange: FormControl = new FormControl(0);
-  degreeMaxFormcontrol: FormControl = new FormControl(9000);
-  degreeMinFormcontrol: FormControl = new FormControl(-9000);
-  timer: any = null;
+  sliderFormControl: FormControl = new FormControl(0);
+  velocityFormControl: FormControl = new FormControl(0, notNullValidator);
 
   constructor(
     private rosService: RosService,
@@ -51,6 +61,13 @@ export class SliderComponent implements OnInit  {
   ) { }
 
   ngOnInit(): void {
+    this.bubbleFormControl.setValidators([
+      Validators.min(-9000),
+      Validators.max(9000),
+      Validators.pattern("^-?[0-9]*$"),
+      Validators.required,
+      notNullValidator,
+    ]);
     this.pulseMaxRange.setValidators([
       Validators.min(0),
       Validators.max(65535),
@@ -113,6 +130,8 @@ export class SliderComponent implements OnInit  {
       if (typeof json.velocity !== "undefined") {
         this.velocityFormControl.setValue(json.velocity);
       }
+      this.setThumbPosition();
+      this.setMinAndMaxBubblePositions();
     });
 
     this.rosService.isInitialized$.subscribe((isInitialized: boolean) => {
@@ -121,6 +140,75 @@ export class SliderComponent implements OnInit  {
         this.rosService.registerMotor(this.motorName, this.messageReceiver$);
       }
     });
+  }
+
+  ngAfterViewInit() {
+    this.setThumbPosition();
+    this.setMinAndMaxBubblePositions();
+  }
+
+  setMinAndMaxBubblePositions() {
+    const sliderWidth = document.getElementById("slider_"+this.motorName)?.clientWidth;
+    if (sliderWidth !== undefined && sliderWidth !== 0) {
+      this.minBubblePosition = this.pixelsFromEdge*100/sliderWidth;
+      this.maxBubblePosition = (sliderWidth-this.pixelsFromEdge)*100/sliderWidth;
+    }
+  }
+
+  setThumbPosition() {
+    const val = Number((this.sliderFormControl.value - -9000) * 100 / (9000 - -9000));
+    setTimeout(() => {
+      this.bubblePosition = val;
+    },0);
+    this.bubbleFormControl.setValue(this.sliderFormControl.value);
+    this.bubbleElement.nativeElement.style.left = `calc(${val}%)`;
+    this.sliderElem.nativeElement.style.setProperty("--pos-relative", val.toString(10)+'%');
+  }
+
+  setSliderValue(value: number) {
+    this.sliderFormControl.setValue(value);
+    this.setThumbPosition();
+  }
+  
+  toggleInputVisible() {
+    if(this.sliderFormControl.value !== null){
+      this.isInputVisible = !this.isInputVisible;
+      this.setSliderValue(this.bubbleFormControl.value);
+      setTimeout(()=>{
+        this.bubbleInput.nativeElement.focus();
+        this.bubbleInput.nativeElement.select();
+      }, 0)
+    } else{
+      this.isInputVisible = !this.isInputVisible;
+    }
+  }
+
+  toggleInputUnvisible() {
+    if (this.bubbleFormControl.value !== this.sliderFormControl.value) {
+      if(this.sliderFormControl.value !== null){
+        this.isInputVisible = !this.isInputVisible;
+        if(this.bubbleFormControl.hasError('min')) {
+          this.setSliderValue(this.minSliderValue);
+          this.inputSendMsg();
+        }
+        else if(this.bubbleFormControl.hasError('max')) {
+          this.setSliderValue(this.maxSliderValue);
+          this.inputSendMsg();
+        }
+        else if(this.bubbleFormControl.hasError('required')) {
+          this.bubbleFormControl.setValue(this.sliderFormControl.value);
+        }
+        else if(this.bubbleFormControl.hasError('pattern')) {
+          this.bubbleFormControl.setValue(this.sliderFormControl.value);
+        }
+        else {
+          this.setSliderValue(this.bubbleFormControl.value);
+          this.inputSendMsg();
+        }
+      } 
+    } else {
+      this.isInputVisible = !this.isInputVisible;
+    }
   }
 
   sendMessage() {
@@ -229,7 +317,7 @@ export class SliderComponent implements OnInit  {
 
   openPopup(content: TemplateRef<any>) {
     this.modalService
-      .open(content, { ariaLabelledBy: "modal-basic-title", size: "xl" })
+      .open(content, { ariaLabelledBy: "modal-basic-title", size: "xl" , windowClass: 'myCustomModalClass',backdropClass: 'myCustomBackdropClass'})
       .result.then(
         (result) => {
           this.closeResult = `Closed with: ${result}`;
@@ -310,11 +398,13 @@ export class SliderComponent implements OnInit  {
     }
   }
 
-  inputSendMsg() {
-    clearTimeout(this.timer);
-    this.timer = setTimeout(() => {
-      this.sendMessage();
-    }, 500);
+  inputSendMsg(): void {
+    if(this.sliderFormControl.value !== null){
+      clearTimeout(this.timer);
+      this.timer = setTimeout(() => {
+        this.sendMessage();
+      }, 500);
+    }
   }
 
   inputSendSettingsMsg() {

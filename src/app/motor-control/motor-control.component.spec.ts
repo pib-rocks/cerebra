@@ -15,13 +15,13 @@ import {
   compareValuesPulseValidator,
 } from "../shared/validators";
 
-import { SliderComponent } from "./slider.component";
+import { MotorControlComponent } from "./motor-control.component";
 import { VoiceAssistant } from "../shared/voice-assistant";
 import { MotorCurrentMessage } from "../shared/currentMessage";
 
-describe("SliderComponent", () => {
-  let component: SliderComponent;
-  let fixture: ComponentFixture<SliderComponent>;
+describe("MotorControlComponent", () => {
+  let component: MotorControlComponent;
+  let fixture: ComponentFixture<MotorControlComponent>;
   let rosService: RosService;
   let modalService: NgbModal;
   let fingerService: MotorService;
@@ -30,12 +30,12 @@ describe("SliderComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [SliderComponent],
+      declarations: [MotorControlComponent],
       imports: [ReactiveFormsModule],
       providers: [RosService, MotorService],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(SliderComponent);
+    fixture = TestBed.createComponent(MotorControlComponent);
     component = fixture.componentInstance;
     rosService = TestBed.inject(RosService);
     modalService = TestBed.inject(NgbModal);
@@ -157,6 +157,7 @@ describe("SliderComponent", () => {
     expect(spyPopup).toHaveBeenCalled();
     expect(spyModal).toHaveBeenCalled();
   });
+
   it("should return dismiss reason by clicking on a backdrop", fakeAsync(() => {
     spyOn(component, "openPopup").and.callThrough();
     spyOn(modalService, "open").and.callThrough();
@@ -231,8 +232,6 @@ describe("SliderComponent", () => {
     expect(rosService.sendSliderMessage).toHaveBeenCalledTimes(6);
   });
 
-
-
   it("should send a combined massege with all values if all inputs are valid", () => {
     const message: Message = {
       motor: component.motorName,
@@ -251,8 +250,7 @@ describe("SliderComponent", () => {
     expect(rosService.sendSliderMessage).toHaveBeenCalledWith(
       jasmine.objectContaining(message)
     );
-
-    const spyMotorNames = spyOn(
+    spyOn(
       motorService,
       "getMotorHandNames"
     ).and.callThrough();
@@ -263,8 +261,6 @@ describe("SliderComponent", () => {
     expect(motorService.getMotorHandNames).toHaveBeenCalledWith("left");
     expect(rosService.sendSliderMessage).toHaveBeenCalledTimes(6);
   });
-
-
 
   it("should send a combined massege with all values if not all inputs are valid", () => {
     const spyMotorNames = spyOn(
@@ -290,8 +286,6 @@ describe("SliderComponent", () => {
     expect(spyMotorNames).toHaveBeenCalledWith("left");
     expect(rosService.sendSliderMessage).toHaveBeenCalledTimes(6);
   });
-
-
 
   it("should return null if max pulse is greater than min pulse", () => {
     const formcontrol1 = new FormControl(0);
@@ -386,4 +380,76 @@ describe("SliderComponent", () => {
     expect(formControl2.valid).toBe(false);
     expect(formcontrol1.hasError("error")).toBe(true);
   });
+
+  it("should make input element visible",(done) => {
+    const mockElementRef = jasmine.createSpyObj('ElementRef', [''], { nativeElement: { focus: () => { console.log("focus called"); }, select: () => { console.log("select called"); } } });
+    spyOn(mockElementRef.nativeElement, 'focus');
+    spyOn(mockElementRef.nativeElement, 'select');
+    component.sliderFormControl.setValue(500);
+    component.isInputVisible = false;
+    component.bubbleInput = mockElementRef;
+    component.toggleInputVisible();
+    expect(component.isInputVisible).toBeTrue();
+    setTimeout(() => {
+      expect(mockElementRef.nativeElement.focus).toHaveBeenCalled();
+      expect(mockElementRef.nativeElement.select).toHaveBeenCalled();
+      done();
+    }, 0);
+  })
+
+  it("should make input element unvisible", () => {
+    component.sliderFormControl.setValue(null);
+    component.toggleInputVisible();
+    expect(component.isInputVisible).toBeTrue();
+  })
+
+  it("should toggle input unvisible", () => {
+    spyOn(component, 'setSliderValue');
+    spyOn(component,'inputSendMsg')
+    component.bubbleFormControl.setValue(500);
+    component.isInputVisible = true;
+    component.toggleInputUnvisible();
+    expect(component.setSliderValue).toHaveBeenCalled();
+    expect(component.inputSendMsg).toHaveBeenCalled();
+  } )
+
+  it("should toggle input unvisible min validation", () => {
+    spyOn(component, 'setSliderValue');
+    spyOn(component,'inputSendMsg')
+    component.bubbleFormControl.setValue(-5000000);
+    component.isInputVisible = true;
+    component.toggleInputUnvisible();
+    expect(component.bubbleFormControl.hasError('min')).toBeTrue;
+    expect(component.setSliderValue).toHaveBeenCalledWith(component.minSliderValue);
+    expect(component.inputSendMsg).toHaveBeenCalled();
+  } )
+
+  it("should toggle input unvisible max validation", () => {
+    spyOn(component, 'setSliderValue');
+    spyOn(component,'inputSendMsg')
+    component.bubbleFormControl.setValue(5000000);
+    component.isInputVisible = true;
+    component.toggleInputUnvisible();
+    expect(component.bubbleFormControl.hasError('max')).toBeTrue;
+    expect(component.setSliderValue).toHaveBeenCalledWith(component.maxSliderValue);
+    expect(component.inputSendMsg).toHaveBeenCalled();
+  } )
+
+  it("should toggle input unvisible required validation", () => {
+    component.bubbleFormControl.setValue(null);
+    component.isInputVisible = true;
+    component.toggleInputUnvisible();
+    expect(component.bubbleFormControl.hasError('required')).toBeTrue;
+    expect(component.isInputVisible).toBeFalse();
+  } )
+
+  it("should toggle input unvisible pattern validation", () => {
+    spyOn(component, 'setThumbPosition');
+    component.bubbleFormControl.setValue('test');
+    component.isInputVisible = true;
+    component.toggleInputUnvisible();
+    expect(component.bubbleFormControl.hasError('pattern')).toBeTrue;
+  } )
 });
+
+

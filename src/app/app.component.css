@@ -1,9 +1,42 @@
-.main-sidebar {
-  background-color: #041939;
+.a {
+  fill: none;
+  stroke: #0094de;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .brand-link {
   border: 0;
+}
+
+.btn-active {
+  margin: 10px 10px 10px 8px;
+  color: white;
+  border-bottom: #e10072 solid 4px;
+  padding-bottom: 4px;
+}
+
+.btn-active svg path, .btn-active .a {
+  fill: #e10072;
+  stroke: #e10072;
+}
+
+.content-wrapper {
+  background-image: url("../assets/bg-gesamt.png");
+  background-size: 100% auto;
+}
+
+.main-sidebar {
+  background-color: #041939;
+}
+
+.menu-is-opening svg path {
+  fill: #e10072;
+  stroke: #e10072;
+}
+
+.menu-open {
+  color: #0094de;
 }
 
 .nav-link.sidebar-btn {
@@ -20,63 +53,30 @@
   text-transform: uppercase;
 }
 
-.nav-pills .nav-link.sidebar-btn:hover {
-  color: white;
-  border-bottom: #e6007e solid 5px;
-  padding-bottom: 3px;
-}
-
-.a {
-  fill: none;
-  stroke: #0094de;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-svg path {
-  fill: #0094de;
-  stroke: #0094de;
-
-}
-
-.btn-active {
-  color: white;
-  border-bottom: #e6007e solid 5px;
-  padding-bottom: 3px;
-}
-
-.btn-active svg path,
-.btn-active .a {
-  fill: #e6007e;
-  stroke: #e6007e;
-}
-
 .nav-link.sidebar-btn.btn-active {
   color: white;
-}
-
-.menu-open {
-  color: #0094de;
 }
 
 .nav-sidebar>.nav-item.menu-open>.nav-link,
 [class*=sidebar-light-] .nav-sidebar>.nav-link {
   color: #ffffff;
-  border-bottom: #e6007e solid 5px;
+  border-bottom: #e10072 solid 4px;
 }
 
 .nav-sidebar>.nav-item.menu-open>.nav-link,
 [class*=sidebar-light-] .nav-sidebar>.nav-link>svg>path {
-  fill: #e6007e;
-  stroke: #e6007e;
+  fill: #e10072;
+  stroke: #e10072;
 }
 
-.menu-is-opening svg path {
-  fill: #e6007e;
-  stroke: #e6007e;
+.nav-pills .nav-link.sidebar-btn:hover {
+  margin: 10px 10px 10px 8px;
+  color: white;
+  border-bottom: #e10072 solid 4px;
+  padding-bottom: 4px;
 }
 
-.content-wrapper {
-  background-image: url("../assets/bg-gesamt.png");
-  background-size: 100% auto;
+svg path {
+  fill: #0094de;
+  stroke: #0094de;
 }

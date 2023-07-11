@@ -1,6 +1,6 @@
 import { Component, Input, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { ActivatedRoute, Params,Router } from '@angular/router';
-import { SliderComponent } from '../slider/slider.component';
+import { MotorControlComponent } from '../motor-control/motor-control.component';
 import { MotorCurrentMessage } from '../shared/currentMessage';
 import { RosService } from '../shared/ros.service';
 
@@ -11,7 +11,7 @@ import { RosService } from '../shared/ros.service';
 })
 export class ArmComponent implements OnInit {
   @Input() side = "Left";
-  @ViewChildren(SliderComponent) childSilderComponents!: QueryList<SliderComponent>;
+  @ViewChildren(MotorControlComponent) childSilderComponents!: QueryList<MotorControlComponent>;
 
   constructor(private rosService: RosService, private route: ActivatedRoute, private router: Router) { }
 
@@ -77,7 +77,7 @@ export class ArmComponent implements OnInit {
   reset() {
     this.childSilderComponents.forEach((child) => {
       if (child.sliderFormControl.value != 0) {
-        child.sliderFormControl.setValue(0);
+        child.setSliderValue(0);
         child.sendMessage();
       }
     });

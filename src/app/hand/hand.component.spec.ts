@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { ReactiveFormsModule } from "@angular/forms";
 import { By } from "@angular/platform-browser";
 import { RouterTestingModule } from "@angular/router/testing";
-import { SliderComponent } from "../slider/slider.component";
+import { MotorControlComponent } from "../motor-control/motor-control.component";
 
 import { HandComponent } from "./hand.component";
 import { RosService } from "../shared/ros.service";
@@ -16,7 +16,7 @@ describe("HandComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [HandComponent, SliderComponent, NavBarComponent],
+      declarations: [HandComponent, MotorControlComponent, NavBarComponent],
       imports: [RouterTestingModule, ReactiveFormsModule],
       providers: [RosService],
     }).compileComponents();
@@ -39,7 +39,7 @@ describe("HandComponent", () => {
   it("should call reset() and set all slider values to 0 after clicking reset button (left and individul fingers)", () => {
     component.side = "left";
 
-    const sliders = fixture.debugElement.queryAll(By.css("app-slider"));
+    const sliders = fixture.debugElement.queryAll(By.css("app-motor-control"));
 
     spyOn(component, "reset").and.callThrough();
 
@@ -62,7 +62,7 @@ describe("HandComponent", () => {
   it("should call reset() and set all slider values to 0 after clicking reset button (right and individul fingers)", () => {
     component.side = "right";
 
-    const sliders = fixture.debugElement.queryAll(By.css("app-slider"));
+    const sliders = fixture.debugElement.queryAll(By.css("app-motor-control"));
 
     spyOn(component, "reset").and.callThrough();
 
@@ -86,7 +86,7 @@ describe("HandComponent", () => {
   it("should call reset() and set all slider values to 0 after clicking reset button (right and combained fingers)", () => {
     component.side = "right";
 
-    const sliders = fixture.debugElement.queryAll(By.css("app-slider"));
+    const sliders = fixture.debugElement.queryAll(By.css("app-motor-control"));
 
     spyOn(component, "reset").and.callThrough();
 
@@ -109,7 +109,7 @@ describe("HandComponent", () => {
   it("should call reset() and set all slider values to 0 after clicking reset button (left and combained fingers)", () => {
     component.side = "left";
 
-    const sliders = fixture.debugElement.queryAll(By.css("app-slider"));
+    const sliders = fixture.debugElement.queryAll(By.css("app-motor-control"));
 
     spyOn(component, "reset").and.callThrough();
 
@@ -136,7 +136,7 @@ describe("HandComponent", () => {
     fixture.detectChanges();
     const checkInput = fixture.debugElement.query(By.css(".custom-control-input"));
     spyOn(checkInput.componentInstance, "switchView").and.callThrough();
-    const sliders = fixture.debugElement.queryAll(By.css("app-slider"));
+    const sliders = fixture.debugElement.queryAll(By.css("app-motor-control"));
     sliders
       .filter(
         (slider) =>
@@ -170,7 +170,7 @@ describe("HandComponent", () => {
     fixture.detectChanges();
     const checkInput = fixture.debugElement.query(By.css(".custom-control-input"));
     spyOn(checkInput.componentInstance, "switchView").and.callThrough();
-    const sliders = fixture.debugElement.queryAll(By.css("app-slider"));
+    const sliders = fixture.debugElement.queryAll(By.css("app-motor-control"));
     sliders
       .filter(
         (slider) =>
@@ -205,7 +205,7 @@ describe("HandComponent", () => {
     fixture.detectChanges();
 
     const checkInput = fixture.debugElement.query(By.css('#leftSwitch'));
-    const sliders = fixture.debugElement.queryAll(By.css("app-slider"));
+    const sliders = fixture.debugElement.queryAll(By.css("app-motor-control"));
     sliders.forEach((slider) =>
     spyOn(slider.componentInstance, "sendAllMessagesCombined")
   );
@@ -232,7 +232,7 @@ fixture.detectChanges();
     fixture.detectChanges();
 
     const checkInput = fixture.debugElement.query(By.css('#rightSwitch'));
-    const sliders = fixture.debugElement.queryAll(By.css("app-slider"));
+    const sliders = fixture.debugElement.queryAll(By.css("app-motor-control"));
     sliders.forEach((slider) =>
     spyOn(slider.componentInstance, "sendAllMessagesCombined")
   );

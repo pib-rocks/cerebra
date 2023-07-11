@@ -3,7 +3,7 @@ import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { HeadComponent } from "./head.component";
 import { RosService } from "../shared/ros.service";
 import { By } from "@angular/platform-browser";
-import { SliderComponent } from "../slider/slider.component";
+import { MotorControlComponent } from "../motor-control/motor-control.component";
 import { ReactiveFormsModule } from "@angular/forms";
 import { NavBarComponent } from "../nav-bar/nav-bar.component";
 import { RouterTestingModule } from "@angular/router/testing";
@@ -15,7 +15,7 @@ describe("HeadComponent", () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [HeadComponent, SliderComponent, NavBarComponent],
+      declarations: [HeadComponent, MotorControlComponent, NavBarComponent],
       imports: [ReactiveFormsModule, RouterTestingModule],
       providers: [RosService],
     }).compileComponents();
@@ -39,7 +39,7 @@ describe("HeadComponent", () => {
   });
 
   it("should call reset() and set all slider values to 0 after clicking reset button", () => {
-    const sliders = fixture.debugElement.queryAll(By.css("app-slider"));
+    const sliders = fixture.debugElement.queryAll(By.css("app-motor-control"));
     for (const slider of sliders) {
       spyOn(slider.componentInstance, "sendMessage");
     }
@@ -58,7 +58,7 @@ describe("HeadComponent", () => {
 
     for (const slider of sliders) {
       if (slider.componentInstance.showMotorSettingsButton === true) {
-        const input = slider.children[1].children[2];
+        const input = slider.children[1].children[1];
         expect(input.nativeElement.value).toBe("0");
         expect(slider.componentInstance.sendMessage).toHaveBeenCalled();
       }
