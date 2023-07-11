@@ -108,7 +108,7 @@ describe("CameraComponent", () => {
     spyOn(window, 'setTimeout');
     spyOn(component,'inputQualityFactor').and.callThrough();
     spyOn(component,'setQualityFactor');
-    let slider = fixture.nativeElement.querySelector('#slider_qualityFactor');
+    const slider = fixture.nativeElement.querySelector('#slider_qualityFactor');
     slider.value = 30;
     slider.dispatchEvent(new Event("input"));
     tick(500);
