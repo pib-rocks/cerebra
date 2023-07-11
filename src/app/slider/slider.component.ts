@@ -1,5 +1,8 @@
 import { Component, ElementRef, Input, ViewChild, Output, EventEmitter, OnInit, AfterViewInit } from "@angular/core";
 import { FormControl } from "@angular/forms";
+import { RosService } from "../shared/ros.service";
+import { Message } from "../shared/message";
+import { Subject } from "rxjs";
 @Component({
   selector: 'app-slider',
   templateUrl: './slider.component.html',
@@ -31,13 +34,35 @@ export class SliderComponent implements OnInit, AfterViewInit {
   minBubblePosition = 0;
 
   pixelsFromEdge = 60;
-  // messageReceiver$ = new Subject<Message>();
+  messageReceiver$ = new Subject<Message>();
+
+  imageSrc!: string;
+
+  constructor(
+    private rosService: RosService
+  ) { }
 
   ngOnInit(): void {
     // Todo: Dirty code Warten auf BubbleElement weil ansonsten Undefined Fehler
     setTimeout(() => {
       this.setSliderValue(this.getValueWithinRange(Number(this.defaultValue)));
     }, 500);
+
+    this.rosService.isInitialized$.subscribe((isInitialized: boolean) => {
+      if (isInitialized) {
+        console.log("register " + this.sliderName);
+        this.rosService.registerMotor(this.sliderName, this.messageReceiver$);
+      }
+    });
+    this.messageReceiver$.subscribe((json) => {
+      const value = json.value;
+      if (value) {
+        this.sliderFormControl.setValue(
+          this.getValueWithinRange(Number(value))
+        );
+      }
+      this.setThumbPosition();
+    });
   }
 
 
@@ -68,6 +93,11 @@ export class SliderComponent implements OnInit, AfterViewInit {
 
   sendMessage() {
     this.sliderEvent.emit(this.sliderFormControl.value);
+    const message: Message = {
+      motor: this.sliderName,
+      value: this.sliderFormControl.value,
+    };
+    this.rosService.sendSliderMessage(message);
   }
 
   toggleInputVisible() {
@@ -124,7 +154,6 @@ export class SliderComponent implements OnInit, AfterViewInit {
   } 
 
   setThumbPosition() {
-    console.log("SliderCom:" + this.sliderFormControl.value);
     const val = (this.sliderFormControl.value - this.minValue)*100 / (this.maxValue - this.minValue);
     setTimeout(() => {
       this.bubblePosition = val;
@@ -133,5 +162,7 @@ export class SliderComponent implements OnInit, AfterViewInit {
     this.bubbleElement.nativeElement.style.left = `calc(${val}%)`;
     this.sliderElem.nativeElement.style.setProperty("--pos-relative", val.toString(10)+'%');
   }
+
+
 
 }

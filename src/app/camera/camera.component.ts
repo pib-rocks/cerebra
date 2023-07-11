@@ -17,8 +17,6 @@ export class CameraComponent implements OnInit, OnDestroy {
   toggleCamera = new FormControl(false);
   resolution = 'SD';
 
-  qualityControlAppSlider = new SliderComponent();
-  refreshRateControlAppSlider = new SliderComponent();
 
   thumbOppositionLeft = { motor: "thumb_left_opposition", label: "Thumb opposition" };
   constructor(private rosService: RosService){  }
@@ -31,7 +29,7 @@ export class CameraComponent implements OnInit, OnDestroy {
       this.imageSrc = 'data:image/jpeg;base64,' + message;
       console.log('-------------------------');
       console.log(message);
-    })
+    });
   }
 
   ngOnDestroy(): void {
