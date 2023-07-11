@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { ReactiveFormsModule} from "@angular/forms";
 import { SliderComponent } from './slider.component';
 
@@ -21,4 +21,11 @@ describe('SliderComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('should call sendMessage after init',fakeAsync(() => {
+    const spy = spyOn(component, 'sendMessage');
+    component.ngOnInit();
+    tick(500);
+    expect(spy).toHaveBeenCalled();
+  }));
 });
