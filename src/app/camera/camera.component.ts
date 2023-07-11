@@ -17,6 +17,9 @@ export class CameraComponent implements OnInit, OnDestroy {
   toggleCamera = new FormControl(false);
   resolution = 'SD';
 
+  qualityControlAppSlider = new SliderComponent();
+  refreshRateControlAppSlider = new SliderComponent();
+
   thumbOppositionLeft = { motor: "thumb_left_opposition", label: "Thumb opposition" };
   constructor(private rosService: RosService){  }
   ngOnInit(): void {
@@ -65,15 +68,14 @@ export class CameraComponent implements OnInit, OnDestroy {
   }
 
   setRefreshRate(refreshRate : number){
+    console.log("test");
     this.rosService.setTimerPeriod(refreshRate);
     this.refreshRateControl.setValue(refreshRate);
   }
   inputRefreshRate(refreshRate : number) {
     console.log("refreshRate:" + refreshRate);
     clearTimeout(this.timer);
-    this.timer = setTimeout(() => {
-      this.setRefreshRate(refreshRate);
-    }, 500);
+    this.setRefreshRate(refreshRate);
   }
 
   startCamera(){
@@ -105,9 +107,7 @@ export class CameraComponent implements OnInit, OnDestroy {
 
   inputQualityFactor(value : number){
     clearTimeout(this.timer);
-    this.timer = setTimeout(() => {
-      this.setQualityFactor(value);
-    }, 500);
+    this.setQualityFactor(value)
 }
   setQualityFactor(qualityFactor : number){
   this.rosService.setQualityFactor(qualityFactor);

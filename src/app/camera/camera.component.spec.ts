@@ -10,6 +10,8 @@ import {
 import { CameraComponent } from "./camera.component";
 import { RosService } from "../shared/ros.service";
 import { By } from "@angular/platform-browser";
+import { SliderComponent } from "../slider/slider.component";
+
 
 describe("CameraComponent", () => {
   let component: CameraComponent;
@@ -20,7 +22,7 @@ describe("CameraComponent", () => {
 
   beforeEach(async () => {
     TestBed.configureTestingModule({
-      declarations: [CameraComponent],
+      declarations: [CameraComponent, SliderComponent],
       imports: [ReactiveFormsModule],
       providers: [RosService],
     }).compileComponents();
@@ -37,17 +39,17 @@ describe("CameraComponent", () => {
   });
 
   it("should have a silder step of 0.05", () => {
-    const slider = fixture.nativeElement.querySelector("#refreshRate");
+    const slider = fixture.nativeElement.querySelector("#slider_refreshRate");
     expect(slider.step).toBe("0.05");
   });
 
   it("should have a maximum range at 1", () => {
-    const slider = fixture.nativeElement.querySelector("#refreshRate");
+    const slider = fixture.nativeElement.querySelector("#slider_refreshRate");
     expect(slider.max).toBe("1");
   });
 
   it("should have a mininum range at 0.1", () => {
-    const slider = fixture.nativeElement.querySelector("#refreshRate");
+    const slider = fixture.nativeElement.querySelector("#slider_refreshRate");
     expect(slider.min).toBe("0.1");
   });
 
@@ -84,14 +86,14 @@ describe("CameraComponent", () => {
     expect(component.isLoading).toBeFalse();
   }));
 
-  it("should call refrechRate() in inputRefrechRate() on input event", fakeAsync(() => {
+  it("should call refreshRate() in inputRefreshRate() when setting new on slider_refreshRate", fakeAsync(() => {
     spyOn(window, 'clearTimeout');
     spyOn(window, 'setTimeout');
     spyOn(component,'inputRefreshRate').and.callThrough();
     spyOn(component,'setRefreshRate');
-    const slider = fixture.nativeElement.querySelector("#refreshRate");
-    slider.setSliderValue(1);
-    slider.dispatchEvent(new Event("sliderEvent"));
+    const slider = fixture.nativeElement.querySelector("#slider_refreshRate");
+    slider.value = 0.9;
+    slider.dispatchEvent(new Event("input"));
     tick(500);
     expect(window.clearTimeout).toHaveBeenCalled();
     expect(window.setTimeout).toHaveBeenCalledWith(jasmine.any(Function), 500);
@@ -101,13 +103,13 @@ describe("CameraComponent", () => {
     expect(component.inputRefreshRate).toHaveBeenCalled();
   }));
 
-  it("should call refrechRate() in inputRefrechRate() on input event", fakeAsync(() => {
+  it("should call setQualityFactor() in inputQualityFactor() when setting new on slider_qualityFactor", fakeAsync(() => {
     spyOn(window, 'clearTimeout');
     spyOn(window, 'setTimeout');
     spyOn(component,'inputQualityFactor').and.callThrough();
     spyOn(component,'setQualityFactor');
-    const slider = fixture.nativeElement.querySelector("#qualityFactorSlider");
-    slider.value = 50;
+    let slider = fixture.nativeElement.querySelector('#slider_qualityFactor');
+    slider.value = 30;
     slider.dispatchEvent(new Event("input"));
     tick(500);
     expect(window.clearTimeout).toHaveBeenCalled();
@@ -115,8 +117,11 @@ describe("CameraComponent", () => {
     const timeoutCallback = (window.setTimeout as unknown as jasmine.Spy).calls.mostRecent().args[0];
     timeoutCallback();
     expect(component.inputQualityFactor).toHaveBeenCalled();
+    tick(1000);
     expect(component.setQualityFactor).toHaveBeenCalled();
+
   }));
+
 
   it("should toggle the camera when i click on the camera icon", () => {
     const spyStartCamera = spyOn(component, 'startCamera');

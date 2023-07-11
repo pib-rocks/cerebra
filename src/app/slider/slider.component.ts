@@ -1,9 +1,5 @@
-import { AfterViewInit, Component, ElementRef, Input, OnInit, TemplateRef, ViewChild } from "@angular/core";
-import { Output, EventEmitter } from '@angular/core'; 
-import { FormControl, Validators } from "@angular/forms";
-import { RosService } from "../shared/ros.service";
-import { notNullValidator } from "../shared/validators";
-import { timeout } from "rxjs";
+import { Component, ElementRef, Input, ViewChild, Output, EventEmitter } from "@angular/core";
+import { FormControl } from "@angular/forms";
 @Component({
   selector: 'app-slider',
   templateUrl: './slider.component.html',
@@ -16,17 +12,11 @@ export class SliderComponent {
   @ViewChild('range') sliderElem!: ElementRef;
 
   @Input() sliderName : string = "";
-  @Input() minSliderValue : number = -9000;
-  @Input() maxSliderValue : number = 9000;
-  @Input() sliderStep = "";
-  @Input() sliderValue = "";
   @Input() minValue : number = 0;
   @Input() maxValue : number = 100;
   @Input() defaultValue : number = (this.minValue + this.maxValue)/2;
   @Input() step : number = 1;
   @Input() unitOfMeasurement : string = "";
-
-  
 
   sliderFormControl: FormControl = new FormControl();
   bubbleFormControl: FormControl = new FormControl();
@@ -40,13 +30,10 @@ export class SliderComponent {
   maxBubblePosition = 100;
   minBubblePosition = 0;
 
-
   pixelsFromEdge = 60;
   // messageReceiver$ = new Subject<Message>();
-  oldValue: number = 0;
 
   ngOnInit(): void {
-    console.log(this.defaultValue);
     // Todo: Dirty code Warten auf BubbleElement weil ansonsten Undefined Fehler
     setTimeout(() => {
       this.setSliderValue(this.getValueWithinRange(Number(this.defaultValue)));
