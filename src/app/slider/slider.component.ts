@@ -1,11 +1,11 @@
-import { Component, ElementRef, Input, ViewChild, Output, EventEmitter } from "@angular/core";
+import { Component, ElementRef, Input, ViewChild, Output, EventEmitter, OnInit, AfterViewInit } from "@angular/core";
 import { FormControl } from "@angular/forms";
 @Component({
   selector: 'app-slider',
   templateUrl: './slider.component.html',
   styleUrls: ['./slider.component.css']
 })
-export class SliderComponent {
+export class SliderComponent implements OnInit, AfterViewInit {
 
   @ViewChild('bubble') bubbleElement!: ElementRef;
   @ViewChild('bubbleInput') bubbleInput!: ElementRef;
