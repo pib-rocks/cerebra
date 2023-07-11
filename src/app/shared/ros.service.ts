@@ -174,24 +174,6 @@ export class RosService {
     this.cameraTopic.unsubscribe();
   }
 
-  publishCameraSliderMessage(){
-    // const json = JSON.parse(JSON.stringify(msg));
-    // const parameters = Object.keys(json).map((key) => ({ [key]: json[key] }));
-    // const message = new ROSLIB.Message({ data: JSON.stringify(parameters) });
-    // if ("motor" in msg) {
-    //   if ("currentValue" in msg) {
-    //     this.motorCurrentConsumptionTopic?.publish(message);
-    //     console.log("Sent message " + JSON.stringify(message));
-    //   } else {
-    //     this.sliderMessageTopic?.publish(message);
-    //     console.log("Sent message " + JSON.stringify(message));
-    //   }
-    // } else {
-    //   this.voiceAssistantTopic.publish(message);
-    //   console.log("Sent message " + JSON.stringify(message));
-    // }
-  }
-
   get Ros(): ROSLIB.Ros {
     return this.ros;
   }

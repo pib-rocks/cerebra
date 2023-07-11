@@ -118,7 +118,6 @@
 
 .range-wrap .range {
   --pos-relative:0;
-  -webkit-appearance: none;
   width: 100%;
   height: 12px;
   background: #324c71;
