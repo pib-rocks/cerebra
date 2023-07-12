@@ -34,6 +34,13 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
   isInputVisible = false;
 
   isCombinedSlider = false;
+  isInputVisible = false;
+  maxSliderValue = 9000;
+  minSliderValue = -9000;
+  maxBubblePosition = 92;
+  minBubblePosition = 8;
+  // the number of pixels from the edges of the slider at which the gray bubbles disappear
+  pixelsFromEdge = 60;
   messageReceiver$ = new Subject<Message>();
   allFingersSliderReceiver$ = new Subject<number>;
   motorFormControl: FormControl = new FormControl(true);
@@ -150,6 +157,7 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
         this.velocityFormControl.setValue(json.velocity);
       }
       this.setThumbPosition();
+      this.setMinAndMaxBubblePositions();
     });
 
     this.rosService.isInitialized$.subscribe((isInitialized: boolean) => {
@@ -162,6 +170,15 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit() {
     this.setThumbPosition();
+    this.setMinAndMaxBubblePositions();
+  }
+
+  setMinAndMaxBubblePositions() {
+    const sliderWidth = document.getElementById("slider_"+this.motorName)?.clientWidth;
+    if (sliderWidth !== undefined && sliderWidth !== 0) {
+      this.minBubblePosition = this.pixelsFromEdge*100/sliderWidth;
+      this.maxBubblePosition = (sliderWidth-this.pixelsFromEdge)*100/sliderWidth;
+    }
   }
 
   setThumbPosition() {
@@ -193,26 +210,28 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
   }
 
   toggleInputUnvisible() {
-    if (this.sliderFormControl.value !== null) {
-      this.isInputVisible = !this.isInputVisible;
-      if (this.bubbleFormControl.hasError('min')) {
-        this.setSliderValue(this.minSliderValue);
-        this.inputSendMsg();
-      }
-      else if (this.bubbleFormControl.hasError('max')) {
-        this.setSliderValue(this.maxSliderValue);
-        this.inputSendMsg();
-      }
-      else if (this.bubbleFormControl.hasError('required')) {
-        this.bubbleFormControl.setValue(this.sliderFormControl.value);
-      }
-      else if (this.bubbleFormControl.hasError('pattern')) {
-        this.bubbleFormControl.setValue(this.sliderFormControl.value);
-      }
-      else {
-        this.setSliderValue(this.bubbleFormControl.value);
-        this.inputSendMsg();
-      }
+    if (this.bubbleFormControl.value !== this.sliderFormControl.value) {
+      if(this.sliderFormControl.value !== null){
+        this.isInputVisible = !this.isInputVisible;
+        if(this.bubbleFormControl.hasError('min')) {
+          this.setSliderValue(this.minSliderValue);
+          this.inputSendMsg();
+        }
+        else if(this.bubbleFormControl.hasError('max')) {
+          this.setSliderValue(this.maxSliderValue);
+          this.inputSendMsg();
+        }
+        else if(this.bubbleFormControl.hasError('required')) {
+          this.bubbleFormControl.setValue(this.sliderFormControl.value);
+        }
+        else if(this.bubbleFormControl.hasError('pattern')) {
+          this.bubbleFormControl.setValue(this.sliderFormControl.value);
+        }
+        else {
+          this.setSliderValue(this.bubbleFormControl.value);
+          this.inputSendMsg();
+        }
+      } 
     } else {
       this.isInputVisible = !this.isInputVisible;
     }
