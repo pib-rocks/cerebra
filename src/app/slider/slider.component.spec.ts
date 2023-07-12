@@ -2,13 +2,10 @@ import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testin
 import { ReactiveFormsModule} from "@angular/forms";
 import { SliderComponent } from './slider.component';
 import { RosService } from "../shared/ros.service";
-import { Message } from "roslib";
 
 describe('SliderComponent', () => {
   let component: SliderComponent;
   let fixture: ComponentFixture<SliderComponent>;
-  let rosService: RosService;
-  let spySendMessage: jasmine.Spy<(msg: Message ) => void>
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -20,7 +17,6 @@ describe('SliderComponent', () => {
 
     fixture = TestBed.createComponent(SliderComponent);
     component = fixture.componentInstance;
-    // spySendMessage = spyOn(rosService, "sendSliderMessage");
     fixture.detectChanges();
   });
 
