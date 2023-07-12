@@ -28,7 +28,7 @@ describe('SliderComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it("should change value after receiving a message", () => {
+  it("should change value after receiving a message from RosTopic", () => {
     const slider = fixture.nativeElement.querySelector('input[type="range"]');
     const jsonValue = String((component.minValue + component.maxValue)/2);
     const json = {
@@ -41,12 +41,12 @@ describe('SliderComponent', () => {
   });
 
   it("should call sendMessage after changing the slider", fakeAsync(() => {
-    const spyOnsendMessage = spyOn(component, "sendMessage");
+    const spyOnSendMessage = spyOn(component, "sendMessage");
     const slider = fixture.nativeElement.querySelector('input[type="range"]');
     slider.value = String((component.minValue + component.maxValue)/2);
     slider.dispatchEvent(new Event('input'));
     tick(1000);
-    expect(spyOnsendMessage).toHaveBeenCalled();
+    expect(spyOnSendMessage).toHaveBeenCalled();
   }));
 
   it("should adjust the slider when using textinput on bubble", fakeAsync(() => {
@@ -60,4 +60,14 @@ describe('SliderComponent', () => {
     tick(500);
     expect(component.sliderFormControl.value).toBeLessThanOrEqual(component.bubbleFormControl.value);
   }));
+
+  it("should set slider values to min or max if given value out of bounds", () => {
+    const maxOutOfBounds = 300;
+    const minOutOfBounds = -300;
+    component.setSliderValue(component.getValueWithinRange(maxOutOfBounds));
+    expect(component.sliderFormControl.value).toBeLessThanOrEqual(component.maxValue);
+    component.setSliderValue(component.getValueWithinRange(minOutOfBounds));
+    expect(component.sliderFormControl.value).toBeLessThanOrEqual(component.minValue);
+  });
+
 });
