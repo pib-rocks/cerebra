@@ -93,9 +93,7 @@ describe("CameraComponent", () => {
     spyOn(window, 'setTimeout');
     spyOn(component,'inputRefreshRate').and.callThrough();
     spyOn(component,'setRefreshRate');
-    
     videoSettingsButton.click();
-    setTimeout( ()=>{},500);
     const slider = fixture.nativeElement.querySelector("#slider_refreshRate");
     slider.value = 0.9;
     slider.dispatchEvent(new Event("input"));
