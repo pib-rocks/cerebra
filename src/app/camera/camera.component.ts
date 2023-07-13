@@ -1,9 +1,7 @@
-import { Component, OnDestroy, OnInit } from "@angular/core";
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { FormControl } from "@angular/forms";
 import * as ROSLIB from "roslib";
 import { RosService } from "../shared/ros.service";
-import { SliderComponent } from "../slider/slider.component";
-
 
 @Component({
   selector: "app-camera",
@@ -16,10 +14,17 @@ export class CameraComponent implements OnInit, OnDestroy {
   isCameraActive = false;
   toggleCamera = new FormControl(false);
   resolution = 'SD';
+  imageSrc!: string;  
+  componentName = "Live view";
+  refreshRateControl = new FormControl(0.5);
+  qualityFactorControl = new FormControl(80);
+  selectedSize = "480p (SD)";
+  cameraActiveIcon = "M880-275 720-435v111L244-800h416q24 0 42 18t18 42v215l160-160v410ZM848-27 39-836l42-42L890-69l-42 42ZM159-800l561 561v19q0 24-18 42t-42 18H140q-24 0-42-18t-18-42v-520q0-24 18-42t42-18h19Z";
+  
+  constructor(
+    private rosService: RosService,
+    ){}
 
-
-  thumbOppositionLeft = { motor: "thumb_left_opposition", label: "Thumb opposition" };
-  constructor(private rosService: RosService){  }
   ngOnInit(): void {
     this.setRefreshRate(0.5);
     this.rosService.setPreviewSize(640, 480);
@@ -31,21 +36,10 @@ export class CameraComponent implements OnInit, OnDestroy {
       console.log(message);
     });
   }
-
   ngOnDestroy(): void {
     this.stopCamera();
   }
 
-  imageSrc!: string;  
-  componentName = "Live view";
-  refreshRateControl = new FormControl(0.5);
-  qualityFactorControl = new FormControl(80);
-  selectedSize = "480p (SD)";
-  cameraActiveIcon = "M880-275 720-435v111L244-800h416q24 0 42 18t18 42v215l160-160v410ZM848-27 39-836l42-42L890-69l-42 42ZM159-800l561 561v19q0 24-18 42t-42 18H140q-24 0-42-18t-18-42v-520q0-24 18-42t42-18h19Z";
-
-
-  private imageTopic!: ROSLIB.Topic;
-  
   setSize(width: number, height: number) {
     this.resolution = 'SD'
     if(height != null){
@@ -66,12 +60,10 @@ export class CameraComponent implements OnInit, OnDestroy {
   }
 
   setRefreshRate(refreshRate : number){
-    console.log("test");
     this.rosService.setTimerPeriod(refreshRate);
     this.refreshRateControl.setValue(refreshRate);
   }
   inputRefreshRate(refreshRate : number) {
-    console.log("refreshRate:" + refreshRate);
     clearTimeout(this.timer);
     this.setRefreshRate(refreshRate);
   }
@@ -82,7 +74,7 @@ export class CameraComponent implements OnInit, OnDestroy {
 
   stopCamera(){
     this.rosService.unsubscribeCameraTopic();
-    //this.imageSrc = '../../assets/pib-Logo.png'
+    this.imageSrc = '../../assets/pib-Logo.png'
   }
 
   toggleCameraState(){
@@ -106,9 +98,11 @@ export class CameraComponent implements OnInit, OnDestroy {
   inputQualityFactor(value : number){
     clearTimeout(this.timer);
     this.setQualityFactor(value)
-}
-  setQualityFactor(qualityFactor : number){
-  this.rosService.setQualityFactor(qualityFactor);
-  this.qualityFactorControl.setValue(qualityFactor);
   }
+
+  setQualityFactor(qualityFactor : number){
+    this.rosService.setQualityFactor(qualityFactor);
+    this.qualityFactorControl.setValue(qualityFactor);
+  }
+
 }

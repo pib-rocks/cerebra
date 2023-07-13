@@ -60,6 +60,7 @@ export class SliderComponent implements OnInit, AfterViewInit {
     });
     this.sliderFormControl.setValue(this.getValueWithinRange(Number(this.defaultValue)));
     this.bubbleFormControl.setValue(this.getValueWithinRange(Number(this.defaultValue)));
+    console.log("init: " + this.sliderName);
   }
 
 
@@ -81,6 +82,7 @@ export class SliderComponent implements OnInit, AfterViewInit {
   }
 
   inputSendMsg(): void {
+    console.log("currentbubbleposition: " + this.bubblePosition +"\tminbubblepos: " + this.minBubblePosition + "\tmaxbubblepos: " + this.maxBubblePosition);
     if(this.sliderFormControl.value !== null){
       clearTimeout(this.timer);
       this.timer = setTimeout(() => {
@@ -160,7 +162,5 @@ export class SliderComponent implements OnInit, AfterViewInit {
     this.bubbleElement.nativeElement.style.left = `calc(${val}%)`;
     this.sliderElem.nativeElement.style.setProperty("--pos-relative", val.toString(10)+'%');
   }
-
-
 
 }
