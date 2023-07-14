@@ -34,9 +34,6 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
   isInputVisible = false;
 
   isCombinedSlider = false;
-  isInputVisible = false;
-  maxSliderValue = 9000;
-  minSliderValue = -9000;
   maxBubblePosition = 92;
   minBubblePosition = 8;
   // the number of pixels from the edges of the slider at which the gray bubbles disappear
