@@ -62,6 +62,7 @@ export class CameraComponent implements OnInit, OnDestroy {
     this.rosService.setTimerPeriod(refreshRate);
     this.refreshRateControl.setValue(refreshRate);
   }
+  
   inputRefreshRate(refreshRate : number) {
     clearTimeout(this.timer);
     this.setRefreshRate(refreshRate);

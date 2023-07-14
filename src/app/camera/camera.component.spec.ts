@@ -62,7 +62,7 @@ describe("CameraComponent", () => {
     expect(spy).toHaveBeenCalled();
   });
 
-  it("refreh rate should be set to 0.1 when the component is instantiated", () => {
+  it("refresh rate should be set to 0.5 when the component is instantiated", () => {
     const spy = spyOn(component, 'setRefreshRate')
     component.ngOnInit()
     expect(spy).toHaveBeenCalled();
