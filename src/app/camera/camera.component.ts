@@ -14,7 +14,6 @@ export class CameraComponent implements OnInit, OnDestroy {
   toggleCamera = new FormControl(false);
   resolution = 'SD';
   imageSrc!: string;  
-  componentName = "Live view";
   refreshRateControl = new FormControl(0.5);
   qualityFactorControl = new FormControl(80);
   selectedSize = "480p (SD)";
@@ -62,7 +61,7 @@ export class CameraComponent implements OnInit, OnDestroy {
     this.rosService.setTimerPeriod(refreshRate);
     this.refreshRateControl.setValue(refreshRate);
   }
-  
+
   inputRefreshRate(refreshRate : number) {
     clearTimeout(this.timer);
     this.setRefreshRate(refreshRate);
