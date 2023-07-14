@@ -27,7 +27,7 @@ export class CameraComponent implements OnInit, OnDestroy {
     this.setRefreshRate(0.5);
     this.rosService.setPreviewSize(640, 480);
     this.rosService.setQualityFactor(80);
-    this.imageSrc = '../../assets/pib-Logo.png'
+    this.imageSrc = '../../assets/camera-placeholder.jpg'
     this.rosService.cameraReceiver$.subscribe(message => {
       this.imageSrc = 'data:image/jpeg;base64,' + message;
       console.log('-------------------------');
@@ -73,7 +73,7 @@ export class CameraComponent implements OnInit, OnDestroy {
 
   stopCamera(){
     this.rosService.unsubscribeCameraTopic();
-    this.imageSrc = '../../assets/pib-Logo.png'
+    this.imageSrc = '../../assets/camera-placeholder.jpg'
   }
 
   toggleCameraState(){

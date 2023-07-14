@@ -27,3 +27,10 @@ video {
   stroke: #e6007e;
 }
 
+#cameraToggle {
+  padding-top: 6px;
+}
+
+#cameraColumn img {
+  max-width: 100%;
+}
