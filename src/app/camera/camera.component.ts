@@ -1,13 +1,20 @@
 import { Component, OnDestroy, OnInit } from "@angular/core";
 import { FormControl } from "@angular/forms";
 import { RosService } from "../shared/ros.service";
+import { Subject } from "rxjs";
 
 @Component({
   selector: "app-camera",
   templateUrl: "./camera.component.html",
   styleUrls: ["./camera.component.css"],
+
+  
 })
 export class CameraComponent implements OnInit, OnDestroy {
+  //PR-157
+  qualityReceiver$! : Subject<number>;
+  refreshRateReceiver$!: Subject<number>;
+  
   timer:any = null;
   isLoading = false;
   isCameraActive = false;
@@ -24,6 +31,18 @@ export class CameraComponent implements OnInit, OnDestroy {
     ){}
 
   ngOnInit(): void {
+    this.rosService.previewSizeReceiver$.subscribe(value => {
+      if (this.arraysEqual(value,[640, 480])){
+        this.selectedSize = "480p";
+      }
+      if (this.arraysEqual(value,[1280, 720])){
+        this.selectedSize = "720p";
+      }
+      if (this.arraysEqual(value,[1920, 1080])){
+        this.selectedSize = "1080p";
+      }
+      this.selectedSize += ' ' + '(' 
+  })
     this.setRefreshRate(0.5);
     this.rosService.setPreviewSize(640, 480);
     this.rosService.setQualityFactor(80);
@@ -31,8 +50,10 @@ export class CameraComponent implements OnInit, OnDestroy {
     this.rosService.cameraReceiver$.subscribe(message => {
       this.imageSrc = 'data:image/jpeg;base64,' + message;
       console.log('-------------------------');
-      console.log(message);
     });
+    this.qualityReceiver$ = this.rosService.qualityFactorReceiver$;
+    this.refreshRateReceiver$ = this.rosService.timerPeriodReceiver$;
+
   }
   ngOnDestroy(): void {
     this.stopCamera();
@@ -56,6 +77,14 @@ export class CameraComponent implements OnInit, OnDestroy {
       this.isLoading = false;  // Stop the spinner
     }, 1500);
   }
+
+  arraysEqual(a: number[], b: number[]) {
+    if (a.length !== b.length) return false;
+    for (let i = 0; i < a.length; i++) {
+        if (a[i] !== b[i]) return false;
+    }
+    return true;
+}
 
   setRefreshRate(refreshRate : number){
     this.rosService.setTimerPeriod(refreshRate);
@@ -102,6 +131,14 @@ export class CameraComponent implements OnInit, OnDestroy {
   setQualityFactor(qualityFactor : number){
     this.rosService.setQualityFactor(qualityFactor);
     this.qualityFactorControl.setValue(qualityFactor);
+  }
+  
+  //Boilerplate? Bessere Lösung (pass RosServer.function ?)
+  qualityControlPublish = (formControlValue : number) => {
+    this.rosService.setQualityFactor(formControlValue);
+  }
+  refreshRatePublish = (formControlValue : number) => {
+    this.rosService.setTimerPeriod(formControlValue);
   }
 
 }

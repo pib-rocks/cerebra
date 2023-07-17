@@ -23,6 +23,14 @@ export class RosService {
   private timerPeriodPublisher!: ROSLIB.Topic;
   private previewSizePublisher!: ROSLIB.Topic;
   private qualityFactorPublisher!: ROSLIB.Topic;
+  
+ 
+  //PR-157
+  previewSizeReceiver$: Subject<number[]> = new Subject<number[]>();
+  public qualityFactorReceiver$: Subject<number> = new Subject<number>();
+  voiceAssistantReceiver$: Subject<any> = new Subject<any>();
+  timerPeriodReceiver$: Subject<number> = new Subject<number>();
+  
 
   private readonly topicName = "/motor_settings";
   private readonly topicVoiceName = "/cerebra_voice_settings";
@@ -46,6 +54,8 @@ export class RosService {
       this.qualityFactorPublisher = this.createQualityFactorPublisher();
       this.subscribeSliderTopic();
       this.subscribeCurrentConsumptionTopic();
+      this.subscribeQualityFactorTopic();
+      this.subscribeTimePeriod()
     });
     this.ros.on("error", (error: string) => {
       console.log("Error connecting to ROSBridge server:", error);
@@ -247,6 +257,19 @@ export class RosService {
       ros: this.ros,
       name: 'quality_factor_topic',
       messageType: 'std_msgs/Int32'
+    });
+  }
+
+  //PR-157
+  subscribeQualityFactorTopic() {
+    this.qualityFactorPublisher.subscribe((message: any) => {
+      this.qualityFactorReceiver$.next(message.data);
+    });
+  }
+
+  subscribeTimePeriod() {
+    this.timerPeriodPublisher.subscribe((message: any) => {
+      this.timerPeriodReceiver$.next(message.data);
     });
   }
   

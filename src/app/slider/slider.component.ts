@@ -20,6 +20,11 @@ export class SliderComponent implements OnInit, AfterViewInit {
   @Input() defaultValue : number = (this.minValue + this.maxValue)/2;
   @Input() step : number = 1;
   @Input() unitOfMeasurement : string = "";
+  
+  //PR-157
+  @Input() publishMessage!: (args: number) => void;
+  @Input() messageReceiver$! : Subject<any>;
+  //
 
   sliderFormControl: FormControl = new FormControl();
   bubbleFormControl: FormControl = new FormControl();
@@ -32,31 +37,20 @@ export class SliderComponent implements OnInit, AfterViewInit {
   isInputVisible = false;
   maxBubblePosition = 100;
   minBubblePosition = 0;
-
   pixelsFromEdge = 60;
-  messageReceiver$ = new Subject<Message>();
-
   imageSrc!: string;
+  @Output() sliderEvent = new EventEmitter<number>();
 
   constructor(
     private rosService: RosService
   ) { }
 
   ngOnInit(): void {
-    this.rosService.isInitialized$.subscribe((isInitialized: boolean) => {
-      if (isInitialized) {
-        console.log("register " + this.sliderName);
-        this.rosService.registerMotor(this.sliderName, this.messageReceiver$);
-      }
-    });
-    this.messageReceiver$.subscribe((json) => {
-      const value = json.value;
+    this.messageReceiver$.subscribe((value) => {
       if (value) {
-        this.sliderFormControl.setValue(
-          this.getValueWithinRange(Number(value))
-        );
+        this.sliderFormControl.setValue(this.getValueWithinRange(Number(value)));
+        this.setThumbPosition();
       }
-      this.setThumbPosition();
     });
     this.sliderFormControl.setValue(this.getValueWithinRange(Number(this.defaultValue)));
     this.bubbleFormControl.setValue(this.getValueWithinRange(Number(this.defaultValue)));
@@ -73,20 +67,15 @@ export class SliderComponent implements OnInit, AfterViewInit {
     this.setThumbPosition();
   }
 
-  @Output() sliderEvent = new EventEmitter<number>();
-
   setSliderValue(value: number) {
     this.sliderFormControl.setValue(value);
     this.setThumbPosition();
-    this.sendMessage();
   }
 
   inputSendMsg(): void {
-    console.log("currentbubbleposition: " + this.bubblePosition +"\tminbubblepos: " + this.minBubblePosition + "\tmaxbubblepos: " + this.maxBubblePosition);
     if(this.sliderFormControl.value !== null){
-      clearTimeout(this.timer);
       this.timer = setTimeout(() => {
-        this.sendMessage();
+        this.publishMessage(Number(this.sliderFormControl.value));
       }, 500);
     }
   }
@@ -132,6 +121,7 @@ export class SliderComponent implements OnInit, AfterViewInit {
           this.bubbleFormControl.setValue(this.sliderFormControl.value);
         }
         else {
+          console.log("???");
           this.setSliderValue(this.bubbleFormControl.value);
           this.inputSendMsg();
         }
