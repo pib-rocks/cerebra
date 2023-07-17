@@ -225,7 +225,7 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
           this.bubbleFormControl.setValue(this.sliderFormControl.value);
         }
         else {
-          this.setSliderValue(Number(this.bubbleFormControl.value));
+          this.setSliderValue(this.bubbleFormControl.value);
           this.inputSendMsg();
         }
       } 
