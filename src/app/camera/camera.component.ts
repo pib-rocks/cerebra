@@ -43,9 +43,6 @@ export class CameraComponent implements OnInit, OnDestroy {
       }
       this.selectedSize += ' ' + '(' 
   })
-    this.setRefreshRate(0.5);
-    this.rosService.setPreviewSize(640, 480);
-    this.rosService.setQualityFactor(80);
     this.imageSrc = '../../assets/camera-placeholder.jpg'
     this.rosService.cameraReceiver$.subscribe(message => {
       this.imageSrc = 'data:image/jpeg;base64,' + message;
@@ -53,7 +50,6 @@ export class CameraComponent implements OnInit, OnDestroy {
     });
     this.qualityReceiver$ = this.rosService.qualityFactorReceiver$;
     this.refreshRateReceiver$ = this.rosService.timerPeriodReceiver$;
-
   }
   ngOnDestroy(): void {
     this.stopCamera();
@@ -86,16 +82,6 @@ export class CameraComponent implements OnInit, OnDestroy {
     return true;
 }
 
-  setRefreshRate(refreshRate : number){
-    this.rosService.setTimerPeriod(refreshRate);
-    this.refreshRateControl.setValue(refreshRate);
-  }
-
-  inputRefreshRate(refreshRate : number) {
-    clearTimeout(this.timer);
-    this.setRefreshRate(refreshRate);
-  }
-
   startCamera(){
     this.rosService.subscribeCameraTopic();
   }
@@ -123,17 +109,7 @@ export class CameraComponent implements OnInit, OnDestroy {
     }
   }
 
-  inputQualityFactor(value : number){
-    clearTimeout(this.timer);
-    this.setQualityFactor(value)
-  }
-
-  setQualityFactor(qualityFactor : number){
-    this.rosService.setQualityFactor(qualityFactor);
-    this.qualityFactorControl.setValue(qualityFactor);
-  }
-  
-  //Boilerplate? Bessere Lösung (pass RosServer.function ?)
+  //Boilerplate? Bessere Lösung gegebenenfalls möglich z.B. pass RosServer.function ?)
   qualityControlPublish = (formControlValue : number) => {
     this.rosService.setQualityFactor(formControlValue);
   }

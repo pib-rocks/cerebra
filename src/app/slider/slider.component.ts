@@ -14,12 +14,13 @@ export class SliderComponent implements OnInit, AfterViewInit {
   @ViewChild('bubbleInput') bubbleInput!: ElementRef;
   @ViewChild('range') sliderElem!: ElementRef;
 
-  @Input() sliderName : string = "";
-  @Input() minValue : number = 0;
-  @Input() maxValue : number = 100;
+  @Input() sliderName: string = "";
+  @Input() minValue: number = 0;
+  @Input() maxValue: number = 100;
   @Input() defaultValue : number = (this.minValue + this.maxValue)/2;
-  @Input() step : number = 1;
-  @Input() unitOfMeasurement : string = "";
+  @Input() step: number = 1;
+  @Input() unitOfMeasurement: string = "";
+  @Input() rotate: boolean = false;
   
   //PR-157
   @Input() publishMessage!: (args: number) => void;
@@ -38,6 +39,7 @@ export class SliderComponent implements OnInit, AfterViewInit {
   maxBubblePosition = 100;
   minBubblePosition = 0;
   pixelsFromEdge = 60;
+  transformBoundaries = this.minValue + this.maxValue;
   imageSrc!: string;
   @Output() sliderEvent = new EventEmitter<number>();
 
@@ -48,6 +50,7 @@ export class SliderComponent implements OnInit, AfterViewInit {
   ngOnInit(): void {
     this.messageReceiver$.subscribe((value) => {
       if (value) {
+        console.log("SliderValue: " + value);
         this.sliderFormControl.setValue(this.getValueWithinRange(Number(value)));
         this.setThumbPosition();
       }
@@ -65,6 +68,12 @@ export class SliderComponent implements OnInit, AfterViewInit {
       this.maxBubblePosition = (sliderWidth-this.pixelsFromEdge)*100/sliderWidth;
     }
     this.setThumbPosition();
+    if(this.rotate){
+      this.sliderElem.nativeElement.style.setProperty("transform", "rotate(180deg)");
+      // let tmp = this.maxBubblePosition;
+      // this.maxBubblePosition = this.minBubblePosition;
+      // this.minBubblePosition = tmp;
+    }
   }
 
   setSliderValue(value: number) {
@@ -144,12 +153,15 @@ export class SliderComponent implements OnInit, AfterViewInit {
   } 
 
   setThumbPosition() {
-    const val = (this.sliderFormControl.value - this.minValue)*100 / (this.maxValue - this.minValue);
+    let val = (this.sliderFormControl.value - this.minValue)*100 / (this.maxValue - this.minValue);
+    if(this.rotate){
+      val = this.transformBoundaries - val;
+    }
     setTimeout(() => {
       this.bubblePosition = val;
     },0);
     this.bubbleFormControl.setValue(this.sliderFormControl.value);
-    this.bubbleElement.nativeElement.style.left = `calc(${val}%)`;
+    this.bubbleElement.nativeElement.style.left = /*this.rotate? `calc(1-${val})`: */`calc(${val}%)`;
     this.sliderElem.nativeElement.style.setProperty("--pos-relative", val.toString(10)+'%');
   }
 

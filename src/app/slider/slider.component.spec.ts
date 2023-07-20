@@ -6,6 +6,7 @@ import { RosService } from "../shared/ros.service";
 describe('SliderComponent', () => {
   let component: SliderComponent;
   let fixture: ComponentFixture<SliderComponent>;
+  let rosService: RosService;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -14,9 +15,10 @@ describe('SliderComponent', () => {
       providers: [RosService]
     })
     .compileComponents();
-
+    rosService = TestBed.inject(RosService);
     fixture = TestBed.createComponent(SliderComponent);
     component = fixture.componentInstance;
+    component.messageReceiver$ = rosService.qualityFactorReceiver$;
     fixture.detectChanges();
   });
 
@@ -25,15 +27,12 @@ describe('SliderComponent', () => {
   });
 
   it("should change value after receiving a message from RosTopic", () => {
+  
     const slider = fixture.nativeElement.querySelector('input[type="range"]');
-    const jsonValue = String((component.minValue + component.maxValue)/2);
-    const json = {
-      motor: String(component.sliderName),
-      value: jsonValue,
-    };
-    component.messageReceiver$.next(json);
+    const jsonValue = (component.minValue + component.maxValue)/2;
+    component.messageReceiver$.next(jsonValue);
     fixture.detectChanges();
-    expect(slider.value).toBe(jsonValue);
+    expect(Number(slider.value)).toBe(jsonValue);
   });
 
   it("should call sendMessage after changing the slider", fakeAsync(() => {
@@ -63,7 +62,7 @@ describe('SliderComponent', () => {
     component.setSliderValue(component.getValueWithinRange(maxOutOfBounds));
     expect(component.sliderFormControl.value).toBeLessThanOrEqual(component.maxValue);
     component.setSliderValue(component.getValueWithinRange(minOutOfBounds));
-    expect(component.sliderFormControl.value).toBeLessThanOrEqual(component.minValue);
+    expect(component.sliderFormControl.value).toBeGreaterThanOrEqual(component.minValue);
   });
 
 });
