@@ -33,4 +33,14 @@ video {
 
 #cameraColumn img {
   max-width: 100%;
+  max-height: 100%;
+}
+
+.pink-corner-frame {
+  background: url('../../assets/ep-br.png') bottom right no-repeat, 
+              url('../../assets/ep-tr.png') top right no-repeat, 
+              url('../../assets/ep-tl.png') top left no-repeat, 
+              url('../../assets/ep-bl.png') bottom left no-repeat, 
+              url("../../assets/bg-gesamt.png") center scroll;
+
 }

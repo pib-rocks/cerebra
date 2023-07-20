@@ -22,7 +22,7 @@
 }
 
 .content-wrapper {
-  background-image: url("../assets/bg-gesamt.png");
+  background: black;
   background-size: 100% auto;
 }
 
