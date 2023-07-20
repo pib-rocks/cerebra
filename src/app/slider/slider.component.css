@@ -131,6 +131,7 @@
   cursor: pointer;
 }
 
+
 .range-wrap .range::-moz-range-progress {
   height: 12px;
   background-color: #e10072;
@@ -156,6 +157,10 @@
   transform: rotate(-90deg);
 }
 
-ul {
-  list-style-type: none;
+.range-high-to-low::-moz-range-progress{
+  background-color: #324c71 !important;
+}
+
+.range-high-to-low{
+  background-color: #e10072 !important;
 }

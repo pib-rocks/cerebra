@@ -2,6 +2,7 @@
 <div class="range-wrap">
   <div class="range-value" #bubble>
     <input class="bubble-input overlay"
+      [ngClass]="rotate ? 'range-high-to-low' : ''"
       [min]="minValue"
       [max]="maxValue"
       *ngIf="isInputVisible"
@@ -18,9 +19,10 @@
       {{bubbleFormControl.value}}{{unitOfMeasurement}}
     </div>
   </div>
-  <span *ngIf="bubblePosition >= minBubblePosition" class="bubble-span-min">{{ minValue }}</span>
-  <span *ngIf="bubblePosition <= maxBubblePosition" class="bubble-span-max">{{ maxValue }}</span>
+  <span *ngIf="bubblePosition >= minBubblePosition" class="bubble-span-min">{{ rotate == true ? maxValue : minValue }}</span>
+  <span *ngIf="bubblePosition <= maxBubblePosition" class="bubble-span-max">{{ rotate == true ? minValue : maxValue }}</span>
   <input class="range" type="range"
+    [ngClass]="rotate ? 'range-high-to-low' : ''"
     id="slider_{{ sliderName }}"
     [min]="minValue"
     [max]="maxValue"
