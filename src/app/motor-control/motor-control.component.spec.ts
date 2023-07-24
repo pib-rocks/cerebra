@@ -26,7 +26,9 @@ describe("MotorControlComponent", () => {
   let modalService: NgbModal;
   let fingerService: MotorService;
   let motorService: MotorService;
-  let  spySendMassege: jasmine.Spy<(msg: Message | VoiceAssistant | MotorCurrentMessage) => void>
+  let spySendMassege: jasmine.Spy<
+    (msg: Message | VoiceAssistant | MotorCurrentMessage) => void
+  >;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -69,10 +71,10 @@ describe("MotorControlComponent", () => {
   });
 
   it("should call sendMessage() in inputSendMsg() on input event", fakeAsync(() => {
-    spyOn(window, 'clearTimeout');
-    spyOn(window, 'setTimeout');
-    spyOn(component,'inputSendMsg').and.callThrough();
-    spyOn(component,'sendMessage');
+    spyOn(window, "clearTimeout");
+    spyOn(window, "setTimeout");
+    spyOn(component, "inputSendMsg").and.callThrough();
+    spyOn(component, "sendMessage");
 
     const slider = fixture.nativeElement.querySelector('input[type="range"]');
     slider.value = 50;
@@ -80,22 +82,26 @@ describe("MotorControlComponent", () => {
     tick(500);
     expect(window.clearTimeout).toHaveBeenCalled();
     expect(window.setTimeout).toHaveBeenCalledWith(jasmine.any(Function), 500);
-    const timeoutCallback = (window.setTimeout as unknown as jasmine.Spy).calls.mostRecent().args[0];
+    const timeoutCallback = (
+      window.setTimeout as unknown as jasmine.Spy
+    ).calls.mostRecent().args[0];
     timeoutCallback();
     expect(component.inputSendMsg).toHaveBeenCalled();
     expect(component.sendMessage).toHaveBeenCalled();
   }));
 
-  it("should call sendSettingsMessage() in inputSendSettingsMsg() on input event", fakeAsync (() => {
-    spyOn(window, 'clearTimeout');
-    spyOn(window, 'setTimeout');
+  it("should call sendSettingsMessage() in inputSendSettingsMsg() on input event", fakeAsync(() => {
+    spyOn(window, "clearTimeout");
+    spyOn(window, "setTimeout");
     spyOn(component, "inputSendSettingsMsg").and.callThrough();
     spyOn(component, "sendSettingMessage");
     component.inputSendSettingsMsg();
     tick(500);
     expect(window.clearTimeout).toHaveBeenCalled();
     expect(window.setTimeout).toHaveBeenCalledWith(jasmine.any(Function), 500);
-    const timeoutCallback = (window.setTimeout as unknown as jasmine.Spy).calls.mostRecent().args[0];
+    const timeoutCallback = (
+      window.setTimeout as unknown as jasmine.Spy
+    ).calls.mostRecent().args[0];
     timeoutCallback();
     expect(component.inputSendSettingsMsg).toHaveBeenCalled();
     expect(component.sendSettingMessage).toHaveBeenCalled();
@@ -151,7 +157,7 @@ describe("MotorControlComponent", () => {
     const spyModal = spyOn(modalService, "open");
     const motorName = component.motorName;
     const button = fixture.debugElement.query(
-      By.css("#dialogBtn_" + motorName)
+      By.css("#dialogBtn_" + motorName),
     );
     button.nativeElement.click();
     expect(spyPopup).toHaveBeenCalled();
@@ -163,7 +169,7 @@ describe("MotorControlComponent", () => {
     spyOn(modalService, "open").and.callThrough();
     const motorName = component.motorName;
     const button = fixture.debugElement.query(
-      By.css("#dialogBtn_" + motorName)
+      By.css("#dialogBtn_" + motorName),
     );
     button.nativeElement.click();
     modalService.dismissAll(ModalDismissReasons.BACKDROP_CLICK);
@@ -176,7 +182,7 @@ describe("MotorControlComponent", () => {
     spyOn(modalService, "open").and.callThrough();
     const motorName = component.motorName;
     const button = fixture.debugElement.query(
-      By.css("#dialogBtn_" + motorName)
+      By.css("#dialogBtn_" + motorName),
     );
     button.nativeElement.click();
     modalService.dismissAll(ModalDismissReasons.ESC);
@@ -189,7 +195,7 @@ describe("MotorControlComponent", () => {
     spyOn(motorService, "getMotorHandNames").and.callThrough();
     const motorName = component.motorName;
     const checkbox = fixture.debugElement.query(
-      By.css("#checkbox_" + motorName)
+      By.css("#checkbox_" + motorName),
     );
     checkbox.nativeElement.dispatchEvent(new Event("change"));
     expect(component.turnTheMotorOnAndOff).toHaveBeenCalled();
@@ -217,12 +223,12 @@ describe("MotorControlComponent", () => {
     };
     component.sendSettingMessage();
     expect(rosService.sendSliderMessage).toHaveBeenCalledWith(
-      jasmine.objectContaining(message)
+      jasmine.objectContaining(message),
     );
 
     const spyMotorNames = spyOn(
       motorService,
-      "getMotorHandNames"
+      "getMotorHandNames",
     ).and.callThrough();
     component.isCombinedSlider = true;
     component.groupSide = "left";
@@ -248,12 +254,9 @@ describe("MotorControlComponent", () => {
     };
     component.sendAllMessagesCombined();
     expect(rosService.sendSliderMessage).toHaveBeenCalledWith(
-      jasmine.objectContaining(message)
+      jasmine.objectContaining(message),
     );
-    spyOn(
-      motorService,
-      "getMotorHandNames"
-    ).and.callThrough();
+    spyOn(motorService, "getMotorHandNames").and.callThrough();
     component.isCombinedSlider = true;
     component.groupSide = "left";
     fixture.detectChanges();
@@ -265,7 +268,7 @@ describe("MotorControlComponent", () => {
   it("should send a combined massege with all values if not all inputs are valid", () => {
     const spyMotorNames = spyOn(
       motorService,
-      "getMotorHandNames"
+      "getMotorHandNames",
     ).and.callThrough();
     const message: Message = {
       motor: component.motorName,
@@ -276,7 +279,7 @@ describe("MotorControlComponent", () => {
     component.pulseMaxRange.setValue(5);
     component.sendAllMessagesCombined();
     expect(rosService.sendSliderMessage).toHaveBeenCalledWith(
-      jasmine.objectContaining(message)
+      jasmine.objectContaining(message),
     );
 
     component.isCombinedSlider = true;
@@ -291,10 +294,10 @@ describe("MotorControlComponent", () => {
     const formcontrol1 = new FormControl(0);
     const formControl2 = new FormControl(0);
     formcontrol1.addValidators(
-      compareValuesPulseValidator(formcontrol1, formControl2)
+      compareValuesPulseValidator(formcontrol1, formControl2),
     );
     formControl2.addValidators(
-      compareValuesPulseValidator(formcontrol1, formControl2)
+      compareValuesPulseValidator(formcontrol1, formControl2),
     );
     formcontrol1.setValue(10);
     formControl2.setValue(20);
@@ -306,10 +309,10 @@ describe("MotorControlComponent", () => {
     const formcontrol1 = new FormControl(0);
     const formControl2 = new FormControl(0);
     formcontrol1.addValidators(
-      compareValuesPulseValidator(formcontrol1, formControl2)
+      compareValuesPulseValidator(formcontrol1, formControl2),
     );
     formControl2.addValidators(
-      compareValuesPulseValidator(formcontrol1, formControl2)
+      compareValuesPulseValidator(formcontrol1, formControl2),
     );
     formcontrol1.setValue(20);
     formControl2.setValue(10);
@@ -322,10 +325,10 @@ describe("MotorControlComponent", () => {
     const formcontrol1 = new FormControl(0);
     const formControl2 = new FormControl(0);
     formcontrol1.addValidators(
-      compareValuesPulseValidator(formcontrol1, formControl2)
+      compareValuesPulseValidator(formcontrol1, formControl2),
     );
     formControl2.addValidators(
-      compareValuesPulseValidator(formcontrol1, formControl2)
+      compareValuesPulseValidator(formcontrol1, formControl2),
     );
     formcontrol1.setValue(-10);
     formControl2.setValue(20);
@@ -338,10 +341,10 @@ describe("MotorControlComponent", () => {
     const formcontrol1 = new FormControl(0);
     const formControl2 = new FormControl(0);
     formcontrol1.addValidators(
-      compareValuesDegreeValidator(formcontrol1, formControl2)
+      compareValuesDegreeValidator(formcontrol1, formControl2),
     );
     formControl2.addValidators(
-      compareValuesDegreeValidator(formcontrol1, formControl2)
+      compareValuesDegreeValidator(formcontrol1, formControl2),
     );
     formcontrol1.setValue(10);
     formControl2.setValue(20);
@@ -353,10 +356,10 @@ describe("MotorControlComponent", () => {
     const formcontrol1 = new FormControl(0);
     const formControl2 = new FormControl(0);
     formcontrol1.addValidators(
-      compareValuesDegreeValidator(formcontrol1, formControl2)
+      compareValuesDegreeValidator(formcontrol1, formControl2),
     );
     formControl2.addValidators(
-      compareValuesDegreeValidator(formcontrol1, formControl2)
+      compareValuesDegreeValidator(formcontrol1, formControl2),
     );
     formcontrol1.setValue(20);
     formControl2.setValue(10);
@@ -369,10 +372,10 @@ describe("MotorControlComponent", () => {
     const formcontrol1 = new FormControl(0);
     const formControl2 = new FormControl(0);
     formcontrol1.addValidators(
-      compareValuesDegreeValidator(formcontrol1, formControl2)
+      compareValuesDegreeValidator(formcontrol1, formControl2),
     );
     formControl2.addValidators(
-      compareValuesDegreeValidator(formcontrol1, formControl2)
+      compareValuesDegreeValidator(formcontrol1, formControl2),
     );
     formcontrol1.setValue(-90000);
     formControl2.setValue(20);
@@ -381,10 +384,19 @@ describe("MotorControlComponent", () => {
     expect(formcontrol1.hasError("error")).toBe(true);
   });
 
-  it("should make input element visible",(done) => {
-    const mockElementRef = jasmine.createSpyObj('ElementRef', [''], { nativeElement: { focus: () => { console.log("focus called"); }, select: () => { console.log("select called"); } } });
-    spyOn(mockElementRef.nativeElement, 'focus');
-    spyOn(mockElementRef.nativeElement, 'select');
+  it("should make input element visible", (done) => {
+    const mockElementRef = jasmine.createSpyObj("ElementRef", [""], {
+      nativeElement: {
+        focus: () => {
+          console.log("focus called");
+        },
+        select: () => {
+          console.log("select called");
+        },
+      },
+    });
+    spyOn(mockElementRef.nativeElement, "focus");
+    spyOn(mockElementRef.nativeElement, "select");
     component.sliderFormControl.setValue(500);
     component.isInputVisible = false;
     component.bubbleInput = mockElementRef;
@@ -395,61 +407,63 @@ describe("MotorControlComponent", () => {
       expect(mockElementRef.nativeElement.select).toHaveBeenCalled();
       done();
     }, 0);
-  })
+  });
 
   it("should make input element unvisible", () => {
     component.sliderFormControl.setValue(null);
     component.toggleInputVisible();
     expect(component.isInputVisible).toBeTrue();
-  })
+  });
 
   it("should toggle input unvisible", () => {
-    spyOn(component, 'setSliderValue');
-    spyOn(component,'inputSendMsg')
+    spyOn(component, "setSliderValue");
+    spyOn(component, "inputSendMsg");
     component.bubbleFormControl.setValue(500);
     component.isInputVisible = true;
     component.toggleInputUnvisible();
     expect(component.setSliderValue).toHaveBeenCalled();
     expect(component.inputSendMsg).toHaveBeenCalled();
-  } )
+  });
 
   it("should toggle input unvisible min validation", () => {
-    spyOn(component, 'setSliderValue');
-    spyOn(component,'inputSendMsg')
+    spyOn(component, "setSliderValue");
+    spyOn(component, "inputSendMsg");
     component.bubbleFormControl.setValue(-5000000);
     component.isInputVisible = true;
     component.toggleInputUnvisible();
-    expect(component.bubbleFormControl.hasError('min')).toBeTrue;
-    expect(component.setSliderValue).toHaveBeenCalledWith(component.minSliderValue);
+    expect(component.bubbleFormControl.hasError("min")).toBeTrue;
+    expect(component.setSliderValue).toHaveBeenCalledWith(
+      component.minSliderValue,
+    );
     expect(component.inputSendMsg).toHaveBeenCalled();
-  } )
+  });
 
   it("should toggle input unvisible max validation", () => {
-    spyOn(component, 'setSliderValue');
-    spyOn(component,'inputSendMsg')
+    spyOn(component, "setSliderValue");
+    spyOn(component, "inputSendMsg");
     component.bubbleFormControl.setValue(5000000);
     component.isInputVisible = true;
     component.toggleInputUnvisible();
-    expect(component.bubbleFormControl.hasError('max')).toBeTrue;
-    expect(component.setSliderValue).toHaveBeenCalledWith(component.maxSliderValue);
+    expect(component.bubbleFormControl.hasError("max")).toBeTrue;
+    expect(component.setSliderValue).toHaveBeenCalledWith(
+      component.maxSliderValue,
+    );
     expect(component.inputSendMsg).toHaveBeenCalled();
-  } )
+  });
 
   it("should toggle input unvisible required validation", () => {
     component.bubbleFormControl.setValue(null);
     component.isInputVisible = true;
     component.toggleInputUnvisible();
-    expect(component.bubbleFormControl.hasError('required')).toBeTrue;
+    expect(component.bubbleFormControl.hasError("required")).toBeTrue;
     expect(component.isInputVisible).toBeFalse();
-  } )
+  });
 
   it("should toggle input unvisible pattern validation", () => {
-    spyOn(component, 'setThumbPosition');
-    component.bubbleFormControl.setValue('test');
+    spyOn(component, "setThumbPosition");
+    component.bubbleFormControl.setValue("test");
     component.isInputVisible = true;
     component.toggleInputUnvisible();
-    expect(component.bubbleFormControl.hasError('pattern')).toBeTrue;
-  } )
+    expect(component.bubbleFormControl.hasError("pattern")).toBeTrue;
+  });
 });
-
-

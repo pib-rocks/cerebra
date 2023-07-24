@@ -22,10 +22,12 @@ export class AppComponent implements OnInit {
   constructor(private router: Router) {}
 
   ngOnInit(): void {
-    this.router.events.subscribe(event => {
+    this.router.events.subscribe((event) => {
       if (event instanceof NavigationEnd) {
-        this.isActiveRoute = this.jointControlNavItemGroup.includes(event.urlAfterRedirects);
+        this.isActiveRoute = this.jointControlNavItemGroup.includes(
+          event.urlAfterRedirects,
+        );
       }
     });
-}
+  }
 }

@@ -14,7 +14,7 @@ export class RosService {
   isInitialized$ = this.isInitializedSubject.asObservable();
   currentReceiver$: Subject<MotorCurrentMessage> =
     new Subject<MotorCurrentMessage>();
-  cameraReceiver$: Subject<string> = new Subject<string>;
+  cameraReceiver$: Subject<string> = new Subject<string>();
   private ros!: ROSLIB.Ros;
   private sliderMessageTopic!: ROSLIB.Topic;
   private voiceAssistantTopic!: ROSLIB.Topic;
@@ -29,7 +29,6 @@ export class RosService {
   private readonly topicCurrentName = "/motor_status";
   private readonly topicCameratName = "/camera_topic";
 
-
   private motors: Motor[] = [];
 
   constructor() {
@@ -39,9 +38,10 @@ export class RosService {
       this.isInitializedSubject.next(true);
       this.sliderMessageTopic = this.createMessageTopic();
       this.voiceAssistantTopic = this.createVoiceAssistantTopic();
-      this.motorCurrentConsumptionTopic = this.createMotorCurrentConsumptionTopic();
+      this.motorCurrentConsumptionTopic =
+        this.createMotorCurrentConsumptionTopic();
       this.cameraTopic = this.createCameraTopic();
-      this.previewSizePublisher = this.createPreviewSizePublisher()
+      this.previewSizePublisher = this.createPreviewSizePublisher();
       this.timerPeriodPublisher = this.createTimePeriodPublisher();
       this.qualityFactorPublisher = this.createQualityFactorPublisher();
       this.subscribeSliderTopic();
@@ -58,15 +58,15 @@ export class RosService {
   createTimePeriodPublisher(): ROSLIB.Topic<ROSLIB.Message> {
     return new ROSLIB.Topic({
       ros: this.ros,
-      name: 'timer_period_topic',
-      messageType: 'std_msgs/Float64'
+      name: "timer_period_topic",
+      messageType: "std_msgs/Float64",
     });
   }
   createPreviewSizePublisher(): ROSLIB.Topic<ROSLIB.Message> {
     return new ROSLIB.Topic({
       ros: this.ros,
-      name: 'size_topic',
-      messageType: 'std_msgs/Int32MultiArray'
+      name: "size_topic",
+      messageType: "std_msgs/Int32MultiArray",
     });
   }
 
@@ -137,7 +137,7 @@ export class RosService {
         "Received message for " +
           jsonObject["motor"] +
           ": " +
-          JSON.stringify(jsonObject)
+          JSON.stringify(jsonObject),
       );
       const receivers$ = this.getReceiversByMotorName(jsonObject["motor"]);
       receivers$.forEach((r) => {
@@ -158,7 +158,7 @@ export class RosService {
         "Received message for " +
           jsonObject["motor"] +
           ": " +
-          JSON.stringify(jsonObject)
+          JSON.stringify(jsonObject),
       );
       this.currentReceiver$.next(jsonObject);
     });
@@ -172,7 +172,7 @@ export class RosService {
 
   unsubscribeCameraTopic() {
     this.cameraTopic.unsubscribe();
-}
+  }
 
   get Ros(): ROSLIB.Ros {
     return this.ros;
@@ -208,14 +208,14 @@ export class RosService {
 
   createCameraTopic(): ROSLIB.Topic {
     return new ROSLIB.Topic({
-      ros : this.ros,
-      name : this.topicCameratName,
-      messageType : 'std_msgs/String'
+      ros: this.ros,
+      name: this.topicCameratName,
+      messageType: "std_msgs/String",
     });
   }
   setTimerPeriod(period: number | null) {
     if (!this.timerPeriodPublisher) {
-      console.error('ROS is not connected.');
+      console.error("ROS is not connected.");
       return;
     }
     const message = new ROSLIB.Message({ data: period });
@@ -224,7 +224,7 @@ export class RosService {
 
   setPreviewSize(width: number, height: number) {
     if (!this.previewSizePublisher) {
-      console.error('ROS is not connected.');
+      console.error("ROS is not connected.");
       return;
     }
 
@@ -232,22 +232,21 @@ export class RosService {
     this.previewSizePublisher.publish(message);
   }
 
-  setQualityFactor(factor: number | null){
+  setQualityFactor(factor: number | null) {
     if (!this.qualityFactorPublisher) {
-        console.error('ROS is not connected.');
-        return;
+      console.error("ROS is not connected.");
+      return;
     }
 
     const message = new ROSLIB.Message({ data: factor });
     this.qualityFactorPublisher.publish(message);
-}
+  }
 
   createQualityFactorPublisher() {
     return new ROSLIB.Topic({
       ros: this.ros,
-      name: 'quality_factor_topic',
-      messageType: 'std_msgs/Int32'
+      name: "quality_factor_topic",
+      messageType: "std_msgs/Int32",
     });
   }
-  
 }

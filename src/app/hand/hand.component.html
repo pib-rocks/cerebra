@@ -2,75 +2,159 @@
 <div class="container-fluid">
   <div class="row">
     <div class="col">
-      <button id="home-position-btn" type="button" class="btn mt-3 float-end" (click)="reset()">
-        <img src="../../assets/icon-home-position.png" alt="" width="19px" height="24px">
+      <button
+        id="home-position-btn"
+        type="button"
+        class="btn mt-3 float-end"
+        (click)="reset()"
+      >
+        <img
+          src="../../assets/icon-home-position.png"
+          alt=""
+          width="19px"
+          height="24px"
+        />
         Home position
       </button>
       <ng-container *ngIf="side === 'left'">
         <div class="custom-control custom-switch custom-switch-pib my-3">
-          <input class="custom-control-input" type="checkbox" id="leftSwitch" [formControl]="leftSwitchControl"
-            (input)="switchView(side)" />
-          <label class="custom-control-label" id="label_leftSwitch" for="leftSwitch">Control fingers individually</label>
+          <input
+            class="custom-control-input"
+            type="checkbox"
+            id="leftSwitch"
+            [formControl]="leftSwitchControl"
+            (input)="switchView(side)"
+          />
+          <label
+            class="custom-control-label"
+            id="label_leftSwitch"
+            for="leftSwitch"
+            >Control fingers individually</label
+          >
         </div>
-        <app-motor-control [motorName]="thumbOppositionLeft.motor" [labelName]="thumbOppositionLeft.label" [isGroup]="true"
-          groupSide="left">
+        <app-motor-control
+          [motorName]="thumbOppositionLeft.motor"
+          [labelName]="thumbOppositionLeft.label"
+          [isGroup]="true"
+          groupSide="left"
+        >
         </app-motor-control>
         <div *ngFor="let f of leftFingers" #leftContainer>
-          <app-motor-control [motorName]="f.motor" [labelName]="f.label" [style.display]="displayIndividual"></app-motor-control>
+          <app-motor-control
+            [motorName]="f.motor"
+            [labelName]="f.label"
+            [style.display]="displayIndividual"
+          ></app-motor-control>
         </div>
-        <app-motor-control [motorName]="allFingersLeft.motor" [labelName]="allFingersLeft.label" [isGroup]="true"
-          [style.display]="displayAll" groupSide="left"></app-motor-control>
+        <app-motor-control
+          [motorName]="allFingersLeft.motor"
+          [labelName]="allFingersLeft.label"
+          [isGroup]="true"
+          [style.display]="displayAll"
+          groupSide="left"
+        ></app-motor-control>
       </ng-container>
 
       <ng-container *ngIf="side === 'right'">
         <div class="custom-control custom-switch custom-switch-pib my-3">
-          <input class="custom-control-input" type="checkbox" id="rightSwitch" [formControl]="rightSwitchControl"
-            (input)="switchView(side)" />
-          <label class="custom-control-label" id="label_rightSwitch" for="rightSwitch">Control fingers individually</label>
+          <input
+            class="custom-control-input"
+            type="checkbox"
+            id="rightSwitch"
+            [formControl]="rightSwitchControl"
+            (input)="switchView(side)"
+          />
+          <label
+            class="custom-control-label"
+            id="label_rightSwitch"
+            for="rightSwitch"
+            >Control fingers individually</label
+          >
         </div>
-        <app-motor-control [motorName]="thumbOppositionRight.motor" [labelName]="thumbOppositionRight.label" [isGroup]="true"
-          groupSide="right"></app-motor-control>
+        <app-motor-control
+          [motorName]="thumbOppositionRight.motor"
+          [labelName]="thumbOppositionRight.label"
+          [isGroup]="true"
+          groupSide="right"
+        ></app-motor-control>
         <ng-container *ngFor="let f of rightFingers" #rightContainer>
-          <app-motor-control [motorName]="f.motor" [labelName]="f.label" [style.display]="displayIndividual"></app-motor-control>
+          <app-motor-control
+            [motorName]="f.motor"
+            [labelName]="f.label"
+            [style.display]="displayIndividual"
+          ></app-motor-control>
         </ng-container>
-        <app-motor-control [motorName]="allFingersRight.motor" [labelName]="allFingersRight.label" [isGroup]="true"
-          groupSide="right" [style.display]="displayAll"></app-motor-control>
+        <app-motor-control
+          [motorName]="allFingersRight.motor"
+          [labelName]="allFingersRight.label"
+          [isGroup]="true"
+          groupSide="right"
+          [style.display]="displayAll"
+        ></app-motor-control>
       </ng-container>
     </div>
     <div class="col">
       <!--right hand image-->
       <div class="container">
         <div class="container-div" *ngIf="side === 'right'">
-          <img class="container" style="height: 30rem; width: 30rem; margin-top: 10px" src="../../assets/hand_right.png"
-            alt="" />
+          <img
+            class="container"
+            style="height: 30rem; width: 30rem; margin-top: 10px"
+            src="../../assets/hand_right.png"
+            alt=""
+          />
           <ng-container *ngFor="let obj of currentRight">
             <div [class]="obj['motor']">
               <span class="current">{{ obj["value"] }} mA</span>
-              <div [style.height]="obj['value'] / 40 + 'px'" class="color-indicator" [class.color-indicator50-80]="
+              <div
+                [style.height]="obj['value'] / 40 + 'px'"
+                class="color-indicator"
+                [class.color-indicator50-80]="
                   obj['value'] / 20 > 50 && obj['value'] / 20 < 80
-                " [class.color-indicator80-100]="obj['value'] / 20 >= 80"></div>
+                "
+                [class.color-indicator80-100]="obj['value'] / 20 >= 80"
+              ></div>
             </div>
           </ng-container>
         </div>
-        <button *ngIf="side === 'right'" (click)="sendDummyMessage()" class="btn btn-primary" id="dummyBtnRight">
+        <button
+          *ngIf="side === 'right'"
+          (click)="sendDummyMessage()"
+          class="btn btn-primary"
+          id="dummyBtnRight"
+        >
           Dummy Values
         </button>
       </div>
       <!--left hand image-->
       <div class="container">
         <div class="container-div" *ngIf="side === 'left'">
-          <img class="container" style="height: 30rem; width: 30rem; margin-top: 10px" src="../../assets/hand_left.png"
-            alt="" />
+          <img
+            class="container"
+            style="height: 30rem; width: 30rem; margin-top: 10px"
+            src="../../assets/hand_left.png"
+            alt=""
+          />
           <ng-container *ngFor="let obj of currentLeft">
             <div [class]="obj['motor']">
               <span class="current">{{ obj["value"] }} mA</span>
-              <div [style.height]="obj['value'] / 40 + 'px'" class="color-indicator" [class.color-indicator50-80]="
+              <div
+                [style.height]="obj['value'] / 40 + 'px'"
+                class="color-indicator"
+                [class.color-indicator50-80]="
                   obj['value'] / 20 > 50 && obj['value'] / 20 < 80
-                " [class.color-indicator80-100]="obj['value'] / 20 >= 80"></div>
+                "
+                [class.color-indicator80-100]="obj['value'] / 20 >= 80"
+              ></div>
             </div>
           </ng-container>
         </div>
-        <button *ngIf="side === 'left'" (click)="sendDummyMessage()" class="btn btn-primary" id="dummyBtnLeft">
+        <button
+          *ngIf="side === 'left'"
+          (click)="sendDummyMessage()"
+          class="btn btn-primary"
+          id="dummyBtnLeft"
+        >
           Dummy Values
         </button>
       </div>

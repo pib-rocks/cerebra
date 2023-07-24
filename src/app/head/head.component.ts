@@ -9,7 +9,8 @@ import { MotorControlComponent } from "../motor-control/motor-control.component"
   styleUrls: ["./head.component.css"],
 })
 export class HeadComponent implements OnInit {
-  @ViewChildren(MotorControlComponent) childComponents!: QueryList<MotorControlComponent>;
+  @ViewChildren(MotorControlComponent)
+  childComponents!: QueryList<MotorControlComponent>;
 
   constructor(private rosService: RosService) {}
 

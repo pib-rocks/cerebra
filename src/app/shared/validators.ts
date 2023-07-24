@@ -7,7 +7,7 @@ import {
 
 export function compareValuesPulseValidator(
   control1: FormControl,
-  control2: FormControl
+  control2: FormControl,
 ): ValidatorFn {
   return (formControl: AbstractControl) => {
     if (control1.value >= control2.value) {
@@ -27,7 +27,7 @@ export function compareValuesPulseValidator(
 
 export function compareValuesDegreeValidator(
   control1: FormControl,
-  control2: FormControl
+  control2: FormControl,
 ): ValidatorFn {
   return (formControl: AbstractControl) => {
     if (control1.value >= control2.value) {
@@ -46,7 +46,7 @@ export function compareValuesDegreeValidator(
 }
 
 export function notNullValidator(
-  control: AbstractControl
+  control: AbstractControl,
 ): { [key: string]: any } | null {
   const isNotNull = control.value !== null;
   return isNotNull ? null : { nullValue: true };

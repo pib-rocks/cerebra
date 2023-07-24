@@ -1,14 +1,13 @@
 @font-face {
-  font-family: 'Titillium';
-  src: url('/assets/Titillium_Web/TitilliumWeb-Regular.ttf');
+  font-family: "Titillium";
+  src: url("/assets/Titillium_Web/TitilliumWeb-Regular.ttf");
   font-weight: normal;
 }
 
 @font-face {
-  font-family: 'Titillium';
-  src: url('/assets/Titillium_Web/TitilliumWeb-Bold.ttf');
+  font-family: "Titillium";
+  src: url("/assets/Titillium_Web/TitilliumWeb-Bold.ttf");
   font-weight: bold;
-
 }
 
 .btn {
@@ -23,21 +22,25 @@
   color: white;
 }
 
-.custom-switch.custom-switch-pib  .custom-control-label::before {
+.custom-switch.custom-switch-pib .custom-control-label::before {
   background-color: transparent;
   border-color: white;
 }
 
-.custom-switch.custom-switch-pib .custom-control-input:checked~.custom-control-label::after {
+.custom-switch.custom-switch-pib
+  .custom-control-input:checked
+  ~ .custom-control-label::after {
   background-color: #e6007e;
 }
 
-.custom-switch.custom-switch-pib .custom-control-input~.custom-control-label::after {
+.custom-switch.custom-switch-pib
+  .custom-control-input
+  ~ .custom-control-label::after {
   background-color: gray;
 }
 
 .custom-control-label {
-  color:white;
+  color: white;
   font-family: Titillium, sans-serif;
   font-weight: normal !important;
   font-size: 16px;

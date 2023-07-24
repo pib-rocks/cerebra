@@ -26,36 +26,36 @@ describe("RosService", () => {
     mockTopic = new MockRosbridgeTopic("test", receiver$);
 
     spySetUpRos = spyOn(RosService.prototype, "setUpRos").and.returnValue(
-      mockRos as unknown as ROSLIB.Ros
+      mockRos as unknown as ROSLIB.Ros,
     );
     spytopic = spyOn(
       RosService.prototype,
-      "createMessageTopic"
+      "createMessageTopic",
     ).and.returnValue(mockTopic as unknown as ROSLIB.Topic);
 
     spyVoiceTopic = spyOn(
       RosService.prototype,
-      "createVoiceAssistantTopic"
+      "createVoiceAssistantTopic",
     ).and.returnValue(mockTopic as unknown as ROSLIB.Topic);
 
     spyMotorCurrentTopic = spyOn(
       RosService.prototype,
-      "createMotorCurrentConsumptionTopic"
+      "createMotorCurrentConsumptionTopic",
     ).and.returnValue(mockTopic as unknown as ROSLIB.Topic);
 
     spyCameraTopic = spyOn(
       RosService.prototype,
-      "createCameraTopic"
+      "createCameraTopic",
     ).and.returnValue(mockTopic as unknown as ROSLIB.Topic);
 
     spySize = spyOn(
       RosService.prototype,
-      "createPreviewSizePublisher"
+      "createPreviewSizePublisher",
     ).and.returnValue(mockTopic as unknown as ROSLIB.Topic);
 
     spySubscribeTopic = spyOn(
       RosService.prototype,
-      "subscribeSliderTopic"
+      "subscribeSliderTopic",
     ).and.callThrough();
     service = new RosService();
   });
@@ -70,8 +70,8 @@ describe("RosService", () => {
   });
 
   xit("should subscribe motor topic", () => {
-    mockRos.on()
-    expect(spySubscribeTopic).toHaveBeenCalled()
+    mockRos.on();
+    expect(spySubscribeTopic).toHaveBeenCalled();
   });
 
   it("createTopic should create topic", () => {
@@ -101,8 +101,11 @@ describe("RosService", () => {
       name: "test",
       messageType: "std_msgs/String",
     });
-    const spySendMassege = spyOn(service, "sendSliderMessage").and.callThrough();
-    const spyPublish = spyOn(service['sliderMessageTopic'], "publish");
+    const spySendMassege = spyOn(
+      service,
+      "sendSliderMessage",
+    ).and.callThrough();
+    const spyPublish = spyOn(service["sliderMessageTopic"], "publish");
     const message = { motor: "test", value: "10" };
     const json = JSON.parse(JSON.stringify(message));
     const parameters = Object.keys(json).map((key) => ({ [key]: json[key] }));
@@ -119,8 +122,14 @@ describe("RosService", () => {
       name: "test",
       messageType: "std_msgs/String",
     });
-    const spySendMassege = spyOn(service, "sendSliderMessage").and.callThrough();
-    const spyPublish = spyOn(service['motorCurrentConsumptionTopic'], "publish");
+    const spySendMassege = spyOn(
+      service,
+      "sendSliderMessage",
+    ).and.callThrough();
+    const spyPublish = spyOn(
+      service["motorCurrentConsumptionTopic"],
+      "publish",
+    );
     const message = { motor: "test", currentValue: 10 };
     const json = JSON.parse(JSON.stringify(message));
     const parameters = Object.keys(json).map((key) => ({ [key]: json[key] }));
@@ -137,7 +146,10 @@ describe("RosService", () => {
       name: "test",
       messageType: "std_msgs/String",
     });
-    const spySendMassege = spyOn(service, "sendSliderMessage").and.callThrough();
+    const spySendMassege = spyOn(
+      service,
+      "sendSliderMessage",
+    ).and.callThrough();
     const spyPublish = spyOn(service["voiceAssistantTopic"], "publish");
     const message = {
       activationFlag: true,
@@ -157,7 +169,7 @@ describe("RosService", () => {
     const receiver$ = new Subject<Message>();
     (service as any).sliderMessageTopic = new MockRosbridgeTopic(
       "test",
-      receiver$
+      receiver$,
     ) as unknown as ROSLIB.Topic;
     const motor = { motor: "test", receiver$: receiver$ };
     (service as any).motors.push();
@@ -173,14 +185,13 @@ describe("RosService", () => {
     const actualReceiver2$ = service.getReceiversByMotorName("test")[0];
     expect(expectedReceiver).toEqual(actualReceiver2$);
   });
-
-
-
-
 });
 
 class MockRosbridgeTopic {
-  constructor(private topicName: string, private subject: Subject<Message>) { }
+  constructor(
+    private topicName: string,
+    private subject: Subject<Message>,
+  ) {}
   subscribers: ((message: any) => void)[] = [];
   messages: any[] = [];
   subscribe(callback: (message: any) => void) {

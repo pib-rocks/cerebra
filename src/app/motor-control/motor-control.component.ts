@@ -1,4 +1,12 @@
-import { AfterViewInit, Component, ElementRef, Input, OnInit, TemplateRef, ViewChild } from "@angular/core";
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  Input,
+  OnInit,
+  TemplateRef,
+  ViewChild,
+} from "@angular/core";
 import { FormControl, Validators } from "@angular/forms";
 import { Subject } from "rxjs";
 import { Message } from "../shared/message";
@@ -16,7 +24,6 @@ import {
   styleUrls: ["./motor-control.component.css"],
 })
 export class MotorControlComponent implements OnInit, AfterViewInit {
-
   @Input() motorName = "";
   @Input() labelName = "";
   @Input() groupSide = "left";
@@ -24,9 +31,9 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
   @Input() showCheckBox = true;
   @Input() showMotorSettingsButton = true;
 
-  @ViewChild('bubble') bubbleElement!: ElementRef;
-  @ViewChild('bubbleInput') bubbleInput!: ElementRef;
-  @ViewChild('range') sliderElem!: ElementRef;
+  @ViewChild("bubble") bubbleElement!: ElementRef;
+  @ViewChild("bubbleInput") bubbleInput!: ElementRef;
+  @ViewChild("range") sliderElem!: ElementRef;
 
   bubblePosition!: number;
   closeResult!: string;
@@ -57,8 +64,8 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
   constructor(
     private rosService: RosService,
     private motorService: MotorService,
-    private modalService: NgbModal
-  ) { }
+    private modalService: NgbModal,
+  ) {}
 
   ngOnInit(): void {
     this.bubbleFormControl.setValidators([
@@ -81,13 +88,19 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
       notNullValidator,
     ]);
     this.degreeMaxFormcontrol.setValidators([
-      compareValuesDegreeValidator(this.degreeMinFormcontrol, this.degreeMaxFormcontrol),
+      compareValuesDegreeValidator(
+        this.degreeMinFormcontrol,
+        this.degreeMaxFormcontrol,
+      ),
       Validators.min(-9000),
       Validators.max(9000),
       notNullValidator,
     ]);
     this.degreeMinFormcontrol.setValidators([
-      compareValuesDegreeValidator(this.degreeMinFormcontrol, this.degreeMaxFormcontrol),
+      compareValuesDegreeValidator(
+        this.degreeMinFormcontrol,
+        this.degreeMaxFormcontrol,
+      ),
       Validators.min(-9000),
       Validators.max(9000),
       notNullValidator,
@@ -100,7 +113,7 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
 
       if (value) {
         this.sliderFormControl.setValue(
-          this.getValueWithinRange(Number(value))
+          this.getValueWithinRange(Number(value)),
         );
       }
       if (typeof json.turnedOn !== "undefined") {
@@ -148,64 +161,67 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
   }
 
   setMinAndMaxBubblePositions() {
-    const sliderWidth = document.getElementById("slider_"+this.motorName)?.clientWidth;
+    const sliderWidth = document.getElementById("slider_" + this.motorName)
+      ?.clientWidth;
     if (sliderWidth !== undefined && sliderWidth !== 0) {
-      this.minBubblePosition = this.pixelsFromEdge*100/sliderWidth;
-      this.maxBubblePosition = (sliderWidth-this.pixelsFromEdge)*100/sliderWidth;
+      this.minBubblePosition = (this.pixelsFromEdge * 100) / sliderWidth;
+      this.maxBubblePosition =
+        ((sliderWidth - this.pixelsFromEdge) * 100) / sliderWidth;
     }
   }
 
   setThumbPosition() {
-    const val = Number((this.sliderFormControl.value - -9000) * 100 / (9000 - -9000));
+    const val = Number(
+      ((this.sliderFormControl.value - -9000) * 100) / (9000 - -9000),
+    );
     setTimeout(() => {
       this.bubblePosition = val;
-    },0);
+    }, 0);
     this.bubbleFormControl.setValue(this.sliderFormControl.value);
     this.bubbleElement.nativeElement.style.left = `calc(${val}%)`;
-    this.sliderElem.nativeElement.style.setProperty("--pos-relative", val.toString(10)+'%');
+    this.sliderElem.nativeElement.style.setProperty(
+      "--pos-relative",
+      val.toString(10) + "%",
+    );
   }
 
   setSliderValue(value: number) {
     this.sliderFormControl.setValue(value);
     this.setThumbPosition();
   }
-  
+
   toggleInputVisible() {
-    if(this.sliderFormControl.value !== null){
+    if (this.sliderFormControl.value !== null) {
       this.isInputVisible = !this.isInputVisible;
       this.setSliderValue(this.bubbleFormControl.value);
-      setTimeout(()=>{
+      setTimeout(() => {
         this.bubbleInput.nativeElement.focus();
         this.bubbleInput.nativeElement.select();
-      }, 0)
-    } else{
+      }, 0);
+    } else {
       this.isInputVisible = !this.isInputVisible;
     }
   }
 
   toggleInputUnvisible() {
     if (this.bubbleFormControl.value !== this.sliderFormControl.value) {
-      if(this.sliderFormControl.value !== null){
+      if (this.sliderFormControl.value !== null) {
         this.isInputVisible = !this.isInputVisible;
-        if(this.bubbleFormControl.hasError('min')) {
+        if (this.bubbleFormControl.hasError("min")) {
           this.setSliderValue(this.minSliderValue);
           this.inputSendMsg();
-        }
-        else if(this.bubbleFormControl.hasError('max')) {
+        } else if (this.bubbleFormControl.hasError("max")) {
           this.setSliderValue(this.maxSliderValue);
           this.inputSendMsg();
-        }
-        else if(this.bubbleFormControl.hasError('required')) {
+        } else if (this.bubbleFormControl.hasError("required")) {
           this.bubbleFormControl.setValue(this.sliderFormControl.value);
-        }
-        else if(this.bubbleFormControl.hasError('pattern')) {
+        } else if (this.bubbleFormControl.hasError("pattern")) {
           this.bubbleFormControl.setValue(this.sliderFormControl.value);
-        }
-        else {
+        } else {
           this.setSliderValue(this.bubbleFormControl.value);
           this.inputSendMsg();
         }
-      } 
+      }
     } else {
       this.isInputVisible = !this.isInputVisible;
     }
@@ -317,7 +333,12 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
 
   openPopup(content: TemplateRef<any>) {
     this.modalService
-      .open(content, { ariaLabelledBy: "modal-basic-title", size: "xl" , windowClass: 'myCustomModalClass',backdropClass: 'myCustomBackdropClass'})
+      .open(content, {
+        ariaLabelledBy: "modal-basic-title",
+        size: "xl",
+        windowClass: "myCustomModalClass",
+        backdropClass: "myCustomBackdropClass",
+      })
       .result.then(
         (result) => {
           this.closeResult = `Closed with: ${result}`;
@@ -325,7 +346,7 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
         (reason) => {
           this.closeResult = `Dismissed ${this.getDismissReason(reason)}`;
           console.log(this.closeResult);
-        }
+        },
       );
   }
 
@@ -399,7 +420,7 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
   }
 
   inputSendMsg(): void {
-    if(this.sliderFormControl.value !== null){
+    if (this.sliderFormControl.value !== null) {
       clearTimeout(this.timer);
       this.timer = setTimeout(() => {
         this.sendMessage();
