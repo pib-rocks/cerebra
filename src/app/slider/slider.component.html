@@ -19,8 +19,8 @@
       {{bubbleFormControl.value}}{{unitOfMeasurement}}
     </div>
   </div>
-  <span *ngIf="bubblePosition >= minBubblePosition" class="bubble-span-min">{{ rotate == true ? maxValue : minValue }}</span>
-  <span *ngIf="bubblePosition <= maxBubblePosition" class="bubble-span-max">{{ rotate == true ? minValue : maxValue }}</span>
+  <span *ngIf="bubblePosition >= minBubblePosition" class="bubble-span-min">{{ rotate === true ? maxValue : minValue }}</span>
+  <span *ngIf="bubblePosition <= maxBubblePosition" class="bubble-span-max">{{ rotate === true ? minValue : maxValue }}</span>
   <input class="range" type="range"
     [ngClass]="rotate ? 'range-high-to-low' : ''"
     id="slider_{{ sliderName }}"

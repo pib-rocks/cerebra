@@ -36,11 +36,13 @@ describe('SliderComponent', () => {
   });
 
   it("should call sendMessage after changing the slider", fakeAsync(() => {
+    component.ngOnInit();
     const spyOnSendMessage = spyOn(component, "sendMessage");
     const slider = fixture.nativeElement.querySelector('input[type="range"]');
     slider.value = String((component.minValue + component.maxValue)/2);
     slider.dispatchEvent(new Event('input'));
     tick(1000);
+    fixture.detectChanges();
     expect(spyOnSendMessage).toHaveBeenCalled();
   }));
 

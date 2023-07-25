@@ -70,9 +70,6 @@ export class SliderComponent implements OnInit, AfterViewInit {
     this.setThumbPosition();
     if(this.rotate){
       this.sliderElem.nativeElement.style.setProperty("transform", "rotate(180deg)");
-      // let tmp = this.maxBubblePosition;
-      // this.maxBubblePosition = this.minBubblePosition;
-      // this.minBubblePosition = tmp;
     }
   }
 
@@ -84,7 +81,11 @@ export class SliderComponent implements OnInit, AfterViewInit {
   inputSendMsg(): void {
     if(this.sliderFormControl.value !== null){
       this.timer = setTimeout(() => {
-        this.publishMessage(Number(this.sliderFormControl.value));
+        if(this.publishMessage){
+          this.publishMessage(Number(this.sliderFormControl.value));
+        }else{
+          this.sendMessage();
+        }
       }, 500);
     }
   }

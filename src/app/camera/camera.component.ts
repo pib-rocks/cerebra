@@ -41,8 +41,8 @@ export class CameraComponent implements OnInit, OnDestroy {
       if (this.arraysEqual(value,[1920, 1080])){
         this.selectedSize = "1080p";
       }
-      this.selectedSize += ' ' + '(' 
-  })
+  });
+    this.setSize(640, 480);
     this.imageSrc = '../../assets/camera-placeholder.jpg'
     this.rosService.cameraReceiver$.subscribe(message => {
       this.imageSrc = 'data:image/jpeg;base64,' + message;
