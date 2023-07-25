@@ -54,7 +54,8 @@ export class CameraComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.stopCamera();
   }
-
+  private imageTopic!: ROSLIB.Topic;
+  
   setSize(width: number, height: number) {
     this.resolution = 'SD'
     if(height != null){
