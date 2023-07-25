@@ -11,7 +11,7 @@ import { Subject } from "rxjs";
   
 })
 export class CameraComponent implements OnInit, OnDestroy {
-  //PR-157
+
   qualityReceiver$! : Subject<number>;
   refreshRateReceiver$!: Subject<number>;
   
