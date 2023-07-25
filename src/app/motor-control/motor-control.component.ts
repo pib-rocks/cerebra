@@ -112,7 +112,7 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
       const value: any = json.value;
       const motorCheckbox = json.turnedOn;
       const motor = json.motor;
-      let message: Message = {
+      const message: Message = {
         motor: this.motorName,
         value: value,
       };
