@@ -93,15 +93,18 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
     ]);
     this.isCombinedSlider = this.motorName === "all_right_stretch" || this.motorName === "all_left_stretch";
     if (this.isCombinedSlider) {
-      this.rosService.sharedValue$.subscribe(value => {
-        if (!Number.isNaN(value) && Number.isFinite(value)) {
-          this.sliderFormControl.setValue(this.getValueWithinRange(Number(value)));
-          setTimeout(() => {
-            this.setThumbPosition();
-          }, 0);
-        }
-        if (value === true || value === false) {
-          this.motorFormControl.setValue(value);
+      this.rosService.sharedValue$.subscribe(json => {
+        if(this.motorName === 'all_left_stretch' && json.motor === 'index_left_stretch' || this.motorName === 'all_right_stretch'&& json.motor === 'index_right_stretch'){
+          if (!Number.isNaN(json.value) && Number.isFinite(json.value)) {
+            
+            this.sliderFormControl.setValue(this.getValueWithinRange(Number(json.value)));
+            setTimeout(() => {
+              this.setThumbPosition();
+            }, 0);
+          }
+          if(json.turnedOn !== undefined){
+            this.motorFormControl.setValue(json.turnedOn);
+          }
         }
       });
     }
@@ -109,15 +112,19 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
       const value: any = json.value;
       const motorCheckbox = json.turnedOn;
       const motor = json.motor;
-      if (motor === 'index_right_stretch' || motor === 'index_left_stretch') {
-        console.log('called');
+      let message: Message = {
+        motor: this.motorName,
+        value: value,
+      };
+      if (motor === 'index_right_stretch' || motor === 'index_left_stretch' ) {
         if (!Number.isNaN(value) && Number.isFinite(value)) {
-          this.rosService.updateSharedValue(value);
+          if(json.turnedOn){
+            message.turnedOn = motorCheckbox;
+          }
+          this.rosService.updateSharedValue(message);
         }
-        if (motorCheckbox === true || motorCheckbox === false) {
-          console.log('called;')
-          this.rosService.updateSharedValue(motorCheckbox);
-        }
+        message.turnedOn = json.turnedOn;
+        this.rosService.updateSharedValue(message);
       }
 
       if (value !== undefined) {
@@ -236,7 +243,6 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
 
   sendMessage() {
     let motorNames: string[] = [];
-
     if (this.isCombinedSlider) {
       motorNames = this.motorService.getMotorHandNames(this.groupSide);
 
@@ -321,7 +327,6 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
     let motorNames: string[] = [];
     if (this.isCombinedSlider) {
       motorNames = this.motorService.getMotorHandNames(this.groupSide);
-
       motorNames.forEach((mn) => {
         const message: Message = {
           motor: mn,

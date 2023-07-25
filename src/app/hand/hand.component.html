@@ -6,36 +6,40 @@
         <img src="../../assets/icon-home-position.png" alt="" width="19px" height="24px">
         Home position
       </button>
-      <ng-container *ngIf="side === 'left'">
-        <div class="custom-control custom-switch custom-switch-pib my-3">
-          <input class="custom-control-input" type="checkbox" id="leftSwitch" [formControl]="leftSwitchControl"
-            (input)="switchView(side)" />
-          <label class="custom-control-label" id="label_leftSwitch" for="leftSwitch">Control fingers individually</label>
-        </div>
-        <app-motor-control [motorName]="thumbOppositionLeft.motor" [labelName]="thumbOppositionLeft.label" [isGroup]="true"
-          groupSide="left">
-        </app-motor-control>
-        <div *ngFor="let f of leftFingers" #leftContainer>
-          <app-motor-control [motorName]="f.motor" [labelName]="f.label" [style.display]="displayIndividual"></app-motor-control>
-        </div>
-        <app-motor-control [motorName]="allFingersLeft.motor" [labelName]="allFingersLeft.label" [isGroup]="true"
-          [style.display]="displayAll" groupSide="left"></app-motor-control>
-      </ng-container>
-
-      <ng-container *ngIf="side === 'right'">
-        <div class="custom-control custom-switch custom-switch-pib my-3">
-          <input class="custom-control-input" type="checkbox" id="rightSwitch" [formControl]="rightSwitchControl"
-            (input)="switchView(side)" />
-          <label class="custom-control-label" id="label_rightSwitch" for="rightSwitch">Control fingers individually</label>
-        </div>
-        <app-motor-control [motorName]="thumbOppositionRight.motor" [labelName]="thumbOppositionRight.label" [isGroup]="true"
-          groupSide="right"></app-motor-control>
-        <ng-container *ngFor="let f of rightFingers" #rightContainer>
-          <app-motor-control [motorName]="f.motor" [labelName]="f.label" [style.display]="displayIndividual"></app-motor-control>
+      <div *ngIf="side === 'left'">
+        <ng-container >
+          <div class="custom-control custom-switch custom-switch-pib my-3">
+            <input class="custom-control-input" type="checkbox" id="leftSwitch" [formControl]="leftSwitchControl"
+              (input)="switchView(side)" />
+            <label class="custom-control-label" id="label_leftSwitch" for="leftSwitch">Control fingers individually</label>
+          </div>
+          <app-motor-control [motorName]="thumbOppositionLeft.motor" [labelName]="thumbOppositionLeft.label" [isGroup]="true"
+            groupSide="left">
+          </app-motor-control>
+          <div *ngFor="let f of leftFingers" #leftContainer>
+            <app-motor-control [motorName]="f.motor" [labelName]="f.label" [style.display]="displayIndividual"></app-motor-control>
+          </div>
+          <app-motor-control [motorName]="allFingersLeft.motor" [labelName]="allFingersLeft.label" [isGroup]="true"
+            [style.display]="displayAll" groupSide="left"></app-motor-control>
         </ng-container>
-        <app-motor-control [motorName]="allFingersRight.motor" [labelName]="allFingersRight.label" [isGroup]="true"
-          groupSide="right" [style.display]="displayAll"></app-motor-control>
-      </ng-container>
+      </div>
+
+      <div *ngIf="side === 'right'">
+        <ng-container >
+          <div class="custom-control custom-switch custom-switch-pib my-3">
+            <input class="custom-control-input" type="checkbox" id="rightSwitch" [formControl]="rightSwitchControl"
+              (input)="switchView(side)" />
+            <label class="custom-control-label" id="label_rightSwitch" for="rightSwitch">Control fingers individually</label>
+          </div>
+          <app-motor-control [motorName]="thumbOppositionRight.motor" [labelName]="thumbOppositionRight.label" [isGroup]="true"
+            groupSide="right"></app-motor-control>
+          <ng-container *ngFor="let f of rightFingers" #rightContainer>
+            <app-motor-control [motorName]="f.motor" [labelName]="f.label" [style.display]="displayIndividual"></app-motor-control>
+          </ng-container>
+          <app-motor-control [motorName]="allFingersRight.motor" [labelName]="allFingersRight.label" [isGroup]="true"
+            groupSide="right" [style.display]="displayAll"></app-motor-control>
+        </ng-container>
+      </div>
     </div>
     <div class="col">
       <!--right hand image-->

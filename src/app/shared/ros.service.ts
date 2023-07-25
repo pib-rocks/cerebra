@@ -27,7 +27,7 @@ export class RosService {
   private timerPeriodTopic!: ROSLIB.Topic;
   private previewSizeTopic!: ROSLIB.Topic;
   private qualityFactorTopic!: ROSLIB.Topic;
-  private sharedAllFingersValueSource = new BehaviorSubject<number | boolean>(0);
+  sharedAllFingersValueSource = new Subject<Message>();
   sharedValue$ = this.sharedAllFingersValueSource.asObservable();
 
   private readonly topicName = "/motor_settings";
@@ -98,7 +98,14 @@ export class RosService {
     }
   }
 
-  updateSharedValue(value: number | boolean) {
+  public printMotors(){
+    console.log("MotorsLength: " + this.motors.length);
+    this.motors.forEach((m) => {
+      console.log("MotorsForEach: " + m.motor);
+    })
+  }
+
+  updateSharedValue(value : Message) {
     this.sharedAllFingersValueSource.next(value);
   }
 
