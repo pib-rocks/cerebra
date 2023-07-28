@@ -109,4 +109,4 @@ export class ArmComponent implements OnInit {
         }
     }
 }
-//
+//blöde einrivhtung prettier
