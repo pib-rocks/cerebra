@@ -115,7 +115,6 @@ export class RosService {
             : []
     }
 
-    // lmao
     setUpRos() {
         let rosUrl: string
         if (isDevMode()) {
