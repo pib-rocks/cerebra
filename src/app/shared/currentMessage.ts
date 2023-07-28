@@ -1,4 +1,4 @@
 export interface MotorCurrentMessage {
-  motor: string;
-  currentValue: number;
+    motor: string
+    currentValue: number
 }
