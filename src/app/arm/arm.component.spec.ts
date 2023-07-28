@@ -90,3 +90,5 @@ describe("ArmComponent", () => {
         expect(rosService.sendSliderMessage).toHaveBeenCalledTimes(12)
     })
 })
+
+//atrseztdufiugohijpo
