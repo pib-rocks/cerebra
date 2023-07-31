@@ -80,6 +80,7 @@ export class SliderComponent implements OnInit, AfterViewInit {
 
   inputSendMsg(): void {
     if(this.sliderFormControl.value !== null){
+      this.sliderEvent.emit(this.sliderFormControl.value);
       this.timer = setTimeout(() => {
         if(this.publishMessage){
           this.publishMessage(Number(this.sliderFormControl.value));
@@ -91,7 +92,6 @@ export class SliderComponent implements OnInit, AfterViewInit {
   }
 
   sendMessage() {
-    this.sliderEvent.emit(this.sliderFormControl.value);
     const message: Message = {
       motor: this.sliderName,
       value: this.sliderFormControl.value,

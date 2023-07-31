@@ -110,6 +110,15 @@ export class CameraComponent implements OnInit, OnDestroy {
     }
   }
 
+  updateRefreshRateLabel(sliderNumber : number){
+    this.refreshRateControl.setValue(sliderNumber);
+  }
+
+  updateQualityFactorLabel(sliderNumber : number){
+    this.qualityFactorControl.setValue(sliderNumber)
+  }
+
+
   //Boilerplate? Bessere Lösung gegebenenfalls möglich z.B. pass RosServer.function ?)
   qualityControlPublish = (formControlValue : number) => {
     this.rosService.setQualityFactor(formControlValue);
