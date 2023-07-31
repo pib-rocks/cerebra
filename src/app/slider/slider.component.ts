@@ -86,7 +86,7 @@ export class SliderComponent implements OnInit, AfterViewInit {
         }else{
           this.sendMessage();
         }
-      }, 500);
+      }, 100);
     }
   }
 
