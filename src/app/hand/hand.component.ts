@@ -102,7 +102,6 @@ export class HandComponent implements OnInit {
 
   reset() {
     if (this.leftSwitchControl.value || this.rightSwitchControl.value) {
-      console.log(this.leftSwitchControl.value || this.rightSwitchControl.value)
       this.childComponents.filter(child => !child.motorName.includes('all')).forEach((child) => {
         if (child.sliderFormControl.value != 0) {
           child.setSliderValue(0);
@@ -141,12 +140,9 @@ export class HandComponent implements OnInit {
       }
     }
   }
-
-
   switchView(side: string) {
     let calledOposite = false;
-    const switchControl =
-      side === "left" ? this.leftSwitchControl : this.rightSwitchControl;
+    const switchControl = side === "left" ? this.rightSwitchControl : this.leftSwitchControl;
     if (switchControl.value === true) {
       this.displayAll = 'block';
       this.displayIndividual = 'none';
@@ -192,6 +188,7 @@ export class HandComponent implements OnInit {
         }
       })
     } else {
+      console.log("SwitchControl: " + switchControl.value)
       this.displayAll = 'none';
       this.displayIndividual = 'block';
       const sliderAll = this.childComponents.filter(
