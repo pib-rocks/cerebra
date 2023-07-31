@@ -79,7 +79,7 @@ describe("MotorControlComponent", () => {
     slider.dispatchEvent(new Event("input"));
     tick(500);
     expect(window.clearTimeout).toHaveBeenCalled();
-    expect(window.setTimeout).toHaveBeenCalledWith(jasmine.any(Function), 500);
+    expect(window.setTimeout).toHaveBeenCalledWith(jasmine.any(Function), 100);
     const timeoutCallback = (window.setTimeout as unknown as jasmine.Spy).calls.mostRecent().args[0];
     timeoutCallback();
     expect(component.inputSendMsg).toHaveBeenCalled();
@@ -94,7 +94,7 @@ describe("MotorControlComponent", () => {
     component.inputSendSettingsMsg();
     tick(500);
     expect(window.clearTimeout).toHaveBeenCalled();
-    expect(window.setTimeout).toHaveBeenCalledWith(jasmine.any(Function), 500);
+    expect(window.setTimeout).toHaveBeenCalledWith(jasmine.any(Function), 100);
     const timeoutCallback = (window.setTimeout as unknown as jasmine.Spy).calls.mostRecent().args[0];
     timeoutCallback();
     expect(component.inputSendSettingsMsg).toHaveBeenCalled();
