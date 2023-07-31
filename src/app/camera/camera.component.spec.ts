@@ -37,10 +37,10 @@ describe("CameraComponent", () => {
     expect(component).toBeTruthy();
   });
 
-  it("should have a silder step of 0.05", () => {
+  it("should have a silder step of 0.1", () => {
     videoSettingsButton.click();
     const slider = fixture.nativeElement.querySelector("#slider_refreshRate");
-    expect(slider.step).toBe("0.05");
+    expect(slider.step).toBe("0.1");
   });
 
   it("should have a maximum range at 1", () => {
@@ -49,7 +49,7 @@ describe("CameraComponent", () => {
     expect(slider.max).toBe("1");
   });
 
-  it("should have a mininum range at 0.1", () => {
+  it("should have a minimum range at 0.1", () => {
     videoSettingsButton.click();
     const slider = fixture.nativeElement.querySelector("#slider_refreshRate");
     expect(slider.min).toBe("0.1");
@@ -127,6 +127,20 @@ describe("CameraComponent", () => {
     expect(spyStartCamera).toHaveBeenCalled();
     toggleBtn.nativeElement.click()
     expect(spyStopCamera).toHaveBeenCalled();
+  });
+
+  it("should change the running state of the camera when clicking camera icon", () => {
+    const spyOnToggleCamera = spyOn(component, 'toggleCameraState');
+    const toggleBtn = fixture.debugElement.query(By.css("#toggleCamera"));
+    const cameraActiveState = component.isCameraActive;
+    toggleBtn.nativeElement.click();
+    expect(spyOnToggleCamera).toHaveBeenCalled();
+    fixture.detectChanges();
+    expect(cameraActiveState).toBeTrue;
+    toggleBtn.nativeElement.click();
+    expect(spyOnToggleCamera).toHaveBeenCalled();
+    fixture.detectChanges();
+    expect(cameraActiveState).toBeFalse;
   });
 
   it("startCamera should subscribe to the camera topic", () => {
