@@ -19,7 +19,7 @@ export class SliderComponent implements OnInit, AfterViewInit {
   @Input() maxValue: number = 100;
   @Input() defaultValue : number = (this.minValue + this.maxValue)/2;
   @Input() step: number = 1;
-  @Input() unitOfMeasurement: string = "";
+  @Input() unitOfMeasurement!: string;
   @Input() rotate: boolean = false;
   
   //PR-157

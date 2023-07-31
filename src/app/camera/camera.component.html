@@ -39,11 +39,11 @@
         <label for="refreshRate" class="form-label my-3" style="font-family: Open Sans, Arial, Helvetica, sans-serif">
           Refresh rate: {{ refreshRateControl.value }}s
         </label>
-        <app-slider #refreshRate sliderName="refreshRate" [messageReceiver$]="refreshRateReceiver$" [publishMessage]=refreshRatePublish [minValue]=0.1 [maxValue]=1 [step]=0.1 [defaultValue]=0.5 (sliderEvent)="updateRefreshRateLabel($event)"></app-slider> 
+        <app-slider #refreshRate sliderName="refreshRate" unitOfMeasurement="s" [messageReceiver$]="refreshRateReceiver$" [publishMessage]=refreshRatePublish [minValue]=0.1 [maxValue]=1 [step]=0.1 [defaultValue]=0.5 (sliderEvent)="updateRefreshRateLabel($event)"></app-slider> 
         <label for="qualityFactor" class="form-label my-3" style="font-family: Open Sans, Arial, Helvetica, sans-serif">
           Quality Factor: {{ qualityFactorControl.value }}
         </label>
-        <app-slider #qualityFactor [rotate]=true sliderName="qualityFactor" [messageReceiver$]="qualityReceiver$" [publishMessage]=qualityControlPublish [minValue]=10 [maxValue]=90 [step]=10 [defaultValue]=80 (sliderEvent)="updateQualityFactorLabel($event)"></app-slider>
+        <app-slider #qualityFactor [rotate]=true unitOfMeasurement="%" sliderName="qualityFactor" [messageReceiver$]="qualityReceiver$" [publishMessage]=qualityControlPublish [minValue]=10 [maxValue]=90 [step]=10 [defaultValue]=80 (sliderEvent)="updateQualityFactorLabel($event)"></app-slider>
       </ng-template>
         
 
