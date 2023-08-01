@@ -40,7 +40,7 @@ export class ArmComponent implements OnInit {
 
   leftArm = [
     { topic: "/upper_arm_left_rotation", label: "Upper arm rotation" },
-    { topic: "/ellbow_left", label: "Ellbow Position" },
+    { topic: "/elbow_left", label: "Elbow Position" },
     { topic: "/lower_arm_left_rotation", label: "Lower arm rotation" },
     { topic: "/wrist_left", label: "Wrist Position" },
     { topic: "/shoulder_vertical_left", label: "Shoulder Vertical" },
@@ -49,7 +49,7 @@ export class ArmComponent implements OnInit {
 
   rightArm = [
     { topic: "/upper_arm_right_rotation", label: "Upper arm rotation" },
-    { topic: "/ellbow_right", label: "Ellbow Position" },
+    { topic: "/elbow_right", label: "Elbow Position" },
     { topic: "/lower_arm_right_rotation", label: "Lower arm rotation" },
     { topic: "/wrist_right", label: "Wrist Position" },
     { topic: "/shoulder_vertical_right", label: "Shoulder Vertical" },
@@ -60,7 +60,7 @@ export class ArmComponent implements OnInit {
     { motor: "shoulder_vertical_left", value: 3000 },
     { motor: "shoulder_horizontal_left", value: 2000 },
     { motor: "upper_arm_left_rotation", value: 1000 },
-    { motor: "ellbow_left", value: 2000 },
+    { motor: "elbow_left", value: 2000 },
     { motor: "lower_arm_left_rotation", value: 2500 },
     { motor: "wrist_left", value: 3500 },
   ];
@@ -69,7 +69,7 @@ export class ArmComponent implements OnInit {
     { motor: "shoulder_vertical_right", value: 3000 },
     { motor: "shoulder_horizontal_right", value: 2000 },
     { motor: "upper_arm_right_rotation", value: 1000 },
-    { motor: "ellbow_right", value: 100 },
+    { motor: "elbow_right", value: 100 },
     { motor: "lower_arm_right_rotation", value: 1000 },
     { motor: "wrist_right", value: 2000 },
   ];
