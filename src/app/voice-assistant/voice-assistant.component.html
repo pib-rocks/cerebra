@@ -10,7 +10,9 @@
             <label for="">Activate voice assistant</label>
         </div>
 
-        <form [formGroup]="voiceFormGroup" (ngSubmit)="updateVoiceSettings()">
+        <form
+            [formGroup]="voiceFormGroup"
+            (ngSubmit)="updateVoiceSettings()">
             <label for="">Personality</label><br />
             <textarea
                 rows="5"
@@ -28,7 +30,11 @@
                         value="male"
                         name="gender"
                         checked />
-                    <label class="form-check-label ms-1" for="male">Male</label>
+                    <label
+                        class="form-check-label ms-1"
+                        for="male"
+                        >Male</label
+                    >
                 </div>
                 <div class="form-check-inline">
                     <input
@@ -37,7 +43,9 @@
                         name="gender"
                         formControlName="gender"
                         value="female" />
-                    <label class="form-check-label ms-1" for="female"
+                    <label
+                        class="form-check-label ms-1"
+                        for="female"
                         >Female</label
                     >
                 </div>

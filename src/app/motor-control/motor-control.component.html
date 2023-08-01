@@ -1,16 +1,22 @@
 <div class="d-flex justify-content-between">
-    <label for="{{ motorName }}" class="form-label"
+    <label
+        for="{{ motorName }}"
+        class="form-label"
         >{{ labelName }}: {{ sliderFormControl.value }}
     </label>
     <div class="d-flex align-items-center">
-        <div class="form-check d-inline" *ngIf="showCheckBox === true">
+        <div
+            class="form-check d-inline"
+            *ngIf="showCheckBox === true">
             <input
                 class="form-check-input"
                 id="checkbox_{{ motorName }}"
                 type="checkbox"
                 [formControl]="motorFormControl"
                 (change)="turnTheMotorOnAndOff()" />
-            <label class="form-check-label" for="checkbox_{{ motorName }}">
+            <label
+                class="form-check-label"
+                for="checkbox_{{ motorName }}">
                 Active
             </label>
         </div>
@@ -24,7 +30,9 @@
 </div>
 
 <div class="range-wrap">
-    <div class="range-value" #bubble>
+    <div
+        class="range-value"
+        #bubble>
         <input
             class="bubble-input overlay"
             id="bubble_input_{{ motorName }}"
@@ -43,10 +51,14 @@
             {{ bubbleFormControl.value }}°
         </div>
     </div>
-    <span *ngIf="bubblePosition >= minBubblePosition" class="bubble-span-min"
+    <span
+        *ngIf="bubblePosition >= minBubblePosition"
+        class="bubble-span-min"
         >{{ minSliderValue }}°</span
     >
-    <span *ngIf="bubblePosition <= maxBubblePosition" class="bubble-span-max"
+    <span
+        *ngIf="bubblePosition <= maxBubblePosition"
+        class="bubble-span-max"
         >{{ maxSliderValue }}°</span
     >
     <input
@@ -61,7 +73,10 @@
         #range />
 </div>
 
-<ng-template #content let-modal id="ng-template">
+<ng-template
+    #content
+    let-modal
+    id="ng-template">
     <div class="modal-header">
         Motor Settings
         <button
@@ -76,7 +91,9 @@
         <ul>
             <li class="horizontalList">Pulse Width min/max (μs):</li>
             <br class="overlappingBr" />
-            <li class="horizontalList" id="pulseMinRange">
+            <li
+                class="horizontalList"
+                id="pulseMinRange">
                 <input
                     id="pulseMinRangeInput"
                     type="number"
@@ -88,7 +105,9 @@
                     (input)="sendSettingMessage()" />
             </li>
             <br class="overlappingBr" />
-            <li class="horizontalList" id="pulseMaxRange">
+            <li
+                class="horizontalList"
+                id="pulseMaxRange">
                 <input
                     id="pulseMaxRangeInput"
                     type="number"
@@ -143,7 +162,9 @@
         <ul>
             <li class="horizontalList">Degree min/max (°/100):</li>
             <br class="overlappingBr" />
-            <li class="horizontalList" id="degreeMinRange">
+            <li
+                class="horizontalList"
+                id="degreeMinRange">
                 <input
                     id="degreeMinRangeInput"
                     type="number"
@@ -155,7 +176,9 @@
                     [formControl]="degreeMinFormcontrol" />
             </li>
             <br class="overlappingBr" />
-            <li class="horizontalList" id="degreeMaxRange">
+            <li
+                class="horizontalList"
+                id="degreeMaxRange">
                 <input
                     id="degreeMaxRangeInput"
                     type="number"

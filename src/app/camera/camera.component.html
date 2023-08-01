@@ -1,5 +1,7 @@
 <div *ngIf="isLoading">
-    <div class="spinner-border" role="status">
+    <div
+        class="spinner-border"
+        role="status">
         <span class="sr-only">Loading...</span>
     </div>
 </div>
@@ -9,9 +11,18 @@
     </div>
     <div class="row">
         <div class="col">
-            <img [src]="imageSrc" alt="camera" width="100%" />
-            <button (click)="stopCamera()" id="stopCamera">Stop Camera</button>
-            <button (click)="startCamera()" id="startCamera">
+            <img
+                [src]="imageSrc"
+                alt="camera"
+                width="100%" />
+            <button
+                (click)="stopCamera()"
+                id="stopCamera">
+                Stop Camera
+            </button>
+            <button
+                (click)="startCamera()"
+                id="startCamera">
                 Start Camera
             </button>
         </div>
@@ -60,7 +71,9 @@
                 [formControl]="qualityFactorControl"
                 (input)="inputQualityFactor()" />
 
-            <div ngbDropdown class="d-inline-block">
+            <div
+                ngbDropdown
+                class="d-inline-block">
                 <br />
                 <button
                     type="button"
@@ -69,7 +82,9 @@
                     ngbDropdownToggle>
                     Select size ({{ selectedSize }})
                 </button>
-                <div ngbDropdownMenu aria-labelledby="dropdownbutton">
+                <div
+                    ngbDropdownMenu
+                    aria-labelledby="dropdownbutton">
                     <button
                         id="dropdownbutton-item-480px"
                         ngbDropdownItem

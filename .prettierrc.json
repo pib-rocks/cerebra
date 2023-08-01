@@ -9,6 +9,6 @@
     "requirePragma": false,
     "insertPragma": false,
     "endOfLine": "auto",
-    "embeddedLanguageFormatting" : "off",
-    "singleAttributePerLine" : true
+    "embeddedLanguageFormatting": "off",
+    "singleAttributePerLine": true
 }
