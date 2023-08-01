@@ -1,9 +1,6 @@
 {
     "tabWidth": 4,
     "semi": false,
-    "singleQuote": false,
-    "quoteProps": "as-needed",
-    "jsxSingleQuote": false,
     "trailingComma": "all",
     "bracketSpacing": false,
     "bracketSameLine": true,
@@ -11,9 +8,7 @@
     "arrowParens": "always",
     "requirePragma": false,
     "insertPragma": false,
-    "htmlWhitespaceSensitivity": "css",
-    "vueIndentScriptAndStyle": false,
     "endOfLine": "auto",
-    "embeddedLanguageFormatting": "off",
-    "singleAttributePerLine": false
+    "embeddedLanguageFormatting" : "off",
+    "singleAttributePerLine" : true
 }
