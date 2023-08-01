@@ -51,3 +51,14 @@ export function notNullValidator(
   const isNotNull = control.value !== null;
   return isNotNull ? null : { nullValue: true };
 }
+
+export function steppingValidator(step : number) : ValidatorFn
+{
+  return (formControl : AbstractControl) => {
+    if(Number.parseInt(formControl.value) % step){
+      return {steppingError : true};
+    }else{
+      return null;
+    }
+  }
+}

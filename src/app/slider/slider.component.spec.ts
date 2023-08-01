@@ -53,7 +53,7 @@ describe('SliderComponent', () => {
     component.bubbleFormControl.setValue(val);
     component.bubbleInput = jasmine.createSpyObj('nativeElement', {}, {property : 'property'});
     component.bubbleInput.nativeElement = jasmine.createSpyObj('nativeElement', { select : 'select', focus : 'focus'});
-    component.toggleInputVisible();
+    component.toggleInputUnvisible();
     tick(500);
     expect(component.sliderFormControl.value).toBeLessThanOrEqual(component.bubbleFormControl.value);
   }));

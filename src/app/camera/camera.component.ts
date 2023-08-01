@@ -2,6 +2,7 @@ import { Component, OnDestroy, OnInit } from "@angular/core";
 import { FormControl } from "@angular/forms";
 import { RosService } from "../shared/ros.service";
 import { Subject } from "rxjs";
+import { string } from "blockly/core/utils";
 
 @Component({
   selector: "app-camera",
@@ -21,28 +22,20 @@ export class CameraComponent implements OnInit, OnDestroy {
   toggleCamera = new FormControl(false);
   resolution = 'SD';
   imageSrc!: string;  
-  refreshRateControl = new FormControl(0.5);
+  refreshRateControl = new FormControl(0.1);
   qualityFactorControl = new FormControl(80);
   selectedSize = "480p (SD)";
   cameraActiveIcon = "M880-275 720-435v111L244-800h416q24 0 42 18t18 42v215l160-160v410ZM848-27 39-836l42-42L890-69l-42 42ZM159-800l561 561v19q0 24-18 42t-42 18H140q-24 0-42-18t-18-42v-520q0-24 18-42t42-18h19Z";
-  
+  private imageTopic!: ROSLIB.Topic;
   constructor(
     private rosService: RosService,
     ){}
 
   ngOnInit(): void {
     this.rosService.previewSizeReceiver$.subscribe(value => {
-      if (this.arraysEqual(value,[640, 480])){
-        this.selectedSize = "480p";
-      }
-      if (this.arraysEqual(value,[1280, 720])){
-        this.selectedSize = "720p";
-      }
-      if (this.arraysEqual(value,[1920, 1080])){
-        this.selectedSize = "1080p";
-      }
+      this.setSize(value[0], value[1]);
   });
-    this.setSize(640, 480);
+    this.rosService.setPreviewSize(640, 480);
     this.imageSrc = '../../assets/camera-placeholder.jpg'
     this.rosService.cameraReceiver$.subscribe(message => {
       this.imageSrc = 'data:image/jpeg;base64,' + message;
@@ -54,7 +47,7 @@ export class CameraComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.stopCamera();
   }
-  private imageTopic!: ROSLIB.Topic;
+  
   
   setSize(width: number, height: number) {
     this.resolution = 'SD'
@@ -67,12 +60,16 @@ export class CameraComponent implements OnInit, OnDestroy {
         this.resolution = 'SD';
       }
     }
-    this.selectedSize = height + 'p' + ' ' + '(' + this.resolution + ')';
-    this.isLoading = true; 
-    this.rosService.setPreviewSize(width, height);
-    setTimeout(() => {
-      this.isLoading = false;  // Stop the spinner
-    }, 1500);
+    const newSize = String(height + 'p' + ' ' + '(' + this.resolution + ')');
+    if(this.selectedSize !== newSize){
+      this.selectedSize = newSize;
+      this.isLoading = true; 
+      this.rosService.setPreviewSize(width, height);
+      setTimeout(() => {
+        this.isLoading = false;  // Stop the spinner
+      }, 1500);
+    }
+    
   }
 
   arraysEqual(a: number[], b: number[]) {
@@ -89,7 +86,7 @@ export class CameraComponent implements OnInit, OnDestroy {
 
   stopCamera(){
     this.rosService.unsubscribeCameraTopic();
-    this.imageSrc = '../../assets/camera-placeholder.jpg'
+    // this.imageSrc = '../../assets/camera-placeholder.jpg'
   }
 
   toggleCameraState(){

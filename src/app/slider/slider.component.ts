@@ -1,8 +1,9 @@
 import { Component, ElementRef, Input, ViewChild, Output, EventEmitter, OnInit, AfterViewInit } from "@angular/core";
-import { FormControl } from "@angular/forms";
+import { FormControl, Validators } from "@angular/forms";
 import { RosService } from "../shared/ros.service";
 import { Message } from "../shared/message";
 import { Subject } from "rxjs";
+import { notNullValidator, steppingValidator } from "../shared/validators";
 @Component({
   selector: 'app-slider',
   templateUrl: './slider.component.html',
@@ -17,7 +18,7 @@ export class SliderComponent implements OnInit, AfterViewInit {
   @Input() sliderName: string = "";
   @Input() minValue: number = 0;
   @Input() maxValue: number = 100;
-  @Input() defaultValue : number = (this.minValue + this.maxValue)/2;
+  @Input() defaultValue! : number;
   @Input() step: number = 1;
   @Input() unitOfMeasurement!: string;
   @Input() rotate: boolean = false;
@@ -48,6 +49,14 @@ export class SliderComponent implements OnInit, AfterViewInit {
   ) { }
 
   ngOnInit(): void {
+    this.bubbleFormControl.setValidators([
+      Validators.min(this.minValue),
+      Validators.max(this.maxValue),
+      Validators.pattern("^-?[0-9]*$"),
+      Validators.required,
+      notNullValidator,
+      steppingValidator(this.step),
+    ]);
     this.messageReceiver$.subscribe((value) => {
       if (value) {
         console.log("SliderValue: " + value);
@@ -57,6 +66,9 @@ export class SliderComponent implements OnInit, AfterViewInit {
     });
     this.sliderFormControl.setValue(this.getValueWithinRange(Number(this.defaultValue)));
     this.bubbleFormControl.setValue(this.getValueWithinRange(Number(this.defaultValue)));
+    if(this.defaultValue !== undefined){
+      this.defaultValue = (this.minValue + this.maxValue)/2;
+    }
     console.log("init: " + this.sliderName);
   }
 
@@ -102,7 +114,6 @@ export class SliderComponent implements OnInit, AfterViewInit {
   toggleInputVisible() {
     if(this.sliderFormControl.value !== null){
       this.isInputVisible = !this.isInputVisible;
-      this.setSliderValue(this.bubbleFormControl.value);
       setTimeout(()=>{
         this.bubbleInput.nativeElement.focus();
         this.bubbleInput.nativeElement.select();
@@ -116,7 +127,13 @@ export class SliderComponent implements OnInit, AfterViewInit {
     if (this.bubbleFormControl.value !== this.sliderFormControl.value) {
       if(this.sliderFormControl.value !== null){
         this.isInputVisible = !this.isInputVisible;
-        if(this.bubbleFormControl.hasError('min')) {
+        if(this.bubbleFormControl.hasError('required')) {
+          this.bubbleFormControl.setValue(this.sliderFormControl.value);
+        }
+        else if(this.bubbleFormControl.hasError('pattern')) {
+          this.bubbleFormControl.setValue(this.sliderFormControl.value);
+        }
+        else if(this.bubbleFormControl.hasError('min')) {
           this.setSliderValue(this.minValue);
           this.inputSendMsg();
         }
@@ -124,15 +141,13 @@ export class SliderComponent implements OnInit, AfterViewInit {
           this.setSliderValue(this.maxValue);
           this.inputSendMsg();
         }
-        else if(this.bubbleFormControl.hasError('required')) {
-          this.bubbleFormControl.setValue(this.sliderFormControl.value);
-        }
-        else if(this.bubbleFormControl.hasError('pattern')) {
-          this.bubbleFormControl.setValue(this.sliderFormControl.value);
+        else if(this.bubbleFormControl.hasError('steppingError')){
+          const val = this.bubbleFormControl.value - (this.bubbleFormControl.value % this.step);
+          this.setSliderValue(val);
+          this.inputSendMsg();
         }
         else {
-          console.log("???");
-          this.setSliderValue(this.bubbleFormControl.value);
+          this.setSliderValue(Number(this.bubbleFormControl.value));
           this.inputSendMsg();
         }
       } 
