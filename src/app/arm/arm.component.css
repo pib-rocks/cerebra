@@ -58,10 +58,10 @@
     top: 30%;
     right: 25%;
 }
-.ellbow_left {
-    position: absolute;
-    top: 45%;
-    right: 20%;
+.elbow_left {
+  position: absolute;
+  top: 45%;
+  right: 20%;
 }
 
 .lower_arm_left_rotation {
@@ -88,10 +88,10 @@
     right: 16%;
 }
 
-.ellbow_right {
-    position: absolute;
-    top: 50%;
-    right: 55%;
+.elbow_right {
+  position: absolute;
+  top: 50%;
+  right: 55%;
 }
 
 .upper_arm_right_rotation {

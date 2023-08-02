@@ -1,31 +1,15 @@
 <div class="d-flex justify-content-between">
-    <label
-        for="{{ motorName }}"
-        class="form-label"
-        >{{ labelName }}: {{ sliderFormControl.value }}
-    </label>
-    <div class="d-flex align-items-center">
-        <div
-            class="form-check d-inline"
-            *ngIf="showCheckBox === true">
-            <input
-                class="form-check-input"
-                id="checkbox_{{ motorName }}"
-                type="checkbox"
-                [formControl]="motorFormControl"
-                (change)="turnTheMotorOnAndOff()" />
-            <label
-                class="form-check-label"
-                for="checkbox_{{ motorName }}">
-                Active
-            </label>
-        </div>
-        <button
-            *ngIf="showMotorSettingsButton === true"
-            id="dialogBtn_{{ motorName }}"
-            class="bi bi-gear btn btn-outline-primary"
-            style="margin-left: 10px; border: 0"
-            (click)="openPopup(content)"></button>
+  <label for="{{ motorName }}" id="label_{{motorName}}" class="form-label">{{
+    labelName }}: {{ sliderFormControl.value }}
+  </label>
+  <div class="d-flex align-items-center">
+    <div class="form-check d-inline" *ngIf="showCheckBox === true">
+      <input class="form-check-input" id="checkbox_{{ motorName }}" type="checkbox"
+        [formControl]="motorFormControl"
+        (change)="turnTheMotorOnAndOff()">
+      <label class="form-check-label" for="checkbox_{{ motorName }}">
+        Active
+      </label>
     </div>
 </div>
 
