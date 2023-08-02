@@ -20,19 +20,19 @@ export class MotorService {
         "pinky_right_stretch",
     ]
 
-  leftArm = [
-    "upper_arm_left_rotation",
-    "elbow_left",
-    "lower_arm_left_rotation",
-    "wrist_left",
-  ];
+    leftArm = [
+        "upper_arm_left_rotation",
+        "elbow_left",
+        "lower_arm_left_rotation",
+        "wrist_left",
+    ]
 
-  rightArm = [
-    "upper_arm_right_rotation",
-    "elbow_right",
-    "lower_arm_right_rotation",
-    "wrist_right",
-  ];
+    rightArm = [
+        "upper_arm_right_rotation",
+        "elbow_right",
+        "lower_arm_right_rotation",
+        "wrist_right",
+    ]
 
     getMotorHandNames(side: string) {
         return side === "left" ? this.leftFingers : this.rightFingers
