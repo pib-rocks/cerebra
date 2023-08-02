@@ -1,5 +1,5 @@
-import {Component, OnInit} from "@angular/core"
-import {NavigationEnd, Router} from "@angular/router"
+import {Component, OnInit} from "@angular/core";
+import {NavigationEnd, Router} from "@angular/router";
 
 @Component({
     selector: "app-root",
@@ -7,9 +7,9 @@ import {NavigationEnd, Router} from "@angular/router"
     styleUrls: ["./app.component.css"],
 })
 export class AppComponent implements OnInit {
-    currentRoute: string = ""
-    title = "cerebra"
-    isActiveRoute = false
+    currentRoute: string = "";
+    title = "cerebra";
+    isActiveRoute = false;
     jointControlNavItemGroup = [
         "/",
         "/head",
@@ -17,7 +17,7 @@ export class AppComponent implements OnInit {
         "/hand/right",
         "/arm/left",
         "/arm/right",
-    ]
+    ];
 
     constructor(private router: Router) {}
 
@@ -26,8 +26,8 @@ export class AppComponent implements OnInit {
             if (event instanceof NavigationEnd) {
                 this.isActiveRoute = this.jointControlNavItemGroup.includes(
                     event.urlAfterRedirects,
-                )
+                );
             }
-        })
+        });
     }
 }

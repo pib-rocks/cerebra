@@ -1,29 +1,29 @@
-import { ComponentFixture, TestBed } from "@angular/core/testing";
-import { MatDialogModule, MAT_DIALOG_DATA } from "@angular/material/dialog";
-import { DialogContentComponent } from "./dialog-content.component";
+import {ComponentFixture, TestBed} from "@angular/core/testing";
+import {MatDialogModule, MAT_DIALOG_DATA} from "@angular/material/dialog";
+import {DialogContentComponent} from "./dialog-content.component";
 
 describe("DialogContentComponent", () => {
-  let component: DialogContentComponent;
-  let fixture: ComponentFixture<DialogContentComponent>;
+    let component: DialogContentComponent;
+    let fixture: ComponentFixture<DialogContentComponent>;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      declarations: [DialogContentComponent],
-      imports: [MatDialogModule],
-      providers: [
-        {
-          provide: MAT_DIALOG_DATA,
-          useValue: {},
-        },
-      ],
-    }).compileComponents();
+    beforeEach(async () => {
+        await TestBed.configureTestingModule({
+            declarations: [DialogContentComponent],
+            imports: [MatDialogModule],
+            providers: [
+                {
+                    provide: MAT_DIALOG_DATA,
+                    useValue: {},
+                },
+            ],
+        }).compileComponents();
 
-    fixture = TestBed.createComponent(DialogContentComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
+        fixture = TestBed.createComponent(DialogContentComponent);
+        component = fixture.componentInstance;
+        fixture.detectChanges();
+    });
 
-  it("should create", () => {
-    expect(component).toBeTruthy();
-  });
+    it("should create", () => {
+        expect(component).toBeTruthy();
+    });
 });

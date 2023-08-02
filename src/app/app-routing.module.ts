@@ -1,11 +1,11 @@
-import {NgModule} from "@angular/core"
-import {RouterModule, Routes} from "@angular/router"
-import {CameraComponent} from "./camera/camera.component"
-import {HandComponent} from "./hand/hand.component"
-import {ArmComponent} from "./arm/arm.component"
-import {VoiceAssistantComponent} from "./voice-assistant/voice-assistant.component"
-import {HeadComponent} from "./head/head.component"
-import {ProgramComponent} from "./program/program.component"
+import {NgModule} from "@angular/core";
+import {RouterModule, Routes} from "@angular/router";
+import {CameraComponent} from "./camera/camera.component";
+import {HandComponent} from "./hand/hand.component";
+import {ArmComponent} from "./arm/arm.component";
+import {VoiceAssistantComponent} from "./voice-assistant/voice-assistant.component";
+import {HeadComponent} from "./head/head.component";
+import {ProgramComponent} from "./program/program.component";
 
 const routes: Routes = [
     {path: "", redirectTo: "head", pathMatch: "full"},
@@ -17,7 +17,7 @@ const routes: Routes = [
     {path: "program", component: ProgramComponent},
     {path: "", redirectTo: "head", pathMatch: "full"},
     {path: "**", redirectTo: "head"},
-]
+];
 
 @NgModule({
     imports: [RouterModule.forRoot(routes)],
