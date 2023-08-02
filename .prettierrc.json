@@ -13,8 +13,10 @@
     "singleAttributePerLine": true,
     "overrides": [
         {
-          "files": "*.html",
-          "parser": "angular"
+            "files": "*.html",
+            "options": {
+                "parser":"html"
+            }
         }
-      ]
+    ]
 }
