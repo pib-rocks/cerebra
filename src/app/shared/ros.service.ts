@@ -14,10 +14,10 @@ export class RosService {
   isInitialized$ = this.isInitializedSubject.asObservable();
   currentReceiver$: Subject<MotorCurrentMessage> =
     new Subject<MotorCurrentMessage>();
-  timerPeriodReceiver$: Subject<number> = new Subject<number>();
+  timerPeriodReceiver$: BehaviorSubject<number> = new BehaviorSubject<number>(0.1);
   cameraReceiver$: Subject<string> = new Subject<string>();
-  previewSizeReceiver$: Subject<number[]> = new Subject<number[]>();
-  qualityFactorReceiver$: Subject<number> = new Subject<number>();
+  previewSizeReceiver$: BehaviorSubject<number[]> = new BehaviorSubject<number[]>([640, 480]);
+  qualityFactorReceiver$: BehaviorSubject<number> = new BehaviorSubject<number>(80);
   voiceAssistantReceiver$: Subject<any> = new Subject<any>();
   private ros!: ROSLIB.Ros;
   private sliderMessageTopic!: ROSLIB.Topic;

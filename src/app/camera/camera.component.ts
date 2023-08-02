@@ -2,7 +2,6 @@ import { Component, OnDestroy, OnInit } from "@angular/core";
 import { FormControl } from "@angular/forms";
 import { RosService } from "../shared/ros.service";
 import { Subject } from "rxjs";
-import { string } from "blockly/core/utils";
 
 @Component({
   selector: "app-camera",
@@ -22,8 +21,8 @@ export class CameraComponent implements OnInit, OnDestroy {
   toggleCamera = new FormControl(false);
   resolution = 'SD';
   imageSrc!: string;  
-  refreshRateControl = new FormControl(0.1);
-  qualityFactorControl = new FormControl(80);
+  refreshRateControl: number = 0.1;
+  qualityFactorControl : number = 80;
   selectedSize = "480p (SD)";
   cameraActiveIcon = "M880-275 720-435v111L244-800h416q24 0 42 18t18 42v215l160-160v410ZM848-27 39-836l42-42L890-69l-42 42ZM159-800l561 561v19q0 24-18 42t-42 18H140q-24 0-42-18t-18-42v-520q0-24 18-42t42-18h19Z";
   private imageTopic!: ROSLIB.Topic;
@@ -33,9 +32,9 @@ export class CameraComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.rosService.previewSizeReceiver$.subscribe(value => {
-      this.setSize(value[0], value[1]);
+      console.log("Received" + value);
+      this.setSize(value[0], value[1], false);
   });
-    this.rosService.setPreviewSize(640, 480);
     this.imageSrc = '../../assets/camera-placeholder.jpg'
     this.rosService.cameraReceiver$.subscribe(message => {
       this.imageSrc = 'data:image/jpeg;base64,' + message;
@@ -49,7 +48,7 @@ export class CameraComponent implements OnInit, OnDestroy {
   }
   
   
-  setSize(width: number, height: number) {
+  setSize(width: number, height: number, publish: boolean = true) {
     this.resolution = 'SD'
     if(height != null){
       if(height >= 1080){
@@ -61,8 +60,8 @@ export class CameraComponent implements OnInit, OnDestroy {
       }
     }
     const newSize = String(height + 'p' + ' ' + '(' + this.resolution + ')');
-    if(this.selectedSize !== newSize){
-      this.selectedSize = newSize;
+    this.selectedSize = newSize;
+    if(publish){
       this.isLoading = true; 
       this.rosService.setPreviewSize(width, height);
       setTimeout(() => {
@@ -108,11 +107,11 @@ export class CameraComponent implements OnInit, OnDestroy {
   }
 
   updateRefreshRateLabel(sliderNumber : number){
-    this.refreshRateControl.setValue(sliderNumber);
+    this.refreshRateControl = sliderNumber;
   }
 
   updateQualityFactorLabel(sliderNumber : number){
-    this.qualityFactorControl.setValue(sliderNumber)
+    this.qualityFactorControl = sliderNumber;
   }
 
 

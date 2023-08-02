@@ -55,7 +55,7 @@ export function notNullValidator(
 export function steppingValidator(step : number) : ValidatorFn
 {
   return (formControl : AbstractControl) => {
-    if(Number.parseInt(formControl.value) % step){
+    if(formControl.value % step){
       return {steppingError : true};
     }else{
       return null;

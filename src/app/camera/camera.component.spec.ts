@@ -62,10 +62,10 @@ describe("CameraComponent", () => {
     expect(spy).toHaveBeenCalled();
   });
 
-  it("size should be set to 480p when the component is instantiated", () => {
-    const spy = spyOn(rosService, 'setPreviewSize')
+  it("size should be set to the value of the behaviourSubject when the component is instantiated", () => {
+    const spy = spyOn(component, 'setSize')
     component.ngOnInit()
-    expect(spy).toHaveBeenCalledWith(640, 480);
+    expect(spy).toHaveBeenCalled();
   });
 
   it("setsize should send the size message via setPreviewSize method in rosService",fakeAsync ( () => {

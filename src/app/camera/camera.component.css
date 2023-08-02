@@ -36,6 +36,10 @@ video {
   max-height: 100%;
 }
 
+.video-settings-label {
+  font-size: 1rem;
+}
+
 .pink-corner-frame {
   background: url('../../assets/ep-br.png') bottom right no-repeat, 
               url('../../assets/ep-tr.png') top right no-repeat, 
@@ -43,4 +47,12 @@ video {
               url('../../assets/ep-bl.png') bottom left no-repeat, 
               url("../../assets/bg-gesamt.png") center scroll;
 
+}
+
+.video-nav-element span {
+  vertical-align: middle;
+  padding-left: .25rem;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: .33px;
 }

@@ -22,20 +22,17 @@ export class SliderComponent implements OnInit, AfterViewInit {
   @Input() step: number = 1;
   @Input() unitOfMeasurement!: string;
   @Input() rotate: boolean = false;
-  
-  //PR-157
   @Input() publishMessage!: (args: number) => void;
   @Input() messageReceiver$! : Subject<any>;
-  //
+  
 
-  sliderFormControl: FormControl = new FormControl();
-  bubbleFormControl: FormControl = new FormControl();
+  sliderFormControl = new FormControl();
+  bubbleFormControl = new FormControl();
+  
 
   timer: any = null;
 
   bubblePosition!: number;
-  closeResult!: string;
-  isCombinedSlider = false;
   isInputVisible = false;
   maxBubblePosition = 100;
   minBubblePosition = 0;
@@ -52,24 +49,20 @@ export class SliderComponent implements OnInit, AfterViewInit {
     this.bubbleFormControl.setValidators([
       Validators.min(this.minValue),
       Validators.max(this.maxValue),
-      Validators.pattern("^-?[0-9]*$"),
+      Validators.pattern("^-?[0-9]{1,}.?[0-9]*$"),
       Validators.required,
       notNullValidator,
       steppingValidator(this.step),
     ]);
     this.messageReceiver$.subscribe((value) => {
       if (value) {
-        console.log("SliderValue: " + value);
         this.sliderFormControl.setValue(this.getValueWithinRange(Number(value)));
-        this.setThumbPosition();
+        if(this.sliderElem && this.bubbleElement){
+          this.setThumbPosition();
+        }
       }
     });
-    this.sliderFormControl.setValue(this.getValueWithinRange(Number(this.defaultValue)));
-    this.bubbleFormControl.setValue(this.getValueWithinRange(Number(this.defaultValue)));
-    if(this.defaultValue !== undefined){
-      this.defaultValue = (this.minValue + this.maxValue)/2;
-    }
-    console.log("init: " + this.sliderName);
+    this.bubbleFormControl.setValue(this.sliderFormControl.value);  
   }
 
 
@@ -142,8 +135,11 @@ export class SliderComponent implements OnInit, AfterViewInit {
           this.inputSendMsg();
         }
         else if(this.bubbleFormControl.hasError('steppingError')){
-          const val = this.bubbleFormControl.value - (this.bubbleFormControl.value % this.step);
-          this.setSliderValue(val);
+          let intBubbleFormControl = Math.floor(this.bubbleFormControl.value*1000);
+          const moduloValue = intBubbleFormControl%(Math.floor(this.step*1000));
+          intBubbleFormControl -= moduloValue;
+          intBubbleFormControl /= 1000;
+          this.setSliderValue(intBubbleFormControl);
           this.inputSendMsg();
         }
         else {
