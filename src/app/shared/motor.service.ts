@@ -22,14 +22,14 @@ export class MotorService {
 
   leftArm = [
     "upper_arm_left_rotation",
-    "ellbow_left",
+    "elbow_left",
     "lower_arm_left_rotation",
     "wrist_left",
   ];
 
   rightArm = [
     "upper_arm_right_rotation",
-    "ellbow_right",
+    "elbow_right",
     "lower_arm_right_rotation",
     "wrist_right",
   ];
