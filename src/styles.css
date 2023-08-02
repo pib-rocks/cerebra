@@ -29,7 +29,7 @@
 }
 
 .custom-switch.custom-switch-pib .custom-control-input:checked~.custom-control-label::after {
-  background-color: #e6007e;
+  background-color: #e10072;
 }
 
 .custom-switch.custom-switch-pib .custom-control-input~.custom-control-label::after {
