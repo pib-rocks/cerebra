@@ -1,4 +1,4 @@
-import {Component} from "@angular/core"
+import {Component, OnInit} from "@angular/core"
 import {FormControl, FormGroup, Validators} from "@angular/forms"
 import {RosService} from "../shared/ros.service"
 import {VoiceAssistant} from "../shared/voice-assistant"
@@ -8,7 +8,7 @@ import {VoiceAssistant} from "../shared/voice-assistant"
     templateUrl: "./voice-assistant.component.html",
     styleUrls: ["./voice-assistant.component.css"],
 })
-export class VoiceAssistantComponent {
+export class VoiceAssistantComponent implements OnInit {
     voiceFormGroup: FormGroup = new FormGroup({
         personality: new FormControl(""),
         threshold: new FormControl(0.8, [
@@ -17,10 +17,13 @@ export class VoiceAssistantComponent {
         ]),
         gender: new FormControl("male"),
     })
-
-    constructor(private rosService: RosService) {}
-
     activationFlag: FormControl = new FormControl(false)
+    constructor(private rosService: RosService) {}
+    ngOnInit(): void {
+        this.rosService.voiceAssistantReceiver$.subscribe((value) => {
+            this.activationFlag.setValue(JSON.parse(value)[0].activationFlag)
+        })
+    }
 
     updateVoiceSettings() {
         if (this.voiceFormGroup.valid) {

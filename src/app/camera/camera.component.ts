@@ -11,8 +11,30 @@ import {RosService} from "../shared/ros.service"
 export class CameraComponent implements OnInit, OnDestroy {
     timer: any = null
     isLoading = false
+    imageSrc!: string
+    componentName = "Live view"
+    refreshRateControl = new FormControl(0.1)
+    qualityFactorControl = new FormControl(80)
+    selectedSize = "480p"
     constructor(private rosService: RosService) {}
     ngOnInit(): void {
+        this.rosService.timerPeriodReceiver$.subscribe((value) => {
+            this.refreshRateControl.setValue(value)
+        })
+        this.rosService.qualityFactorReceiver$.subscribe((value) => {
+            this.qualityFactorControl.setValue(value)
+        })
+        this.rosService.previewSizeReceiver$.subscribe((value) => {
+            if (this.arraysEqual(value, [640, 480])) {
+                this.selectedSize = "480p"
+            }
+            if (this.arraysEqual(value, [1280, 720])) {
+                this.selectedSize = "720p"
+            }
+            if (this.arraysEqual(value, [1920, 1080])) {
+                this.selectedSize = "1080p"
+            }
+        })
         this.setRefreshRate()
         this.rosService.setPreviewSize(640, 480)
         this.rosService.setQualityFactor(80)
@@ -28,11 +50,13 @@ export class CameraComponent implements OnInit, OnDestroy {
         this.stopCamera()
     }
 
-    imageSrc!: string
-    componentName = "Live view"
-    refreshRateControl = new FormControl(0.1)
-    qualityFactorControl = new FormControl(80)
-    selectedSize = "480p"
+    arraysEqual(a: number[], b: number[]) {
+        if (a.length !== b.length) return false
+        for (let i = 0; i < a.length; i++) {
+            if (a[i] !== b[i]) return false
+        }
+        return true
+    }
 
     private imageTopic!: ROSLIB.Topic
 
