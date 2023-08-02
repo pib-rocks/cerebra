@@ -1,15 +1,15 @@
 video {
-  display: block;
-  width: 100%;
-  height: auto;
-  object-fit: cover;
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: cover;
 }
 
 #dropdownbutton {
-  color: white;
-  background-color: #e6007e;
+    color: white;
+    background-color: #e6007e;
 }
 
-.qualityFactor{
-  transform: rotate(180deg);
+.qualityFactor {
+    transform: rotate(180deg);
 }
