@@ -1,13 +1,11 @@
-**/*.yml
+*.yml
 
-**/*.json
+*.json
 
-**/*.eslintcache
+*.eslintcache
 
-**/*.properties
+*.properties
 
-**/*.ico
+*.ico
 
-**/*.spec.ts
-
-node_modules
+*.spec.ts
