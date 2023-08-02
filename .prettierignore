@@ -8,4 +8,6 @@
 
 **/*.ico
 
+**/*.spec.ts
+
 node_modules
