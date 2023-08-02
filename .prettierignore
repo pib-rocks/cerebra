@@ -1,1 +1,11 @@
 **/*.yml
+
+**/*.json
+
+**/*.eslintcache
+
+**/*.properties
+
+**/*.ico
+
+node_modules
