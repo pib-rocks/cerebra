@@ -10,5 +10,11 @@
     "insertPragma": false,
     "endOfLine": "auto",
     "embeddedLanguageFormatting": "off",
-    "singleAttributePerLine": true
+    "singleAttributePerLine": true,
+    "overrides": [
+        {
+          "files": "*.html",
+          "parser": "angular"
+        }
+      ]
 }
