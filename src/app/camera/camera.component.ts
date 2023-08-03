@@ -32,9 +32,9 @@ export class CameraComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.rosService.previewSizeReceiver$.subscribe(value => {
-      console.log("Received" + value);
       this.setSize(value[0], value[1], false);
   });
+    this.rosService.setPreviewSize(640,480);
     this.imageSrc = '../../assets/camera-placeholder.jpg'
     this.rosService.cameraReceiver$.subscribe(message => {
       this.imageSrc = 'data:image/jpeg;base64,' + message;

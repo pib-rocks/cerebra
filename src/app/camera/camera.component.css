@@ -12,20 +12,12 @@ video {
 .cameraIcon {
   border: none !important;
 }
+
 .cameraIcon path {
   fill: #ffffff;
   stroke: #ffffff;
 }
 
-.cameraIcon:hover, .cameraIcon path:hover {
-  color: #e6007e;
-  background-color: transparent;
-}
-
-#cameraToggle path:hover {
-  fill: #e6007e;
-  stroke: #e6007e;
-}
 
 #cameraToggle {
   padding-top: 8px;
@@ -55,4 +47,18 @@ video {
   font-size: 13px;
   font-weight: 600;
   letter-spacing: .33px;
+}
+
+.video-nav-element svg path {
+  fill: #FFFFFF;
+  transition: fill .15s ease;
+}
+
+.video-nav-element:hover svg path {
+  fill: #e6007e;
+}
+
+.video-nav-element:hover{
+  color: #e6007e;
+  background-color: transparent;
 }

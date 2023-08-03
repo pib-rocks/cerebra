@@ -49,7 +49,7 @@ export class SliderComponent implements OnInit, AfterViewInit {
     this.bubbleFormControl.setValidators([
       Validators.min(this.minValue),
       Validators.max(this.maxValue),
-      Validators.pattern("^-?[0-9]{1,}.?[0-9]*$"),
+      Validators.pattern("^-?[0-9]{1,}\\.?[0-9]*$"),
       Validators.required,
       notNullValidator,
       steppingValidator(this.step),
