@@ -55,10 +55,29 @@ video {
 }
 
 .video-nav-element:hover svg path {
-  fill: #e6007e;
+  fill: #e10072;
 }
 
 .video-nav-element:hover{
-  color: #e6007e;
+  color: #e10072;
   background-color: transparent;
 }
+
+.show .video-nav-element svg path{
+  fill: #e10072;
+}
+
+.show .video-nav-element{
+  color: #e10072;
+  background-color: transparent;
+}
+
+.showPopover svg path{
+  fill: #e10072;
+}
+
+.showPopover{
+  color: #e10072;
+  background-color: transparent;
+}
+

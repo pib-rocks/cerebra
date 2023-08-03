@@ -45,6 +45,7 @@ export class CameraComponent implements OnInit, OnDestroy {
   }
   ngOnDestroy(): void {
     this.stopCamera();
+    this.rosService.setPreviewSize(640, 480);
   }
   
   
@@ -112,6 +113,15 @@ export class CameraComponent implements OnInit, OnDestroy {
 
   updateQualityFactorLabel(sliderNumber : number){
     this.qualityFactorControl = sliderNumber;
+  }
+
+  removeCssClass(){
+    const videoSettingsButton = document.getElementById('videosettings');
+    videoSettingsButton?.classList.remove('showPopover');
+  }
+  addCssClass(){
+    const videoSettingsButton = document.getElementById('videosettings');
+    videoSettingsButton?.classList.add('showPopover');
   }
 
 
