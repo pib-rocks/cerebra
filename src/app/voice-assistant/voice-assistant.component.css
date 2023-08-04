@@ -1,19 +1,19 @@
 #div-parent {
-  position: relative;
-  display: inline-block;
+    position: relative;
+    display: inline-block;
 }
 
 #submit {
-  bottom: 0;
-  right: 0;
-  position: absolute;
+    bottom: 0;
+    right: 0;
+    position: absolute;
 }
 
 .error {
-  color: red;
+    color: red;
 }
 
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
-  opacity: 1;
+    opacity: 1;
 }

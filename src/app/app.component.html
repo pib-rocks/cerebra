@@ -1,144 +1,149 @@
 <div class="wrapper">
-  <div class="sidebar-wrapper">
-    <aside
-      class="main-sidebar elevation-4 sidebar justify-content-between d-flex flex-column"
-    >
-      <div class="d-flex flex-column align-items-center">
-        <a class="brand-link">
-          <img
-            src="../assets/pib-Logo.png"
-            alt=""
-            class="img-fluid d-inline-block my-2"
-            width="250"
-            style="cursor: pointer"
-            title="https://pib.rocks/"
-          />
-        </a>
-        <div class="sidebar mt-12">
-          <nav class="mt-12">
-            <ul
-              class="nav nav-pills nav-sidebar flex-column"
-              data-widget="treeview"
-              role="menu"
-              routerLinkActive="show"
-            >
-              <li class="nav-item" role="presentation">
-                <a
-                  class="nav-link sidebar-btn"
-                  id="joint-nav"
-                  [class.btn-active]="isActiveRoute"
-                  routerLink="head"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    height="35px"
-                    viewBox="0 0 24 24"
-                    width="35px"
-                  >
-                    <path
-                      d="M17 16l-4-4V8.82c1.35-.49 2.26-1.89 1.93-3.46-.25-1.18-1.23-2.12-2.42-2.32C10.63 2.73 9 4.17 9 6c0 1.3.84 2.4 2 2.82V12l-4 4H4c-.55 0-1 .45-1 1v3c0 .55.45 1 1 1h3c.55 0 1-.45 1-1v-2.05l4-4.2 4 4.2V20c0 .55.45 1 1 1h3c.55 0 1-.45 1-1v-3c0-.55-.45-1-1-1h-3z"
-                    />
-                  </svg>
-                  Joint Control
+    <div class="sidebar-wrapper">
+        <aside
+            class="main-sidebar elevation-4 sidebar justify-content-between d-flex flex-column">
+            <div class="d-flex flex-column align-items-center">
+                <a class="brand-link">
+                    <img
+                        src="../assets/pib-Logo.png"
+                        alt=""
+                        class="img-fluid d-inline-block my-2"
+                        width="250"
+                        style="cursor: pointer"
+                        title="https://pib.rocks/" />
                 </a>
-              </li>
-              <li class="nav-item" role="presentation">
-                <a
-                  id="camera-nav"
-                  class="nav-link sidebar-btn"
-                  routerLinkActive="btn-active"
-                  routerLink="camera"
-                >
-                  <svg
-                    width="35px"
-                    height="35px"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M4 6H16C16.55 6 17 6.45 17 7V10.5L21 6.5V17.5L17 13.5V17C17 17.55 16.55 18 16 18H4C3.45 18 3 17.55 3 17V7C3 6.45 3.45 6 4 6Z"
-                    />
-                  </svg>
-                  Camera
-                </a>
-              </li>
-              <li class="nav-item" role="presentation">
-                <a
-                  id="voice-assistant-nav"
-                  class="nav-link sidebar-btn"
-                  routerLinkActive="btn-active"
-                  routerLink="voice"
-                >
-                  <svg
-                    width="35px"
-                    height="35px"
-                    viewBox="0 0 48 48"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <defs></defs>
-                    <circle class="a" cx="14.3548" cy="19.496" r="4.934" />
-                    <path
-                      class="a"
-                      d="M24.7339,33.2758v1.6906a1.641,1.641,0,0,1-1.6447,1.6446H6.1447A1.641,1.641,0,0,1,4.5,34.9664V33.2758c2.1586-7.0207,18.973-5.8163,20.2339,0Z"
-                    />
-                    <path class="a" d="M25.258,20.877v5.0323" />
-                    <path class="a" d="M29.8186,16.2116V30.5745" />
-                    <path class="a" d="M34.3791,11.3891V35.3972" />
-                    <path class="a" d="M43.5,20.877v5.0323" />
-                    <path class="a" d="M38.94,16.2116V30.5745" />
-                  </svg>
-                  Voice Assistant
-                </a>
-              </li>
-              <li class="nav-item" role="presentation">
-                <a
-                  id="program-nav"
-                  class="nav-link sidebar-btn"
-                  routerLinkActive="btn-active"
-                  routerLink="program"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    height="35px"
-                    viewBox="0 0 24 24"
-                    width="35px"
-                  >
-                    <path
-                      d="M8.7 15.9L4.8 12l3.9-3.9c.39-.39.39-1.01 0-1.4-.39-.39-1.01-.39-1.4 0l-4.59 4.59c-.39.39-.39 1.02 0 1.41l4.59 4.6c.39.39 1.01.39 1.4 0 .39-.39.39-1.01 0-1.4zm6.6 0l3.9-3.9-3.9-3.9c-.39-.39-.39-1.01 0-1.4.39-.39 1.01-.39 1.4 0l4.59 4.59c.39.39.39 1.02 0 1.41l-4.59 4.6c-.39.39-1.01.39-1.4 0-.39-.39-.39-1.01 0-1.4z"
-                    />
-                  </svg>
-                  Program
-                </a>
-              </li>
-            </ul>
-          </nav>
-        </div>
-      </div>
-      <div class="img-fluid mx-auto mb-5">
-        <img
-          src="../assets/icon-cerebra.png"
-          alt="Bottom Image"
-          width="35"
-          height="35"
-        />
-      </div>
-    </aside>
-  </div>
-  <div class="content-wrapper">
-    <div class="container-fluid">
-      <div class="row">
-        <div class="col-auto m-0 p-0 mt-5">
-          <button
-            id="hamburger-button"
-            class="btn bi bi-list"
-            data-widget="pushmenu"
-          ></button>
-        </div>
-        <div class="col">
-          <router-outlet></router-outlet>
-        </div>
-      </div>
+                <div class="sidebar mt-12">
+                    <nav class="mt-12">
+                        <ul
+                            class="nav nav-pills nav-sidebar flex-column"
+                            data-widget="treeview"
+                            role="menu"
+                            routerLinkActive="show">
+                            <li
+                                class="nav-item"
+                                role="presentation">
+                                <a
+                                    class="nav-link sidebar-btn"
+                                    id="joint-nav"
+                                    [class.btn-active]="isActiveRoute"
+                                    routerLink="head">
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        height="35px"
+                                        viewBox="0 0 24 24"
+                                        width="35px">
+                                        <path
+                                            d="M17 16l-4-4V8.82c1.35-.49 2.26-1.89 1.93-3.46-.25-1.18-1.23-2.12-2.42-2.32C10.63 2.73 9 4.17 9 6c0 1.3.84 2.4 2 2.82V12l-4 4H4c-.55 0-1 .45-1 1v3c0 .55.45 1 1 1h3c.55 0 1-.45 1-1v-2.05l4-4.2 4 4.2V20c0 .55.45 1 1 1h3c.55 0 1-.45 1-1v-3c0-.55-.45-1-1-1h-3z" />
+                                    </svg>
+                                    Joint Control
+                                </a>
+                            </li>
+                            <li
+                                class="nav-item"
+                                role="presentation">
+                                <a
+                                    id="camera-nav"
+                                    class="nav-link sidebar-btn"
+                                    routerLinkActive="btn-active"
+                                    routerLink="camera">
+                                    <svg
+                                        width="35px"
+                                        height="35px"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path
+                                            d="M4 6H16C16.55 6 17 6.45 17 7V10.5L21 6.5V17.5L17 13.5V17C17 17.55 16.55 18 16 18H4C3.45 18 3 17.55 3 17V7C3 6.45 3.45 6 4 6Z" />
+                                    </svg>
+                                    Camera
+                                </a>
+                            </li>
+                            <li
+                                class="nav-item"
+                                role="presentation">
+                                <a
+                                    id="voice-assistant-nav"
+                                    class="nav-link sidebar-btn"
+                                    routerLinkActive="btn-active"
+                                    routerLink="voice">
+                                    <svg
+                                        width="35px"
+                                        height="35px"
+                                        viewBox="0 0 48 48"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <defs></defs>
+                                        <circle
+                                            class="a"
+                                            cx="14.3548"
+                                            cy="19.496"
+                                            r="4.934" />
+                                        <path
+                                            class="a"
+                                            d="M24.7339,33.2758v1.6906a1.641,1.641,0,0,1-1.6447,1.6446H6.1447A1.641,1.641,0,0,1,4.5,34.9664V33.2758c2.1586-7.0207,18.973-5.8163,20.2339,0Z" />
+                                        <path
+                                            class="a"
+                                            d="M25.258,20.877v5.0323" />
+                                        <path
+                                            class="a"
+                                            d="M29.8186,16.2116V30.5745" />
+                                        <path
+                                            class="a"
+                                            d="M34.3791,11.3891V35.3972" />
+                                        <path
+                                            class="a"
+                                            d="M43.5,20.877v5.0323" />
+                                        <path
+                                            class="a"
+                                            d="M38.94,16.2116V30.5745" />
+                                    </svg>
+                                    Voice Assistant
+                                </a>
+                            </li>
+                            <li
+                                class="nav-item"
+                                role="presentation">
+                                <a
+                                    id="program-nav"
+                                    class="nav-link sidebar-btn"
+                                    routerLinkActive="btn-active"
+                                    routerLink="program">
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        height="35px"
+                                        viewBox="0 0 24 24"
+                                        width="35px">
+                                        <path
+                                            d="M8.7 15.9L4.8 12l3.9-3.9c.39-.39.39-1.01 0-1.4-.39-.39-1.01-.39-1.4 0l-4.59 4.59c-.39.39-.39 1.02 0 1.41l4.59 4.6c.39.39 1.01.39 1.4 0 .39-.39.39-1.01 0-1.4zm6.6 0l3.9-3.9-3.9-3.9c-.39-.39-.39-1.01 0-1.4.39-.39 1.01-.39 1.4 0l4.59 4.59c.39.39.39 1.02 0 1.41l-4.59 4.6c-.39.39-1.01.39-1.4 0-.39-.39-.39-1.01 0-1.4z" />
+                                    </svg>
+                                    Program
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+            <div class="img-fluid mx-auto mb-5">
+                <img
+                    src="../assets/icon-cerebra.png"
+                    alt="Bottom Image"
+                    width="35"
+                    height="35" />
+            </div>
+        </aside>
     </div>
-  </div>
+    <div class="content-wrapper">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-auto m-0 p-0 mt-5">
+                    <button
+                        id="hamburger-button"
+                        class="btn bi bi-list"
+                        data-widget="pushmenu"></button>
+                </div>
+                <div class="col">
+                    <router-outlet></router-outlet>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
