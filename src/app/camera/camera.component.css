@@ -5,7 +5,7 @@ video {
   object-fit: cover;
 }
 
-.qualityFactor{
+.qualityFactor {
   transform: rotate(180deg);
 }
 
@@ -17,7 +17,6 @@ video {
   fill: #ffffff;
   stroke: #ffffff;
 }
-
 
 #cameraToggle {
   padding-top: 8px;
@@ -33,52 +32,51 @@ video {
 }
 
 .pink-corner-frame {
-  background: url('../../assets/ep-br.png') bottom right no-repeat, 
-              url('../../assets/ep-tr.png') top right no-repeat, 
-              url('../../assets/ep-tl.png') top left no-repeat, 
-              url('../../assets/ep-bl.png') bottom left no-repeat, 
-              url("../../assets/bg-gesamt.png") center scroll;
-
+  background:
+    url("../../assets/ep-br.png") bottom right no-repeat,
+    url("../../assets/ep-tr.png") top right no-repeat,
+    url("../../assets/ep-tl.png") top left no-repeat,
+    url("../../assets/ep-bl.png") bottom left no-repeat,
+    url("../../assets/bg-gesamt.png") center scroll;
 }
 
 .video-nav-element span {
   vertical-align: middle;
-  padding-left: .25rem;
+  padding-left: 0.25rem;
   font-size: 13px;
   font-weight: 600;
-  letter-spacing: .33px;
+  letter-spacing: 0.33px;
 }
 
 .video-nav-element svg path {
-  fill: #FFFFFF;
-  transition: fill .15s ease;
+  fill: #ffffff;
+  transition: fill 0.15s ease;
 }
 
 .video-nav-element:hover svg path {
   fill: #e10072;
-  transition: fill .15s ease;
+  transition: fill 0.15s ease;
 }
 
-.video-nav-element:hover{
+.video-nav-element:hover {
   color: #e10072;
   background-color: transparent;
 }
 
-.show .video-nav-element svg path{
+.show .video-nav-element svg path {
   fill: #e10072;
 }
 
-.show .video-nav-element{
+.show .video-nav-element {
   color: #e10072;
   background-color: transparent;
 }
 
-.showPopover svg path{
+.showPopover svg path {
   fill: #e10072;
 }
 
-.showPopover{
+.showPopover {
   color: #e10072;
   background-color: transparent;
 }
-

@@ -16,7 +16,8 @@
   padding-bottom: 4px;
 }
 
-.btn-active svg path, .btn-active .a {
+.btn-active svg path,
+.btn-active .a {
   fill: #e10072;
   stroke: #e10072;
 }
@@ -57,14 +58,14 @@
   color: white;
 }
 
-.nav-sidebar>.nav-item.menu-open>.nav-link,
-[class*=sidebar-light-] .nav-sidebar>.nav-link {
+.nav-sidebar > .nav-item.menu-open > .nav-link,
+[class*="sidebar-light-"] .nav-sidebar > .nav-link {
   color: #ffffff;
   border-bottom: #e10072 solid 4px;
 }
 
-.nav-sidebar>.nav-item.menu-open>.nav-link,
-[class*=sidebar-light-] .nav-sidebar>.nav-link>svg>path {
+.nav-sidebar > .nav-item.menu-open > .nav-link,
+[class*="sidebar-light-"] .nav-sidebar > .nav-link > svg > path {
   fill: #e10072;
   stroke: #e10072;
 }

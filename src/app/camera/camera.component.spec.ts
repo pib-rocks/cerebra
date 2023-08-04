@@ -11,13 +11,12 @@ import { By } from "@angular/platform-browser";
 import { SliderComponent } from "../slider/slider.component";
 import { NgbPopover } from "@ng-bootstrap/ng-bootstrap";
 
-
 describe("CameraComponent", () => {
   let component: CameraComponent;
   let fixture: ComponentFixture<CameraComponent>;
   let rosService: RosService;
-  let spyUnsubscribeCamera: jasmine.Spy<() => void>
-  let videoSettingsButton : HTMLButtonElement;
+  let spyUnsubscribeCamera: jasmine.Spy<() => void>;
+  let videoSettingsButton: HTMLButtonElement;
 
   beforeEach(async () => {
     TestBed.configureTestingModule({
@@ -29,7 +28,7 @@ describe("CameraComponent", () => {
     fixture = TestBed.createComponent(CameraComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
-    spyUnsubscribeCamera = spyOn(rosService,'unsubscribeCameraTopic')
+    spyUnsubscribeCamera = spyOn(rosService, "unsubscribeCameraTopic");
     videoSettingsButton = fixture.nativeElement.querySelector("#videosettings");
   });
 
@@ -57,25 +56,27 @@ describe("CameraComponent", () => {
 
   it("should subscribe to the message receiver when the component is instantiated", () => {
     const receiver$ = rosService.cameraReceiver$;
-    const spy = spyOn(receiver$, 'subscribe')
-    component.ngOnInit()
+    const spy = spyOn(receiver$, "subscribe");
+    component.ngOnInit();
     expect(spy).toHaveBeenCalled();
   });
 
   it("size should be set to the value of the behaviourSubject when the component is instantiated", () => {
-    const spy = spyOn(component, 'setSize')
-    component.ngOnInit()
+    const spy = spyOn(component, "setSize");
+    component.ngOnInit();
     expect(spy).toHaveBeenCalled();
   });
 
-  it("setsize should send the size message via setPreviewSize method in rosService",fakeAsync ( () => {
-    spyOn(component,'setSize').and.callThrough();
-    spyOn(rosService,'setPreviewSize');
+  it("setsize should send the size message via setPreviewSize method in rosService", fakeAsync(() => {
+    spyOn(component, "setSize").and.callThrough();
+    spyOn(rosService, "setPreviewSize");
     const width = 1920;
     const height = 1080;
-    const resolution = 'FHD'
+    const resolution = "FHD";
     component.setSize(width, height);
-    expect(component.selectedSize).toBe(height + 'p' + ' ' + '(' + resolution + ')');
+    expect(component.selectedSize).toBe(
+      height + "p" + " " + "(" + resolution + ")",
+    );
     expect(component.isLoading).toBeTrue();
     expect(rosService.setPreviewSize).toHaveBeenCalledWith(width, height);
     tick(1500);
@@ -83,17 +84,17 @@ describe("CameraComponent", () => {
   }));
 
   it("should toggle the camera when i click on the camera icon", () => {
-    const spyStartCamera = spyOn(component, 'startCamera');
-    const spyStopCamera = spyOn(component, 'stopCamera');
+    const spyStartCamera = spyOn(component, "startCamera");
+    const spyStopCamera = spyOn(component, "stopCamera");
     const toggleBtn = fixture.debugElement.query(By.css("#toggleCamera"));
-    toggleBtn.nativeElement.click()
+    toggleBtn.nativeElement.click();
     expect(spyStartCamera).toHaveBeenCalled();
-    toggleBtn.nativeElement.click()
+    toggleBtn.nativeElement.click();
     expect(spyStopCamera).toHaveBeenCalled();
   });
 
   it("should change the running state of the camera when clicking camera icon", () => {
-    const spyOnToggleCamera = spyOn(component, 'toggleCameraState');
+    const spyOnToggleCamera = spyOn(component, "toggleCameraState");
     const toggleBtn = fixture.debugElement.query(By.css("#toggleCamera"));
     const cameraActiveState = component.isCameraActive;
     toggleBtn.nativeElement.click();
@@ -107,7 +108,7 @@ describe("CameraComponent", () => {
   });
 
   it("startCamera should subscribe to the camera topic", () => {
-    const spySubscribe = spyOn(rosService,'subscribeCameraTopic')
+    const spySubscribe = spyOn(rosService, "subscribeCameraTopic");
     component.startCamera();
     expect(spySubscribe).toHaveBeenCalled();
   });
@@ -116,5 +117,4 @@ describe("CameraComponent", () => {
     component.ngOnDestroy();
     expect(spyUnsubscribeCamera).toHaveBeenCalled();
   });
-
 });

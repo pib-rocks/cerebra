@@ -1,0 +1,9 @@
+*.yml
+
+*.json
+
+*.eslintcache
+
+*.properties
+
+*.ico

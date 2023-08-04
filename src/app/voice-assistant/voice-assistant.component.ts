@@ -17,11 +17,10 @@ export class VoiceAssistantComponent implements OnInit {
   activationFlag: FormControl = new FormControl(false);
   constructor(private rosService: RosService) {}
   ngOnInit(): void {
-    this.rosService.voiceAssistantReceiver$.subscribe(value => {
+    this.rosService.voiceAssistantReceiver$.subscribe((value) => {
       this.activationFlag.setValue(JSON.parse(value)[0].activationFlag);
-  })
+    });
   }
-
 
   updateVoiceSettings() {
     if (this.voiceFormGroup.valid) {

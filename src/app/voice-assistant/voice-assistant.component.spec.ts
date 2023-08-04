@@ -65,7 +65,7 @@ describe("VoiceAssistantComponent", () => {
     expect(component.updateVoiceSettings).toHaveBeenCalled();
     expect(rosService.sendSliderMessage).not.toHaveBeenCalled();
     expect(compiled.querySelector("span").textContent).toContain(
-      "threshhold must be between 0.1 and 2"
+      "threshhold must be between 0.1 and 2",
     );
   });
 });

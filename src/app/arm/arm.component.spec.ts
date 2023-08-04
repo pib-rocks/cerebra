@@ -43,7 +43,9 @@ describe("ArmComponent", () => {
   it("should call reset() and set all slider values to 0 after clicking reset button", () => {
     component.side = "left";
     fixture.detectChanges();
-    const childComponents = fixture.debugElement.queryAll(By.css("app-motor-control"));
+    const childComponents = fixture.debugElement.queryAll(
+      By.css("app-motor-control"),
+    );
     const spies: jasmine.Spy<any>[] = [];
     for (const childComponent of childComponents) {
       spyOn(childComponent.componentInstance, "sendMessage");

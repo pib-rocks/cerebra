@@ -1,8 +1,14 @@
-import { Component, Input, OnInit, QueryList, ViewChildren } from '@angular/core';
-import { ActivatedRoute, Params,Router } from '@angular/router';
-import { MotorControlComponent } from '../motor-control/motor-control.component';
-import { MotorCurrentMessage } from '../shared/currentMessage';
-import { RosService } from '../shared/ros.service';
+import {
+  Component,
+  Input,
+  OnInit,
+  QueryList,
+  ViewChildren,
+} from "@angular/core";
+import { ActivatedRoute, Params, Router } from "@angular/router";
+import { MotorControlComponent } from "../motor-control/motor-control.component";
+import { MotorCurrentMessage } from "../shared/currentMessage";
+import { RosService } from "../shared/ros.service";
 
 @Component({
   selector: "app-right-arm",
@@ -11,18 +17,23 @@ import { RosService } from '../shared/ros.service';
 })
 export class ArmComponent implements OnInit {
   @Input() side = "Left";
-  @ViewChildren(MotorControlComponent) childSilderComponents!: QueryList<MotorControlComponent>;
+  @ViewChildren(MotorControlComponent)
+  childSilderComponents!: QueryList<MotorControlComponent>;
 
-  constructor(private rosService: RosService, private route: ActivatedRoute, private router: Router) { }
+  constructor(
+    private rosService: RosService,
+    private route: ActivatedRoute,
+    private router: Router,
+  ) {}
 
   ngOnInit(): void {
     this.route.params.subscribe((params: Params) => {
-      this.side = params['side'];
-    })
-    if (!(this.side === 'right' || this.side ==='left')){
-      this.router.navigate(['/head']);
+      this.side = params["side"];
+    });
+    if (!(this.side === "right" || this.side === "left")) {
+      this.router.navigate(["/head"]);
     }
-    this.rosService.currentReceiver$.subscribe(message => {
+    this.rosService.currentReceiver$.subscribe((message) => {
       for (const cl of this.currentLeft) {
         if (message["motor"] === cl["motor"]) {
           console.log("current value" + message["currentValue"]);
