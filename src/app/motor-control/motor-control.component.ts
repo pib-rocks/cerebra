@@ -482,7 +482,7 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
             clearTimeout(this.timer);
             this.timer = setTimeout(() => {
                 this.sendMessage();
-            }, 100);
+            }, 500);
         }
     }
 
@@ -490,6 +490,6 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
         clearTimeout(this.timer);
         this.timer = setTimeout(() => {
             this.sendSettingMessage();
-        }, 100);
+        }, 500);
     }
 }
