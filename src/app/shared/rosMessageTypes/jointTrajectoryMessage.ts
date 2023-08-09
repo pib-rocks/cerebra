@@ -1,0 +1,10 @@
+import {stdMessageHeader} from "./stdMessageHeader";
+import {jointTrajectoryPoint} from "./jointTrajectoryPoint";
+
+// TypeScript implementation of the ROS Common-Interfaces JointTrajectoryMessage
+// Documentation at: https://github.com/ros2/common_interfaces/blob/rolling/trajectory_msgs/msg/JointTrajectory.msg
+export interface jointTrajectoryMessage {
+    header: stdMessageHeader;
+    joint_names: string[];
+    points: jointTrajectoryPoint[];
+}

@@ -5,6 +5,10 @@ import {Message} from "./message";
 import {Motor} from "./motor";
 import {VoiceAssistant} from "./voice-assistant";
 import {MotorCurrentMessage} from "./currentMessage";
+import {jointTrajectoryMessage} from "./rosMessageTypes/jointTrajectoryMessage";
+import {stdMessageHeader} from "./rosMessageTypes/stdMessageHeader";
+import {rosTime} from "./rosMessageTypes/rosTime";
+import {jointTrajectoryPoint} from "./rosMessageTypes/jointTrajectoryPoint";
 
 @Injectable({
     providedIn: "root",
@@ -111,6 +115,35 @@ export class RosService {
     }
 
     sendSliderMessage(msg: Message | VoiceAssistant | MotorCurrentMessage) {
+        let stamp: rosTime = {
+            sec: 2,
+            nanosec: 0,
+        };
+
+        const stdMessageHeader: stdMessageHeader = {
+            seq: 0,
+            stamp,
+            frame_id: "1",
+        };
+
+        let time_from_start: rosTime = {
+            sec: 1,
+            nanosec: 0,
+        };
+
+        let positions: Float64Array = new Float64Array([1.0, 2.0, 3.0]);
+
+        const jointTrajectoryPoint: jointTrajectoryPoint = {
+            positions,
+            time_from_start,
+        };
+
+        const jointTrajectoryMessage: jointTrajectoryMessage = {
+            header: stdMessageHeader,
+            joint_names: ["1", "2"],
+            points: [jointTrajectoryPoint, jointTrajectoryPoint],
+        };
+
         const json = JSON.parse(JSON.stringify(msg));
         const parameters = Object.keys(json).map((key) => ({[key]: json[key]}));
         const message = new ROSLIB.Message({data: JSON.stringify(parameters)});
