@@ -5,10 +5,6 @@ import {Message} from "./message";
 import {Motor} from "./motor";
 import {VoiceAssistant} from "./voice-assistant";
 import {MotorCurrentMessage} from "./currentMessage";
-import {jointTrajectoryMessage} from "./rosMessageTypes/jointTrajectoryMessage";
-import {stdMessageHeader} from "./rosMessageTypes/stdMessageHeader";
-import {rosTime} from "./rosMessageTypes/rosTime";
-import {jointTrajectoryPoint} from "./rosMessageTypes/jointTrajectoryPoint";
 
 @Injectable({
     providedIn: "root",
@@ -31,6 +27,11 @@ export class RosService {
     private timerPeriodTopic!: ROSLIB.Topic;
     private previewSizeTopic!: ROSLIB.Topic;
     private qualityFactorTopic!: ROSLIB.Topic;
+
+    //Test JT
+    public jointTrajectoryTopic!: ROSLIB.Topic;
+    //Test JT Ende
+
     sharedAllFingersValueSource = new Subject<Message>();
     sharedValue$ = this.sharedAllFingersValueSource.asObservable();
 
@@ -38,6 +39,7 @@ export class RosService {
     private readonly topicVoiceName = "/cerebra_voice_settings";
     private readonly topicCurrentName = "/motor_status";
     private readonly topicCameratName = "/camera_topic";
+
     private motors: Motor[] = [];
 
     constructor() {
@@ -59,6 +61,11 @@ export class RosService {
             this.subscribeQualityFactorTopic();
             this.subscribeTimePeriod();
             this.subscribeVoiceAssistant();
+
+            //Test JT
+            this.jointTrajectoryTopic =
+                this.createJointTrajectoryTopicPublisher();
+            //Test JT Ende
         });
         this.ros.on("error", (error: string) => {
             console.log("Error connecting to ROSBridge server:", error);
@@ -68,6 +75,17 @@ export class RosService {
             console.log("Disconnected from ROSBridge server.");
         });
     }
+
+    //Test JT
+    createJointTrajectoryTopicPublisher() {
+        return new ROSLIB.Topic({
+            ros: this.Ros,
+            name: "joint_trajectory",
+            messageType: "trajectory_msgs/JointTrajectory",
+        });
+    }
+    //Test JT Ende
+
     createTimePeriodTopic(): ROSLIB.Topic<ROSLIB.Message> {
         return new ROSLIB.Topic({
             ros: this.ros,
@@ -115,35 +133,6 @@ export class RosService {
     }
 
     sendSliderMessage(msg: Message | VoiceAssistant | MotorCurrentMessage) {
-        let stamp: rosTime = {
-            sec: 2,
-            nanosec: 0,
-        };
-
-        const stdMessageHeader: stdMessageHeader = {
-            seq: 0,
-            stamp,
-            frame_id: "1",
-        };
-
-        let time_from_start: rosTime = {
-            sec: 1,
-            nanosec: 0,
-        };
-
-        let positions: Float64Array = new Float64Array([1.0, 2.0, 3.0]);
-
-        const jointTrajectoryPoint: jointTrajectoryPoint = {
-            positions,
-            time_from_start,
-        };
-
-        const jointTrajectoryMessage: jointTrajectoryMessage = {
-            header: stdMessageHeader,
-            joint_names: ["1", "2"],
-            points: [jointTrajectoryPoint, jointTrajectoryPoint],
-        };
-
         const json = JSON.parse(JSON.stringify(msg));
         const parameters = Object.keys(json).map((key) => ({[key]: json[key]}));
         const message = new ROSLIB.Message({data: JSON.stringify(parameters)});
@@ -171,7 +160,7 @@ export class RosService {
     setUpRos() {
         let rosUrl: string;
         if (isDevMode()) {
-            rosUrl = "192.168.220.110";
+            rosUrl = "192.168.220.109";
         } else {
             rosUrl = window.location.hostname;
         }
