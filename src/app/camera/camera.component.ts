@@ -2,10 +2,6 @@ import {Component, OnDestroy, OnInit} from "@angular/core";
 import {FormControl} from "@angular/forms";
 import * as ROSLIB from "roslib";
 import {RosService} from "../shared/ros.service";
-import {jointTrajectoryMessage} from ".././shared/rosMessageTypes/jointTrajectoryMessage";
-import {stdMessageHeader} from ".././shared/rosMessageTypes/stdMessageHeader";
-import {rosTime} from ".././shared/rosMessageTypes/rosTime";
-import {jointTrajectoryPoint} from ".././shared/rosMessageTypes/jointTrajectoryPoint";
 
 @Component({
     selector: "app-camera",
@@ -84,44 +80,7 @@ export class CameraComponent implements OnInit, OnDestroy {
     }
 
     startCamera() {
-        //Test JT
-        let stamp: rosTime = {
-            sec: 2,
-            nanosec: 0,
-        };
-
-        const stdMessageHeader: stdMessageHeader = {
-            seq: 0,
-            stamp,
-            frame_id: "1",
-        };
-
-        let time_from_start: rosTime = {
-            sec: 1,
-            nanosec: 0,
-        };
-
-        let positions: Float64Array = new Float64Array([1.0, 2.0, 3.0]);
-
-        const jointTrajectoryPoint: jointTrajectoryPoint = {
-            positions,
-            time_from_start,
-        };
-
-        const jointTrajectoryMessage: jointTrajectoryMessage = {
-            header: stdMessageHeader,
-            joint_names: ["1", "2"],
-            points: [jointTrajectoryPoint, jointTrajectoryPoint],
-        };
-
-        for (var i = 0; i < 100; i++) {
-            const message = new ROSLIB.Message(jointTrajectoryMessage.toString);
-            this.rosService.jointTrajectoryTopic.publish(message);
-            console.log(i);
-        }
-        //Test JT Ende
-
-        //this.rosService.subscribeCameraTopic();
+        this.rosService.subscribeCameraTopic();
     }
 
     stopCamera() {

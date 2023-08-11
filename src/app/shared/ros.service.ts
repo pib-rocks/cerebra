@@ -5,7 +5,9 @@ import {Message} from "./message";
 import {Motor} from "./motor";
 import {VoiceAssistant} from "./voice-assistant";
 import {MotorCurrentMessage} from "./currentMessage";
-
+// Test JT
+import {jointTrajectoryMessage} from "../shared/rosMessageTypes/jointTrajectoryMessage";
+// Test JT Ende
 @Injectable({
     providedIn: "root",
 })
@@ -149,6 +151,19 @@ export class RosService {
             console.log("Sent message " + JSON.stringify(message));
         }
     }
+
+    // Test JT
+    sendJointTrajectoryMessage(jtMsg: jointTrajectoryMessage) {
+        for (var i = 0; i < 9; i++) {
+            this.jointTrajectoryTopic.publish(
+                new ROSLIB.Message(jtMsg.toString),
+            );
+
+            console.log("Sent message " + JSON.stringify(jtMsg));
+            console.log(i);
+        }
+    }
+    // Test JT Ende
 
     getReceiversByMotorName(motorName: string): Subject<Message>[] {
         const foundMotors = this.motors.filter((m) => m.motor === motorName);

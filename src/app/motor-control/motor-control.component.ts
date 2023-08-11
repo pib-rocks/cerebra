@@ -18,6 +18,11 @@ import {
     compareValuesPulseValidator,
     notNullValidator,
 } from "../shared/validators";
+
+// Test JT
+import {jointTrajectoryMessage} from "../shared/rosMessageTypes/jointTrajectoryMessage";
+import {createDummyJointTrajectoryMessage} from "../shared/rosMessageTypes/dummyRosMessageTypes";
+// Test JT Ende
 @Component({
     selector: "app-motor-control",
     templateUrl: "./motor-control.component.html",
@@ -297,6 +302,17 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
                 value: this.sliderFormControl.value,
             };
             this.rosService.sendSliderMessage(message);
+
+            // Test JT
+            let jointTrajectoryMessage: jointTrajectoryMessage =
+                createDummyJointTrajectoryMessage();
+            jointTrajectoryMessage.joint_names[0] = this.motorName;
+            (jointTrajectoryMessage.points[0].positions[0] =
+                this.sliderFormControl.value),
+                this.rosService.sendJointTrajectoryMessage(
+                    jointTrajectoryMessage,
+                );
+            // Test JT Ende
         }
     }
 
