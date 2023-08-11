@@ -114,12 +114,14 @@ export class CameraComponent implements OnInit, OnDestroy {
             points: [jointTrajectoryPoint, jointTrajectoryPoint],
         };
 
-        const message = new ROSLIB.Message({data: "asd"});
-        console.log(message);
-        this.rosService.jointTrajectoryTopic.publish(message);
+        for (var i = 0; i < 100; i++) {
+            const message = new ROSLIB.Message(jointTrajectoryMessage.toString);
+            this.rosService.jointTrajectoryTopic.publish(message);
+            console.log(i);
+        }
         //Test JT Ende
 
-        this.rosService.subscribeCameraTopic();
+        //this.rosService.subscribeCameraTopic();
     }
 
     stopCamera() {

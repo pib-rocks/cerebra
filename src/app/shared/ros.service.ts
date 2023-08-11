@@ -80,8 +80,8 @@ export class RosService {
     createJointTrajectoryTopicPublisher() {
         return new ROSLIB.Topic({
             ros: this.Ros,
-            name: "joint_trajectory",
-            messageType: "trajectory_msgs/JointTrajectory",
+            name: "/joint_trajectory",
+            messageType: "trajectory_msgs/msg/JointTrajectory",
         });
     }
     //Test JT Ende
