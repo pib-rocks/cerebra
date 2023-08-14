@@ -304,7 +304,7 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
             this.rosService.sendSliderMessage(message);
 
             // Test JT
-            let jointTrajectoryMessage: jointTrajectoryMessage =
+            const jointTrajectoryMessage: jointTrajectoryMessage =
                 createDummyJointTrajectoryMessage();
             jointTrajectoryMessage.joint_names[0] = this.motorName;
             (jointTrajectoryMessage.points[0].positions[0] =

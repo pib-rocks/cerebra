@@ -154,10 +154,10 @@ export class RosService {
 
     // Test JT
     sendJointTrajectoryMessage(jtMsg: jointTrajectoryMessage) {
+        const message = new ROSLIB.Message(jtMsg.toString);
+
         for (var i = 0; i < 9; i++) {
-            this.jointTrajectoryTopic.publish(
-                new ROSLIB.Message(jtMsg.toString),
-            );
+            this.jointTrajectoryTopic.publish(message);
 
             console.log("Sent message " + JSON.stringify(jtMsg));
             console.log(i);

@@ -4,7 +4,7 @@ import {jointTrajectoryPoint} from "./jointTrajectoryPoint";
 import {jointTrajectoryMessage} from "./jointTrajectoryMessage";
 
 export function createDummyStdMessageHeader(): stdMessageHeader {
-    let stamp: rosTime = {
+    const stamp: rosTime = {
         sec: 1,
         nanosec: 2,
     };
@@ -19,12 +19,12 @@ export function createDummyStdMessageHeader(): stdMessageHeader {
 }
 
 export function createDummyJointTrajectoryPoint(): jointTrajectoryPoint {
-    let time_from_start: rosTime = {
+    const time_from_start: rosTime = {
         sec: 5,
         nanosec: 6,
     };
 
-    let positions: Float64Array = new Float64Array([7.0]);
+    const positions: Float64Array = new Float64Array([7.0]);
 
     const jointTrajectoryPoint: jointTrajectoryPoint = {
         positions,
