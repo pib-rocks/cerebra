@@ -7,11 +7,11 @@ $form-range-track-bg: #dee2e6;
 $form-range-thumb-bg: $pib-blue;
 
 .nav .nav-item .nav-link {
-  color: $pib-pink;
+    color: $pib-pink;
 }
 
 $theme-colors: (
-  "primary": $pib-pink
-  );
+    "primary": $pib-pink,
+);
 
 @import "../../node_modules/bootstrap/scss/bootstrap";

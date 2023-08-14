@@ -1,96 +1,100 @@
 <app-nav-bar></app-nav-bar>
 <div class="container-fluid">
-  <div class="row">
-    <div class="col">
-      <div class="d-flex flex-row-reverse">
-        <button id="home-position-btn" type="button" class="mt-3 btn" (click)="reset()">
-          <img src="../../assets/icon-home-position.png" alt="" width="19px" height="24px">
-          Home position
-        </button>
-      </div>
-      <div *ngIf="side === 'left'">
-        <ng-container *ngFor="let f of leftArm">
-          <app-motor-control
-            [motorName]="f.topic"
-            [labelName]="f.label | titlecase"
-          ></app-motor-control>
-        </ng-container>
-      </div>
-      <div *ngIf="side === 'right'">
-        <ng-container *ngFor="let f of rightArm">
-          <app-motor-control
-            [motorName]="f.topic"
-            [labelName]="f.label | titlecase"
-          ></app-motor-control>
-        </ng-container>
-      </div>
-    </div>
+    <div class="row">
+        <div class="col">
+            <div class="d-flex flex-row-reverse">
+                <button
+                    id="home-position-btn"
+                    type="button"
+                    class="mt-3 btn"
+                    (click)="reset()">
+                    <img
+                        src="../../assets/icon-home-position.png"
+                        alt=""
+                        width="19px"
+                        height="24px" />
+                    Home position
+                </button>
+            </div>
+            <div *ngIf="side === 'left'">
+                <ng-container *ngFor="let f of leftArm">
+                    <app-motor-control
+                        [motorName]="f.topic"
+                        [labelName]="f.label | titlecase"></app-motor-control>
+                </ng-container>
+            </div>
+            <div *ngIf="side === 'right'">
+                <ng-container *ngFor="let f of rightArm">
+                    <app-motor-control
+                        [motorName]="f.topic"
+                        [labelName]="f.label | titlecase"></app-motor-control>
+                </ng-container>
+            </div>
+        </div>
 
-    <!--right hand image-->
-    <div class="col">
-      <div class="container">
-        <div class="container-div" *ngIf="side === 'right'">
-          <img
-            class="container"
-            style="width: auto; height: 40rem"
-            src="../../assets/arm_right.png"
-            alt=""
-          />
-          <ng-container *ngFor="let obj of currentRight">
-            <div [class]="obj['motor']">
-              <span class="current">{{ obj["value"] }} mA</span>
-              <div
-                [style.height]="obj['value'] / 80 + 'px'"
-                class="color-indicator"
-                [class.color-indicator50-80]="
+        <!--right hand image-->
+        <div class="col">
+            <div class="container">
+                <div
+                    class="container-div"
+                    *ngIf="side === 'right'">
+                    <img
+                        class="container"
+                        style="width: auto; height: 40rem"
+                        src="../../assets/arm_right.png"
+                        alt="" />
+                    <ng-container *ngFor="let obj of currentRight">
+                        <div [class]="obj['motor']">
+                            <span class="current">{{ obj["value"] }} mA</span>
+                            <div
+                                [style.height]="obj['value'] / 80 + 'px'"
+                                class="color-indicator"
+                                [class.color-indicator50-80]="
+obj['value'] / 40 > 50 && obj['value'] / 40 < 80
+"
+                                [class.color-indicator80-100]="obj['value'] / 40 >= 80"></div>
+                        </div>
+                    </ng-container>
+                </div>
+                <button
+                    *ngIf="side === 'right'"
+                    (click)="sendDummyMessage()"
+                    class="btn btn-primary"
+                    id="dummyBtnRight">
+                    Dummy Values
+                </button>
+            </div>
+            <!--left hand image-->
+            <div class="container">
+                <div
+                    class="container-div"
+                    *ngIf="side === 'left'">
+                    <img
+                        class="container"
+                        style="width: auto; height: 40rem"
+                        src="../../assets/arm_left.png"
+                        alt="" />
+                    <ng-container *ngFor="let obj of currentLeft">
+                        <div [class]="obj['motor']">
+                            <span class="current">{{ obj["value"] }} mA</span>
+                            <div
+                                [style.height]="obj['value'] / 80 + 'px'"
+                                class="color-indicator"
+                                [class.color-indicator50-80]="
                   obj['value'] / 40 > 50 && obj['value'] / 40 < 80
                 "
-                [class.color-indicator80-100]="obj['value'] / 40 >= 80"
-              ></div>
+                                [class.color-indicator80-100]="obj['value'] / 40 >= 80"></div>
+                        </div>
+                    </ng-container>
+                </div>
+                <button
+                    *ngIf="side === 'left'"
+                    (click)="sendDummyMessage()"
+                    class="btn btn-primary"
+                    id="dummyBtnLeft">
+                    Dummy Values
+                </button>
             </div>
-          </ng-container>
         </div>
-        <button
-          *ngIf="side === 'right'"
-          (click)="sendDummyMessage()"
-          class="btn btn-primary"
-          id="dummyBtnRight"
-        >
-          Dummy Values
-        </button>
-      </div>
-      <!--left hand image-->
-      <div class="container">
-        <div class="container-div" *ngIf="side === 'left'">
-          <img
-            class="container"
-            style="width: auto; height: 40rem"
-            src="../../assets/arm_left.png"
-            alt=""
-          />
-          <ng-container *ngFor="let obj of currentLeft">
-            <div [class]="obj['motor']">
-              <span class="current">{{ obj["value"] }} mA</span>
-              <div
-                [style.height]="obj['value'] / 80 + 'px'"
-                class="color-indicator"
-                [class.color-indicator50-80]="
-                  obj['value'] / 40 > 50 && obj['value'] / 40 < 80
-                "
-                [class.color-indicator80-100]="obj['value'] / 40 >= 80"
-              ></div>
-            </div>
-          </ng-container>
-        </div>
-        <button
-          *ngIf="side === 'left'"
-          (click)="sendDummyMessage()"
-          class="btn btn-primary"
-          id="dummyBtnLeft"
-        >
-          Dummy Values
-        </button>
-      </div>
     </div>
-  </div>
 </div>

@@ -8,7 +8,8 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "sonar": "sonar-scanner",
-    "lint": "ng lint"
+    "lint": "ng lint",
+    "prepare": "husky install"
   },
   "private": true,
   "dependencies": {
@@ -25,11 +26,6 @@
     "@ng-bootstrap/ng-bootstrap": "^14.0.1",
     "@popperjs/core": "^2.11.6",
     "admin-lte": "^3.2.0-rc",
-    "angular": "^1.8.3",
-    "angular-animate": "^1.8.3",
-    "angular-aria": "^1.8.3",
-    "angular-material": "^1.2.5",
-    "angular-messages": "^1.8.3",
     "bootstrap": "^5.3.0-alpha1",
     "bootstrap-icons": "^1.10.5",
     "font-awesome": "^4.7.0",
@@ -56,14 +52,23 @@
     "@typescript-eslint/parser": "5.48.2",
     "blockly": "^9.3.2",
     "eslint": "^8.33.0",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "husky": "^8.0.3",
     "jasmine-core": "~4.5.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.1.0",
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.0.0",
+    "lint-staged": "^13.2.3",
+    "prettier": "3.0.0",
     "sonar-scanner": "^3.1.0",
+    "stylelint-config-prettier": "^9.0.5",
     "ts-node": "^10.9.1",
     "typescript": "~4.9.4"
+  },
+  "lint-staged": {
+    "*.{js,html,css,scss,ts}": "prettier --write ."
   }
 }

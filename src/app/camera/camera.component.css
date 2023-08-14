@@ -1,15 +1,82 @@
 video {
-  display: block;
-  width: 100%;
-  height: auto;
-  object-fit: cover;
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: cover;
 }
 
-#dropdownbutton {
-  color: white;
-  background-color: #e6007e;
+.qualityFactor {
+    transform: rotate(180deg);
 }
 
-.qualityFactor{
-  transform: rotate(180deg);
+.cameraIcon {
+    border: none !important;
+}
+
+.cameraIcon path {
+    fill: #ffffff;
+    stroke: #ffffff;
+}
+
+#cameraToggle {
+    padding-top: 8px;
+}
+
+#cameraColumn img {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.video-settings-label {
+    font-size: 1rem;
+}
+
+.pink-corner-frame {
+    background:
+        url("../../assets/ep-br.png") bottom right no-repeat,
+        url("../../assets/ep-tr.png") top right no-repeat,
+        url("../../assets/ep-tl.png") top left no-repeat,
+        url("../../assets/ep-bl.png") bottom left no-repeat,
+        url("../../assets/bg-gesamt.png") center scroll;
+}
+
+.video-nav-element span {
+    vertical-align: middle;
+    padding-left: 0.25rem;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.33px;
+}
+
+.video-nav-element svg path {
+    fill: #ffffff;
+    transition: fill 0.15s ease;
+}
+
+.video-nav-element:hover svg path {
+    fill: #e10072;
+    transition: fill 0.15s ease;
+}
+
+.video-nav-element:hover {
+    color: #e10072;
+    background-color: transparent;
+}
+
+.show .video-nav-element svg path {
+    fill: #e10072;
+}
+
+.show .video-nav-element {
+    color: #e10072;
+    background-color: transparent;
+}
+
+.showPopover svg path {
+    fill: #e10072;
+}
+
+.showPopover {
+    color: #e10072;
+    background-color: transparent;
 }
