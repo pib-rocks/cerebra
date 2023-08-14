@@ -157,7 +157,7 @@ export class RosService {
         const message = new ROSLIB.Message(jtMsg);
 
         for (let i = 0; i < 9; i++) {
-            this.jointTrajectoryTopic.publish(message.toString);
+            this.jointTrajectoryTopic.publish(message);
 
             console.log("Sent message " + JSON.stringify(message));
             console.log(i);

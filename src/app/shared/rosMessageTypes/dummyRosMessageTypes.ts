@@ -10,9 +10,8 @@ export function createDummyStdMessageHeader(): stdMessageHeader {
     };
 
     const stdMessageHeader: stdMessageHeader = {
-        seq: 3,
         stamp,
-        frame_id: "4",
+        frame_id: "example_frame_id",
     };
 
     return stdMessageHeader;
@@ -24,7 +23,7 @@ export function createDummyJointTrajectoryPoint(): jointTrajectoryPoint {
         nanosec: 6,
     };
 
-    const positions: Float64Array = new Float64Array([7.0]);
+    const positions: number[] = [1.1, 2.2, 3.3];
 
     const jointTrajectoryPoint: jointTrajectoryPoint = {
         positions,
@@ -37,7 +36,7 @@ export function createDummyJointTrajectoryPoint(): jointTrajectoryPoint {
 export function createDummyJointTrajectoryMessage(): jointTrajectoryMessage {
     const jointTrajectoryMessage: jointTrajectoryMessage = {
         header: createDummyStdMessageHeader(),
-        joint_names: ["8"],
+        joint_names: ["joint_1", "joint_2", "joint_3"],
         points: [
             createDummyJointTrajectoryPoint(),
             createDummyJointTrajectoryPoint(),

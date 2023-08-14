@@ -2,7 +2,6 @@
 import {rosTime} from "./rosTime";
 
 export type stdMessageHeader = {
-    seq: number;
     stamp: rosTime;
     frame_id: string;
 };
