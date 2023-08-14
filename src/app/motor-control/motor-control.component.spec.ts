@@ -85,7 +85,7 @@ describe("MotorControlComponent", () => {
         expect(window.clearTimeout).toHaveBeenCalled();
         expect(window.setTimeout).toHaveBeenCalledWith(
             jasmine.any(Function),
-            500,
+            100,
         );
         const timeoutCallback = (
             window.setTimeout as unknown as jasmine.Spy
@@ -105,7 +105,7 @@ describe("MotorControlComponent", () => {
         expect(window.clearTimeout).toHaveBeenCalled();
         expect(window.setTimeout).toHaveBeenCalledWith(
             jasmine.any(Function),
-            500,
+            100,
         );
         const timeoutCallback = (
             window.setTimeout as unknown as jasmine.Spy
