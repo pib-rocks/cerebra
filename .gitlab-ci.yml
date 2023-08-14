@@ -25,7 +25,7 @@ static_analysis:
   stage: test
   allow_failure: false
   script:
-    - echo "runing static analysis"
+    - echo "running static analysis"
     - npm link @angular/cli
     - ng lint
   rules:
@@ -44,7 +44,7 @@ run_tests:
   stage: test
   allow_failure: false
   before_script:
-    - echo "runing unit tests"
+    - echo "running unit tests"
     - apt-get update
     - wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
     - apt install -y ./google-chrome*.deb;
@@ -74,8 +74,8 @@ sonarqube-check:
     paths:
       - .sonar/cache
   script:
-    - echo "runing sonarqube check"
-    - sonar-scanner
+    - echo "running sonarqube check"
+    - sonar-scanner -Dsonar.login=${SONAR_TOKEN}
   allow_failure: true
   rules:
     - if: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master" || $CI_COMMIT_BRANCH
@@ -84,7 +84,7 @@ build_app:
   stage: build
   image: ${IMAGE}
   script:
-    - echo "runing the build"
+    - echo "running the build"
     - npm link @angular/cli
     - ng build --configuration production
   artifacts:

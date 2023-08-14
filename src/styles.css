@@ -30,7 +30,7 @@
 .custom-switch.custom-switch-pib
     .custom-control-input:checked
     ~ .custom-control-label::after {
-    background-color: #e6007e;
+    background-color: #e10072;
 }
 
 .custom-switch.custom-switch-pib
@@ -50,10 +50,36 @@
     display: inline-block;
 }
 
+label {
+    color: #fff;
+    font-family: Titillium, sans-serif;
+}
+
 .myCustomModalClass {
-    z-index: 1050 !important;
+    z-index: 1060 !important;
+}
+
+.myCustomModalDialogeClass .modal-content {
+    border: solid 1px #fff;
+    background-color: #041939;
+}
+
+.videoSettingsPopOver .popover-body {
+    border: solid 1px #fff;
+    background-color: #041939;
+    min-width: 300px;
+    padding: 0.75rem 1.5rem;
+}
+
+.myCustomModalDialogeClass .modal-content app-slider {
+    padding: 0 30px 0 30px;
+}
+
+.myCustomModalDialogeClass .modal-content label {
+    padding: 0 30px 0 30px;
 }
 
 .myCustomBackdropClass {
     z-index: 1040 !important;
+    background-color: transparent !important;
 }

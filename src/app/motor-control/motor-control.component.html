@@ -48,8 +48,8 @@
             class="bubble-span overlay"
             id="bubble_span_{{ motorName }}"
             *ngIf="!isInputVisible"
-            (dblclick)="toggleInputVisible();">
-            {{bubbleFormControl.value}}°
+            (dblclick)="toggleInputVisible()">
+            {{ bubbleFormControl.value }}°
         </div>
     </div>
     <span
@@ -123,38 +123,38 @@
     </div>
     <span
         *ngIf="
-        pulseMinRange.hasError('notGreaterThan') ||
-        (pulseMaxRange.hasError('notGreaterThan') &&
-          (pulseMaxRange.touched || pulseMinRange.touched))
-      "
+      pulseMinRange.hasError('notGreaterThan') ||
+      (pulseMaxRange.hasError('notGreaterThan') &&
+        (pulseMaxRange.touched || pulseMinRange.touched))
+    "
         style="color: red"
         class="h-100 d-flex align-items-center justify-content-center"
         >min pulse can not be greater than max pulse</span
     >
     <span
         *ngIf="
-        pulseMinRange.hasError('max') ||
-        (pulseMinRange.hasError('min') && pulseMinRange.touched)
-      "
+      pulseMinRange.hasError('max') ||
+      (pulseMinRange.hasError('min') && pulseMinRange.touched)
+    "
         style="color: red"
         class="h-100 d-flex align-items-center justify-content-center"
         >pulse width must be between 0 and 65535 μs</span
     >
     <span
         *ngIf="
-        pulseMaxRange.hasError('max') ||
-        (pulseMaxRange.hasError('min') && pulseMaxRange.touched)
-      "
+      pulseMaxRange.hasError('max') ||
+      (pulseMaxRange.hasError('min') && pulseMaxRange.touched)
+    "
         style="color: red"
         class="h-100 d-flex align-items-center justify-content-center"
         >pulse width must be between 0 and 65535 μs</span
     >
     <span
         *ngIf="
-        pulseMinRange.hasError('nullValue') ||
-        (pulseMaxRange.hasError('nullValue') &&
-          (pulseMaxRange.touched || pulseMinRange.touched))
-      "
+      pulseMinRange.hasError('nullValue') ||
+      (pulseMaxRange.hasError('nullValue') &&
+        (pulseMaxRange.touched || pulseMinRange.touched))
+    "
         style="color: red"
         class="h-100 d-flex align-items-center justify-content-center"
         >pulse width must not be empty</span
@@ -195,9 +195,9 @@
     <span
         *ngIf="
       degreeMinFormcontrol.hasError('notGreaterThan') ||
-        (degreeMaxFormcontrol.hasError('notGreaterThan') &&
-          (degreeMaxFormcontrol.touched || degreeMinFormcontrol.touched))
-      "
+      (degreeMaxFormcontrol.hasError('notGreaterThan') &&
+        (degreeMaxFormcontrol.touched || degreeMinFormcontrol.touched))
+    "
         style="color: red"
         class="h-100 d-flex align-items-center justify-content-center"
         >min degree can not be greater than max degree</span
@@ -205,8 +205,8 @@
     <span
         *ngIf="
       degreeMinFormcontrol.hasError('max') ||
-        (degreeMinFormcontrol.hasError('min') && degreeMinFormcontrol.touched)
-      "
+      (degreeMinFormcontrol.hasError('min') && degreeMinFormcontrol.touched)
+    "
         style="color: red"
         class="h-100 d-flex align-items-center justify-content-center"
         >degree must be between -9000 and 9000</span
@@ -214,8 +214,8 @@
     <span
         *ngIf="
       degreeMaxFormcontrol.hasError('max') ||
-        (degreeMaxFormcontrol.hasError('min') && degreeMaxFormcontrol.touched)
-      "
+      (degreeMaxFormcontrol.hasError('min') && degreeMaxFormcontrol.touched)
+    "
         style="color: red"
         class="h-100 d-flex align-items-center justify-content-center"
         >degree width must be between -9000 and 9000</span
@@ -223,9 +223,9 @@
     <span
         *ngIf="
       degreeMinFormcontrol.hasError('nullValue') ||
-        (degreeMaxFormcontrol.hasError('nullValue') &&
-          (degreeMaxFormcontrol.touched || degreeMinFormcontrol.touched))
-      "
+      (degreeMaxFormcontrol.hasError('nullValue') &&
+        (degreeMaxFormcontrol.touched || degreeMinFormcontrol.touched))
+    "
         style="color: red"
         class="h-100 d-flex align-items-center justify-content-center"
         >degree width must not be empty</span
@@ -304,8 +304,8 @@
                     </li>
                     <li
                         *ngIf="
-                !accelerationFormControl.valid && accelerationFormControl.touched
-              "
+              !accelerationFormControl.valid && accelerationFormControl.touched
+            "
                         style="color: red; font-size: 8px">
                         Acceleration can not be empty, minus or greater than
                         500000
@@ -343,8 +343,8 @@
                     </li>
                     <li
                         *ngIf="
-                !decelerationFormControl.valid && decelerationFormControl.touched
-              "
+              !decelerationFormControl.valid && decelerationFormControl.touched
+            "
                         style="color: red; font-size: 8px">
                         Deceleration can not be empty, minus or greater than
                         500000
