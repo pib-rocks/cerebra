@@ -1,21 +1,21 @@
 {
-    "tabWidth": 4,
-    "trailingComma": "all",
-    "bracketSpacing": false,
-    "bracketSameLine": true,
-    "jsxBracketSameLine": true,
-    "arrowParens": "always",
-    "requirePragma": false,
-    "insertPragma": false,
-    "endOfLine": "auto",
-    "embeddedLanguageFormatting": "off",
-    "singleAttributePerLine": true,
-    "overrides": [
-        {
-            "files": "*.html",
-            "options": {
-                "parser":"html"
-            }
-        }
-    ]
+  "tabWidth": 4,
+  "trailingComma": "all",
+  "bracketSpacing": false,
+  "bracketSameLine": true,
+  "jsxBracketSameLine": true,
+  "arrowParens": "always",
+  "requirePragma": false,
+  "insertPragma": false,
+  "endOfLine": "auto",
+  "embeddedLanguageFormatting": "off",
+  "singleAttributePerLine": true,
+  "overrides": [
+    {
+      "files": "*.html",
+      "options": {
+        "parser": "html"
+      }
+    }
+  ]
 }
