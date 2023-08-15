@@ -148,7 +148,7 @@ describe("RosService", () => {
         });
         const spySendMassege = spyOn(
             service,
-            "sendSliderMessage",
+            "sendVoiceActivationMessage",
         ).and.callThrough();
         const spyPublish = spyOn(service["voiceAssistantTopic"], "publish");
         const message = {
@@ -157,10 +157,8 @@ describe("RosService", () => {
             threshold: 1.3,
             gender: "male",
         };
-        const json = JSON.parse(JSON.stringify(message));
-        const parameters = Object.keys(json).map((key) => ({[key]: json[key]}));
-        const msg = new ROSLIB.Message({data: JSON.stringify(parameters)});
-        service.sendSliderMessage(message);
+        const msg = new ROSLIB.Message({data: JSON.stringify(message)});
+        service.sendVoiceActivationMessage(message);
         expect(spySendMassege).toHaveBeenCalled();
         expect(spyPublish).toHaveBeenCalledWith(msg);
     });
