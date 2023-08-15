@@ -34,6 +34,7 @@ export class CameraComponent implements OnInit, OnDestroy {
         this.imageSrc = "../../assets/camera-placeholder.jpg";
         this.rosService.cameraReceiver$.subscribe((message) => {
             this.imageSrc = "data:image/jpeg;base64," + message;
+            console.log(message);
             console.log("-------------------------");
             if (message.startsWith("Camera not available")) {
                 // this.toggleCameraState();
@@ -90,17 +91,13 @@ export class CameraComponent implements OnInit, OnDestroy {
     }
 
     stopCamera() {
-        if (this.rosService.Ros.isConnected) {
-            this.rosService.unsubscribeCameraTopic();
-        }
+        this.rosService.unsubscribeCameraTopic();
         this.imageSrc = "../../assets/camera-placeholder.jpg";
     }
 
     toggleCameraState() {
-        if (!this.isCameraActive && this.rosService.Ros.isConnected) {
+        if (!this.isCameraActive) {
             this.startCamera();
-        } else if (!this.isCameraActive && !this.rosService.Ros.isConnected) {
-            this.imageSrc = "../../assets/its-not-working.jpg";
         } else {
             this.stopCamera();
         }
