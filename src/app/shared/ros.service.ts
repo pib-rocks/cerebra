@@ -65,8 +65,7 @@ export class RosService {
             this.subscribeVoiceAssistant();
 
             //Test JT
-            this.jointTrajectoryTopic =
-                this.createJointTrajectoryTopicPublisher();
+            this.jointTrajectoryTopic = this.createJointTrajectoryTopic();
             //Test JT Ende
         });
         this.ros.on("error", (error: string) => {
@@ -79,7 +78,7 @@ export class RosService {
     }
 
     //Test JT
-    createJointTrajectoryTopicPublisher() {
+    createJointTrajectoryTopic() {
         return new ROSLIB.Topic({
             ros: this.Ros,
             name: "/joint_trajectory",
