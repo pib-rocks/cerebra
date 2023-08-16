@@ -34,16 +34,15 @@ export class CameraComponent implements OnInit, OnDestroy {
         this.imageSrc = "../../assets/camera-placeholder.jpg";
         this.rosService.cameraReceiver$.subscribe((message) => {
             this.imageSrc = "data:image/jpeg;base64," + message;
-            console.log(message);
             console.log("-------------------------");
             if (message.startsWith("Camera not available")) {
-                // this.toggleCameraState();
                 this.imageSrc = "../../assets/its-not-working.jpg";
             }
         });
         this.rosService.Ros.on("error", (error: string) => {
             if (this.isCameraActive) {
                 this.imageSrc = "../../assets/its-not-working.jpg";
+                console.error(error);
             }
         });
         this.qualityReceiver$ = this.rosService.qualityFactorReceiver$;
