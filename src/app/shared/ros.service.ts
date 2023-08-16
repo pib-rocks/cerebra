@@ -1,10 +1,10 @@
-import { Injectable, isDevMode } from "@angular/core";
+import {Injectable, isDevMode} from "@angular/core";
 import * as ROSLIB from "roslib";
-import { BehaviorSubject, Subject } from "rxjs";
-import { Message } from "./message";
-import { Motor } from "./motor";
-import { VoiceAssistant } from "./voice-assistant";
-import { MotorCurrentMessage } from "./currentMessage";
+import {BehaviorSubject, Subject} from "rxjs";
+import {Message} from "./message";
+import {Motor} from "./motor";
+import {VoiceAssistant} from "./voice-assistant";
+import {MotorCurrentMessage} from "./currentMessage";
 
 @Injectable({
     providedIn: "root",
@@ -117,8 +117,8 @@ export class RosService {
 
     sendSliderMessage(msg: Message | VoiceAssistant | MotorCurrentMessage) {
         const json = JSON.parse(JSON.stringify(msg));
-        const parameters = Object.keys(json).map((key) => ({ [key]: json[key] }));
-        const message = new ROSLIB.Message({ data: JSON.stringify(parameters) });
+        const parameters = Object.keys(json).map((key) => ({[key]: json[key]}));
+        const message = new ROSLIB.Message({data: JSON.stringify(parameters)});
         if ("motor" in msg) {
             if ("currentValue" in msg) {
                 this.motorCurrentConsumptionTopic?.publish(message);
@@ -131,7 +131,7 @@ export class RosService {
     }
 
     sendVoiceActivationMessage(msg: VoiceAssistant) {
-        const message = new ROSLIB.Message({ data: JSON.stringify(msg) });
+        const message = new ROSLIB.Message({data: JSON.stringify(msg)});
         this.voiceAssistantTopic.publish(message);
         console.log("Sent message " + JSON.stringify(message));
     }
@@ -162,15 +162,15 @@ export class RosService {
             const jsonArray = JSON.parse(json["data"]);
             const jsonObject = jsonArray.reduce(
                 (key: object, value: object) => {
-                    return { ...key, ...value };
+                    return {...key, ...value};
                 },
                 {},
             );
             console.log(
                 "Received message for " +
-                jsonObject["motor"] +
-                ": " +
-                JSON.stringify(jsonObject),
+                    jsonObject["motor"] +
+                    ": " +
+                    JSON.stringify(jsonObject),
             );
             const receivers$ = this.getReceiversByMotorName(
                 jsonObject["motor"],
@@ -188,15 +188,15 @@ export class RosService {
             const jsonArray = JSON.parse(json["data"]);
             const jsonObject = jsonArray.reduce(
                 (key: object, value: object) => {
-                    return { ...key, ...value };
+                    return {...key, ...value};
                 },
                 {},
             );
             console.log(
                 "Received message for " +
-                jsonObject["motor"] +
-                ": " +
-                JSON.stringify(jsonObject),
+                    jsonObject["motor"] +
+                    ": " +
+                    JSON.stringify(jsonObject),
             );
             this.currentReceiver$.next(jsonObject);
         });
@@ -280,7 +280,7 @@ export class RosService {
             console.error("ROS is not connected.");
             return;
         }
-        const message = new ROSLIB.Message({ data: period });
+        const message = new ROSLIB.Message({data: period});
         this.timerPeriodTopic.publish(message);
     }
 
@@ -290,7 +290,7 @@ export class RosService {
             return;
         }
 
-        const message = new ROSLIB.Message({ data: [width, height] });
+        const message = new ROSLIB.Message({data: [width, height]});
         this.previewSizeTopic.publish(message);
     }
 
@@ -300,7 +300,7 @@ export class RosService {
             return;
         }
 
-        const message = new ROSLIB.Message({ data: factor });
+        const message = new ROSLIB.Message({data: factor});
         this.qualityFactorTopic.publish(message);
     }
 
