@@ -139,7 +139,7 @@ describe("RosService", () => {
         expect(spyPublish).toHaveBeenCalledWith(msg);
     });
 
-    it("The voiceAssistantTopic should publish the message when the sendMessage method is called, Incase the Message is of type voiceAssistantMessage ", () => {
+    it("The voiceAssistantTopic should publish the message when the sendVoiceActivationMessage method is called.", () => {
         service = new RosService();
         (service as any).voiceAssistantTopic = new ROSLIB.Topic({
             ros: mockRos as unknown as ROSLIB.Ros,
