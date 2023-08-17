@@ -57,11 +57,43 @@ label {
 
 .myCustomModalClass {
     z-index: 1060 !important;
+    color: #fff;
+    font-family: Titillium, sans-serif;
+    font-weight: bold;
+    vertical-align: middle;
+    font-size: 1rem;
 }
 
-.myCustomModalDialogeClass .modal-content {
-    border: solid 1px #fff;
+.myCustomModalClass .row {
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.myCustomModalClass .btn {
+    border: none;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.myCustomModalClass .modal-header {
+    z-index: 1060 !important;
+    border-bottom: 1px solid #009fe3;
+
+    /* background-color: green; */
+}
+
+.myCustomModalClass .modal-footer {
+    border-top: 1px solid #009fe3;
+}
+
+.myCustomModalClass .modal-content {
+    background:
+        url("assets/ep-br.png") bottom right no-repeat,
+        url("assets/ep-tr.png") top right no-repeat,
+        url("assets/ep-tl.png") top left no-repeat,
+        url("assets/ep-bl.png") bottom left no-repeat;
     background-color: #041939;
+    border-radius: 0;
 }
 
 .videoSettingsPopOver .popover-body {
@@ -69,14 +101,6 @@ label {
     background-color: #041939;
     min-width: 300px;
     padding: 0.75rem 1.5rem;
-}
-
-.myCustomModalDialogeClass .modal-content app-slider {
-    padding: 0 30px 0 30px;
-}
-
-.myCustomModalDialogeClass .modal-content label {
-    padding: 0 30px 0 30px;
 }
 
 .myCustomBackdropClass {

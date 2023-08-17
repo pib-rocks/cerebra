@@ -383,6 +383,16 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
         }
     }
 
+    imgSrc: string = "../../assets/mock_button.png";
+
+    changeIcon() {
+        if (this.imgSrc === "../../assets/mock_button.png") {
+            this.imgSrc = "../../assets/mock_button2.png";
+        } else {
+            this.imgSrc = "../../assets/mock_button.png";
+        }
+    }
+
     openPopup(content: TemplateRef<any>) {
         this.modalService
             .open(content, {

@@ -78,331 +78,318 @@
     #content
     let-modal
     id="ng-template">
-    <div class="modal-header">
-        Motor Settings
-        <button
-            id="x-button"
-            type="button"
-            class="close"
-            aria-label="Close"
-            (click)="modal.dismiss('Cross click')"
-            class="bi bi-x btn btn-outline-dark"></button>
+    <div class="row modal-header">
+        <div class="col">
+            <span>MOTOR SETTINGS</span>
+        </div>
+        <div class="col text-right">
+            <button
+                id="x-button"
+                type="button"
+                (click)="modal.dismiss('Cross click')"
+                class="btn">
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="10"
+                    height="16">
+                    <text
+                        font-family="Titillium"
+                        fill="#FFF"
+                        font-weight="bold"
+                        font-size="16"
+                        y="11.062">
+                        X
+                    </text>
+                </svg>
+            </button>
+        </div>
     </div>
-    <div class="h-100 d-flex align-items-center justify-content-center">
-        <ul>
-            <li class="horizontalList">Pulse Width min/max (μs):</li>
-            <br class="overlappingBr" />
-            <li
-                class="horizontalList"
-                id="pulseMinRange">
-                <input
-                    id="pulseMinRangeInput"
-                    type="number"
-                    value="1"
-                    name="PluseMin"
-                    min="0"
-                    max="65535"
-                    [formControl]="pulseMinRange"
-                    (input)="sendSettingMessage()" />
-            </li>
-            <br class="overlappingBr" />
-            <li
-                class="horizontalList"
-                id="pulseMaxRange">
-                <input
-                    id="pulseMaxRangeInput"
-                    type="number"
-                    value="65535"
-                    name="PluseMax"
-                    min="0"
-                    max="65535"
-                    [formControl]="pulseMaxRange"
-                    (input)="sendSettingMessage()" />
-            </li>
-        </ul>
+    <div class="row mt-5 mb-5">
+        <div class="col text-right">
+            <span> SPEED SETTINGS </span>
+        </div>
+        <div class="col-md-auto">
+            <button (click)="changeIcon()">
+                <img
+                    [src]="imgSrc"
+                    alt="testbutton" />
+            </button>
+        </div>
+        <div class="col">
+            <span> EXTENDED VALUES </span>
+        </div>
     </div>
-    <span
-        *ngIf="
-      pulseMinRange.hasError('notGreaterThan') ||
-      (pulseMaxRange.hasError('notGreaterThan') &&
-        (pulseMaxRange.touched || pulseMinRange.touched))
-    "
-        style="color: red"
-        class="h-100 d-flex align-items-center justify-content-center"
-        >min pulse can not be greater than max pulse</span
-    >
-    <span
-        *ngIf="
-      pulseMinRange.hasError('max') ||
-      (pulseMinRange.hasError('min') && pulseMinRange.touched)
-    "
-        style="color: red"
-        class="h-100 d-flex align-items-center justify-content-center"
-        >pulse width must be between 0 and 65535 μs</span
-    >
-    <span
-        *ngIf="
-      pulseMaxRange.hasError('max') ||
-      (pulseMaxRange.hasError('min') && pulseMaxRange.touched)
-    "
-        style="color: red"
-        class="h-100 d-flex align-items-center justify-content-center"
-        >pulse width must be between 0 and 65535 μs</span
-    >
-    <span
-        *ngIf="
-      pulseMinRange.hasError('nullValue') ||
-      (pulseMaxRange.hasError('nullValue') &&
-        (pulseMaxRange.touched || pulseMinRange.touched))
-    "
-        style="color: red"
-        class="h-100 d-flex align-items-center justify-content-center"
-        >pulse width must not be empty</span
-    >
-    <div class="h-100 d-flex align-items-center justify-content-center">
-        <ul>
-            <li class="horizontalList">Degree min/max (°/100):</li>
-            <br class="overlappingBr" />
-            <li
-                class="horizontalList"
-                id="degreeMinRange">
-                <input
-                    id="degreeMinRangeInput"
-                    type="number"
-                    value="0"
-                    name="DegreeMin"
-                    max="9000"
-                    min="-9000"
-                    (input)="inputSendSettingsMsg()"
-                    [formControl]="degreeMinFormcontrol" />
-            </li>
-            <br class="overlappingBr" />
-            <li
-                class="horizontalList"
-                id="degreeMaxRange">
-                <input
-                    id="degreeMaxRangeInput"
-                    type="number"
-                    value="0"
-                    name="DegreeMax"
-                    max="9000"
-                    min="-9000"
-                    (input)="inputSendSettingsMsg()"
-                    [formControl]="degreeMaxFormcontrol" />
-            </li>
-        </ul>
-    </div>
-    <span
-        *ngIf="
-      degreeMinFormcontrol.hasError('notGreaterThan') ||
-      (degreeMaxFormcontrol.hasError('notGreaterThan') &&
-        (degreeMaxFormcontrol.touched || degreeMinFormcontrol.touched))
-    "
-        style="color: red"
-        class="h-100 d-flex align-items-center justify-content-center"
-        >min degree can not be greater than max degree</span
-    >
-    <span
-        *ngIf="
-      degreeMinFormcontrol.hasError('max') ||
-      (degreeMinFormcontrol.hasError('min') && degreeMinFormcontrol.touched)
-    "
-        style="color: red"
-        class="h-100 d-flex align-items-center justify-content-center"
-        >degree must be between -9000 and 9000</span
-    >
-    <span
-        *ngIf="
-      degreeMaxFormcontrol.hasError('max') ||
-      (degreeMaxFormcontrol.hasError('min') && degreeMaxFormcontrol.touched)
-    "
-        style="color: red"
-        class="h-100 d-flex align-items-center justify-content-center"
-        >degree width must be between -9000 and 9000</span
-    >
-    <span
-        *ngIf="
-      degreeMinFormcontrol.hasError('nullValue') ||
-      (degreeMaxFormcontrol.hasError('nullValue') &&
-        (degreeMaxFormcontrol.touched || degreeMinFormcontrol.touched))
-    "
-        style="color: red"
-        class="h-100 d-flex align-items-center justify-content-center"
-        >degree width must not be empty</span
-    >
-
-    <div class="h-100 d-flex align-items-center justify-content-center">
-        <ul>
-            <li class="horizontalList">
-                <ul>
-                    <li class="centered">Velocity (°/100s)</li>
-                    <br /><br /><br /><br />
-                    <li>
-                        <input
-                            id="velocitySlider"
-                            type="range"
-                            min="0"
-                            max="500000"
-                            step="1"
-                            class="form-range rotateRange"
-                            [value]="velocityFormControl.value"
-                            [formControl]="velocityFormControl"
-                            (input)="inputSendSettingsMsg()" />
-                    </li>
-                    <br /><br /><br /><br />
-                    <li>
-                        <input
-                            id="velocityId"
-                            type="number"
-                            min="0"
-                            max="500000"
-                            [value]="velocityFormControl.value"
-                            name="Velocity"
-                            [formControl]="velocityFormControl"
-                            (input)="inputSendSettingsMsg()" />
-                    </li>
-                    <li
-                        *ngIf="!velocityFormControl.valid && velocityFormControl.touched"
-                        style="color: red; font-size: 8px">
-                        Velocity can not be empty, minus or greater than 500000
-                    </li>
-                </ul>
-            </li>
-            <br class="overlappingBr" /><br class="overlappingBr" /><br
-                class="overlappingBr" /><br class="overlappingBr" /><br
-                class="overlappingBr" /><br class="overlappingBr" /><br
-                class="overlappingBr" /><br class="overlappingBr" /><br
-                class="overlappingBr" /><br class="overlappingBr" /><br
-                class="overlappingBr" />
-            <li class="horizontalList">
-                <ul>
-                    <li class="centered">Acceleration</li>
-                    <br /><br /><br /><br />
-                    <li>
-                        <input
-                            id="accelarationSlider"
-                            type="range"
-                            min="0"
-                            max="500000"
-                            step="1"
-                            class="form-range rotateRange"
-                            [value]="accelerationFormControl.value"
-                            [formControl]="accelerationFormControl"
-                            (input)="inputSendSettingsMsg()" />
-                    </li>
-                    <br /><br /><br /><br />
-                    <li>
-                        <input
-                            id="accelarationInput"
-                            type="number"
-                            min="0"
-                            max="500000"
-                            [value]="accelerationFormControl.value"
-                            name="Acceleration"
-                            [formControl]="accelerationFormControl"
-                            (input)="inputSendSettingsMsg()" />
-                    </li>
-                    <li
-                        *ngIf="
-              !accelerationFormControl.valid && accelerationFormControl.touched
+    <div
+        *ngIf="imgSrc === '../../assets/mock_button2.png'"
+        class="row">
+        <div class="col h-100 d-flex align-items-center justify-content-center">
+            <ul>
+                <li class="horizontalList">Pulse Width min/max (μs):</li>
+                <br class="overlappingBr" />
+                <li
+                    class="horizontalList"
+                    id="pulseMinRange">
+                    <input
+                        id="pulseMinRangeInput"
+                        type="number"
+                        value="1"
+                        name="PluseMin"
+                        min="0"
+                        max="65535"
+                        [formControl]="pulseMinRange"
+                        (input)="sendSettingMessage()" />
+                </li>
+                <br class="overlappingBr" />
+                <li
+                    class="horizontalList"
+                    id="pulseMaxRange">
+                    <input
+                        id="pulseMaxRangeInput"
+                        type="number"
+                        value="65535"
+                        name="PluseMax"
+                        min="0"
+                        max="65535"
+                        [formControl]="pulseMaxRange"
+                        (input)="sendSettingMessage()" />
+                </li>
+            </ul>
+            <span
+                *ngIf="
+              pulseMinRange.hasError('notGreaterThan') ||
+              (pulseMaxRange.hasError('notGreaterThan') &&
+                (pulseMaxRange.touched || pulseMinRange.touched))
             "
-                        style="color: red; font-size: 8px">
-                        Acceleration can not be empty, minus or greater than
-                        500000
-                    </li>
-                </ul>
-            </li>
-
-            <li class="horizontalList">
-                <ul>
-                    <li class="centered">Deceleration</li>
-                    <br /><br /><br /><br />
-                    <li>
-                        <input
-                            id="decelerationSlider"
-                            type="range"
-                            min="0"
-                            max="500000"
-                            step="1"
-                            class="form-range rotateRange"
-                            [value]="decelerationFormControl.value"
-                            [formControl]="decelerationFormControl"
-                            (input)="inputSendSettingsMsg()" />
-                    </li>
-                    <br /><br /><br /><br />
-                    <li>
-                        <input
-                            id="decelerationInput"
-                            type="number"
-                            min="0"
-                            max="500000"
-                            [value]="decelerationFormControl.value"
-                            name="Deceleration"
-                            [formControl]="decelerationFormControl"
-                            (input)="inputSendSettingsMsg()" />
-                    </li>
-                    <li
-                        *ngIf="
-              !decelerationFormControl.valid && decelerationFormControl.touched
+                style="color: red"
+                class="h-100 d-flex align-items-center justify-content-center"
+                >min pulse can not be greater than max pulse</span
+            >
+            <span
+                *ngIf="
+              pulseMinRange.hasError('max') ||
+              (pulseMinRange.hasError('min') && pulseMinRange.touched)
             "
-                        style="color: red; font-size: 8px">
-                        Deceleration can not be empty, minus or greater than
-                        500000
-                    </li>
-                </ul>
-            </li>
-            <br class="overlappingBr" /><br class="overlappingBr" /><br
-                class="overlappingBr" /><br class="overlappingBr" /><br
-                class="overlappingBr" /><br class="overlappingBr" /><br
-                class="overlappingBr" /><br class="overlappingBr" /><br
-                class="overlappingBr" /><br class="overlappingBr" /><br
-                class="overlappingBr" />
-            <li class="horizontalList">
-                <ul>
-                    <li class="centered">Period (μs)</li>
-                    <br /><br /><br /><br />
-                    <li>
-                        <input
-                            id="periodSlider"
-                            type="range"
-                            min="1"
-                            max="65535"
-                            step="1"
-                            class="form-range rotateRange"
-                            [value]="periodFormControl.value"
-                            [formControl]="periodFormControl"
-                            (input)="inputSendSettingsMsg()" />
-                    </li>
-                    <br /><br /><br /><br />
-                    <li>
-                        <input
-                            id="periodInput"
-                            type="number"
-                            min="1"
-                            max="65535"
-                            [value]="periodFormControl.value"
-                            name="Period"
-                            [formControl]="periodFormControl"
-                            (input)="inputSendSettingsMsg()" />
-                    </li>
-                    <li
-                        *ngIf="!periodFormControl.valid && periodFormControl.touched"
-                        style="color: red; font-size: 8px">
-                        Period can not be empty, greater than 65535μs or smaller
-                        than 1
-                    </li>
-                </ul>
-            </li>
-        </ul>
+                style="color: red"
+                class="h-100 d-flex align-items-center justify-content-center"
+                >pulse width must be between 0 and 65535 μs</span
+            >
+            <span
+                *ngIf="
+              pulseMaxRange.hasError('max') ||
+              (pulseMaxRange.hasError('min') && pulseMaxRange.touched)
+            "
+                style="color: red"
+                class="h-100 d-flex align-items-center justify-content-center"
+                >pulse width must be between 0 and 65535 μs</span
+            >
+            <span
+                *ngIf="
+              pulseMinRange.hasError('nullValue') ||
+              (pulseMaxRange.hasError('nullValue') &&
+                (pulseMaxRange.touched || pulseMinRange.touched))
+            "
+                style="color: red"
+                class="h-100 d-flex align-items-center justify-content-center"
+                >pulse width must not be empty</span
+            >
+        </div>
     </div>
-
-    <div class="modal-footer">
-        <button
-            id="closeButton"
-            type="button"
-            class="btn btn-outline-dark"
-            (click)="modal.dismiss('Cross click')">
-            Close
-        </button>
+    <div
+        *ngIf="imgSrc === '../../assets/mock_button2.png'"
+        class="row">
+        <div class="col">
+            <div class="h-100 d-flex align-items-center justify-content-center">
+                <ul>
+                    <li class="horizontalList">Degree min/max (°/100):</li>
+                    <br class="overlappingBr" />
+                    <li
+                        class="horizontalList"
+                        id="degreeMinRange">
+                        <input
+                            id="degreeMinRangeInput"
+                            type="number"
+                            value="0"
+                            name="DegreeMin"
+                            max="9000"
+                            min="-9000"
+                            (input)="inputSendSettingsMsg()"
+                            [formControl]="degreeMinFormcontrol" />
+                    </li>
+                    <br class="overlappingBr" />
+                    <li
+                        class="horizontalList"
+                        id="degreeMaxRange">
+                        <input
+                            id="degreeMaxRangeInput"
+                            type="number"
+                            value="0"
+                            name="DegreeMax"
+                            max="9000"
+                            min="-9000"
+                            (input)="inputSendSettingsMsg()"
+                            [formControl]="degreeMaxFormcontrol" />
+                    </li>
+                </ul>
+            </div>
+            <span
+                *ngIf="
+          degreeMinFormcontrol.hasError('notGreaterThan') ||
+          (degreeMaxFormcontrol.hasError('notGreaterThan') &&
+            (degreeMaxFormcontrol.touched || degreeMinFormcontrol.touched))
+        "
+                style="color: red"
+                class="h-100 d-flex align-items-center justify-content-center"
+                >min degree can not be greater than max degree</span
+            >
+            <span
+                *ngIf="
+          degreeMinFormcontrol.hasError('max') ||
+          (degreeMinFormcontrol.hasError('min') && degreeMinFormcontrol.touched)
+        "
+                style="color: red"
+                class="h-100 d-flex align-items-center justify-content-center"
+                >degree must be between -9000 and 9000</span
+            >
+            <span
+                *ngIf="
+          degreeMaxFormcontrol.hasError('max') ||
+          (degreeMaxFormcontrol.hasError('min') && degreeMaxFormcontrol.touched)
+        "
+                style="color: red"
+                class="h-100 d-flex align-items-center justify-content-center"
+                >degree width must be between -9000 and 9000</span
+            >
+            <span
+                *ngIf="
+          degreeMinFormcontrol.hasError('nullValue') ||
+          (degreeMaxFormcontrol.hasError('nullValue') &&
+            (degreeMaxFormcontrol.touched || degreeMinFormcontrol.touched))
+        "
+                style="color: red"
+                class="h-100 d-flex align-items-center justify-content-center"
+                >degree width must not be empty</span
+            >
+        </div>
+    </div>
+    <div
+        *ngIf="imgSrc === '../../assets/mock_button2.png'"
+        class="row">
+        <div class="col h-100 d-flex align-items-center justify-content-center">
+            <span>Period (μs)</span>
+            <input
+                id="periodSlider"
+                type="range"
+                min="1"
+                max="65535"
+                step="1"
+                class="form-range"
+                [value]="periodFormControl.value"
+                [formControl]="periodFormControl"
+                (input)="inputSendSettingsMsg()" />
+            <input
+                id="periodInput"
+                type="number"
+                min="1"
+                max="65535"
+                [value]="periodFormControl.value"
+                name="Period"
+                [formControl]="periodFormControl"
+                (input)="inputSendSettingsMsg()" />
+            <span *ngIf="!periodFormControl.valid && periodFormControl.touched">
+                style="color: red; font-size: 8px"> Period can not be empty,
+                greater than 65535μs or smaller than 1
+            </span>
+        </div>
+    </div>
+    <div
+        *ngIf="imgSrc === '../../assets/mock_button.png'"
+        class="row modal-body h-100 d-flex align-items-center justify-content-center">
+        <div class="col-md-auto">
+            <p>Velocity (°/100s)</p>
+            <input
+                id="velocitySlider"
+                type="range"
+                min="0"
+                max="500000"
+                step="1"
+                class="form-range rotateRange"
+                [value]="velocityFormControl.value"
+                [formControl]="velocityFormControl"
+                (input)="inputSendSettingsMsg()" />
+            <input
+                id="velocityId"
+                type="number"
+                min="0"
+                max="500000"
+                [value]="velocityFormControl.value"
+                name="Velocity"
+                [formControl]="velocityFormControl"
+                (input)="inputSendSettingsMsg()" />
+            <p
+                *ngIf="!velocityFormControl.valid && velocityFormControl.touched">
+                style="color: red; font-size: 8px"> Velocity can not be empty,
+                minus or greater than 500000
+            </p>
+        </div>
+        <div class="col-md-auto">
+            <p>Acceleration</p>
+            <input
+                style="writing-mode: bt-lr; -webkit-appearance: slider-vertical;"
+                orient="vertical"
+                id="accelarationSlider"
+                type="range"
+                min="0"
+                max="500000"
+                step="1"
+                class="form-range"
+                [value]="accelerationFormControl.value"
+                [formControl]="accelerationFormControl"
+                (input)="inputSendSettingsMsg()" />
+            <input
+                id="accelarationInput"
+                type="number"
+                min="0"
+                max="500000"
+                [value]="accelerationFormControl.value"
+                name="Acceleration"
+                [formControl]="accelerationFormControl"
+                (input)="inputSendSettingsMsg()" />
+            <p
+                *ngIf="
+                !accelerationFormControl.valid && accelerationFormControl.touched
+              ">
+                style="color: red; font-size: 8px"> Acceleration can not be
+                empty, minus or greater than 500000
+            </p>
+        </div>
+        <div class="col-md-auto">
+            <p>Deceleration</p>
+            <input
+                id="decelerationSlider"
+                type="range"
+                min="0"
+                max="500000"
+                step="1"
+                class="form-range rotateRange"
+                [value]="decelerationFormControl.value"
+                [formControl]="decelerationFormControl"
+                (input)="inputSendSettingsMsg()" />
+            <input
+                id="decelerationInput"
+                type="number"
+                min="0"
+                max="500000"
+                [value]="decelerationFormControl.value"
+                name="Deceleration"
+                [formControl]="decelerationFormControl"
+                (input)="inputSendSettingsMsg()" />
+            <p
+                *ngIf="
+                !decelerationFormControl.valid && decelerationFormControl.touched
+              ">
+                style="color: red; font-size: 8px"> Deceleration can not be
+                empty, minus or greater than 500000
+            </p>
+        </div>
     </div>
 </ng-template>
