@@ -127,10 +127,13 @@ export class RosService {
                 this.sliderMessageTopic?.publish(message);
                 console.log("Sent message " + JSON.stringify(message));
             }
-        } else {
-            this.voiceAssistantTopic.publish(message);
-            console.log("Sent message " + JSON.stringify(message));
         }
+    }
+
+    sendVoiceActivationMessage(msg: VoiceAssistant) {
+        const message = new ROSLIB.Message({data: JSON.stringify(msg)});
+        this.voiceAssistantTopic.publish(message);
+        console.log("Sent message " + JSON.stringify(message));
     }
 
     getReceiversByMotorName(motorName: string): Subject<Message>[] {
