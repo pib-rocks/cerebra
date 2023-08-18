@@ -66,6 +66,10 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
     timer: any = null;
     bubblePosition!: number;
 
+    //Test JT
+    jtMessageReceiver$ = new Subject<Message>();
+    //Test JT Ende
+
     constructor(
         private rosService: RosService,
         private motorService: MotorService,
@@ -206,6 +210,12 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
                 );
             }
         });
+
+        //Test JT
+        this.rosService.jointTrajectoryReceiver$.subscribe((message) => {
+            console.log("Receiver Step: " + message);
+        });
+        //Test JT Ende
     }
 
     ngAfterViewInit() {

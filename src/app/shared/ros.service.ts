@@ -31,7 +31,9 @@ export class RosService {
     private qualityFactorTopic!: ROSLIB.Topic;
 
     //Test JT
-    public jointTrajectoryTopic!: ROSLIB.Topic;
+    private jointTrajectoryTopic!: ROSLIB.Topic;
+    jointTrajectoryReceiver$: Subject<jointTrajectoryMessage> =
+        new Subject<jointTrajectoryMessage>();
     //Test JT Ende
 
     sharedAllFingersValueSource = new Subject<Message>();
@@ -66,6 +68,7 @@ export class RosService {
 
             //Test JT
             this.jointTrajectoryTopic = this.createJointTrajectoryTopic();
+            this.subscribeJointTrajectoryTopic();
             //Test JT Ende
         });
         this.ros.on("error", (error: string) => {
@@ -157,6 +160,16 @@ export class RosService {
 
         this.jointTrajectoryTopic.publish(message);
         console.log("Sent message " + JSON.stringify(message));
+    }
+
+    subscribeJointTrajectoryTopic() {
+        this.jointTrajectoryTopic.subscribe((jtmsg) => {
+            const jsonStr = JSON.stringify(jtmsg);
+            console.log(
+                "Subscribe Step, Try 1: " + jtmsg.toString(),
+                "Subscribe Step, Try 2: " + JSON.parse(jsonStr),
+            );
+        });
     }
     // Test JT Ende
 
@@ -267,6 +280,12 @@ export class RosService {
     get Topic(): ROSLIB.Topic {
         return this.sliderMessageTopic;
     }
+
+    // Test JT (ToDo: Check for necessity)
+    get jtTopic(): ROSLIB.Topic {
+        return this.jointTrajectoryTopic;
+    }
+    // Test JT Ende
 
     createMessageTopic(): ROSLIB.Topic {
         return new ROSLIB.Topic({
