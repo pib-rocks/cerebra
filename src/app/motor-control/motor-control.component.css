@@ -188,10 +188,6 @@ label.form-label {
     );
 }
 
-.rotateRange {
-    transform: rotate(-90deg);
-}
-
 ul {
     list-style-type: none;
 }
