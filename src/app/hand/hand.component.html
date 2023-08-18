@@ -23,7 +23,7 @@
                             type="checkbox"
                             id="leftSwitch"
                             [formControl]="leftSwitchControl"
-                            (input)="switchView('left', false)"
+                            (input)="switchView(false)"
                             #leftSwitch />
                         <label
                             class="custom-control-label"
@@ -63,8 +63,8 @@
                             class="custom-control-input"
                             type="checkbox"
                             id="rightSwitch"
-                            [formControl]="rightSwitchControl"
-                            (input)="switchView('right', false)"
+                            [formControl]="leftSwitchControl"
+                            (input)="switchView(false)"
                             #rightSwitch />
                         <label
                             class="custom-control-label"
