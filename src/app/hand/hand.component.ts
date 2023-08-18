@@ -183,13 +183,17 @@ export class HandComponent implements OnInit {
         if (!swichedPage) {
             if (side === "right") {
                 this.logikRight(this.rightHandSwitch?.nativeElement.checked);
-                this.rightHandSwitchSave =
-                    this.rightHandSwitch?.nativeElement.checked;
+                if (this.rightHandSwitch?.nativeElement.checked != undefined) {
+                    this.rightHandSwitchSave =
+                        this.rightHandSwitch?.nativeElement.checked;
+                }
             }
             if (side === "left") {
                 this.logikLeft(this.leftHandSwitch?.nativeElement.checked);
-                this.leftHandSwitchSave =
-                    this.leftHandSwitch?.nativeElement.checked;
+                if (this.leftHandSwitch?.nativeElement.checked != undefined) {
+                    this.leftHandSwitchSave =
+                        this.leftHandSwitch?.nativeElement.checked;
+                }
             }
         } else {
             if (!this.leftHandSwitchSave && !this.rightHandSwitchSave) {
@@ -205,24 +209,16 @@ export class HandComponent implements OnInit {
     logikLeft(value: boolean) {
         if (value) {
             this.controllFinger("left");
-            this.leftHandSwitchSave =
-                this.leftHandSwitch?.nativeElement.checked;
         } else {
             this.controllHand();
-            this.leftHandSwitchSave =
-                this.leftHandSwitch?.nativeElement.checked;
         }
     }
 
     logikRight(value: boolean) {
         if (value) {
             this.controllFinger("right");
-            this.rightHandSwitchSave =
-                this.rightHandSwitch?.nativeElement.checked;
         } else {
             this.controllHand();
-            this.rightHandSwitchSave =
-                this.rightHandSwitch?.nativeElement.checked;
         }
     }
 
