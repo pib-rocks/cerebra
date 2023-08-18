@@ -155,19 +155,26 @@ export class RosService {
     }
 
     // Test JT
-    sendJointTrajectoryMessage(jtMsg: jointTrajectoryMessage) {
-        const message = new ROSLIB.Message(jtMsg);
+    sendJointTrajectoryMessage(jointTrajectoryMessage: jointTrajectoryMessage) {
+        const message = new ROSLIB.Message(jointTrajectoryMessage);
 
         this.jointTrajectoryTopic.publish(message);
-        console.log("Sent message " + JSON.stringify(message));
+        console.log("Sent jtMessage " + JSON.stringify(message));
     }
 
     subscribeJointTrajectoryTopic() {
-        this.jointTrajectoryTopic.subscribe((jtmsg) => {
-            const jsonStr = JSON.stringify(jtmsg);
+        this.jointTrajectoryTopic.subscribe((jointTrajectoryMessage) => {
+            const jsonString = JSON.stringify(jointTrajectoryMessage);
+            const parsedJtJson = JSON.parse(
+                jsonString,
+            ) as jointTrajectoryMessage;
+            const motorName = parsedJtJson.joint_names[0];
+            const motorPosition = parsedJtJson.points[0].positions[0];
             console.log(
-                "Subscribe Step, Try 1: " + jtmsg.toString(),
-                "Subscribe Step, Try 2: " + JSON.parse(jsonStr),
+                "Received jtMessage for " +
+                    motorName +
+                    ": Move to position " +
+                    motorPosition,
             );
         });
     }
