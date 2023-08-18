@@ -43,9 +43,6 @@ export class HandComponent implements OnInit {
         private router: Router,
     ) {}
 
-    leftSwitchControl = new FormControl(false);
-    rightSwitchControl = new FormControl(false);
-
     @ViewChild("leftSwitch") leftHandSwitch?: ElementRef;
     @ViewChild("rightSwitch") rightHandSwitch?: ElementRef;
     firstLoad: boolean = false;
@@ -132,7 +129,10 @@ export class HandComponent implements OnInit {
     }
 
     reset() {
-        if (this.leftSwitchControl.value || this.rightSwitchControl.value) {
+        if (
+            this.leftHandSwitch?.nativeElement.checked ||
+            this.rightHandSwitch?.nativeElement.checked
+        ) {
             this.childComponents
                 .filter((child) => !child.motorName.includes("all"))
                 .forEach((child) => {
@@ -281,7 +281,9 @@ export class HandComponent implements OnInit {
     controllFinger(side: string) {
         let calledOposite = false;
         const switchControl =
-            side === "right" ? this.rightSwitchControl : this.leftSwitchControl;
+            side === "right"
+                ? this.rightHandSwitch?.nativeElement.checked
+                : this.leftHandSwitch?.nativeElement.checked;
         console.log("SwitchControl: " + switchControl.value);
         this.displayAll = "none";
         this.displayIndividual = "block";
