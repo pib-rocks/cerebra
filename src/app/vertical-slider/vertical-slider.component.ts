@@ -1,4 +1,11 @@
-import {Component, Input, OnInit, Output, EventEmitter} from "@angular/core";
+import {
+    Component,
+    Input,
+    OnInit,
+    Output,
+    EventEmitter,
+    ElementRef,
+} from "@angular/core";
 import {FormControl, Validators} from "@angular/forms";
 import {notNullValidator, steppingValidator} from "../shared/validators";
 
@@ -16,6 +23,8 @@ export class VerticalSliderComponent implements OnInit {
     @Input() name?: string;
     @Input() showPrompt: boolean = true;
     @Input() showTextInput: boolean = true;
+    @Input() parentFunction = () => {};
+    @Input() id = "";
 
     //Slider
     @Input() step: number = 1;
@@ -30,5 +39,17 @@ export class VerticalSliderComponent implements OnInit {
             notNullValidator,
             steppingValidator(this.step),
         ]);
+    }
+
+    colorSliderTrack() {
+        const slider: ElementRef["nativeElement"] = document.getElementById(
+            this.name + "Slider",
+        );
+        const sliderPercentage: number =
+            (this.rangeFormControl.value / this.maxValue) * 100;
+        slider.style.setProperty(
+            "--pos-relative",
+            sliderPercentage.toString() + "%",
+        );
     }
 }

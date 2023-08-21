@@ -332,7 +332,7 @@
             </p>
         </div>
         <div class="col-4">
-            <p>Acceleration</p>
+            <!-- <p>Acceleration</p>
             <input
                 id="accelarationInput"
                 type="number"
@@ -441,7 +441,6 @@
                             </text>
                         </svg>
                     </div>
-                    <!-- orient="vertical" -->
                     <div
                         class="rotateRange"
                         style="position:absolute; left:43px; top:216px">
@@ -456,7 +455,6 @@
                             [formControl]="accelerationFormControl"
                             (input)="inputSendSettingsMsg(); colorSliderTrack('accelarationSlider')" />
                     </div>
-                    <!-- <span class="range-value"></span> -->
                     <div style="position:absolute; top:30px;left:70.8px">
                         <svg
                             width="50px"
@@ -531,30 +529,13 @@
                         </svg>
                     </div>
                 </div>
-
-                <!-- </fieldset> -->
-            </div>
-
-            <!-- <input
-                    id="accelarationSlider"
-                    type="range"
-                    min="0"
-                    max="500000"
-                    step="1"
-                    class="form-range rotateRange"
-                    [value]="accelerationFormControl.value"
-                    [formControl]="accelerationFormControl"
-                    (input)="inputSendSettingsMsg()" /> -->
-            <!-- 
-            
             </div> -->
-            <p
-                *ngIf="
-                !accelerationFormControl.valid && accelerationFormControl.touched
-              ">
-                style="color: red; font-size: 8px"> Acceleration can not be
-                empty, minus or greater than 500000
-            </p>
+            <app-vertical-slider
+                name="Test"
+                [rangeFormControl]="accelerationFormControl"
+                [parentFunction]="inputSendSettingsMsg"
+                [minValue]="0"
+                [maxValue]="500000"></app-vertical-slider>
         </div>
         <div class="col-4">
             <p>Deceleration</p>

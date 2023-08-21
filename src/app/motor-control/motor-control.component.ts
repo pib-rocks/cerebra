@@ -51,7 +51,7 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
     motorFormControl: FormControl = new FormControl(true);
     sliderFormControl: FormControl = new FormControl(0);
     velocityFormControl: FormControl = new FormControl(0, notNullValidator);
-    accelerationFormControl: FormControl = new FormControl(0, notNullValidator);
+    accelerationFormControl: FormControl = new FormControl(0);
     decelerationFormControl: FormControl = new FormControl(0, notNullValidator);
     periodFormControl: FormControl = new FormControl(1, notNullValidator);
     pulseMaxRange: FormControl = new FormControl(65535);
@@ -496,12 +496,12 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
         }
     }
 
-    inputSendSettingsMsg() {
+    inputSendSettingsMsg = () => {
         clearTimeout(this.timer);
         this.timer = setTimeout(() => {
             this.sendSettingMessage();
         }, 100);
-    }
+    };
 
     colorSliderTrack(id: string) {
         const slider: ElementRef["nativeElement"] = document.getElementById(id);
