@@ -55,45 +55,39 @@ label {
     font-family: Titillium, sans-serif;
 }
 
+/* Vertical Slider Modal */
 .rotateRange {
-    transform: rotate(-90deg);
+    transform: translate(-45%, -150%) rotate(-90deg);
 }
 
-.range-slider {
-    .input-range {
-        -webkit-appearance: none;
-        -webkit-appearance: slider-vertical;
-        height: 350px;
-        width: 12px;
-        border-radius: 5px;
-        background: #324c71;
-        outline: none;
-        writing-mode: bt-lr; /* IE */
-    }
-}
-
-input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none !important;
-    border: none !important;
-    height: 16px !important;
-    width: 16px !important;
-    border-radius: 50% !important;
-    background: goldenrod !important;
-    margin-top: -4px !important;
-}
-
-.input-range::-webkit-slider-runnable-track {
+.range-slider .input-range {
+    --pos-relative: 0;
     -webkit-appearance: none;
-    /* background: #324c71; */
-    border-radius: 3px;
-    /* background: linear-gradient(0deg, #e10072 var(--pos-absolute), #324c71 ); */
+    /* -webkit-appearance: slider-vertical; */
+    height: 12px;
+    width: 350px;
+    border-radius: 5px;
     background: linear-gradient(
-        0deg,
+        to right,
         #e10072,
         #e10072 var(--pos-relative),
         #324c71 var(--pos-relative),
         #324c71
-    ) !important;
+    );
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    border: none;
+    height: 24px;
+    width: 24px;
+    border-radius: 50%;
+    background: #e10072;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+    -webkit-appearance: none;
+    border-radius: 3px;
 }
 
 .input-range::-ms-fill-lower {
@@ -103,23 +97,19 @@ input[type="range"]::-webkit-slider-thumb {
     background-color: #324c71;
 }
 
-/* .input-range::-webkit-slider-thumb {
-    /* -webkit-appearance: none; */
-/* background: #e10072;
-    cursor:; */
-/*} */
-
 /* Mozilla Input Type Range Track Rules */
 .input-range::-moz-range-progress {
     width: 12px;
+    height: 12px;
     background-color: #e10072;
     border-radius: 0.25em;
 }
 .input-range::-moz-range-thumb {
     width: 24px;
+    height: 24px;
     background-color: #e10072;
     border: none;
-    border-radius: 8em;
+    border-radius: 2em;
 }
 
 .input-range::-moz-range-track {
@@ -138,34 +128,6 @@ svg .range__tick {
     fill: #58667c;
 }
 
-.input-range::-webkit-slider-thumb {
-    /* -webkit-appearance: none; 
-    appearance: none;
-    margin-top: -12px; 
-    background-color: #5cd5eb;
-    height: 2rem;
-    width: 1rem;    */
-    color: #e10072;
-}
-
-input[type="range"]::-moz-range-thumb {
-    /* border: none; 
-    border-radius: 0; 
-    background-color: #5cd5eb;
-    height: 2rem;
-    width: 1rem;  */
-    color: #e10072;
-}
-
-.range-slider svg {
-    /*  */
-}
-
-.vertSliderContainer {
-    height: 400px;
-    width: 200px;
-}
-
 .myCustomModalClass {
     z-index: 1060 !important;
     color: #fff;
@@ -180,10 +142,6 @@ input[type="range"]::-moz-range-thumb {
     margin-right: 0;
 }
 
-.myCustomModalClass .row .display_block > [class*="col-"] > input {
-    display: block;
-}
-
 .myCustomModalClass .btn {
     border: none;
     padding-top: 0;
@@ -193,8 +151,6 @@ input[type="range"]::-moz-range-thumb {
 .myCustomModalClass .modal-header {
     z-index: 1060 !important;
     border-bottom: 1px solid #009fe3;
-
-    /* background-color: green; */
 }
 
 .myCustomModalClass .modal-footer {

@@ -342,17 +342,15 @@
                 name="Acceleration"
                 [formControl]="accelerationFormControl"
                 (input)="inputSendSettingsMsg()" />
-            <!-- <div class="vertSliderContainer d-flex align-items-center"> -->
 
             <div class="d-flex justify-content-center">
-                <!-- <fieldset class="range__field"> -->
                 <div
-                    class="range-slider"
+                    class="range-slider mt-5"
                     style="position:relative; width:300px; height:400px">
-                    <div style="position:absolute; top:9px; left: 20px">
+                    <div style="position:absolute; top:30px; left: 0px">
                         <svg
                             width="50px"
-                            height="331px"
+                            height="330px"
                             xmlns="http://www.w3.org/2000/svg">
                             <rect
                                 class="range__tick"
@@ -443,11 +441,12 @@
                             </text>
                         </svg>
                     </div>
-                    <div style="position:absolute; left:70px">
+                    <!-- orient="vertical" -->
+                    <div
+                        class="rotateRange"
+                        style="position:absolute; left:43px; top:216px">
                         <input
                             class="input-range"
-                            orient="vertical"
-                            style="height:350px; background-color: transparent;"
                             id="accelarationSlider"
                             type="range"
                             min="0"
@@ -455,13 +454,13 @@
                             step="1"
                             [value]="accelerationFormControl.value"
                             [formControl]="accelerationFormControl"
-                            (input)="inputSendSettingsMsg()" />
+                            (input)="inputSendSettingsMsg(); colorSliderTrack('accelarationSlider')" />
                     </div>
                     <!-- <span class="range-value"></span> -->
-                    <div style="position:absolute; top:9px;left:90.8px">
+                    <div style="position:absolute; top:30px;left:70.8px">
                         <svg
                             width="50px"
-                            height="331px"
+                            height="330px"
                             xmlns="http://www.w3.org/2000/svg">
                             <rect
                                 class="range__tick"
