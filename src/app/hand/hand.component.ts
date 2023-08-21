@@ -177,6 +177,9 @@ export class HandComponent implements OnInit {
     switchView(swichedPage: boolean) {
         if (!swichedPage) {
             if (this.side === "right") {
+                console.log(
+                    this.rightHandSwitch?.nativeElement.checked + "---",
+                );
                 this.logikRight(this.rightHandSwitch?.nativeElement.checked);
                 if (this.rightHandSwitch?.nativeElement.checked != undefined) {
                     this.rightHandSwitchSave =
