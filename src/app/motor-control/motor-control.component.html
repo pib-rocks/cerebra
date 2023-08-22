@@ -305,266 +305,28 @@
         *ngIf="imgSrc === '../../assets/mock_button.png'"
         class="row modal-body h-100 d-flex align-items-center justify-content-center">
         <div class="col-4">
-            <p>Velocity (°/100s)</p>
-            <input
-                id="velocityId"
-                type="number"
-                min="0"
-                max="500000"
-                [value]="velocityFormControl.value"
+            <app-vertical-slider
                 name="Velocity"
-                [formControl]="velocityFormControl"
-                (input)="inputSendSettingsMsg()" />
-            <input
-                id="velocitySlider"
-                type="range"
-                min="0"
-                max="500000"
-                step="1"
-                class="form-range rotateRange"
-                [value]="velocityFormControl.value"
-                [formControl]="velocityFormControl"
-                (input)="inputSendSettingsMsg()" />
-            <p
-                *ngIf="!velocityFormControl.valid && velocityFormControl.touched">
-                style="color: red; font-size: 8px"> Velocity can not be empty,
-                minus or greater than 500000
-            </p>
+                [rangeFormControl]="velocityFormControl"
+                [parentFunction]="inputSendSettingsMsg"
+                [minValue]="0"
+                [maxValue]="500000"></app-vertical-slider>
         </div>
         <div class="col-4">
-            <!-- <p>Acceleration</p>
-            <input
-                id="accelarationInput"
-                type="number"
-                min="0"
-                max="500000"
-                [value]="accelerationFormControl.value"
-                name="Acceleration"
-                [formControl]="accelerationFormControl"
-                (input)="inputSendSettingsMsg()" />
-
-            <div class="d-flex justify-content-center">
-                <div
-                    class="range-slider mt-5"
-                    style="position:relative; width:300px; height:400px">
-                    <div style="position:absolute; top:30px; left: 0px">
-                        <svg
-                            width="50px"
-                            height="330px"
-                            xmlns="http://www.w3.org/2000/svg">
-                            <rect
-                                class="range__tick"
-                                x="35"
-                                y="0%"
-                                width="15"
-                                height="2"></rect>
-                            <rect
-                                class="range__tick"
-                                x="35"
-                                y="10%"
-                                width="15"
-                                height="2"></rect>
-                            <rect
-                                class="range__tick"
-                                x="35"
-                                y="20%"
-                                width="15"
-                                height="2"></rect>
-                            <rect
-                                class="range__tick"
-                                x="35"
-                                y="30%"
-                                width="15"
-                                height="2"></rect>
-                            <rect
-                                class="range__tick"
-                                x="35"
-                                y="40%"
-                                width="15"
-                                height="2"></rect>
-                            <rect
-                                class="range__tick"
-                                x="35"
-                                y="50%"
-                                width="15"
-                                height="2"></rect>
-                            <rect
-                                class="range__tick"
-                                x="35"
-                                y="60%"
-                                width="15"
-                                height="2"></rect>
-                            <rect
-                                class="range__tick"
-                                x="35"
-                                y="70%"
-                                width="15"
-                                height="2"></rect>
-                            <rect
-                                class="range__tick"
-                                x="35"
-                                y="80%"
-                                width="15"
-                                height="2"></rect>
-                            <rect
-                                class="range__tick"
-                                x="35"
-                                y="90%"
-                                width="15"
-                                height="2"></rect>
-                            <rect
-                                class="range__tick"
-                                x="35"
-                                y="99%"
-                                width="15"
-                                height="2"></rect>
-                            <text
-                                class="range__point"
-                                x="17"
-                                y="21.75%"
-                                text-anchor="middle">
-                                400k
-                            </text>
-                            <text
-                                class="range__point"
-                                x="17"
-                                y="51.75%"
-                                text-anchor="middle">
-                                250k
-                            </text>
-                            <text
-                                class="range__point"
-                                x="17"
-                                y="81.75%"
-                                text-anchor="middle">
-                                100k
-                            </text>
-                        </svg>
-                    </div>
-                    <div
-                        class="rotateRange"
-                        style="position:absolute; left:43px; top:216px">
-                        <input
-                            class="input-range"
-                            id="accelarationSlider"
-                            type="range"
-                            min="0"
-                            max="500000"
-                            step="1"
-                            [value]="accelerationFormControl.value"
-                            [formControl]="accelerationFormControl"
-                            (input)="inputSendSettingsMsg(); colorSliderTrack('accelarationSlider')" />
-                    </div>
-                    <div style="position:absolute; top:30px;left:70.8px">
-                        <svg
-                            width="50px"
-                            height="330px"
-                            xmlns="http://www.w3.org/2000/svg">
-                            <rect
-                                class="range__tick"
-                                x="0"
-                                y="0%"
-                                width="15"
-                                height="2"></rect>
-                            <rect
-                                class="range__tick"
-                                x="0"
-                                y="10%"
-                                width="15"
-                                height="2"></rect>
-                            <rect
-                                class="range__tick"
-                                x="0"
-                                y="20%"
-                                width="15"
-                                height="2"></rect>
-                            <rect
-                                class="range__tick"
-                                x="0"
-                                y="30%"
-                                width="15"
-                                height="2"></rect>
-                            <rect
-                                class="range__tick"
-                                x="0"
-                                y="40%"
-                                width="15"
-                                height="2"></rect>
-                            <rect
-                                class="range__tick"
-                                x="0"
-                                y="50%"
-                                width="15"
-                                height="2"></rect>
-                            <rect
-                                class="range__tick"
-                                x="0"
-                                y="60%"
-                                width="15"
-                                height="2"></rect>
-                            <rect
-                                class="range__tick"
-                                x="0"
-                                y="70%"
-                                width="15"
-                                height="2"></rect>
-                            <rect
-                                class="range__tick"
-                                x="0"
-                                y="80%"
-                                width="15"
-                                height="2"></rect>
-                            <rect
-                                class="range__tick"
-                                x="0"
-                                y="90%"
-                                width="15"
-                                height="2"></rect>
-                            <rect
-                                class="range__tick"
-                                x="0"
-                                y="99%"
-                                width="15"
-                                height="2"></rect>
-                        </svg>
-                    </div>
-                </div>
-            </div> -->
             <app-vertical-slider
-                name="Test"
+                name="Acceleration"
                 [rangeFormControl]="accelerationFormControl"
                 [parentFunction]="inputSendSettingsMsg"
                 [minValue]="0"
                 [maxValue]="500000"></app-vertical-slider>
         </div>
         <div class="col-4">
-            <p>Deceleration</p>
-            <input
-                id="decelerationInput"
-                type="number"
-                min="0"
-                max="500000"
-                [value]="decelerationFormControl.value"
+            <app-vertical-slider
                 name="Deceleration"
-                [formControl]="decelerationFormControl"
-                (input)="inputSendSettingsMsg()" />
-            <input
-                id="decelerationSlider"
-                type="range"
-                min="0"
-                max="500000"
-                step="1"
-                class="form-range rotateRange"
-                [value]="decelerationFormControl.value"
-                [formControl]="decelerationFormControl"
-                (input)="inputSendSettingsMsg()" />
-            <p
-                *ngIf="
-                !decelerationFormControl.valid && decelerationFormControl.touched
-              "
-                style="color: red; font-size: 8px">
-                Deceleration can not be empty, minus or greater than 500000
-            </p>
+                [rangeFormControl]="decelerationFormControl"
+                [parentFunction]="inputSendSettingsMsg"
+                [minValue]="0"
+                [maxValue]="500000"></app-vertical-slider>
         </div>
     </div>
 </ng-template>

@@ -201,8 +201,9 @@
         </div>
     </div>
     <p
-        *ngIf="!rangeFormControl.valid && rangeFormControl.touched"
+        *ngIf="rangeFormControl.errors"
         style="color: red; font-size: 8px">
-        Acceleration can not be empty, minus or greater than 500000
+        {{ name }} must be a number and can not be empty, minus or greater than
+        {{ maxValue }}
     </p>
 </div>
