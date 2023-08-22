@@ -18,6 +18,7 @@ import {ProgramComponent} from "./program/program.component";
 import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
 import {DialogContentComponent} from "./program/dialog-content/dialog-content.component";
 import {NavBarComponent} from "./nav-bar/nav-bar.component";
+import {SliderComponent} from "./slider/slider.component";
 
 @NgModule({
     declarations: [
@@ -31,6 +32,7 @@ import {NavBarComponent} from "./nav-bar/nav-bar.component";
         ProgramComponent,
         DialogContentComponent,
         NavBarComponent,
+        SliderComponent,
     ],
     imports: [
         BrowserModule,
