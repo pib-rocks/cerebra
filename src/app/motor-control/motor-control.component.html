@@ -104,7 +104,7 @@
             </button>
         </div>
     </div>
-    <div class="row display-flex mt-5 mb-5">
+    <div class="row display-flex mt-5 mb-3">
         <div class="col text-right">
             <span> SPEED SETTINGS </span>
         </div>
@@ -303,8 +303,8 @@
     </div>
     <div
         *ngIf="imgSrc === '../../assets/mock_button.png'"
-        class="row modal-body h-100 d-flex align-items-center justify-content-center">
-        <div class="col-4">
+        class="row modal-body h-100 d-flex align-items-start justify-content-center">
+        <div class="col-3">
             <app-vertical-slider
                 name="Velocity"
                 [rangeFormControl]="velocityFormControl"
@@ -312,7 +312,7 @@
                 [minValue]="0"
                 [maxValue]="500000"></app-vertical-slider>
         </div>
-        <div class="col-4">
+        <div class="col-3">
             <app-vertical-slider
                 name="Acceleration"
                 [rangeFormControl]="accelerationFormControl"
@@ -320,7 +320,7 @@
                 [minValue]="0"
                 [maxValue]="500000"></app-vertical-slider>
         </div>
-        <div class="col-4">
+        <div class="col-3">
             <app-vertical-slider
                 name="Deceleration"
                 [rangeFormControl]="decelerationFormControl"

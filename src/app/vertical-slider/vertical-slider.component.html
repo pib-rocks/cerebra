@@ -1,22 +1,18 @@
 <div class="d-flex flex-column align-items-center">
-    <p
-        *ngIf="showPrompt"
-        class="">
-        {{name}}
-    </p>
+    <p *ngIf="showPrompt">{{name}}</p>
     <input
         *ngIf="showTextInput"
         [id]="name + 'Input'"
+        class="form-control text-input"
         type="number"
         [min]="minValue"
         [max]="maxValue"
         [value]="rangeFormControl.value"
         [name]="name"
         [formControl]="rangeFormControl"
-        (input)="parentFunction(); colorSliderTrack()" />
-
+        (input)="parentFunction();" />
     <div
-        class="range-slider mt-5 d-flex flex-column align-items-center"
+        class="range-slider mt-2 d-flex flex-column align-items-center"
         style="position:relative;width:120px; height:400px">
         <div style="position:absolute; top:30px; left: 0px">
             <svg
@@ -112,6 +108,27 @@
                 </text>
             </svg>
         </div>
+        <div style="position:absolute; top:0px; left: 35px">
+            <svg
+                width="50px"
+                height="400px"
+                xmlns="http://www.w3.org/2000/svg">
+                <text
+                    class="range__point"
+                    x="25"
+                    y="386px"
+                    text-anchor="middle">
+                    {{minValue}}
+                </text>
+                <text
+                    class="range__point"
+                    x="25"
+                    y="14px"
+                    text-anchor="middle">
+                    {{maxValue}}
+                </text>
+            </svg>
+        </div>
         <div
             class="rotateRange"
             style="position:absolute; left:43px; top:216px">
@@ -124,7 +141,8 @@
                 step="1"
                 [value]="rangeFormControl.value"
                 [formControl]="rangeFormControl"
-                (input)="parentFunction(); colorSliderTrack()" />
+                (input)="parentFunction();"
+                #slider />
         </div>
         <div style="position:absolute; top:30px;left:70.8px">
             <svg
@@ -200,10 +218,10 @@
             </svg>
         </div>
     </div>
-    <p
+    <span
         *ngIf="rangeFormControl.errors"
-        style="color: red; font-size: 8px">
+        style="color: red; font-size: 13px; content:''">
         {{ name }} must be a number and can not be empty, minus or greater than
         {{ maxValue }}
-    </p>
+    </span>
 </div>

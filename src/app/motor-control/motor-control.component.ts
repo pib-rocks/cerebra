@@ -502,16 +502,4 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
             this.sendSettingMessage();
         }, 100);
     };
-
-    colorSliderTrack(id: string) {
-        const slider: ElementRef["nativeElement"] = document.getElementById(id);
-        console.log(slider);
-        console.log(slider.max);
-        console.log(slider.value);
-        const sliderValue: number = (slider.value / slider.max) * 100;
-        slider.style.setProperty(
-            "--pos-relative",
-            sliderValue.toString() + "%",
-        );
-    }
 }

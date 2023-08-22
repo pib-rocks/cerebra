@@ -2,9 +2,9 @@ import {
     Component,
     Input,
     OnInit,
-    Output,
-    EventEmitter,
     ElementRef,
+    ViewChild,
+    AfterViewInit,
 } from "@angular/core";
 import {FormControl, Validators} from "@angular/forms";
 import {notNullValidator, steppingValidator} from "../shared/validators";
@@ -14,7 +14,7 @@ import {notNullValidator, steppingValidator} from "../shared/validators";
     templateUrl: "./vertical-slider.component.html",
     styleUrls: ["./vertical-slider.component.css"],
 })
-export class VerticalSliderComponent implements OnInit {
+export class VerticalSliderComponent implements OnInit, AfterViewInit {
     //Shared
     @Input() defaultValue: number = 0;
     @Input() maxValue: number = 100;
@@ -25,10 +25,9 @@ export class VerticalSliderComponent implements OnInit {
     @Input() showTextInput: boolean = true;
     @Input() parentFunction = () => {};
     @Input() id = "";
-
     //Slider
+    @ViewChild("slider") slider?: ElementRef;
     @Input() step: number = 1;
-    @Output() eventEmitter: EventEmitter<number> = new EventEmitter<number>();
 
     ngOnInit(): void {
         this.rangeFormControl.setValidators([
@@ -40,16 +39,17 @@ export class VerticalSliderComponent implements OnInit {
             steppingValidator(this.step),
         ]);
     }
-
-    colorSliderTrack() {
-        const slider: ElementRef["nativeElement"] = document.getElementById(
-            this.name + "Slider",
-        );
-        const sliderPercentage: number =
-            (this.rangeFormControl.value / this.maxValue) * 100;
-        slider.style.setProperty(
-            "--pos-relative",
-            sliderPercentage.toString() + "%",
-        );
+    ngAfterViewInit(): void {
+        this.rangeFormControl.valueChanges.subscribe((value) => {
+            const slider: ElementRef["nativeElement"] =
+                this.slider?.nativeElement;
+            const sliderPercentage: number =
+                (this.rangeFormControl.value / this.maxValue) * 100;
+            slider.style.setProperty(
+                "--pos-relative",
+                sliderPercentage.toString() + "%",
+            );
+        });
+        this.rangeFormControl.setValue(this.rangeFormControl.value);
     }
 }
