@@ -14,7 +14,7 @@
     <div
         class="range-slider mt-2 d-flex flex-column align-items-center"
         style="position:relative;width:120px; height:400px">
-        <div style="position:absolute; top:30px; left: 0px">
+        <div style="position:absolute; top:30px; left: 0px; z-index: 1650;">
             <svg
                 width="50px"
                 height="330px"
@@ -108,7 +108,7 @@
                 </text>
             </svg>
         </div>
-        <div style="position:absolute; top:0px; left: 35px">
+        <div style="position:absolute; top:0px; left: 35px; z-index: 1650;">
             <svg
                 width="50px"
                 height="400px"
@@ -131,7 +131,7 @@
         </div>
         <div
             class="rotateRange"
-            style="position:absolute; left:43px; top:216px">
+            style="position:absolute; left:43px; top:216px; z-index: 1660;">
             <input
                 class="input-range"
                 [id]="name + 'Slider'"
@@ -144,7 +144,7 @@
                 (input)="parentFunction();"
                 #slider />
         </div>
-        <div style="position:absolute; top:30px;left:70.8px">
+        <div style="position:absolute; top:30px;left:70.8px; z-index: 1650;">
             <svg
                 width="50px"
                 height="330px"
