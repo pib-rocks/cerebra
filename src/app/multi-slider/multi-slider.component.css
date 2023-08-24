@@ -1,0 +1,206 @@
+.range-wrap {
+    margin-top: 20px;
+    position: relative;
+}
+.range-value {
+    position: absolute;
+    top: -30%;
+    left: 1%;
+}
+
+.range-value .bubble-input {
+    width: 40px;
+    height: 24px;
+    line-height: 24px;
+    text-align: center;
+    background: #e10072;
+    color: #fff;
+    font-size: 12px;
+    display: block;
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%, 0);
+    top: -25%;
+    border-radius: 6px;
+}
+
+.range-value .bubble-span {
+    width: fit-content;
+    min-width: 30px;
+    height: 24px;
+    line-height: 24px;
+    text-align: center;
+    background: #e10072;
+    color: #fff;
+    font-size: 12px;
+    display: block;
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%, 0);
+    border-radius: 6px;
+    padding: 0 2px;
+}
+
+.range-wrap .bubble-span-min {
+    width: 40px;
+    height: 25px;
+    line-height: 24px;
+    text-align: center;
+    background: #344a69;
+    color: #fff;
+    font-size: 12px;
+    display: block;
+    position: absolute;
+    left: 0;
+    top: -30%;
+    border-radius: 6px;
+}
+
+.range-wrap .bubble-span-max {
+    width: 40px;
+    height: 25px;
+    line-height: 24px;
+    text-align: center;
+    background: #344a69;
+    color: #fff;
+    font-size: 12px;
+    display: inline-block;
+    position: absolute;
+    right: 0;
+    top: -30%;
+    border-radius: 6px;
+}
+
+.range-value .bubble-span:before {
+    content: "";
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-top: 10px solid #e10072;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    margin-top: -1px;
+}
+
+.range-wrap .range-value .bubble-input:before {
+    content: "";
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-top: 10px solid #e10072;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    margin-top: -1px;
+}
+
+/* .range-wrap .range {
+    --pos-relative: 0;
+    appearance: none;
+    -webkit-appearance: none;
+    width: 100%;
+    height: 12px;
+    background: #324c71;
+    outline: none;
+} */
+
+/* .range-wrap .range::-moz-range-progress {
+    height: 12px;
+    background-color: #e10072;
+} */
+
+/* Styling Input Ranges */
+.range {
+    margin: 20px 0;
+    width: 100%;
+}
+
+.range:focus {
+    outline: none;
+}
+
+.range:hover {
+    cursor: pointer;
+}
+
+.wrap {
+    display: grid;
+    grid-template-rows: max-content;
+    margin: 1em auto;
+}
+input[type="range"] {
+    grid-column: 1;
+    grid-row: 2;
+}
+
+input[type="range"] {
+    --pos-relative: 0;
+    appearance: none;
+    -webkit-appearance: none;
+    width: 100%;
+    height: 12px;
+    pointer-events: none;
+    background: #344a69;
+    outline: none;
+}
+input[type="range"].top-layer {
+    --pos-upper: 0;
+    background: none;
+}
+input[type="range"].bottom-layer {
+    --pos-lower: 0;
+    --pos-upper: 0;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    appearance: none;
+    -webkit-appearance: none;
+    border: none;
+    height: 24px;
+    width: 24px;
+    border-radius: 50%;
+    background: #e10072;
+    pointer-events: auto;
+}
+
+input[type="range"]::-moz-range-thumb {
+    appearance: none;
+    width: 24px;
+    /* z-index: 1660; */
+    height: 24px;
+    background-color: #e10072;
+    border: none;
+    border-radius: 2em;
+    pointer-events: auto;
+    /* margin: 0;
+    margin-left: -12px;
+    margin-right: -12px; */
+}
+
+/* Mozilla Input Type Range Track Rules */
+input[type="range"]::-moz-range-progress {
+    appearance: none;
+    background-color: none;
+    border: none;
+    width: 100%;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+    appearance: none;
+    -webkit-appearance: none;
+    background-color: none;
+    border: none;
+    width: 100%;
+}
+
+/* .wrap input[type="range"].top-layer::-webkit-slider-runnable-track {
+    display:none;
+}
+.wrap input[type="range"].top-layer::-moz-range-progress {
+    display:none;
+} */
