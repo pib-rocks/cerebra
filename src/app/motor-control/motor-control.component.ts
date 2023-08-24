@@ -19,10 +19,8 @@ import {
     notNullValidator,
 } from "../shared/validators";
 
-// Test JT
 import {jointTrajectoryMessage} from "../shared/rosMessageTypes/jointTrajectoryMessage";
 import {createDummyJointTrajectoryMessage} from "../shared/rosMessageTypes/dummyRosMessageTypes";
-// Test JT Ende
 @Component({
     selector: "app-motor-control",
     templateUrl: "./motor-control.component.html",
@@ -66,9 +64,7 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
     timer: any = null;
     bubblePosition!: number;
 
-    //Test JT
     jtMessageReceiver$ = new Subject<Message>();
-    //Test JT Ende
 
     constructor(
         private rosService: RosService,
@@ -210,12 +206,6 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
                 );
             }
         });
-
-        //Test JT
-        this.rosService.jointTrajectoryReceiver$.subscribe((message) => {
-            console.log("Receiver Step: " + message);
-        });
-        //Test JT Ende
     }
 
     ngAfterViewInit() {
@@ -313,7 +303,6 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
             };
             this.rosService.sendSliderMessage(message);
 
-            // Test JT
             const jointTrajectoryMessage: jointTrajectoryMessage =
                 createDummyJointTrajectoryMessage();
             jointTrajectoryMessage.joint_names[0] = this.motorName;
@@ -323,7 +312,6 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
                 this.rosService.sendJointTrajectoryMessage(
                     jointTrajectoryMessage,
                 );
-            // Test JT Ende
         }
     }
 

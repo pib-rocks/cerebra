@@ -5,9 +5,7 @@ import {Message} from "./message";
 import {Motor} from "./motor";
 import {VoiceAssistant} from "./voice-assistant";
 import {MotorCurrentMessage} from "./currentMessage";
-// Test JT
 import {jointTrajectoryMessage} from "../shared/rosMessageTypes/jointTrajectoryMessage";
-// Test JT Ende
 @Injectable({
     providedIn: "root",
 })
@@ -21,6 +19,8 @@ export class RosService {
     previewSizeReceiver$: Subject<number[]> = new Subject<number[]>();
     qualityFactorReceiver$: Subject<number> = new Subject<number>();
     voiceAssistantReceiver$: Subject<any> = new Subject<any>();
+    jointTrajectoryReceiver$: Subject<jointTrajectoryMessage> =
+        new Subject<jointTrajectoryMessage>();
     private ros!: ROSLIB.Ros;
     private sliderMessageTopic!: ROSLIB.Topic;
     private voiceAssistantTopic!: ROSLIB.Topic;
@@ -29,12 +29,7 @@ export class RosService {
     private timerPeriodTopic!: ROSLIB.Topic;
     private previewSizeTopic!: ROSLIB.Topic;
     private qualityFactorTopic!: ROSLIB.Topic;
-
-    //Test JT
     private jointTrajectoryTopic!: ROSLIB.Topic;
-    jointTrajectoryReceiver$: Subject<jointTrajectoryMessage> =
-        new Subject<jointTrajectoryMessage>();
-    //Test JT Ende
 
     sharedAllFingersValueSource = new Subject<Message>();
     sharedValue$ = this.sharedAllFingersValueSource.asObservable();
@@ -59,17 +54,14 @@ export class RosService {
             this.previewSizeTopic = this.createPreviewSizeTopic();
             this.timerPeriodTopic = this.createTimePeriodTopic();
             this.qualityFactorTopic = this.createQualityFactorPublisher();
+            this.jointTrajectoryTopic = this.createJointTrajectoryTopic();
             this.subscribeSliderTopic();
             this.subscribeCurrentConsumptionTopic();
             this.subscribePreviewSize();
             this.subscribeQualityFactorTopic();
             this.subscribeTimePeriod();
             this.subscribeVoiceAssistant();
-
-            //Test JT
-            this.jointTrajectoryTopic = this.createJointTrajectoryTopic();
             this.subscribeJointTrajectoryTopic();
-            //Test JT Ende
         });
         this.ros.on("error", (error: string) => {
             console.log("Error connecting to ROSBridge server:", error);
@@ -80,7 +72,6 @@ export class RosService {
         });
     }
 
-    //Test JT
     createJointTrajectoryTopic() {
         return new ROSLIB.Topic({
             ros: this.Ros,
@@ -88,7 +79,6 @@ export class RosService {
             messageType: "trajectory_msgs/msg/JointTrajectory",
         });
     }
-    //Test JT Ende
 
     createTimePeriodTopic(): ROSLIB.Topic<ROSLIB.Message> {
         return new ROSLIB.Topic({
@@ -154,7 +144,6 @@ export class RosService {
         }
     }
 
-    // Test JT
     sendJointTrajectoryMessage(jointTrajectoryMessage: jointTrajectoryMessage) {
         const message = new ROSLIB.Message(jointTrajectoryMessage);
 
@@ -178,7 +167,6 @@ export class RosService {
             );
         });
     }
-    // Test JT Ende
 
     getReceiversByMotorName(motorName: string): Subject<Message>[] {
         const foundMotors = this.motors.filter((m) => m.motor === motorName);
@@ -287,12 +275,6 @@ export class RosService {
     get Topic(): ROSLIB.Topic {
         return this.sliderMessageTopic;
     }
-
-    // Test JT (ToDo: Check for necessity)
-    get jtTopic(): ROSLIB.Topic {
-        return this.jointTrajectoryTopic;
-    }
-    // Test JT Ende
 
     createMessageTopic(): ROSLIB.Topic {
         return new ROSLIB.Topic({
