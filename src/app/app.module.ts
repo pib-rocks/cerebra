@@ -20,6 +20,7 @@ import {DialogContentComponent} from "./program/dialog-content/dialog-content.co
 import {NavBarComponent} from "./nav-bar/nav-bar.component";
 import {SliderComponent} from "./slider/slider.component";
 import {VerticalSliderComponent} from "./vertical-slider/vertical-slider.component";
+import {MultiSliderComponent} from "./multi-slider/multi-slider.component";
 
 @NgModule({
     declarations: [
@@ -35,6 +36,7 @@ import {VerticalSliderComponent} from "./vertical-slider/vertical-slider.compone
         NavBarComponent,
         SliderComponent,
         VerticalSliderComponent,
+        MultiSliderComponent,
     ],
     imports: [
         BrowserModule,

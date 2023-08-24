@@ -273,9 +273,9 @@
     </div>
     <div
         *ngIf="imgSrc === '../../assets/mock_button2.png'"
-        class="row display-flex">
-        <div class="col h-100 d-flex align-items-center justify-content-center">
-            <span>Period (μs)</span>
+        class="row display-flex justify-content-center">
+        <div class="col-10 ">
+            <!-- <span>Period (μs)</span>
             <input
                 id="periodSlider"
                 type="range"
@@ -298,7 +298,8 @@
             <span *ngIf="!periodFormControl.valid && periodFormControl.touched">
                 style="color: red; font-size: 8px"> Period can not be empty,
                 greater than 65535μs or smaller than 1
-            </span>
+            </span> -->
+            <app-multi-slider></app-multi-slider>
         </div>
     </div>
     <div
