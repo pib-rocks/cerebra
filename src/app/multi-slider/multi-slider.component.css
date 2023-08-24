@@ -24,6 +24,10 @@
     border-radius: 6px;
 }
 
+.range-value .bubble-input .invisible {
+    display: none;
+}
+
 .range-value .bubble-span {
     width: fit-content;
     min-width: 30px;

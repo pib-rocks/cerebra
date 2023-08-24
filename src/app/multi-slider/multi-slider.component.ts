@@ -9,7 +9,7 @@ import {
     AfterViewInit,
     Renderer2,
 } from "@angular/core";
-import {FormControl, Validators} from "@angular/forms";
+import {Form, FormControl, Validators} from "@angular/forms";
 import {RosService} from "../shared/ros.service";
 import {Message} from "../shared/message";
 import {Subject} from "rxjs";
@@ -22,7 +22,9 @@ import {notNullValidator, steppingValidator} from "../shared/validators";
 })
 export class MultiSliderComponent implements OnInit, AfterViewInit {
     @ViewChild("bubble") bubbleElement!: ElementRef;
+    @ViewChild("bubbleUpper") bubbleElementUpper!: ElementRef;
     @ViewChild("bubbleInput") bubbleInput!: ElementRef;
+    @ViewChild("bubbleInputUpper") bubbleInputUpper!: ElementRef;
     @ViewChild("range") sliderElem!: ElementRef;
     @ViewChild("rangeUpper") sliderElemUpper!: ElementRef;
 
@@ -43,6 +45,7 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
     timer: any = null;
 
     bubblePosition!: number;
+    bubblePositionUpper!: number;
     isInputVisible = false;
     maxBubblePosition = 100;
     minBubblePosition = 0;
@@ -65,16 +68,6 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
             notNullValidator,
             steppingValidator(this.step),
         ]);
-        // this.messageReceiver$.subscribe((value) => {
-        //     if (value) {
-        //         this.sliderFormControl.setValue(
-        //             this.getValueWithinRange(Number(value)),
-        //         );
-        //         if (this.sliderElem && this.bubbleElement) {
-        //             this.setThumbPosition();
-        //         }
-        //     }
-        // });
         this.bubbleFormControl.setValue(this.sliderFormControl.value);
     }
 
@@ -95,8 +88,8 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
         }
     }
 
-    setSliderValue(value: number) {
-        this.sliderFormControl.setValue(value);
+    setSliderValue(sliderFormControl: FormControl, value: number) {
+        sliderFormControl.setValue(value);
         this.setThumbPosition();
     }
 
@@ -121,36 +114,46 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
         this.rosService.sendSliderMessage(message);
     }
 
-    toggleInputVisible() {
+    toggleInputVisible(htmlInputElement: HTMLInputElement) {
+        // console.log(event);
+        // console.log(event.target);
+        console.log(htmlInputElement);
+
         if (this.sliderFormControl.value !== null) {
             this.isInputVisible = !this.isInputVisible;
             setTimeout(() => {
-                this.bubbleInput.nativeElement.focus();
-                this.bubbleInput.nativeElement.select();
+                htmlInputElement.focus();
+                htmlInputElement.select();
             }, 0);
         } else {
             this.isInputVisible = !this.isInputVisible;
         }
     }
 
-    toggleInputUnvisible() {
-        if (this.bubbleFormControl.value !== this.sliderFormControl.value) {
-            if (this.sliderFormControl.value !== null) {
+    toggleInputUnvisible(
+        bubbleFormControl: FormControl,
+        sliderFormControl: FormControl,
+    ) {
+        console.log(
+            "bfcValue: " +
+                bubbleFormControl.value +
+                "\nsfCValue: " +
+                sliderFormControl.value,
+        );
+        if (bubbleFormControl.value !== sliderFormControl.value) {
+            if (sliderFormControl.value !== null) {
                 this.isInputVisible = !this.isInputVisible;
-                if (this.bubbleFormControl.hasError("required")) {
-                    this.bubbleFormControl.setValue(
-                        this.sliderFormControl.value,
-                    );
-                } else if (this.bubbleFormControl.hasError("pattern")) {
-                    this.bubbleFormControl.setValue(
-                        this.sliderFormControl.value,
-                    );
-                } else if (this.bubbleFormControl.hasError("min")) {
-                    this.setSliderValue(this.minValue);
-                    this.inputSendMsg();
+                if (
+                    bubbleFormControl.hasError("required") ||
+                    bubbleFormControl.hasError("pattern")
+                ) {
+                    bubbleFormControl.setValue(sliderFormControl.value);
+                } else if (bubbleFormControl.hasError("min")) {
+                    this.setSliderValue(sliderFormControl, this.minValue);
+                    // this.inputSendMsg();
                 } else if (this.bubbleFormControl.hasError("max")) {
-                    this.setSliderValue(this.maxValue);
-                    this.inputSendMsg();
+                    this.setSliderValue(sliderFormControl, this.maxValue);
+                    // this.inputSendMsg();
                 } else if (this.bubbleFormControl.hasError("steppingError")) {
                     let intBubbleFormControl = Math.floor(
                         this.bubbleFormControl.value * 1000,
@@ -159,16 +162,25 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
                         intBubbleFormControl % Math.floor(this.step * 1000);
                     intBubbleFormControl -= moduloValue;
                     intBubbleFormControl /= 1000;
-                    this.setSliderValue(intBubbleFormControl);
-                    this.inputSendMsg();
+                    this.setSliderValue(
+                        sliderFormControl,
+                        intBubbleFormControl,
+                    );
+                    // this.inputSendMsg();
                 } else {
-                    this.setSliderValue(Number(this.bubbleFormControl.value));
-                    this.inputSendMsg();
+                    console.log("vluSFC" + sliderFormControl.value);
+                    this.setSliderValue(
+                        sliderFormControl,
+                        Number(this.bubbleFormControl.value),
+                    );
+                    // this.inputSendMsg();
                 }
             }
         } else {
             this.isInputVisible = !this.isInputVisible;
         }
+
+        this.isInputVisible = false;
     }
 
     getValueWithinRange(value: number) {
@@ -193,12 +205,31 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
         setTimeout(() => {
             this.bubblePosition = val;
         }, 0);
-        this.bubbleFormControl.setValue(this.sliderFormControl.value);
+
         this.bubbleElement.nativeElement.style.left = /*this.rotate? `calc(1-${val})`: */ `calc(${val}%)`;
         this.sliderElem.nativeElement.style.setProperty(
-            "--pos-relative",
+            "--pos-lower",
             val.toString(10) + "%",
         );
+
+        let val2 =
+            ((this.sliderFormControlUpper.value - this.minValue) * 100) /
+            (this.maxValue - this.minValue);
+        setTimeout(() => {
+            this.bubblePositionUpper = val2;
+        }, 0);
+        console.log(
+            "bubblePositionUpper: " +
+                this.bubblePositionUpper +
+                "\nbubblePositionLower: " +
+                this.bubblePosition,
+        );
+        this.bubbleElementUpper.nativeElement.style.left = /*this.rotate? `calc(1-${val})`: */ `calc(${val2}%)`;
+        this.sliderElemUpper.nativeElement.style.setProperty(
+            "--pos-upper",
+            val2.toString(10) + "%",
+        );
+        this.setGradient();
     }
 
     setPosUpper() {
