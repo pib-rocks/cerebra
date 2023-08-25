@@ -34,13 +34,13 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
     @Input() defaultValue!: number;
     @Input() step: number = 1;
     @Input() unitOfMeasurement!: string;
-    @Input() rotate: boolean = false;
     @Input() publishMessage!: (args: number) => void;
     @Input() messageReceiver$!: Subject<any>;
 
-    sliderFormControl = new FormControl();
-    sliderFormControlUpper = new FormControl();
+    @Input() sliderFormControl = new FormControl();
+    @Input() sliderFormControlUpper = new FormControl();
     bubbleFormControl = new FormControl();
+    bubbleFormControlUpper = new FormControl();
 
     timer: any = null;
 
@@ -68,7 +68,18 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
             notNullValidator,
             steppingValidator(this.step),
         ]);
+        this.bubbleFormControlUpper.setValidators([
+            Validators.min(this.minValue),
+            Validators.max(this.maxValue),
+            Validators.pattern("^-?[0-9]{1,}\\.?[0-9]*$"),
+            Validators.required,
+            notNullValidator,
+            steppingValidator(this.step),
+        ]);
+        this.sliderFormControl.setValue(33);
+        this.sliderFormControlUpper.setValue(44);
         this.bubbleFormControl.setValue(this.sliderFormControl.value);
+        this.bubbleFormControlUpper.setValue(this.sliderFormControlUpper.value);
     }
 
     ngAfterViewInit() {
@@ -79,13 +90,8 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
             this.maxBubblePosition =
                 ((sliderWidth - this.pixelsFromEdge) * 100) / sliderWidth;
         }
+        this.setGradient();
         this.setThumbPosition();
-        if (this.rotate) {
-            this.sliderElem.nativeElement.style.setProperty(
-                "transform",
-                "rotate(180deg)",
-            );
-        }
     }
 
     setSliderValue(sliderFormControl: FormControl, value: number) {
@@ -114,19 +120,18 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
         this.rosService.sendSliderMessage(message);
     }
 
-    toggleInputVisible(htmlInputElement: HTMLInputElement) {
-        // console.log(event);
-        // console.log(event.target);
-        console.log(htmlInputElement);
-
-        if (this.sliderFormControl.value !== null) {
-            this.isInputVisible = !this.isInputVisible;
+    toggleInputVisible(
+        htmlInputElement: HTMLInputElement,
+        sliderFormControl: FormControl,
+        bubbleFormControl: FormControl,
+    ) {
+        if (sliderFormControl?.value !== null) {
+            bubbleFormControl.setValue(sliderFormControl.value);
+            this.isInputVisible = true;
             setTimeout(() => {
                 htmlInputElement.focus();
                 htmlInputElement.select();
             }, 0);
-        } else {
-            this.isInputVisible = !this.isInputVisible;
         }
     }
 
@@ -171,7 +176,7 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
                     console.log("vluSFC" + sliderFormControl.value);
                     this.setSliderValue(
                         sliderFormControl,
-                        Number(this.bubbleFormControl.value),
+                        Number(bubbleFormControl.value),
                     );
                     // this.inputSendMsg();
                 }
@@ -179,70 +184,45 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
         } else {
             this.isInputVisible = !this.isInputVisible;
         }
-
         this.isInputVisible = false;
     }
 
-    getValueWithinRange(value: number) {
-        let validVal;
-        if (value > this.maxValue) {
-            validVal = this.maxValue;
-        } else if (value < this.minValue) {
-            validVal = this.minValue;
-        } else {
-            validVal = value;
-        }
-        return validVal;
-    }
-
     setThumbPosition() {
-        let val =
+        const val =
             ((this.sliderFormControl.value - this.minValue) * 100) /
             (this.maxValue - this.minValue);
-        if (this.rotate) {
-            val = this.transformBoundaries - val;
-        }
         setTimeout(() => {
             this.bubblePosition = val;
         }, 0);
-
         this.bubbleElement.nativeElement.style.left = /*this.rotate? `calc(1-${val})`: */ `calc(${val}%)`;
         this.sliderElem.nativeElement.style.setProperty(
             "--pos-lower",
             val.toString(10) + "%",
         );
 
-        let val2 =
+        const val2 =
             ((this.sliderFormControlUpper.value - this.minValue) * 100) /
             (this.maxValue - this.minValue);
         setTimeout(() => {
             this.bubblePositionUpper = val2;
         }, 0);
+        this.bubbleElementUpper.nativeElement.style.left = /*this.rotate? `calc(1-${val})`: */ `calc(${val2}%)`;
+        this.sliderElemUpper.nativeElement.style.setProperty(
+            "--pos-upper",
+            val2.toString(10) + "%",
+        );
         console.log(
             "bubblePositionUpper: " +
                 this.bubblePositionUpper +
                 "\nbubblePositionLower: " +
                 this.bubblePosition,
         );
-        this.bubbleElementUpper.nativeElement.style.left = /*this.rotate? `calc(1-${val})`: */ `calc(${val2}%)`;
-        this.sliderElemUpper.nativeElement.style.setProperty(
-            "--pos-upper",
-            val2.toString(10) + "%",
-        );
         this.setGradient();
     }
 
-    setPosUpper() {
-        const val = this.sliderFormControlUpper.value;
-        this.sliderElemUpper.nativeElement.style.setProperty(
-            "--pos-upper",
-            val.toString(10) + "%",
-        );
-        this.setGradient();
-    }
-    setPosLower() {
-        const val = this.sliderFormControl.value;
-        this.sliderElem.nativeElement.style.setProperty(
+    setBubblePos(htmlInputElement: HTMLInputElement, formControl: FormControl) {
+        const val = formControl.value;
+        htmlInputElement.style.setProperty(
             "--pos-lower",
             val.toString(10) + "%",
         );

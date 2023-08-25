@@ -16,7 +16,7 @@
             class="bubble-span overlay"
             id="bubble_span_{{ sliderName }}"
             [ngClass]="isInputVisible ? 'invisible' : ''"
-            (dblclick)="toggleInputVisible(bubbleInput)">
+            (dblclick)="toggleInputVisible(bubbleInput, sliderFormControl, bubbleFormControl)">
             {{ sliderFormControl.value }}{{ unitOfMeasurement }}
         </div>
     </div>
@@ -29,52 +29,48 @@
             [ngClass]="isInputVisible ? '' : 'invisible'"
             [min]="minValue"
             [max]="maxValue"
-            [formControl]="bubbleFormControl"
-            (blur)="toggleInputUnvisible(bubbleFormControl, sliderFormControlUpper)"
-            (keydown.enter)="toggleInputUnvisible(bubbleFormControl, sliderFormControlUpper)"
+            [formControl]="bubbleFormControlUpper"
+            (blur)="toggleInputUnvisible(bubbleFormControlUpper, sliderFormControlUpper)"
+            (keydown.enter)="toggleInputUnvisible(bubbleFormControlUpper, sliderFormControlUpper)"
             #bubbleInputUpper />
         <div
             class="bubble-span overlay"
             id="bubble_spanUpper_{{ sliderName }}"
             [ngClass]="isInputVisible ? 'invisible' : ''"
-            (dblclick)="toggleInputVisible(bubbleInputUpper)">
+            (dblclick)="toggleInputVisible(bubbleInputUpper, sliderFormControlUpper, bubbleFormControlUpper)">
             {{ sliderFormControlUpper.value }}{{ unitOfMeasurement }}
         </div>
     </div>
     <span
         *ngIf="bubblePosition >= minBubblePosition && bubblePositionUpper >= minBubblePosition"
         class="bubble-span-min"
-        >{{ rotate === true ? maxValue : minValue }}{{ unitOfMeasurement
-        }}</span
+        >{{ minValue }}{{ unitOfMeasurement }}</span
     >
     <span
         *ngIf="bubblePosition <= maxBubblePosition && bubblePositionUpper <= maxBubblePosition"
         class="bubble-span-max"
-        >{{ rotate === true ? minValue : maxValue }}{{ unitOfMeasurement
-        }}</span
+        >{{ maxValue }}{{ unitOfMeasurement }}</span
     >
 
     <div class="wrap">
         <input
             class="range bottom-layer"
             type="range"
-            [ngClass]="rotate ? 'range-high-to-low' : ''"
             id="slider_{{ sliderName }}"
             [min]="minValue"
             [max]="maxValue"
             [step]="step"
             [formControl]="sliderFormControl"
-            (input)="setThumbPosition(); setPosLower();"
+            (input)="setThumbPosition(); setBubblePos(range, sliderFormControl);"
             #range />
         <input
             class="range top-layer"
             type="range"
-            [ngClass]="rotate ? 'range-high-to-low' : ''"
             id="slider2_{{ sliderName }}"
             [min]="minValue"
             [max]="maxValue"
             [formControl]="sliderFormControlUpper"
-            (input)="setThumbPosition(); setPosUpper();"
+            (input)="setThumbPosition(); setBubblePos(rangeUpper, sliderFormControlUpper);"
             [step]="step"
             #rangeUpper />
     </div>
