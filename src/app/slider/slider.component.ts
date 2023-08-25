@@ -68,6 +68,9 @@ export class SliderComponent implements OnInit, AfterViewInit {
                 }
             }
         });
+        if (this.defaultValue) {
+            this.sliderFormControl.setValue(this.defaultValue);
+        }
         this.bubbleFormControl.setValue(this.sliderFormControl.value);
     }
 
@@ -95,13 +98,14 @@ export class SliderComponent implements OnInit, AfterViewInit {
 
     inputSendMsg(): void {
         if (this.sliderFormControl.value !== null) {
-            this.sliderEvent.emit(this.sliderFormControl.value);
+            clearTimeout(this.timer);
             this.timer = setTimeout(() => {
                 if (this.publishMessage) {
                     this.publishMessage(Number(this.sliderFormControl.value));
                 } else {
                     this.sendMessage();
                 }
+                this.sliderEvent.emit(this.sliderFormControl.value);
             }, 100);
         }
     }

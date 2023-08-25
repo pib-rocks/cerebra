@@ -50,6 +50,7 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
 
     pulseWidthSubject$ = new Subject<number[]>();
     degreeSubject$ = new Subject<number[]>();
+    periodSubject$ = new Subject<number>();
 
     allFingersSliderReceiver$ = new Subject<number>();
     motorFormControl: FormControl = new FormControl(true);
@@ -200,6 +201,7 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
                 Number(this.pulseMinRange.value),
                 Number(this.pulseMaxRange.value),
             ]);
+            this.periodSubject$.next(Number(this.periodFormControl.value));
             this.setThumbPosition();
             this.setMinAndMaxBubblePositions();
         });
@@ -523,6 +525,10 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
     setDegree(number: number[]) {
         this.degreeMinFormcontrol.setValue(number[0]);
         this.degreeMaxFormcontrol.setValue(number[1]);
+        this.sendSettingMessage();
+    }
+    setPeriod(number: number) {
+        this.periodFormControl.setValue(number);
         this.sendSettingMessage();
     }
 }

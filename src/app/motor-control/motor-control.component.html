@@ -156,31 +156,19 @@
         *ngIf="imgSrc === '../../assets/mock_button2.png'"
         class="row display-flex justify-content-center">
         <div class="col-9">
-            <!-- <span>Period (μs)</span>
-            <input
-                id="periodSlider"
-                type="range"
-                min="1"
-                max="65535"
-                step="1"
-                class="form-range"
-                [value]="periodFormControl.value"
-                [formControl]="periodFormControl"
-                (input)="inputSendSettingsMsg()" />
-            <input
-                id="periodInput"
-                type="number"
-                min="1"
-                max="65535"
-                [value]="periodFormControl.value"
-                name="Period"
-                [formControl]="periodFormControl"
-                (input)="inputSendSettingsMsg()" />
-            <span *ngIf="!periodFormControl.valid && periodFormControl.touched">
-                style="color: red; font-size: 8px"> Period can not be empty,
-                greater than 65535μs or smaller than 1
-            </span> -->
-            <app-multi-slider></app-multi-slider>
+            <p
+                class="mb-5"
+                style="font-weight: bold">
+                Period <span style="font-weight:normal">(μs)</span>
+            </p>
+            <app-slider
+                [sliderName]="'Period'"
+                [minValue]="0"
+                [maxValue]="100000"
+                [defaultValue]="periodFormControl.value? periodFormControl.value : 5000"
+                [step]="1"
+                [messageReceiver$]="periodSubject$"
+                (sliderEvent)="setPeriod($event)"></app-slider>
         </div>
     </div>
     <div

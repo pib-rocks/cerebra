@@ -68,7 +68,7 @@
             [max]="maxValue"
             [step]="step"
             [formControl]="sliderFormControl"
-            (input)="setThumbPosition(); setBubblePos(range, sliderFormControl); sendEvent();"
+            (input)="setThumbPosition(); sendEvent();"
             #range />
         <input
             class="range top-layer"
@@ -77,7 +77,7 @@
             [min]="minValue"
             [max]="maxValue"
             [formControl]="sliderFormControlUpper"
-            (input)="setThumbPosition(); setBubblePos(rangeUpper, sliderFormControlUpper); sendEvent();"
+            (input)="setThumbPosition(); sendEvent();"
             [step]="step"
             #rangeUpper />
     </div>

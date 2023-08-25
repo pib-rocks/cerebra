@@ -11,7 +11,6 @@ import {
 } from "@angular/core";
 import {Form, FormControl, Validators} from "@angular/forms";
 import {RosService} from "../shared/ros.service";
-import {Message} from "../shared/message";
 import {Subject} from "rxjs";
 import {notNullValidator, steppingValidator} from "../shared/validators";
 
@@ -86,9 +85,25 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
         );
         this.bubbleFormControl.setValue(this.sliderFormControl.value);
         this.bubbleFormControlUpper.setValue(this.sliderFormControlUpper.value);
+
+        this.bubblePosition =
+            ((this.sliderFormControl.value - this.minValue) * 100) /
+            (this.maxValue - this.minValue);
+        this.bubblePositionUpper =
+            ((this.sliderFormControlUpper.value - this.minValue) * 100) /
+            (this.maxValue - this.minValue);
+
         this.messageReceiver$?.subscribe((value: number[]) => {
-            this.sliderFormControl.setValue(value[0]);
-            this.sliderFormControlUpper.setValue(value[1]);
+            if (
+                Number(this.sliderFormControl.value) <
+                Number(this.sliderFormControlUpper.value)
+            ) {
+                this.sliderFormControl.setValue(value[0]);
+                this.sliderFormControlUpper.setValue(value[1]);
+            } else {
+                this.sliderFormControlUpper.setValue(value[0]);
+                this.sliderFormControl.setValue(value[1]);
+            }
             this.setThumbPosition();
         });
     }
@@ -100,6 +115,11 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
             this.maxBubblePosition =
                 ((sliderWidth - this.pixelsFromEdge) * 100) / sliderWidth;
         }
+        this.renderer.setStyle(
+            this.sliderElem.nativeElement,
+            "background",
+            "linear-gradient(to right, #324c71, #324c71 var(--pos-lower), #e10072 var(--pos-lower), #e10072 var(--pos-upper), #324c71 var(--pos-upper), #324c71)",
+        );
         this.setGradient();
         this.setThumbPosition();
     }
@@ -193,13 +213,13 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
         this.isInputVisible = false;
     }
 
+    //Refactor, Berechnung 3mal vorhanden in setTHumb, setBubblePos,
     setThumbPosition() {
         const val =
             ((this.sliderFormControl.value - this.minValue) * 100) /
             (this.maxValue - this.minValue);
-        setTimeout(() => {
-            this.bubblePosition = val;
-        }, 0);
+        this.bubblePosition = val;
+
         this.bubbleElement.nativeElement.style.left = /*this.rotate? `calc(1-${val})`: */ `calc(${val}%)`;
         this.sliderElem.nativeElement.style.setProperty(
             "--pos-lower",
@@ -209,53 +229,31 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
         const val2 =
             ((this.sliderFormControlUpper.value - this.minValue) * 100) /
             (this.maxValue - this.minValue);
-        setTimeout(() => {
-            this.bubblePositionUpper = val2;
-        }, 0);
+        this.bubblePositionUpper = val2;
         this.bubbleElementUpper.nativeElement.style.left = /*this.rotate? `calc(1-${val})`: */ `calc(${val2}%)`;
         this.sliderElemUpper.nativeElement.style.setProperty(
             "--pos-upper",
             val2.toString(10) + "%",
         );
-        // console.log(
-        //     "bubblePositionUpper: " +
-        //         this.bubblePositionUpper +
-        //         "\nbubblePositionLower: " +
-        //         this.bubblePosition +
-        //     "\nminBubblePos: " + this.minBubblePosition +
-        //     "\nmaxBubblePos: " + this.maxBubblePosition
-        // );
-        this.setGradient();
-    }
-
-    setBubblePos(htmlInputElement: HTMLInputElement, formControl: FormControl) {
-        const val = formControl.value;
-        htmlInputElement.style.setProperty(
-            "--pos-lower",
-            val.toString(10) + "%",
-        );
         this.setGradient();
     }
 
     setGradient() {
-        const percentage = this.maxValue - this.minValue;
-
+        const total = this.maxValue - this.minValue;
         const upper =
             (((this.sliderFormControl.value >= this.sliderFormControlUpper.value
                 ? this.sliderFormControl.value
                 : this.sliderFormControlUpper.value) -
                 this.minValue) *
                 100) /
-            percentage;
+            total;
         const lower =
             (((this.sliderFormControl.value < this.sliderFormControlUpper.value
                 ? this.sliderFormControl.value
                 : this.sliderFormControlUpper.value) -
                 this.minValue) *
                 100) /
-            percentage;
-
-        // console.log("upper: " + upper + "\nlower: " + lower);
+            total;
         this.sliderElem.nativeElement.style.setProperty(
             "--pos-upper",
             upper.toString(10) + "%",
@@ -263,11 +261,6 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
         this.sliderElem.nativeElement.style.setProperty(
             "--pos-lower",
             lower.toString(10) + "%",
-        );
-        this.renderer.setStyle(
-            this.sliderElem.nativeElement,
-            "background",
-            "linear-gradient(to right, #324c71, #324c71 var(--pos-lower), #e10072 var(--pos-lower), #e10072 var(--pos-upper), #324c71 var(--pos-upper), #324c71)",
         );
     }
 }
