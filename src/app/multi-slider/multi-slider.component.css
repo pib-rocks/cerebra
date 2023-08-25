@@ -7,6 +7,13 @@
     top: -30%;
     left: 1%;
 }
+p {
+    font-weight: bold;
+}
+
+p span {
+    font-weight: normal;
+}
 
 .range-value .bubble-input {
     width: 40px;
@@ -30,13 +37,14 @@
 
 .range-value .bubble-span {
     width: fit-content;
-    min-width: 30px;
+    min-width: 40px;
     height: 24px;
     line-height: 24px;
     text-align: center;
     background: #e10072;
     color: #fff;
-    font-size: 12px;
+    font-size: 13px;
+    font-weight: normal;
     display: block;
     position: absolute;
     left: 50%;
@@ -46,13 +54,15 @@
 }
 
 .range-wrap .bubble-span-min {
-    width: 40px;
+    width: fit-content;
+    min-width: 40px;
     height: 25px;
     line-height: 24px;
     text-align: center;
     background: #344a69;
     color: #fff;
-    font-size: 12px;
+    font-size: 13px;
+    font-weight: normal;
     display: block;
     position: absolute;
     left: 0;
@@ -61,13 +71,15 @@
 }
 
 .range-wrap .bubble-span-max {
-    width: 40px;
+    width: fit-content;
+    min-width: 40px;
     height: 25px;
     line-height: 24px;
     text-align: center;
     background: #344a69;
     color: #fff;
-    font-size: 12px;
+    font-size: 13px;
+    font-weight: normal;
     display: inline-block;
     position: absolute;
     right: 0;
@@ -148,6 +160,8 @@ input[type="range"] {
     -webkit-appearance: none;
     width: 100%;
     height: 12px;
+    font-weight: normal;
+    font-size: 13px;
     pointer-events: none;
     background: #344a69;
     outline: none;

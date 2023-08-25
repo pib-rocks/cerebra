@@ -121,160 +121,41 @@
     </div>
     <div
         *ngIf="imgSrc === '../../assets/mock_button2.png'"
-        class="row">
-        <div class="col h-100 d-flex align-items-center justify-content-center">
-            <ul>
-                <li class="horizontalList">Pulse Width min/max (μs):</li>
-                <br class="overlappingBr" />
-                <li
-                    class="horizontalList"
-                    id="pulseMinRange">
-                    <input
-                        id="pulseMinRangeInput"
-                        type="number"
-                        value="1"
-                        name="PluseMin"
-                        min="0"
-                        max="65535"
-                        [formControl]="pulseMinRange"
-                        (input)="sendSettingMessage()" />
-                </li>
-                <br class="overlappingBr" />
-                <li
-                    class="horizontalList"
-                    id="pulseMaxRange">
-                    <input
-                        id="pulseMaxRangeInput"
-                        type="number"
-                        value="65535"
-                        name="PluseMax"
-                        min="0"
-                        max="65535"
-                        [formControl]="pulseMaxRange"
-                        (input)="sendSettingMessage()" />
-                </li>
-            </ul>
-            <span
-                *ngIf="
-              pulseMinRange.hasError('notGreaterThan') ||
-              (pulseMaxRange.hasError('notGreaterThan') &&
-                (pulseMaxRange.touched || pulseMinRange.touched))
-            "
-                style="color: red"
-                class="h-100 d-flex align-items-center justify-content-center"
-                >min pulse can not be greater than max pulse</span
-            >
-            <span
-                *ngIf="
-              pulseMinRange.hasError('max') ||
-              (pulseMinRange.hasError('min') && pulseMinRange.touched)
-            "
-                style="color: red"
-                class="h-100 d-flex align-items-center justify-content-center"
-                >pulse width must be between 0 and 65535 μs</span
-            >
-            <span
-                *ngIf="
-              pulseMaxRange.hasError('max') ||
-              (pulseMaxRange.hasError('min') && pulseMaxRange.touched)
-            "
-                style="color: red"
-                class="h-100 d-flex align-items-center justify-content-center"
-                >pulse width must be between 0 and 65535 μs</span
-            >
-            <span
-                *ngIf="
-              pulseMinRange.hasError('nullValue') ||
-              (pulseMaxRange.hasError('nullValue') &&
-                (pulseMaxRange.touched || pulseMinRange.touched))
-            "
-                style="color: red"
-                class="h-100 d-flex align-items-center justify-content-center"
-                >pulse width must not be empty</span
-            >
-        </div>
-    </div>
-    <div
-        *ngIf="imgSrc === '../../assets/mock_button2.png'"
-        class="row display-flex">
-        <div class="col">
-            <div class="h-100 d-flex align-items-center justify-content-center">
-                <ul>
-                    <li class="horizontalList">Degree min/max (°/100):</li>
-                    <br class="overlappingBr" />
-                    <li
-                        class="horizontalList"
-                        id="degreeMinRange">
-                        <input
-                            id="degreeMinRangeInput"
-                            type="number"
-                            value="0"
-                            name="DegreeMin"
-                            max="9000"
-                            min="-9000"
-                            (input)="inputSendSettingsMsg()"
-                            [formControl]="degreeMinFormcontrol" />
-                    </li>
-                    <br class="overlappingBr" />
-                    <li
-                        class="horizontalList"
-                        id="degreeMaxRange">
-                        <input
-                            id="degreeMaxRangeInput"
-                            type="number"
-                            value="0"
-                            name="DegreeMax"
-                            max="9000"
-                            min="-9000"
-                            (input)="inputSendSettingsMsg()"
-                            [formControl]="degreeMaxFormcontrol" />
-                    </li>
-                </ul>
-            </div>
-            <span
-                *ngIf="
-          degreeMinFormcontrol.hasError('notGreaterThan') ||
-          (degreeMaxFormcontrol.hasError('notGreaterThan') &&
-            (degreeMaxFormcontrol.touched || degreeMinFormcontrol.touched))
-        "
-                style="color: red"
-                class="h-100 d-flex align-items-center justify-content-center"
-                >min degree can not be greater than max degree</span
-            >
-            <span
-                *ngIf="
-          degreeMinFormcontrol.hasError('max') ||
-          (degreeMinFormcontrol.hasError('min') && degreeMinFormcontrol.touched)
-        "
-                style="color: red"
-                class="h-100 d-flex align-items-center justify-content-center"
-                >degree must be between -9000 and 9000</span
-            >
-            <span
-                *ngIf="
-          degreeMaxFormcontrol.hasError('max') ||
-          (degreeMaxFormcontrol.hasError('min') && degreeMaxFormcontrol.touched)
-        "
-                style="color: red"
-                class="h-100 d-flex align-items-center justify-content-center"
-                >degree width must be between -9000 and 9000</span
-            >
-            <span
-                *ngIf="
-          degreeMinFormcontrol.hasError('nullValue') ||
-          (degreeMaxFormcontrol.hasError('nullValue') &&
-            (degreeMaxFormcontrol.touched || degreeMinFormcontrol.touched))
-        "
-                style="color: red"
-                class="h-100 d-flex align-items-center justify-content-center"
-                >degree width must not be empty</span
-            >
+        class="row justify-content-center">
+        <div class="col-9">
+            <app-multi-slider
+                [minValue]="0"
+                [maxValue]="65535"
+                [step]="1"
+                [unitLong]="'μs'"
+                name="Pulse width "
+                [minInit]="pulseMinRange.value"
+                [maxInit]="pulseMaxRange.value"
+                [messageReceiver$]="pulseWidthSubject$"
+                (multiSliderEvent)="setPulseRanges($event)"></app-multi-slider>
         </div>
     </div>
     <div
         *ngIf="imgSrc === '../../assets/mock_button2.png'"
         class="row display-flex justify-content-center">
-        <div class="col-10 ">
+        <div class="col-9">
+            <app-multi-slider
+                [minValue]="-9000"
+                [maxValue]="9000"
+                [step]="1"
+                [unitShort]="'°'"
+                [unitLong]="'°/100'"
+                name="Degree"
+                [minInit]="degreeMinFormcontrol.value"
+                [maxInit]="degreeMaxFormcontrol.value"
+                [messageReceiver$]="degreeSubject$"
+                (multiSliderEvent)="setDegree($event)"></app-multi-slider>
+        </div>
+    </div>
+    <div
+        *ngIf="imgSrc === '../../assets/mock_button2.png'"
+        class="row display-flex justify-content-center">
+        <div class="col-9">
             <!-- <span>Period (μs)</span>
             <input
                 id="periodSlider"

@@ -1,3 +1,10 @@
+<p
+    class="mb-5"
+    *ngIf="name">
+    {{ name + ' ' }}<span *ngIf="unitLong || unitShort"
+        >({{ unitLong ? unitLong : unitShort}})</span
+    >
+</p>
 <div class="range-wrap">
     <div
         class="range-value"
@@ -14,10 +21,10 @@
             #bubbleInput />
         <div
             class="bubble-span overlay"
-            id="bubble_span_{{ sliderName }}"
+            id="bubble_span_{{ name }}"
             [ngClass]="isInputVisible ? 'invisible' : ''"
             (dblclick)="toggleInputVisible(bubbleInput, sliderFormControl, bubbleFormControl)">
-            {{ sliderFormControl.value }}{{ unitOfMeasurement }}
+            {{ sliderFormControl.value }}{{ unitShort }}
         </div>
     </div>
     <div
@@ -35,42 +42,42 @@
             #bubbleInputUpper />
         <div
             class="bubble-span overlay"
-            id="bubble_spanUpper_{{ sliderName }}"
+            id="bubble_spanUpper_{{ name }}"
             [ngClass]="isInputVisible ? 'invisible' : ''"
             (dblclick)="toggleInputVisible(bubbleInputUpper, sliderFormControlUpper, bubbleFormControlUpper)">
-            {{ sliderFormControlUpper.value }}{{ unitOfMeasurement }}
+            {{ sliderFormControlUpper.value }}{{ unitShort }}
         </div>
     </div>
     <span
         *ngIf="bubblePosition >= minBubblePosition && bubblePositionUpper >= minBubblePosition"
         class="bubble-span-min"
-        >{{ minValue }}{{ unitOfMeasurement }}</span
+        >{{ minValue }}{{ unitShort }}</span
     >
     <span
         *ngIf="bubblePosition <= maxBubblePosition && bubblePositionUpper <= maxBubblePosition"
         class="bubble-span-max"
-        >{{ maxValue }}{{ unitOfMeasurement }}</span
+        >{{ maxValue }}{{ unitShort }}</span
     >
 
     <div class="wrap">
         <input
             class="range bottom-layer"
             type="range"
-            id="slider_{{ sliderName }}"
+            id="slider_{{ name }}"
             [min]="minValue"
             [max]="maxValue"
             [step]="step"
             [formControl]="sliderFormControl"
-            (input)="setThumbPosition(); setBubblePos(range, sliderFormControl);"
+            (input)="setThumbPosition(); setBubblePos(range, sliderFormControl); sendEvent();"
             #range />
         <input
             class="range top-layer"
             type="range"
-            id="slider2_{{ sliderName }}"
+            id="slider_upper_{{ name }}"
             [min]="minValue"
             [max]="maxValue"
             [formControl]="sliderFormControlUpper"
-            (input)="setThumbPosition(); setBubblePos(rangeUpper, sliderFormControlUpper);"
+            (input)="setThumbPosition(); setBubblePos(rangeUpper, sliderFormControlUpper); sendEvent();"
             [step]="step"
             #rangeUpper />
     </div>

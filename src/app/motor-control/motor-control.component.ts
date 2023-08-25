@@ -47,6 +47,10 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
     // the number of pixels from the edges of the slider at which the gray bubbles disappear
     pixelsFromEdge = 60;
     messageReceiver$ = new Subject<Message>();
+
+    pulseWidthSubject$ = new Subject<number[]>();
+    degreeSubject$ = new Subject<number[]>();
+
     allFingersSliderReceiver$ = new Subject<number>();
     motorFormControl: FormControl = new FormControl(true);
     sliderFormControl: FormControl = new FormControl(0);
@@ -188,6 +192,14 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
             if (json.velocity !== undefined) {
                 this.velocityFormControl.setValue(json.velocity);
             }
+            this.degreeSubject$.next([
+                Number(this.degreeMinFormcontrol.value),
+                Number(this.degreeMaxFormcontrol.value),
+            ]);
+            this.pulseWidthSubject$.next([
+                Number(this.pulseMinRange.value),
+                Number(this.pulseMaxRange.value),
+            ]);
             this.setThumbPosition();
             this.setMinAndMaxBubblePositions();
         });
@@ -502,4 +514,15 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
             this.sendSettingMessage();
         }, 100);
     };
+
+    setPulseRanges(number: number[]) {
+        this.pulseMinRange.setValue(number[0]);
+        this.pulseMaxRange.setValue(number[1]);
+        this.sendSettingMessage();
+    }
+    setDegree(number: number[]) {
+        this.degreeMinFormcontrol.setValue(number[0]);
+        this.degreeMaxFormcontrol.setValue(number[1]);
+        this.sendSettingMessage();
+    }
 }
