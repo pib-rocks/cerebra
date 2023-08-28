@@ -2,38 +2,18 @@
     <div
         class="container d-flex"
         style="background-color: #192021;">
-        <div class="row">
+        <div
+            class="row"
+            *ngFor="let element of headerElements">
             <svg
                 xmlns="http://www.w3.org/2000/svg"
+                class="elementIcon"
                 height="24px"
                 viewBox="0 -960 960 960"
                 width="24px">
-                <path [attr.d]="addPersonality" />
+                <path [attr.d]="element.icon" />
             </svg>
-            <p style="color: aliceblue;">ADD</p>
-        </div>
-        <div class="row">
-            <svg
-                xmlns="http://www.w3.org/2000/svg"
-                style="color: #0094de;"
-                class="personalityIcon"
-                height="24px"
-                viewBox="0 -960 960 960"
-                width="24px">
-                <path [attr.d]="deletePersonality" />
-            </svg>
-            <p style="color: aliceblue;">DELETE</p>
-        </div>
-        <div class="row">
-            <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="personalityIcon"
-                height="24px"
-                viewBox="0 -960 960 960"
-                width="24px">
-                <path [attr.d]="editPersonality" />
-            </svg>
-            <p style="color: aliceblue;">EDIT</p>
+            <p>{{element.label}}</p>
         </div>
     </div>
     <div
@@ -41,18 +21,18 @@
         style="color: aliceblue;">
         <div
             class="row"
-            *ngFor="let personality of personalities">
+            *ngFor="let element of bodyElements">
             <div class="container d-flex">
-                <div class="row p-1">
+                <div class="row p-1 elementIcon">
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
                         height="24px"
                         viewBox="0 -960 960 960"
                         width="24px">
-                        <path [attr.d]="personalityIcon" />
+                        <path [attr.d]="elementIcon" />
                     </svg>
                 </div>
-                <div class="row p-1">{{personality}}</div>
+                <div class="row p-1">{{element}}</div>
             </div>
         </div>
     </div>

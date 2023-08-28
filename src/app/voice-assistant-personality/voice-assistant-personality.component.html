@@ -32,7 +32,10 @@
             class="row col-lg-2"
             style="margin-top: -2.5%;">
             <!-- Content for the panel goes here -->
-            <app-voice-assistant-sidebar-right></app-voice-assistant-sidebar-right>
+            <app-voice-assistant-sidebar-right
+                [headerElements]="headerElements"
+                [bodyElements]="personalities"
+                [elementIcon]="personalityIcon"></app-voice-assistant-sidebar-right>
         </div>
     </div>
 </div>
