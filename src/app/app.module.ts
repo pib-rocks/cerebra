@@ -19,6 +19,11 @@ import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
 import {DialogContentComponent} from "./program/dialog-content/dialog-content.component";
 import {NavBarComponent} from "./nav-bar/nav-bar.component";
 import {SliderComponent} from "./slider/slider.component";
+import {VoiceAssistantNavComponent} from "./voice-assistant-nav/voice-assistant-nav.component";
+import {VoiceAssistantChatComponent} from "./voice-assistant-chat/voice-assistant-chat.component";
+import {VoiceAssistantPersonalityComponent} from "./voice-assistant-personality/voice-assistant-personality.component";
+import {FormsModule} from "@angular/forms";
+import {VoiceAssistantSidebarRightComponent} from "./voice-assistant-sidebar-right/voice-assistant-sidebar-right.component";
 
 @NgModule({
     declarations: [
@@ -33,6 +38,10 @@ import {SliderComponent} from "./slider/slider.component";
         DialogContentComponent,
         NavBarComponent,
         SliderComponent,
+        VoiceAssistantNavComponent,
+        VoiceAssistantChatComponent,
+        VoiceAssistantPersonalityComponent,
+        VoiceAssistantSidebarRightComponent,
     ],
     imports: [
         BrowserModule,
@@ -44,6 +53,7 @@ import {SliderComponent} from "./slider/slider.component";
         MatSliderModule,
         BrowserAnimationsModule,
         NgbDropdownModule,
+        FormsModule,
     ],
     providers: [],
     bootstrap: [AppComponent],

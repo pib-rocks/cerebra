@@ -1,0 +1,10 @@
+.voice-activation-button {
+    display: flex;
+    flex-direction: column-reverse;
+    padding: 0%;
+    align-self: baseline;
+}
+
+#voice-activation-toggle {
+    padding-top: 8px;
+}

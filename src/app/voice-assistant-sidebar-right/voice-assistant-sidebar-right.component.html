@@ -1,0 +1,59 @@
+<div class="bg-navigation-Kopie">
+    <div
+        class="container d-flex"
+        style="background-color: #192021;">
+        <div class="row">
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                height="24px"
+                viewBox="0 -960 960 960"
+                width="24px">
+                <path [attr.d]="addPersonality" />
+            </svg>
+            <p style="color: aliceblue;">ADD</p>
+        </div>
+        <div class="row">
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                style="color: #0094de;"
+                class="personalityIcon"
+                height="24px"
+                viewBox="0 -960 960 960"
+                width="24px">
+                <path [attr.d]="deletePersonality" />
+            </svg>
+            <p style="color: aliceblue;">DELETE</p>
+        </div>
+        <div class="row">
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="personalityIcon"
+                height="24px"
+                viewBox="0 -960 960 960"
+                width="24px">
+                <path [attr.d]="editPersonality" />
+            </svg>
+            <p style="color: aliceblue;">EDIT</p>
+        </div>
+    </div>
+    <div
+        class="container"
+        style="color: aliceblue;">
+        <div
+            class="row"
+            *ngFor="let personality of personalities">
+            <div class="container d-flex">
+                <div class="row p-1">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        height="24px"
+                        viewBox="0 -960 960 960"
+                        width="24px">
+                        <path [attr.d]="personalityIcon" />
+                    </svg>
+                </div>
+                <div class="row p-1">{{personality}}</div>
+            </div>
+        </div>
+    </div>
+</div>
