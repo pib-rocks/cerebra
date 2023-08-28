@@ -155,10 +155,12 @@ label.form-label {
 }
 
 .range-wrap .range::-moz-range-thumb {
-    width: 3px;
-    height: 15px;
-    background: #e10072;
     cursor: pointer;
+    border: none;
+    border-radius: 0;
+    width: 3px;
+    height: 12px;
+    background: #6b0337;
 }
 
 .range-wrap .range::-moz-range-progress {
