@@ -117,11 +117,10 @@ describe("MultiSliderComponent", () => {
         const htmlElement: HTMLInputElement = debugElement.nativeElement;
         expect(htmlElement).toBeTruthy();
         expect(htmlElement).toBeDefined();
-        console.log(htmlElement);
         component.setGradient();
         fixture.detectChanges();
-        let poslower = htmlElement.style.getPropertyValue("--pos-lower");
-        let posupper = htmlElement.style.getPropertyValue("--pos-upper");
+        const poslower = htmlElement.style.getPropertyValue("--pos-lower");
+        const posupper = htmlElement.style.getPropertyValue("--pos-upper");
         expect(poslower).toBe("50%");
         expect(posupper).toBe("100%");
     });

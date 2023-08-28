@@ -75,8 +75,7 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
             notNullValidator,
             steppingValidator(this.step),
         ]);
-        console.log("minInit " + this.minInit);
-        console.log("maxInit " + this.maxInit);
+
         this.sliderFormControl.setValue(
             this.minInit ? this.minInit : this.minValue,
         );
@@ -162,12 +161,6 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
         bubbleFormControl: FormControl,
         sliderFormControl: FormControl,
     ) {
-        console.log(
-            "bfcValue: " +
-                bubbleFormControl.value +
-                "\nsfCValue: " +
-                sliderFormControl.value,
-        );
         if (bubbleFormControl.value !== sliderFormControl.value) {
             if (sliderFormControl.value !== null) {
                 this.isInputVisible = !this.isInputVisible;
@@ -193,7 +186,6 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
                         intBubbleFormControl,
                     );
                 } else {
-                    console.log("vluSFC" + sliderFormControl.value);
                     this.setSliderValue(
                         sliderFormControl,
                         Number(bubbleFormControl.value),
