@@ -47,7 +47,7 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
 
     bubblePosition!: number;
     bubblePositionUpper!: number;
-    isInputVisible = false;
+    isInputVisible?: boolean;
     maxBubblePosition = 100;
     minBubblePosition = 0;
     pixelsFromEdge = 60;
@@ -86,13 +86,6 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
         this.bubbleFormControl.setValue(this.sliderFormControl.value);
         this.bubbleFormControlUpper.setValue(this.sliderFormControlUpper.value);
 
-        this.bubblePosition =
-            ((this.sliderFormControl.value - this.minValue) * 100) /
-            (this.maxValue - this.minValue);
-        this.bubblePositionUpper =
-            ((this.sliderFormControlUpper.value - this.minValue) * 100) /
-            (this.maxValue - this.minValue);
-
         this.messageReceiver$?.subscribe((value: number[]) => {
             if (
                 Number(this.sliderFormControl.value) <
@@ -109,6 +102,7 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
     }
 
     ngAfterViewInit() {
+        this.setThumbPosition();
         const sliderWidth = this.sliderElem?.nativeElement.clientWidth;
         if (sliderWidth !== undefined) {
             this.minBubblePosition = (this.pixelsFromEdge * 100) / sliderWidth;
@@ -120,8 +114,6 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
             "background",
             "linear-gradient(to right, #324c71, #324c71 var(--pos-lower), #e10072 var(--pos-lower), #e10072 var(--pos-upper), #324c71 var(--pos-upper), #324c71)",
         );
-        this.setGradient();
-        this.setThumbPosition();
     }
 
     sendEvent() {
@@ -148,6 +140,7 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
     setSliderValue(sliderFormControl: FormControl, value: number) {
         sliderFormControl.setValue(value);
         this.setThumbPosition();
+        this.sendEvent();
     }
 
     toggleInputVisible(
@@ -213,28 +206,24 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
         this.isInputVisible = false;
     }
 
-    //Refactor, Berechnung 3mal vorhanden in setTHumb, setBubblePos,
+    //Refactor, Berechnung 2mal vorhanden in setTHumb,
     setThumbPosition() {
         const val =
             ((this.sliderFormControl.value - this.minValue) * 100) /
             (this.maxValue - this.minValue);
-        this.bubblePosition = val;
+        setTimeout(() => {
+            this.bubblePosition = val;
+        }, 0);
 
         this.bubbleElement.nativeElement.style.left = /*this.rotate? `calc(1-${val})`: */ `calc(${val}%)`;
-        this.sliderElem.nativeElement.style.setProperty(
-            "--pos-lower",
-            val.toString(10) + "%",
-        );
 
         const val2 =
             ((this.sliderFormControlUpper.value - this.minValue) * 100) /
             (this.maxValue - this.minValue);
-        this.bubblePositionUpper = val2;
+        setTimeout(() => {
+            this.bubblePositionUpper = val2;
+        }, 0);
         this.bubbleElementUpper.nativeElement.style.left = /*this.rotate? `calc(1-${val})`: */ `calc(${val2}%)`;
-        this.sliderElemUpper.nativeElement.style.setProperty(
-            "--pos-upper",
-            val2.toString(10) + "%",
-        );
         this.setGradient();
     }
 
