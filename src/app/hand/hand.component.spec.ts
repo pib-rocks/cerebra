@@ -271,10 +271,6 @@ describe("HandComponent", () => {
             )[0].componentInstance,
             "sendMessage",
         );
-        const slider = sliders.filter(
-            (slider) =>
-                slider.componentInstance.motorName === "all_left_stretch",
-        )[0];
         sliders
             .filter(
                 (slider) =>

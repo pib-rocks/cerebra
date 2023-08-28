@@ -15,7 +15,6 @@ import {By} from "@angular/platform-browser";
 describe("MultiSliderComponent", () => {
     let component: MultiSliderComponent;
     let fixture: ComponentFixture<MultiSliderComponent>;
-    let rosService: RosService;
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
@@ -23,7 +22,6 @@ describe("MultiSliderComponent", () => {
             imports: [ReactiveFormsModule],
             providers: [RosService],
         }).compileComponents();
-        rosService = TestBed.inject(RosService);
         fixture = TestBed.createComponent(MultiSliderComponent);
         component = fixture.componentInstance;
         component.messageReceiver$ = new Subject<number[]>();

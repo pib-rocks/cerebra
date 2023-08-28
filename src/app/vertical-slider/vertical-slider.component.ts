@@ -23,7 +23,9 @@ export class VerticalSliderComponent implements OnInit, AfterViewInit {
     @Input() name?: string;
     @Input() showPrompt: boolean = true;
     @Input() showTextInput: boolean = true;
-    @Input() parentFunction = () => {};
+    @Input() parentFunction = () => {
+        console.warn("no Parentfunction passed to component");
+    };
     @Input() id = "";
     //Slider
     @ViewChild("slider") slider?: ElementRef;
