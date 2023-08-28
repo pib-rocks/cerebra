@@ -1,7 +1,6 @@
 {
   "root": true,
   "ignorePatterns": ["projects/**/*"],
-  "prettier/prettier": "warn",
   "overrides": [
       {
           "files": ["*.ts"],

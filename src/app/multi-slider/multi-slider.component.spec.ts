@@ -93,13 +93,18 @@ describe("MultiSliderComponent", () => {
 
     it("should call respective functions and set values on calling toggleInputUnvisible", () => {
         const spySetSliderValue = spyOn(component, "setSliderValue");
-        component.bubbleFormControl.setValue(150);
-        component.sliderFormControl.setValue(50);
-        component.toggleInputUnvisible(
-            component.bubbleFormControl,
-            component.sliderFormControl,
-        );
+        const sFC = component.sliderFormControl;
+        const bFC = component.bubbleFormControl;
+        bFC.setValue(150);
+        sFC.setValue(50);
+        component.toggleInputUnvisible(bFC, sFC);
         expect(spySetSliderValue).toHaveBeenCalled();
+        bFC.setValue("sdf");
+        component.toggleInputUnvisible(bFC, sFC);
+        expect(bFC.value).not.toBe("sdf");
+        bFC.setValue(null);
+        component.toggleInputUnvisible(bFC, sFC);
+        expect(bFC.value).not.toBe(null);
     });
 
     it("should change the color gradient when calling setGradient", () => {
