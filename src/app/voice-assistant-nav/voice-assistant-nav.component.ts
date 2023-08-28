@@ -1,4 +1,5 @@
 import {Component} from "@angular/core";
+import {FormControl} from "@angular/forms";
 
 @Component({
     selector: "app-voice-assistant-nav",
@@ -10,4 +11,7 @@ import {Component} from "@angular/core";
         "../voice-assistant/voice-assistant.component.css",
     ],
 })
-export class VoiceAssistantNavComponent {}
+export class VoiceAssistantNavComponent {
+    voiceAssistantActiveStatus = false;
+    voiceAssistantStatus = this.voiceAssistantActiveStatus ? "ON" : "OFF";
+}

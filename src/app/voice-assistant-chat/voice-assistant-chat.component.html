@@ -16,13 +16,11 @@
     <div class="row">
         <div class="col-lg-10 pink-corner-frame">
             <!-- Content for the main section goes here -->
-            <div
-                class="chat-container mt-2 mb-1 p5"
-                style="width: 100%;">
+            <div class="chat-container mt-2 mb-1 p5">
                 <div class="messages">
                     <!-- Messages will be dynamically generated here -->
                     <div *ngFor="let message of messages">
-                        <p style="color: aliceblue;">{{message}}</p>
+                        <p>{{message}}</p>
                     </div>
                 </div>
                 <div class="input-container">
