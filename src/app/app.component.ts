@@ -10,6 +10,7 @@ export class AppComponent implements OnInit {
     currentRoute: string = "";
     title = "cerebra";
     isActiveRoute = false;
+    isActiveVoiceRoute = false;
     jointControlNavItemGroup = [
         "/",
         "/head",
@@ -19,12 +20,17 @@ export class AppComponent implements OnInit {
         "/arm/right",
     ];
 
+    voiceNavItemGroup = ["/personality", "/chat"];
+
     constructor(private router: Router) {}
 
     ngOnInit(): void {
         this.router.events.subscribe((event) => {
             if (event instanceof NavigationEnd) {
                 this.isActiveRoute = this.jointControlNavItemGroup.includes(
+                    event.urlAfterRedirects,
+                );
+                this.isActiveVoiceRoute = this.voiceNavItemGroup.includes(
                     event.urlAfterRedirects,
                 );
             }
