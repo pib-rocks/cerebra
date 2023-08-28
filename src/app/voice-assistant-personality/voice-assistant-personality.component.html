@@ -1,40 +1,36 @@
 <header>
     <app-voice-assistant-nav></app-voice-assistant-nav>
 </header>
-<div class="container-fluid mt-3">
+<div class="container-fluid d-flex p-2">
+    <div class="row col-md-8 p-2 mt-2">
+        <label style="font-size: large; color: aliceblue;">
+            Personality Name
+        </label>
+    </div>
+    <div class="row col-md-2 p-2">
+        <button class="btn btn-sm btn-primary">Save</button>
+    </div>
+    <div class="row col-md-2 p-2">
+        <button class="btn btn-sm btn-primary">Save As...</button>
+    </div>
+</div>
+<div class="container-fluid">
     <div class="row">
-        <div class="col-lg-10 pink-corner-frame">
-            <div class="container-fluid d-flex p-2">
-                <div class="row col-md-8">
-                    <label style="font-size: large; color: aliceblue;"
-                        >Personality Name</label
-                    >
-                </div>
-                <div class="row col-md-2 p-2 mr-1">
-                    <button class="btn btn-sm btn-primary">Save</button>
-                </div>
-                <div class="row col-md-2 p-2 ml-1">
-                    <button class="btn btn-sm btn-primary">Save as...</button>
-                </div>
-            </div>
+        <div class="col-lg-10">
             <!-- Content for the main section goes here -->
             <div
-                class="chat-container mt-2 mb-1 p-5"
+                class="row"
                 style="width: 100%;">
-                <div
-                    class="row"
-                    style="width: 100%;">
-                    <textarea
-                        class="form-control pink-corner-frame"
-                        rows="25"
-                        placeholder="Describe personality with a prompt...">
-                    </textarea>
-                </div>
+                <textarea
+                    class="form-control pink-corner-frame"
+                    rows="25"
+                    placeholder="Describe personality with a prompt...">
+                </textarea>
             </div>
         </div>
         <div
             class="row col-lg-2"
-            style="margin-top: -1.6%;">
+            style="margin-top: -2.5%;">
             <!-- Content for the panel goes here -->
             <app-voice-assistant-sidebar-right></app-voice-assistant-sidebar-right>
         </div>
