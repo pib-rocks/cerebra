@@ -148,7 +148,9 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
             };
             if (
                 motor === "index_right_stretch" ||
-                motor === "index_left_stretch"
+                motor === "index_left_stretch" ||
+                motor === "all_left_stretch" ||
+                motor === "all_right_stretch"
             ) {
                 if (!Number.isNaN(value) && Number.isFinite(value)) {
                     if (json.turnedOn) {
