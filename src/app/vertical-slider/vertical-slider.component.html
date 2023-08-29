@@ -1,5 +1,7 @@
 <div class="d-flex flex-column align-items-center">
-    <p *ngIf="showPrompt">{{name}}</p>
+    <p *ngIf="showPrompt">
+        {{name}}<span *ngIf="unitLong">{{ " " + unitLong }}</span>
+    </p>
     <input
         *ngIf="showTextInput"
         [id]="name + 'Input'"

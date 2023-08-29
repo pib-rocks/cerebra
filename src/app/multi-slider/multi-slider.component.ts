@@ -117,8 +117,8 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
 
     sendEvent() {
         if (
-            this.sliderFormControl?.value &&
-            this.sliderFormControlUpper?.value
+            this.sliderFormControl?.value != null &&
+            this.sliderFormControlUpper?.value != null
         ) {
             const lower =
                 this.sliderFormControl.value >=
@@ -170,8 +170,10 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
                 ) {
                     bubbleFormControl.setValue(sliderFormControl.value);
                 } else if (bubbleFormControl.hasError("min")) {
+                    bubbleFormControl.setValue(this.minValue);
                     this.setSliderValue(sliderFormControl, this.minValue);
-                } else if (this.bubbleFormControl.hasError("max")) {
+                } else if (bubbleFormControl.hasError("max")) {
+                    bubbleFormControl.setValue(this.maxValue);
                     this.setSliderValue(sliderFormControl, this.maxValue);
                 } else if (this.bubbleFormControl.hasError("steppingError")) {
                     let intBubbleFormControl = Math.floor(
@@ -198,7 +200,6 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
         this.isInputVisible = false;
     }
 
-    //Refactor, Berechnung 2mal vorhanden in setTHumb,
     setThumbPosition() {
         const val =
             ((this.sliderFormControl.value - this.minValue) * 100) /
@@ -206,7 +207,7 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
         setTimeout(() => {
             this.bubblePosition = val;
         }, 0);
-
+        this.bubbleFormControl.setValue(Number(this.sliderFormControl.value));
         this.bubbleElement.nativeElement.style.left = /*this.rotate? `calc(1-${val})`: */ `calc(${val}%)`;
 
         const val2 =
@@ -215,6 +216,9 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
         setTimeout(() => {
             this.bubblePositionUpper = val2;
         }, 0);
+        this.bubbleFormControlUpper.setValue(
+            Number(this.sliderFormControlUpper.value),
+        );
         this.bubbleElementUpper.nativeElement.style.left = /*this.rotate? `calc(1-${val})`: */ `calc(${val2}%)`;
         this.setGradient();
     }

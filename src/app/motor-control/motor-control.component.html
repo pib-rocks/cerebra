@@ -84,7 +84,7 @@
         </div>
         <div class="col text-right">
             <button
-                id="x-button"
+                id="modal-close-button"
                 type="button"
                 (click)="modal.dismiss('Cross click')"
                 class="btn">
@@ -109,7 +109,9 @@
             <span> SPEED SETTINGS </span>
         </div>
         <div class="col-md-auto">
-            <button (click)="changeIcon()">
+            <button
+                (click)="changeIcon()"
+                id="toggle-settings">
                 <img
                     [src]="imgSrc"
                     alt="testbutton" />
@@ -179,6 +181,7 @@
                 name="Velocity"
                 [rangeFormControl]="velocityFormControl"
                 [parentFunction]="inputSendSettingsMsg"
+                [unitLong]="'(°/100s)'"
                 [minValue]="0"
                 [maxValue]="500000"></app-vertical-slider>
         </div>
