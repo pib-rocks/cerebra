@@ -1,26 +1,29 @@
-<div class="nav nav-tabs d-flex">
-    <div
-        class="nav-item row"
-        routerLinkActive="navbar-btn-active"
-        [routerLink]="['/personality']">
-        <a class="nav-link sidebar-btn"> Personality </a>
+<div class="container-fluid d-flex nav nav-tabs">
+    <div class="row col-md-10">
+        <div
+            class="nav-item"
+            routerLinkActive="navbar-btn-active"
+            [routerLink]="['/personality']">
+            <a class="nav-link sidebar-btn"> Personality </a>
+        </div>
+        <div
+            class="nav-item"
+            routerLinkActive="navbar-btn-active"
+            [routerLink]="['/chat']">
+            <a class="nav-link sidebar-btn"> Chat </a>
+        </div>
     </div>
-    <div
-        class="nav-item row"
-        routerLinkActive="navbar-btn-active"
-        [routerLink]="['/chat']">
-        <a class="nav-link sidebar-btn"> Chat </a>
-    </div>
-
-    <div class="form-check form-switch col-sm-12 row">
-        <input
-            class="form-check-input"
-            type="checkbox"
-            id="checkbox"
-            [(ngModel)]="voiceAssistantActiveStatus" />
-        <label for=""
-            >Voice assistant {{voiceAssistantActiveStatus ? 'ON' :
-            'OFF'}}</label
-        >
+    <div class="row col-md-2">
+        <div class="form-check form-switch pt-3">
+            <input
+                class="form-check-input"
+                type="checkbox"
+                id="checkbox"
+                [(ngModel)]="voiceAssistantActiveStatus" />
+            <label for=""
+                >Voice assistant {{voiceAssistantActiveStatus ? 'ON' :
+                'OFF'}}</label
+            >
+        </div>
     </div>
 </div>
