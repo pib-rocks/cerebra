@@ -105,20 +105,18 @@
         </div>
     </div>
     <div class="row display-flex mt-5 mb-3">
-        <div class="col text-right">
-            <span> SPEED SETTINGS </span>
-        </div>
-        <div class="col-md-auto">
-            <button
-                (click)="changeIcon()"
-                id="toggle-settings">
-                <img
-                    [src]="imgSrc"
-                    alt="testbutton" />
-            </button>
-        </div>
-        <div class="col">
-            <span> EXTENDED VALUES </span>
+        <div class="row">
+            <div class="col text-right"><span> SPEED SETTINGS </span></div>
+            <div class="col col-md-auto">
+                <button
+                    (click)="changeIcon()"
+                    id="toggle-settings">
+                    <img
+                        [src]="imgSrc"
+                        alt="testbutton" />
+                </button>
+            </div>
+            <div class="col text-left"><span> EXTENDED VALUES </span></div>
         </div>
     </div>
     <div
@@ -176,7 +174,7 @@
     <div
         *ngIf="imgSrc === '../../assets/mock_button.png'"
         class="row modal-body h-100 d-flex align-items-start justify-content-center">
-        <div class="col-3 ml-2 mr-2">
+        <div class="col-3 ml-2 mr-2 ">
             <app-vertical-slider
                 name="Velocity"
                 [rangeFormControl]="velocityFormControl"
