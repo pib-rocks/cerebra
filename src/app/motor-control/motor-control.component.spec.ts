@@ -123,7 +123,7 @@ describe("MotorControlComponent", () => {
         fingerService.getMotorHandNames(component.groupSide);
         spyOn(component, "sendMessage").and.callThrough();
         component.sendMessage();
-        expect(rosService.sendSliderMessage).toHaveBeenCalledTimes(5);
+        expect(rosService.sendSliderMessage).toHaveBeenCalledTimes(6);
     });
 
     it("should set a valid value after receiving a message", () => {
@@ -220,7 +220,7 @@ describe("MotorControlComponent", () => {
         fixture.detectChanges();
         component.turnTheMotorOnAndOff();
         expect(motorService.getMotorHandNames).toHaveBeenCalledWith("left");
-        expect(rosService.sendSliderMessage).toHaveBeenCalledTimes(6);
+        expect(rosService.sendSliderMessage).toHaveBeenCalledTimes(7);
     });
 
     it("should send a settings message when changing a value of the setting", () => {
@@ -249,7 +249,7 @@ describe("MotorControlComponent", () => {
         fixture.detectChanges();
         component.sendSettingMessage();
         expect(spyMotorNames).toHaveBeenCalledWith("left");
-        expect(rosService.sendSliderMessage).toHaveBeenCalledTimes(6);
+        expect(rosService.sendSliderMessage).toHaveBeenCalledTimes(7);
     });
 
     it("should send a combined massege with all values if all inputs are valid", () => {
@@ -276,7 +276,7 @@ describe("MotorControlComponent", () => {
         fixture.detectChanges();
         component.sendAllMessagesCombined();
         expect(motorService.getMotorHandNames).toHaveBeenCalledWith("left");
-        expect(rosService.sendSliderMessage).toHaveBeenCalledTimes(6);
+        expect(rosService.sendSliderMessage).toHaveBeenCalledTimes(7);
     });
 
     it("should send a combined massege with all values if not all inputs are valid", () => {
@@ -301,7 +301,7 @@ describe("MotorControlComponent", () => {
         fixture.detectChanges();
         component.sendAllMessagesCombined();
         expect(spyMotorNames).toHaveBeenCalledWith("left");
-        expect(rosService.sendSliderMessage).toHaveBeenCalledTimes(6);
+        expect(rosService.sendSliderMessage).toHaveBeenCalledTimes(7);
     });
 
     it("should return null if max pulse is greater than min pulse", () => {
