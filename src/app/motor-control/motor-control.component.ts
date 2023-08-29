@@ -18,9 +18,11 @@ import {
     compareValuesPulseValidator,
     notNullValidator,
 } from "../shared/validators";
-
-import {jointTrajectoryMessage} from "../shared/rosMessageTypes/jointTrajectoryMessage";
-import {createDummyJointTrajectoryMessage} from "../shared/rosMessageTypes/dummyRosMessageTypes";
+import {
+    jointTrajectoryMessage,
+    createDefaultJointTrajectoryMessage,
+} from "../shared/rosMessageTypes/jointTrajectoryMessage";
+import {createJointTrajectoryPoint} from "../shared/rosMessageTypes/jointTrajectoryPoint";
 @Component({
     selector: "app-motor-control",
     templateUrl: "./motor-control.component.html",
@@ -289,29 +291,25 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
         if (this.isCombinedSlider) {
             motorNames = this.motorService.getMotorHandNames(this.groupSide);
 
-            motorNames.forEach((mn) => {
-                const message: Message = {
-                    motor: mn,
-                    value: this.sliderFormControl.value,
-                };
-                this.rosService.sendSliderMessage(message);
-            });
-        } else {
-            const message: Message = {
-                motor: this.motorName,
-                value: this.sliderFormControl.value,
-            };
-            this.rosService.sendSliderMessage(message);
-
             const jointTrajectoryMessage: jointTrajectoryMessage =
-                createDummyJointTrajectoryMessage();
-            jointTrajectoryMessage.joint_names[0] = this.motorName;
-
-            (jointTrajectoryMessage.points[0].positions[0] =
-                this.sliderFormControl.value),
-                this.rosService.sendJointTrajectoryMessage(
-                    jointTrajectoryMessage,
+                createDefaultJointTrajectoryMessage();
+            for (var index in motorNames) {
+                jointTrajectoryMessage.joint_names.push(motorNames[index]);
+                jointTrajectoryMessage.points.push(
+                    createJointTrajectoryPoint(this.sliderFormControl.value),
                 );
+            }
+
+            this.rosService.sendJointTrajectoryMessage(jointTrajectoryMessage);
+        } else {
+            const jointTrajectoryMessage: jointTrajectoryMessage =
+                createDefaultJointTrajectoryMessage();
+            jointTrajectoryMessage.joint_names.push(this.motorName);
+            jointTrajectoryMessage.points.push(
+                createJointTrajectoryPoint(this.sliderFormControl.value),
+            );
+
+            this.rosService.sendJointTrajectoryMessage(jointTrajectoryMessage);
         }
     }
 

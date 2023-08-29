@@ -6,3 +6,12 @@ export type rosTime = {
     sec: number;
     nanosec: number;
 };
+
+export function createDefaultRosTime(): rosTime {
+    const rosTime: rosTime = {
+        sec: 0,
+        nanosec: 100000000,
+    };
+
+    return rosTime;
+}

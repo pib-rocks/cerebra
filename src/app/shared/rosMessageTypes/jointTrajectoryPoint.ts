@@ -1,4 +1,4 @@
-import {rosTime} from "./rosTime";
+import {rosTime, createDefaultRosTime} from "./rosTime";
 
 // TypeScript implementation of the ROS Common-Interfaces JointTrajectoryMessage
 // Documentation at: https://github.com/ros2/common_interfaces/blob/rolling/trajectory_msgs/msg/JointTrajectory.msg
@@ -9,3 +9,15 @@ export type jointTrajectoryPoint = {
     effort?: number[];
     time_from_start: rosTime;
 };
+
+export function createJointTrajectoryPoint(
+    position: number,
+): jointTrajectoryPoint {
+    var jointTrajectoryPoint: jointTrajectoryPoint = {
+        positions: new Array<number>(),
+        time_from_start: createDefaultRosTime(),
+    };
+    jointTrajectoryPoint.positions.push(position);
+
+    return jointTrajectoryPoint;
+}
