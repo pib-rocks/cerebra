@@ -35,6 +35,7 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
     @Input() publishMessage!: (args: number) => void;
     @Input() messageReceiver$!: Subject<number[]>;
     @Input() name?: string;
+    @Input() id?: string;
 
     @Input() minInit?: number;
     @Input() maxInit?: number;
@@ -59,6 +60,7 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
     ) {}
 
     ngOnInit(): void {
+        this.id = this.sanitizeNameForId(this.name);
         this.bubbleFormControl.setValidators([
             Validators.min(this.minValue),
             Validators.max(this.maxValue),
@@ -247,5 +249,12 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
             "--pos-lower",
             lower.toString(10) + "%",
         );
+    }
+
+    sanitizeNameForId(name: string | undefined) {
+        if (!name) {
+            return "NAME_NOT_PASSED";
+        }
+        return name.replace(" ", "_").toLowerCase();
     }
 }

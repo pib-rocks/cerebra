@@ -4,7 +4,19 @@
 }
 
 p {
+    max-width: 120px;
+    overflow-x: hidden;
+    overflow-y: hidden;
     font-weight: normal;
+}
+p span {
+    overflow-x: hidden;
+    overflow-y: hidden;
+    text-overflow: hidden;
+}
+
+.min-w {
+    min-width: 140px;
 }
 
 .sliderRange {

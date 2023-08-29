@@ -11,7 +11,7 @@
         #bubble>
         <input
             class="bubble-input overlay"
-            id="test123"
+            id="input_{{id}}"
             [ngClass]="isInputVisible ? '' : 'invisible'"
             [min]="minValue"
             [max]="maxValue"
@@ -21,7 +21,7 @@
             #bubbleInput />
         <div
             class="bubble-span overlay"
-            id="bubble_span_{{ name }}"
+            id="bubble_span_{{ id }}"
             [ngClass]="isInputVisible ? 'invisible' : ''"
             (dblclick)="toggleInputVisible(bubbleInput, sliderFormControl, bubbleFormControl)">
             {{ sliderFormControl.value }}{{ unitShort }}
@@ -32,7 +32,7 @@
         #bubbleUpper>
         <input
             class="bubble-input overlay"
-            id="test321"
+            id="input_upper_{{id}}"
             [ngClass]="isInputVisible ? '' : 'invisible'"
             [min]="minValue"
             [max]="maxValue"
@@ -42,7 +42,7 @@
             #bubbleInputUpper />
         <div
             class="bubble-span overlay"
-            id="bubble_spanUpper_{{ name }}"
+            id="bubble_span_upper_{{ id }}"
             [ngClass]="isInputVisible ? 'invisible' : ''"
             (dblclick)="toggleInputVisible(bubbleInputUpper, sliderFormControlUpper, bubbleFormControlUpper)">
             {{ sliderFormControlUpper.value }}{{ unitShort }}
@@ -58,12 +58,11 @@
         class="bubble-span-max"
         >{{ maxValue }}{{ unitShort }}</span
     >
-
     <div class="wrap">
         <input
             class="range bottom-layer"
             type="range"
-            id="slider_{{ name }}"
+            id="slider_{{ id }}"
             [min]="minValue"
             [max]="maxValue"
             [step]="step"
@@ -73,7 +72,7 @@
         <input
             class="range top-layer"
             type="range"
-            id="slider_upper_{{ name }}"
+            id="slider_upper_{{ id }}"
             [min]="minValue"
             [max]="maxValue"
             [formControl]="sliderFormControlUpper"
