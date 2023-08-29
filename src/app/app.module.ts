@@ -19,6 +19,7 @@ import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
 import {DialogContentComponent} from "./program/dialog-content/dialog-content.component";
 import {NavBarComponent} from "./nav-bar/nav-bar.component";
 import {SliderComponent} from "./slider/slider.component";
+import {CircularSliderComponent} from "./slider/circular-slider/circular-slider.component";
 
 @NgModule({
     declarations: [
@@ -33,6 +34,7 @@ import {SliderComponent} from "./slider/slider.component";
         DialogContentComponent,
         NavBarComponent,
         SliderComponent,
+        CircularSliderComponent,
     ],
     imports: [
         BrowserModule,
