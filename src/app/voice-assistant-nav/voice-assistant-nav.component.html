@@ -1,20 +1,18 @@
-<ul class="nav nav-tabs">
-    <li
-        class="nav-item"
+<div class="nav nav-tabs d-flex">
+    <div
+        class="nav-item row"
         routerLinkActive="navbar-btn-active"
         [routerLink]="['/personality']">
         <a class="nav-link sidebar-btn"> Personality </a>
-    </li>
-    <li
-        class="nav-item"
+    </div>
+    <div
+        class="nav-item row"
         routerLinkActive="navbar-btn-active"
         [routerLink]="['/chat']">
         <a class="nav-link sidebar-btn"> Chat </a>
-    </li>
+    </div>
 
-    <li
-        class="form-check form-switch col-sm-12"
-        align="right">
+    <div class="form-check form-switch col-sm-12 row">
         <input
             class="form-check-input"
             type="checkbox"
@@ -24,5 +22,5 @@
             >Voice assistant {{voiceAssistantActiveStatus ? 'ON' :
             'OFF'}}</label
         >
-    </li>
-</ul>
+    </div>
+</div>
