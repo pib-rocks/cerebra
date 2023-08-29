@@ -134,12 +134,10 @@ p span {
     grid-template-rows: max-content;
     margin: 1em auto;
 }
+
 input[type="range"] {
     grid-column: 1;
     grid-row: 2;
-}
-
-input[type="range"] {
     --pos-relative: 0;
     appearance: none;
     -webkit-appearance: none;
