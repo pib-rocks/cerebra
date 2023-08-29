@@ -13,16 +13,18 @@
             <a class="nav-link sidebar-btn"> Chat </a>
         </div>
     </div>
-    <div class="row col-md-2">
-        <div class="form-check form-switch pt-3">
+    <div class="row col-md-2 mt-3">
+        <div class="custom-switch custom-switch-pib">
             <input
-                class="form-check-input"
+                class="custom-control-input"
                 type="checkbox"
-                id="checkbox"
-                [(ngModel)]="voiceAssistantActiveStatus" />
-            <label for=""
-                >Voice assistant {{voiceAssistantActiveStatus ? 'ON' :
-                'OFF'}}</label
+                id="voiceAssistantActivationToggle"
+                [formControl]="voiceAssistantActivationToggle"
+                (input)="toggleVoiceAssistantActivation()" />
+            <label
+                class="custom-control-label"
+                for="voiceAssistantActivationToggle"
+                >Voice Assistant {{voiceAssistantStatus}}</label
             >
         </div>
     </div>
