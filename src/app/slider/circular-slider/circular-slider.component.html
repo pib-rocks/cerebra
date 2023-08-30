@@ -1,1 +1,12 @@
-<p>circular-slider works!</p>
+<canvas
+    id="{{ name }}"
+    #canvas
+    width="150"
+    height="150">
+</canvas>
+<input
+    id="input_{{name}}"
+    type="number"
+    class="form-control"
+    style="width: 150px"
+    [formControl]="mAFormControl" />

@@ -1,18 +1,54 @@
-import {Component, ElementRef, Input, ViewChild} from "@angular/core";
+import {
+    AfterViewInit,
+    Component,
+    ElementRef,
+    Input,
+    OnInit,
+    ViewChild,
+} from "@angular/core";
+import {FormControl, Validators} from "@angular/forms";
+import {map} from "rxjs";
+import {notNullValidator} from "src/app/shared/validators";
 
 @Component({
     selector: "app-circular-slider",
     templateUrl: "./circular-slider.component.html",
     styleUrls: ["./circular-slider.component.css"],
 })
-export class CircularSliderComponent {
+export class CircularSliderComponent implements AfterViewInit, OnInit {
     @ViewChild("canvas") canvas!: ElementRef;
     ctx: any;
     @Input()
-    degree: number = 100;
+    @Input()
+    initValue: number = 180;
+    @Input() maxValue: number = 2000;
+    @Input() minValue: number = 0;
+    @Input() strokeWidth: number = 20;
+    @Input() name?: string;
+    mAFormControl: FormControl = new FormControl(0);
+
+    ngOnInit(): void {
+        this.mAFormControl.setValidators([
+            Validators.min(this.minValue),
+            Validators.max(this.maxValue),
+            Validators.pattern("^[0-9]{1,}"),
+            Validators.required,
+            notNullValidator,
+        ]);
+        this.mAFormControl.valueChanges
+            .pipe(map((x) => this.sanitize(x)))
+            .subscribe((value) => {
+                if (value) {
+                    this.drawGradientCircle(
+                        (value / this.maxValue) * 360,
+                        this.strokeWidth,
+                    );
+                }
+            });
+    }
 
     ngAfterViewInit(): void {
-        this.drawGradientCircle(this.degree, 20);
+        this.drawGradientCircle(this.initValue, this.strokeWidth);
     }
     drawGradientCircle(degree: number, strokeWidth: number) {
         const element = this.canvas.nativeElement;
@@ -42,11 +78,16 @@ export class CircularSliderComponent {
             r + strokewidth,
             r + strokewidth,
         );
-        gradient.addColorStop(0, "green");
-        gradient.addColorStop(0.5, "green");
-        gradient.addColorStop(0.6, "blue");
-        gradient.addColorStop(0.7, "orange");
-        gradient.addColorStop(0.8, "red");
+        gradient.addColorStop(0, "#0094df");
+        // gradient.addColorStop(0.25, "#0094df");
+        gradient.addColorStop(0.4, "#8b1a76");
+        gradient.addColorStop(0.8, "#e20072");
+        gradient.addColorStop(1, "#e10072");
+        // gradient.addColorStop(0, "#0094df");
+        // gradient.addColorStop(0.25, "#8b1a76");
+        // gradient.addColorStop(0.5, "#e20072");
+        // gradient.addColorStop(0.75, "#0094df");
+        // gradient.addColorStop(1, "#0094df");
         this.ctx.beginPath();
         this.ctx.arc(cx, cy, r, -Math.PI / 2, endAngle - Math.PI / 2);
         this.ctx.lineWidth = strokewidth;
@@ -92,5 +133,24 @@ export class CircularSliderComponent {
             Number((event.target as HTMLInputElement).value),
             30,
         );
+    }
+
+    sanitize(value: number) {
+        if (this.mAFormControl.hasError("required")) {
+            return null;
+        }
+        if (this.mAFormControl.hasError("pattern")) {
+            return null;
+        }
+        if (this.mAFormControl.hasError("nullValue")) {
+            return null;
+        }
+        if (this.mAFormControl.hasError("min")) {
+            return this.minValue;
+        }
+        if (this.mAFormControl.hasError("max")) {
+            return this.maxValue;
+        }
+        return value;
     }
 }
