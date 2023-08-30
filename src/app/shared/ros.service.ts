@@ -14,10 +14,15 @@ export class RosService {
     isInitialized$ = this.isInitializedSubject.asObservable();
     currentReceiver$: Subject<MotorCurrentMessage> =
         new Subject<MotorCurrentMessage>();
-    timerPeriodReceiver$: Subject<number> = new Subject<number>();
+    timerPeriodReceiver$: BehaviorSubject<number> = new BehaviorSubject<number>(
+        0.1,
+    );
     cameraReceiver$: Subject<string> = new Subject<string>();
-    previewSizeReceiver$: Subject<number[]> = new Subject<number[]>();
-    qualityFactorReceiver$: Subject<number> = new Subject<number>();
+    previewSizeReceiver$: BehaviorSubject<number[]> = new BehaviorSubject<
+        number[]
+    >([640, 480]);
+    qualityFactorReceiver$: BehaviorSubject<number> =
+        new BehaviorSubject<number>(80);
     voiceAssistantReceiver$: Subject<any> = new Subject<any>();
     jointTrajectoryReceiver$: Subject<jointTrajectoryMessage> =
         new Subject<jointTrajectoryMessage>();
@@ -130,12 +135,17 @@ export class RosService {
         const json = JSON.parse(JSON.stringify(msg));
         const parameters = Object.keys(json).map((key) => ({[key]: json[key]}));
         const message = new ROSLIB.Message({data: JSON.stringify(parameters)});
-        if ("currentValue" in msg) {
-            this.motorCurrentConsumptionTopic?.publish(message);
-            console.log("Sent message " + JSON.stringify(message));
+
+        if ("motor" in msg) {
+            if ("currentValue" in msg) {
+                this.motorCurrentConsumptionTopic?.publish(message);
+                console.log("Sent message " + JSON.stringify(message));
+            } else {
+                this.sliderMessageTopic?.publish(message);
+                console.log("Sent message " + JSON.stringify(message));
+            }
         } else {
             this.voiceAssistantTopic.publish(message);
-            console.log("Sent message " + JSON.stringify(message));
         }
     }
 
@@ -161,6 +171,12 @@ export class RosService {
                     motorPosition,
             );
         });
+    }
+
+    sendVoiceActivationMessage(msg: VoiceAssistant) {
+        const message = new ROSLIB.Message({data: JSON.stringify(msg)});
+        this.voiceAssistantTopic.publish(message);
+        console.log("Sent message " + JSON.stringify(message));
     }
 
     getReceiversByMotorName(motorName: string): Subject<Message>[] {

@@ -18,6 +18,7 @@ import {
 import {MotorControlComponent} from "./motor-control.component";
 import {VoiceAssistant} from "../shared/voice-assistant";
 import {MotorCurrentMessage} from "../shared/currentMessage";
+import {jointTrajectoryMessage} from "../shared/rosMessageTypes/jointTrajectoryMessage";
 
 describe("MotorControlComponent", () => {
     let component: MotorControlComponent;
@@ -29,6 +30,7 @@ describe("MotorControlComponent", () => {
     let spySendMassege: jasmine.Spy<
         (msg: Message | VoiceAssistant | MotorCurrentMessage) => void
     >;
+    let spySendJTMassege: jasmine.Spy<(msg: Message) => void>;
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
@@ -44,6 +46,7 @@ describe("MotorControlComponent", () => {
         fingerService = TestBed.inject(MotorService);
         motorService = TestBed.inject(MotorService);
         spySendMassege = spyOn(rosService, "sendSliderMessage");
+        spySendJTMassege = spyOn(rosService, "sendJointTrajectoryMessage");
         fixture.detectChanges();
     });
 
@@ -63,11 +66,11 @@ describe("MotorControlComponent", () => {
         expect(slider.min).toBe("-9000");
     });
 
-    it("should call sendMessage() of rosService when calling sendMessage()", () => {
+    it("should call sendJointTrajectoryMessage() of rosService when calling sendMessage()", () => {
         spyOn(component, "sendMessage").and.callThrough();
         component.sendMessage();
         expect(component.sendMessage).toHaveBeenCalled();
-        expect(rosService.sendSliderMessage).toHaveBeenCalled();
+        expect(rosService.sendJointTrajectoryMessage).toHaveBeenCalled();
     });
 
     it("should call sendMessage() in inputSendMsg() on input event", fakeAsync(() => {
@@ -85,7 +88,7 @@ describe("MotorControlComponent", () => {
         expect(window.clearTimeout).toHaveBeenCalled();
         expect(window.setTimeout).toHaveBeenCalledWith(
             jasmine.any(Function),
-            500,
+            100,
         );
         const timeoutCallback = (
             window.setTimeout as unknown as jasmine.Spy
@@ -105,7 +108,7 @@ describe("MotorControlComponent", () => {
         expect(window.clearTimeout).toHaveBeenCalled();
         expect(window.setTimeout).toHaveBeenCalledWith(
             jasmine.any(Function),
-            500,
+            100,
         );
         const timeoutCallback = (
             window.setTimeout as unknown as jasmine.Spy
@@ -123,7 +126,7 @@ describe("MotorControlComponent", () => {
         fingerService.getMotorHandNames(component.groupSide);
         spyOn(component, "sendMessage").and.callThrough();
         component.sendMessage();
-        expect(rosService.sendSliderMessage).toHaveBeenCalledTimes(5);
+        expect(rosService.sendJointTrajectoryMessage).toHaveBeenCalled();
     });
 
     it("should set a valid value after receiving a message", () => {

@@ -21,7 +21,7 @@ export class VoiceAssistantComponent implements OnInit {
     constructor(private rosService: RosService) {}
     ngOnInit(): void {
         this.rosService.voiceAssistantReceiver$.subscribe((value) => {
-            this.activationFlag.setValue(JSON.parse(value)[0].activationFlag);
+            this.activationFlag.setValue(JSON.parse(value).activationFlag);
         });
     }
 
@@ -32,7 +32,7 @@ export class VoiceAssistantComponent implements OnInit {
                 threshold: this.voiceFormGroup.get("threshold")?.value,
                 gender: this.voiceFormGroup.get("gender")?.value,
             };
-            this.rosService.sendSliderMessage(msg);
+            this.rosService.sendVoiceActivationMessage(msg);
             this.voiceFormGroup.get("personality")?.setValue("");
         }
     }
@@ -41,6 +41,6 @@ export class VoiceAssistantComponent implements OnInit {
         const msg: VoiceAssistant = {
             activationFlag: this.activationFlag.value,
         };
-        this.rosService.sendSliderMessage(msg);
+        this.rosService.sendVoiceActivationMessage(msg);
     }
 }

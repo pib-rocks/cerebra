@@ -1,17 +1,9 @@
 import {
-    AfterContentInit,
-    AfterViewChecked,
-    AfterViewInit,
     Component,
-    DoCheck,
     ElementRef,
-    HostListener,
     Input,
-    OnChanges,
-    OnDestroy,
     OnInit,
     QueryList,
-    SimpleChanges,
     ViewChild,
     ViewChildren,
 } from "@angular/core";
@@ -37,14 +29,14 @@ export class HandComponent implements OnInit {
     displayAll!: string;
     displayIndividual!: string;
 
+    leftSwitchControl = new FormControl(false);
+    rightSwitchControl = new FormControl(false);
+
     constructor(
         private route: ActivatedRoute,
         private rosService: RosService,
         private router: Router,
     ) {}
-
-    leftSwitchControl = new FormControl(false);
-    rightSwitchControl = new FormControl(false);
 
     @ViewChild("leftSwitch") leftHandSwitch?: ElementRef;
     @ViewChild("rightSwitch") rightHandSwitch?: ElementRef;
@@ -108,7 +100,7 @@ export class HandComponent implements OnInit {
         this.route.params.subscribe((params: Params) => {
             this.side = params["side"];
             if (!this.firstLoad) {
-                this.switchView(this.side, true);
+                this.switchView(true);
             }
             this.firstLoad = false;
         });
@@ -132,7 +124,10 @@ export class HandComponent implements OnInit {
     }
 
     reset() {
-        if (this.leftSwitchControl.value || this.rightSwitchControl.value) {
+        if (
+            this.leftHandSwitch?.nativeElement.checked ||
+            this.rightHandSwitch?.nativeElement.checked
+        ) {
             this.childComponents
                 .filter((child) => !child.motorName.includes("all"))
                 .forEach((child) => {
@@ -179,16 +174,19 @@ export class HandComponent implements OnInit {
         }
     }
 
-    switchView(side: string, swichedPage: boolean) {
+    switchView(swichedPage: boolean) {
         if (!swichedPage) {
-            if (side === "right") {
+            if (this.side === "right") {
+                console.log(
+                    this.rightHandSwitch?.nativeElement.checked + "---",
+                );
                 this.logikRight(this.rightHandSwitch?.nativeElement.checked);
                 if (this.rightHandSwitch?.nativeElement.checked != undefined) {
                     this.rightHandSwitchSave =
                         this.rightHandSwitch?.nativeElement.checked;
                 }
             }
-            if (side === "left") {
+            if (this.side === "left") {
                 this.logikLeft(this.leftHandSwitch?.nativeElement.checked);
                 if (this.leftHandSwitch?.nativeElement.checked != undefined) {
                     this.leftHandSwitchSave =
@@ -198,7 +196,7 @@ export class HandComponent implements OnInit {
         } else {
             if (!this.leftHandSwitchSave && !this.rightHandSwitchSave) {
                 this.controllHand();
-            } else if (side === "left") {
+            } else if (this.side === "left") {
                 this.logikLeft(this.leftHandSwitchSave);
             } else {
                 this.logikRight(this.rightHandSwitchSave);
@@ -208,7 +206,7 @@ export class HandComponent implements OnInit {
 
     logikLeft(value: boolean) {
         if (value) {
-            this.controllFinger("left");
+            this.controllFinger();
         } else {
             this.controllHand();
         }
@@ -216,7 +214,7 @@ export class HandComponent implements OnInit {
 
     logikRight(value: boolean) {
         if (value) {
-            this.controllFinger("right");
+            this.controllFinger();
         } else {
             this.controllHand();
         }
@@ -278,11 +276,13 @@ export class HandComponent implements OnInit {
         });
     }
 
-    controllFinger(side: string) {
+    controllFinger() {
         let calledOposite = false;
         const switchControl =
-            side === "right" ? this.rightSwitchControl : this.leftSwitchControl;
-        console.log("SwitchControl: " + switchControl.value);
+            this.side === "right"
+                ? this.rightHandSwitch?.nativeElement.checked
+                : this.leftHandSwitch?.nativeElement.checked;
+        console.log("SwitchControl: " + switchControl);
         this.displayAll = "none";
         this.displayIndividual = "block";
         const sliderAll = this.childComponents.filter(
@@ -295,7 +295,7 @@ export class HandComponent implements OnInit {
                 );
             }
         });
-        if (side === "right") {
+        if (this.side === "right") {
             this.childComponents.forEach((child) => {
                 if (child.motorName === "all_right_stretch") {
                     child.sendAllMessagesCombined();

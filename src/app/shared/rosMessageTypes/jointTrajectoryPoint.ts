@@ -13,7 +13,7 @@ export type jointTrajectoryPoint = {
 export function createJointTrajectoryPoint(
     position: number,
 ): jointTrajectoryPoint {
-    var jointTrajectoryPoint: jointTrajectoryPoint = {
+    const jointTrajectoryPoint: jointTrajectoryPoint = {
         positions: new Array<number>(),
         time_from_start: createDefaultRosTime(),
     };
