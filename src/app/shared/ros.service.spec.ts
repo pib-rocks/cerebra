@@ -3,6 +3,7 @@ import * as ROSLIB from "roslib";
 import {Subject} from "rxjs";
 import {Message} from "./message";
 import {RosService} from "./ros.service";
+import {createDefaultJointTrajectoryMessage} from "./rosMessageTypes/jointTrajectoryMessage";
 
 describe("RosService", () => {
     let service: RosService;
@@ -12,6 +13,7 @@ describe("RosService", () => {
     let spytopic: jasmine.Spy<() => ROSLIB.Topic>;
     let spyVoiceTopic: jasmine.Spy<() => ROSLIB.Topic>;
     let spyMotorCurrentTopic: jasmine.Spy<() => ROSLIB.Topic>;
+    let spyJointTrajectoryTopic: jasmine.Spy<() => ROSLIB.Topic>;
     let spyCameraTopic: jasmine.Spy<() => ROSLIB.Topic>;
     let spySize: jasmine.Spy<() => ROSLIB.Topic>;
     let spySubscribeTopic: jasmine.Spy<() => void>;
@@ -31,6 +33,11 @@ describe("RosService", () => {
         spytopic = spyOn(
             RosService.prototype,
             "createMessageTopic",
+        ).and.returnValue(mockTopic as unknown as ROSLIB.Topic);
+
+        spyJointTrajectoryTopic = spyOn(
+            RosService.prototype,
+            "createJointTrajectoryTopic",
         ).and.returnValue(mockTopic as unknown as ROSLIB.Topic);
 
         spyVoiceTopic = spyOn(
@@ -64,7 +71,7 @@ describe("RosService", () => {
         expect(service).toBeTruthy();
     });
 
-    it("should istablish ros in the constructor", () => {
+    it("should establish ros in the constructor", () => {
         expect(spySetUpRos).toHaveBeenCalled();
         expect(service.Ros).toBeTruthy();
     });
@@ -161,6 +168,24 @@ describe("RosService", () => {
         service.sendVoiceActivationMessage(message);
         expect(spySendMassege).toHaveBeenCalled();
         expect(spyPublish).toHaveBeenCalledWith(msg);
+    });
+
+    it("The jointTrajectoryTopic should publish the message to rosbridge when calling sendJointTrajectoryMessage method", () => {
+        service = new RosService();
+        (service as any).jointTrajectoryTopic = new ROSLIB.Topic({
+            ros: mockRos as unknown as ROSLIB.Ros,
+            name: "/joint_trajectory",
+            messageType: "trajectory_msgs/msg/JointTrajectory",
+        });
+        const spySendMassege = spyOn(
+            service,
+            "sendJointTrajectoryMessage",
+        ).and.callThrough();
+        const spyPublish = spyOn(service["jointTrajectoryTopic"], "publish");
+        const jtMessage = createDefaultJointTrajectoryMessage();
+        service.sendJointTrajectoryMessage(jtMessage);
+        expect(spySendMassege).toHaveBeenCalled();
+        expect(spyPublish).toHaveBeenCalledWith(new ROSLIB.Message(jtMessage));
     });
 
     it("subscribeTopic should emmit a value to a subject", (): void => {

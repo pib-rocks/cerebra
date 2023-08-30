@@ -288,29 +288,25 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
 
     sendMessage() {
         let motorNames: string[] = [];
+
+        const jointTrajectoryMessage: jointTrajectoryMessage =
+            createDefaultJointTrajectoryMessage();
         if (this.isCombinedSlider) {
             motorNames = this.motorService.getMotorHandNames(this.groupSide);
 
-            const jointTrajectoryMessage: jointTrajectoryMessage =
-                createDefaultJointTrajectoryMessage();
-            for (var index in motorNames) {
+            for (const index in motorNames) {
                 jointTrajectoryMessage.joint_names.push(motorNames[index]);
                 jointTrajectoryMessage.points.push(
                     createJointTrajectoryPoint(this.sliderFormControl.value),
                 );
             }
-
-            this.rosService.sendJointTrajectoryMessage(jointTrajectoryMessage);
         } else {
-            const jointTrajectoryMessage: jointTrajectoryMessage =
-                createDefaultJointTrajectoryMessage();
             jointTrajectoryMessage.joint_names.push(this.motorName);
             jointTrajectoryMessage.points.push(
                 createJointTrajectoryPoint(this.sliderFormControl.value),
             );
-
-            this.rosService.sendJointTrajectoryMessage(jointTrajectoryMessage);
         }
+        this.rosService.sendJointTrajectoryMessage(jointTrajectoryMessage);
     }
 
     checkValidity(): boolean {

@@ -30,7 +30,7 @@ describe("MotorControlComponent", () => {
     let spySendMassege: jasmine.Spy<
         (msg: Message | VoiceAssistant | MotorCurrentMessage) => void
     >;
-    let spySendJTMassege: jasmine.Spy<(msg: Message) => void>;
+    let spySendJTMassege: jasmine.Spy<(msg: jointTrajectoryMessage) => void>;
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
