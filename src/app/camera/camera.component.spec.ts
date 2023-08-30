@@ -103,7 +103,7 @@ describe("CameraComponent", () => {
     it("should display an error image when receiving error messages from the backend", fakeAsync(() => {
         rosService.cameraReceiver$.next("Camera not available");
         tick(1000);
-        expect(component.imageSrc).toMatch("../../assets/its-not-working.jpg");
+        expect(component.imageSrc).toMatch("../../assets/camera-error-image");
     }));
 
     it("should change the running state of the camera when clicking camera icon", () => {

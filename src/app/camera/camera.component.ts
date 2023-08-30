@@ -51,6 +51,8 @@ export class CameraComponent implements OnInit, OnDestroy, AfterViewInit {
                 console.error(error);
             }
         });
+        this.qualityReceiver$ = this.rosService.qualityFactorReceiver$;
+        this.refreshRateReceiver$ = this.rosService.timerPeriodReceiver$;
     }
     ngOnDestroy(): void {
         this.stopCamera();
