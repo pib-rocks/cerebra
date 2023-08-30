@@ -65,6 +65,7 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
     degreeMinFormcontrol: FormControl = new FormControl(-9000);
     timer: any = null;
     bubblePosition!: number;
+    imgSrc: string = "../../assets/toggle-switch-left.png";
 
     constructor(
         private rosService: RosService,
@@ -399,13 +400,11 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
         }
     }
 
-    imgSrc: string = "../../assets/mock_button.png";
-
     changeIcon() {
-        if (this.imgSrc === "../../assets/mock_button.png") {
-            this.imgSrc = "../../assets/mock_button2.png";
+        if (this.imgSrc === "../../assets/toggle-switch-left.png") {
+            this.imgSrc = "../../assets/toggle-switch-right.png";
         } else {
-            this.imgSrc = "../../assets/mock_button.png";
+            this.imgSrc = "../../assets/toggle-switch-left.png";
         }
     }
 
