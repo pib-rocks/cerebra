@@ -93,6 +93,14 @@ export class MotorCurrentService {
     public getMotorSubjectByName(
         name: string | undefined,
     ): BehaviorSubject<any> | null {
+        console.log("passed name " + name);
+        console.log(this.motors);
+        for (const x of this.motors) {
+            if (x.name === name) {
+                console.log(x);
+            }
+        }
+
         const foundMotors = this.motors.filter((m) => m.name === name);
         if (foundMotors.length != 1) {
             console.warn(

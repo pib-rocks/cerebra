@@ -31,18 +31,6 @@ export class CircularSliderComponent implements AfterViewInit, OnInit {
     constructor(private motorCurrentService: MotorCurrentService) {}
 
     ngOnInit(): void {
-        this.motorSubscription = this.motorCurrentService
-            .getMotorSubjectByName(this.name)
-            ?.subscribe((value: number) => {
-                console.log(
-                    "received Motormessage for: " +
-                        this.name +
-                        "\t Current: " +
-                        value,
-                );
-                this.drawGradientCircle(value, this.strokeWidth);
-            });
-
         this.mAFormControl.setValidators([
             Validators.min(this.minValue),
             Validators.max(this.maxValue),
@@ -63,6 +51,20 @@ export class CircularSliderComponent implements AfterViewInit, OnInit {
     }
 
     ngAfterViewInit(): void {
+        this.motorSubscription = this.motorCurrentService
+            .getMotorSubjectByName(this.name)
+            ?.subscribe((value: number) => {
+                console.log(
+                    "received Motormessage for: " +
+                        this.name +
+                        "\t Current: " +
+                        value,
+                );
+                this.drawGradientCircle(
+                    this.percentage(value),
+                    this.strokeWidth,
+                );
+            });
         this.drawGradientCircle(this.initValue, this.strokeWidth);
     }
     drawGradientCircle(degree: number, strokeWidth: number) {
@@ -70,7 +72,7 @@ export class CircularSliderComponent implements AfterViewInit, OnInit {
         const width = element.getBoundingClientRect().width;
         const height = element.getBoundingClientRect().height;
         const radius = Math.min(width, height) / 2;
-        this.ctx = element.getContext("2d")!;
+        this.ctx = element.getContext("2d");
         this.ctx.clearRect(0, 0, element.width, element.height);
         this.drawGradientArc(
             radius,
@@ -94,23 +96,19 @@ export class CircularSliderComponent implements AfterViewInit, OnInit {
             r + strokewidth,
         );
         gradient.addColorStop(0, "#0094df");
-        // gradient.addColorStop(0.25, "#0094df");
         gradient.addColorStop(0.4, "#8b1a76");
         gradient.addColorStop(0.8, "#e20072");
         gradient.addColorStop(1, "#e10072");
-        // gradient.addColorStop(0, "#0094df");
-        // gradient.addColorStop(0.25, "#8b1a76");
-        // gradient.addColorStop(0.5, "#e20072");
-        // gradient.addColorStop(0.75, "#0094df");
-        // gradient.addColorStop(1, "#0094df");
+
         this.ctx.beginPath();
+
         this.ctx.arc(cx, cy, r, -Math.PI / 2, endAngle - Math.PI / 2);
         this.ctx.lineWidth = strokewidth;
         this.ctx.strokeStyle = gradient;
         this.ctx.stroke();
         this.ctx.closePath();
         this.ctx.beginPath();
-        this.ctx.strokeStyle = "rgba(200,200,200,0.3)";
+        this.ctx.strokeStyle = "rgba(200,200,200, 0.3)";
         this.ctx.arc(
             cx,
             cy,

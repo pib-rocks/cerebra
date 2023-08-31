@@ -1,11 +1,11 @@
 <app-nav-bar></app-nav-bar>
 <div class="container-fluid">
     <div class="row">
-        <div class="col">
+        <div class="col mt-3 float-end">
             <button
                 id="home-position-btn"
                 type="button"
-                class="btn mt-3 float-end"
+                class="btn"
                 (click)="reset()">
                 <img
                     src="../../assets/icon-home-position.png"
@@ -14,6 +14,10 @@
                     height="24px" />
                 Home position
             </button>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
             <div *ngIf="side === 'left'">
                 <ng-container>
                     <div
@@ -132,14 +136,17 @@
                 <div
                     class="container-div"
                     *ngIf="side === 'left'">
-                    <app-circular-slider
-                        name="pinky-left-stretch"></app-circular-slider>
+                    <ng-container *ngFor="let obj of leftFingers">
+                        <app-circular-slider
+                            name="{{obj['motor']}}"></app-circular-slider>
+                    </ng-container>
+
                     <img
                         class="container"
                         style="height: 30rem; width: 30rem; margin-top: 10px"
                         src="../../assets/hand_left.png"
                         alt="" />
-                    <ng-container *ngFor="let obj of currentLeft">
+                    <!-- <ng-container *ngFor="let obj of currentLeft">
                         <div [class]="obj['motor']">
                             <span class="current">{{ obj["value"] }} mA</span>
                             <div
@@ -150,7 +157,7 @@
                 "
                                 [class.color-indicator80-100]="obj['value'] / 20 >= 80"></div>
                         </div>
-                    </ng-container>
+                    </ng-container> -->
                 </div>
                 <button
                     *ngIf="side === 'left'"
