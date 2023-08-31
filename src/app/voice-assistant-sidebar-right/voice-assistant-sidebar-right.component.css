@@ -16,3 +16,8 @@ p {
     color: aliceblue;
     text-align: center;
 }
+
+.header {
+    background-color: #192021;
+    width: 100%;
+}
