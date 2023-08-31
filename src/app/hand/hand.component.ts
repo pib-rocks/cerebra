@@ -13,6 +13,7 @@ import {MotorControlComponent} from "../motor-control/motor-control.component";
 import {RosService} from "../shared/ros.service";
 import {MotorCurrentMessage} from "../shared/currentMessage";
 import {Subject} from "rxjs";
+import {MotorCurrentService} from "../shared/motor-current.mock.service";
 
 @Component({
     selector: "app-hand",
@@ -36,6 +37,7 @@ export class HandComponent implements OnInit {
         private route: ActivatedRoute,
         private rosService: RosService,
         private router: Router,
+        private motorCurrentService: MotorCurrentService,
     ) {}
 
     @ViewChild("leftSwitch") leftHandSwitch?: ElementRef;
@@ -110,13 +112,11 @@ export class HandComponent implements OnInit {
         this.rosService.currentReceiver$.subscribe((message) => {
             for (const cl of this.currentLeft) {
                 if (message["motor"] === cl["motor"]) {
-                    console.log("current value" + message["currentValue"]);
                     cl["value"] = message["currentValue"];
                 }
             }
             for (const cr of this.currentRight) {
                 if (message["motor"] === cr["motor"]) {
-                    console.log("current value" + message["currentValue"]);
                     cr["value"] = message["currentValue"];
                 }
             }
@@ -153,25 +153,26 @@ export class HandComponent implements OnInit {
     }
 
     sendDummyMessage() {
-        if (this.side === "left") {
-            for (const cl of this.currentLeft) {
-                const message: MotorCurrentMessage = {
-                    motor: cl["motor"],
-                    currentValue: Math.floor(Math.random() * 2000),
-                };
-                this.rosService.sendSliderMessage(message);
-            }
-        }
+        this.motorCurrentService.sendDummyMessageForGroup(this.side + "_hand");
+        // if (this.side === "left") {
+        // for (const cl of this.currentLeft) {
+        //     const message: MotorCurrentMessage = {
+        //         motor: cl["motor"],
+        //         currentValue: Math.floor(Math.random() * 2000),
+        //     };
+        //     this.rosService.sendSliderMessage(message);
+        // }
+        // }
 
-        if (this.side === "right") {
-            for (const cr of this.currentRight) {
-                const message: MotorCurrentMessage = {
-                    motor: cr["motor"],
-                    currentValue: Math.floor(Math.random() * 2000),
-                };
-                this.rosService.sendSliderMessage(message);
-            }
-        }
+        // if (this.side === "right") {
+        //     for (const cr of this.currentRight) {
+        //         const message: MotorCurrentMessage = {
+        //             motor: cr["motor"],
+        //             currentValue: Math.floor(Math.random() * 2000),
+        //         };
+        //         this.rosService.sendSliderMessage(message);
+        //     }
+        // }
     }
 
     switchView(swichedPage: boolean) {

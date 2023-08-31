@@ -7,7 +7,8 @@ import {
     ViewChild,
 } from "@angular/core";
 import {FormControl, Validators} from "@angular/forms";
-import {map} from "rxjs";
+import {Subscription, map} from "rxjs";
+import {MotorCurrentService} from "src/app/shared/motor-current.mock.service";
 import {notNullValidator} from "src/app/shared/validators";
 
 @Component({
@@ -18,16 +19,30 @@ import {notNullValidator} from "src/app/shared/validators";
 export class CircularSliderComponent implements AfterViewInit, OnInit {
     @ViewChild("canvas") canvas!: ElementRef;
     ctx: any;
-    @Input()
-    @Input()
-    initValue: number = 180;
+    @Input() initValue: number = 180;
     @Input() maxValue: number = 2000;
     @Input() minValue: number = 0;
     @Input() strokeWidth: number = 20;
     @Input() name?: string;
     mAFormControl: FormControl = new FormControl(0);
 
+    motorSubscription?: Subscription;
+
+    constructor(private motorCurrentService: MotorCurrentService) {}
+
     ngOnInit(): void {
+        this.motorSubscription = this.motorCurrentService
+            .getMotorSubjectByName(this.name)
+            ?.subscribe((value: number) => {
+                console.log(
+                    "received Motormessage for: " +
+                        this.name +
+                        "\t Current: " +
+                        value,
+                );
+                this.drawGradientCircle(value, this.strokeWidth);
+            });
+
         this.mAFormControl.setValidators([
             Validators.min(this.minValue),
             Validators.max(this.maxValue),
@@ -40,7 +55,7 @@ export class CircularSliderComponent implements AfterViewInit, OnInit {
             .subscribe((value) => {
                 if (value) {
                     this.drawGradientCircle(
-                        (value / this.maxValue) * 360,
+                        this.percentage(value),
                         this.strokeWidth,
                     );
                 }
@@ -152,5 +167,9 @@ export class CircularSliderComponent implements AfterViewInit, OnInit {
             return this.maxValue;
         }
         return value;
+    }
+
+    percentage(number: number): number {
+        return (number / this.maxValue) * 360;
     }
 }

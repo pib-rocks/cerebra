@@ -20,6 +20,7 @@ import {DialogContentComponent} from "./program/dialog-content/dialog-content.co
 import {NavBarComponent} from "./nav-bar/nav-bar.component";
 import {SliderComponent} from "./slider/slider.component";
 import {CircularSliderComponent} from "./slider/circular-slider/circular-slider.component";
+import {MotorCurrentService} from "./shared/motor-current.mock.service";
 
 @NgModule({
     declarations: [
@@ -47,7 +48,7 @@ import {CircularSliderComponent} from "./slider/circular-slider/circular-slider.
         BrowserAnimationsModule,
         NgbDropdownModule,
     ],
-    providers: [],
+    providers: [MotorCurrentService],
     bootstrap: [AppComponent],
     entryComponents: [MatDialogModule],
 })
