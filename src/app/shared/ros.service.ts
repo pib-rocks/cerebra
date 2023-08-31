@@ -115,7 +115,7 @@ export class RosService {
         this.sharedAllFingersValueSource.next(value);
     }
 
-    sendSliderMessage(msg: Message | VoiceAssistant | MotorCurrentMessage) {
+    sendSliderMessage(msg: Message | MotorCurrentMessage) {
         const json = JSON.parse(JSON.stringify(msg));
         const parameters = Object.keys(json).map((key) => ({[key]: json[key]}));
         const message = new ROSLIB.Message({data: JSON.stringify(parameters)});
@@ -183,20 +183,30 @@ export class RosService {
 
     subscribeCurrentConsumptionTopic() {
         this.motorCurrentConsumptionTopic.subscribe((message) => {
-            const jsonStr = JSON.stringify(message);
-            const json = JSON.parse(jsonStr);
-            const jsonArray = JSON.parse(json["data"]);
+            // console.log('####');
+            // console.log(message);
+            // const jsonStr = JSON.stringify(message);
+            // console.log(jsonStr);
+
+            // const json = JSON.parse(jsonStr);
+            // console.log(json);
+
+            // const jsonArray = JSON.parse(json["data"]);
+            // console.log(jsonArray);
+            // console.log('++++');
+            // const jsonObject = jsonArray.reduce(
+            //     (key: object, value: object) => {
+            //         return {...key, ...value};
+            //     },
+            //     {},
+            // );
+            const json = (message as {data: ""})["data"];
+            const jsonArray = JSON.parse(json);
             const jsonObject = jsonArray.reduce(
                 (key: object, value: object) => {
                     return {...key, ...value};
                 },
                 {},
-            );
-            console.log(
-                "Received message for " +
-                    jsonObject["motor"] +
-                    ": " +
-                    JSON.stringify(jsonObject),
             );
             this.currentReceiver$.next(jsonObject);
         });
