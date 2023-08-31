@@ -153,7 +153,7 @@ export class RosService {
         const message = new ROSLIB.Message(jointTrajectoryMessage);
 
         this.jointTrajectoryTopic.publish(message);
-        console.log("Sent jtMessage " + JSON.stringify(message));
+        this.sendJointTrajectoryConsoleLog("Sent", message);
     }
 
     subscribeJointTrajectoryTopic() {
@@ -162,15 +162,30 @@ export class RosService {
             const parsedJtJson = JSON.parse(
                 jsonString,
             ) as jointTrajectoryMessage;
-            const motorName = parsedJtJson.joint_names[0];
-            const motorPosition = parsedJtJson.points[0].positions[0];
-            console.log(
-                "Received jtMessage for " +
-                    motorName +
-                    ": Move to position " +
-                    motorPosition,
+
+            this.sendJointTrajectoryConsoleLog(
+                "Received",
+                jointTrajectoryMessage,
             );
         });
+    }
+
+    sendJointTrajectoryConsoleLog(
+        sentReceivedPrefix: String,
+        jtMessage: ROSLIB.Message,
+    ) {
+        const jsonJtString = JSON.stringify(jtMessage);
+        const parsedJtJson = JSON.parse(jsonJtString) as jointTrajectoryMessage;
+
+        for (const index in parsedJtJson.joint_names) {
+            console.log(
+                sentReceivedPrefix +
+                    " jtMessage for motor: " +
+                    parsedJtJson.joint_names[index] +
+                    " position: " +
+                    parsedJtJson.points[index].positions,
+            );
+        }
     }
 
     sendVoiceActivationMessage(msg: VoiceAssistant) {
