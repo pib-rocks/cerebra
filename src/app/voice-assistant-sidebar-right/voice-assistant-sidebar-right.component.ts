@@ -8,5 +8,5 @@ import {Component, Input} from "@angular/core";
 export class VoiceAssistantSidebarRightComponent {
     @Input() headerElements: {icon: string; label: string}[] = [];
     @Input() bodyElements: string[] = [];
-    @Input() elementIcon: String = "";
+    @Input() elementIcon: string = "";
 }

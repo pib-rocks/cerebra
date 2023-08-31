@@ -14,7 +14,7 @@ import {FormControl} from "@angular/forms";
 export class VoiceAssistantNavComponent {
     voiceAssistantActivationToggle = new FormControl(false);
     voiceAssistantActiveStatus = false;
-    voiceAssistantStatus: String = "OFF";
+    voiceAssistantStatus: string = "OFF";
     toggleVoiceAssistantActivation() {
         this.voiceAssistantActiveStatus = !this.voiceAssistantActiveStatus;
         this.voiceAssistantStatus = this.voiceAssistantActiveStatus

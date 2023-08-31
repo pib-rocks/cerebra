@@ -30,8 +30,8 @@ export class VoiceAssistantChatComponent {
             label: "EDIT",
         },
     ];
-    message: String = "";
-    messages: String[] = [];
+    message: string = "";
+    messages: string[] = [];
 
     sendMessage = () => {
         this.messages.push(this.message);
