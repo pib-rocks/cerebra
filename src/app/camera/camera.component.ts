@@ -47,7 +47,7 @@ export class CameraComponent implements OnInit, OnDestroy, AfterViewInit {
         });
         this.rosService.Ros.on("error", (error: string) => {
             if (this.isCameraActive) {
-                this.imageSrc = "../../camera-error-image.svg";
+                this.imageSrc = "../../assets/camera-error-image.svg";
                 console.error(error);
             }
         });
