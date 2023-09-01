@@ -186,11 +186,11 @@ export class HandComponent implements OnInit {
                     child.pulseMinRange.setValue(
                         indexFinger.pulseMinRange.value,
                     );
-                    child.degreeMaxFormcontrol.setValue(
-                        indexFinger.degreeMaxFormcontrol.value,
+                    child.degreeMaxFormControl.setValue(
+                        indexFinger.degreeMaxFormControl.value,
                     );
-                    child.degreeMinFormcontrol.setValue(
-                        indexFinger.degreeMinFormcontrol.value,
+                    child.degreeMinFormControl.setValue(
+                        indexFinger.degreeMinFormControl.value,
                     );
                 }
                 if (side === "right") {

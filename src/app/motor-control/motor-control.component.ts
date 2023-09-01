@@ -61,8 +61,8 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
     periodFormControl: FormControl = new FormControl(1, notNullValidator);
     pulseMaxRange: FormControl = new FormControl(65535);
     pulseMinRange: FormControl = new FormControl(0);
-    degreeMaxFormcontrol: FormControl = new FormControl(9000);
-    degreeMinFormcontrol: FormControl = new FormControl(-9000);
+    degreeMaxFormControl: FormControl = new FormControl(9000);
+    degreeMinFormControl: FormControl = new FormControl(-9000);
     timer: any = null;
     bubblePosition!: number;
     imgSrc: string = "../../assets/toggle-switch-left.png";
@@ -93,19 +93,19 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
             compareValuesPulseValidator(this.pulseMinRange, this.pulseMaxRange),
             notNullValidator,
         ]);
-        this.degreeMaxFormcontrol.setValidators([
+        this.degreeMaxFormControl.setValidators([
             compareValuesDegreeValidator(
-                this.degreeMinFormcontrol,
-                this.degreeMaxFormcontrol,
+                this.degreeMinFormControl,
+                this.degreeMaxFormControl,
             ),
             Validators.min(-9000),
             Validators.max(9000),
             notNullValidator,
         ]);
-        this.degreeMinFormcontrol.setValidators([
+        this.degreeMinFormControl.setValidators([
             compareValuesDegreeValidator(
-                this.degreeMinFormcontrol,
-                this.degreeMaxFormcontrol,
+                this.degreeMinFormControl,
+                this.degreeMaxFormControl,
             ),
             Validators.min(-9000),
             Validators.max(9000),
@@ -188,17 +188,17 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
                 this.pulseMinRange.setValue(json.pule_widths_min);
             }
             if (json.rotation_range_max !== undefined) {
-                this.degreeMaxFormcontrol.setValue(json.rotation_range_max);
+                this.degreeMaxFormControl.setValue(json.rotation_range_max);
             }
             if (json.rotation_range_min !== undefined) {
-                this.degreeMinFormcontrol.setValue(json.rotation_range_min);
+                this.degreeMinFormControl.setValue(json.rotation_range_min);
             }
             if (json.velocity !== undefined) {
                 this.velocityFormControl.setValue(json.velocity);
             }
             this.degreeSubject$.next([
-                Number(this.degreeMinFormcontrol.value),
-                Number(this.degreeMaxFormcontrol.value),
+                Number(this.degreeMinFormControl.value),
+                Number(this.degreeMaxFormControl.value),
             ]);
             this.pulseWidthSubject$.next([
                 Number(this.pulseMinRange.value),
@@ -325,8 +325,8 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
             this.periodFormControl.valid &&
             this.pulseMaxRange.valid &&
             this.pulseMinRange.valid &&
-            this.degreeMaxFormcontrol.valid &&
-            this.degreeMinFormcontrol.valid
+            this.degreeMaxFormControl.valid &&
+            this.degreeMinFormControl.valid
         );
     }
 
@@ -342,8 +342,8 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
                         motor: mn,
                         pule_widths_min: this.pulseMinRange.value,
                         pule_widths_max: this.pulseMaxRange.value,
-                        rotation_range_min: this.degreeMinFormcontrol.value,
-                        rotation_range_max: this.degreeMaxFormcontrol.value,
+                        rotation_range_min: this.degreeMinFormControl.value,
+                        rotation_range_max: this.degreeMaxFormControl.value,
                         velocity: this.velocityFormControl.value,
                         acceleration: this.accelerationFormControl.value,
                         deceleration: this.decelerationFormControl.value,
@@ -356,8 +356,8 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
                     motor: this.motorName,
                     pule_widths_min: this.pulseMinRange.value,
                     pule_widths_max: this.pulseMaxRange.value,
-                    rotation_range_min: this.degreeMinFormcontrol.value,
-                    rotation_range_max: this.degreeMaxFormcontrol.value,
+                    rotation_range_min: this.degreeMinFormControl.value,
+                    rotation_range_max: this.degreeMaxFormControl.value,
                     velocity: this.velocityFormControl.value,
                     acceleration: this.accelerationFormControl.value,
                     deceleration: this.decelerationFormControl.value,
@@ -453,8 +453,8 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
                         turnedOn: this.motorFormControl.value,
                         pule_widths_min: this.pulseMinRange.value,
                         pule_widths_max: this.pulseMaxRange.value,
-                        rotation_range_min: this.degreeMinFormcontrol.value,
-                        rotation_range_max: this.degreeMaxFormcontrol.value,
+                        rotation_range_min: this.degreeMinFormControl.value,
+                        rotation_range_max: this.degreeMaxFormControl.value,
                         velocity: this.velocityFormControl.value,
                         acceleration: this.accelerationFormControl.value,
                         deceleration: this.decelerationFormControl.value,
@@ -469,8 +469,8 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
                     turnedOn: this.motorFormControl.value,
                     pule_widths_min: this.pulseMinRange.value,
                     pule_widths_max: this.pulseMaxRange.value,
-                    rotation_range_min: this.degreeMinFormcontrol.value,
-                    rotation_range_max: this.degreeMaxFormcontrol.value,
+                    rotation_range_min: this.degreeMinFormControl.value,
+                    rotation_range_max: this.degreeMaxFormControl.value,
                     velocity: this.velocityFormControl.value,
                     acceleration: this.accelerationFormControl.value,
                     deceleration: this.decelerationFormControl.value,
@@ -524,8 +524,8 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
         this.sendSettingMessage();
     }
     setDegree(number: number[]) {
-        this.degreeMinFormcontrol.setValue(number[0]);
-        this.degreeMaxFormcontrol.setValue(number[1]);
+        this.degreeMinFormControl.setValue(number[0]);
+        this.degreeMaxFormControl.setValue(number[1]);
         this.sendSettingMessage();
     }
     setPeriod(number: number) {
