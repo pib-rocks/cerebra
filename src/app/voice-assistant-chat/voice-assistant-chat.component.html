@@ -2,19 +2,26 @@
     rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,1,0" />
 <app-voice-assistant-nav></app-voice-assistant-nav>
-<div class="container-fluid d-flex p-2">
-    <div class="row col-sm-8 p-2 mt-2">
-        <label style="font-size: large; color: aliceblue;"
-            >Personality Name</label
-        >
-    </div>
-    <div class="row col-sm-2 p-2">
-        <button class="btn btn-primary">Export chat</button>
-    </div>
-</div>
+
 <div class="container-fluid">
-    <div class="row">
-        <div class="col-sm-9 pink-corner-frame">
+    <div class="row mt-5">
+        <div class="col-md-10 pink-corner-frame  mt-1">
+            <div class="container-fluid d-flex p-2">
+                <div class="row col-sm-10 p-2 mt-2">
+                    <label
+                        class="personlityName"
+                        style="font-size: large;"
+                        >Personality Name</label
+                    >
+                </div>
+                <div class="row col-sm-2 p-2">
+                    <button
+                        class="btn btn-primary exportButton"
+                        id="exportButton">
+                        Export chat
+                    </button>
+                </div>
+            </div>
             <div class="chat-container mt-2 mb-1 p5">
                 <div class="messages">
                     <div *ngFor="let message of messages">
@@ -24,21 +31,21 @@
                 <div class="input-container">
                     <input
                         (keyup.enter)="sendMessage()"
-                        type="text"
+                        id="chat-message-input"
+                        class="message-input-box input-container2"
                         [(ngModel)]="message"
-                        class="bottom-input"
                         placeholder="Type your message..." />
                     <button
-                        class="send-button"
+                        class="sendButton send-button p-4 mt-3"
                         (click)="sendMessage()">
-                        <span class="material-symbols-outlined"> send </span>
+                        <span class="material-symbols-outlined ml-1">
+                            send
+                        </span>
                     </button>
                 </div>
             </div>
         </div>
-        <div
-            class="row col-sm-3"
-            style="margin-top: -2.5%;">
+        <div class="row col-md-2 sidebar">
             <app-voice-assistant-sidebar-right
                 [headerElements]="headerElements"
                 [bodyElements]="chatTopics"

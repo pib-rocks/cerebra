@@ -2,3 +2,53 @@
     width: 100%;
     padding: 1%;
 }
+
+textarea {
+    border-radius: 0px;
+    background: transparent;
+    font-family: Titillium;
+    font-size: 16px;
+    font-weight: normal;
+    font-stretch: normal;
+    font-style: normal;
+    line-height: normal;
+    letter-spacing: 0.4px;
+    text-align: left;
+    color: #828282;
+}
+
+textarea:focus {
+    border-radius: 0px;
+    background: linear-gradient(
+        to right,
+        #e10072,
+        #e10072 var(--pos-relative),
+        #324c71 var(--pos-relative),
+        #324c71
+    );
+    font-family: Titillium;
+    font-size: 16px;
+    font-weight: normal;
+    font-stretch: normal;
+    font-style: normal;
+    line-height: normal;
+    letter-spacing: 0.4px;
+    text-align: left;
+    color: #828282;
+}
+
+.personalityDescriptionFrame {
+    height: 100%;
+}
+
+button {
+    font-family: Titillium;
+    font-size: medium;
+    width: 100%;
+}
+
+.personalityLabel {
+    font-size: large;
+    color: white;
+    font-family: Titillium;
+}

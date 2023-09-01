@@ -1,36 +1,36 @@
-<div class="bg-navigation-Kopie mt-5">
-    <div class="container d-flex">
-        <div
-            class="row header"
-            *ngFor="let element of headerElements">
-            <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="elementIcon"
-                height="24px"
-                viewBox="0 -960 960 960"
-                width="24px">
-                <path [attr.d]="element.icon" />
-            </svg>
-            <p>{{element.label}}</p>
+<div class="row mt-4">
+    <div class="bg-navigation-Kopie col">
+        <div class="container d-flex">
+            <div
+                class="row header"
+                *ngFor="let element of headerElements">
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="elementIcon"
+                    height="24px"
+                    viewBox="0 -960 960 960"
+                    width="24px">
+                    <path [attr.d]="element.icon" />
+                </svg>
+                <p>{{element.label}}</p>
+            </div>
         </div>
-    </div>
-    <div
-        class="container"
-        style="color: white;">
-        <div
-            class="row"
-            *ngFor="let element of bodyElements">
-            <div class="container d-flex">
-                <div class="row p-1 elementIcon">
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        height="24px"
-                        viewBox="0 -960 960 960"
-                        width="24px">
-                        <path [attr.d]="elementIcon" />
-                    </svg>
+        <div class="container col">
+            <div
+                class="row"
+                *ngFor="let element of bodyElements">
+                <div class="container d-flex bodyElements">
+                    <div class="row p-1 elementIcon">
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            height="24px"
+                            viewBox="0 -960 960 960"
+                            width="24px">
+                            <path [attr.d]="elementIcon" />
+                        </svg>
+                    </div>
+                    <div class="row p-2 mt-2">{{element}}</div>
                 </div>
-                <div class="row p-1">{{element}}</div>
             </div>
         </div>
     </div>

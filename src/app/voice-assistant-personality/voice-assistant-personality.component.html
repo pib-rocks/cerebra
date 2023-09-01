@@ -1,32 +1,29 @@
 <header>
     <app-voice-assistant-nav></app-voice-assistant-nav>
 </header>
-<div class="container-fluid d-flex p-2">
-    <div class="row col-sm-8 p-2 mt-2">
-        <label style="font-size: large; color: white;">
-            Personality Name
-        </label>
-    </div>
-    <div class="row col-sm-2 p-2 mr-2">
-        <button class="btn btn-sm btn-primary">Save</button>
-    </div>
-    <div class="row col-sm-2 p-2">
-        <button class="btn btn-sm btn-primary">Save As...</button>
-    </div>
-</div>
 <div class="container-fluid">
     <div class="row">
-        <div class="col-sm-9">
+        <div
+            class="col-md-10 pink-corner-frame mt-5 personalityDescriptionFrame">
+            <div class="container-fluid d-flex p-2">
+                <div class="row col-md-8 p-2 mt-2">
+                    <label class="personalityLabel"> Personality Name </label>
+                </div>
+                <div class="row col-md-2 p-2 mr-2 personalityLabel">
+                    <button class="btn btn-md btn-primary">Save</button>
+                </div>
+                <div class="row col-md-2 p-2 personalityLabel">
+                    <button class="btn btn-sm btn-primary">Save As...</button>
+                </div>
+            </div>
             <div class="row textAreaDiv">
                 <textarea
-                    class="form-control pink-corner-frame"
-                    rows="26"
+                    class="form-control"
+                    rows="22"
                     placeholder="Describe personality with a prompt..."></textarea>
             </div>
         </div>
-        <div
-            class="row col-sm-3"
-            style="margin-top: -2.5%;">
+        <div class="row col-md-2">
             <app-voice-assistant-sidebar-right
                 [headerElements]="headerElements"
                 [bodyElements]="personalities"
