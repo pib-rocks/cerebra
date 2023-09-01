@@ -257,10 +257,10 @@ describe("HandComponent", () => {
 
     it("should set all values to the value of the all_stretch slider (left)", fakeAsync(() => {
         component.side = "left";
-        component.rightSwitchControl.setValue(false);
         fixture.detectChanges();
 
         const checkInput = fixture.debugElement.query(By.css("#leftSwitch"));
+        checkInput.nativeElement.checked = true;
         const sliders = fixture.debugElement.queryAll(
             By.css("app-motor-control"),
         );
@@ -306,10 +306,10 @@ describe("HandComponent", () => {
 
     it("should set all values to the value of the all_stretch slider (right)", fakeAsync(() => {
         component.side = "right";
-        component.rightSwitchControl.setValue(false);
         fixture.detectChanges();
 
         const checkInput = fixture.debugElement.query(By.css("#rightSwitch"));
+        checkInput.nativeElement.checked = true;
         const input = fixture.debugElement.query(
             By.css("#slider_all_right_stretch"),
         );
@@ -332,7 +332,7 @@ describe("HandComponent", () => {
         sliders
             .filter(
                 (slider) =>
-                    slider.componentInstance.motorName === "all_right_stretch",
+                    slider.componentInstance.motorName === "right_stretch",
             )
             .forEach((child) => {
                 expect(child.componentInstance.sliderFormControl.value).toBe(
