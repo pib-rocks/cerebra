@@ -18,12 +18,16 @@ import {notNullValidator} from "src/app/shared/validators";
 })
 export class CircularSliderComponent implements AfterViewInit, OnInit {
     @ViewChild("canvas") canvas!: ElementRef;
+    @ViewChild("numberdisplay") paragraph!: ElementRef;
     ctx: any;
-    @Input() initValue: number = 180;
+    @Input() initValue: number = 1000;
     @Input() maxValue: number = 2000;
     @Input() minValue: number = 0;
     @Input() strokeWidth: number = 20;
     @Input() name?: string;
+    @Input() initHeight!: number;
+    @Input() initWidth!: number;
+    currentValue?: number;
     mAFormControl: FormControl = new FormControl(0);
 
     motorSubscription?: Subscription;
@@ -38,16 +42,6 @@ export class CircularSliderComponent implements AfterViewInit, OnInit {
             Validators.required,
             notNullValidator,
         ]);
-        this.mAFormControl.valueChanges
-            .pipe(map((x) => this.sanitize(x)))
-            .subscribe((value) => {
-                if (value) {
-                    this.drawGradientCircle(
-                        this.percentage(value),
-                        this.strokeWidth,
-                    );
-                }
-            });
     }
 
     ngAfterViewInit(): void {
@@ -60,17 +54,22 @@ export class CircularSliderComponent implements AfterViewInit, OnInit {
                         "\t Current: " +
                         value,
                 );
+                this.currentValue = value;
                 this.drawGradientCircle(
                     this.percentage(value),
                     this.strokeWidth,
                 );
             });
-        this.drawGradientCircle(this.initValue, this.strokeWidth);
+        this.drawGradientCircle(
+            this.percentage(this.initValue),
+            this.strokeWidth,
+        );
+        this.currentValue = this.initValue ? this.initValue : 0;
     }
     drawGradientCircle(degree: number, strokeWidth: number) {
         const element = this.canvas.nativeElement;
-        const width = element.getBoundingClientRect().width;
-        const height = element.getBoundingClientRect().height;
+        const width = element.width;
+        const height = element.height;
         const radius = Math.min(width, height) / 2;
         this.ctx = element.getContext("2d");
         this.ctx.clearRect(0, 0, element.width, element.height);
@@ -95,10 +94,10 @@ export class CircularSliderComponent implements AfterViewInit, OnInit {
             r + strokewidth,
             r + strokewidth,
         );
-        gradient.addColorStop(0, "#0094df");
-        gradient.addColorStop(0.4, "#8b1a76");
-        gradient.addColorStop(0.8, "#e20072");
-        gradient.addColorStop(1, "#e10072");
+        gradient.addColorStop(0, "rgba(0, 148, 223, 1)");
+        gradient.addColorStop(0.4, "rgba(139, 26, 118, 1)");
+        gradient.addColorStop(0.8, "rgba(226, 0, 114, 1)");
+        gradient.addColorStop(1, "rgba(225, 0, 114, 1)");
 
         this.ctx.beginPath();
 
@@ -141,12 +140,12 @@ export class CircularSliderComponent implements AfterViewInit, OnInit {
         this.ctx.stroke();
         this.ctx.closePath();
     }
-    slide(event: any) {
-        this.drawGradientCircle(
-            Number((event.target as HTMLInputElement).value),
-            30,
-        );
-    }
+    // slide(event: any) {
+    //     this.drawGradientCircle(
+    //         Number((event.target as HTMLInputElement).value),
+    //         30,
+    //     );
+    // }
 
     sanitize(value: number) {
         if (this.mAFormControl.hasError("required")) {

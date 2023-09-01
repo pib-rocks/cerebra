@@ -1,12 +1,11 @@
 <canvas
     id="{{ name }}"
-    width="150"
-    height="150"
+    [width]="initWidth"
+    [height]="initHeight"
     #canvas>
 </canvas>
-<input
-    id="input_{{name}}"
-    type="number"
-    class="form-control"
-    style="width: 150px"
-    [formControl]="mAFormControl" />
+<p
+    class="mt-3"
+    #numberdisplay>
+    {{ currentValue }} mA
+</p>
