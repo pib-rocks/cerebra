@@ -16,8 +16,8 @@
             [min]="minValue"
             [max]="maxValue"
             [formControl]="bubbleFormControl"
-            (blur)="toggleInputUnvisible(bubbleFormControl, sliderFormControl)"
-            (keydown.enter)="toggleInputUnvisible(bubbleFormControl, sliderFormControl)"
+            (blur)="toggleInputInvisible(bubbleFormControl, sliderFormControl)"
+            (keydown.enter)="toggleInputInvisible(bubbleFormControl, sliderFormControl)"
             #bubbleInput />
         <div
             class="bubble-span overlay"
@@ -37,8 +37,8 @@
             [min]="minValue"
             [max]="maxValue"
             [formControl]="bubbleFormControlUpper"
-            (blur)="toggleInputUnvisible(bubbleFormControlUpper, sliderFormControlUpper)"
-            (keydown.enter)="toggleInputUnvisible(bubbleFormControlUpper, sliderFormControlUpper)"
+            (blur)="toggleInputInvisible(bubbleFormControlUpper, sliderFormControlUpper)"
+            (keydown.enter)="toggleInputInvisible(bubbleFormControlUpper, sliderFormControlUpper)"
             #bubbleInputUpper />
         <div
             class="bubble-span overlay"

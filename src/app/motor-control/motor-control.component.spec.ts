@@ -434,7 +434,7 @@ describe("MotorControlComponent", () => {
         spyOn(component, "inputSendMsg");
         component.bubbleFormControl.setValue(500);
         component.isInputVisible = true;
-        component.toggleInputUnvisible();
+        component.toggleInputInvisible();
         expect(component.setSliderValue).toHaveBeenCalled();
         expect(component.inputSendMsg).toHaveBeenCalled();
     });
@@ -444,7 +444,7 @@ describe("MotorControlComponent", () => {
         spyOn(component, "inputSendMsg");
         component.bubbleFormControl.setValue(-5000000);
         component.isInputVisible = true;
-        component.toggleInputUnvisible();
+        component.toggleInputInvisible();
         expect(component.bubbleFormControl.hasError("min")).toBeTrue;
         expect(component.setSliderValue).toHaveBeenCalledWith(
             component.minSliderValue,
@@ -457,7 +457,7 @@ describe("MotorControlComponent", () => {
         spyOn(component, "inputSendMsg");
         component.bubbleFormControl.setValue(5000000);
         component.isInputVisible = true;
-        component.toggleInputUnvisible();
+        component.toggleInputInvisible();
         expect(component.bubbleFormControl.hasError("max")).toBeTrue;
         expect(component.setSliderValue).toHaveBeenCalledWith(
             component.maxSliderValue,
@@ -468,7 +468,7 @@ describe("MotorControlComponent", () => {
     it("should toggle input unvisible required validation", () => {
         component.bubbleFormControl.setValue(null);
         component.isInputVisible = true;
-        component.toggleInputUnvisible();
+        component.toggleInputInvisible();
         expect(component.bubbleFormControl.hasError("required")).toBeTrue;
         expect(component.isInputVisible).toBeFalse();
     });
@@ -477,7 +477,7 @@ describe("MotorControlComponent", () => {
         spyOn(component, "setThumbPosition");
         component.bubbleFormControl.setValue("test");
         component.isInputVisible = true;
-        component.toggleInputUnvisible();
+        component.toggleInputInvisible();
         expect(component.bubbleFormControl.hasError("pattern")).toBeTrue;
     });
 });

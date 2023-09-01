@@ -159,7 +159,7 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
         }
     }
 
-    toggleInputUnvisible(
+    toggleInputInvisible(
         bubbleFormControl: FormControl,
         sliderFormControl: FormControl,
     ) {
