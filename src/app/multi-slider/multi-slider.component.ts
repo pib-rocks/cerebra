@@ -210,7 +210,7 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
             this.bubblePosition = val;
         }, 0);
         this.bubbleFormControl.setValue(Number(this.sliderFormControl.value));
-        this.bubbleElement.nativeElement.style.left = /*this.rotate? `calc(1-${val})`: */ `calc(${val}%)`;
+        this.bubbleElement.nativeElement.style.left = `calc(${val}%)`;
 
         const val2 =
             ((this.sliderFormControlUpper.value - this.minValue) * 100) /
@@ -221,7 +221,7 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
         this.bubbleFormControlUpper.setValue(
             Number(this.sliderFormControlUpper.value),
         );
-        this.bubbleElementUpper.nativeElement.style.left = /*this.rotate? `calc(1-${val})`: */ `calc(${val2}%)`;
+        this.bubbleElementUpper.nativeElement.style.left = `calc(${val2}%)`;
         this.setGradient();
     }
 
