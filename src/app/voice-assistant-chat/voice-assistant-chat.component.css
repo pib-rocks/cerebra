@@ -1,7 +1,5 @@
 .sidebar {
-    vertical-align: text-top;
     margin-top: -1.2%;
-    height: fit-content;
 }
 
 .chat-container {
@@ -31,30 +29,6 @@
     margin-bottom: 10px;
 }
 
-.bottom-input {
-    width: 100%;
-    padding: 0%;
-    border: 1px solid #ccc;
-    border-radius: 20px;
-    margin: 1%;
-    background: linear-gradient(
-        to right,
-        #e10072,
-        #e10072 var(--pos-relative),
-        #324c71 var(--pos-relative),
-        #324c71
-    );
-}
-
-.bg-navigation-Kopie {
-    width: 100%;
-    height: 100%;
-    margin: 23px 1px 0 0;
-    padding: 0 0 458px;
-    background-color: #1b2b44;
-    float: right;
-}
-
 .personalityIcon {
     color: #0094de;
 }
@@ -79,14 +53,13 @@ p {
     font-family: Titillium;
     font-size: medium;
     width: 100%;
+    border: none;
 }
 
 .chat-input {
     display: flex;
     align-items: center;
     width: 100%;
-    background-color: #fff;
-    border: 1px solid #ccc;
     border-radius: 10px;
     padding: 10px;
     background-color: #1b2b44;
