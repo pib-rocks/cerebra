@@ -3,8 +3,7 @@
 </header>
 <div class="container-fluid">
     <div class="row">
-        <div
-            class="col-md-10 pink-corner-frame mt-5 personalityDescriptionFrame">
+        <div class="col-md-10 pink-corner-frame mt-5 mainContentFrame">
             <div class="container-fluid d-flex p-2">
                 <div class="row col-md-8 p-2 mt-2">
                     <label class="personalityLabel"> Personality Name </label>
@@ -28,12 +27,13 @@
                 <textarea
                     id="textAreaPersonality"
                     class="form-control"
-                    rows="23"
+                    rows="20"
                     placeholder="Describe personality with a prompt..."></textarea>
             </div>
         </div>
-        <div class="row col-md-2 mt-4">
+        <div class="row col-md-2 mt-4 ">
             <app-voice-assistant-sidebar-right
+                class="sidebar"
                 [headerElements]="headerElements"
                 [bodyElements]="personalities"
                 [elementIcon]="personalityIcon"></app-voice-assistant-sidebar-right>

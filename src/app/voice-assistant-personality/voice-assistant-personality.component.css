@@ -1,6 +1,10 @@
 .textAreaDiv {
-    width: 100%;
+    width: 98%;
     padding: 1%;
+}
+
+.mainContentFrame {
+    height: 75%;
 }
 
 textarea {
@@ -15,6 +19,7 @@ textarea {
     letter-spacing: 0.4px;
     text-align: left;
     color: #828282;
+    margin: 2%;
 }
 
 textarea:focus {
@@ -65,4 +70,8 @@ textarea:focus {
     letter-spacing: 0.4px;
     text-align: left;
     color: #fff;
+}
+.sidebar {
+    height: 95%;
+    margin-left: 1%;
 }
