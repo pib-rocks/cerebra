@@ -1,4 +1,12 @@
-import {Component, Input, OnInit, QueryList, ViewChildren} from "@angular/core";
+import {
+    Component,
+    ElementRef,
+    Input,
+    OnInit,
+    QueryList,
+    ViewChild,
+    ViewChildren,
+} from "@angular/core";
 import {FormControl} from "@angular/forms";
 import {ActivatedRoute, Params, Router} from "@angular/router";
 import {MotorControlComponent} from "../motor-control/motor-control.component";
@@ -21,14 +29,21 @@ export class HandComponent implements OnInit {
     displayAll!: string;
     displayIndividual!: string;
 
+    leftSwitchControl = new FormControl(false);
+    rightSwitchControl = new FormControl(false);
+
     constructor(
         private route: ActivatedRoute,
         private rosService: RosService,
         private router: Router,
     ) {}
 
-    leftSwitchControl = new FormControl(false);
-    rightSwitchControl = new FormControl(false);
+    @ViewChild("leftSwitch") leftHandSwitch?: ElementRef;
+    @ViewChild("rightSwitch") rightHandSwitch?: ElementRef;
+    firstLoad: boolean = false;
+
+    leftHandSwitchSave: boolean = false;
+    rightHandSwitchSave: boolean = false;
 
     leftFingers = [
         {motor: "thumb_left_stretch", label: "Thumb"},
@@ -80,9 +95,14 @@ export class HandComponent implements OnInit {
     ];
 
     ngOnInit(): void {
+        this.firstLoad = true;
         this.displayIndividual = "none";
         this.route.params.subscribe((params: Params) => {
             this.side = params["side"];
+            if (!this.firstLoad) {
+                this.switchView(true);
+            }
+            this.firstLoad = false;
         });
         if (!(this.side === "right" || this.side === "left")) {
             this.router.navigate(["/head"]);
@@ -104,7 +124,10 @@ export class HandComponent implements OnInit {
     }
 
     reset() {
-        if (this.leftSwitchControl.value || this.rightSwitchControl.value) {
+        if (
+            this.leftHandSwitch?.nativeElement.checked ||
+            this.rightHandSwitch?.nativeElement.checked
+        ) {
             this.childComponents
                 .filter((child) => !child.motorName.includes("all"))
                 .forEach((child) => {
@@ -150,116 +173,154 @@ export class HandComponent implements OnInit {
             }
         }
     }
-    switchView(side: string) {
+
+    switchView(swichedPage: boolean) {
+        if (!swichedPage) {
+            if (this.side === "right") {
+                console.log(
+                    this.rightHandSwitch?.nativeElement.checked + "---",
+                );
+                this.logikRight(this.rightHandSwitch?.nativeElement.checked);
+                if (this.rightHandSwitch?.nativeElement.checked != undefined) {
+                    this.rightHandSwitchSave =
+                        this.rightHandSwitch?.nativeElement.checked;
+                }
+            }
+            if (this.side === "left") {
+                this.logikLeft(this.leftHandSwitch?.nativeElement.checked);
+                if (this.leftHandSwitch?.nativeElement.checked != undefined) {
+                    this.leftHandSwitchSave =
+                        this.leftHandSwitch?.nativeElement.checked;
+                }
+            }
+        } else {
+            if (!this.leftHandSwitchSave && !this.rightHandSwitchSave) {
+                this.controllHand();
+            } else if (this.side === "left") {
+                this.logikLeft(this.leftHandSwitchSave);
+            } else {
+                this.logikRight(this.rightHandSwitchSave);
+            }
+        }
+    }
+
+    logikLeft(value: boolean) {
+        if (value) {
+            this.controllFinger();
+        } else {
+            this.controllHand();
+        }
+    }
+
+    logikRight(value: boolean) {
+        if (value) {
+            this.controllFinger();
+        } else {
+            this.controllHand();
+        }
+    }
+
+    controllHand() {
+        let calledOposite = false;
+        this.displayAll = "block";
+        this.displayIndividual = "none";
+        const indexFinger = this.childComponents.filter(
+            (child) => child.labelName === "Index finger",
+        )[0];
+        this.childComponents.forEach((child) => {
+            if (child.labelName != "Thumb opposition") {
+                child.sliderFormControl.setValue(
+                    indexFinger.sliderFormControl.value,
+                );
+                child.motorFormControl.setValue(
+                    indexFinger.motorFormControl.value,
+                );
+                child.velocityFormControl.setValue(
+                    indexFinger.velocityFormControl.value,
+                );
+                child.accelerationFormControl.setValue(
+                    indexFinger.accelerationFormControl.value,
+                );
+                child.decelerationFormControl.setValue(
+                    indexFinger.decelerationFormControl.value,
+                );
+                child.periodFormControl.setValue(
+                    indexFinger.periodFormControl.value,
+                );
+                child.pulseMaxRange.setValue(indexFinger.pulseMaxRange.value);
+                child.pulseMinRange.setValue(indexFinger.pulseMinRange.value);
+                child.degreeMaxFormControl.setValue(
+                    indexFinger.degreeMaxFormControl.value,
+                );
+                child.degreeMinFormControl.setValue(
+                    indexFinger.degreeMinFormControl.value,
+                );
+            }
+            if (child.motorName === "all_right_stretch") {
+                child.sendAllMessagesCombined();
+            }
+            if (
+                child.motorName.includes("right_opposition") &&
+                !calledOposite
+            ) {
+                calledOposite = true;
+                child.sendAllMessagesCombined();
+            }
+            if (child.motorName === "all_left_stretch") {
+                child.sendAllMessagesCombined();
+            }
+            if (child.motorName.includes("left_opposition") && !calledOposite) {
+                calledOposite = true;
+                child.sendAllMessagesCombined();
+            }
+        });
+    }
+
+    controllFinger() {
         let calledOposite = false;
         const switchControl =
-            side === "left" ? this.rightSwitchControl : this.leftSwitchControl;
-        if (switchControl.value === true) {
-            this.displayAll = "block";
-            this.displayIndividual = "none";
-            const indexFinger = this.childComponents.filter(
-                (child) => child.labelName === "Index finger",
-            )[0];
+            this.side === "right"
+                ? this.rightHandSwitch?.nativeElement.checked
+                : this.leftHandSwitch?.nativeElement.checked;
+        console.log("SwitchControl: " + switchControl);
+        this.displayAll = "none";
+        this.displayIndividual = "block";
+        const sliderAll = this.childComponents.filter(
+            (child) => child.labelName === "Open/Close all fingers",
+        )[0];
+        this.childComponents.forEach((child) => {
+            if (child.labelName != "Thumb opposition") {
+                child.sliderFormControl.setValue(
+                    sliderAll.sliderFormControl.value,
+                );
+            }
+        });
+        if (this.side === "right") {
             this.childComponents.forEach((child) => {
-                if (child.labelName != "Thumb opposition") {
-                    child.sliderFormControl.setValue(
-                        indexFinger.sliderFormControl.value,
-                    );
-                    child.motorFormControl.setValue(
-                        indexFinger.motorFormControl.value,
-                    );
-                    child.velocityFormControl.setValue(
-                        indexFinger.velocityFormControl.value,
-                    );
-                    child.accelerationFormControl.setValue(
-                        indexFinger.accelerationFormControl.value,
-                    );
-                    child.decelerationFormControl.setValue(
-                        indexFinger.decelerationFormControl.value,
-                    );
-                    child.periodFormControl.setValue(
-                        indexFinger.periodFormControl.value,
-                    );
-                    child.pulseMaxRange.setValue(
-                        indexFinger.pulseMaxRange.value,
-                    );
-                    child.pulseMinRange.setValue(
-                        indexFinger.pulseMinRange.value,
-                    );
-                    child.degreeMaxFormControl.setValue(
-                        indexFinger.degreeMaxFormControl.value,
-                    );
-                    child.degreeMinFormControl.setValue(
-                        indexFinger.degreeMinFormControl.value,
-                    );
+                if (child.motorName === "all_right_stretch") {
+                    child.sendAllMessagesCombined();
                 }
-                if (side === "right") {
-                    if (child.motorName === "all_right_stretch") {
-                        child.sendAllMessagesCombined();
-                    }
-                    if (
-                        child.motorName.includes("right_opposition") &&
-                        !calledOposite
-                    ) {
-                        calledOposite = true;
-                        child.sendAllMessagesCombined();
-                    }
-                }
-                if (side === "left") {
-                    if (child.motorName === "all_left_stretch") {
-                        child.sendAllMessagesCombined();
-                    }
-                    if (
-                        child.motorName.includes("left_opposition") &&
-                        !calledOposite
-                    ) {
-                        calledOposite = true;
-                        child.sendAllMessagesCombined();
-                    }
+                if (
+                    child.motorName.includes("right_opposition") &&
+                    !calledOposite
+                ) {
+                    calledOposite = true;
+                    child.sendAllMessagesCombined();
                 }
             });
         } else {
-            console.log("SwitchControl: " + switchControl.value);
-            this.displayAll = "none";
-            this.displayIndividual = "block";
-            const sliderAll = this.childComponents.filter(
-                (child) => child.labelName === "Open/Close all fingers",
-            )[0];
             this.childComponents.forEach((child) => {
-                if (child.labelName != "Thumb opposition") {
-                    child.sliderFormControl.setValue(
-                        sliderAll.sliderFormControl.value,
-                    );
+                if (child.motorName === "all_left_stretch") {
+                    child.sendAllMessagesCombined();
+                }
+                if (
+                    child.motorName.includes("left_opposition") &&
+                    !calledOposite
+                ) {
+                    calledOposite = true;
+                    child.sendAllMessagesCombined();
                 }
             });
-            if (side === "right") {
-                this.childComponents.forEach((child) => {
-                    if (child.motorName === "all_right_stretch") {
-                        child.sendAllMessagesCombined();
-                    }
-                    if (
-                        child.motorName.includes("right_opposition") &&
-                        !calledOposite
-                    ) {
-                        calledOposite = true;
-                        child.sendAllMessagesCombined();
-                    }
-                });
-            } else {
-                this.childComponents.forEach((child) => {
-                    if (child.motorName === "all_left_stretch") {
-                        child.sendAllMessagesCombined();
-                    }
-                    if (
-                        child.motorName.includes("left_opposition") &&
-                        !calledOposite
-                    ) {
-                        calledOposite = true;
-                        child.sendAllMessagesCombined();
-                    }
-                });
-            }
         }
-        this.childComponents.forEach((child) => child.setThumbPosition());
     }
 }
