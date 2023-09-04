@@ -1,15 +1,15 @@
 .container-fluid {
     display: flex;
-    flex-wrap: wrap; /* Allows wrapping to a new line when there's not enough horizontal space */
+    flex-wrap: wrap;
 }
 
 .mainFrame {
-    flex: 5; /* Takes up 5/6th (10/12th) of the available width */
-    min-width: 0; /* Allow the left div to shrink if needed */
+    flex: 5;
+    min-width: 0;
     padding: 10px;
-    box-sizing: border-box; /* Include padding and border in the width */
-    margin-right: 10px; /* Add some spacing between divs */
-    margin-bottom: 10px; /* Add some spacing between rows */
+    box-sizing: border-box;
+    margin-right: 10px;
+    margin-bottom: 10px;
 }
 
 .sideContent {
