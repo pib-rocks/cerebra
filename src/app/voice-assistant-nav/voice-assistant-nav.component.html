@@ -2,12 +2,14 @@
     <div class="row col-md-10">
         <div
             class="nav-item"
+            id="personalityTab"
             routerLinkActive="navbar-btn-active"
             [routerLink]="['/personality']">
             <a class="nav-link sidebar-btn"> Personality </a>
         </div>
         <div
             class="nav-item"
+            id="chatTab"
             routerLinkActive="navbar-btn-active"
             [routerLink]="['/chat']">
             <a class="nav-link sidebar-btn"> Chat </a>
@@ -23,6 +25,7 @@
                 (input)="toggleVoiceAssistantActivation()" />
             <label
                 class="custom-control-label"
+                id="toggleLabel"
                 for="voiceAssistantActivationToggle">
                 Assistant {{voiceAssistantStatus}}</label
             >

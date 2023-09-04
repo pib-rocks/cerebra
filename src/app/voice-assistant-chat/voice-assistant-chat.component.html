@@ -25,7 +25,11 @@
             <div class="chat-container mt-2 mb-1 p5">
                 <div class="messages">
                     <div *ngFor="let message of messages">
-                        <p class="message">{{message}}</p>
+                        <p
+                            class="message"
+                            id="user-message">
+                            {{message}}
+                        </p>
                     </div>
                 </div>
                 <div class="chat-input">
