@@ -19,7 +19,7 @@ textarea {
     letter-spacing: 0.4px;
     text-align: left;
     color: #828282;
-    margin: 2%;
+    padding: 2%;
 }
 
 textarea:focus {
@@ -72,7 +72,47 @@ textarea:focus {
     text-align: left;
     color: #fff;
 }
-.sidebar {
-    height: 95%;
-    margin-left: 2%;
+
+.container-fluid {
+    display: flex;
+    flex-wrap: wrap; /* Allows wrapping to a new line when there's not enough horizontal space */
+}
+
+.mainFrame {
+    flex: 5; /* Takes up 5/6th (10/12th) of the available width */
+    min-width: 0; /* Allow the left div to shrink if needed */
+    padding: 10px;
+    box-sizing: border-box; /* Include padding and border in the width */
+    margin-right: 10px; /* Add some spacing between divs */
+    margin-bottom: 10px; /* Add some spacing between rows */
+}
+
+.sideContent {
+    flex: 1;
+    min-width: 0;
+    padding: 10px;
+    box-sizing: border-box;
+    margin-bottom: 10px;
+}
+
+.innerContentMain {
+    flex: 4;
+}
+
+.innerContentSide {
+    flex: 2;
+}
+
+@media (max-width: 768px) {
+    .container-fluid {
+        flex-direction: column;
+    }
+
+    .sideContent {
+        display: 1;
+    }
+
+    .mainFrame {
+        flex: 1;
+    }
 }

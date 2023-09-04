@@ -1,22 +1,22 @@
-<div class="container-fluid d-flex nav nav-tabs">
-    <div class="row col-md-10">
-        <div
-            class="nav-item"
+<div class="container-fluid">
+    <div class="mainFrame nav nav-tabs">
+        <button
+            class="nav-item voice-tabs"
             id="personalityTab"
             routerLinkActive="navbar-btn-active"
             [routerLink]="['/personality']">
             <a class="nav-link sidebar-btn"> Personality </a>
-        </div>
-        <div
-            class="nav-item"
+        </button>
+        <button
+            class="nav-item voice-tabs"
             id="chatTab"
             routerLinkActive="navbar-btn-active"
             [routerLink]="['/chat']">
             <a class="nav-link sidebar-btn"> Chat </a>
-        </div>
+        </button>
     </div>
-    <div class="row col-md-2 mt-3">
-        <div class="custom-switch custom-switch-pib">
+    <div class="sideContent nav nav-tabs">
+        <div class="custom-switch custom-switch-pib mt-3">
             <input
                 class="custom-control-input"
                 type="checkbox"
@@ -25,7 +25,7 @@
                 (input)="toggleVoiceAssistantActivation()" />
             <label
                 class="custom-control-label"
-                id="toggleLabel"
+                id=""
                 for="voiceAssistantActivationToggle">
                 Assistant {{voiceAssistantStatus}}</label
             >

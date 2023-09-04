@@ -2,61 +2,62 @@
     rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,1,0" />
 <app-voice-assistant-nav></app-voice-assistant-nav>
-
 <div class="container-fluid">
-    <div class="row mt-5">
-        <div class="col-md-10 pink-corner-frame  mt-1">
-            <div class="container-fluid d-flex p-2">
-                <div class="row col-sm-10 p-2 mt-2">
-                    <label
-                        class="personlityName"
-                        style="font-size: large;"
-                        >Personality Name</label
-                    >
-                </div>
-                <div class="row col-sm-2 p-2">
-                    <button
-                        class="btn btn-primary exportButton"
-                        id="exportButton">
-                        Export chat
-                    </button>
-                </div>
+    <div class="mainFrame  mt-4 pink-corner-frame">
+        <div class="container-fluid">
+            <div class="innerContentMain mt-1">
+                <label
+                    class="personlityName"
+                    style="font-size: large;"
+                    >Personality Name</label
+                >
             </div>
-            <div class="chat-container mt-2 mb-1 p5">
-                <div class="messages">
-                    <div *ngFor="let message of messages">
-                        <p
-                            class="message"
-                            id="user-message">
-                            {{message}}
-                        </p>
+            <div class="innerContentSide mr-4">
+                <button
+                    class="btn btn-primary exportButton"
+                    id="exportButton">
+                    Export chat
+                </button>
+            </div>
+        </div>
+        <div class="container-fluid">
+            <div class="mainFrame">
+                <div class="chat-container">
+                    <div class="messages">
+                        <div *ngFor="let message of messages">
+                            <p
+                                class="message"
+                                id="user-message">
+                                {{message}}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="chat-input">
+                        <input
+                            type="text"
+                            id="message-input"
+                            placeholder="Send a message"
+                            [(ngModel)]="message"
+                            (keyup.enter)="sendMessage()" />
+                        <button id="chat-send-button">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                height="24px"
+                                viewBox="0 -960 960 960"
+                                width="24px"
+                                (click)="sendMessage()">
+                                <path [attr.d]="sendButton" />
+                            </svg>
+                        </button>
                     </div>
                 </div>
-                <div class="chat-input">
-                    <input
-                        type="text"
-                        id="message-input"
-                        placeholder="Send a message"
-                        [(ngModel)]="message"
-                        (keyup.enter)="sendMessage()" />
-                    <button id="chat-send-button">
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            height="24px"
-                            viewBox="0 -960 960 960"
-                            width="24px"
-                            (click)="sendMessage()">
-                            <path [attr.d]="sendButton" />
-                        </svg>
-                    </button>
-                </div>
             </div>
         </div>
-        <div class="row col-md-2 sidebar">
-            <app-voice-assistant-sidebar-right
-                [headerElements]="headerElements"
-                [bodyElements]="chatTopics"
-                [elementIcon]="chatIcon"></app-voice-assistant-sidebar-right>
-        </div>
     </div>
+    <app-voice-assistant-sidebar-right
+        class="sideContent"
+        [headerElements]="headerElements"
+        [bodyElements]="chatTopics"
+        [elementIcon]="chatIcon">
+    </app-voice-assistant-sidebar-right>
 </div>

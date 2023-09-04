@@ -1,7 +1,7 @@
 <header>
     <app-voice-assistant-nav></app-voice-assistant-nav>
 </header>
-<div class="container-fluid">
+<!--<div class="container-fluid">
     <div class="row">
         <div class="col-md-10 pink-corner-frame mt-5 mainContentFrame">
             <div class="container-fluid d-flex p-2">
@@ -39,4 +39,44 @@
                 [elementIcon]="personalityIcon"></app-voice-assistant-sidebar-right>
         </div>
     </div>
+</div>-->
+<div class="container-fluid">
+    <div class="mainFrame mt-4 pink-corner-frame">
+        <div class="container-fluid">
+            <div class="innerContentMain">
+                <label
+                    class="personalityLabel"
+                    style="font-size: large;">
+                    Personality Name
+                </label>
+            </div>
+            <div class="innerContentSide d-flex">
+                <button
+                    class="btn btn-sm btn-primary saveButtons mr-2"
+                    id="saveButtonPersonality">
+                    Save
+                </button>
+                <button
+                    class="btn btn-sm btn-primary saveButtons mr-4"
+                    id="saveAsButtonPersonality">
+                    Save As...
+                </button>
+            </div>
+        </div>
+        <div class="container-fluid">
+            <div class="mainFrame textAreaDiv">
+                <textarea
+                    id="textAreaPersonality"
+                    class="form-control"
+                    rows="20"
+                    placeholder="Describe personality with a prompt..."></textarea>
+            </div>
+        </div>
+    </div>
+    <app-voice-assistant-sidebar-right
+        class="sideContent"
+        [headerElements]="headerElements"
+        [bodyElements]="personalities"
+        [elementIcon]="personalityIcon">
+    </app-voice-assistant-sidebar-right>
 </div>
