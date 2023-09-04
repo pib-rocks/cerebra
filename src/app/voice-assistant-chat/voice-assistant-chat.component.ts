@@ -35,7 +35,7 @@ export class VoiceAssistantChatComponent {
     messages: string[] = [];
 
     sendMessage = () => {
-        if (this.message != "") {
+        if (this.message.trim() != "") {
             this.messages.push(this.message);
         }
         this.message = "";
