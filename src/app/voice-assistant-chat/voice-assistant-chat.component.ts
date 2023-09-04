@@ -30,6 +30,7 @@ export class VoiceAssistantChatComponent {
             label: "EDIT",
         },
     ];
+    sendButton: string = "M120-160v-240l320-80-320-80v-240l760 320-760 320Z";
     message: string = "";
     messages: string[] = [];
 

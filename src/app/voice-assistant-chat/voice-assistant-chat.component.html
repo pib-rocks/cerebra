@@ -28,19 +28,22 @@
                         <p class="message">{{message}}</p>
                     </div>
                 </div>
-                <div class="input-container">
+                <div class="chat-input">
                     <input
-                        (keyup.enter)="sendMessage()"
-                        id="chat-message-input"
-                        class="message-input-box input-container2"
+                        type="text"
+                        id="message-input"
+                        placeholder="Type your message..."
                         [(ngModel)]="message"
-                        placeholder="Type your message..." />
-                    <button
-                        class="sendButton send-button p-4 mt-3"
-                        (click)="sendMessage()">
-                        <span class="material-symbols-outlined ml-1">
-                            send
-                        </span>
+                        (keyup.enter)="sendMessage()" />
+                    <button id="chat-send-button">
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            height="24px"
+                            viewBox="0 -960 960 960"
+                            width="24px"
+                            (click)="sendMessage()">
+                            <path [attr.d]="sendButton" />
+                        </svg>
                     </button>
                 </div>
             </div>
