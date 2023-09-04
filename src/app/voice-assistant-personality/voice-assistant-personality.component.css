@@ -58,6 +58,7 @@ textarea:focus {
     font-family: Titillium;
     font-size: medium;
     width: 100%;
+    border: none;
 }
 
 .personalityLabel {
