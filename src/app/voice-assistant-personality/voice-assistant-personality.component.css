@@ -79,10 +79,9 @@ textarea:focus {
 }
 
 .mainFrame {
-    flex: 5; /* Takes up 5/6th (10/12th) of the available width */
+    flex: 5; /* Takes up 5/6th of the available width */
     min-width: 0; /* Allow the left div to shrink if needed */
     padding: 10px;
-    box-sizing: border-box; /* Include padding and border in the width */
     margin-right: 10px; /* Add some spacing between divs */
     margin-bottom: 10px; /* Add some spacing between rows */
 }
