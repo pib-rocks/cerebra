@@ -64,7 +64,7 @@
     </div>
     <div class="row background-image">
         <div
-            class="col-6 pink-corner-frame mr-2 pt-3 pl-3 pr-3"
+            class="col-md-6 pink-corner-frame mr-2 pt-3 pl-3 pr-3 mb-2"
             *ngIf="side === 'left'">
             <ng-container>
                 <div class="row">
@@ -95,7 +95,7 @@
             </ng-container>
         </div>
         <div
-            class="col-6 pink-corner-frame mr-2 pt-3 pl-3 pr-3"
+            class="col-md-6 pink-corner-frame mr-2 pt-3 pl-3 pr-3 mb-2"
             *ngIf="side === 'right'">
             <ng-container>
                 <div class="row">
@@ -126,44 +126,36 @@
         </div>
         <!--right hand image-->
         <div
-            class="col-md-auto blue-corner-frame hand-image mb-2"
+            class="col-md-5 blue-corner-frame mb-2"
             *ngIf="side === 'right'">
             <div class="row mt-3">
                 <ng-container *ngFor="let obj of rightFingersAll">
                     <div class="col-2 pr-0 pl-0">
                         <app-circular-slider
-                            name="{{obj['motor']}}"
-                            [initWidth]="80"
-                            [initHeight]="80"></app-circular-slider>
+                            name="{{obj['motor']}}"></app-circular-slider>
                     </div>
                 </ng-container>
             </div>
             <div class="row">
                 <img
-                    class="container"
-                    style="height: 30rem; width: 30rem; margin-top: 10px"
                     src="../../assets/hand_right.png"
                     alt="" />
             </div>
         </div>
         <!--left hand image-->
         <div
-            class="col-md-auto blue-corner-frame hand-image"
+            class="col-md-5 blue-corner-frame mb-2"
             *ngIf="side === 'left'">
             <div class="row mt-3">
                 <ng-container *ngFor="let obj of leftFingersAll">
                     <div class="col-2 pr-0 pl-0">
                         <app-circular-slider
-                            name="{{obj['motor']}}"
-                            [initWidth]="80"
-                            [initHeight]="80"></app-circular-slider>
+                            name="{{obj['motor']}}"></app-circular-slider>
                     </div>
                 </ng-container>
             </div>
             <div class="row">
                 <img
-                    class="container"
-                    style="height: 30rem; width: 30rem; margin-top: 10px"
                     src="../../assets/hand_left.png"
                     alt="" />
             </div>

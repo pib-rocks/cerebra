@@ -118,10 +118,8 @@
         url("../../assets/eb-bl.png") bottom left no-repeat;
     background-color: rgba(255, 255, 255, 0.05);
 }
-.hand-image {
-    max-width: 480px;
-}
 
 .background-image {
     background: url("../../assets/bg-gesamt.png") left no-repeat;
+    background-size: cover;
 }
