@@ -17,6 +17,7 @@ export class MotorCurrentService {
 
     leftFingers = [
         "thumb_left_stretch",
+        "thumb_left_opposition",
         "index_left_stretch",
         "middle_left_stretch",
         "ring_left_stretch",
@@ -24,6 +25,7 @@ export class MotorCurrentService {
     ];
     rightFingers = [
         "thumb_right_stretch",
+        "thumb_right_opposition",
         "index_right_stretch",
         "middle_right_stretch",
         "ring_right_stretch",
