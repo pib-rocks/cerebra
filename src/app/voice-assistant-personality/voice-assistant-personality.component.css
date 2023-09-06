@@ -59,6 +59,7 @@ textarea:focus {
     font-size: medium;
     width: 100%;
     border: none;
+    background-color: rgb(60, 138, 241);
 }
 
 .personalityLabel {

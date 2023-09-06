@@ -90,6 +90,7 @@ p {
     font-size: medium;
     width: 100%;
     border: none;
+    background-color: rgb(60, 138, 241);
 }
 
 .chat-input {
