@@ -93,12 +93,18 @@ describe("CameraComponent", () => {
     it("should toggle the camera when i click on the camera icon", () => {
         const spyStartCamera = spyOn(component, "startCamera");
         const spyStopCamera = spyOn(component, "stopCamera");
+
         const toggleBtn = fixture.debugElement.query(By.css("#toggleCamera"));
         toggleBtn.nativeElement.click();
         expect(spyStartCamera).toHaveBeenCalled();
         toggleBtn.nativeElement.click();
         expect(spyStopCamera).toHaveBeenCalled();
     });
+    it("should display an error image when receiving error messages from the backend", fakeAsync(() => {
+        rosService.cameraReceiver$.next("Camera not available");
+        tick(1000);
+        expect(component.imageSrc).toMatch("../../assets/camera-error-image");
+    }));
 
     it("should change the running state of the camera when clicking camera icon", () => {
         const spyOnToggleCamera = spyOn(component, "toggleCameraState");

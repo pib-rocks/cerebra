@@ -5,6 +5,7 @@ import {Injectable} from "@angular/core";
 })
 export class MotorService {
     leftFingers = [
+        "all_left_stretch",
         "thumb_left_stretch",
         "index_left_stretch",
         "middle_left_stretch",
@@ -13,6 +14,7 @@ export class MotorService {
     ];
 
     rightFingers = [
+        "all_right_stretch",
         "thumb_right_stretch",
         "index_right_stretch",
         "middle_right_stretch",

@@ -123,7 +123,7 @@ describe("MotorControlComponent", () => {
         fingerService.getMotorHandNames(component.groupSide);
         spyOn(component, "sendMessage").and.callThrough();
         component.sendMessage();
-        expect(rosService.sendSliderMessage).toHaveBeenCalledTimes(5);
+        expect(rosService.sendSliderMessage).toHaveBeenCalledTimes(6);
     });
 
     it("should set a valid value after receiving a message", () => {
@@ -220,7 +220,7 @@ describe("MotorControlComponent", () => {
         fixture.detectChanges();
         component.turnTheMotorOnAndOff();
         expect(motorService.getMotorHandNames).toHaveBeenCalledWith("left");
-        expect(rosService.sendSliderMessage).toHaveBeenCalledTimes(6);
+        expect(rosService.sendSliderMessage).toHaveBeenCalledTimes(7);
     });
 
     it("should send a settings message when changing a value of the setting", () => {
@@ -228,8 +228,8 @@ describe("MotorControlComponent", () => {
             motor: component.motorName,
             pule_widths_min: component.pulseMinRange.value,
             pule_widths_max: component.pulseMaxRange.value,
-            rotation_range_min: component.degreeMinFormcontrol.value,
-            rotation_range_max: component.degreeMaxFormcontrol.value,
+            rotation_range_min: component.degreeMinFormControl.value,
+            rotation_range_max: component.degreeMaxFormControl.value,
             velocity: component.velocityFormControl.value,
             acceleration: component.accelerationFormControl.value,
             deceleration: component.decelerationFormControl.value,
@@ -249,7 +249,7 @@ describe("MotorControlComponent", () => {
         fixture.detectChanges();
         component.sendSettingMessage();
         expect(spyMotorNames).toHaveBeenCalledWith("left");
-        expect(rosService.sendSliderMessage).toHaveBeenCalledTimes(6);
+        expect(rosService.sendSliderMessage).toHaveBeenCalledTimes(7);
     });
 
     it("should send a combined massege with all values if all inputs are valid", () => {
@@ -259,8 +259,8 @@ describe("MotorControlComponent", () => {
             turnedOn: component.motorFormControl.value,
             pule_widths_min: component.pulseMinRange.value,
             pule_widths_max: component.pulseMaxRange.value,
-            rotation_range_min: component.degreeMinFormcontrol.value,
-            rotation_range_max: component.degreeMaxFormcontrol.value,
+            rotation_range_min: component.degreeMinFormControl.value,
+            rotation_range_max: component.degreeMaxFormControl.value,
             velocity: component.velocityFormControl.value,
             acceleration: component.accelerationFormControl.value,
             deceleration: component.decelerationFormControl.value,
@@ -276,7 +276,7 @@ describe("MotorControlComponent", () => {
         fixture.detectChanges();
         component.sendAllMessagesCombined();
         expect(motorService.getMotorHandNames).toHaveBeenCalledWith("left");
-        expect(rosService.sendSliderMessage).toHaveBeenCalledTimes(6);
+        expect(rosService.sendSliderMessage).toHaveBeenCalledTimes(7);
     });
 
     it("should send a combined massege with all values if not all inputs are valid", () => {
@@ -301,7 +301,7 @@ describe("MotorControlComponent", () => {
         fixture.detectChanges();
         component.sendAllMessagesCombined();
         expect(spyMotorNames).toHaveBeenCalledWith("left");
-        expect(rosService.sendSliderMessage).toHaveBeenCalledTimes(6);
+        expect(rosService.sendSliderMessage).toHaveBeenCalledTimes(7);
     });
 
     it("should return null if max pulse is greater than min pulse", () => {
@@ -434,7 +434,7 @@ describe("MotorControlComponent", () => {
         spyOn(component, "inputSendMsg");
         component.bubbleFormControl.setValue(500);
         component.isInputVisible = true;
-        component.toggleInputUnvisible();
+        component.toggleInputInvisible();
         expect(component.setSliderValue).toHaveBeenCalled();
         expect(component.inputSendMsg).toHaveBeenCalled();
     });
@@ -444,7 +444,7 @@ describe("MotorControlComponent", () => {
         spyOn(component, "inputSendMsg");
         component.bubbleFormControl.setValue(-5000000);
         component.isInputVisible = true;
-        component.toggleInputUnvisible();
+        component.toggleInputInvisible();
         expect(component.bubbleFormControl.hasError("min")).toBeTrue;
         expect(component.setSliderValue).toHaveBeenCalledWith(
             component.minSliderValue,
@@ -457,7 +457,7 @@ describe("MotorControlComponent", () => {
         spyOn(component, "inputSendMsg");
         component.bubbleFormControl.setValue(5000000);
         component.isInputVisible = true;
-        component.toggleInputUnvisible();
+        component.toggleInputInvisible();
         expect(component.bubbleFormControl.hasError("max")).toBeTrue;
         expect(component.setSliderValue).toHaveBeenCalledWith(
             component.maxSliderValue,
@@ -468,7 +468,7 @@ describe("MotorControlComponent", () => {
     it("should toggle input unvisible required validation", () => {
         component.bubbleFormControl.setValue(null);
         component.isInputVisible = true;
-        component.toggleInputUnvisible();
+        component.toggleInputInvisible();
         expect(component.bubbleFormControl.hasError("required")).toBeTrue;
         expect(component.isInputVisible).toBeFalse();
     });
@@ -477,7 +477,7 @@ describe("MotorControlComponent", () => {
         spyOn(component, "setThumbPosition");
         component.bubbleFormControl.setValue("test");
         component.isInputVisible = true;
-        component.toggleInputUnvisible();
+        component.toggleInputInvisible();
         expect(component.bubbleFormControl.hasError("pattern")).toBeTrue;
     });
 });
