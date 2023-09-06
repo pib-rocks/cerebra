@@ -38,3 +38,9 @@ p {
     margin-left: 0.7%;
     width: auto;
 }
+
+.headerButtons {
+    background-color: #192021;
+    border: none;
+    width: auto;
+}

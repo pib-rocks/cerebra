@@ -3,8 +3,8 @@
     style="width: fit-content;">
     <div class="bg-navigation-Kopie col">
         <div class="container d-flex">
-            <div
-                class="row header"
+            <button
+                class="row header headerButtons"
                 *ngFor="let element of headerElements">
                 <svg
                     id="icon_{{element.label}}"
@@ -16,7 +16,7 @@
                     <path [attr.d]="element.icon" />
                 </svg>
                 <p id="label_{{element.label}}">{{element.label}}</p>
-            </div>
+            </button>
         </div>
         <div class="container col">
             <div
