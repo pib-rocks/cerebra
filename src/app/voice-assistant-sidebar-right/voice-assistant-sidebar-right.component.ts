@@ -9,4 +9,8 @@ export class VoiceAssistantSidebarRightComponent {
     @Input() headerElements: {icon: string; label: string}[] = [];
     @Input() bodyElements: string[] = [];
     @Input() elementIcon: string = "";
+
+    getIdString(element: string) {
+        return "label_" + element.replaceAll(" ", "-");
+    }
 }
