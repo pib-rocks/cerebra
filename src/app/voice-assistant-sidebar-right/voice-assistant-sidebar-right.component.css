@@ -10,8 +10,6 @@
     text-align: center;
     fill: #0094de;
     margin-top: 5%;
-    margin-left: 1%;
-    padding: 2%;
 }
 
 p {
@@ -32,4 +30,11 @@ p {
     margin-bottom: 0%;
     margin-left: -10%;
     font-size: medium;
+}
+
+.elementButtons {
+    background-color: #1b2b44;
+    border: none;
+    margin-left: 0.7%;
+    width: auto;
 }

@@ -22,10 +22,12 @@
             <div
                 class="row"
                 *ngFor="let element of bodyElements">
-                <div class="container d-flex bodyElements">
-                    <div class="row p-1 elementIcon">
+                <button class="container d-flex bodyElements elementButtons">
+                    <div
+                        id="button_{{element}}"
+                        class="row mt-1 p-1 elementIcon">
                         <svg
-                            id="personalityIcon_{{element}}"
+                            id="icon_{{element}}"
                             xmlns="http://www.w3.org/2000/svg"
                             height="24px"
                             viewBox="0 -960 960 960"
@@ -35,10 +37,10 @@
                     </div>
                     <div
                         [id]="getIdString(element)"
-                        class="row p-2 mt-2">
+                        class="row p-2 mt-1">
                         {{element}}
                     </div>
-                </div>
+                </button>
             </div>
         </div>
     </div>
