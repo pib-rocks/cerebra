@@ -4,6 +4,7 @@
     margin: 23px 1px 0 0;
     padding: 0 0 458px;
     background-color: #1b2b44;
+    max-width: 100%;
 }
 
 .elementIcon {
@@ -28,7 +29,7 @@ p {
     color: #0094de;
     font-family: titillium;
     margin-bottom: 0%;
-    margin-left: -10%;
+
     font-size: medium;
 }
 
@@ -37,10 +38,12 @@ p {
     border: none;
     margin-left: 0.7%;
     width: auto;
+    max-width: 99%;
 }
 
 .headerButtons {
     background-color: #192021;
     border: none;
     width: auto;
+    max-width: 100%;
 }

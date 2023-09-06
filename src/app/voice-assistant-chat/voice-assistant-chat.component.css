@@ -23,6 +23,7 @@
     padding: 10px;
     box-sizing: border-box;
     margin-top: -0.7%;
+    max-width: 100%;
 }
 
 @media (max-width: 768px) {

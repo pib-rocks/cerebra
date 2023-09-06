@@ -1,4 +1,6 @@
+import {HttpClient} from "@angular/common/http";
 import {Component, Input} from "@angular/core";
+import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
 
 @Component({
     selector: "app-voice-assistant-sidebar-right",
@@ -11,6 +13,6 @@ export class VoiceAssistantSidebarRightComponent {
     @Input() elementIcon: string = "";
 
     getIdString(element: string) {
-        return "label_" + element.replaceAll(" ", "-");
+        return "button_" + element.replaceAll(" ", "-");
     }
 }
