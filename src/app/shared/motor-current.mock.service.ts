@@ -81,13 +81,17 @@ export class MotorCurrentService {
                 subject: new BehaviorSubject<number>(0),
             });
         }
-        console.log(this.motors);
+        // console.log(this.motors);
     }
 
     public sendDummyMessageForGroup(group: string) {
         for (const motor of this.motors) {
             if (motor.group === group) {
-                motor.subject.next(Math.floor(Math.random() * 2000));
+                // motor.subject.next(Math.floor(Math.random() * 2000));
+                this.rosService.sendSliderMessage({
+                    motor: motor.name,
+                    currentValue: Math.floor(Math.random() * 2000),
+                });
             }
         }
     }
@@ -95,11 +99,11 @@ export class MotorCurrentService {
     public getMotorSubjectByName(
         name: string | undefined,
     ): BehaviorSubject<any> | null {
-        console.log("passed name " + name);
-        console.log(this.motors);
+        // console.log("passed name " + name);
+        // console.log(this.motors);
         for (const x of this.motors) {
             if (x.name === name) {
-                console.log(x);
+                // console.log(x);
             }
         }
 
@@ -114,15 +118,17 @@ export class MotorCurrentService {
             );
             return null;
         }
-        console.log(foundMotors);
+        // console.log(foundMotors);
         return foundMotors.map((m) => m.subject)[0];
     }
 
     subscribeCurrentReceiver(): Subscription {
         return this.rosService.currentReceiver$.subscribe(
             (message: MotorCurrentMessage) => {
+                // console.log(message['motor']);
                 for (const motor of this.motors) {
                     if (motor.name === message.motor) {
+                        // console.log(message);
                         motor.subject.next(message.currentValue);
                     }
                 }
