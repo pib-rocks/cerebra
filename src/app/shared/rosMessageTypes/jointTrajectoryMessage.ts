@@ -1,5 +1,8 @@
 import {stdMessageHeader} from "./stdMessageHeader";
-import {jointTrajectoryPoint} from "./jointTrajectoryPoint";
+import {
+    jointTrajectoryPoint,
+    createJointTrajectoryPoint,
+} from "./jointTrajectoryPoint";
 import {createDefaultStdMessageHeader} from "./stdMessageHeader";
 
 // TypeScript implementation of the ROS Common-Interfaces JointTrajectoryMessage
@@ -10,12 +13,28 @@ export type jointTrajectoryMessage = {
     points: jointTrajectoryPoint[];
 };
 
-export function createDefaultJointTrajectoryMessage(): jointTrajectoryMessage {
+export function createEmptyJointTrajectoryMessage(): jointTrajectoryMessage {
     const jointTrajectoryMessage: jointTrajectoryMessage = {
         header: createDefaultStdMessageHeader(),
         joint_names: new Array<string>(),
         points: new Array<jointTrajectoryPoint>(),
     };
+
+    return jointTrajectoryMessage;
+}
+
+export function createSinglePositionJointTrajectoryMessage(
+    jointName: string,
+    position: number,
+): jointTrajectoryMessage {
+    const jointTrajectoryMessage: jointTrajectoryMessage = {
+        header: createDefaultStdMessageHeader(),
+        joint_names: new Array<string>(),
+        points: new Array<jointTrajectoryPoint>(),
+    };
+
+    jointTrajectoryMessage.joint_names.push(jointName);
+    jointTrajectoryMessage.points.push(createJointTrajectoryPoint(position));
 
     return jointTrajectoryMessage;
 }
