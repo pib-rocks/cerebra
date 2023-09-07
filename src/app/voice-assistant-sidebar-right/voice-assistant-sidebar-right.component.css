@@ -1,21 +1,15 @@
 .bg-navigation-Kopie {
-    width: 50%;
     height: 500px;
-    margin: 23px 1px 0 0;
-    padding: 0 0 458px;
+    margin-top: 4px;
+    margin-right: 4px;
+    padding: 0;
     background-color: #1b2b44;
     max-width: 100%;
 }
 
-.elementIcon {
-    text-align: center;
-    fill: #0094de;
-    margin-top: 5%;
-}
-
 p {
     color: #0094de;
-    text-align: center;
+    text-align: justify-center;
     font-family: titillium;
     margin-bottom: 0%;
 }
@@ -29,7 +23,6 @@ p {
     color: #0094de;
     font-family: titillium;
     margin-bottom: 0%;
-
     font-size: medium;
 }
 
@@ -44,6 +37,13 @@ p {
 .headerButtons {
     background-color: #192021;
     border: none;
-    width: auto;
-    max-width: 100%;
+    width: 100%;
+    align-items: auto;
+}
+
+.bodyElementText {
+    text-align: justify;
+}
+
+@media (max-width: 768px) {
 }

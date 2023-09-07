@@ -14,7 +14,6 @@
 
 .mainContent {
     height: 500px;
-    width: 100%;
 }
 
 .sideContent {
@@ -31,12 +30,12 @@
         flex-direction: column;
     }
 
-    .sideContent {
-        display: 1;
+    .main {
+        width: fit-content;
     }
 
-    .mainFrame {
-        flex: 1;
+    .sidebar {
+        width: fit-content;
     }
 }
 

@@ -76,15 +76,15 @@ textarea:focus {
 
 .container-fluid {
     display: flex;
-    flex-wrap: wrap; /* Allows wrapping to a new line when there's not enough horizontal space */
+    flex-wrap: wrap;
 }
 
 .mainFrame {
-    flex: 5; /* Takes up 5/6th of the available width */
-    min-width: 0; /* Allow the left div to shrink if needed */
+    flex: 5;
+    min-width: 0;
     padding: 10px;
-    margin-right: 10px; /* Add some spacing between divs */
-    margin-bottom: 10px; /* Add some spacing between rows */
+    margin-right: 10px;
+    margin-bottom: 10px;
 }
 
 .mainContent {
@@ -94,7 +94,7 @@ textarea:focus {
 
 .sideContent {
     flex: 1;
-    min-width: 0;
+    min-width: 200px;
     padding: 10px;
     box-sizing: border-box;
     margin-top: -0.7%;
@@ -113,11 +113,11 @@ textarea:focus {
         flex-direction: column;
     }
 
-    .sideContent {
-        display: 1;
+    .main {
+        width: fit-content;
     }
 
-    .mainFrame {
-        flex: 1;
+    .sidebar {
+        width: fit-content;
     }
 }

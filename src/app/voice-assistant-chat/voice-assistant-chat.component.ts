@@ -14,24 +14,18 @@ export class VoiceAssistantChatComponent {
         "Nürnberg",
         "Definition of AI today",
     ];
-    chatIcon: string = "../../assets/voice-assistant-svgs/chat/chat_add.svg";
+    chatIcon: string = "../../assets/voice-assistant-svgs/chat/chat.svg";
     headerElements = [
         {
             icon: "../../assets/voice-assistant-svgs/chat/chat_add.svg",
-            activeIcon:
-                "../../assets/voice-assistant-svgs/chat/chat_add_active.svg",
             label: "ADD",
         },
         {
-            icon: "../../assets/voice-assistant-svgs/chat/chat_add.svg",
-            activeIcon:
-                "../../assets/voice-assistant-svgs/chat/chat_add_active.svg",
+            icon: "../../assets/voice-assistant-svgs/chat/chat_delete.svg",
             label: "DELETE",
         },
         {
-            icon: "../../assets/voice-assistant-svgs/chat/chat_add.svg",
-            activeIcon:
-                "../../assets/voice-assistant-svgs/chat/chat_add_active.svg",
+            icon: "../../assets/voice-assistant-svgs/chat/chat_edit.svg",
             label: "EDIT",
         },
     ];

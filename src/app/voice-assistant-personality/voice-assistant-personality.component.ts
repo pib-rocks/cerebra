@@ -16,12 +16,12 @@ export class VoiceAssistantPersonalityComponent {
             label: "ADD",
         },
         {
-            icon: "../../assets/voice-assistant-svgs/personality/personality_edit.svg",
-            label: "EDIT",
-        },
-        {
             icon: "../../assets/voice-assistant-svgs/personality/personality_delete.svg",
             label: "DELETE",
+        },
+        {
+            icon: "../../assets/voice-assistant-svgs/personality/personality_edit.svg",
+            label: "EDIT",
         },
     ];
     personalityIcon: string =

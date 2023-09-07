@@ -1,45 +1,49 @@
 <header>
     <app-voice-assistant-nav></app-voice-assistant-nav>
 </header>
-<div
-    class="container-fluid"
-    style="max-width: fit-content; margin: 1%;">
-    <div class="mainFrame mainContent mt-4 m-1 pink-corner-frame">
-        <div class="container-fluid">
-            <div class="innerContentMain">
-                <label
-                    class="personalityLabel ml-2"
-                    style="font-size: large;">
-                    Personality Name
-                </label>
+<div class="container-fluid row p-0">
+    <div class="col-10 pr-1 main">
+        <div class="mainFrame mainContent mt-4 pink-corner-frame">
+            <div class="innerContentMain d-flex">
+                <div class="col-md-8 mr-1">
+                    <label
+                        class="personalityLabel ml-2 innerContentMain"
+                        style="font-size: large;">
+                        Personality Name
+                    </label>
+                </div>
+                <div class="col-4 mr-5 pr-1 d-flex innerContentSide">
+                    <button
+                        class="btn btn-sm btn-primary saveButtons mr-2 col-6"
+                        id="saveButtonPersonality">
+                        Save
+                    </button>
+                    <button
+                        class="btn btn-sm btn-primary saveButtons col-6"
+                        id="saveAsButtonPersonality">
+                        Save As...
+                    </button>
+                </div>
             </div>
-            <div class="innerContentSide d-flex">
-                <button
-                    class="btn btn-sm btn-primary saveButtons mr-2"
-                    id="saveButtonPersonality">
-                    Save
-                </button>
-                <button
-                    class="btn btn-sm btn-primary saveButtons mr-4"
-                    id="saveAsButtonPersonality">
-                    Save As...
-                </button>
-            </div>
-        </div>
-        <div class="container-fluid">
-            <div class="mainFrame textAreaDiv">
-                <textarea
-                    id="textAreaPersonality"
-                    class="form-control"
-                    rows="15"
-                    placeholder="Describe personality with a prompt..."></textarea>
+            <div class=" d-flex col-12">
+                <div class="col-md-12">
+                    <div class="mainFrame textAreaDiv">
+                        <textarea
+                            id="textAreaPersonality"
+                            class="form-control"
+                            rows="15"
+                            placeholder="Describe personality with a prompt..."></textarea>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-    <app-voice-assistant-sidebar-right
-        class="sideContent"
-        [headerElements]="headerElements"
-        [bodyElements]="personalities"
-        [elementIcon]="personalityIcon">
-    </app-voice-assistant-sidebar-right>
+    <div class="col-md-2 pr-3 sidebar">
+        <app-voice-assistant-sidebar-right
+            class="sideContent"
+            [headerElements]="headerElements"
+            [bodyElements]="personalities"
+            [elementIcon]="personalityIcon">
+        </app-voice-assistant-sidebar-right>
+    </div>
 </div>

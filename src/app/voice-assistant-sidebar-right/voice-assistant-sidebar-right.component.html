@@ -1,42 +1,44 @@
-<div
-    class="row"
-    style="width: fit-content;">
-    <div class="bg-navigation-Kopie col">
-        <div class="container d-flex">
-            <button
-                class="row header headerButtons"
-                *ngFor="let element of headerElements">
-                <img
-                    [src]="element.icon"
-                    width="24px"
-                    height="24px"
-                    alt="" />
-                <p id="label_{{element.label}}">{{element.label}}</p>
-            </button>
-        </div>
-        <div class="container-fluid col">
+<div class="bg-navigation-Kopie col">
+    <div class="container-fluid">
+        <div class="row">
             <div
-                class="row"
-                *ngFor="let element of bodyElements">
-                <button class="container d-flex bodyElements elementButtons">
-                    <div
-                        id="button_{{element}}"
-                        class="row mt-1 p-1 elementIcon">
-                        <div class="mt-1">
-                            <img
-                                [src]="elementIcon"
-                                width="24px"
-                                height="24px"
-                                alt="" />
-                        </div>
-                    </div>
-                    <div
-                        [id]="getIdString(element)"
-                        class="row p-2 mt-1 bodyElementText">
-                        {{element}}
-                    </div>
+                class="col-4 p-0"
+                *ngFor="let element of headerElements">
+                <button class="header headerButtons">
+                    <img
+                        [src]="element.icon"
+                        width="16px"
+                        height="16px"
+                        alt="" />
+                    <p id="label_{{element.label}}">{{element.label}}</p>
                 </button>
             </div>
+        </div>
+    </div>
+    <div class="container-fluid">
+        <div
+            class="row"
+            *ngFor="let element of bodyElements">
+            <button
+                [id]="getIdString(element)"
+                class="container d-flex bodyElements elementButtons">
+                <div
+                    id="button_{{element}}"
+                    class="row mt-1 p-1 elementIcon">
+                    <div class="mt-1">
+                        <img
+                            [src]="elementIcon"
+                            width="16"
+                            height="16"
+                            alt="" />
+                    </div>
+                </div>
+                <div
+                    [id]="getIdString(element)"
+                    class="row p-2 mt-1 bodyElementText">
+                    {{element}}
+                </div>
+            </button>
         </div>
     </div>
 </div>
