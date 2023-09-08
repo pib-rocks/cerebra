@@ -92,12 +92,8 @@ textarea:focus {
     width: 100%;
 }
 
-.sideContent {
-    flex: 1;
-    min-width: 200px;
-    padding: 10px;
-    box-sizing: border-box;
-    margin-top: -0.7%;
+.sidebar {
+    padding-top: 0.3%;
 }
 
 .innerContentMain {
@@ -115,9 +111,11 @@ textarea:focus {
 
     .main {
         width: fit-content;
+        min-width: 100%;
     }
 
     .sidebar {
         width: fit-content;
+        min-width: 32%;
     }
 }

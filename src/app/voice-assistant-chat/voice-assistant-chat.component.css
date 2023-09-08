@@ -16,13 +16,8 @@
     height: 500px;
 }
 
-.sideContent {
-    flex: 1;
-    min-width: 0;
-    padding: 10px;
-    box-sizing: border-box;
-    margin-top: -0.7%;
-    max-width: 100%;
+.sidebar {
+    padding-top: 0.3%;
 }
 
 @media (max-width: 768px) {
@@ -32,10 +27,12 @@
 
     .main {
         width: fit-content;
+        min-width: 100%;
     }
 
     .sidebar {
         width: fit-content;
+        min-width: 32%;
     }
 }
 
