@@ -1,7 +1,6 @@
 textarea {
     border-radius: 0px;
     background: transparent;
-    font-family: Titillium;
     font-size: 16px;
     font-weight: normal;
     font-stretch: normal;
@@ -21,7 +20,6 @@ textarea:focus {
         #324c71 var(--pos-relative),
         #324c71
     );
-    font-family: Titillium;
     font-size: 16px;
     font-weight: normal;
     font-stretch: normal;
@@ -33,15 +31,14 @@ textarea:focus {
 }
 
 .saveButtons {
-    font-family: Titillium;
+    float: right;
     font-size: medium;
-    width: 100%;
+    width: auto;
     border: none;
     background-color: #0094df;
 }
 
 .personalityName {
-    font-family: Titillium;
     font-size: large;
     font-weight: bold;
     font-stretch: normal;
@@ -50,6 +47,10 @@ textarea:focus {
     letter-spacing: 0.4px;
     text-align: left;
     color: #fff;
+}
+
+.allContent {
+    font-family: Titillium;
 }
 
 @media (max-width: 768px) {

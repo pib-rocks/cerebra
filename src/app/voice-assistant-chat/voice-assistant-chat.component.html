@@ -3,15 +3,15 @@
     href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,1,0" />
 <app-voice-assistant-nav></app-voice-assistant-nav>
 <div class="container-fluid">
-    <div class="row allContent">
-        <div class="col-10 pink-corner-frame main mt-4">
+    <div class="row allContent mt-4">
+        <div class="col-10 pink-corner-frame main ">
             <div class="row mt-2">
                 <div class="col-10">
                     <label class="personalityName mt-1">Personality Name</label>
                 </div>
                 <div class="col-2">
                     <button
-                        class="btn-sm btn-primary exportButton"
+                        class="btn-sm col btn-primary exportButton"
                         id="exportButton">
                         Export chat
                     </button>
@@ -51,7 +51,7 @@
                 </div>
             </div>
         </div>
-        <div class="side col-2 mt-3 pt-2">
+        <div class="side col-2 ">
             <app-voice-assistant-sidebar-right
                 [headerElements]="headerElements"
                 [bodyElements]="chatTopics"
