@@ -47,7 +47,7 @@ describe("HeadComponent", () => {
             By.css("app-motor-control"),
         );
         for (const slider of sliders) {
-            spyOn(slider.componentInstance, "sendMessage");
+            spyOn(slider.componentInstance, "sendJointTrajectoryMessage");
         }
 
         spyOn(component, "reset").and.callThrough();
@@ -69,7 +69,9 @@ describe("HeadComponent", () => {
             if (slider.componentInstance.showMotorSettingsButton === true) {
                 const input = slider.children[1].children[1];
                 expect(input.nativeElement.value).toBe("0");
-                expect(slider.componentInstance.sendMessage).toHaveBeenCalled();
+                expect(
+                    slider.componentInstance.sendJointTrajectoryMessage,
+                ).toHaveBeenCalled();
             }
         }
     });
