@@ -70,7 +70,7 @@
         max="{{ maxSliderValue }}"
         step="1"
         [formControl]="sliderFormControl"
-        (input)="setThumbPosition(); inputSendMsg()"
+        (input)="setThumbPosition(); inputSendJointTrajectoryMsg()"
         #range />
 </div>
 
@@ -103,7 +103,7 @@
                     min="0"
                     max="65535"
                     [formControl]="pulseMinRange"
-                    (input)="sendSettingMessage()" />
+                    (input)="sendMotorSettingsMessage()" />
             </li>
             <br class="overlappingBr" />
             <li
@@ -117,7 +117,7 @@
                     min="0"
                     max="65535"
                     [formControl]="pulseMaxRange"
-                    (input)="sendSettingMessage()" />
+                    (input)="sendMotorSettingsMessage()" />
             </li>
         </ul>
     </div>

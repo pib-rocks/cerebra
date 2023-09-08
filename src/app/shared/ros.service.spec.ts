@@ -1,9 +1,12 @@
 import {TestBed} from "@angular/core/testing";
 import * as ROSLIB from "roslib";
 import {Subject} from "rxjs";
-import {Message} from "./message";
+import {MotorSettingsMessage} from "./motorSettingsMessage";
 import {RosService} from "./ros.service";
-import {createDefaultJointTrajectoryMessage} from "./rosMessageTypes/jointTrajectoryMessage";
+import {
+    createEmptyJointTrajectoryMessage,
+    jointTrajectoryMessage,
+} from "./rosMessageTypes/jointTrajectoryMessage";
 
 describe("RosService", () => {
     let service: RosService;
@@ -24,7 +27,8 @@ describe("RosService", () => {
         service = TestBed.inject(RosService);
         mockRos = new RosMock(service);
         mockRos.setConnection(true);
-        const receiver$ = new Subject<Message>();
+        const receiver$ = new Subject<MotorSettingsMessage>();
+        const jtMessageReceiver$ = new Subject<jointTrajectoryMessage>();
         mockTopic = new MockRosbridgeTopic("test", receiver$);
 
         spySetUpRos = spyOn(RosService.prototype, "setUpRos").and.returnValue(
@@ -62,7 +66,7 @@ describe("RosService", () => {
 
         spySubscribeTopic = spyOn(
             RosService.prototype,
-            "subscribeSliderTopic",
+            "subscribeMotorSettingsTopic",
         ).and.callThrough();
         service = new RosService();
     });
@@ -112,7 +116,7 @@ describe("RosService", () => {
             service,
             "sendSliderMessage",
         ).and.callThrough();
-        const spyPublish = spyOn(service["sliderMessageTopic"], "publish");
+        const spyPublish = spyOn(service["motorSettingsTopic"], "publish");
         const message = {motor: "test", value: "10"};
         const json = JSON.parse(JSON.stringify(message));
         const parameters = Object.keys(json).map((key) => ({[key]: json[key]}));
@@ -182,14 +186,31 @@ describe("RosService", () => {
             "sendJointTrajectoryMessage",
         ).and.callThrough();
         const spyPublish = spyOn(service["jointTrajectoryTopic"], "publish");
-        const jtMessage = createDefaultJointTrajectoryMessage();
+        const jtMessage = createEmptyJointTrajectoryMessage();
         service.sendJointTrajectoryMessage(jtMessage);
         expect(spySendMassege).toHaveBeenCalled();
         expect(spyPublish).toHaveBeenCalledWith(new ROSLIB.Message(jtMessage));
     });
 
+    it("subscribeJointTrajectoryTopic should emmit a value to a subject", (): void => {
+        const jointTrajectoryMessageReceiver$ =
+            new Subject<jointTrajectoryMessage>();
+        (service as any).jointTrajectoryTopic = new MockRosbridgeJtTopic(
+            "test",
+            jointTrajectoryMessageReceiver$,
+        ) as unknown as ROSLIB.Topic;
+        const motor = {
+            motor: "test",
+            receiver$: jointTrajectoryMessageReceiver$,
+        };
+        (service as any).motors.push();
+        const spyNext = spyOn(motor.receiver$, "next");
+        service.subscribeMotorSettingsTopic();
+        expect(spyNext).toHaveBeenCalled();
+    });
+
     it("subscribeTopic should emmit a value to a subject", (): void => {
-        const receiver$ = new Subject<Message>();
+        const receiver$ = new Subject<MotorSettingsMessage>();
         (service as any).sliderMessageTopic = new MockRosbridgeTopic(
             "test",
             receiver$,
@@ -197,12 +218,12 @@ describe("RosService", () => {
         const motor = {motor: "test", receiver$: receiver$};
         (service as any).motors.push();
         const spyNext = spyOn(motor.receiver$, "next");
-        service.subscribeSliderTopic();
+        service.subscribeMotorSettingsTopic();
         expect(spyNext).toHaveBeenCalled();
     });
 
     it("should be able to get a single motor receiver by name", () => {
-        const expectedReceiver = new Subject<Message>();
+        const expectedReceiver = new Subject<MotorSettingsMessage>();
         const motor = {motor: "test", receiver$: expectedReceiver};
         (service as any).motors.push(motor);
         const actualReceiver2$ = service.getReceiversByMotorName("test")[0];
@@ -210,16 +231,35 @@ describe("RosService", () => {
     });
 });
 
-class MockRosbridgeTopic {
+class MockRosbridgeJtTopic {
     constructor(
-        private topicName: string,
-        private subject: Subject<Message>,
+        private jointTrajectoryTopic: string,
+        private subject: Subject<jointTrajectoryMessage>,
     ) {}
     subscribers: ((message: any) => void)[] = [];
     messages: any[] = [];
     subscribe(callback: (message: any) => void) {
         this.subscribers.push(callback);
-        this.subject.next({motor: "test", value: "10"});
+        this.subject.next(createEmptyJointTrajectoryMessage());
+    }
+    publish(message: any) {
+        this.messages.push(message);
+        for (const callback of this.subscribers) {
+            callback(message);
+        }
+    }
+}
+
+class MockRosbridgeTopic {
+    constructor(
+        private motorSettingsTopic: string,
+        private subject: Subject<MotorSettingsMessage>,
+    ) {}
+    subscribers: ((message: any) => void)[] = [];
+    messages: any[] = [];
+    subscribe(callback: (message: any) => void) {
+        this.subscribers.push(callback);
+        this.subject.next({motor: "test"});
     }
     publish(message: any) {
         this.messages.push(message);

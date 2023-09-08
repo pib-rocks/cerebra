@@ -66,18 +66,18 @@ describe("MotorControlComponent", () => {
         expect(slider.min).toBe("-9000");
     });
 
-    it("should call sendJointTrajectoryMessage() of rosService when calling sendMessage()", () => {
-        spyOn(component, "sendMessage").and.callThrough();
-        component.sendMessage();
-        expect(component.sendMessage).toHaveBeenCalled();
+    it("should call sendJointTrajectoryMessage() of rosService when calling sendJointTrajectoryMessage()", () => {
+        spyOn(component, "sendJointTrajectoryMessage").and.callThrough();
+        component.sendJointTrajectoryMessage();
+        expect(component.sendJointTrajectoryMessage).toHaveBeenCalled();
         expect(rosService.sendJointTrajectoryMessage).toHaveBeenCalled();
     });
 
-    it("should call sendMessage() in inputSendMsg() on input event", fakeAsync(() => {
+    it("should call sendJointTrajectoryMessage() in inputSendJointTrajectoryMsg() on input event", fakeAsync(() => {
         spyOn(window, "clearTimeout");
         spyOn(window, "setTimeout");
-        spyOn(component, "inputSendMsg").and.callThrough();
-        spyOn(component, "sendMessage");
+        spyOn(component, "inputSendJointTrajectoryMsg").and.callThrough();
+        spyOn(component, "sendJointTrajectoryMessage");
 
         const slider = fixture.nativeElement.querySelector(
             'input[type="range"]',
@@ -94,15 +94,15 @@ describe("MotorControlComponent", () => {
             window.setTimeout as unknown as jasmine.Spy
         ).calls.mostRecent().args[0];
         timeoutCallback();
-        expect(component.inputSendMsg).toHaveBeenCalled();
-        expect(component.sendMessage).toHaveBeenCalled();
+        expect(component.inputSendJointTrajectoryMsg).toHaveBeenCalled();
+        expect(component.sendJointTrajectoryMessage).toHaveBeenCalled();
     }));
 
     it("should call sendSettingsMessage() in inputSendSettingsMsg() on input event", fakeAsync(() => {
         spyOn(window, "clearTimeout");
         spyOn(window, "setTimeout");
         spyOn(component, "inputSendSettingsMsg").and.callThrough();
-        spyOn(component, "sendSettingMessage");
+        spyOn(component, "sendMotorSettingsMessage");
         component.inputSendSettingsMsg();
         tick(500);
         expect(window.clearTimeout).toHaveBeenCalled();
@@ -115,17 +115,17 @@ describe("MotorControlComponent", () => {
         ).calls.mostRecent().args[0];
         timeoutCallback();
         expect(component.inputSendSettingsMsg).toHaveBeenCalled();
-        expect(component.sendSettingMessage).toHaveBeenCalled();
+        expect(component.sendMotorSettingsMessage).toHaveBeenCalled();
     }));
 
-    it("should call sendMessage() to all finger topics on input from combined slider", () => {
+    it("should call sendJointTrajectoryMessage() to all finger topics on input from combined slider", () => {
         component.isCombinedSlider = true;
         component.groupSide = "left";
         component.sliderFormControl.setValue(500);
         fixture.detectChanges();
         fingerService.getMotorHandNames(component.groupSide);
-        spyOn(component, "sendMessage").and.callThrough();
-        component.sendMessage();
+        spyOn(component, "sendJointTrajectoryMessage").and.callThrough();
+        component.sendJointTrajectoryMessage();
         expect(rosService.sendJointTrajectoryMessage).toHaveBeenCalled();
     });
 
@@ -139,7 +139,7 @@ describe("MotorControlComponent", () => {
             value: "50000",
         };
 
-        component.messageReceiver$.next(json);
+        component.motorSettingsMessageReceiver$.next(json);
         fixture.detectChanges();
         expect(slider.value).toBe(String(component.maxSliderValue));
 
@@ -148,7 +148,7 @@ describe("MotorControlComponent", () => {
             value: "-50000",
         };
 
-        component.messageReceiver$.next(json);
+        component.motorSettingsMessageReceiver$.next(json);
         fixture.detectChanges();
         expect(slider.value).toBe(String(component.minSliderValue));
     });
@@ -161,7 +161,7 @@ describe("MotorControlComponent", () => {
             motor: "thumb_left_stretch",
             value: "500",
         };
-        component.messageReceiver$.next(json);
+        component.motorSettingsMessageReceiver$.next(json);
 
         fixture.detectChanges();
         expect(slider.value).toBe("500");
@@ -238,7 +238,7 @@ describe("MotorControlComponent", () => {
             deceleration: component.decelerationFormControl.value,
             period: component.periodFormControl.value,
         };
-        component.sendSettingMessage();
+        component.sendMotorSettingsMessage();
         expect(rosService.sendSliderMessage).toHaveBeenCalledWith(
             jasmine.objectContaining(message),
         );
@@ -250,7 +250,7 @@ describe("MotorControlComponent", () => {
         component.isCombinedSlider = true;
         component.groupSide = "left";
         fixture.detectChanges();
-        component.sendSettingMessage();
+        component.sendMotorSettingsMessage();
         expect(spyMotorNames).toHaveBeenCalledWith("left");
         expect(rosService.sendSliderMessage).toHaveBeenCalledTimes(6);
     });
@@ -434,17 +434,17 @@ describe("MotorControlComponent", () => {
 
     it("should toggle input unvisible", () => {
         spyOn(component, "setSliderValue");
-        spyOn(component, "inputSendMsg");
+        spyOn(component, "sendMotorSettingsMessage");
         component.bubbleFormControl.setValue(500);
         component.isInputVisible = true;
         component.toggleInputUnvisible();
         expect(component.setSliderValue).toHaveBeenCalled();
-        expect(component.inputSendMsg).toHaveBeenCalled();
+        expect(component.sendMotorSettingsMessage).toHaveBeenCalled();
     });
 
     it("should toggle input unvisible min validation", () => {
         spyOn(component, "setSliderValue");
-        spyOn(component, "inputSendMsg");
+        spyOn(component, "sendMotorSettingsMessage");
         component.bubbleFormControl.setValue(-5000000);
         component.isInputVisible = true;
         component.toggleInputUnvisible();
@@ -452,12 +452,12 @@ describe("MotorControlComponent", () => {
         expect(component.setSliderValue).toHaveBeenCalledWith(
             component.minSliderValue,
         );
-        expect(component.inputSendMsg).toHaveBeenCalled();
+        expect(component.inputSendSettingsMsg).toHaveBeenCalled();
     });
 
     it("should toggle input unvisible max validation", () => {
         spyOn(component, "setSliderValue");
-        spyOn(component, "inputSendMsg");
+        spyOn(component, "sendMotorSettingsMessage");
         component.bubbleFormControl.setValue(5000000);
         component.isInputVisible = true;
         component.toggleInputUnvisible();
@@ -465,7 +465,7 @@ describe("MotorControlComponent", () => {
         expect(component.setSliderValue).toHaveBeenCalledWith(
             component.maxSliderValue,
         );
-        expect(component.inputSendMsg).toHaveBeenCalled();
+        expect(component.inputSendSettingsMsg).toHaveBeenCalled();
     });
 
     it("should toggle input unvisible required validation", () => {
