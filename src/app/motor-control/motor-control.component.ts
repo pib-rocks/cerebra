@@ -120,47 +120,48 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
         this.isCombinedSlider =
             this.motorName === "all_right_stretch" ||
             this.motorName === "all_left_stretch";
-        if (this.isCombinedSlider) {
-            this.rosService.sharedMotorPosition$.subscribe((jtMessage) => {
-                const jointName = jtMessage.joint_names[0];
-                const position = jtMessage.points[0].positions[0];
-                if (
-                    (this.motorName === "all_left_stretch" &&
-                        jointName === "index_left_stretch") ||
-                    (this.motorName === "all_right_stretch" &&
-                        jointName === "index_right_stretch")
-                ) {
-                    if (!Number.isNaN(position) && Number.isFinite(position)) {
-                        this.sliderFormControl.setValue(
-                            this.getValueWithinRange(Number(position)),
-                        );
-                        setTimeout(() => {
-                            this.setThumbPosition();
-                        }, 0);
-                    }
-                }
-            });
-        }
-        if (this.isCombinedSlider) {
-            this.rosService.sharedMotorSettings$.subscribe(
-                (motorSettingMessage) => {
-                    const jointName = motorSettingMessage.motor;
+        //  Sinn? Will ich wirklich allFinger mit Index synchen und wenn ja warum? Wenn schon gegeben sollten wir das mit Anastasiia/Nina/Jürgen
+        // if (this.isCombinedSlider) {
+        //     this.rosService.sharedMotorPosition$.subscribe((jtMessage) => {
+        //         const jointName = jtMessage.joint_names[0];
+        //         const position = jtMessage.points[0].positions[0];
+        //         if (
+        //             (this.motorName === "all_left_stretch" &&
+        //                 jointName === "index_left_stretch") ||
+        //             (this.motorName === "all_right_stretch" &&
+        //                 jointName === "index_right_stretch")
+        //         ) {
+        //             if (!Number.isNaN(position) && Number.isFinite(position)) {
+        //                 this.sliderFormControl.setValue(
+        //                     this.getValueWithinRange(Number(position)),
+        //                 );
+        //                 setTimeout(() => {
+        //                     this.setThumbPosition();
+        //                 }, 0);
+        //             }
+        //         }
+        //     });
+        // }
+        // if (this.isCombinedSlider) {
+        //     this.rosService.sharedMotorSettings$.subscribe(
+        //         (motorSettingMessage) => {
+        //             const jointName = motorSettingMessage.motor;
 
-                    if (
-                        (this.motorName === "all_left_stretch" &&
-                            jointName === "index_left_stretch") ||
-                        (this.motorName === "all_right_stretch" &&
-                            jointName === "index_right_stretch")
-                    ) {
-                        if (motorSettingMessage.turnedOn !== undefined) {
-                            this.motorFormControl.setValue(
-                                motorSettingMessage.turnedOn,
-                            );
-                        }
-                    }
-                },
-            );
-        }
+        //             if (
+        //                 (this.motorName === "all_left_stretch" &&
+        //                     jointName === "index_left_stretch") ||
+        //                 (this.motorName === "all_right_stretch" &&
+        //                     jointName === "index_right_stretch")
+        //             ) {
+        //                 if (motorSettingMessage.turnedOn !== undefined) {
+        //                     this.motorFormControl.setValue(
+        //                         motorSettingMessage.turnedOn,
+        //                     );
+        //                 }
+        //             }
+        //         },
+        //     );
+        // }
         this.motorSettingsMessageReceiver$.subscribe((motorSettingsMessage) => {
             if (motorSettingsMessage.turnedOn !== undefined) {
                 this.motorFormControl.setValue(motorSettingsMessage.turnedOn);
@@ -304,23 +305,19 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
                 if (this.bubbleFormControl.hasError("min")) {
                     this.setSliderValue(this.minSliderValue);
                     this.inputSendJointTrajectoryMsg();
-                    this.inputSendSettingsMsg();
                 } else if (this.bubbleFormControl.hasError("max")) {
                     this.setSliderValue(this.maxSliderValue);
                     this.inputSendJointTrajectoryMsg();
-                    this.inputSendSettingsMsg();
-                } else if (this.bubbleFormControl.hasError("required")) {
-                    this.bubbleFormControl.setValue(
-                        this.sliderFormControl.value,
-                    );
-                } else if (this.bubbleFormControl.hasError("pattern")) {
+                } else if (
+                    this.bubbleFormControl.hasError("required") ||
+                    this.bubbleFormControl.hasError("pattern")
+                ) {
                     this.bubbleFormControl.setValue(
                         this.sliderFormControl.value,
                     );
                 } else {
                     this.setSliderValue(Number(this.bubbleFormControl.value));
                     this.inputSendJointTrajectoryMsg();
-                    this.inputSendSettingsMsg();
                 }
             }
         } else {
