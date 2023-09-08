@@ -124,7 +124,6 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
             this.rosService.sharedMotorPosition$.subscribe((jtMessage) => {
                 const jointName = jtMessage.joint_names[0];
                 const position = jtMessage.points[0].positions[0];
-
                 if (
                     (this.motorName === "all_left_stretch" &&
                         jointName === "index_left_stretch") ||
@@ -163,8 +162,6 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
             );
         }
         this.motorSettingsMessageReceiver$.subscribe((motorSettingsMessage) => {
-            const motorName = motorSettingsMessage.motor;
-
             if (motorSettingsMessage.turnedOn !== undefined) {
                 this.motorFormControl.setValue(motorSettingsMessage.turnedOn);
             }
@@ -215,8 +212,6 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
                 Number(this.pulseMaxRange.value),
             ]);
             this.periodSubject$.next(Number(this.periodFormControl.value));
-            this.setThumbPosition();
-            this.setMinAndMaxBubblePositions();
         });
 
         this.jointTrajectoryMessageReceiver$.subscribe((jtMessage) => {
@@ -226,7 +221,6 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
                 position !== undefined &&
                 !Number.isNaN(position) &&
                 Number.isFinite(position);
-
             if (
                 motor_name === "index_right_stretch" ||
                 motor_name === "index_left_stretch"
@@ -235,11 +229,11 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
                     this.rosService.updateSharedMotorPosition(jtMessage);
                 }
             }
-
             if (positionIsValid) {
                 this.sliderFormControl.setValue(
                     this.getValueWithinRange(Number(position)),
                 );
+                this.setThumbPosition();
             }
         });
 
