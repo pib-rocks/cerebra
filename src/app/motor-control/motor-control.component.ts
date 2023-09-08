@@ -8,7 +8,7 @@ import {
     ViewChild,
 } from "@angular/core";
 import {FormControl, Validators} from "@angular/forms";
-import {Subject} from "rxjs";
+import {Subject, map} from "rxjs";
 import {MotorSettingsMessage} from "../shared/motorSettingsMessage";
 import {MotorService} from "../shared/motor.service";
 import {RosService} from "../shared/ros.service";
@@ -215,28 +215,42 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
             this.periodSubject$.next(Number(this.periodFormControl.value));
         });
 
-        this.jointTrajectoryMessageReceiver$.subscribe((jtMessage) => {
-            const position: number = jtMessage.points[0].positions[0];
-            const motor_name = jtMessage.joint_names[0];
-            const positionIsValid: boolean =
-                position !== undefined &&
-                !Number.isNaN(position) &&
-                Number.isFinite(position);
-            if (
-                motor_name === "index_right_stretch" ||
-                motor_name === "index_left_stretch"
-            ) {
+        this.jointTrajectoryMessageReceiver$
+            .pipe(
+                map((jtMessage) => {
+                    const index = jtMessage.joint_names.indexOf(this.motorName);
+                    if (index === -1) {
+                        return {};
+                    } else {
+                        const name = jtMessage.joint_names[index];
+                        const position = jtMessage.points[index].positions[0];
+                        return {name: name, position: position};
+                    }
+                }),
+            )
+            .subscribe((object) => {
+                const position = object["position"];
+                const motor_name = object["name"];
+                const positionIsValid: boolean =
+                    position !== undefined &&
+                    !Number.isNaN(position) &&
+                    Number.isFinite(position);
+                //SharedMotorPositions????
+                // if (
+                //     motor_name === "index_right_stretch" ||
+                //     motor_name === "index_left_stretch"
+                // ) {
+                //     if (positionIsValid) {
+                // this.rosService.updateSharedMotorPosition(jtMessage);
+                //     }
+                // }
                 if (positionIsValid) {
-                    this.rosService.updateSharedMotorPosition(jtMessage);
+                    this.sliderFormControl.setValue(
+                        this.getValueWithinRange(Number(position)),
+                    );
+                    this.setThumbPosition();
                 }
-            }
-            if (positionIsValid) {
-                this.sliderFormControl.setValue(
-                    this.getValueWithinRange(Number(position)),
-                );
-                this.setThumbPosition();
-            }
-        });
+            });
 
         this.rosService.isInitialized$.subscribe((isInitialized: boolean) => {
             if (isInitialized) {
@@ -332,7 +346,7 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
             createEmptyJointTrajectoryMessage();
         if (this.isCombinedSlider) {
             motorNames = this.motorService.getMotorHandNames(this.groupSide);
-
+            console.log("combined");
             for (const index in motorNames) {
                 jointTrajectoryMessage.joint_names.push(motorNames[index]);
                 jointTrajectoryMessage.points.push(
