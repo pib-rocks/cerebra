@@ -24,7 +24,7 @@
 .chat-container {
     display: flex;
     flex-direction: column;
-    height: 425px;
+    height: 435px;
     width: 100%;
     border: 1px solid #ccc;
     padding: 1%;
@@ -36,6 +36,7 @@
     flex-grow: 1;
     overflow-y: auto;
     padding: 1%px;
+    color: #fff;
 }
 
 .message {
