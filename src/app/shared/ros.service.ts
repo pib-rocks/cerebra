@@ -51,6 +51,7 @@ export class RosService {
     private readonly topicVoiceName = "/cerebra_voice_settings";
     private readonly topicCurrentName = "/motor_status";
     private readonly topicCameratName = "/camera_topic";
+    private readonly topicJointTrajectoryName = "/joint_trajectory";
 
     private motors: Motor[] = [];
 
@@ -90,7 +91,7 @@ export class RosService {
     createJointTrajectoryTopic() {
         return new ROSLIB.Topic({
             ros: this.Ros,
-            name: "/joint_trajectory",
+            name: this.topicJointTrajectoryName,
             messageType: "trajectory_msgs/msg/JointTrajectory",
         });
     }
