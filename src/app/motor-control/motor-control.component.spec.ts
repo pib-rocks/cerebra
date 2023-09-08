@@ -18,7 +18,12 @@ import {
 import {MotorControlComponent} from "./motor-control.component";
 import {VoiceAssistant} from "../shared/voice-assistant";
 import {MotorCurrentMessage} from "../shared/currentMessage";
-import {jointTrajectoryMessage} from "../shared/rosMessageTypes/jointTrajectoryMessage";
+import {
+    createEmptyJointTrajectoryMessage,
+    jointTrajectoryMessage,
+} from "../shared/rosMessageTypes/jointTrajectoryMessage";
+import {createJointTrajectoryPoint} from "../shared/rosMessageTypes/jointTrajectoryPoint";
+import {MotorSettingsMessage} from "../shared/motorSettingsMessage";
 
 describe("MotorControlComponent", () => {
     let component: MotorControlComponent;
@@ -27,6 +32,7 @@ describe("MotorControlComponent", () => {
     let modalService: NgbModal;
     let fingerService: MotorService;
     let motorService: MotorService;
+    let spySendMotorSettings: jasmine.Spy<(msg: MotorSettingsMessage) => void>;
     let spySendMassege: jasmine.Spy<
         (msg: Message | VoiceAssistant | MotorCurrentMessage) => void
     >;
@@ -46,6 +52,7 @@ describe("MotorControlComponent", () => {
         fingerService = TestBed.inject(MotorService);
         motorService = TestBed.inject(MotorService);
         spySendMassege = spyOn(rosService, "sendSliderMessage");
+        spySendMotorSettings = spyOn(rosService, "sendMotorSettingsMessage");
         spySendJTMassege = spyOn(rosService, "sendJointTrajectoryMessage");
         fixture.detectChanges();
     });
@@ -130,38 +137,35 @@ describe("MotorControlComponent", () => {
     });
 
     it("should set a valid value after receiving a message", () => {
+        component.motorName = "thumb_left_stretch";
         const slider = fixture.nativeElement.querySelector(
             'input[type="range"]',
         );
-
-        let json = {
-            motor: "thumb_left_stretch",
-            value: "50000",
-        };
-
-        component.motorSettingsMessageReceiver$.next(json);
+        const jtMessage = createEmptyJointTrajectoryMessage();
+        jtMessage.joint_names.push("thumb_left_stretch");
+        jtMessage.points.push(createJointTrajectoryPoint(50000));
+        component.jointTrajectoryMessageReceiver$.next(jtMessage);
         fixture.detectChanges();
         expect(slider.value).toBe(String(component.maxSliderValue));
 
-        json = {
-            motor: "thumb_left_stretch",
-            value: "-50000",
-        };
-
-        component.motorSettingsMessageReceiver$.next(json);
+        const jtMessage2 = createEmptyJointTrajectoryMessage();
+        jtMessage2.joint_names.push("thumb_left_stretch");
+        jtMessage2.points.push(createJointTrajectoryPoint(-50000));
+        component.jointTrajectoryMessageReceiver$.next(jtMessage2);
         fixture.detectChanges();
         expect(slider.value).toBe(String(component.minSliderValue));
     });
 
     it("should change value after receiving a message", () => {
+        component.motorName = "thumb_left_stretch";
         const slider = fixture.nativeElement.querySelector(
             'input[type="range"]',
         );
-        const json = {
-            motor: "thumb_left_stretch",
-            value: "500",
-        };
-        component.motorSettingsMessageReceiver$.next(json);
+
+        const jtMessage = createEmptyJointTrajectoryMessage();
+        jtMessage.joint_names.push("thumb_left_stretch");
+        jtMessage.points.push(createJointTrajectoryPoint(500));
+        component.jointTrajectoryMessageReceiver$.next(jtMessage);
 
         fixture.detectChanges();
         expect(slider.value).toBe("500");
@@ -216,14 +220,14 @@ describe("MotorControlComponent", () => {
         );
         checkbox.nativeElement.dispatchEvent(new Event("change"));
         expect(component.turnTheMotorOnAndOff).toHaveBeenCalled();
-        expect(spySendMassege).toHaveBeenCalled();
+        expect(spySendMotorSettings).toHaveBeenCalled();
 
         component.isCombinedSlider = true;
         component.groupSide = "left";
         fixture.detectChanges();
         component.turnTheMotorOnAndOff();
         expect(motorService.getMotorHandNames).toHaveBeenCalledWith("left");
-        expect(rosService.sendSliderMessage).toHaveBeenCalledTimes(7);
+        expect(spySendMotorSettings).toHaveBeenCalledTimes(7);
     });
 
     it("should send a settings message when changing a value of the setting", () => {
