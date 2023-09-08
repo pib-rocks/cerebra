@@ -67,4 +67,8 @@ textarea:focus {
         margin-left: 2px;
         padding-top: 5%;
     }
+
+    textarea {
+        margin: 5px;
+    }
 }
