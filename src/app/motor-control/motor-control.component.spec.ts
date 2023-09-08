@@ -446,9 +446,10 @@ describe("MotorControlComponent", () => {
         expect(component.sendMotorSettingsMessage).toHaveBeenCalled();
     });
 
-    it("should toggle input unvisible min validation", () => {
+    it("should toggle input unvisible min validation", fakeAsync(() => {
         spyOn(component, "setSliderValue");
         spyOn(component, "sendMotorSettingsMessage");
+        spyOn(component, "toggleInputInvisible").and.callThrough();
         component.bubbleFormControl.setValue(-5000000);
         component.isInputVisible = true;
         component.toggleInputInvisible();
@@ -456,11 +457,13 @@ describe("MotorControlComponent", () => {
         expect(component.setSliderValue).toHaveBeenCalledWith(
             component.minSliderValue,
         );
-        expect(component.inputSendSettingsMsg).toHaveBeenCalled();
-    });
+        tick(500);
+        expect(spySendJTMassege).toHaveBeenCalled();
+    }));
 
-    it("should toggle input unvisible max validation", () => {
+    it("should toggle input unvisible max validation", fakeAsync(() => {
         spyOn(component, "setSliderValue");
+        spyOn(component, "toggleInputInvisible").and.callThrough();
         spyOn(component, "sendMotorSettingsMessage");
         component.bubbleFormControl.setValue(5000000);
         component.isInputVisible = true;
@@ -469,8 +472,9 @@ describe("MotorControlComponent", () => {
         expect(component.setSliderValue).toHaveBeenCalledWith(
             component.maxSliderValue,
         );
-        expect(component.inputSendSettingsMsg).toHaveBeenCalled();
-    });
+        tick(500);
+        expect(spySendJTMassege).toHaveBeenCalled();
+    }));
 
     it("should toggle input unvisible required validation", () => {
         component.bubbleFormControl.setValue(null);
