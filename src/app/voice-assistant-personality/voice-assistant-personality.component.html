@@ -1,9 +1,9 @@
 <header>
     <app-voice-assistant-nav></app-voice-assistant-nav>
 </header>
-<div class="container-fluid row p-0">
-    <div class="col-10 pr-1 main">
-        <div class="mainFrame mainContent mt-4 pink-corner-frame">
+><!--<div class="container-fluid p-0">
+    <div class="row  pr-1 main">
+        <div class="mainFrame col-10 mainContent mt-4 pink-corner-frame">
             <div class="innerContentMain d-flex">
                 <div class="col-md-8 mr-1">
                     <label
@@ -37,13 +37,55 @@
                 </div>
             </div>
         </div>
+        <div class="col-md-2 pr-3 mt-3 sidebar">
+            <app-voice-assistant-sidebar-right
+                class=""
+                [headerElements]="headerElements"
+                [bodyElements]="personalities"
+                [elementIcon]="personalityIcon">
+            </app-voice-assistant-sidebar-right>
+        </div>
     </div>
-    <div class="col-md-2 pr-3 mt-3 sidebar">
-        <app-voice-assistant-sidebar-right
-            class=""
-            [headerElements]="headerElements"
-            [bodyElements]="personalities"
-            [elementIcon]="personalityIcon">
-        </app-voice-assistant-sidebar-right>
+</div>-->
+<div class="container-fluid">
+    <div class="row allContent">
+        <div class="main col-10 pink-corner-frame mt-1">
+            <div class="row mt-2">
+                <div class="col-8">
+                    <label class="personalityName ml-2 mt-1">
+                        Personality Name
+                    </label>
+                </div>
+                <div class="col-4 d-flex justify-content-end">
+                    <button
+                        class="btn btn-sm btn-primary saveButtons mr-2 col-6"
+                        id="saveButtonPersonality">
+                        Save
+                    </button>
+                    <button
+                        class="btn btn-sm btn-primary saveButtons col-6"
+                        id="saveAsButtonPersonality">
+                        Save As...
+                    </button>
+                </div>
+            </div>
+            <div class="row mt-2">
+                <div class="col-12">
+                    <textarea
+                        id="textAreaPersonality"
+                        class="form-control p-2"
+                        rows="17"
+                        placeholder="Describe personality with a prompt..."></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="col-2">
+            <app-voice-assistant-sidebar-right
+                class="side"
+                [headerElements]="headerElements"
+                [bodyElements]="personalities"
+                [elementIcon]="personalityIcon">
+            </app-voice-assistant-sidebar-right>
+        </div>
     </div>
 </div>

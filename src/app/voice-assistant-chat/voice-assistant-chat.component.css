@@ -1,45 +1,13 @@
-.container-fluid {
-    display: flex;
-    flex-wrap: wrap;
-}
-
-.mainFrame {
-    flex: 5;
-    min-width: 0;
-    padding: 10px;
-    box-sizing: border-box;
-    margin-right: 10px;
-    margin-bottom: 10px;
-}
-
-.mainContent {
-    height: 500px;
-}
-
-.sidebar {
-    padding-top: 0.3%;
-}
-
 @media (max-width: 768px) {
-    .container-fluid {
-        flex-direction: column;
-    }
-
-    .main {
-        width: fit-content;
-        min-width: 100%;
-    }
-
-    .sidebar {
-        width: fit-content;
-        min-width: 32%;
+    .allContent {
+        display: block;
     }
 }
 
 .chat-container {
     display: flex;
     flex-direction: column;
-    height: 410px;
+    height: 435px;
     width: 100%;
     border: 1px solid #ccc;
     padding: 1%;
@@ -60,14 +28,6 @@
     border: 1px solid white;
     border-radius: 8px;
     margin-bottom: 10px;
-}
-
-.personalityIcon {
-    color: #0094de;
-}
-
-p {
-    color: white;
 }
 
 .personalityName {
@@ -128,12 +88,4 @@ input:focus {
 
 #message-input::placeholder {
     color: #ccc;
-}
-
-.innerContentMain {
-    flex: 5;
-}
-
-.innerContentSide {
-    flex: 1;
 }
