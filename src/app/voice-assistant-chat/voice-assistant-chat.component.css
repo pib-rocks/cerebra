@@ -24,7 +24,7 @@
 .chat-container {
     display: flex;
     flex-direction: column;
-    height: 435px;
+    height: 425px;
     width: 100%;
     border: 1px solid #ccc;
     padding: 1%;
@@ -64,7 +64,7 @@
     font-size: medium;
     width: 100%;
     border: none;
-    background-color: rgb(60, 138, 241);
+    background-color: #0094df;
 }
 
 .chat-input {

@@ -17,8 +17,8 @@
                     </button>
                 </div>
             </div>
-            <div class="row ">
-                <div>
+            <div class="row">
+                <div class="col-12">
                     <div class="chat-container">
                         <div class="messages">
                             <div *ngFor="let message of messages">
@@ -51,7 +51,7 @@
                 </div>
             </div>
         </div>
-        <div class="side col-2 mt-3 pt-1">
+        <div class="side col-2 mt-3 pt-2">
             <app-voice-assistant-sidebar-right
                 [headerElements]="headerElements"
                 [bodyElements]="chatTopics"
