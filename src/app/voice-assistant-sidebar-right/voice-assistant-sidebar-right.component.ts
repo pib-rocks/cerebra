@@ -1,6 +1,4 @@
-import {HttpClient} from "@angular/common/http";
 import {Component, Input} from "@angular/core";
-import {DomSanitizer, SafeHtml} from "@angular/platform-browser";
 
 @Component({
     selector: "app-voice-assistant-sidebar-right",

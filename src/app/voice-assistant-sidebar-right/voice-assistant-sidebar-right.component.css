@@ -1,6 +1,5 @@
 .bg-navigation-Kopie {
     height: 500px;
-    margin-top: 4px;
     margin-right: 4px;
     padding: 0;
     background-color: #1b2b44;
@@ -24,6 +23,7 @@ p {
     font-family: titillium;
     margin-bottom: 0%;
     font-size: medium;
+    align-items: justify;
 }
 
 .elementButtons {
@@ -42,8 +42,6 @@ p {
 }
 
 .bodyElementText {
-    text-align: justify;
-}
-
-@media (max-width: 768px) {
+    text-align: left;
+    white-space: normal;
 }
