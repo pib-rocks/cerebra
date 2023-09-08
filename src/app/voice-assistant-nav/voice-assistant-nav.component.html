@@ -16,11 +16,12 @@
         </button>
     </div>
     <div class="sideContent nav nav-tabs">
-        <div class="custom-switch custom-switch-pib mt-3">
+        <div
+            class="custom-switch custom-switch-pib mt-3"
+            id="voiceAssistantActivationToggle">
             <input
                 class="custom-control-input"
                 type="checkbox"
-                id="voiceAssistantActivationToggle"
                 [formControl]="voiceAssistantActivationToggle"
                 (input)="toggleVoiceAssistantActivation()" />
             <label
