@@ -53,19 +53,25 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
     pixelsFromEdge = 60;
     motorSettingsMessageReceiver$ = new Subject<MotorSettingsMessage>();
     jointTrajectoryMessageReceiver$ = new Subject<jointTrajectoryMessage>();
+
+    pulseWidthSubject$ = new Subject<number[]>();
+    degreeSubject$ = new Subject<number[]>();
+    periodSubject$ = new Subject<number>();
+
     allFingersSliderReceiver$ = new Subject<number>();
     motorFormControl: FormControl = new FormControl(true);
     sliderFormControl: FormControl = new FormControl(0);
     velocityFormControl: FormControl = new FormControl(0, notNullValidator);
-    accelerationFormControl: FormControl = new FormControl(0, notNullValidator);
+    accelerationFormControl: FormControl = new FormControl(0);
     decelerationFormControl: FormControl = new FormControl(0, notNullValidator);
     periodFormControl: FormControl = new FormControl(1, notNullValidator);
     pulseMaxRange: FormControl = new FormControl(65535);
     pulseMinRange: FormControl = new FormControl(0);
-    degreeMaxFormcontrol: FormControl = new FormControl(9000);
-    degreeMinFormcontrol: FormControl = new FormControl(-9000);
+    degreeMaxFormControl: FormControl = new FormControl(9000);
+    degreeMinFormControl: FormControl = new FormControl(-9000);
     timer: any = null;
     bubblePosition!: number;
+    imgSrc: string = "../../assets/toggle-switch-left.png";
 
     constructor(
         private rosService: RosService,
@@ -93,19 +99,19 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
             compareValuesPulseValidator(this.pulseMinRange, this.pulseMaxRange),
             notNullValidator,
         ]);
-        this.degreeMaxFormcontrol.setValidators([
+        this.degreeMaxFormControl.setValidators([
             compareValuesDegreeValidator(
-                this.degreeMinFormcontrol,
-                this.degreeMaxFormcontrol,
+                this.degreeMinFormControl,
+                this.degreeMaxFormControl,
             ),
             Validators.min(-9000),
             Validators.max(9000),
             notNullValidator,
         ]);
-        this.degreeMinFormcontrol.setValidators([
+        this.degreeMinFormControl.setValidators([
             compareValuesDegreeValidator(
-                this.degreeMinFormcontrol,
-                this.degreeMaxFormcontrol,
+                this.degreeMinFormControl,
+                this.degreeMaxFormControl,
             ),
             Validators.min(-9000),
             Validators.max(9000),
@@ -200,6 +206,15 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
                     motorSettingsMessage.velocity,
                 );
             }
+            this.degreeSubject$.next([
+                Number(this.degreeMinFormControl.value),
+                Number(this.degreeMaxFormControl.value),
+            ]);
+            this.pulseWidthSubject$.next([
+                Number(this.pulseMinRange.value),
+                Number(this.pulseMaxRange.value),
+            ]);
+            this.periodSubject$.next(Number(this.periodFormControl.value));
             this.setThumbPosition();
             this.setMinAndMaxBubblePositions();
         });
@@ -288,7 +303,7 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
         }
     }
 
-    toggleInputUnvisible() {
+    toggleInputInvisible() {
         if (this.bubbleFormControl.value !== this.sliderFormControl.value) {
             if (this.sliderFormControl.value !== null) {
                 this.isInputVisible = !this.isInputVisible;
@@ -350,8 +365,8 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
             this.periodFormControl.valid &&
             this.pulseMaxRange.valid &&
             this.pulseMinRange.valid &&
-            this.degreeMaxFormcontrol.valid &&
-            this.degreeMinFormcontrol.valid
+            this.degreeMaxFormControl.valid &&
+            this.degreeMinFormControl.valid
         );
     }
 
@@ -367,8 +382,8 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
                         motor: mn,
                         pule_widths_min: this.pulseMinRange.value,
                         pule_widths_max: this.pulseMaxRange.value,
-                        rotation_range_min: this.degreeMinFormcontrol.value,
-                        rotation_range_max: this.degreeMaxFormcontrol.value,
+                        rotation_range_min: this.degreeMinFormControl.value,
+                        rotation_range_max: this.degreeMaxFormControl.value,
                         velocity: this.velocityFormControl.value,
                         acceleration: this.accelerationFormControl.value,
                         deceleration: this.decelerationFormControl.value,
@@ -381,8 +396,8 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
                     motor: this.motorName,
                     pule_widths_min: this.pulseMinRange.value,
                     pule_widths_max: this.pulseMaxRange.value,
-                    rotation_range_min: this.degreeMinFormcontrol.value,
-                    rotation_range_max: this.degreeMaxFormcontrol.value,
+                    rotation_range_min: this.degreeMinFormControl.value,
+                    rotation_range_max: this.degreeMaxFormControl.value,
                     velocity: this.velocityFormControl.value,
                     acceleration: this.accelerationFormControl.value,
                     deceleration: this.decelerationFormControl.value,
@@ -422,6 +437,22 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
                 turnedOn: this.motorFormControl.value,
             };
             this.rosService.sendMotorSettingsMessage(message);
+        }
+    }
+
+    changeIcon() {
+        if (this.imgSrc === "../../assets/toggle-switch-left.png") {
+            this.imgSrc = "../../assets/toggle-switch-right.png";
+        } else {
+            this.imgSrc = "../../assets/toggle-switch-left.png";
+        }
+    }
+
+    changeIcon() {
+        if (this.imgSrc === "../../assets/toggle-switch-left.png") {
+            this.imgSrc = "../../assets/toggle-switch-right.png";
+        } else {
+            this.imgSrc = "../../assets/toggle-switch-left.png";
         }
     }
 
@@ -470,8 +501,8 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
                         turnedOn: this.motorFormControl.value,
                         pule_widths_min: this.pulseMinRange.value,
                         pule_widths_max: this.pulseMaxRange.value,
-                        rotation_range_min: this.degreeMinFormcontrol.value,
-                        rotation_range_max: this.degreeMaxFormcontrol.value,
+                        rotation_range_min: this.degreeMinFormControl.value,
+                        rotation_range_max: this.degreeMaxFormControl.value,
                         velocity: this.velocityFormControl.value,
                         acceleration: this.accelerationFormControl.value,
                         deceleration: this.decelerationFormControl.value,
@@ -485,8 +516,8 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
                     turnedOn: this.motorFormControl.value,
                     pule_widths_min: this.pulseMinRange.value,
                     pule_widths_max: this.pulseMaxRange.value,
-                    rotation_range_min: this.degreeMinFormcontrol.value,
-                    rotation_range_max: this.degreeMaxFormcontrol.value,
+                    rotation_range_min: this.degreeMinFormControl.value,
+                    rotation_range_max: this.degreeMaxFormControl.value,
                     velocity: this.velocityFormControl.value,
                     acceleration: this.accelerationFormControl.value,
                     deceleration: this.decelerationFormControl.value,
@@ -525,10 +556,25 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
         }
     }
 
-    inputSendSettingsMsg() {
+    inputSendSettingsMsg = () => {
         clearTimeout(this.timer);
         this.timer = setTimeout(() => {
             this.sendMotorSettingsMessage();
         }, 100);
+    };
+
+    setPulseRanges(number: number[]) {
+        this.pulseMinRange.setValue(number[0]);
+        this.pulseMaxRange.setValue(number[1]);
+        this.sendSettingMessage();
+    }
+    setDegree(number: number[]) {
+        this.degreeMinFormControl.setValue(number[0]);
+        this.degreeMaxFormControl.setValue(number[1]);
+        this.sendSettingMessage();
+    }
+    setPeriod(number: number) {
+        this.periodFormControl.setValue(number);
+        this.sendSettingMessage();
     }
 }

@@ -1,18 +1,24 @@
-import {Component, OnDestroy, OnInit} from "@angular/core";
+import {
+    Component,
+    ElementRef,
+    OnDestroy,
+    OnInit,
+    ViewChild,
+    AfterViewInit,
+} from "@angular/core";
 import {FormControl} from "@angular/forms";
 import {RosService} from "../shared/ros.service";
-import {Subject} from "rxjs";
+import {Subject, Subscription, map} from "rxjs";
 
 @Component({
     selector: "app-camera",
     templateUrl: "./camera.component.html",
     styleUrls: ["./camera.component.css"],
 })
-export class CameraComponent implements OnInit, OnDestroy {
+export class CameraComponent implements OnInit, OnDestroy, AfterViewInit {
+    @ViewChild("videobox") videoBox?: ElementRef;
     qualityReceiver$!: Subject<number>;
     refreshRateReceiver$!: Subject<number>;
-
-    timer: any = null;
     isLoading = false;
     isCameraActive = false;
     toggleCamera = new FormControl(false);
@@ -35,6 +41,15 @@ export class CameraComponent implements OnInit, OnDestroy {
         this.rosService.cameraReceiver$.subscribe((message) => {
             this.imageSrc = "data:image/jpeg;base64," + message;
             console.log("-------------------------");
+            if (message.startsWith("Camera not available")) {
+                this.imageSrc = "../../assets/camera-error-image.svg";
+            }
+        });
+        this.rosService.Ros.on("error", (error: string) => {
+            if (this.isCameraActive) {
+                this.imageSrc = "../../assets/camera-error-image.svg";
+                console.error(error);
+            }
         });
         this.qualityReceiver$ = this.rosService.qualityFactorReceiver$;
         this.refreshRateReceiver$ = this.rosService.timerPeriodReceiver$;
@@ -44,7 +59,29 @@ export class CameraComponent implements OnInit, OnDestroy {
         this.rosService.setPreviewSize(640, 480);
     }
 
+    ngAfterViewInit(): void {
+        const tempSub: Subscription = this.rosService.previewSizeReceiver$
+            .pipe(
+                map((x) => {
+                    return x[1].toString(10) + "px";
+                }),
+            )
+            .subscribe((value) => {
+                this.videoBox?.nativeElement.style.setProperty(
+                    "max-height",
+                    value,
+                );
+                setTimeout(() => {
+                    tempSub.unsubscribe();
+                }, 25);
+            });
+    }
+
     setSize(width: number, height: number, publish: boolean = true) {
+        this.videoBox?.nativeElement.style.setProperty(
+            "max-height",
+            height + "px",
+        );
         this.resolution = "SD";
         if (height != null) {
             if (height >= 1080) {
@@ -82,7 +119,7 @@ export class CameraComponent implements OnInit, OnDestroy {
 
     stopCamera() {
         this.rosService.unsubscribeCameraTopic();
-        // this.imageSrc = '../../assets/camera-placeholder.jpg'
+        this.imageSrc = "../../assets/camera-placeholder.jpg";
     }
 
     toggleCameraState() {
