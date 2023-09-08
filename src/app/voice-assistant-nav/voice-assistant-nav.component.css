@@ -1,30 +1,3 @@
-/* Default styles for larger screens */
-.container-fluid {
-    display: flex;
-}
-
-.sideContent {
-    flex: 1;
-}
-
-.mainFrame {
-    flex: 5;
-}
-
-/* Media query for smaller screens */
-@media (max-width: 768px) {
-    .container {
-        flex-direction: column; /* Stack elements vertically */
-    }
-
-    .sideContent {
-        display: 1; /* Hide the sidebar */
-    }
-
-    .mainFrame {
-        flex: 1; /* Take full width */
-    }
-}
 .voice-tabs {
     border: none;
 }
