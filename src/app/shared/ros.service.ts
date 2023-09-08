@@ -68,7 +68,7 @@ export class RosService {
             this.cameraTopic = this.createCameraTopic();
             this.previewSizeTopic = this.createPreviewSizeTopic();
             this.timerPeriodTopic = this.createTimePeriodTopic();
-            this.qualityFactorTopic = this.createQualityFactorPublisher();
+            this.qualityFactorTopic = this.createQualityFactorTopic();
             this.jointTrajectoryTopic = this.createJointTrajectoryTopic();
             this.subscribeSliderTopic();
             this.subscribeMotorSettingsTopic();
@@ -182,14 +182,12 @@ export class RosService {
         const json = JSON.parse(JSON.stringify(motorSettingsMessage));
         const parameters = Object.keys(json).map((key) => ({[key]: json[key]}));
         const message = new ROSLIB.Message({data: JSON.stringify(parameters)});
-
         this.motorSettingsTopic.publish(message);
         this.sendMotorSettingsConsoleLog("Sent", message);
     }
 
     sendJointTrajectoryMessage(jointTrajectoryMessage: jointTrajectoryMessage) {
         const message = new ROSLIB.Message(jointTrajectoryMessage);
-
         this.jointTrajectoryTopic.publish(message);
         this.sendJointTrajectoryConsoleLog("Sent", message);
     }
@@ -200,7 +198,6 @@ export class RosService {
     ) {
         const jsonJtString = JSON.stringify(jtMessage);
         const parsedJtJson = JSON.parse(jsonJtString) as jointTrajectoryMessage;
-
         for (const index in parsedJtJson.joint_names) {
             console.log(
                 sentReceivedPrefix +
@@ -244,9 +241,11 @@ export class RosService {
     }
 
     getJtReceiversByMotorName(
-        motorName: string,
+        motorNames: string[],
     ): Subject<jointTrajectoryMessage>[] {
-        const foundMotors = this.motors.filter((m) => m.motor === motorName);
+        const foundMotors = this.motors.filter((m) =>
+            motorNames.includes(m.motor),
+        );
         return foundMotors.length > 0
             ? foundMotors.map((m) => m["jointTrajectoryReceiver$"])
             : [];
@@ -276,12 +275,10 @@ export class RosService {
     subscribeJointTrajectoryTopic() {
         this.jointTrajectoryTopic.subscribe((jointTrajectoryMessage) => {
             const jsonString = JSON.stringify(jointTrajectoryMessage);
-            const parsedJtJson = JSON.parse(
-                jsonString,
-            ) as jointTrajectoryMessage;
+            const parsedJtJson = JSON.parse(jsonString);
 
             const receivers$ = this.getJtReceiversByMotorName(
-                parsedJtJson.joint_names[0],
+                parsedJtJson.joint_names,
             );
             receivers$.forEach((r) => {
                 r.next(parsedJtJson);
@@ -451,7 +448,6 @@ export class RosService {
             console.error("ROS is not connected.");
             return;
         }
-
         const message = new ROSLIB.Message({data: [width, height]});
         this.previewSizeTopic.publish(message);
     }
@@ -461,12 +457,11 @@ export class RosService {
             console.error("ROS is not connected.");
             return;
         }
-
         const message = new ROSLIB.Message({data: factor});
         this.qualityFactorTopic.publish(message);
     }
 
-    createQualityFactorPublisher() {
+    createQualityFactorTopic() {
         return new ROSLIB.Topic({
             ros: this.ros,
             name: "quality_factor_topic",
