@@ -192,12 +192,12 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
                 );
             }
             if (motorSettingsMessage.rotation_range_max !== undefined) {
-                this.degreeMaxFormcontrol.setValue(
+                this.degreeMaxFormControl.setValue(
                     motorSettingsMessage.rotation_range_max,
                 );
             }
             if (motorSettingsMessage.rotation_range_min !== undefined) {
-                this.degreeMinFormcontrol.setValue(
+                this.degreeMinFormControl.setValue(
                     motorSettingsMessage.rotation_range_min,
                 );
             }
@@ -448,14 +448,6 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
         }
     }
 
-    changeIcon() {
-        if (this.imgSrc === "../../assets/toggle-switch-left.png") {
-            this.imgSrc = "../../assets/toggle-switch-right.png";
-        } else {
-            this.imgSrc = "../../assets/toggle-switch-left.png";
-        }
-    }
-
     openPopup(content: TemplateRef<any>) {
         this.modalService
             .open(content, {
@@ -566,15 +558,15 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
     setPulseRanges(number: number[]) {
         this.pulseMinRange.setValue(number[0]);
         this.pulseMaxRange.setValue(number[1]);
-        this.sendSettingMessage();
+        this.sendMotorSettingsMessage();
     }
     setDegree(number: number[]) {
         this.degreeMinFormControl.setValue(number[0]);
         this.degreeMaxFormControl.setValue(number[1]);
-        this.sendSettingMessage();
+        this.sendMotorSettingsMessage();
     }
     setPeriod(number: number) {
         this.periodFormControl.setValue(number);
-        this.sendSettingMessage();
+        this.sendMotorSettingsMessage();
     }
 }
