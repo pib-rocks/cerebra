@@ -55,7 +55,10 @@ describe("ArmComponent", () => {
             By.css("app-motor-control"),
         );
         for (const childComponent of childComponents) {
-            spyOn(childComponent.componentInstance, "sendMessage");
+            spyOn(
+                childComponent.componentInstance,
+                "sendJointTrajectoryMessage",
+            );
         }
         const button = fixture.debugElement.query(By.css("#home-position-btn"));
         console.log(button);
@@ -69,7 +72,9 @@ describe("ArmComponent", () => {
             expect(child.componentInstance.sliderFormControl.value).toBe(0);
         }
         for (const spy of childComponents) {
-            expect(spy.componentInstance.sendMessage).toHaveBeenCalled();
+            expect(
+                spy.componentInstance.sendJointTrajectoryMessage,
+            ).toHaveBeenCalled();
         }
     });
     it("should send dummy values", () => {
