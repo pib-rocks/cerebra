@@ -33,6 +33,7 @@ p {
     margin-left: 0.7%;
     width: 90%;
     max-width: 99%;
+    margin: 1% 8% 3% 4%;
 }
 
 .headerButtons {
@@ -46,6 +47,7 @@ p {
     text-align: left;
     white-space: normal;
     text-wrap: wrap;
+    font-size: 16px;
 }
 
 .btn-active {
