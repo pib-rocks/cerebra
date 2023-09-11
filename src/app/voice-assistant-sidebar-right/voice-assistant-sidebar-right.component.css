@@ -45,3 +45,10 @@ p {
     text-align: left;
     white-space: normal;
 }
+
+.btn-active {
+    margin: 1% 12% 10% 1%;
+    color: white;
+    border-bottom: #e10072 solid 4px;
+    padding-bottom: 4px;
+}

@@ -18,22 +18,28 @@
     <div class="container-fluid">
         <div
             class="row"
-            *ngFor="let element of bodyElements">
+            *ngFor="let element of bodyElements"
+            (mouseenter)="onButtonHover(element)"
+            (mouseleave)="onButtonHover(element)"
+            (click)="activateElement(element)">
             <button
-                [id]="getIdString(element)"
-                class="container d-flex bodyElements elementButtons">
+                [id]="getIdString(element.description)"
+                class="container d-flex bodyElements elementButtons"
+                [class.btn-active]="element.active || element.hovered">
                 <div
                     id="button_{{element}}"
                     class="row mt-1 p-1 elementIcon">
                     <div class="mt-1">
                         <img
-                            [src]="elementIcon"
+                            [src]="element.active || element.hovered ? elementIconActive : elementIcon"
                             width="16"
                             height="16"
                             alt="" />
                     </div>
                 </div>
-                <div class="row p-2 mt-1 bodyElementText">{{element}}</div>
+                <div class="row p-2 mt-1 bodyElementText">
+                    {{element.description}}
+                </div>
             </button>
         </div>
     </div>

@@ -9,7 +9,16 @@ import {Component} from "@angular/core";
     ],
 })
 export class VoiceAssistantPersonalityComponent {
-    personalities: string[] = ["Eva", "Thomas", "Janina", "Georg"];
+    personalityIcon: string =
+        "../../assets/voice-assistant-svgs/personality/personality.svg";
+    activeIcon: string =
+        "../../assets/voice-assistant-svgs/personality/personality_active.svg";
+    personalities = [
+        {description: "Eva", active: true, hovered: false},
+        {description: "Thomas", active: false, hovered: false},
+        {description: "Janina", active: false, hovered: false},
+        {description: "Georg", active: false, hovered: false},
+    ];
     headerElements = [
         {
             icon: "../../assets/voice-assistant-svgs/personality/personality_add.svg",
@@ -24,6 +33,4 @@ export class VoiceAssistantPersonalityComponent {
             label: "EDIT",
         },
     ];
-    personalityIcon: string =
-        "../../assets/voice-assistant-svgs/personality/personality.svg";
 }

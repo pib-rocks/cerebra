@@ -9,12 +9,17 @@ import {Component} from "@angular/core";
     ],
 })
 export class VoiceAssistantChatComponent {
-    chatTopics: string[] = [
-        "Short stories",
-        "Nürnberg",
-        "Definition of AI today",
+    activeIcon = "../../assets/voice-assistant-svgs/chat/chat_active.svg";
+    chatTopics = [
+        {description: "Short stories", active: true, hovered: false},
+        {description: "Nürnberg", active: false, hovered: false},
+        {description: "Definition of AI today", active: false, hovered: false},
     ];
+    chatIconPaths = {
+        icon: "../../assets/voice-assistant-svgs/chat/chat.svg",
+    };
     chatIcon: string = "../../assets/voice-assistant-svgs/chat/chat.svg";
+
     headerElements = [
         {
             icon: "../../assets/voice-assistant-svgs/chat/chat_add.svg",
