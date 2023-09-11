@@ -29,8 +29,9 @@ p {
 .elementButtons {
     background-color: #1b2b44;
     border: none;
+    border-radius: 5%;
     margin-left: 0.7%;
-    width: auto;
+    width: 90%;
     max-width: 99%;
 }
 
@@ -44,11 +45,13 @@ p {
 .bodyElementText {
     text-align: left;
     white-space: normal;
+    text-wrap: wrap;
 }
 
 .btn-active {
-    margin: 1% 12% 10% 1%;
+    margin: 1% 8% 3% 4%;
     color: white;
     border-bottom: #e10072 solid 4px;
     padding-bottom: 4px;
+    flex-wrap: wrap;
 }
