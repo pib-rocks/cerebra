@@ -17,7 +17,6 @@ const routes: Routes = [
     {path: "voice", component: VoiceAssistantComponent},
     {path: "head", component: HeadComponent},
     {path: "program", component: ProgramComponent},
-    {path: "", redirectTo: "head", pathMatch: "full"},
     {path: "personality", component: VoiceAssistantPersonalityComponent},
     {path: "chat", component: VoiceAssistantChatComponent},
     {path: "**", redirectTo: "head"},

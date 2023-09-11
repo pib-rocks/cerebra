@@ -33,7 +33,7 @@ p {
     margin-left: 0.7%;
     width: 90%;
     max-width: 99%;
-    margin: 1% 8% 3% 4%;
+    border-bottom: #1b2b44 solid 4px;
 }
 
 .headerButtons {
@@ -51,9 +51,7 @@ p {
 }
 
 .btn-active {
-    margin: 1% 8% 3% 4%;
     color: white;
     border-bottom: #e10072 solid 4px;
-    padding-bottom: 4px;
     flex-wrap: wrap;
 }
