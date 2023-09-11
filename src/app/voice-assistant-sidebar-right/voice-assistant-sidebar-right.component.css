@@ -43,6 +43,10 @@ p {
     align-items: auto;
 }
 
+.headerButtonActive {
+    color: white;
+}
+
 .bodyElementText {
     text-align: left;
     white-space: normal;

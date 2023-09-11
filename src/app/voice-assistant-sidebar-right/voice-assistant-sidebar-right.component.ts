@@ -6,7 +6,13 @@ import {Component, Input} from "@angular/core";
     styleUrls: ["./voice-assistant-sidebar-right.component.css"],
 })
 export class VoiceAssistantSidebarRightComponent {
-    @Input() headerElements: {icon: string; label: string}[] = [];
+    @Input() headerElements: {
+        icon: string;
+        active_icon: string;
+        label: string;
+        active: boolean;
+        hovered: boolean;
+    }[] = [];
     @Input() bodyElements: {
         description: string;
         active: boolean;
@@ -25,9 +31,20 @@ export class VoiceAssistantSidebarRightComponent {
         hoveredElement.hovered = !hoveredElement.hovered;
     }
 
-    activateElement(element: any) {
+    activateBodyElement(element: any) {
         element.active = true;
         for (let el of this.bodyElements) {
+            if (el == element) {
+                continue;
+            } else {
+                el.active = false;
+            }
+        }
+    }
+
+    activateHeaderElement(element: any) {
+        element.active = true;
+        for (let el of this.headerElements) {
             if (el == element) {
                 continue;
             } else {

@@ -22,15 +22,27 @@ export class VoiceAssistantPersonalityComponent {
     headerElements = [
         {
             icon: "../../assets/voice-assistant-svgs/personality/personality_add.svg",
+            active_icon:
+                "../../assets/voice-assistant-svgs/personality/personality_add_active.svg",
             label: "ADD",
+            active: true,
+            hovered: false,
         },
         {
             icon: "../../assets/voice-assistant-svgs/personality/personality_delete.svg",
+            active_icon:
+                "../../assets/voice-assistant-svgs/personality/personality_delete_active.svg",
             label: "DELETE",
+            active: false,
+            hovered: false,
         },
         {
             icon: "../../assets/voice-assistant-svgs/personality/personality_edit.svg",
+            active_icon:
+                "../../assets/voice-assistant-svgs/personality/personality_edit_active.svg",
             label: "EDIT",
+            active: false,
+            hovered: false,
         },
     ];
 }

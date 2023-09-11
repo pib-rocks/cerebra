@@ -3,14 +3,21 @@
         <div class="row">
             <div
                 class="col-4 p-0"
-                *ngFor="let element of headerElements">
+                *ngFor="let element of headerElements"
+                (mouseenter)="onButtonHover(element)"
+                (mouseleave)="onButtonHover(element)"
+                (click)="activateHeaderElement(element)">
                 <button class="header headerButtons">
                     <img
-                        [src]="element.icon"
+                        [src]="element.active || element.hovered ? element.active_icon : element.icon"
                         width="16px"
                         height="16px"
                         alt="" />
-                    <p id="label_{{element.label}}">{{element.label}}</p>
+                    <p
+                        [class.headerButtonActive]="element.active || element.hovered"
+                        id="label_{{element.label}}">
+                        {{element.label}}
+                    </p>
                 </button>
             </div>
         </div>
@@ -21,7 +28,7 @@
             *ngFor="let element of bodyElements"
             (mouseenter)="onButtonHover(element)"
             (mouseleave)="onButtonHover(element)"
-            (click)="activateElement(element)">
+            (click)="activateBodyElement(element)">
             <button
                 [id]="getIdString(element.description)"
                 class="container d-flex bodyElements elementButtons"
