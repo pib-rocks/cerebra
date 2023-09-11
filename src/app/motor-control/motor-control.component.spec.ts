@@ -243,7 +243,7 @@ describe("MotorControlComponent", () => {
             period: component.periodFormControl.value,
         };
         component.sendMotorSettingsMessage();
-        expect(rosService.sendSliderMessage).toHaveBeenCalledWith(
+        expect(rosService.sendMotorSettingsMessage).toHaveBeenCalledWith(
             jasmine.objectContaining(message),
         );
 
@@ -256,14 +256,13 @@ describe("MotorControlComponent", () => {
         fixture.detectChanges();
         component.sendMotorSettingsMessage();
         expect(spyMotorNames).toHaveBeenCalledWith("left");
-        expect(rosService.sendSliderMessage).toHaveBeenCalledTimes(7);
+        expect(rosService.sendMotorSettingsMessage).toHaveBeenCalledTimes(7);
     });
 
+    // Nutzloser Test da mit Unterteilung JT/Settings entweder Settings oder JT gesendet werden aber nicht beides
     it("should send a combined massege with all values if all inputs are valid", () => {
         const message: Message = {
             motor: component.motorName,
-            value: component.sliderFormControl.value,
-            turnedOn: component.motorFormControl.value,
             pule_widths_min: component.pulseMinRange.value,
             pule_widths_max: component.pulseMaxRange.value,
             rotation_range_min: component.degreeMinFormControl.value,
@@ -274,7 +273,7 @@ describe("MotorControlComponent", () => {
             period: component.periodFormControl.value,
         };
         component.sendAllMessagesCombined();
-        expect(rosService.sendSliderMessage).toHaveBeenCalledWith(
+        expect(rosService.sendMotorSettingsMessage).toHaveBeenCalledWith(
             jasmine.objectContaining(message),
         );
         spyOn(motorService, "getMotorHandNames").and.callThrough();
@@ -283,9 +282,9 @@ describe("MotorControlComponent", () => {
         fixture.detectChanges();
         component.sendAllMessagesCombined();
         expect(motorService.getMotorHandNames).toHaveBeenCalledWith("left");
-        expect(rosService.sendSliderMessage).toHaveBeenCalledTimes(7);
+        expect(rosService.sendMotorSettingsMessage).toHaveBeenCalledTimes(7);
     });
-
+    // Nutzloser Test da mit Unterteilung JT/Settings entweder Settings oder JT gesendet werden aber nicht beides
     it("should send a combined massege with all values if not all inputs are valid", () => {
         const spyMotorNames = spyOn(
             motorService,
@@ -293,13 +292,12 @@ describe("MotorControlComponent", () => {
         ).and.callThrough();
         const message: Message = {
             motor: component.motorName,
-            value: component.sliderFormControl.value,
             turnedOn: component.motorFormControl.value,
         };
         component.pulseMinRange.setValue(10);
         component.pulseMaxRange.setValue(5);
         component.sendAllMessagesCombined();
-        expect(rosService.sendSliderMessage).toHaveBeenCalledWith(
+        expect(rosService.sendMotorSettingsMessage).toHaveBeenCalledWith(
             jasmine.objectContaining(message),
         );
 
@@ -308,7 +306,7 @@ describe("MotorControlComponent", () => {
         fixture.detectChanges();
         component.sendAllMessagesCombined();
         expect(spyMotorNames).toHaveBeenCalledWith("left");
-        expect(rosService.sendSliderMessage).toHaveBeenCalledTimes(7);
+        expect(rosService.sendMotorSettingsMessage).toHaveBeenCalledTimes(7);
     });
 
     it("should return null if max pulse is greater than min pulse", () => {
@@ -438,12 +436,12 @@ describe("MotorControlComponent", () => {
 
     it("should toggle input unvisible", () => {
         spyOn(component, "setSliderValue");
-        spyOn(component, "sendMotorSettingsMessage");
+        spyOn(component, "inputSendJointTrajectoryMsg");
         component.bubbleFormControl.setValue(500);
         component.isInputVisible = true;
         component.toggleInputInvisible();
         expect(component.setSliderValue).toHaveBeenCalled();
-        expect(component.sendMotorSettingsMessage).toHaveBeenCalled();
+        expect(component.inputSendJointTrajectoryMsg).toHaveBeenCalled();
     });
 
     it("should toggle input unvisible min validation", fakeAsync(() => {
