@@ -32,9 +32,7 @@
                 [id]="getIdString(element.description)"
                 class="container d-flex bodyElements elementButtons"
                 [class.btn-active]="element.active || element.hovered">
-                <div
-                    id="button_{{element}}"
-                    class="row mt-1 p-1 elementIcon">
+                <div class="row mt-1 p-1 elementIcon">
                     <div class="mt-1">
                         <img
                             [src]="element.active || element.hovered ? elementIconActive : elementIcon"
