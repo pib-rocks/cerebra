@@ -249,11 +249,11 @@ export class HandComponent implements OnInit {
                 );
                 child.pulseMaxRange.setValue(indexFinger.pulseMaxRange.value);
                 child.pulseMinRange.setValue(indexFinger.pulseMinRange.value);
-                child.degreeMaxFormcontrol.setValue(
-                    indexFinger.degreeMaxFormcontrol.value,
+                child.degreeMaxFormControl.setValue(
+                    indexFinger.degreeMaxFormControl.value,
                 );
-                child.degreeMinFormcontrol.setValue(
-                    indexFinger.degreeMinFormcontrol.value,
+                child.degreeMinFormControl.setValue(
+                    indexFinger.degreeMinFormControl.value,
                 );
             }
             if (child.motorName === "all_right_stretch") {

@@ -54,7 +54,6 @@ describe("ArmComponent", () => {
         const childComponents = fixture.debugElement.queryAll(
             By.css("app-motor-control"),
         );
-        const spies: jasmine.Spy<any>[] = [];
         for (const childComponent of childComponents) {
             spyOn(childComponent.componentInstance, "sendMessage");
         }
