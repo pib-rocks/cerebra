@@ -5,12 +5,13 @@
         <input
             class="bubble-input overlay"
             [ngClass]="rotate ? 'range-high-to-low' : ''"
+            id="slider_bubbleinput_{{ sliderName }}"
             [min]="minValue"
             [max]="maxValue"
             *ngIf="isInputVisible"
             [formControl]="bubbleFormControl"
-            (blur)="toggleInputUnvisible()"
-            (keydown.enter)="toggleInputUnvisible()"
+            (blur)="toggleInputInvisible()"
+            (keydown.enter)="toggleInputInvisible()"
             #bubbleInput />
         <div
             class="bubble-span overlay"

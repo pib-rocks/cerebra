@@ -5244,7 +5244,6 @@ fieldset:disabled .btn {
     background-color: var(--bs-modal-bg);
     background-clip: padding-box;
     border: var(--bs-modal-border-width) solid var(--bs-modal-border-color);
-    border-radius: var(--bs-modal-border-radius);
     outline: 0;
 }
 
@@ -5305,8 +5304,7 @@ fieldset:disabled .btn {
     justify-content: flex-end;
     padding: calc(var(--bs-modal-padding) - var(--bs-modal-footer-gap) * 0.5);
     background-color: var(--bs-modal-footer-bg);
-    border-top: var(--bs-modal-footer-border-width) solid
-        var(--bs-modal-footer-border-color);
+
     border-bottom-right-radius: var(--bs-modal-inner-border-radius);
     border-bottom-left-radius: var(--bs-modal-inner-border-radius);
 }
