@@ -33,7 +33,7 @@ export class VoiceAssistantSidebarRightComponent {
 
     activateBodyElement(element: any) {
         element.active = true;
-        for (let el of this.bodyElements) {
+        for (const el of this.bodyElements) {
             if (el == element) {
                 continue;
             } else {
@@ -44,7 +44,7 @@ export class VoiceAssistantSidebarRightComponent {
 
     activateHeaderElement(element: any) {
         element.active = true;
-        for (let el of this.headerElements) {
+        for (const el of this.headerElements) {
             if (el == element) {
                 continue;
             } else {

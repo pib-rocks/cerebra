@@ -26,7 +26,7 @@ export class VoiceAssistantChatComponent {
             active_icon:
                 "../../assets/voice-assistant-svgs/chat/chat_add_active.svg",
             label: "ADD",
-            active: false,
+            active: true,
             hovered: false,
         },
         {
