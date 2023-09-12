@@ -5,16 +5,15 @@
                 class="col-4 p-0"
                 *ngFor="let element of headerElements"
                 (mouseenter)="onButtonHover(element)"
-                (mouseleave)="onButtonHover(element)"
-                (click)="activateHeaderElement(element)">
+                (mouseleave)="onButtonHover(element)">
                 <button class="header headerButtons">
                     <img
-                        [src]="element.active || element.hovered ? element.active_icon : element.icon"
+                        [src]="element.hovered ? element.active_icon : element.icon"
                         width="16px"
                         height="16px"
                         alt="" />
                     <p
-                        [class.headerButtonActive]="element.active || element.hovered"
+                        [class.headerButtonActive]="element.hovered"
                         id="label_{{element.label}}">
                         {{element.label}}
                     </p>

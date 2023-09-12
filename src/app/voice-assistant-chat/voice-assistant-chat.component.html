@@ -11,8 +11,11 @@
                 </div>
                 <div class="col-2">
                     <button
+                        id="exportButton"
                         class="btn-sm col btn-primary exportButton"
-                        id="exportButton">
+                        (mouseenter)="onExportButtonHover(true)"
+                        (mouseleave)="onExportButtonHover(false)"
+                        [class.exportButtonHovered]="exportButtonHovered">
                         Export chat
                     </button>
                 </div>

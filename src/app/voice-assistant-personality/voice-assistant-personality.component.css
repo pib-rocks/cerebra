@@ -74,3 +74,6 @@ textarea:focus {
         margin: 5px;
     }
 }
+.hover-background {
+    background-color: #e10072;
+}

@@ -9,6 +9,7 @@ import {Component} from "@angular/core";
     ],
 })
 export class VoiceAssistantChatComponent {
+    exportButtonHovered = false;
     activeIcon = "../../assets/voice-assistant-svgs/chat/chat_active.svg";
     chatTopics = [
         {description: "Short stories", active: true, hovered: false},
@@ -26,7 +27,6 @@ export class VoiceAssistantChatComponent {
             active_icon:
                 "../../assets/voice-assistant-svgs/chat/chat_add_active.svg",
             label: "ADD",
-            active: true,
             hovered: false,
         },
         {
@@ -34,7 +34,6 @@ export class VoiceAssistantChatComponent {
             active_icon:
                 "../../assets/voice-assistant-svgs/chat/chat_delete_active.svg",
             label: "DELETE",
-            active: false,
             hovered: false,
         },
         {
@@ -42,7 +41,6 @@ export class VoiceAssistantChatComponent {
             active_icon:
                 "../../assets/voice-assistant-svgs/chat/chat_edit_active.svg",
             label: "EDIT",
-            active: false,
             hovered: false,
         },
     ];
@@ -56,4 +54,8 @@ export class VoiceAssistantChatComponent {
         }
         this.message = "";
     };
+
+    onExportButtonHover(hovered: boolean) {
+        this.exportButtonHovered = hovered;
+    }
 }

@@ -25,7 +25,6 @@ export class VoiceAssistantPersonalityComponent {
             active_icon:
                 "../../assets/voice-assistant-svgs/personality/personality_add_active.svg",
             label: "ADD",
-            active: true,
             hovered: false,
         },
         {
@@ -33,7 +32,6 @@ export class VoiceAssistantPersonalityComponent {
             active_icon:
                 "../../assets/voice-assistant-svgs/personality/personality_delete_active.svg",
             label: "DELETE",
-            active: false,
             hovered: false,
         },
         {
@@ -41,8 +39,20 @@ export class VoiceAssistantPersonalityComponent {
             active_icon:
                 "../../assets/voice-assistant-svgs/personality/personality_edit_active.svg",
             label: "EDIT",
-            active: false,
             hovered: false,
         },
     ];
+
+    saveButton: boolean = false;
+    saveAsButton: boolean = false;
+
+    saveButtonsHovered(buttonType: string, hovered: boolean) {
+        if (buttonType == "save") {
+            this.saveButton = hovered;
+            console.log("save: " + this.saveButton);
+        } else if (buttonType == "saveAs") {
+            this.saveAsButton = hovered;
+            console.log("save as : " + this.saveAsButton);
+        }
+    }
 }

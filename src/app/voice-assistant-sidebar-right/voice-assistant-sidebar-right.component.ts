@@ -10,7 +10,6 @@ export class VoiceAssistantSidebarRightComponent {
         icon: string;
         active_icon: string;
         label: string;
-        active: boolean;
         hovered: boolean;
     }[] = [];
     @Input() bodyElements: {
@@ -20,8 +19,6 @@ export class VoiceAssistantSidebarRightComponent {
     }[] = [];
     @Input() elementIcon: string = "";
     @Input() elementIconActive: string = "";
-
-    isHovered = false;
 
     getIdString(element: string) {
         return "button_" + element.replaceAll(" ", "-");
@@ -34,17 +31,6 @@ export class VoiceAssistantSidebarRightComponent {
     activateBodyElement(element: any) {
         element.active = true;
         for (const el of this.bodyElements) {
-            if (el == element) {
-                continue;
-            } else {
-                el.active = false;
-            }
-        }
-    }
-
-    activateHeaderElement(element: any) {
-        element.active = true;
-        for (const el of this.headerElements) {
             if (el == element) {
                 continue;
             } else {
