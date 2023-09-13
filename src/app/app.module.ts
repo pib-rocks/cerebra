@@ -42,12 +42,10 @@ import {MultiSliderComponent} from "./multi-slider/multi-slider.component";
         DialogContentComponent,
         NavBarComponent,
         SliderComponent,
-
         VoiceAssistantNavComponent,
         VoiceAssistantChatComponent,
         VoiceAssistantPersonalityComponent,
         VoiceAssistantSidebarRightComponent,
-
         VerticalSliderComponent,
         MultiSliderComponent,
     ],
