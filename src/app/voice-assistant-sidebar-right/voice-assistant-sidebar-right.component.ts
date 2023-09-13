@@ -24,10 +24,6 @@ export class VoiceAssistantSidebarRightComponent {
         return "button_" + element.replaceAll(" ", "-");
     }
 
-    onButtonHover(hoveredElement: any) {
-        hoveredElement.hovered = !hoveredElement.hovered;
-    }
-
     activateBodyElement(element: any) {
         element.active = true;
         for (const el of this.bodyElements) {

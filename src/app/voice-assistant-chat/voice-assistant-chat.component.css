@@ -69,6 +69,14 @@
     background-color: #0094df;
 }
 
+.exportButton:hover {
+    font-size: medium;
+    float: right;
+    width: auto;
+    border: none;
+    background: #e10072;
+}
+
 .chat-input {
     display: flex;
     align-items: center;
@@ -105,8 +113,4 @@ input:focus {
 
 #message-input::placeholder {
     color: #ccc;
-}
-
-.exportButtonHovered {
-    background: #e10072;
 }

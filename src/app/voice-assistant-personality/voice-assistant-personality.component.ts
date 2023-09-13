@@ -45,12 +45,4 @@ export class VoiceAssistantPersonalityComponent {
 
     saveButton: boolean = false;
     saveAsButton: boolean = false;
-
-    saveButtonsHovered(buttonType: string, hovered: boolean) {
-        if (buttonType == "save") {
-            this.saveButton = hovered;
-        } else if (buttonType == "saveAs") {
-            this.saveAsButton = hovered;
-        }
-    }
 }

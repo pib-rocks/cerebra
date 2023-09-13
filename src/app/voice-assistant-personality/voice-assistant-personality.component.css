@@ -39,6 +39,15 @@ textarea:focus {
     white-space: nowrap;
 }
 
+.saveButtons:hover {
+    float: right;
+    font-size: medium;
+    width: auto;
+    border: none;
+    background-color: #e10072;
+    white-space: nowrap;
+}
+
 .personalityName {
     font-size: large;
     font-weight: bold;
@@ -73,7 +82,4 @@ textarea:focus {
     textarea {
         margin: 5px;
     }
-}
-.hover-background {
-    background-color: #e10072;
 }

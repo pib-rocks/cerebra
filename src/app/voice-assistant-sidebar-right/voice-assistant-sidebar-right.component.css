@@ -36,6 +36,18 @@ p {
     border-bottom: #1b2b44 solid 4px;
 }
 
+.elementButtons:hover {
+    color: white;
+    border-bottom: #e10072 solid 4px;
+    flex-wrap: wrap;
+}
+
+.elementButtons:active {
+    color: white;
+    border-bottom: #e10072 solid 4px;
+    flex-wrap: wrap;
+}
+
 .headerButtons {
     background-color: #192021;
     border: none;

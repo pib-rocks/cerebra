@@ -54,8 +54,4 @@ export class VoiceAssistantChatComponent {
         }
         this.message = "";
     };
-
-    onExportButtonHover(hovered: boolean) {
-        this.exportButtonHovered = hovered;
-    }
 }
