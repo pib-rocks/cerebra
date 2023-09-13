@@ -228,7 +228,7 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
                     }
                 }),
             )
-            .subscribe((object) => {
+            .subscribe((object: {name?: string; position?: number}) => {
                 const position = object["position"];
                 const motor_name = object["name"];
                 const positionIsValid: boolean =
