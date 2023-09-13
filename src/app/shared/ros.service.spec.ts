@@ -116,7 +116,7 @@ describe("RosService", () => {
             service,
             "sendSliderMessage",
         ).and.callThrough();
-        const spyPublish = spyOn(service["motorSettingsTopic"], "publish");
+        const spyPublish = spyOn(service["sliderMessageTopic"], "publish");
         const message = {motor: "test", value: "10"};
         const json = JSON.parse(JSON.stringify(message));
         const parameters = Object.keys(json).map((key) => ({[key]: json[key]}));
@@ -192,41 +192,54 @@ describe("RosService", () => {
         expect(spyPublish).toHaveBeenCalledWith(new ROSLIB.Message(jtMessage));
     });
 
-    //Wie ist der Test gemeint? Beim Subscriben auf ein normales RXJS-Subject wird keine Nachricht gepublished
-    it("subscribeJointTrajectoryTopic should emmit a value to a subject", (): void => {
+    it("subscribeJointTrajectoryTopic should publish a value to a rxjs subject", (): void => {
         const jointTrajectoryMessageReceiver$ =
             new Subject<jointTrajectoryMessage>();
+        const motorSettingsMessageReceiver$ =
+            new Subject<MotorSettingsMessage>();
         (service as any).jointTrajectoryTopic = new MockRosbridgeJtTopic(
             "test",
             jointTrajectoryMessageReceiver$,
         ) as unknown as ROSLIB.Topic;
         const motor = {
             motor: "test",
-            receiver$: jointTrajectoryMessageReceiver$,
+            motorSettingsMessageReceiver$,
+            jointTrajectoryMessageReceiver$,
         };
-        const spyNext = spyOn(motor.receiver$, "next");
+        const spyNext = spyOn(motor.jointTrajectoryMessageReceiver$, "next");
         (service as any).motors.push();
-        service.subscribeMotorSettingsTopic();
+        service.subscribeJointTrajectoryTopic();
         expect(spyNext).toHaveBeenCalled();
     });
 
-    //Wie ist der Test gemeint? Beim Subscriben auf ein normales RXJS-Subject wird keine Nachricht gepublished
-    it("subscribeTopic should emmit a value to a subject", (): void => {
-        const receiver$ = new Subject<MotorSettingsMessage>();
-        (service as any).sliderMessageTopic = new MockRosbridgeTopic(
+    it("subscribeMotorSettingsTopic should publish a value to a rxjs subject", (): void => {
+        const jointTrajectoryMessageReceiver$ =
+            new Subject<jointTrajectoryMessage>();
+        const motorSettingsMessageReceiver$ =
+            new Subject<MotorSettingsMessage>();
+        (service as any).motorSettingsTopic = new MockRosbridgeTopic(
             "test",
-            receiver$,
+            motorSettingsMessageReceiver$,
         ) as unknown as ROSLIB.Topic;
-        const motor = {motor: "test", receiver$: receiver$};
+        const motor = {
+            motor: "test",
+            motorSettingsMessageReceiver$,
+            jointTrajectoryMessageReceiver$,
+        };
         (service as any).motors.push();
-        const spyNext = spyOn(motor.receiver$, "next");
+        const spyNext = spyOn(motor.motorSettingsMessageReceiver$, "next");
         service.subscribeMotorSettingsTopic();
         expect(spyNext).toHaveBeenCalled();
     });
 
     it("should be able to get a single motor receiver by name", () => {
         const expectedReceiver = new Subject<MotorSettingsMessage>();
-        const motor = {motor: "test", receiver$: expectedReceiver};
+        const expectedJTReceiver = new Subject<jointTrajectoryMessage>();
+        const motor = {
+            motor: "test",
+            motorSettingsReceiver$: expectedReceiver,
+            jointTrajectoryReceiver$: expectedJTReceiver,
+        };
         (service as any).motors.push(motor);
         const actualReceiver$ = service.getReceiversByMotorName("test")[0];
         expect(expectedReceiver).toEqual(actualReceiver$);
