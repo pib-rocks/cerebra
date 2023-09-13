@@ -29,7 +29,6 @@ import {VoiceAssistantSidebarRightComponent} from "./voice-assistant-sidebar-rig
 import {VerticalSliderComponent} from "./vertical-slider/vertical-slider.component";
 import {MultiSliderComponent} from "./multi-slider/multi-slider.component";
 
-
 @NgModule({
     declarations: [
         AppComponent,
@@ -51,7 +50,6 @@ import {MultiSliderComponent} from "./multi-slider/multi-slider.component";
 
         VerticalSliderComponent,
         MultiSliderComponent,
-
     ],
     imports: [
         BrowserModule,
