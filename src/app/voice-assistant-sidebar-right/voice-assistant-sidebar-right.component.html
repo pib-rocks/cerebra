@@ -3,7 +3,9 @@
         <div class="row">
             <div
                 class="col-4 p-0"
-                *ngFor="let element of headerElements">
+                *ngFor="let element of headerElements"
+                (mouseenter)="onButtonHover(element)"
+                (mouseleave)="onButtonHover(element)">
                 <button class="header headerButtons">
                     <img
                         [src]="element.hovered ? element.active_icon : element.icon"
@@ -23,6 +25,8 @@
         <div
             class="row buttonRow"
             *ngFor="let element of bodyElements"
+            (mouseenter)="onButtonHover(element)"
+            (mouseleave)="onButtonHover(element)"
             (click)="activateBodyElement(element)">
             <button
                 [id]="getIdString(element.description)"
