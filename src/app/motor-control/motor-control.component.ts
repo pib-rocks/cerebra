@@ -179,14 +179,14 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
             if (motorSettingsMessage.period !== undefined) {
                 this.periodFormControl.setValue(motorSettingsMessage.period);
             }
-            if (motorSettingsMessage.pule_widths_max !== undefined) {
+            if (motorSettingsMessage.pulse_widths_max !== undefined) {
                 this.pulseMaxRange.setValue(
-                    motorSettingsMessage.pule_widths_max,
+                    motorSettingsMessage.pulse_widths_max,
                 );
             }
-            if (motorSettingsMessage.pule_widths_min !== undefined) {
+            if (motorSettingsMessage.pulse_widths_min !== undefined) {
                 this.pulseMinRange.setValue(
-                    motorSettingsMessage.pule_widths_min,
+                    motorSettingsMessage.pulse_widths_min,
                 );
             }
             if (motorSettingsMessage.rotation_range_max !== undefined) {
@@ -377,8 +377,8 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
                 motorNames.forEach((mn) => {
                     const message: MotorSettingsMessage = {
                         motorName: mn,
-                        pule_widths_min: this.pulseMinRange.value,
-                        pule_widths_max: this.pulseMaxRange.value,
+                        pulse_widths_min: this.pulseMinRange.value,
+                        pulse_widths_max: this.pulseMaxRange.value,
                         rotation_range_min: this.degreeMinFormControl.value,
                         rotation_range_max: this.degreeMaxFormControl.value,
                         velocity: this.velocityFormControl.value,
@@ -391,8 +391,8 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
             } else {
                 const message: MotorSettingsMessage = {
                     motorName: this.motorName,
-                    pule_widths_min: this.pulseMinRange.value,
-                    pule_widths_max: this.pulseMaxRange.value,
+                    pulse_widths_min: this.pulseMinRange.value,
+                    pulse_widths_max: this.pulseMaxRange.value,
                     rotation_range_min: this.degreeMinFormControl.value,
                     rotation_range_max: this.degreeMaxFormControl.value,
                     velocity: this.velocityFormControl.value,
@@ -488,8 +488,8 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
                     const message: MotorSettingsMessage = {
                         motorName: mn,
                         turnedOn: this.motorFormControl.value,
-                        pule_widths_min: this.pulseMinRange.value,
-                        pule_widths_max: this.pulseMaxRange.value,
+                        pulse_widths_min: this.pulseMinRange.value,
+                        pulse_widths_max: this.pulseMaxRange.value,
                         rotation_range_min: this.degreeMinFormControl.value,
                         rotation_range_max: this.degreeMaxFormControl.value,
                         velocity: this.velocityFormControl.value,
@@ -503,8 +503,8 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
                 const message: MotorSettingsMessage = {
                     motorName: this.motorName,
                     turnedOn: this.motorFormControl.value,
-                    pule_widths_min: this.pulseMinRange.value,
-                    pule_widths_max: this.pulseMaxRange.value,
+                    pulse_widths_min: this.pulseMinRange.value,
+                    pulse_widths_max: this.pulseMaxRange.value,
                     rotation_range_min: this.degreeMinFormControl.value,
                     rotation_range_max: this.degreeMaxFormControl.value,
                     velocity: this.velocityFormControl.value,

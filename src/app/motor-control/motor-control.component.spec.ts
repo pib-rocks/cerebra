@@ -233,8 +233,8 @@ describe("MotorControlComponent", () => {
     it("should send a settings message when changing a value of the setting", () => {
         const message: Message = {
             motorName: component.motorName,
-            pule_widths_min: component.pulseMinRange.value,
-            pule_widths_max: component.pulseMaxRange.value,
+            pulse_widths_min: component.pulseMinRange.value,
+            pulse_widths_max: component.pulseMaxRange.value,
             rotation_range_min: component.degreeMinFormControl.value,
             rotation_range_max: component.degreeMaxFormControl.value,
             velocity: component.velocityFormControl.value,

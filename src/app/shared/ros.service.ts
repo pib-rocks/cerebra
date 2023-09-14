@@ -222,7 +222,7 @@ export class RosService {
         console.log(
             sentReceivedPrefix +
                 " settings message for motor: " +
-                jsonObject.motor,
+                jsonObject.motorName,
         );
     }
 
@@ -307,7 +307,7 @@ export class RosService {
             this.sendMotorSettingsConsoleLog("Received", message);
 
             const receivers$ = this.getMotorSettingsReceiversByMotorName(
-                jsonObject["motor"],
+                jsonObject["motorName"],
             );
             receivers$.forEach((r) => {
                 r.next(jsonObject);
