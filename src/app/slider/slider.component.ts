@@ -75,6 +75,10 @@ export class SliderComponent implements OnInit, AfterViewInit {
     }
 
     ngAfterViewInit() {
+        this.calculateBubbles();
+    }
+
+    calculateBubbles() {
         const sliderWidth = document.getElementById("slider_" + this.sliderName)
             ?.clientWidth;
         if (sliderWidth !== undefined) {
