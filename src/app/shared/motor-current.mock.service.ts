@@ -125,7 +125,8 @@ export class MotorCurrentService {
     subscribeCurrentReceiver(): Subscription {
         return this.rosService.currentReceiver$.subscribe(
             (message: MotorCurrentMessage) => {
-                // console.log(message['motor']);
+                console.log(message);
+                console.log(message["motor"]);
                 for (const motor of this.motors) {
                     if (motor.name === message.motor) {
                         // console.log(message);
