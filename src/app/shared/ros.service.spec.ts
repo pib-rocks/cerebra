@@ -12,15 +12,16 @@ describe("RosService", () => {
     let service: RosService;
     let mockRos: RosMock;
     let mockTopic: MockRosbridgeTopic;
+    let mockJtTopic: MockRosbridgeJtTopic;
     let spySetUpRos: jasmine.Spy<() => ROSLIB.Ros>;
     let spytopic: jasmine.Spy<() => ROSLIB.Topic>;
     let spyVoiceTopic: jasmine.Spy<() => ROSLIB.Topic>;
-    let spyMotorCurrentTopic: jasmine.Spy<() => ROSLIB.Topic>;
+    let spyMotorCurrentConsumptionTopic: jasmine.Spy<() => ROSLIB.Topic>;
     let spyJointTrajectoryTopic: jasmine.Spy<() => ROSLIB.Topic>;
     let spyCameraTopic: jasmine.Spy<() => ROSLIB.Topic>;
     let spySize: jasmine.Spy<() => ROSLIB.Topic>;
     let spySubscribeTopic: jasmine.Spy<() => void>;
-    let spySubscribeCurrentTopic: jasmine.Spy<() => void>;
+    let spySubscribeCurrentConsumptionTopic: jasmine.Spy<() => void>;
     beforeEach(() => {
         TestBed.configureTestingModule({});
 
@@ -29,7 +30,8 @@ describe("RosService", () => {
         mockRos.setConnection(true);
         const receiver$ = new Subject<MotorSettingsMessage>();
         const jtMessageReceiver$ = new Subject<jointTrajectoryMessage>();
-        mockTopic = new MockRosbridgeTopic("test", receiver$);
+        mockTopic = new MockRosbridgeTopic(receiver$);
+        mockJtTopic = new MockRosbridgeJtTopic(jtMessageReceiver$);
 
         spySetUpRos = spyOn(RosService.prototype, "setUpRos").and.returnValue(
             mockRos as unknown as ROSLIB.Ros,
@@ -42,14 +44,14 @@ describe("RosService", () => {
         spyJointTrajectoryTopic = spyOn(
             RosService.prototype,
             "createJointTrajectoryTopic",
-        ).and.returnValue(mockTopic as unknown as ROSLIB.Topic);
+        ).and.returnValue(mockJtTopic as unknown as ROSLIB.Topic);
 
         spyVoiceTopic = spyOn(
             RosService.prototype,
             "createVoiceAssistantTopic",
         ).and.returnValue(mockTopic as unknown as ROSLIB.Topic);
 
-        spyMotorCurrentTopic = spyOn(
+        spyMotorCurrentConsumptionTopic = spyOn(
             RosService.prototype,
             "createMotorCurrentConsumptionTopic",
         ).and.returnValue(mockTopic as unknown as ROSLIB.Topic);
@@ -89,6 +91,10 @@ describe("RosService", () => {
         expect(spytopic).toHaveBeenCalled();
     });
 
+    it("createJointTrajectoryTopic should create the jointTrajectory topic", () => {
+        expect(spyJointTrajectoryTopic).toHaveBeenCalled();
+    });
+
     it("createVoiceTopic should create voice topic", () => {
         expect(spyVoiceTopic).toHaveBeenCalled();
     });
@@ -97,8 +103,8 @@ describe("RosService", () => {
         expect(spySize).toHaveBeenCalled();
     });
 
-    it("createTopic should create motor current topic", () => {
-        expect(spyMotorCurrentTopic).toHaveBeenCalled();
+    it("createMotorCurrentConsumptionTopic should create motor current topic", () => {
+        expect(spyMotorCurrentConsumptionTopic).toHaveBeenCalled();
     });
 
     it("createCameraTopic should create camera topic", () => {
@@ -126,7 +132,7 @@ describe("RosService", () => {
         expect(spyPublish).toHaveBeenCalledWith(msg);
     });
 
-    it("The motorCurrentTopic should publish the message to rosbridge when calling sendMessage method, Incase the Message is of type MotorCurrentMessage ", () => {
+    it("The motorCurrentTopic should publish the message to rosbridge when calling sendSliderMessage method, Incase the Message is of type MotorCurrentMessage ", () => {
         service = new RosService();
         (service as any).motorCurrentConsumptionTopic = new ROSLIB.Topic({
             ros: mockRos as unknown as ROSLIB.Ros,
@@ -198,7 +204,6 @@ describe("RosService", () => {
         const motorSettingsMessageReceiver$ =
             new Subject<MotorSettingsMessage>();
         (service as any).jointTrajectoryTopic = new MockRosbridgeJtTopic(
-            "test",
             jointTrajectoryMessageReceiver$,
         ) as unknown as ROSLIB.Topic;
         const motor = {
@@ -218,7 +223,25 @@ describe("RosService", () => {
         const motorSettingsMessageReceiver$ =
             new Subject<MotorSettingsMessage>();
         (service as any).motorSettingsTopic = new MockRosbridgeTopic(
-            "test",
+            motorSettingsMessageReceiver$,
+        ) as unknown as ROSLIB.Topic;
+        const motor = {
+            motor: "test",
+            motorSettingsMessageReceiver$,
+            jointTrajectoryMessageReceiver$,
+        };
+        (service as any).motors.push();
+        const spyNext = spyOn(motor.motorSettingsMessageReceiver$, "next");
+        service.subscribeMotorSettingsTopic();
+        expect(spyNext).toHaveBeenCalled();
+    });
+
+    it("subscribeMotorSettingsTopic tbd should publish a value to a rxjs subject", (): void => {
+        const jointTrajectoryMessageReceiver$ =
+            new Subject<jointTrajectoryMessage>();
+        const motorSettingsMessageReceiver$ =
+            new Subject<MotorSettingsMessage>();
+        (service as any).motorSettingsTopic = new MockRosbridgeTopic(
             motorSettingsMessageReceiver$,
         ) as unknown as ROSLIB.Topic;
         const motor = {
@@ -247,10 +270,7 @@ describe("RosService", () => {
 });
 
 class MockRosbridgeJtTopic {
-    constructor(
-        private jointTrajectoryTopic: string,
-        private subject: Subject<jointTrajectoryMessage>,
-    ) {}
+    constructor(private subject: Subject<jointTrajectoryMessage>) {}
     subscribers: ((message: any) => void)[] = [];
     messages: any[] = [];
     subscribe(callback: (message: any) => void) {
@@ -266,10 +286,7 @@ class MockRosbridgeJtTopic {
 }
 
 class MockRosbridgeTopic {
-    constructor(
-        private motorSettingsTopic: string,
-        private subject: Subject<MotorSettingsMessage>,
-    ) {}
+    constructor(private subject: Subject<MotorSettingsMessage>) {}
     subscribers: ((message: any) => void)[] = [];
     messages: any[] = [];
     subscribe(callback: (message: any) => void) {
@@ -300,6 +317,7 @@ export class RosMock {
     on() {
         this.service?.createMessageTopic();
         this.service?.createVoiceAssistantTopic();
+        this.service?.createJointTrajectoryTopic();
         this.service?.createMotorCurrentConsumptionTopic();
         this.service?.createCameraTopic();
         this.service?.createPreviewSizeTopic();
