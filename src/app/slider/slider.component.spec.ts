@@ -7,12 +7,13 @@ import {
 import {ReactiveFormsModule} from "@angular/forms";
 import {SliderComponent} from "./slider.component";
 import {RosService} from "../shared/ros.service";
+import {BehaviorSubject} from "rxjs";
 
 describe("SliderComponent", () => {
     let component: SliderComponent;
     let fixture: ComponentFixture<SliderComponent>;
     let rosService: RosService;
-
+    const testSubject: BehaviorSubject<number> = new BehaviorSubject<number>(0);
     beforeEach(async () => {
         await TestBed.configureTestingModule({
             declarations: [SliderComponent],
@@ -22,7 +23,7 @@ describe("SliderComponent", () => {
         rosService = TestBed.inject(RosService);
         fixture = TestBed.createComponent(SliderComponent);
         component = fixture.componentInstance;
-        component.messageReceiver$ = rosService.qualityFactorReceiver$;
+        component.messageReceiver$ = testSubject;
         fixture.detectChanges();
     });
 
@@ -35,14 +36,14 @@ describe("SliderComponent", () => {
             'input[type="range"]',
         );
         const jsonValue = (component.minValue + component.maxValue) / 2;
-        component.messageReceiver$.next(jsonValue);
+        testSubject.next(jsonValue);
         fixture.detectChanges();
         expect(Number(slider.value)).toBe(jsonValue);
     });
 
     it("should call sendMessage after changing the slider", fakeAsync(() => {
         component.ngOnInit();
-        const spyOnSendMessage = spyOn(component, "sendMessage");
+        const spyOninputSendMsg = spyOn(component, "inputSendMsg");
         const slider = fixture.nativeElement.querySelector(
             'input[type="range"]',
         );
@@ -50,7 +51,7 @@ describe("SliderComponent", () => {
         slider.dispatchEvent(new Event("input"));
         tick(1000);
         fixture.detectChanges();
-        expect(spyOnSendMessage).toHaveBeenCalled();
+        expect(spyOninputSendMsg).toHaveBeenCalled();
     }));
 
     it("should adjust the slider when using textinput on bubble", fakeAsync(() => {

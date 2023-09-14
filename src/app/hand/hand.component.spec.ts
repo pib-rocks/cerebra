@@ -12,6 +12,7 @@ import {MotorControlComponent} from "../motor-control/motor-control.component";
 import {HandComponent} from "./hand.component";
 import {RosService} from "../shared/ros.service";
 import {NavBarComponent} from "../nav-bar/nav-bar.component";
+import {SliderComponent} from "../slider/slider.component";
 
 describe("HandComponent", () => {
     let component: HandComponent;
@@ -24,6 +25,7 @@ describe("HandComponent", () => {
                 HandComponent,
                 MotorControlComponent,
                 NavBarComponent,
+                SliderComponent,
             ],
             imports: [RouterTestingModule, ReactiveFormsModule],
             providers: [RosService],
