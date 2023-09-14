@@ -1,19 +1,19 @@
 // TypeScript implementation of a ROS std_msgs Header (stdandard Messages)
-import {rosTime} from "./rosTime";
+import {RosTime} from "./rosTime";
 
-export type stdMessageHeader = {
-    stamp: rosTime;
+export type StdMessageHeader = {
+    stamp: RosTime;
     frame_id: string;
 };
 
-export function createDefaultStdMessageHeader(): stdMessageHeader {
+export function createDefaultStdMessageHeader(): StdMessageHeader {
     const now = new Date();
-    const stamp: rosTime = {
+    const stamp: RosTime = {
         sec: Math.round(now.getTime() / 1000),
         nanosec: 0,
     };
 
-    const stdMessageHeader: stdMessageHeader = {
+    const stdMessageHeader: StdMessageHeader = {
         stamp,
         //the frame_id specifies the environment the data should be interpreted it
         //possible examples could be "camera_frame" oder "lidar_frame"

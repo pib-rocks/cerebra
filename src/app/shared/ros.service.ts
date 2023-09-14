@@ -6,7 +6,7 @@ import {MotorSettingsMessage} from "./motorSettingsMessage";
 import {Motor} from "./motor";
 import {VoiceAssistant} from "./voice-assistant";
 import {MotorCurrentMessage} from "./currentMessage";
-import {jointTrajectoryMessage} from "../shared/rosMessageTypes/jointTrajectoryMessage";
+import {JointTrajectoryMessage} from "../shared/rosMessageTypes/jointTrajectoryMessage";
 @Injectable({
     providedIn: "root",
 })
@@ -25,20 +25,20 @@ export class RosService {
     qualityFactorReceiver$: BehaviorSubject<number> =
         new BehaviorSubject<number>(80);
     voiceAssistantReceiver$: Subject<any> = new Subject<any>();
-    jointTrajectoryReceiver$: Subject<jointTrajectoryMessage> =
-        new Subject<jointTrajectoryMessage>();
+    jointTrajectoryReceiver$: Subject<JointTrajectoryMessage> =
+        new Subject<JointTrajectoryMessage>();
     private ros!: ROSLIB.Ros;
     private sliderMessageTopic!: ROSLIB.Topic;
     private motorSettingsTopic!: ROSLIB.Topic;
     private voiceAssistantTopic!: ROSLIB.Topic;
-    private motorCurrentConsumptionTopic!: ROSLIB.Topic;
+    private motorCurrentTopic!: ROSLIB.Topic;
     private cameraTopic!: ROSLIB.Topic;
     private timerPeriodTopic!: ROSLIB.Topic;
     private previewSizeTopic!: ROSLIB.Topic;
     private qualityFactorTopic!: ROSLIB.Topic;
     private jointTrajectoryTopic!: ROSLIB.Topic;
 
-    sharedAllFingersMotorPositionSource = new Subject<jointTrajectoryMessage>();
+    sharedAllFingersMotorPositionSource = new Subject<JointTrajectoryMessage>();
     sharedMotorPosition$ =
         this.sharedAllFingersMotorPositionSource.asObservable();
 
@@ -63,8 +63,7 @@ export class RosService {
             this.sliderMessageTopic = this.createMessageTopic();
             this.motorSettingsTopic = this.createMotorSettingsTopic();
             this.voiceAssistantTopic = this.createVoiceAssistantTopic();
-            this.motorCurrentConsumptionTopic =
-                this.createMotorCurrentConsumptionTopic();
+            this.motorCurrentTopic = this.createMotorCurrentTopic();
             this.cameraTopic = this.createCameraTopic();
             this.previewSizeTopic = this.createPreviewSizeTopic();
             this.timerPeriodTopic = this.createTimePeriodTopic();
@@ -72,7 +71,7 @@ export class RosService {
             this.jointTrajectoryTopic = this.createJointTrajectoryTopic();
             this.subscribeSliderTopic();
             this.subscribeMotorSettingsTopic();
-            this.subscribeCurrentConsumptionTopic();
+            this.subscribeCurrentTopic();
             this.subscribePreviewSize();
             this.subscribeQualityFactorTopic();
             this.subscribeTimePeriod();
@@ -122,7 +121,7 @@ export class RosService {
     registerMotor(
         motorName: string,
         motorSettingsReceiver$: Subject<MotorSettingsMessage>,
-        jtMotorReceiver$: Subject<jointTrajectoryMessage>,
+        jtMotorReceiver$: Subject<JointTrajectoryMessage>,
     ) {
         let isRegistered = false;
         if (this.ros.isConnected) {
@@ -152,7 +151,7 @@ export class RosService {
         });
     }
 
-    updateSharedMotorPosition(jtMessage: jointTrajectoryMessage) {
+    updateSharedMotorPosition(jtMessage: JointTrajectoryMessage) {
         this.sharedAllFingersMotorPositionSource.next(jtMessage);
     }
 
@@ -167,7 +166,7 @@ export class RosService {
 
         if ("motor" in msg) {
             if ("currentValue" in msg) {
-                this.motorCurrentConsumptionTopic?.publish(message);
+                this.motorCurrentTopic?.publish(message);
                 console.log("Sent message " + JSON.stringify(message));
             } else {
                 this.sliderMessageTopic?.publish(message);
@@ -186,7 +185,7 @@ export class RosService {
         this.sendMotorSettingsConsoleLog("Sent", message);
     }
 
-    sendJointTrajectoryMessage(jointTrajectoryMessage: jointTrajectoryMessage) {
+    sendJointTrajectoryMessage(jointTrajectoryMessage: JointTrajectoryMessage) {
         const message = new ROSLIB.Message(jointTrajectoryMessage);
         this.jointTrajectoryTopic.publish(message);
         this.sendJointTrajectoryConsoleLog("Sent", message);
@@ -197,7 +196,7 @@ export class RosService {
         jtMessage: ROSLIB.Message,
     ) {
         const jsonJtString = JSON.stringify(jtMessage);
-        const parsedJtJson = JSON.parse(jsonJtString) as jointTrajectoryMessage;
+        const parsedJtJson = JSON.parse(jsonJtString) as JointTrajectoryMessage;
         for (const index in parsedJtJson.joint_names) {
             console.log(
                 sentReceivedPrefix +
@@ -233,7 +232,9 @@ export class RosService {
         console.log("Sent message " + JSON.stringify(message));
     }
 
-    getReceiversByMotorName(motorName: string): Subject<Message>[] {
+    getReceiversByMotorName(
+        motorName: string,
+    ): Subject<MotorSettingsMessage>[] {
         const foundMotors = this.motors.filter((m) => m.motor === motorName);
         return foundMotors.length > 0
             ? foundMotors.map((m) => m["motorSettingsReceiver$"])
@@ -242,7 +243,7 @@ export class RosService {
 
     getJtReceiversByMotorName(
         motorNames: string[],
-    ): Subject<jointTrajectoryMessage>[] {
+    ): Subject<JointTrajectoryMessage>[] {
         const foundMotors = this.motors.filter((m) =>
             motorNames.includes(m.motor),
         );
@@ -340,8 +341,8 @@ export class RosService {
         });
     }
 
-    subscribeCurrentConsumptionTopic() {
-        this.motorCurrentConsumptionTopic.subscribe((message) => {
+    subscribeCurrentTopic() {
+        this.motorCurrentTopic.subscribe((message) => {
             const jsonStr = JSON.stringify(message);
             const json = JSON.parse(jsonStr);
             const jsonArray = JSON.parse(json["data"]);
@@ -419,7 +420,7 @@ export class RosService {
         });
     }
 
-    createMotorCurrentConsumptionTopic(): ROSLIB.Topic {
+    createMotorCurrentTopic(): ROSLIB.Topic {
         return new ROSLIB.Topic({
             ros: this.ros,
             name: this.topicCurrentName,

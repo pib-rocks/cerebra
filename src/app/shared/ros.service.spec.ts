@@ -5,7 +5,7 @@ import {MotorSettingsMessage} from "./motorSettingsMessage";
 import {RosService} from "./ros.service";
 import {
     createEmptyJointTrajectoryMessage,
-    jointTrajectoryMessage,
+    JointTrajectoryMessage,
 } from "./rosMessageTypes/jointTrajectoryMessage";
 
 describe("RosService", () => {
@@ -16,12 +16,12 @@ describe("RosService", () => {
     let spySetUpRos: jasmine.Spy<() => ROSLIB.Ros>;
     let spytopic: jasmine.Spy<() => ROSLIB.Topic>;
     let spyVoiceTopic: jasmine.Spy<() => ROSLIB.Topic>;
-    let spyMotorCurrentConsumptionTopic: jasmine.Spy<() => ROSLIB.Topic>;
+    let spyMotorCurrentTopic: jasmine.Spy<() => ROSLIB.Topic>;
     let spyJointTrajectoryTopic: jasmine.Spy<() => ROSLIB.Topic>;
     let spyCameraTopic: jasmine.Spy<() => ROSLIB.Topic>;
     let spySize: jasmine.Spy<() => ROSLIB.Topic>;
     let spySubscribeTopic: jasmine.Spy<() => void>;
-    let spySubscribeCurrentConsumptionTopic: jasmine.Spy<() => void>;
+    let spySubscribeCurrentTopic: jasmine.Spy<() => void>;
     beforeEach(() => {
         TestBed.configureTestingModule({});
 
@@ -29,7 +29,7 @@ describe("RosService", () => {
         mockRos = new RosMock(service);
         mockRos.setConnection(true);
         const receiver$ = new Subject<MotorSettingsMessage>();
-        const jtMessageReceiver$ = new Subject<jointTrajectoryMessage>();
+        const jtMessageReceiver$ = new Subject<JointTrajectoryMessage>();
         mockTopic = new MockRosbridgeTopic(receiver$);
         mockJtTopic = new MockRosbridgeJtTopic(jtMessageReceiver$);
 
@@ -51,9 +51,9 @@ describe("RosService", () => {
             "createVoiceAssistantTopic",
         ).and.returnValue(mockTopic as unknown as ROSLIB.Topic);
 
-        spyMotorCurrentConsumptionTopic = spyOn(
+        spyMotorCurrentTopic = spyOn(
             RosService.prototype,
-            "createMotorCurrentConsumptionTopic",
+            "createMotorCurrentTopic",
         ).and.returnValue(mockTopic as unknown as ROSLIB.Topic);
 
         spyCameraTopic = spyOn(
@@ -69,6 +69,12 @@ describe("RosService", () => {
         spySubscribeTopic = spyOn(
             RosService.prototype,
             "subscribeMotorSettingsTopic",
+        ).and.callThrough();
+        service = new RosService();
+
+        spySubscribeCurrentTopic = spyOn(
+            RosService.prototype,
+            "subscribeCurrentTopic",
         ).and.callThrough();
         service = new RosService();
     });
@@ -103,8 +109,8 @@ describe("RosService", () => {
         expect(spySize).toHaveBeenCalled();
     });
 
-    it("createMotorCurrentConsumptionTopic should create motor current topic", () => {
-        expect(spyMotorCurrentConsumptionTopic).toHaveBeenCalled();
+    it("createMotorCurrentTopic should create motor current topic", () => {
+        expect(spyMotorCurrentTopic).toHaveBeenCalled();
     });
 
     it("createCameraTopic should create camera topic", () => {
@@ -134,7 +140,7 @@ describe("RosService", () => {
 
     it("The motorCurrentTopic should publish the message to rosbridge when calling sendSliderMessage method, Incase the Message is of type MotorCurrentMessage ", () => {
         service = new RosService();
-        (service as any).motorCurrentConsumptionTopic = new ROSLIB.Topic({
+        (service as any).motorCurrentTopic = new ROSLIB.Topic({
             ros: mockRos as unknown as ROSLIB.Ros,
             name: "test",
             messageType: "std_msgs/String",
@@ -143,10 +149,7 @@ describe("RosService", () => {
             service,
             "sendSliderMessage",
         ).and.callThrough();
-        const spyPublish = spyOn(
-            service["motorCurrentConsumptionTopic"],
-            "publish",
-        );
+        const spyPublish = spyOn(service["motorCurrentTopic"], "publish");
         const message = {motor: "test", currentValue: 10};
         const json = JSON.parse(JSON.stringify(message));
         const parameters = Object.keys(json).map((key) => ({[key]: json[key]}));
@@ -200,7 +203,7 @@ describe("RosService", () => {
 
     it("subscribeJointTrajectoryTopic should publish a value to a rxjs subject", (): void => {
         const jointTrajectoryMessageReceiver$ =
-            new Subject<jointTrajectoryMessage>();
+            new Subject<JointTrajectoryMessage>();
         const motorSettingsMessageReceiver$ =
             new Subject<MotorSettingsMessage>();
         (service as any).jointTrajectoryTopic = new MockRosbridgeJtTopic(
@@ -219,7 +222,7 @@ describe("RosService", () => {
 
     it("subscribeMotorSettingsTopic should publish a value to a rxjs subject", (): void => {
         const jointTrajectoryMessageReceiver$ =
-            new Subject<jointTrajectoryMessage>();
+            new Subject<JointTrajectoryMessage>();
         const motorSettingsMessageReceiver$ =
             new Subject<MotorSettingsMessage>();
         (service as any).motorSettingsTopic = new MockRosbridgeTopic(
@@ -238,7 +241,7 @@ describe("RosService", () => {
 
     it("subscribeMotorSettingsTopic tbd should publish a value to a rxjs subject", (): void => {
         const jointTrajectoryMessageReceiver$ =
-            new Subject<jointTrajectoryMessage>();
+            new Subject<JointTrajectoryMessage>();
         const motorSettingsMessageReceiver$ =
             new Subject<MotorSettingsMessage>();
         (service as any).motorSettingsTopic = new MockRosbridgeTopic(
@@ -257,7 +260,7 @@ describe("RosService", () => {
 
     it("should be able to get a single motor receiver by name", () => {
         const expectedReceiver = new Subject<MotorSettingsMessage>();
-        const expectedJTReceiver = new Subject<jointTrajectoryMessage>();
+        const expectedJTReceiver = new Subject<JointTrajectoryMessage>();
         const motor = {
             motor: "test",
             motorSettingsReceiver$: expectedReceiver,
@@ -270,7 +273,7 @@ describe("RosService", () => {
 });
 
 class MockRosbridgeJtTopic {
-    constructor(private subject: Subject<jointTrajectoryMessage>) {}
+    constructor(private subject: Subject<JointTrajectoryMessage>) {}
     subscribers: ((message: any) => void)[] = [];
     messages: any[] = [];
     subscribe(callback: (message: any) => void) {
@@ -291,7 +294,7 @@ class MockRosbridgeTopic {
     messages: any[] = [];
     subscribe(callback: (message: any) => void) {
         this.subscribers.push(callback);
-        this.subject.next({motor: "test"});
+        this.subject.next({motorName: "test"});
     }
     publish(message: any) {
         this.messages.push(message);
@@ -318,7 +321,7 @@ export class RosMock {
         this.service?.createMessageTopic();
         this.service?.createVoiceAssistantTopic();
         this.service?.createJointTrajectoryTopic();
-        this.service?.createMotorCurrentConsumptionTopic();
+        this.service?.createMotorCurrentTopic();
         this.service?.createCameraTopic();
         this.service?.createPreviewSizeTopic();
     }

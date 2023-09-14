@@ -1,23 +1,23 @@
-import {stdMessageHeader} from "./stdMessageHeader";
+import {StdMessageHeader} from "./stdMessageHeader";
 import {
-    jointTrajectoryPoint,
+    JointTrajectoryPoint,
     createJointTrajectoryPoint,
 } from "./jointTrajectoryPoint";
 import {createDefaultStdMessageHeader} from "./stdMessageHeader";
 
 // TypeScript implementation of the ROS Common-Interfaces JointTrajectoryMessage
 // Documentation at: https://github.com/ros2/common_interfaces/blob/rolling/trajectory_msgs/msg/JointTrajectory.msg
-export type jointTrajectoryMessage = {
-    header: stdMessageHeader;
+export type JointTrajectoryMessage = {
+    header: StdMessageHeader;
     joint_names: string[];
-    points: jointTrajectoryPoint[];
+    points: JointTrajectoryPoint[];
 };
 
-export function createEmptyJointTrajectoryMessage(): jointTrajectoryMessage {
-    const jointTrajectoryMessage: jointTrajectoryMessage = {
+export function createEmptyJointTrajectoryMessage(): JointTrajectoryMessage {
+    const jointTrajectoryMessage: JointTrajectoryMessage = {
         header: createDefaultStdMessageHeader(),
         joint_names: <string[]>[],
-        points: <jointTrajectoryPoint[]>[],
+        points: <JointTrajectoryPoint[]>[],
     };
 
     return jointTrajectoryMessage;
@@ -26,11 +26,11 @@ export function createEmptyJointTrajectoryMessage(): jointTrajectoryMessage {
 export function createSinglePositionJointTrajectoryMessage(
     jointName: string,
     position: number,
-): jointTrajectoryMessage {
-    const jointTrajectoryMessage: jointTrajectoryMessage = {
+): JointTrajectoryMessage {
+    const jointTrajectoryMessage: JointTrajectoryMessage = {
         header: createDefaultStdMessageHeader(),
         joint_names: new Array<string>(),
-        points: new Array<jointTrajectoryPoint>(),
+        points: new Array<JointTrajectoryPoint>(),
     };
 
     jointTrajectoryMessage.joint_names.push(jointName);

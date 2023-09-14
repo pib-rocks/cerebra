@@ -1,5 +1,5 @@
 export interface MotorSettingsMessage {
-    motor: string;
+    motorName: string;
     turnedOn?: boolean;
     pule_widths_min?: string;
     pule_widths_max?: string;

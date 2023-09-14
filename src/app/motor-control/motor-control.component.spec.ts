@@ -20,7 +20,7 @@ import {VoiceAssistant} from "../shared/voice-assistant";
 import {MotorCurrentMessage} from "../shared/currentMessage";
 import {
     createEmptyJointTrajectoryMessage,
-    jointTrajectoryMessage,
+    JointTrajectoryMessage,
 } from "../shared/rosMessageTypes/jointTrajectoryMessage";
 import {createJointTrajectoryPoint} from "../shared/rosMessageTypes/jointTrajectoryPoint";
 import {MotorSettingsMessage} from "../shared/motorSettingsMessage";
@@ -36,7 +36,7 @@ describe("MotorControlComponent", () => {
     let spySendMassege: jasmine.Spy<
         (msg: Message | VoiceAssistant | MotorCurrentMessage) => void
     >;
-    let spySendJTMassege: jasmine.Spy<(msg: jointTrajectoryMessage) => void>;
+    let spySendJTMassege: jasmine.Spy<(msg: JointTrajectoryMessage) => void>;
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
@@ -232,7 +232,7 @@ describe("MotorControlComponent", () => {
 
     it("should send a settings message when changing a value of the setting", () => {
         const message: Message = {
-            motor: component.motorName,
+            motorName: component.motorName,
             pule_widths_min: component.pulseMinRange.value,
             pule_widths_max: component.pulseMaxRange.value,
             rotation_range_min: component.degreeMinFormControl.value,
@@ -255,56 +255,6 @@ describe("MotorControlComponent", () => {
         component.groupSide = "left";
         fixture.detectChanges();
         component.sendMotorSettingsMessage();
-        expect(spyMotorNames).toHaveBeenCalledWith("left");
-        expect(rosService.sendMotorSettingsMessage).toHaveBeenCalledTimes(7);
-    });
-
-    // Nutzloser Test da mit Unterteilung JT/Settings entweder Settings oder JT gesendet werden aber nicht beides
-    it("should send a combined massege with all values if all inputs are valid", () => {
-        const message: Message = {
-            motor: component.motorName,
-            pule_widths_min: component.pulseMinRange.value,
-            pule_widths_max: component.pulseMaxRange.value,
-            rotation_range_min: component.degreeMinFormControl.value,
-            rotation_range_max: component.degreeMaxFormControl.value,
-            velocity: component.velocityFormControl.value,
-            acceleration: component.accelerationFormControl.value,
-            deceleration: component.decelerationFormControl.value,
-            period: component.periodFormControl.value,
-        };
-        component.sendAllMessagesCombined();
-        expect(rosService.sendMotorSettingsMessage).toHaveBeenCalledWith(
-            jasmine.objectContaining(message),
-        );
-        spyOn(motorService, "getMotorHandNames").and.callThrough();
-        component.isCombinedSlider = true;
-        component.groupSide = "left";
-        fixture.detectChanges();
-        component.sendAllMessagesCombined();
-        expect(motorService.getMotorHandNames).toHaveBeenCalledWith("left");
-        expect(rosService.sendMotorSettingsMessage).toHaveBeenCalledTimes(7);
-    });
-    // Nutzloser Test da mit Unterteilung JT/Settings entweder Settings oder JT gesendet werden aber nicht beides
-    it("should send a combined massege with all values if not all inputs are valid", () => {
-        const spyMotorNames = spyOn(
-            motorService,
-            "getMotorHandNames",
-        ).and.callThrough();
-        const message: Message = {
-            motor: component.motorName,
-            turnedOn: component.motorFormControl.value,
-        };
-        component.pulseMinRange.setValue(10);
-        component.pulseMaxRange.setValue(5);
-        component.sendAllMessagesCombined();
-        expect(rosService.sendMotorSettingsMessage).toHaveBeenCalledWith(
-            jasmine.objectContaining(message),
-        );
-
-        component.isCombinedSlider = true;
-        component.groupSide = "left";
-        fixture.detectChanges();
-        component.sendAllMessagesCombined();
         expect(spyMotorNames).toHaveBeenCalledWith("left");
         expect(rosService.sendMotorSettingsMessage).toHaveBeenCalledTimes(7);
     });
