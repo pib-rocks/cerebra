@@ -1,12 +1,4 @@
-import {
-    AfterViewInit,
-    Component,
-    ElementRef,
-    Input,
-    OnInit,
-    TemplateRef,
-    ViewChild,
-} from "@angular/core";
+import {Component, Input, OnInit, TemplateRef, ViewChild} from "@angular/core";
 import {FormControl, Validators} from "@angular/forms";
 import {Subject} from "rxjs";
 import {Message} from "../shared/message";
@@ -18,15 +10,13 @@ import {
     compareValuesPulseValidator,
     notNullValidator,
 } from "../shared/validators";
+import {SliderComponent} from "../slider/slider.component";
 @Component({
     selector: "app-motor-control",
     templateUrl: "./motor-control.component.html",
     styleUrls: ["./motor-control.component.css"],
 })
-export class MotorControlComponent implements OnInit, AfterViewInit {
-    maxSliderValue = 9000;
-    minSliderValue = -9000;
-
+export class MotorControlComponent implements OnInit {
     @Input() motorName = "";
     @Input() labelName = "";
     @Input() groupSide = "left";
@@ -34,27 +24,19 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
     @Input() showCheckBox = true;
     @Input() showMotorSettingsButton = true;
 
-    closeResult!: string;
-    @ViewChild("bubble") bubbleElement!: ElementRef;
-    @ViewChild("range") sliderElem!: ElementRef;
-    @ViewChild("bubbleInput") bubbleInput!: ElementRef;
-    bubbleFormControl: FormControl = new FormControl(0);
-    isInputVisible = false;
+    @ViewChild(SliderComponent) sliderComponent!: SliderComponent;
 
+    closeResult!: string;
     isCombinedSlider = false;
-    maxBubblePosition = 92;
-    minBubblePosition = 8;
-    // the number of pixels from the edges of the slider at which the gray bubbles disappear
-    pixelsFromEdge = 60;
+
     messageReceiver$ = new Subject<Message>();
 
     pulseWidthSubject$ = new Subject<number[]>();
     degreeSubject$ = new Subject<number[]>();
     periodSubject$ = new Subject<number>();
 
-    allFingersSliderReceiver$ = new Subject<number>();
-    motorFormControl: FormControl = new FormControl(true);
     sliderFormControl: FormControl = new FormControl(0);
+    motorFormControl: FormControl = new FormControl(true);
     velocityFormControl: FormControl = new FormControl(0, notNullValidator);
     accelerationFormControl: FormControl = new FormControl(0);
     decelerationFormControl: FormControl = new FormControl(0, notNullValidator);
@@ -64,7 +46,6 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
     degreeMaxFormControl: FormControl = new FormControl(9000);
     degreeMinFormControl: FormControl = new FormControl(-9000);
     timer: any = null;
-    bubblePosition!: number;
     imgSrc: string = "../../assets/toggle-switch-left.png";
 
     constructor(
@@ -74,13 +55,6 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
     ) {}
 
     ngOnInit(): void {
-        this.bubbleFormControl.setValidators([
-            Validators.min(-9000),
-            Validators.max(9000),
-            Validators.pattern("^-?[0-9]*$"),
-            Validators.required,
-            notNullValidator,
-        ]);
         this.pulseMaxRange.setValidators([
             Validators.min(0),
             Validators.max(65535),
@@ -126,12 +100,7 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
                         !Number.isNaN(json.value) &&
                         Number.isFinite(json.value)
                     ) {
-                        this.sliderFormControl.setValue(
-                            this.getValueWithinRange(Number(json.value)),
-                        );
-                        setTimeout(() => {
-                            this.setThumbPosition();
-                        }, 0);
+                        this.sliderFormControl.setValue(Number(json.value));
                     }
                     if (json.turnedOn !== undefined) {
                         this.motorFormControl.setValue(json.turnedOn);
@@ -164,9 +133,7 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
             }
 
             if (value !== undefined) {
-                this.sliderFormControl.setValue(
-                    this.getValueWithinRange(Number(value)),
-                );
+                this.sliderFormControl.setValue(Number(json.value));
             }
 
             if (json.turnedOn !== undefined) {
@@ -205,8 +172,6 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
                 Number(this.pulseMaxRange.value),
             ]);
             this.periodSubject$.next(Number(this.periodFormControl.value));
-            this.setThumbPosition();
-            this.setMinAndMaxBubblePositions();
         });
 
         this.rosService.isInitialized$.subscribe((isInitialized: boolean) => {
@@ -218,82 +183,6 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
                 );
             }
         });
-    }
-
-    ngAfterViewInit() {
-        this.setThumbPosition();
-        this.setMinAndMaxBubblePositions();
-    }
-
-    setMinAndMaxBubblePositions() {
-        const sliderWidth = document.getElementById("slider_" + this.motorName)
-            ?.clientWidth;
-        if (sliderWidth !== undefined && sliderWidth !== 0) {
-            this.minBubblePosition = (this.pixelsFromEdge * 100) / sliderWidth;
-            this.maxBubblePosition =
-                ((sliderWidth - this.pixelsFromEdge) * 100) / sliderWidth;
-        }
-    }
-
-    setThumbPosition() {
-        const val = Number(
-            ((this.sliderFormControl.value - -9000) * 100) / (9000 - -9000),
-        );
-        setTimeout(() => {
-            this.bubblePosition = val;
-        }, 0);
-        this.bubbleFormControl.setValue(this.sliderFormControl.value);
-        this.bubbleElement.nativeElement.style.left = `calc(${val}%)`;
-        this.sliderElem.nativeElement.style.setProperty(
-            "--pos-relative",
-            val.toString(10) + "%",
-        );
-    }
-
-    setSliderValue(value: number) {
-        this.sliderFormControl.setValue(value);
-        this.setThumbPosition();
-    }
-
-    toggleInputVisible() {
-        if (this.sliderFormControl.value !== null) {
-            this.isInputVisible = !this.isInputVisible;
-            this.setSliderValue(this.bubbleFormControl.value);
-            setTimeout(() => {
-                this.bubbleInput.nativeElement.focus();
-                this.bubbleInput.nativeElement.select();
-            }, 0);
-        } else {
-            this.isInputVisible = !this.isInputVisible;
-        }
-    }
-
-    toggleInputInvisible() {
-        if (this.bubbleFormControl.value !== this.sliderFormControl.value) {
-            if (this.sliderFormControl.value !== null) {
-                this.isInputVisible = !this.isInputVisible;
-                if (this.bubbleFormControl.hasError("min")) {
-                    this.setSliderValue(this.minSliderValue);
-                    this.inputSendMsg();
-                } else if (this.bubbleFormControl.hasError("max")) {
-                    this.setSliderValue(this.maxSliderValue);
-                    this.inputSendMsg();
-                } else if (this.bubbleFormControl.hasError("required")) {
-                    this.bubbleFormControl.setValue(
-                        this.sliderFormControl.value,
-                    );
-                } else if (this.bubbleFormControl.hasError("pattern")) {
-                    this.bubbleFormControl.setValue(
-                        this.sliderFormControl.value,
-                    );
-                } else {
-                    this.setSliderValue(Number(this.bubbleFormControl.value));
-                    this.inputSendMsg();
-                }
-            }
-        } else {
-            this.isInputVisible = !this.isInputVisible;
-        }
     }
 
     sendMessage() {
@@ -366,18 +255,6 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
                 this.rosService.sendSliderMessage(message);
             }
         }
-    }
-
-    getValueWithinRange(value: number) {
-        let validVal;
-        if (value > this.maxSliderValue) {
-            validVal = this.maxSliderValue;
-        } else if (value < this.minSliderValue) {
-            validVal = this.minSliderValue;
-        } else {
-            validVal = value;
-        }
-        return validVal;
     }
 
     turnTheMotorOnAndOff() {
@@ -502,20 +379,20 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
         }
     }
 
-    inputSendMsg(): void {
-        if (this.sliderFormControl.value !== null) {
-            clearTimeout(this.timer);
-            this.timer = setTimeout(() => {
-                this.sendMessage();
-            }, 100);
-        }
-    }
-
     inputSendSettingsMsg = () => {
         clearTimeout(this.timer);
         this.timer = setTimeout(() => {
             this.sendSettingMessage();
         }, 100);
+    };
+
+    setSliderValue(value: number) {
+        // this.sliderSubject$.next(value);
+        this.sliderFormControl.setValue(value);
+    }
+    setMotorPositionValue = (value: number) => {
+        this.sliderFormControl.setValue(value);
+        this.sendMessage();
     };
 
     setPulseRanges(number: number[]) {
