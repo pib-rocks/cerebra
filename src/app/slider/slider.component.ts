@@ -11,7 +11,7 @@ import {
 import {FormControl, Validators} from "@angular/forms";
 import {RosService} from "../shared/ros.service";
 import {Message} from "../shared/message";
-import {Subject} from "rxjs";
+import {Observable} from "rxjs";
 import {notNullValidator, steppingValidator} from "../shared/validators";
 @Component({
     selector: "app-slider",
@@ -26,12 +26,12 @@ export class SliderComponent implements OnInit, AfterViewInit {
     @Input() sliderName: string = "";
     @Input() minValue: number = 0;
     @Input() maxValue: number = 100;
-    @Input() defaultValue!: number;
+    @Input() defaultValue!: number | string;
     @Input() step: number = 1;
     @Input() unitOfMeasurement!: string;
     @Input() rotate: boolean = false;
     @Input() publishMessage!: (args: number) => void;
-    @Input() messageReceiver$!: Subject<any>;
+    @Input() messageReceiver$!: Observable<any>;
 
     sliderFormControl = new FormControl();
     bubbleFormControl = new FormControl();
@@ -59,7 +59,7 @@ export class SliderComponent implements OnInit, AfterViewInit {
             steppingValidator(this.step),
         ]);
         this.messageReceiver$.subscribe((value) => {
-            if (value) {
+            if (value !== undefined) {
                 this.sliderFormControl.setValue(
                     this.getValueWithinRange(Number(value)),
                 );
@@ -102,8 +102,6 @@ export class SliderComponent implements OnInit, AfterViewInit {
             this.timer = setTimeout(() => {
                 if (this.publishMessage) {
                     this.publishMessage(Number(this.sliderFormControl.value));
-                } else {
-                    this.sendMessage();
                 }
                 this.sliderEvent.emit(this.sliderFormControl.value);
             }, 100);
