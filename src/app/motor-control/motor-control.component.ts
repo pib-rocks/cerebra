@@ -387,7 +387,6 @@ export class MotorControlComponent implements OnInit {
     };
 
     setSliderValue(value: number) {
-        // this.sliderSubject$.next(value);
         this.sliderFormControl.setValue(value);
     }
     setMotorPositionValue = (value: number) => {

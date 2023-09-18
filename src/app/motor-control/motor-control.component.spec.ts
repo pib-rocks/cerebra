@@ -338,7 +338,7 @@ describe("MotorControlComponent", () => {
         expect(formcontrol1.hasError("error")).toBe(true);
     });
 
-    it("should change sliderFormControl value and call sendMessage after receiving sliderevent", fakeAsync(() => {
+    it("should change sliderFormControl value and call sendMessage after receiving sliderEvent", fakeAsync(() => {
         const spyOnSendMessage = spyOn(
             component,
             "sendMessage",
