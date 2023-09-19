@@ -10,6 +10,7 @@ import {ModalDismissReasons, NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {Message} from "roslib";
 import {MotorService} from "../shared/motor.service";
 import {RosService} from "../shared/ros.service";
+import {SliderComponent} from "../slider/slider.component";
 import {
     compareValuesDegreeValidator,
     compareValuesPulseValidator,
@@ -36,7 +37,7 @@ describe("MotorControlComponent", () => {
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
-            declarations: [MotorControlComponent],
+            declarations: [MotorControlComponent, SliderComponent],
             imports: [ReactiveFormsModule],
             providers: [RosService, MotorService],
         }).compileComponents();
@@ -57,49 +58,12 @@ describe("MotorControlComponent", () => {
         expect(component).toBeTruthy();
     });
 
-    it("should have a maximum range at 1000", () => {
-        const slider = fixture.debugElement.queryAll(By.css("input"))[1]
-            .nativeElement;
-        expect(slider.max).toBe("9000");
-    });
-
-    it("should have a mininum range at -1000", () => {
-        const slider = fixture.debugElement.queryAll(By.css("input"))[1]
-            .nativeElement;
-        expect(slider.min).toBe("-9000");
-    });
-
     it("should call sendJointTrajectoryMessage() of rosService when calling sendJointTrajectoryMessage()", () => {
         spyOn(component, "sendJointTrajectoryMessage").and.callThrough();
         component.sendJointTrajectoryMessage();
         expect(component.sendJointTrajectoryMessage).toHaveBeenCalled();
         expect(rosService.sendJointTrajectoryMessage).toHaveBeenCalled();
     });
-
-    it("should call sendJointTrajectoryMessage() in inputSendJointTrajectoryMsg() on input event", fakeAsync(() => {
-        spyOn(window, "clearTimeout");
-        spyOn(window, "setTimeout");
-        spyOn(component, "inputSendJointTrajectoryMsg").and.callThrough();
-        spyOn(component, "sendJointTrajectoryMessage");
-
-        const slider = fixture.nativeElement.querySelector(
-            'input[type="range"]',
-        );
-        slider.value = 50;
-        slider.dispatchEvent(new Event("input"));
-        tick(500);
-        expect(window.clearTimeout).toHaveBeenCalled();
-        expect(window.setTimeout).toHaveBeenCalledWith(
-            jasmine.any(Function),
-            100,
-        );
-        const timeoutCallback = (
-            window.setTimeout as unknown as jasmine.Spy
-        ).calls.mostRecent().args[0];
-        timeoutCallback();
-        expect(component.inputSendJointTrajectoryMsg).toHaveBeenCalled();
-        expect(component.sendJointTrajectoryMessage).toHaveBeenCalled();
-    }));
 
     it("should call sendSettingsMessage() in inputSendSettingsMsg() on input event", fakeAsync(() => {
         spyOn(window, "clearTimeout");
@@ -130,26 +94,6 @@ describe("MotorControlComponent", () => {
         spyOn(component, "sendJointTrajectoryMessage").and.callThrough();
         component.sendJointTrajectoryMessage();
         expect(rosService.sendJointTrajectoryMessage).toHaveBeenCalled();
-    });
-
-    it("should set a valid value after receiving a message", () => {
-        component.motorName = "thumb_left_stretch";
-        const slider = fixture.nativeElement.querySelector(
-            'input[type="range"]',
-        );
-        const jtMessage = rosService.createEmptyJointTrajectoryMessage();
-        jtMessage.joint_names.push("thumb_left_stretch");
-        jtMessage.points.push(rosService.createJointTrajectoryPoint(50000));
-        component.jointTrajectoryMessageReceiver$.next(jtMessage);
-        fixture.detectChanges();
-        expect(slider.value).toBe(String(component.maxSliderValue));
-
-        const jtMessage2 = rosService.createEmptyJointTrajectoryMessage();
-        jtMessage2.joint_names.push("thumb_left_stretch");
-        jtMessage2.points.push(rosService.createJointTrajectoryPoint(-50000));
-        component.jointTrajectoryMessageReceiver$.next(jtMessage2);
-        fixture.detectChanges();
-        expect(slider.value).toBe(String(component.minSliderValue));
     });
 
     it("should change value after receiving a message", () => {
@@ -349,90 +293,14 @@ describe("MotorControlComponent", () => {
         expect(formcontrol1.hasError("error")).toBe(true);
     });
 
-    it("should make input element visible", (done) => {
-        const mockElementRef = jasmine.createSpyObj("ElementRef", [""], {
-            nativeElement: {
-                focus: () => {
-                    console.log("focus called");
-                },
-                select: () => {
-                    console.log("select called");
-                },
-            },
-        });
-        spyOn(mockElementRef.nativeElement, "focus");
-        spyOn(mockElementRef.nativeElement, "select");
-        component.sliderFormControl.setValue(500);
-        component.isInputVisible = false;
-        component.bubbleInput = mockElementRef;
-        component.toggleInputVisible();
-        expect(component.isInputVisible).toBeTrue();
-        setTimeout(() => {
-            expect(mockElementRef.nativeElement.focus).toHaveBeenCalled();
-            expect(mockElementRef.nativeElement.select).toHaveBeenCalled();
-            done();
-        }, 0);
-    });
-
-    it("should make input element unvisible", () => {
-        component.sliderFormControl.setValue(null);
-        component.toggleInputVisible();
-        expect(component.isInputVisible).toBeTrue();
-    });
-
-    it("should toggle input unvisible", () => {
-        spyOn(component, "setSliderValue");
-        spyOn(component, "inputSendJointTrajectoryMsg");
-        component.bubbleFormControl.setValue(500);
-        component.isInputVisible = true;
-        component.toggleInputInvisible();
-        expect(component.setSliderValue).toHaveBeenCalled();
-        expect(component.inputSendJointTrajectoryMsg).toHaveBeenCalled();
-    });
-
-    it("should toggle input unvisible min validation", fakeAsync(() => {
-        spyOn(component, "setSliderValue");
-        spyOn(component, "sendMotorSettingsMessage");
-        spyOn(component, "toggleInputInvisible").and.callThrough();
-        component.bubbleFormControl.setValue(-5000000);
-        component.isInputVisible = true;
-        component.toggleInputInvisible();
-        expect(component.bubbleFormControl.hasError("min")).toBeTrue;
-        expect(component.setSliderValue).toHaveBeenCalledWith(
-            component.minSliderValue,
-        );
+    it("should change sliderFormControl value and call sendMessage after receiving sliderEvent", fakeAsync(() => {
+        const spyOnSendMessage = spyOn(
+            component,
+            "sendJointTrajectoryMessage",
+        ).and.callThrough();
+        component.setMotorPositionValue(1000);
         tick(500);
-        expect(spySendJTMassege).toHaveBeenCalled();
+        expect(component.sliderFormControl.value).toBe(1000);
+        expect(spyOnSendMessage).toHaveBeenCalled();
     }));
-
-    it("should toggle input unvisible max validation", fakeAsync(() => {
-        spyOn(component, "setSliderValue");
-        spyOn(component, "toggleInputInvisible").and.callThrough();
-        spyOn(component, "sendMotorSettingsMessage");
-        component.bubbleFormControl.setValue(5000000);
-        component.isInputVisible = true;
-        component.toggleInputInvisible();
-        expect(component.bubbleFormControl.hasError("max")).toBeTrue;
-        expect(component.setSliderValue).toHaveBeenCalledWith(
-            component.maxSliderValue,
-        );
-        tick(500);
-        expect(spySendJTMassege).toHaveBeenCalled();
-    }));
-
-    it("should toggle input unvisible required validation", () => {
-        component.bubbleFormControl.setValue(null);
-        component.isInputVisible = true;
-        component.toggleInputInvisible();
-        expect(component.bubbleFormControl.hasError("required")).toBeTrue;
-        expect(component.isInputVisible).toBeFalse();
-    });
-
-    it("should toggle input unvisible pattern validation", () => {
-        spyOn(component, "setThumbPosition");
-        component.bubbleFormControl.setValue("test");
-        component.isInputVisible = true;
-        component.toggleInputInvisible();
-        expect(component.bubbleFormControl.hasError("pattern")).toBeTrue;
-    });
 });

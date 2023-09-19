@@ -8,6 +8,7 @@ import {ArmComponent} from "./arm.component";
 import {RosService} from "../shared/ros.service";
 import {NavBarComponent} from "../nav-bar/nav-bar.component";
 import {RouterTestingModule} from "@angular/router/testing";
+import {SliderComponent} from "../slider/slider.component";
 
 describe("ArmComponent", () => {
     let component: ArmComponent;
@@ -20,6 +21,7 @@ describe("ArmComponent", () => {
                 ArmComponent,
                 MotorControlComponent,
                 NavBarComponent,
+                SliderComponent,
             ],
             imports: [
                 AppRoutingModule,

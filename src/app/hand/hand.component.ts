@@ -13,6 +13,7 @@ import {MotorControlComponent} from "../motor-control/motor-control.component";
 import {RosService} from "../shared/ros.service";
 import {MotorCurrentMessage} from "../shared/currentMessage";
 import {Subject} from "rxjs";
+import {SliderComponent} from "../slider/slider.component";
 
 @Component({
     selector: "app-hand",
@@ -22,6 +23,8 @@ import {Subject} from "rxjs";
 export class HandComponent implements OnInit {
     @ViewChildren(MotorControlComponent)
     childComponents!: QueryList<MotorControlComponent>;
+    @ViewChildren(SliderComponent)
+    sliderComponents!: QueryList<SliderComponent>;
 
     @Input() side = "left";
     messageReceiver$: Subject<MotorCurrentMessage> =
@@ -289,6 +292,9 @@ export class HandComponent implements OnInit {
             (child) => child.labelName === "Open/Close all fingers",
         )[0];
         this.childComponents.forEach((child) => {
+            setTimeout(() => {
+                child.sliderComponent.calculateBubbles();
+            }, 0);
             if (child.labelName != "Thumb opposition") {
                 child.sliderFormControl.setValue(
                     sliderAll.sliderFormControl.value,

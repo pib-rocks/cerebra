@@ -1,12 +1,4 @@
-import {
-    AfterViewInit,
-    Component,
-    ElementRef,
-    Input,
-    OnInit,
-    TemplateRef,
-    ViewChild,
-} from "@angular/core";
+import {Component, Input, OnInit, TemplateRef, ViewChild} from "@angular/core";
 import {FormControl, Validators} from "@angular/forms";
 import {Subject, map} from "rxjs";
 import {MotorSettingsMessage} from "../shared/motorSettingsMessage";
@@ -19,15 +11,13 @@ import {
     notNullValidator,
 } from "../shared/validators";
 import {JointTrajectoryMessage} from "../shared/rosMessageTypes/jointTrajectoryMessage";
+import {SliderComponent} from "../slider/slider.component";
 @Component({
     selector: "app-motor-control",
     templateUrl: "./motor-control.component.html",
     styleUrls: ["./motor-control.component.css"],
 })
-export class MotorControlComponent implements OnInit, AfterViewInit {
-    maxSliderValue = 9000;
-    minSliderValue = -9000;
-
+export class MotorControlComponent implements OnInit {
     @Input() motorName = "";
     @Input() labelName = "";
     @Input() groupSide = "left";
@@ -35,18 +25,11 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
     @Input() showCheckBox = true;
     @Input() showMotorSettingsButton = true;
 
-    closeResult!: string;
-    @ViewChild("bubble") bubbleElement!: ElementRef;
-    @ViewChild("range") sliderElem!: ElementRef;
-    @ViewChild("bubbleInput") bubbleInput!: ElementRef;
-    bubbleFormControl: FormControl = new FormControl(0);
-    isInputVisible = false;
+    @ViewChild(SliderComponent) sliderComponent!: SliderComponent;
 
+    closeResult!: string;
     isCombinedSlider = false;
-    maxBubblePosition = 92;
-    minBubblePosition = 8;
-    // the number of pixels from the edges of the slider at which the gray bubbles disappear
-    pixelsFromEdge = 60;
+
     motorSettingsMessageReceiver$ = new Subject<MotorSettingsMessage>();
     jointTrajectoryMessageReceiver$ = new Subject<JointTrajectoryMessage>();
 
@@ -54,9 +37,8 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
     degreeSubject$ = new Subject<number[]>();
     periodSubject$ = new Subject<number>();
 
-    allFingersSliderReceiver$ = new Subject<number>();
-    motorFormControl: FormControl = new FormControl(true);
     sliderFormControl: FormControl = new FormControl(0);
+    motorFormControl: FormControl = new FormControl(true);
     velocityFormControl: FormControl = new FormControl(0, notNullValidator);
     accelerationFormControl: FormControl = new FormControl(0);
     decelerationFormControl: FormControl = new FormControl(0, notNullValidator);
@@ -66,7 +48,6 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
     degreeMaxFormControl: FormControl = new FormControl(9000);
     degreeMinFormControl: FormControl = new FormControl(-9000);
     timer: any = null;
-    bubblePosition!: number;
     imgSrc: string = "../../assets/toggle-switch-left.png";
 
     constructor(
@@ -76,13 +57,6 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
     ) {}
 
     ngOnInit(): void {
-        this.bubbleFormControl.setValidators([
-            Validators.min(-9000),
-            Validators.max(9000),
-            Validators.pattern("^-?[0-9]*$"),
-            Validators.required,
-            notNullValidator,
-        ]);
         this.pulseMaxRange.setValidators([
             Validators.min(0),
             Validators.max(65535),
@@ -116,48 +90,7 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
         this.isCombinedSlider =
             this.motorName === "all_right_stretch" ||
             this.motorName === "all_left_stretch";
-        //  Sinn? Will ich wirklich allFinger mit Index synchen und wenn ja warum? Wenn schon gegeben sollten wir das mit Anastasiia/Nina/Jürgen
-        // if (this.isCombinedSlider) {
-        //     this.rosService.sharedMotorPosition$.subscribe((jtMessage) => {
-        //         const jointName = jtMessage.joint_names[0];
-        //         const position = jtMessage.points[0].positions[0];
-        //         if (
-        //             (this.motorName === "all_left_stretch" &&
-        //                 jointName === "index_left_stretch") ||
-        //             (this.motorName === "all_right_stretch" &&
-        //                 jointName === "index_right_stretch")
-        //         ) {
-        //             if (!Number.isNaN(position) && Number.isFinite(position)) {
-        //                 this.sliderFormControl.setValue(
-        //                     this.getValueWithinRange(Number(position)),
-        //                 );
-        //                 setTimeout(() => {
-        //                     this.setThumbPosition();
-        //                 }, 0);
-        //             }
-        //         }
-        //     });
-        // }
-        // if (this.isCombinedSlider) {
-        //     this.rosService.sharedMotorSettings$.subscribe(
-        //         (motorSettingMessage) => {
-        //             const jointName = motorSettingMessage.motor;
 
-        //             if (
-        //                 (this.motorName === "all_left_stretch" &&
-        //                     jointName === "index_left_stretch") ||
-        //                 (this.motorName === "all_right_stretch" &&
-        //                     jointName === "index_right_stretch")
-        //             ) {
-        //                 if (motorSettingMessage.turnedOn !== undefined) {
-        //                     this.motorFormControl.setValue(
-        //                         motorSettingMessage.turnedOn,
-        //                     );
-        //                 }
-        //             }
-        //         },
-        //     );
-        // }
         this.motorSettingsMessageReceiver$.subscribe((motorSettingsMessage) => {
             if (motorSettingsMessage.turnedOn !== undefined) {
                 this.motorFormControl.setValue(motorSettingsMessage.turnedOn);
@@ -232,10 +165,7 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
                     Number.isFinite(position);
 
                 if (positionIsValid) {
-                    this.sliderFormControl.setValue(
-                        this.getValueWithinRange(Number(position)),
-                    );
-                    this.setThumbPosition();
+                    this.setSliderValue(position!);
                 }
             });
 
@@ -249,81 +179,6 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
                 );
             }
         });
-    }
-
-    ngAfterViewInit() {
-        this.setThumbPosition();
-        this.setMinAndMaxBubblePositions();
-    }
-
-    setMinAndMaxBubblePositions() {
-        const sliderWidth = document.getElementById("slider_" + this.motorName)
-            ?.clientWidth;
-        if (sliderWidth !== undefined && sliderWidth !== 0) {
-            this.minBubblePosition = (this.pixelsFromEdge * 100) / sliderWidth;
-            this.maxBubblePosition =
-                ((sliderWidth - this.pixelsFromEdge) * 100) / sliderWidth;
-        }
-    }
-
-    setThumbPosition() {
-        const val = Number(
-            ((this.sliderFormControl.value - -9000) * 100) / (9000 - -9000),
-        );
-        setTimeout(() => {
-            this.bubblePosition = val;
-        }, 0);
-        this.bubbleFormControl.setValue(this.sliderFormControl.value);
-        this.bubbleElement.nativeElement.style.left = `calc(${val}%)`;
-        this.sliderElem.nativeElement.style.setProperty(
-            "--pos-relative",
-            val.toString(10) + "%",
-        );
-    }
-
-    setSliderValue(value: number) {
-        this.sliderFormControl.setValue(value);
-        this.setThumbPosition();
-    }
-
-    toggleInputVisible() {
-        if (this.sliderFormControl.value !== null) {
-            this.isInputVisible = !this.isInputVisible;
-            this.setSliderValue(this.bubbleFormControl.value);
-            setTimeout(() => {
-                this.bubbleInput.nativeElement.focus();
-                this.bubbleInput.nativeElement.select();
-            }, 0);
-        } else {
-            this.isInputVisible = !this.isInputVisible;
-        }
-    }
-
-    toggleInputInvisible() {
-        if (this.bubbleFormControl.value !== this.sliderFormControl.value) {
-            if (this.sliderFormControl.value !== null) {
-                this.isInputVisible = !this.isInputVisible;
-                if (this.bubbleFormControl.hasError("min")) {
-                    this.setSliderValue(this.minSliderValue);
-                    this.inputSendJointTrajectoryMsg();
-                } else if (this.bubbleFormControl.hasError("max")) {
-                    this.setSliderValue(this.maxSliderValue);
-                    this.inputSendJointTrajectoryMsg();
-                } else if (
-                    this.bubbleFormControl.hasError("required") ||
-                    this.bubbleFormControl.hasError("pattern")
-                ) {
-                    this.bubbleFormControl.setValue(
-                        this.sliderFormControl.value,
-                    );
-                } else {
-                    this.setSliderValue(Number(this.bubbleFormControl.value));
-                    this.inputSendJointTrajectoryMsg();
-                }
-            }
-        } else {
-            this.isInputVisible = !this.isInputVisible;
-        }
     }
 
     sendJointTrajectoryMessage() {
@@ -401,18 +256,6 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
                 this.rosService.sendMotorSettingsMessage(message);
             }
         }
-    }
-
-    getValueWithinRange(value: number) {
-        let validVal;
-        if (value > this.maxSliderValue) {
-            validVal = this.maxSliderValue;
-        } else if (value < this.minSliderValue) {
-            validVal = this.minSliderValue;
-        } else {
-            validVal = value;
-        }
-        return validVal;
     }
 
     turnTheMotorOnAndOff() {
@@ -534,20 +377,19 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
         }
     }
 
-    inputSendJointTrajectoryMsg(): void {
-        if (this.sliderFormControl.value !== null) {
-            clearTimeout(this.timer);
-            this.timer = setTimeout(() => {
-                this.sendJointTrajectoryMessage();
-            }, 100);
-        }
-    }
-
     inputSendSettingsMsg = () => {
         clearTimeout(this.timer);
         this.timer = setTimeout(() => {
             this.sendMotorSettingsMessage();
         }, 100);
+    };
+
+    setSliderValue(value: number) {
+        this.sliderFormControl.setValue(value);
+    }
+    setMotorPositionValue = (value: number) => {
+        this.sliderFormControl.setValue(value);
+        this.sendJointTrajectoryMessage();
     };
 
     setPulseRanges(number: number[]) {

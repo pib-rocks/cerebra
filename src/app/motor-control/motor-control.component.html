@@ -30,49 +30,17 @@
     </div>
 </div>
 
-<div class="range-wrap">
-    <div
-        class="range-value"
-        #bubble>
-        <input
-            class="bubble-input overlay"
-            id="bubble_input_{{ motorName }}"
-            min="{{ minSliderValue }}"
-            max="{{ maxSliderValue }}"
-            *ngIf="isInputVisible"
-            [formControl]="bubbleFormControl"
-            (blur)="toggleInputInvisible()"
-            (keydown.enter)="toggleInputInvisible()"
-            #bubbleInput />
-        <div
-            class="bubble-span overlay"
-            id="bubble_span_{{ motorName }}"
-            *ngIf="!isInputVisible"
-            (dblclick)="toggleInputVisible()">
-            {{ bubbleFormControl.value }}°
-        </div>
-    </div>
-    <span
-        *ngIf="bubblePosition >= minBubblePosition"
-        class="bubble-span-min"
-        >{{ minSliderValue }}°</span
-    >
-    <span
-        *ngIf="bubblePosition <= maxBubblePosition"
-        class="bubble-span-max"
-        >{{ maxSliderValue }}°</span
-    >
-    <input
-        class="range"
-        type="range"
-        id="slider_{{ motorName }}"
-        min="{{ minSliderValue }}"
-        max="{{ maxSliderValue }}"
-        step="1"
-        [formControl]="sliderFormControl"
-        (input)="setThumbPosition(); inputSendJointTrajectoryMsg()"
-        #range />
-</div>
+<app-slider
+    #refreshRate
+    [sliderName]="motorName"
+    unitOfMeasurement="°"
+    [messageReceiver$]="sliderFormControl.valueChanges"
+    [publishMessage]="setMotorPositionValue"
+    [minValue]="-9000"
+    [maxValue]="9000"
+    [step]="1"
+    defaultValue="0">
+</app-slider>
 
 <ng-template
     #content
