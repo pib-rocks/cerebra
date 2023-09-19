@@ -76,7 +76,6 @@ describe("RosService", () => {
             RosService.prototype,
             "subscribeCurrentTopic",
         ).and.callThrough();
-        service = new RosService();
     });
 
     it("should be created", () => {
@@ -190,14 +189,14 @@ describe("RosService", () => {
             name: "/joint_trajectory",
             messageType: "trajectory_msgs/msg/JointTrajectory",
         });
-        const spySendMassege = spyOn(
+        const spySendMessage = spyOn(
             service,
             "sendJointTrajectoryMessage",
         ).and.callThrough();
         const spyPublish = spyOn(service["jointTrajectoryTopic"], "publish");
         const jtMessage = createEmptyJointTrajectoryMessage();
         service.sendJointTrajectoryMessage(jtMessage);
-        expect(spySendMassege).toHaveBeenCalled();
+        expect(spySendMessage).toHaveBeenCalled();
         expect(spyPublish).toHaveBeenCalledWith(new ROSLIB.Message(jtMessage));
     });
 

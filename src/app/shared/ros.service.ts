@@ -38,14 +38,6 @@ export class RosService {
     private qualityFactorTopic!: ROSLIB.Topic;
     private jointTrajectoryTopic!: ROSLIB.Topic;
 
-    sharedAllFingersMotorPositionSource = new Subject<JointTrajectoryMessage>();
-    sharedMotorPosition$ =
-        this.sharedAllFingersMotorPositionSource.asObservable();
-
-    sharedAllFingersMotorSettingsSource = new Subject<MotorSettingsMessage>();
-    sharedMotorSettings$ =
-        this.sharedAllFingersMotorSettingsSource.asObservable();
-
     private readonly topicName = "/motor_settings";
     private readonly topicMotorSettingsName = "/motorSettings";
     private readonly topicVoiceName = "/cerebra_voice_settings";
@@ -149,14 +141,6 @@ export class RosService {
         this.motors.forEach((m) => {
             console.log("MotorsForEach: " + m.motor);
         });
-    }
-
-    updateSharedMotorPosition(jtMessage: JointTrajectoryMessage) {
-        this.sharedAllFingersMotorPositionSource.next(jtMessage);
-    }
-
-    updateSharedMotorSettingsValue(motorSettingsMessage: MotorSettingsMessage) {
-        this.sharedAllFingersMotorSettingsSource.next(motorSettingsMessage);
     }
 
     sendSliderMessage(msg: Message | VoiceAssistant | MotorCurrentMessage) {

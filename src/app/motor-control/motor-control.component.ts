@@ -230,7 +230,6 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
             )
             .subscribe((object) => {
                 const position = object["position"];
-                const motor_name = object["name"];
                 const positionIsValid: boolean =
                     position !== undefined &&
                     !Number.isNaN(position) &&
@@ -338,7 +337,6 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
             createEmptyJointTrajectoryMessage();
         if (this.isCombinedSlider) {
             motorNames = this.motorService.getMotorHandNames(this.groupSide);
-            console.log("combined");
             for (const index in motorNames) {
                 jointTrajectoryMessage.joint_names.push(motorNames[index]);
                 jointTrajectoryMessage.points.push(
