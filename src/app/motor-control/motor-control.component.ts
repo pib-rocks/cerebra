@@ -18,11 +18,7 @@ import {
     compareValuesPulseValidator,
     notNullValidator,
 } from "../shared/validators";
-import {
-    JointTrajectoryMessage,
-    createEmptyJointTrajectoryMessage,
-} from "../shared/rosMessageTypes/jointTrajectoryMessage";
-import {createJointTrajectoryPoint} from "../shared/rosMessageTypes/jointTrajectoryPoint";
+import {JointTrajectoryMessage} from "../shared/rosMessageTypes/jointTrajectoryMessage";
 @Component({
     selector: "app-motor-control",
     templateUrl: "./motor-control.component.html",
@@ -334,19 +330,23 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
         let motorNames: string[] = [];
 
         const jointTrajectoryMessage: JointTrajectoryMessage =
-            createEmptyJointTrajectoryMessage();
+            this.rosService.createEmptyJointTrajectoryMessage();
         if (this.isCombinedSlider) {
             motorNames = this.motorService.getMotorHandNames(this.groupSide);
             for (const index in motorNames) {
                 jointTrajectoryMessage.joint_names.push(motorNames[index]);
                 jointTrajectoryMessage.points.push(
-                    createJointTrajectoryPoint(this.sliderFormControl.value),
+                    this.rosService.createJointTrajectoryPoint(
+                        this.sliderFormControl.value,
+                    ),
                 );
             }
         } else {
             jointTrajectoryMessage.joint_names.push(this.motorName);
             jointTrajectoryMessage.points.push(
-                createJointTrajectoryPoint(this.sliderFormControl.value),
+                this.rosService.createJointTrajectoryPoint(
+                    this.sliderFormControl.value,
+                ),
             );
         }
         this.rosService.sendJointTrajectoryMessage(jointTrajectoryMessage);

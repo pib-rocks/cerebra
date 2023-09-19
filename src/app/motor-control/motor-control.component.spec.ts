@@ -18,11 +18,7 @@ import {
 import {MotorControlComponent} from "./motor-control.component";
 import {VoiceAssistant} from "../shared/voice-assistant";
 import {MotorCurrentMessage} from "../shared/currentMessage";
-import {
-    createEmptyJointTrajectoryMessage,
-    JointTrajectoryMessage,
-} from "../shared/rosMessageTypes/jointTrajectoryMessage";
-import {createJointTrajectoryPoint} from "../shared/rosMessageTypes/jointTrajectoryPoint";
+import {JointTrajectoryMessage} from "../shared/rosMessageTypes/jointTrajectoryMessage";
 import {MotorSettingsMessage} from "../shared/motorSettingsMessage";
 
 describe("MotorControlComponent", () => {
@@ -141,16 +137,16 @@ describe("MotorControlComponent", () => {
         const slider = fixture.nativeElement.querySelector(
             'input[type="range"]',
         );
-        const jtMessage = createEmptyJointTrajectoryMessage();
+        const jtMessage = rosService.createEmptyJointTrajectoryMessage();
         jtMessage.joint_names.push("thumb_left_stretch");
-        jtMessage.points.push(createJointTrajectoryPoint(50000));
+        jtMessage.points.push(rosService.createJointTrajectoryPoint(50000));
         component.jointTrajectoryMessageReceiver$.next(jtMessage);
         fixture.detectChanges();
         expect(slider.value).toBe(String(component.maxSliderValue));
 
-        const jtMessage2 = createEmptyJointTrajectoryMessage();
+        const jtMessage2 = rosService.createEmptyJointTrajectoryMessage();
         jtMessage2.joint_names.push("thumb_left_stretch");
-        jtMessage2.points.push(createJointTrajectoryPoint(-50000));
+        jtMessage2.points.push(rosService.createJointTrajectoryPoint(-50000));
         component.jointTrajectoryMessageReceiver$.next(jtMessage2);
         fixture.detectChanges();
         expect(slider.value).toBe(String(component.minSliderValue));
@@ -162,9 +158,9 @@ describe("MotorControlComponent", () => {
             'input[type="range"]',
         );
 
-        const jtMessage = createEmptyJointTrajectoryMessage();
+        const jtMessage = rosService.createEmptyJointTrajectoryMessage();
         jtMessage.joint_names.push("thumb_left_stretch");
-        jtMessage.points.push(createJointTrajectoryPoint(500));
+        jtMessage.points.push(rosService.createJointTrajectoryPoint(500));
         component.jointTrajectoryMessageReceiver$.next(jtMessage);
 
         fixture.detectChanges();

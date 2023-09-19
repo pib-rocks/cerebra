@@ -7,6 +7,9 @@ import {Motor} from "./motor";
 import {VoiceAssistant} from "./voice-assistant";
 import {MotorCurrentMessage} from "./currentMessage";
 import {JointTrajectoryMessage} from "../shared/rosMessageTypes/jointTrajectoryMessage";
+import {JointTrajectoryPoint} from "./rosMessageTypes/jointTrajectoryPoint";
+import {RosTime} from "./rosMessageTypes/rosTime";
+import {StdMessageHeader} from "./rosMessageTypes/stdMessageHeader";
 @Injectable({
     providedIn: "root",
 })
@@ -443,5 +446,70 @@ export class RosService {
             name: "quality_factor_topic",
             messageType: "std_msgs/Int32",
         });
+    }
+
+    createEmptyJointTrajectoryMessage(): JointTrajectoryMessage {
+        const jointTrajectoryMessage: JointTrajectoryMessage = {
+            header: this.createDefaultStdMessageHeader(),
+            joint_names: <string[]>[],
+            points: <JointTrajectoryPoint[]>[],
+        };
+
+        return jointTrajectoryMessage;
+    }
+
+    createSinglePositionJointTrajectoryMessage(
+        jointName: string,
+        position: number,
+    ): JointTrajectoryMessage {
+        const jointTrajectoryMessage: JointTrajectoryMessage = {
+            header: this.createDefaultStdMessageHeader(),
+            joint_names: new Array<string>(),
+            points: new Array<JointTrajectoryPoint>(),
+        };
+
+        jointTrajectoryMessage.joint_names.push(jointName);
+        jointTrajectoryMessage.points.push(
+            this.createJointTrajectoryPoint(position),
+        );
+
+        return jointTrajectoryMessage;
+    }
+
+    createJointTrajectoryPoint(position: number): JointTrajectoryPoint {
+        const jointTrajectoryPoint: JointTrajectoryPoint = {
+            positions: new Array<number>(),
+            time_from_start: this.createDefaultRosTime(),
+        };
+        jointTrajectoryPoint.positions.push(position);
+
+        return jointTrajectoryPoint;
+    }
+
+    createDefaultRosTime(): RosTime {
+        const rosTime: RosTime = {
+            sec: 0,
+            nanosec: 100000000,
+        };
+
+        return rosTime;
+    }
+
+    createDefaultStdMessageHeader(): StdMessageHeader {
+        const now = new Date();
+        const stamp: RosTime = {
+            sec: Math.round(now.getTime() / 1000),
+            nanosec: 0,
+        };
+
+        const stdMessageHeader: StdMessageHeader = {
+            stamp,
+            //the frame_id specifies the environment the data should be interpreted it
+            //possible examples could be "camera_frame" oder "lidar_frame"
+            //as of right now, frames are unused in the pib-project, so a default value is assigned
+            frame_id: "motor_frame",
+        };
+
+        return stdMessageHeader;
     }
 }
