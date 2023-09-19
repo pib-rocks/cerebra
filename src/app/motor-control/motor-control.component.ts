@@ -18,11 +18,7 @@ import {
     compareValuesPulseValidator,
     notNullValidator,
 } from "../shared/validators";
-import {
-    jointTrajectoryMessage,
-    createEmptyJointTrajectoryMessage,
-} from "../shared/rosMessageTypes/jointTrajectoryMessage";
-import {createJointTrajectoryPoint} from "../shared/rosMessageTypes/jointTrajectoryPoint";
+import {JointTrajectoryMessage} from "../shared/rosMessageTypes/jointTrajectoryMessage";
 @Component({
     selector: "app-motor-control",
     templateUrl: "./motor-control.component.html",
@@ -52,7 +48,7 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
     // the number of pixels from the edges of the slider at which the gray bubbles disappear
     pixelsFromEdge = 60;
     motorSettingsMessageReceiver$ = new Subject<MotorSettingsMessage>();
-    jointTrajectoryMessageReceiver$ = new Subject<jointTrajectoryMessage>();
+    jointTrajectoryMessageReceiver$ = new Subject<JointTrajectoryMessage>();
 
     pulseWidthSubject$ = new Subject<number[]>();
     degreeSubject$ = new Subject<number[]>();
@@ -179,14 +175,14 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
             if (motorSettingsMessage.period !== undefined) {
                 this.periodFormControl.setValue(motorSettingsMessage.period);
             }
-            if (motorSettingsMessage.pule_widths_max !== undefined) {
+            if (motorSettingsMessage.pulse_widths_max !== undefined) {
                 this.pulseMaxRange.setValue(
-                    motorSettingsMessage.pule_widths_max,
+                    motorSettingsMessage.pulse_widths_max,
                 );
             }
-            if (motorSettingsMessage.pule_widths_min !== undefined) {
+            if (motorSettingsMessage.pulse_widths_min !== undefined) {
                 this.pulseMinRange.setValue(
-                    motorSettingsMessage.pule_widths_min,
+                    motorSettingsMessage.pulse_widths_min,
                 );
             }
             if (motorSettingsMessage.rotation_range_max !== undefined) {
@@ -230,20 +226,11 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
             )
             .subscribe((object: {name?: string; position?: number}) => {
                 const position = object["position"];
-                const motor_name = object["name"];
                 const positionIsValid: boolean =
                     position !== undefined &&
                     !Number.isNaN(position) &&
                     Number.isFinite(position);
-                //SharedMotorPositions????
-                // if (
-                //     motor_name === "index_right_stretch" ||
-                //     motor_name === "index_left_stretch"
-                // ) {
-                //     if (positionIsValid) {
-                // this.rosService.updateSharedMotorPosition(jtMessage);
-                //     }
-                // }
+
                 if (positionIsValid) {
                     this.sliderFormControl.setValue(
                         this.getValueWithinRange(Number(position)),
@@ -342,21 +329,24 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
     sendJointTrajectoryMessage() {
         let motorNames: string[] = [];
 
-        const jointTrajectoryMessage: jointTrajectoryMessage =
-            createEmptyJointTrajectoryMessage();
+        const jointTrajectoryMessage: JointTrajectoryMessage =
+            this.rosService.createEmptyJointTrajectoryMessage();
         if (this.isCombinedSlider) {
             motorNames = this.motorService.getMotorHandNames(this.groupSide);
-            console.log("combined");
             for (const index in motorNames) {
                 jointTrajectoryMessage.joint_names.push(motorNames[index]);
                 jointTrajectoryMessage.points.push(
-                    createJointTrajectoryPoint(this.sliderFormControl.value),
+                    this.rosService.createJointTrajectoryPoint(
+                        this.sliderFormControl.value,
+                    ),
                 );
             }
         } else {
             jointTrajectoryMessage.joint_names.push(this.motorName);
             jointTrajectoryMessage.points.push(
-                createJointTrajectoryPoint(this.sliderFormControl.value),
+                this.rosService.createJointTrajectoryPoint(
+                    this.sliderFormControl.value,
+                ),
             );
         }
         this.rosService.sendJointTrajectoryMessage(jointTrajectoryMessage);
@@ -384,9 +374,9 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
                 );
                 motorNames.forEach((mn) => {
                     const message: MotorSettingsMessage = {
-                        motor: mn,
-                        pule_widths_min: this.pulseMinRange.value,
-                        pule_widths_max: this.pulseMaxRange.value,
+                        motorName: mn,
+                        pulse_widths_min: this.pulseMinRange.value,
+                        pulse_widths_max: this.pulseMaxRange.value,
                         rotation_range_min: this.degreeMinFormControl.value,
                         rotation_range_max: this.degreeMaxFormControl.value,
                         velocity: this.velocityFormControl.value,
@@ -398,9 +388,9 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
                 });
             } else {
                 const message: MotorSettingsMessage = {
-                    motor: this.motorName,
-                    pule_widths_min: this.pulseMinRange.value,
-                    pule_widths_max: this.pulseMaxRange.value,
+                    motorName: this.motorName,
+                    pulse_widths_min: this.pulseMinRange.value,
+                    pulse_widths_max: this.pulseMaxRange.value,
                     rotation_range_min: this.degreeMinFormControl.value,
                     rotation_range_max: this.degreeMaxFormControl.value,
                     velocity: this.velocityFormControl.value,
@@ -431,14 +421,14 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
             motorNames = this.motorService.getMotorHandNames(this.groupSide);
             motorNames.forEach((mn) => {
                 const message: MotorSettingsMessage = {
-                    motor: mn,
+                    motorName: mn,
                     turnedOn: this.motorFormControl.value,
                 };
                 this.rosService.sendMotorSettingsMessage(message);
             });
         } else {
             const message: MotorSettingsMessage = {
-                motor: this.motorName,
+                motorName: this.motorName,
                 turnedOn: this.motorFormControl.value,
             };
             this.rosService.sendMotorSettingsMessage(message);
@@ -494,10 +484,10 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
                 );
                 motorNames.forEach((mn) => {
                     const message: MotorSettingsMessage = {
-                        motor: mn,
+                        motorName: mn,
                         turnedOn: this.motorFormControl.value,
-                        pule_widths_min: this.pulseMinRange.value,
-                        pule_widths_max: this.pulseMaxRange.value,
+                        pulse_widths_min: this.pulseMinRange.value,
+                        pulse_widths_max: this.pulseMaxRange.value,
                         rotation_range_min: this.degreeMinFormControl.value,
                         rotation_range_max: this.degreeMaxFormControl.value,
                         velocity: this.velocityFormControl.value,
@@ -509,10 +499,10 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
                 });
             } else {
                 const message: MotorSettingsMessage = {
-                    motor: this.motorName,
+                    motorName: this.motorName,
                     turnedOn: this.motorFormControl.value,
-                    pule_widths_min: this.pulseMinRange.value,
-                    pule_widths_max: this.pulseMaxRange.value,
+                    pulse_widths_min: this.pulseMinRange.value,
+                    pulse_widths_max: this.pulseMaxRange.value,
                     rotation_range_min: this.degreeMinFormControl.value,
                     rotation_range_max: this.degreeMaxFormControl.value,
                     velocity: this.velocityFormControl.value,
@@ -529,14 +519,14 @@ export class MotorControlComponent implements OnInit, AfterViewInit {
                 );
                 motorNames.forEach((mn) => {
                     const message: MotorSettingsMessage = {
-                        motor: mn,
+                        motorName: mn,
                         turnedOn: this.motorFormControl.value,
                     };
                     this.rosService.sendMotorSettingsMessage(message);
                 });
             } else {
                 const message: MotorSettingsMessage = {
-                    motor: this.motorName,
+                    motorName: this.motorName,
                     turnedOn: this.motorFormControl.value,
                 };
                 this.rosService.sendMotorSettingsMessage(message);

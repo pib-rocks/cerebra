@@ -3,15 +3,13 @@ import * as ROSLIB from "roslib";
 import {Subject} from "rxjs";
 import {MotorSettingsMessage} from "./motorSettingsMessage";
 import {RosService} from "./ros.service";
-import {
-    createEmptyJointTrajectoryMessage,
-    jointTrajectoryMessage,
-} from "./rosMessageTypes/jointTrajectoryMessage";
+import {JointTrajectoryMessage} from "./rosMessageTypes/jointTrajectoryMessage";
 
 describe("RosService", () => {
-    let service: RosService;
+    let rosService: RosService;
     let mockRos: RosMock;
     let mockTopic: MockRosbridgeTopic;
+    let mockJtTopic: MockRosbridgeJtTopic;
     let spySetUpRos: jasmine.Spy<() => ROSLIB.Ros>;
     let spytopic: jasmine.Spy<() => ROSLIB.Topic>;
     let spyVoiceTopic: jasmine.Spy<() => ROSLIB.Topic>;
@@ -24,12 +22,13 @@ describe("RosService", () => {
     beforeEach(() => {
         TestBed.configureTestingModule({});
 
-        service = TestBed.inject(RosService);
-        mockRos = new RosMock(service);
+        rosService = TestBed.inject(RosService);
+        mockRos = new RosMock(rosService);
         mockRos.setConnection(true);
         const receiver$ = new Subject<MotorSettingsMessage>();
-        const jtMessageReceiver$ = new Subject<jointTrajectoryMessage>();
-        mockTopic = new MockRosbridgeTopic("test", receiver$);
+        const jtMessageReceiver$ = new Subject<JointTrajectoryMessage>();
+        mockTopic = new MockRosbridgeTopic(receiver$);
+        mockJtTopic = new MockRosbridgeJtTopic(jtMessageReceiver$);
 
         spySetUpRos = spyOn(RosService.prototype, "setUpRos").and.returnValue(
             mockRos as unknown as ROSLIB.Ros,
@@ -42,7 +41,7 @@ describe("RosService", () => {
         spyJointTrajectoryTopic = spyOn(
             RosService.prototype,
             "createJointTrajectoryTopic",
-        ).and.returnValue(mockTopic as unknown as ROSLIB.Topic);
+        ).and.returnValue(mockJtTopic as unknown as ROSLIB.Topic);
 
         spyVoiceTopic = spyOn(
             RosService.prototype,
@@ -51,7 +50,7 @@ describe("RosService", () => {
 
         spyMotorCurrentTopic = spyOn(
             RosService.prototype,
-            "createMotorCurrentConsumptionTopic",
+            "createMotorCurrentTopic",
         ).and.returnValue(mockTopic as unknown as ROSLIB.Topic);
 
         spyCameraTopic = spyOn(
@@ -68,16 +67,21 @@ describe("RosService", () => {
             RosService.prototype,
             "subscribeMotorSettingsTopic",
         ).and.callThrough();
-        service = new RosService();
+        rosService = new RosService();
+
+        spySubscribeCurrentTopic = spyOn(
+            RosService.prototype,
+            "subscribeCurrentTopic",
+        ).and.callThrough();
     });
 
     it("should be created", () => {
-        expect(service).toBeTruthy();
+        expect(rosService).toBeTruthy();
     });
 
     it("should establish ros in the constructor", () => {
         expect(spySetUpRos).toHaveBeenCalled();
-        expect(service.Ros).toBeTruthy();
+        expect(rosService.Ros).toBeTruthy();
     });
 
     xit("should subscribe motor topic", () => {
@@ -89,6 +93,10 @@ describe("RosService", () => {
         expect(spytopic).toHaveBeenCalled();
     });
 
+    it("createJointTrajectoryTopic should create the jointTrajectory topic", () => {
+        expect(spyJointTrajectoryTopic).toHaveBeenCalled();
+    });
+
     it("createVoiceTopic should create voice topic", () => {
         expect(spyVoiceTopic).toHaveBeenCalled();
     });
@@ -97,7 +105,7 @@ describe("RosService", () => {
         expect(spySize).toHaveBeenCalled();
     });
 
-    it("createTopic should create motor current topic", () => {
+    it("createMotorCurrentTopic should create motor current topic", () => {
         expect(spyMotorCurrentTopic).toHaveBeenCalled();
     });
 
@@ -106,62 +114,59 @@ describe("RosService", () => {
     });
 
     it("The messageTopic should publish the message to rosbridge when calling sendMessage method, Incase the Message is of type Message", () => {
-        service = new RosService();
-        (service as any).sliderMessageTopic = new ROSLIB.Topic({
+        rosService = new RosService();
+        (rosService as any).sliderMessageTopic = new ROSLIB.Topic({
             ros: mockRos as unknown as ROSLIB.Ros,
             name: "test",
             messageType: "std_msgs/String",
         });
         const spySendMassege = spyOn(
-            service,
+            rosService,
             "sendSliderMessage",
         ).and.callThrough();
-        const spyPublish = spyOn(service["motorSettingsTopic"], "publish");
+        const spyPublish = spyOn(rosService["sliderMessageTopic"], "publish");
         const message = {motor: "test", value: "10"};
         const json = JSON.parse(JSON.stringify(message));
         const parameters = Object.keys(json).map((key) => ({[key]: json[key]}));
         const msg = new ROSLIB.Message({data: JSON.stringify(parameters)});
-        service.sendSliderMessage(message);
+        rosService.sendSliderMessage(message);
         expect(spySendMassege).toHaveBeenCalled();
         expect(spyPublish).toHaveBeenCalledWith(msg);
     });
 
-    it("The motorCurrentTopic should publish the message to rosbridge when calling sendMessage method, Incase the Message is of type MotorCurrentMessage ", () => {
-        service = new RosService();
-        (service as any).motorCurrentConsumptionTopic = new ROSLIB.Topic({
+    it("The motorCurrentTopic should publish the message to rosbridge when calling sendSliderMessage method, Incase the Message is of type MotorCurrentMessage ", () => {
+        rosService = new RosService();
+        (rosService as any).motorCurrentTopic = new ROSLIB.Topic({
             ros: mockRos as unknown as ROSLIB.Ros,
             name: "test",
             messageType: "std_msgs/String",
         });
         const spySendMassege = spyOn(
-            service,
+            rosService,
             "sendSliderMessage",
         ).and.callThrough();
-        const spyPublish = spyOn(
-            service["motorCurrentConsumptionTopic"],
-            "publish",
-        );
+        const spyPublish = spyOn(rosService["motorCurrentTopic"], "publish");
         const message = {motor: "test", currentValue: 10};
         const json = JSON.parse(JSON.stringify(message));
         const parameters = Object.keys(json).map((key) => ({[key]: json[key]}));
         const msg = new ROSLIB.Message({data: JSON.stringify(parameters)});
-        service.sendSliderMessage(message);
+        rosService.sendSliderMessage(message);
         expect(spySendMassege).toHaveBeenCalled();
         expect(spyPublish).toHaveBeenCalledWith(msg);
     });
 
     it("The voiceAssistantTopic should publish the message when the sendVoiceActivationMessage method is called.", () => {
-        service = new RosService();
-        (service as any).voiceAssistantTopic = new ROSLIB.Topic({
+        rosService = new RosService();
+        (rosService as any).voiceAssistantTopic = new ROSLIB.Topic({
             ros: mockRos as unknown as ROSLIB.Ros,
             name: "test",
             messageType: "std_msgs/String",
         });
         const spySendMassege = spyOn(
-            service,
+            rosService,
             "sendVoiceActivationMessage",
         ).and.callThrough();
-        const spyPublish = spyOn(service["voiceAssistantTopic"], "publish");
+        const spyPublish = spyOn(rosService["voiceAssistantTopic"], "publish");
         const message = {
             activationFlag: true,
             personality: "1",
@@ -169,80 +174,109 @@ describe("RosService", () => {
             gender: "male",
         };
         const msg = new ROSLIB.Message({data: JSON.stringify(message)});
-        service.sendVoiceActivationMessage(message);
+        rosService.sendVoiceActivationMessage(message);
         expect(spySendMassege).toHaveBeenCalled();
         expect(spyPublish).toHaveBeenCalledWith(msg);
     });
 
     it("The jointTrajectoryTopic should publish the message to rosbridge when calling sendJointTrajectoryMessage method", () => {
-        service = new RosService();
-        (service as any).jointTrajectoryTopic = new ROSLIB.Topic({
+        rosService = new RosService();
+        (rosService as any).jointTrajectoryTopic = new ROSLIB.Topic({
             ros: mockRos as unknown as ROSLIB.Ros,
             name: "/joint_trajectory",
             messageType: "trajectory_msgs/msg/JointTrajectory",
         });
-        const spySendMassege = spyOn(
-            service,
+        const spySendMessage = spyOn(
+            rosService,
             "sendJointTrajectoryMessage",
         ).and.callThrough();
-        const spyPublish = spyOn(service["jointTrajectoryTopic"], "publish");
-        const jtMessage = createEmptyJointTrajectoryMessage();
-        service.sendJointTrajectoryMessage(jtMessage);
-        expect(spySendMassege).toHaveBeenCalled();
+        const spyPublish = spyOn(rosService["jointTrajectoryTopic"], "publish");
+        const jtMessage = rosService.createEmptyJointTrajectoryMessage();
+        rosService.sendJointTrajectoryMessage(jtMessage);
+        expect(spySendMessage).toHaveBeenCalled();
         expect(spyPublish).toHaveBeenCalledWith(new ROSLIB.Message(jtMessage));
     });
 
-    //Wie ist der Test gemeint? Beim Subscriben auf ein normales RXJS-Subject wird keine Nachricht gepublished
-    it("subscribeJointTrajectoryTopic should emmit a value to a subject", (): void => {
+    it("subscribeJointTrajectoryTopic should publish a value to a rxjs subject", (): void => {
         const jointTrajectoryMessageReceiver$ =
-            new Subject<jointTrajectoryMessage>();
-        (service as any).jointTrajectoryTopic = new MockRosbridgeJtTopic(
-            "test",
+            new Subject<JointTrajectoryMessage>();
+        const motorSettingsMessageReceiver$ =
+            new Subject<MotorSettingsMessage>();
+        (rosService as any).jointTrajectoryTopic = new MockRosbridgeJtTopic(
             jointTrajectoryMessageReceiver$,
         ) as unknown as ROSLIB.Topic;
         const motor = {
             motor: "test",
-            receiver$: jointTrajectoryMessageReceiver$,
+            motorSettingsMessageReceiver$,
+            jointTrajectoryMessageReceiver$,
         };
-        const spyNext = spyOn(motor.receiver$, "next");
-        (service as any).motors.push();
-        service.subscribeMotorSettingsTopic();
+        const spyNext = spyOn(motor.jointTrajectoryMessageReceiver$, "next");
+        (rosService as any).motors.push();
+        rosService.subscribeJointTrajectoryTopic();
         expect(spyNext).toHaveBeenCalled();
     });
 
-    //Wie ist der Test gemeint? Beim Subscriben auf ein normales RXJS-Subject wird keine Nachricht gepublished
-    it("subscribeTopic should emmit a value to a subject", (): void => {
-        const receiver$ = new Subject<MotorSettingsMessage>();
-        (service as any).sliderMessageTopic = new MockRosbridgeTopic(
-            "test",
-            receiver$,
+    it("subscribeMotorSettingsTopic should publish a value to a rxjs subject", (): void => {
+        const jointTrajectoryMessageReceiver$ =
+            new Subject<JointTrajectoryMessage>();
+        const motorSettingsMessageReceiver$ =
+            new Subject<MotorSettingsMessage>();
+        (rosService as any).motorSettingsTopic = new MockRosbridgeTopic(
+            motorSettingsMessageReceiver$,
         ) as unknown as ROSLIB.Topic;
-        const motor = {motor: "test", receiver$: receiver$};
-        (service as any).motors.push();
-        const spyNext = spyOn(motor.receiver$, "next");
-        service.subscribeMotorSettingsTopic();
+        const motor = {
+            motor: "test",
+            motorSettingsMessageReceiver$,
+            jointTrajectoryMessageReceiver$,
+        };
+        (rosService as any).motors.push();
+        const spyNext = spyOn(motor.motorSettingsMessageReceiver$, "next");
+        rosService.subscribeMotorSettingsTopic();
+        expect(spyNext).toHaveBeenCalled();
+    });
+
+    it("subscribeMotorSettingsTopic tbd should publish a value to a rxjs subject", (): void => {
+        const jointTrajectoryMessageReceiver$ =
+            new Subject<JointTrajectoryMessage>();
+        const motorSettingsMessageReceiver$ =
+            new Subject<MotorSettingsMessage>();
+        (rosService as any).motorSettingsTopic = new MockRosbridgeTopic(
+            motorSettingsMessageReceiver$,
+        ) as unknown as ROSLIB.Topic;
+        const motor = {
+            motor: "test",
+            motorSettingsMessageReceiver$,
+            jointTrajectoryMessageReceiver$,
+        };
+        (rosService as any).motors.push();
+        const spyNext = spyOn(motor.motorSettingsMessageReceiver$, "next");
+        rosService.subscribeMotorSettingsTopic();
         expect(spyNext).toHaveBeenCalled();
     });
 
     it("should be able to get a single motor receiver by name", () => {
         const expectedReceiver = new Subject<MotorSettingsMessage>();
-        const motor = {motor: "test", receiver$: expectedReceiver};
-        (service as any).motors.push(motor);
-        const actualReceiver$ = service.getReceiversByMotorName("test")[0];
+        const expectedJTReceiver = new Subject<JointTrajectoryMessage>();
+        const motor = {
+            motor: "test",
+            motorSettingsReceiver$: expectedReceiver,
+            jointTrajectoryReceiver$: expectedJTReceiver,
+        };
+        (rosService as any).motors.push(motor);
+        const actualReceiver$ =
+            rosService.getMotorSettingsReceiversByMotorName("test")[0];
         expect(expectedReceiver).toEqual(actualReceiver$);
     });
 });
 
 class MockRosbridgeJtTopic {
-    constructor(
-        private jointTrajectoryTopic: string,
-        private subject: Subject<jointTrajectoryMessage>,
-    ) {}
+    rosService = new RosService();
+    constructor(private subject: Subject<JointTrajectoryMessage>) {}
     subscribers: ((message: any) => void)[] = [];
     messages: any[] = [];
     subscribe(callback: (message: any) => void) {
         this.subscribers.push(callback);
-        this.subject.next(createEmptyJointTrajectoryMessage());
+        this.subject.next(this.rosService.createEmptyJointTrajectoryMessage());
     }
     publish(message: any) {
         this.messages.push(message);
@@ -253,15 +287,12 @@ class MockRosbridgeJtTopic {
 }
 
 class MockRosbridgeTopic {
-    constructor(
-        private motorSettingsTopic: string,
-        private subject: Subject<MotorSettingsMessage>,
-    ) {}
+    constructor(private subject: Subject<MotorSettingsMessage>) {}
     subscribers: ((message: any) => void)[] = [];
     messages: any[] = [];
     subscribe(callback: (message: any) => void) {
         this.subscribers.push(callback);
-        this.subject.next({motor: "test"});
+        this.subject.next({motorName: "test"});
     }
     publish(message: any) {
         this.messages.push(message);
@@ -287,7 +318,8 @@ export class RosMock {
     on() {
         this.service?.createMessageTopic();
         this.service?.createVoiceAssistantTopic();
-        this.service?.createMotorCurrentConsumptionTopic();
+        this.service?.createJointTrajectoryTopic();
+        this.service?.createMotorCurrentTopic();
         this.service?.createCameraTopic();
         this.service?.createPreviewSizeTopic();
     }

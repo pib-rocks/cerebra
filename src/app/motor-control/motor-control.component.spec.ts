@@ -18,11 +18,7 @@ import {
 import {MotorControlComponent} from "./motor-control.component";
 import {VoiceAssistant} from "../shared/voice-assistant";
 import {MotorCurrentMessage} from "../shared/currentMessage";
-import {
-    createEmptyJointTrajectoryMessage,
-    jointTrajectoryMessage,
-} from "../shared/rosMessageTypes/jointTrajectoryMessage";
-import {createJointTrajectoryPoint} from "../shared/rosMessageTypes/jointTrajectoryPoint";
+import {JointTrajectoryMessage} from "../shared/rosMessageTypes/jointTrajectoryMessage";
 import {MotorSettingsMessage} from "../shared/motorSettingsMessage";
 
 describe("MotorControlComponent", () => {
@@ -36,7 +32,7 @@ describe("MotorControlComponent", () => {
     let spySendMassege: jasmine.Spy<
         (msg: Message | VoiceAssistant | MotorCurrentMessage) => void
     >;
-    let spySendJTMassege: jasmine.Spy<(msg: jointTrajectoryMessage) => void>;
+    let spySendJTMassege: jasmine.Spy<(msg: JointTrajectoryMessage) => void>;
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
@@ -141,16 +137,16 @@ describe("MotorControlComponent", () => {
         const slider = fixture.nativeElement.querySelector(
             'input[type="range"]',
         );
-        const jtMessage = createEmptyJointTrajectoryMessage();
+        const jtMessage = rosService.createEmptyJointTrajectoryMessage();
         jtMessage.joint_names.push("thumb_left_stretch");
-        jtMessage.points.push(createJointTrajectoryPoint(50000));
+        jtMessage.points.push(rosService.createJointTrajectoryPoint(50000));
         component.jointTrajectoryMessageReceiver$.next(jtMessage);
         fixture.detectChanges();
         expect(slider.value).toBe(String(component.maxSliderValue));
 
-        const jtMessage2 = createEmptyJointTrajectoryMessage();
+        const jtMessage2 = rosService.createEmptyJointTrajectoryMessage();
         jtMessage2.joint_names.push("thumb_left_stretch");
-        jtMessage2.points.push(createJointTrajectoryPoint(-50000));
+        jtMessage2.points.push(rosService.createJointTrajectoryPoint(-50000));
         component.jointTrajectoryMessageReceiver$.next(jtMessage2);
         fixture.detectChanges();
         expect(slider.value).toBe(String(component.minSliderValue));
@@ -162,9 +158,9 @@ describe("MotorControlComponent", () => {
             'input[type="range"]',
         );
 
-        const jtMessage = createEmptyJointTrajectoryMessage();
+        const jtMessage = rosService.createEmptyJointTrajectoryMessage();
         jtMessage.joint_names.push("thumb_left_stretch");
-        jtMessage.points.push(createJointTrajectoryPoint(500));
+        jtMessage.points.push(rosService.createJointTrajectoryPoint(500));
         component.jointTrajectoryMessageReceiver$.next(jtMessage);
 
         fixture.detectChanges();
@@ -232,9 +228,9 @@ describe("MotorControlComponent", () => {
 
     it("should send a settings message when changing a value of the setting", () => {
         const message: Message = {
-            motor: component.motorName,
-            pule_widths_min: component.pulseMinRange.value,
-            pule_widths_max: component.pulseMaxRange.value,
+            motorName: component.motorName,
+            pulse_widths_min: component.pulseMinRange.value,
+            pulse_widths_max: component.pulseMaxRange.value,
             rotation_range_min: component.degreeMinFormControl.value,
             rotation_range_max: component.degreeMaxFormControl.value,
             velocity: component.velocityFormControl.value,
@@ -255,56 +251,6 @@ describe("MotorControlComponent", () => {
         component.groupSide = "left";
         fixture.detectChanges();
         component.sendMotorSettingsMessage();
-        expect(spyMotorNames).toHaveBeenCalledWith("left");
-        expect(rosService.sendMotorSettingsMessage).toHaveBeenCalledTimes(7);
-    });
-
-    // Nutzloser Test da mit Unterteilung JT/Settings entweder Settings oder JT gesendet werden aber nicht beides
-    it("should send a combined massege with all values if all inputs are valid", () => {
-        const message: Message = {
-            motor: component.motorName,
-            pule_widths_min: component.pulseMinRange.value,
-            pule_widths_max: component.pulseMaxRange.value,
-            rotation_range_min: component.degreeMinFormControl.value,
-            rotation_range_max: component.degreeMaxFormControl.value,
-            velocity: component.velocityFormControl.value,
-            acceleration: component.accelerationFormControl.value,
-            deceleration: component.decelerationFormControl.value,
-            period: component.periodFormControl.value,
-        };
-        component.sendAllMessagesCombined();
-        expect(rosService.sendMotorSettingsMessage).toHaveBeenCalledWith(
-            jasmine.objectContaining(message),
-        );
-        spyOn(motorService, "getMotorHandNames").and.callThrough();
-        component.isCombinedSlider = true;
-        component.groupSide = "left";
-        fixture.detectChanges();
-        component.sendAllMessagesCombined();
-        expect(motorService.getMotorHandNames).toHaveBeenCalledWith("left");
-        expect(rosService.sendMotorSettingsMessage).toHaveBeenCalledTimes(7);
-    });
-    // Nutzloser Test da mit Unterteilung JT/Settings entweder Settings oder JT gesendet werden aber nicht beides
-    it("should send a combined massege with all values if not all inputs are valid", () => {
-        const spyMotorNames = spyOn(
-            motorService,
-            "getMotorHandNames",
-        ).and.callThrough();
-        const message: Message = {
-            motor: component.motorName,
-            turnedOn: component.motorFormControl.value,
-        };
-        component.pulseMinRange.setValue(10);
-        component.pulseMaxRange.setValue(5);
-        component.sendAllMessagesCombined();
-        expect(rosService.sendMotorSettingsMessage).toHaveBeenCalledWith(
-            jasmine.objectContaining(message),
-        );
-
-        component.isCombinedSlider = true;
-        component.groupSide = "left";
-        fixture.detectChanges();
-        component.sendAllMessagesCombined();
         expect(spyMotorNames).toHaveBeenCalledWith("left");
         expect(rosService.sendMotorSettingsMessage).toHaveBeenCalledTimes(7);
     });
