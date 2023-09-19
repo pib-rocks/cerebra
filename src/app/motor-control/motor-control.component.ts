@@ -157,7 +157,7 @@ export class MotorControlComponent implements OnInit {
                     }
                 }),
             )
-            .subscribe((object) => {
+            .subscribe((object: {name?: string; position?: number}) => {
                 const position = object["position"];
                 const positionIsValid: boolean =
                     position !== undefined &&
