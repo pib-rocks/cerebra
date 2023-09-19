@@ -458,24 +458,6 @@ export class RosService {
         return jointTrajectoryMessage;
     }
 
-    createSinglePositionJointTrajectoryMessage(
-        jointName: string,
-        position: number,
-    ): JointTrajectoryMessage {
-        const jointTrajectoryMessage: JointTrajectoryMessage = {
-            header: this.createDefaultStdMessageHeader(),
-            joint_names: new Array<string>(),
-            points: new Array<JointTrajectoryPoint>(),
-        };
-
-        jointTrajectoryMessage.joint_names.push(jointName);
-        jointTrajectoryMessage.points.push(
-            this.createJointTrajectoryPoint(position),
-        );
-
-        return jointTrajectoryMessage;
-    }
-
     createJointTrajectoryPoint(position: number): JointTrajectoryPoint {
         const jointTrajectoryPoint: JointTrajectoryPoint = {
             positions: new Array<number>(),
