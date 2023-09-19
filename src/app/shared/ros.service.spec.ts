@@ -266,7 +266,8 @@ describe("RosService", () => {
             jointTrajectoryReceiver$: expectedJTReceiver,
         };
         (service as any).motors.push(motor);
-        const actualReceiver$ = service.getReceiversByMotorName("test")[0];
+        const actualReceiver$ =
+            service.getMotorSettingsReceiversByMotorName("test")[0];
         expect(expectedReceiver).toEqual(actualReceiver$);
     });
 });

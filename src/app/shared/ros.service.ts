@@ -216,15 +216,6 @@ export class RosService {
         console.log("Sent message " + JSON.stringify(message));
     }
 
-    getReceiversByMotorName(
-        motorName: string,
-    ): Subject<MotorSettingsMessage>[] {
-        const foundMotors = this.motors.filter((m) => m.motor === motorName);
-        return foundMotors.length > 0
-            ? foundMotors.map((m) => m["motorSettingsReceiver$"])
-            : [];
-    }
-
     getJtReceiversByMotorName(
         motorNames: string[],
     ): Subject<JointTrajectoryMessage>[] {
@@ -316,7 +307,7 @@ export class RosService {
                     ": " +
                     JSON.stringify(jsonObject),
             );
-            const receivers$ = this.getReceiversByMotorName(
+            const receivers$ = this.getMotorSettingsReceiversByMotorName(
                 jsonObject["motor"],
             );
             receivers$.forEach((r) => {
