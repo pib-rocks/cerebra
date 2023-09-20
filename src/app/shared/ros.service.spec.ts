@@ -4,16 +4,18 @@ import {Subject} from "rxjs";
 import {MotorSettingsMessage} from "./motorSettingsMessage";
 import {RosService} from "./ros.service";
 import {JointTrajectoryMessage} from "./rosMessageTypes/jointTrajectoryMessage";
+import {Motor} from "./motor";
 
 describe("RosService", () => {
     let rosService: RosService;
     let mockRos: RosMock;
-    let mockTopic: MockRosbridgeMotorSettingsTopic;
-    let mockJtTopic: MockRosbridgeJtTopic;
+    let mockMotorSettingsTopic: MockRosbridgeMotorSettingsTopic;
+    let mockJointTrajectoryTopic: MockRosbridgeJtTopic;
     let spySetUpRos: jasmine.Spy<() => ROSLIB.Ros>;
     let spytopic: jasmine.Spy<() => ROSLIB.Topic>;
     let spyVoiceTopic: jasmine.Spy<() => ROSLIB.Topic>;
     let spyMotorCurrentTopic: jasmine.Spy<() => ROSLIB.Topic>;
+    let spyMotorSettingsTopic: jasmine.Spy<() => ROSLIB.Topic>;
     let spyJointTrajectoryTopic: jasmine.Spy<() => ROSLIB.Topic>;
     let spyCameraTopic: jasmine.Spy<() => ROSLIB.Topic>;
     let spySize: jasmine.Spy<() => ROSLIB.Topic>;
@@ -26,8 +28,8 @@ describe("RosService", () => {
         mockRos.setConnection(true);
         const receiver$ = new Subject<MotorSettingsMessage>();
         const jtMessageReceiver$ = new Subject<JointTrajectoryMessage>();
-        mockTopic = new MockRosbridgeMotorSettingsTopic(receiver$);
-        mockJtTopic = new MockRosbridgeJtTopic(jtMessageReceiver$);
+        mockMotorSettingsTopic = new MockRosbridgeMotorSettingsTopic(receiver$);
+        mockJointTrajectoryTopic = new MockRosbridgeJtTopic(jtMessageReceiver$);
 
         spySetUpRos = spyOn(RosService.prototype, "setUpRos").and.returnValue(
             mockRos as unknown as ROSLIB.Ros,
@@ -35,32 +37,37 @@ describe("RosService", () => {
         spytopic = spyOn(
             RosService.prototype,
             "createMessageTopic",
-        ).and.returnValue(mockTopic as unknown as ROSLIB.Topic);
+        ).and.returnValue(mockMotorSettingsTopic as unknown as ROSLIB.Topic);
 
         spyJointTrajectoryTopic = spyOn(
             RosService.prototype,
             "createJointTrajectoryTopic",
-        ).and.returnValue(mockJtTopic as unknown as ROSLIB.Topic);
+        ).and.returnValue(mockJointTrajectoryTopic as unknown as ROSLIB.Topic);
 
         spyVoiceTopic = spyOn(
             RosService.prototype,
             "createVoiceAssistantTopic",
-        ).and.returnValue(mockTopic as unknown as ROSLIB.Topic);
+        ).and.returnValue(mockMotorSettingsTopic as unknown as ROSLIB.Topic);
 
         spyMotorCurrentTopic = spyOn(
             RosService.prototype,
             "createMotorCurrentTopic",
-        ).and.returnValue(mockTopic as unknown as ROSLIB.Topic);
+        ).and.returnValue(mockMotorSettingsTopic as unknown as ROSLIB.Topic);
+
+        spyMotorSettingsTopic = spyOn(
+            RosService.prototype,
+            "createMotorSettingsTopic",
+        ).and.returnValue(mockMotorSettingsTopic as unknown as ROSLIB.Topic);
 
         spyCameraTopic = spyOn(
             RosService.prototype,
             "createCameraTopic",
-        ).and.returnValue(mockTopic as unknown as ROSLIB.Topic);
+        ).and.returnValue(mockMotorSettingsTopic as unknown as ROSLIB.Topic);
 
         spySize = spyOn(
             RosService.prototype,
             "createPreviewSizeTopic",
-        ).and.returnValue(mockTopic as unknown as ROSLIB.Topic);
+        ).and.returnValue(mockMotorSettingsTopic as unknown as ROSLIB.Topic);
 
         spySubscribeCurrentTopic = spyOn(
             RosService.prototype,
@@ -97,6 +104,10 @@ describe("RosService", () => {
 
     it("createMotorCurrentTopic should create motor current topic", () => {
         expect(spyMotorCurrentTopic).toHaveBeenCalled();
+    });
+
+    it("createMotorSettingsTopic should create motor current topic", () => {
+        expect(spyMotorSettingsTopic).toHaveBeenCalled();
     });
 
     it("createCameraTopic should create camera topic", () => {
@@ -206,78 +217,48 @@ describe("RosService", () => {
         expect(spyNext).toHaveBeenCalled();
     });
 
-    it("subscribeMotorSettingsTopic should publish a value to a rxjs subject", (): void => {
-        const jointTrajectoryMessageReceiver$ =
-            new Subject<JointTrajectoryMessage>();
-        const motorSettingsMessageReceiver$ =
-            new Subject<MotorSettingsMessage>();
-        (rosService as any).motorSettingsTopic =
-            new MockRosbridgeMotorSettingsTopic(
-                motorSettingsMessageReceiver$,
-            ) as unknown as ROSLIB.Topic;
-        const motor = {
-            motor: "test",
-            motorSettingsMessageReceiver$,
-            jointTrajectoryMessageReceiver$,
-        };
-        const spyNext = spyOn(motor.motorSettingsMessageReceiver$, "next");
-        (rosService as any).motors.push();
-        rosService.subscribeMotorSettingsTopic();
-        expect(spyNext).toHaveBeenCalled();
-    });
+    it("the subscribe method of motorSettingsTopic should be called when a new message is received", () => {
+        const rService = rosService as any;
 
-    it("subscribeMotorSettingsTopic should publish a value to a rxjs subject", (): void => {
-        const jointTrajectoryMessageReceiver$ =
-            new Subject<JointTrajectoryMessage>();
-        const motorSettingsMessageReceiver$ =
-            new Subject<MotorSettingsMessage>();
-        (rosService as any).motorSettingsTopic =
-            new MockRosbridgeMotorSettingsTopic(
-                motorSettingsMessageReceiver$,
-            ) as unknown as ROSLIB.Topic;
-        const motor = {
+        const expectedReceiver$ = new Subject<MotorSettingsMessage>();
+        const expectedJTReceiver$ = new Subject<JointTrajectoryMessage>();
+        const motor: Motor = {
             motor: "test",
-            motorSettingsMessageReceiver$,
-            jointTrajectoryMessageReceiver$,
+            motorSettingsReceiver$: expectedReceiver$,
+            jointTrajectoryReceiver$: expectedJTReceiver$,
         };
-        (rosService as any).motors.push();
-        const spyNext = spyOn(motor.motorSettingsMessageReceiver$, "next");
-        rosService.subscribeMotorSettingsTopic();
-        expect(spyNext).toHaveBeenCalled();
-    });
+        const message: MotorSettingsMessage = {
+            motorName: "test",
+        };
+        rService.motors.push(motor);
+        expect(rService.motors.length).toBe(1);
 
-    it("subscribeMotorSettingsTopic tbd should publish a value to a rxjs subject", (): void => {
-        const jointTrajectoryMessageReceiver$ =
-            new Subject<JointTrajectoryMessage>();
-        const motorSettingsMessageReceiver$ =
-            new Subject<MotorSettingsMessage>();
-        (rosService as any).motorSettingsTopic =
-            new MockRosbridgeMotorSettingsTopic(
-                motorSettingsMessageReceiver$,
-            ) as unknown as ROSLIB.Topic;
-        const motor = {
-            motor: "test",
-            motorSettingsMessageReceiver$,
-            jointTrajectoryMessageReceiver$,
-        };
-        (rosService as any).motors.push();
-        const spyNext = spyOn(motor.motorSettingsMessageReceiver$, "next");
-        rosService.subscribeMotorSettingsTopic();
-        expect(spyNext).toHaveBeenCalled();
+        const json = JSON.parse(JSON.stringify(message));
+        const parameters = Object.keys(json).map((key) => ({[key]: json[key]}));
+        const roslibMessage = new ROSLIB.Message({
+            data: JSON.stringify(parameters),
+        });
+        const spySettingsReceiver = spyOn(motor.motorSettingsReceiver$, "next");
+
+        rService.motorSettingsTopic = rService.createMotorSettingsTopic();
+        rService.subscribeMotorSettingsTopic();
+        rService.motorSettingsTopic.publish(roslibMessage);
+
+        expect(spySettingsReceiver).toHaveBeenCalled();
     });
 
     it("should be able to get a single motor receiver by name", () => {
-        const expectedReceiver = new Subject<MotorSettingsMessage>();
-        const expectedJTReceiver = new Subject<JointTrajectoryMessage>();
+        const expectedReceiver$ = new Subject<MotorSettingsMessage>();
+        const expectedJTReceiver$ = new Subject<JointTrajectoryMessage>();
         const motor = {
             motor: "test",
-            motorSettingsReceiver$: expectedReceiver,
-            jointTrajectoryReceiver$: expectedJTReceiver,
+            motorSettingsReceiver$: expectedReceiver$,
+            jointTrajectoryReceiver$: expectedJTReceiver$,
         };
         (rosService as any).motors.push(motor);
         const actualReceiver$ =
             rosService.getMotorSettingsReceiversByMotorName("test")[0];
-        expect(expectedReceiver).toEqual(actualReceiver$);
+        expect(expectedReceiver$).toEqual(actualReceiver$);
     });
 
     it("should add a motor to the motor array after calling registerMotor", () => {
@@ -346,6 +327,7 @@ export class RosMock {
         this.service?.createVoiceAssistantTopic();
         this.service?.createJointTrajectoryTopic();
         this.service?.createMotorCurrentTopic();
+        this.service?.createMotorSettingsTopic();
         this.service?.createCameraTopic();
         this.service?.createPreviewSizeTopic();
     }
