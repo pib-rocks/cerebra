@@ -284,11 +284,12 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
                 ((clickLocation - offsetLeft) / elementWidth) * 100;
             let sliderValue = (thumbMovePercentage / 100) * this.maxValue; //Assuming slider has a minValue of 0
 
-            if (this.maxValue == 9000) {
-                //In case the slider starts with -9000 and ends with +9000
+            if (this.minValue < 0) {
+                //In case the slider has a negative minValue and a positive maxValue
                 sliderValue =
                     this.minValue +
-                    (thumbMovePercentage / 100) * this.maxValue * 2;
+                    (thumbMovePercentage / 100) *
+                        (this.maxValue + Math.abs(this.minValue));
             }
 
             //Finds the closest slider to move
