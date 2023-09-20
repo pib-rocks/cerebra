@@ -5,6 +5,7 @@ import {MotorSettingsMessage} from "./motorSettingsMessage";
 import {RosService} from "./ros.service";
 import {JointTrajectoryMessage} from "./rosMessageTypes/jointTrajectoryMessage";
 import {Motor} from "./motor";
+import {MotorCurrentMessage} from "./currentMessage";
 
 describe("RosService", () => {
     let rosService: RosService;
@@ -253,6 +254,28 @@ describe("RosService", () => {
         rService.motorSettingsTopic.publish(roslibMessage);
 
         expect(spySettingsReceiver).toHaveBeenCalled();
+    });
+
+    it("the subscribe method of motorCurrentTopic should be called when a new message is received", () => {
+        const rService = rosService as any;
+
+        const message: MotorCurrentMessage = {
+            motor: "test",
+            currentValue: 200,
+        };
+
+        const json = JSON.parse(JSON.stringify(message));
+        const parameters = Object.keys(json).map((key) => ({[key]: json[key]}));
+        const roslibMessage = new ROSLIB.Message({
+            data: JSON.stringify(parameters),
+        });
+        const spyCurrentReceiver = spyOn(rService.currentReceiver$, "next");
+
+        rService.motorCurrentTopic = rService.createMotorCurrentTopic();
+        rService.subscribeCurrentTopic();
+        rService.motorCurrentTopic.publish(roslibMessage);
+
+        expect(spyCurrentReceiver).toHaveBeenCalled();
     });
 
     it("should be able to get a single motor receiver by name", () => {
