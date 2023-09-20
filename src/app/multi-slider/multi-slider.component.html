@@ -58,7 +58,10 @@
         class="bubble-span-max"
         >{{ maxValue }}{{ unitShort }}</span
     >
-    <div class="wrap">
+    <div
+        id="slider"
+        class="wrap"
+        (click)="onSliderClick($event, 'slider')">
         <input
             class="range bottom-layer"
             type="range"

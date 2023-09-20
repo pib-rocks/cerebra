@@ -218,6 +218,7 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
         setTimeout(() => {
             this.bubblePositionUpper = val2;
         }, 0);
+
         this.bubbleFormControlUpper.setValue(
             Number(this.sliderFormControlUpper.value),
         );
@@ -256,5 +257,52 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
             return "NAME_NOT_PASSED";
         }
         return name.replace(" ", "_").toLowerCase();
+    }
+
+    onSliderClick(event: MouseEvent, id: string) {
+        //The variables load all the required values
+        const clickLocation = event.clientX;
+        const elementWidth = document.getElementById(id)?.offsetWidth;
+        const offsetLeft = document.getElementById(id)?.getBoundingClientRect()
+            .left;
+        const upperThumb = getComputedStyle(this.sliderElem.nativeElement)
+            .getPropertyValue("--pos-upper")
+            .trim();
+        const lowerThumb = getComputedStyle(this.sliderElem.nativeElement)
+            .getPropertyValue("--pos-lower")
+            .trim();
+
+        let thumbMovePercentage;
+        if (elementWidth != undefined && offsetLeft != undefined) {
+            const upperThumbPosition = Number(
+                upperThumb.substring(0, upperThumb.length - 1),
+            );
+            const lowerThumbPosition = Number(
+                lowerThumb.substring(0, lowerThumb.length - 1),
+            );
+            thumbMovePercentage =
+                ((clickLocation - offsetLeft) / elementWidth) * 100;
+            let sliderValue = (thumbMovePercentage / 100) * this.maxValue; //Assuming slider has a minValue of 0
+
+            if (this.maxValue == 9000) {
+                //In case the slider starts with -9000 and ends with +9000
+                sliderValue =
+                    this.minValue +
+                    (thumbMovePercentage / 100) * this.maxValue * 2;
+            }
+
+            //Finds the closest slider to move
+            if (
+                Math.abs(thumbMovePercentage - upperThumbPosition) >
+                Math.abs(thumbMovePercentage - lowerThumbPosition)
+            ) {
+                this.sliderFormControl.setValue(Math.floor(sliderValue));
+                this.setThumbPosition();
+            } else {
+                this.sliderFormControlUpper.setValue(Math.floor(sliderValue));
+                this.setThumbPosition();
+            }
+            this.sendEvent();
+        }
     }
 }
