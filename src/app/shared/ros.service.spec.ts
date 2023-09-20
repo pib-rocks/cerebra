@@ -198,35 +198,43 @@ describe("RosService", () => {
         expect(spyPublish).toHaveBeenCalledWith(new ROSLIB.Message(jtMessage));
     });
 
-    it("subscribeJointTrajectoryTopic should publish a value to a rxjs subject", (): void => {
-        const jointTrajectoryMessageReceiver$ =
-            new Subject<JointTrajectoryMessage>();
-        const motorSettingsMessageReceiver$ =
-            new Subject<MotorSettingsMessage>();
-        (rosService as any).jointTrajectoryTopic = new MockRosbridgeJtTopic(
-            jointTrajectoryMessageReceiver$,
-        ) as unknown as ROSLIB.Topic;
-        const motor = {
+    it("the subscribe method of jointTrajectoryTopic should be called when a new jtMessage is received", () => {
+        const rService = rosService as any;
+
+        const motor: Motor = {
             motor: "test",
-            motorSettingsMessageReceiver$,
-            jointTrajectoryMessageReceiver$,
+            motorSettingsReceiver$: new Subject<MotorSettingsMessage>(),
+            jointTrajectoryReceiver$: new Subject<JointTrajectoryMessage>(),
         };
-        const spyNext = spyOn(motor.jointTrajectoryMessageReceiver$, "next");
-        (rosService as any).motors.push();
-        rosService.subscribeJointTrajectoryTopic();
-        expect(spyNext).toHaveBeenCalled();
+        rService.motors.push(motor);
+
+        const jointTrajectoryMessage: JointTrajectoryMessage =
+            rosService.createEmptyJointTrajectoryMessage();
+        jointTrajectoryMessage.joint_names.push("test");
+        jointTrajectoryMessage.points.push(
+            rosService.createJointTrajectoryPoint(200),
+        );
+        const roslibMessage = new ROSLIB.Message(jointTrajectoryMessage);
+
+        const spySettingsReceiver = spyOn(
+            motor.jointTrajectoryReceiver$,
+            "next",
+        );
+        rService.jointTrajectoryTopic = rService.createJointTrajectoryTopic();
+        rService.subscribeJointTrajectoryTopic();
+        rService.jointTrajectoryTopic.publish(roslibMessage);
+        expect(spySettingsReceiver).toHaveBeenCalled();
     });
 
     it("the subscribe method of motorSettingsTopic should be called when a new message is received", () => {
         const rService = rosService as any;
 
-        const expectedReceiver$ = new Subject<MotorSettingsMessage>();
-        const expectedJTReceiver$ = new Subject<JointTrajectoryMessage>();
         const motor: Motor = {
             motor: "test",
-            motorSettingsReceiver$: expectedReceiver$,
-            jointTrajectoryReceiver$: expectedJTReceiver$,
+            motorSettingsReceiver$: new Subject<MotorSettingsMessage>(),
+            jointTrajectoryReceiver$: new Subject<JointTrajectoryMessage>(),
         };
+
         const message: MotorSettingsMessage = {
             motorName: "test",
         };
