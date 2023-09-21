@@ -88,35 +88,35 @@ describe("RosService", () => {
         expect(rosService.Ros).toBeTruthy();
     });
 
-    it("createTopic should create topic", () => {
+    it("should create the message topic", () => {
         expect(spytopic).toHaveBeenCalled();
     });
 
-    it("createJointTrajectoryTopic should create the jointTrajectory topic", () => {
+    it("should create the jointTrajectory topic", () => {
         expect(spyJointTrajectoryTopic).toHaveBeenCalled();
     });
 
-    it("createVoiceTopic should create voice topic", () => {
+    it("should create the voice topic", () => {
         expect(spyVoiceTopic).toHaveBeenCalled();
     });
 
-    it("createPreviewSizePublisher should create preview size topic", () => {
+    it("should create the preview size topic", () => {
         expect(spySize).toHaveBeenCalled();
     });
 
-    it("createMotorCurrentTopic should create motor current topic", () => {
+    it("should create the motor current topic", () => {
         expect(spyMotorCurrentTopic).toHaveBeenCalled();
     });
 
-    it("createMotorSettingsTopic should create motor current topic", () => {
+    it("should create the motor settings topic", () => {
         expect(spyMotorSettingsTopic).toHaveBeenCalled();
     });
 
-    it("createCameraTopic should create camera topic", () => {
+    it("should create the camera topic", () => {
         expect(spyCameraTopic).toHaveBeenCalled();
     });
 
-    it("The messageTopic should publish the message to rosbridge when calling sendMessage method, Incase the Message is of type Message", () => {
+    it("should publish a message to the sliderMessageTopic when calling sendMessage method and the Message is of type Message", () => {
         rosService = new RosService();
         (rosService as any).sliderMessageTopic = new ROSLIB.Topic({
             ros: mockRos as unknown as ROSLIB.Ros,
@@ -137,7 +137,7 @@ describe("RosService", () => {
         expect(spyPublish).toHaveBeenCalledWith(msg);
     });
 
-    it("The motorCurrentTopic should publish the message to rosbridge when calling sendSliderMessage method, Incase the Message is of type MotorCurrentMessage ", () => {
+    it("should publish a message to the motorCurrentTopic when calling sendMessage method and the Message is of type MotorCurrentMessage ", () => {
         rosService = new RosService();
         (rosService as any).motorCurrentTopic = new ROSLIB.Topic({
             ros: mockRos as unknown as ROSLIB.Ros,
@@ -158,7 +158,7 @@ describe("RosService", () => {
         expect(spyPublish).toHaveBeenCalledWith(msg);
     });
 
-    it("The voiceAssistantTopic should publish the message when the sendVoiceActivationMessage method is called.", () => {
+    it("should publish the message onto the voiceAssistantTopic when the sendVoiceActivationMessage method is called.", () => {
         rosService = new RosService();
         (rosService as any).voiceAssistantTopic = new ROSLIB.Topic({
             ros: mockRos as unknown as ROSLIB.Ros,
@@ -182,7 +182,7 @@ describe("RosService", () => {
         expect(spyPublish).toHaveBeenCalledWith(msg);
     });
 
-    it("The jointTrajectoryTopic should publish the message to rosbridge when calling sendJointTrajectoryMessage method", () => {
+    it("should publish the message onto the jointTrajectoryTopic when calling the sendJointTrajectoryMessage method", () => {
         rosService = new RosService();
         (rosService as any).jointTrajectoryTopic = new ROSLIB.Topic({
             ros: mockRos as unknown as ROSLIB.Ros,
@@ -200,7 +200,7 @@ describe("RosService", () => {
         expect(spyPublish).toHaveBeenCalledWith(new ROSLIB.Message(jtMessage));
     });
 
-    it("the subscribe method of jointTrajectoryTopic should be called when a new jtMessage is received", () => {
+    it("should call the subscribe method of jointTrajectoryTopic when a jtMessage is received", () => {
         const rService = rosService as any;
 
         const motor: Motor = {
@@ -228,7 +228,7 @@ describe("RosService", () => {
         expect(spyTrajectoryReceiver).toHaveBeenCalled();
     });
 
-    it("the subscribe method of motorSettingsTopic should be called when a new message is received", () => {
+    it("should call the subscribe method of motorSettingsTopic when a settingsMessage is received", () => {
         const rService = rosService as any;
 
         const motor: Motor = {
@@ -257,7 +257,7 @@ describe("RosService", () => {
         expect(spySettingsReceiver).toHaveBeenCalled();
     });
 
-    it("the subscribe method of motorCurrentTopic should be called when a new message is received", () => {
+    it("should call the subscribe method of motorCurrentTopic when a currentMessage is received", () => {
         const rService = rosService as any;
 
         const message: MotorCurrentMessage = {
@@ -279,7 +279,7 @@ describe("RosService", () => {
         expect(spyCurrentReceiver).toHaveBeenCalled();
     });
 
-    it("the subscribe method of sliderMessageTopic should be called when a new message is received", () => {
+    it("should call the subscribe method of sliderMessageTopic when a message is received", () => {
         const rService = rosService as any;
 
         const motor: Motor = {
