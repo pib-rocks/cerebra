@@ -262,6 +262,7 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
     onSliderClick(event: MouseEvent, id: string) {
         //The variables load all the required values
         const clickLocation = event.clientX;
+        console.log(clickLocation);
         const elementWidth = document.getElementById(id)?.offsetWidth;
         const offsetLeft = document.getElementById(id)?.getBoundingClientRect()
             .left;
@@ -277,11 +278,14 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
             const upperThumbPosition = Number(
                 upperThumb.substring(0, upperThumb.length - 1),
             );
+
             const lowerThumbPosition = Number(
                 lowerThumb.substring(0, lowerThumb.length - 1),
             );
+
             thumbMovePercentage =
                 ((clickLocation - offsetLeft) / elementWidth) * 100;
+
             let sliderValue = (thumbMovePercentage / 100) * this.maxValue; //Assuming slider has a minValue of 0
 
             if (this.minValue < 0) {
@@ -291,6 +295,12 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
                     (thumbMovePercentage / 100) *
                         (this.maxValue + Math.abs(this.minValue));
             }
+
+            //Makes sure that the thumb never exceeds the edges of the slider
+            sliderValue =
+                sliderValue < this.minValue ? this.minValue : sliderValue;
+            sliderValue =
+                sliderValue > this.maxValue ? this.maxValue : sliderValue;
 
             //Finds the closest slider to move
             if (
@@ -303,6 +313,7 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
                 this.sliderFormControlUpper.setValue(Math.floor(sliderValue));
                 this.setThumbPosition();
             }
+
             this.sendEvent();
         }
     }
