@@ -318,7 +318,6 @@ export class MotorControlComponent implements OnInit {
     }
 
     sendAllMessagesCombined() {
-        // PR-203: Implement the currently missing JT-Handling for this method
         let motorNames: string[] = [];
         if (this.checkValidity()) {
             if (this.isCombinedSlider) {

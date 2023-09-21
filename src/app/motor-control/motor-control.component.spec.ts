@@ -111,6 +111,23 @@ describe("MotorControlComponent", () => {
         expect(slider.value).toBe("500");
     });
 
+    it("should change the component attributes when a motorSettingsMessage is being received", () => {
+        const message: MotorSettingsMessage = {
+            motorName: component.motorName,
+            pulse_widths_min: "testValue",
+            pulse_widths_max: component.pulseMaxRange.value,
+            rotation_range_min: component.degreeMinFormControl.value,
+            rotation_range_max: component.degreeMaxFormControl.value,
+            velocity: component.velocityFormControl.value,
+            acceleration: component.accelerationFormControl.value,
+            deceleration: component.decelerationFormControl.value,
+            period: component.periodFormControl.value,
+        };
+
+        component.motorSettingsMessageReceiver$.next(message);
+        expect(component.pulseMinRange.value).toEqual("testValue");
+    });
+
     it("should open dialog when the button has been clicked", () => {
         const spyPopup = spyOn(component, "openPopup").and.callThrough();
         const spyModal = spyOn(modalService, "open");
