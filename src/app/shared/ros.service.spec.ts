@@ -1,11 +1,12 @@
 import {TestBed} from "@angular/core/testing";
 import * as ROSLIB from "roslib";
 import {Subject} from "rxjs";
-import {MotorSettingsMessage} from "./motorSettingsMessage";
 import {RosService} from "./ros.service";
-import {JointTrajectoryMessage} from "./rosMessageTypes/jointTrajectoryMessage";
 import {Motor} from "./motor";
+import {JointTrajectoryMessage} from "./rosMessageTypes/jointTrajectoryMessage";
+import {MotorSettingsMessage} from "./motorSettingsMessage";
 import {MotorCurrentMessage} from "./currentMessage";
+import {Message} from "./message";
 
 describe("RosService", () => {
     let rosService: RosService;
@@ -217,14 +218,14 @@ describe("RosService", () => {
         );
         const roslibMessage = new ROSLIB.Message(jointTrajectoryMessage);
 
-        const spySettingsReceiver = spyOn(
+        const spyTrajectoryReceiver = spyOn(
             motor.jointTrajectoryReceiver$,
             "next",
         );
         rService.jointTrajectoryTopic = rService.createJointTrajectoryTopic();
         rService.subscribeJointTrajectoryTopic();
         rService.jointTrajectoryTopic.publish(roslibMessage);
-        expect(spySettingsReceiver).toHaveBeenCalled();
+        expect(spyTrajectoryReceiver).toHaveBeenCalled();
     });
 
     it("the subscribe method of motorSettingsTopic should be called when a new message is received", () => {
@@ -276,6 +277,34 @@ describe("RosService", () => {
         rService.motorCurrentTopic.publish(roslibMessage);
 
         expect(spyCurrentReceiver).toHaveBeenCalled();
+    });
+
+    it("the subscribe method of sliderMessageTopic should be called when a new message is received", () => {
+        const rService = rosService as any;
+
+        const motor: Motor = {
+            motor: "test",
+            motorSettingsReceiver$: new Subject<MotorSettingsMessage>(),
+            jointTrajectoryReceiver$: new Subject<JointTrajectoryMessage>(),
+        };
+
+        const message: Message = {
+            motor: "test",
+        };
+        rService.motors.push(motor);
+
+        const json = JSON.parse(JSON.stringify(message));
+        const parameters = Object.keys(json).map((key) => ({[key]: json[key]}));
+        const roslibMessage = new ROSLIB.Message({
+            data: JSON.stringify(parameters),
+        });
+        const spySliderReceiver = spyOn(motor.motorSettingsReceiver$, "next");
+
+        rService.sliderMessageTopic = rService.createMessageTopic();
+        rService.subscribeSliderTopic();
+        rService.sliderMessageTopic.publish(roslibMessage);
+
+        expect(spySliderReceiver).toHaveBeenCalled();
     });
 
     it("should be able to get a single motor receiver by name", () => {
