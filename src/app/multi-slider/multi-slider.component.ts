@@ -272,6 +272,8 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
         const lowerThumb = getComputedStyle(this.sliderElem.nativeElement)
             .getPropertyValue("--pos-lower")
             .trim();
+        const initialLowerThumbValue = this.sliderFormControl.value;
+        const initialUpperThumbValue = this.sliderFormControlUpper.value;
 
         let thumbMovePercentage;
         if (elementWidth != undefined && offsetLeft != undefined) {
@@ -307,13 +309,26 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
                 Math.abs(thumbMovePercentage - upperThumbPosition) >
                 Math.abs(thumbMovePercentage - lowerThumbPosition)
             ) {
+                if (
+                    this.bubbleFormControl.value >=
+                    this.bubbleFormControlUpper.value
+                ) {
+                    this.sliderFormControlUpper.setValue(
+                        initialLowerThumbValue,
+                    );
+                }
                 this.sliderFormControl.setValue(Math.floor(sliderValue));
-                this.setThumbPosition();
             } else {
+                if (
+                    this.bubbleFormControlUpper.value <=
+                    this.bubbleFormControl.value
+                ) {
+                    this.sliderFormControl.setValue(initialUpperThumbValue);
+                }
                 this.sliderFormControlUpper.setValue(Math.floor(sliderValue));
-                this.setThumbPosition();
             }
 
+            this.setThumbPosition();
             this.sendEvent();
         }
     }

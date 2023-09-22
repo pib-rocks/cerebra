@@ -126,9 +126,7 @@ describe("MultiSliderComponent", () => {
     it("should choose the nearest bubble to move when clicking somewhere on the slider", () => {
         //Using the slider width doesnt work. The seems to expect the html width for the maximum slider input.
         const htmlElement = document.documentElement;
-        const computedStyle = window.getComputedStyle(htmlElement);
-        const htmlElementWidth = computedStyle.getPropertyValue("width");
-        const widthInPixels = parseInt(htmlElementWidth.replace("px", ""), 10);
+        const htmlElementWidth = htmlElement.clientWidth;
 
         //check init-values
         expect(component.sliderFormControl.getRawValue()).toEqual(20);
@@ -144,7 +142,7 @@ describe("MultiSliderComponent", () => {
 
         //move to max-value of sliderFormControlUpper
         const clickEventMax = new MouseEvent("maxClick", {
-            clientX: widthInPixels,
+            clientX: htmlElementWidth,
         });
         component.onSliderClick(clickEventMax, "slider");
         expect(component.sliderFormControl.getRawValue()).toEqual(-200);
@@ -152,7 +150,7 @@ describe("MultiSliderComponent", () => {
 
         //check middle-value (only the right slider should move)
         const clickEventMiddle = new MouseEvent("middleClick", {
-            clientX: Math.round(widthInPixels / 2),
+            clientX: Math.round(htmlElementWidth / 2),
         });
         component.onSliderClick(clickEventMiddle, "slider");
         expect(component.sliderFormControl.getRawValue()).toEqual(-200);
