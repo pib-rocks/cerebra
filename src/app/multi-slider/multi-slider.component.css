@@ -48,7 +48,7 @@ p span {
     display: block;
     position: absolute;
     left: 50%;
-    transform: translate(-50%, 0);
+    transform: translate(-50%, -3px);
     border-radius: 6px;
     padding: 0 2px;
 }
@@ -56,7 +56,7 @@ p span {
 .range-wrap .bubble-span-min {
     width: fit-content;
     min-width: 40px;
-    height: 25px;
+    height: 24px;
     line-height: 24px;
     text-align: center;
     background: #344a69;
@@ -66,6 +66,7 @@ p span {
     display: block;
     position: absolute;
     left: 0;
+    transform: translate(0px, -3px);
     top: -30%;
     border-radius: 6px;
 }
@@ -73,7 +74,7 @@ p span {
 .range-wrap .bubble-span-max {
     width: fit-content;
     min-width: 40px;
-    height: 25px;
+    height: 24px;
     line-height: 24px;
     text-align: center;
     background: #344a69;
@@ -83,6 +84,7 @@ p span {
     display: inline-block;
     position: absolute;
     right: 0;
+    transform: translate(0px, -3px);
     top: -30%;
     border-radius: 6px;
 }
@@ -152,10 +154,14 @@ input[type="range"] {
 input[type="range"].top-layer {
     --pos-upper: 0;
     background: none;
+    border: none;
+    border-radius: 5px;
 }
 input[type="range"].bottom-layer {
     --pos-lower: 0;
     --pos-upper: 0;
+    border: none;
+    border-radius: 5px;
 }
 
 input[type="range"]::-webkit-slider-thumb {
@@ -166,26 +172,23 @@ input[type="range"]::-webkit-slider-thumb {
     width: 24px;
     border-radius: 50%;
     background: #e10072; */
-    width: 3px;
-    height: 12px;
-    background: #6b0337;
+    width: 24px;
+    height: 24px;
+    background: #e10072;
     cursor: pointer;
     pointer-events: auto;
+    border: none;
+    border-radius: 50%;
 }
 
 input[type="range"]::-moz-range-thumb {
     appearance: none;
-    /* width: 24px;
+    width: 24px;
     height: 24px;
     background-color: #e10072;
     border: none;
-    border-radius: 2em; */
+    border-radius: 50%;
     pointer-events: auto;
-    border: none;
-    border-radius: 0;
-    width: 3px;
-    height: 12px;
-    background: #6b0337;
     cursor: pointer;
     /* margin: 0;
     margin-left: -12px;
@@ -201,7 +204,6 @@ input[type="range"]::-moz-range-progress {
 }
 
 input[type="range"]::-webkit-slider-runnable-track {
-    appearance: none;
     -webkit-appearance: none;
     background-color: none;
     border: none;

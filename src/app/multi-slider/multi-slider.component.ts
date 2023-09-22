@@ -9,7 +9,7 @@ import {
     AfterViewInit,
     Renderer2,
 } from "@angular/core";
-import {FormControl, Validators} from "@angular/forms";
+import {Form, FormControl, Validators} from "@angular/forms";
 import {RosService} from "../shared/ros.service";
 import {Subject} from "rxjs";
 import {notNullValidator, steppingValidator} from "../shared/validators";
@@ -52,6 +52,7 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
     maxBubblePosition = 100;
     minBubblePosition = 0;
     pixelsFromEdge = 60;
+    thumbWidth = 24;
     @Output() multiSliderEvent = new EventEmitter<number[]>();
 
     constructor(
@@ -106,9 +107,8 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
         this.setThumbPosition();
         const sliderWidth = this.sliderElem?.nativeElement.clientWidth;
         if (sliderWidth !== undefined) {
-            this.minBubblePosition = (this.pixelsFromEdge * 100) / sliderWidth;
-            this.maxBubblePosition =
-                ((sliderWidth - this.pixelsFromEdge) * 100) / sliderWidth;
+            this.minBubblePosition = this.pixelsFromEdge;
+            this.maxBubblePosition = sliderWidth - this.pixelsFromEdge;
         }
         this.renderer.setStyle(
             this.sliderElem.nativeElement,
@@ -202,52 +202,70 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
         this.isInputVisible = false;
     }
 
-    setThumbPosition() {
-        const val =
-            ((this.sliderFormControl.value - this.minValue) * 100) /
-            (this.maxValue - this.minValue);
-        setTimeout(() => {
-            this.bubblePosition = val;
-        }, 0);
-        this.bubbleFormControl.setValue(Number(this.sliderFormControl.value));
-        this.bubbleElement.nativeElement.style.left = `calc(${val}%)`;
+    setSingleThumbPosition(
+        sliderElem: HTMLElement,
+        sliderForm: FormControl,
+        bubbleElem: HTMLElement,
+        bubbleForm: FormControl,
+        bubblePosSetter: (val: number) => void,
+    ) {
+        const sliderWidth = sliderElem.clientWidth;
 
-        const val2 =
-            ((this.sliderFormControlUpper.value - this.minValue) * 100) /
+        const normalizedSliderVal =
+            (sliderForm.value - this.minValue) /
             (this.maxValue - this.minValue);
-        setTimeout(() => {
-            this.bubblePositionUpper = val2;
-        }, 0);
-        this.bubbleFormControlUpper.setValue(
-            Number(this.sliderFormControlUpper.value),
+
+        const bubbleOffset = (0.5 - normalizedSliderVal) * this.thumbWidth;
+        const nextBubblePos = normalizedSliderVal * sliderWidth + bubbleOffset;
+        bubblePosSetter(nextBubblePos);
+
+        bubbleForm.setValue(Number(this.sliderFormControl.value));
+        bubbleElem.style.left = `calc(${nextBubblePos}px)`;
+    }
+
+    setThumbPosition() {
+        this.setSingleThumbPosition(
+            this.sliderElem.nativeElement,
+            this.sliderFormControl,
+            this.bubbleElement.nativeElement,
+            this.bubbleFormControl,
+            (val) => setTimeout(() => (this.bubblePosition = val)),
         );
-        this.bubbleElementUpper.nativeElement.style.left = `calc(${val2}%)`;
+        this.setSingleThumbPosition(
+            this.sliderElemUpper.nativeElement,
+            this.sliderFormControlUpper,
+            this.bubbleElementUpper.nativeElement,
+            this.bubbleFormControlUpper,
+            (val) => setTimeout(() => (this.bubblePositionUpper = val)),
+        );
         this.setGradient();
     }
 
     setGradient() {
-        const total = this.maxValue - this.minValue;
         const upper =
-            (((this.sliderFormControl.value >= this.sliderFormControlUpper.value
-                ? this.sliderFormControl.value
-                : this.sliderFormControlUpper.value) -
-                this.minValue) *
-                100) /
-            total;
-        const lower =
-            (((this.sliderFormControl.value < this.sliderFormControlUpper.value
-                ? this.sliderFormControl.value
-                : this.sliderFormControlUpper.value) -
-                this.minValue) *
-                100) /
-            total;
+            this.sliderFormControl.value >= this.sliderFormControlUpper.value
+                ? this.bubbleElement.nativeElement.offsetLeft
+                : this.bubbleElementUpper.nativeElement.offsetLeft;
+        const upperSliderWidth = this.sliderElemUpper.nativeElement.clientWidth;
         this.sliderElem.nativeElement.style.setProperty(
             "--pos-upper",
-            upper.toString(10) + "%",
+            (
+                (upper / this.sliderElem.nativeElement.clientWidth) *
+                100
+            ).toString(10) + "%",
         );
+
+        const lower =
+            this.sliderFormControl.value < this.sliderFormControlUpper.value
+                ? this.bubbleElement.nativeElement.offsetLeft
+                : this.bubbleElementUpper.nativeElement.offsetLeft;
+        const lowerSliderWidth = this.sliderElem.nativeElement.clientWidth;
         this.sliderElem.nativeElement.style.setProperty(
             "--pos-lower",
-            lower.toString(10) + "%",
+            (
+                (lower / this.sliderElem.nativeElement.clientWidth) *
+                100
+            ).toString(10) + "%",
         );
     }
 
