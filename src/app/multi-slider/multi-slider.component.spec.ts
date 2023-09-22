@@ -122,4 +122,34 @@ describe("MultiSliderComponent", () => {
         expect(poslower).toBe("50%");
         expect(posupper).toBe("100%");
     });
+
+    it("should choose the nearest bubble to move when clicking somewhere on the slider", () => {
+        //check init-values
+        expect(component.sliderFormControl.getRawValue()).toEqual(20);
+        expect(component.sliderFormControlUpper.getRawValue()).toEqual(80);
+
+        //move to min-value of sliderFormControl
+        const clickEventMin = new MouseEvent("minClick", {
+            clientX: 0,
+        });
+        component.onSliderClick(clickEventMin, "slider");
+        expect(component.sliderFormControl.getRawValue()).toEqual(-200);
+        expect(component.sliderFormControlUpper.getRawValue()).toEqual(80);
+
+        //move to max-value of sliderFormControlUpper
+        const clickEventMax = new MouseEvent("maxClick", {
+            clientX: 1000,
+        });
+        component.onSliderClick(clickEventMax, "slider");
+        expect(component.sliderFormControl.getRawValue()).toEqual(-200);
+        expect(component.sliderFormControlUpper.getRawValue()).toEqual(200);
+
+        //check middle-value (only the right slider should move)
+        const clickEventMiddle = new MouseEvent("middleClick", {
+            clientX: 503,
+        });
+        component.onSliderClick(clickEventMiddle, "slider");
+        expect(component.sliderFormControl.getRawValue()).toEqual(-200);
+        expect(component.sliderFormControlUpper.getRawValue()).toEqual(0);
+    });
 });
