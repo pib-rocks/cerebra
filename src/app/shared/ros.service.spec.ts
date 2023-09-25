@@ -117,7 +117,6 @@ describe("RosService", () => {
     });
 
     it("should publish a message to the sliderMessageTopic when calling sendMessage method and the Message is of type Message", () => {
-        rosService = new RosService();
         (rosService as any).sliderMessageTopic = new ROSLIB.Topic({
             ros: mockRos as unknown as ROSLIB.Ros,
             name: "test",
@@ -138,7 +137,6 @@ describe("RosService", () => {
     });
 
     it("should publish a message to the motorCurrentTopic when calling sendMessage method and the Message is of type MotorCurrentMessage ", () => {
-        rosService = new RosService();
         (rosService as any).motorCurrentTopic = new ROSLIB.Topic({
             ros: mockRos as unknown as ROSLIB.Ros,
             name: "test",
@@ -159,7 +157,6 @@ describe("RosService", () => {
     });
 
     it("should publish the message onto the voiceAssistantTopic when the sendVoiceActivationMessage method is called.", () => {
-        rosService = new RosService();
         (rosService as any).voiceAssistantTopic = new ROSLIB.Topic({
             ros: mockRos as unknown as ROSLIB.Ros,
             name: "test",
@@ -183,7 +180,6 @@ describe("RosService", () => {
     });
 
     it("should publish the message onto the jointTrajectoryTopic when calling the sendJointTrajectoryMessage method", () => {
-        rosService = new RosService();
         (rosService as any).jointTrajectoryTopic = new ROSLIB.Topic({
             ros: mockRos as unknown as ROSLIB.Ros,
             name: "/joint_trajectory",
