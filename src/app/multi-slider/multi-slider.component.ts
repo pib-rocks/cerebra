@@ -9,7 +9,7 @@ import {
     AfterViewInit,
     Renderer2,
 } from "@angular/core";
-import {Form, FormControl, Validators} from "@angular/forms";
+import {FormControl, Validators} from "@angular/forms";
 import {RosService} from "../shared/ros.service";
 import {Subject} from "rxjs";
 import {notNullValidator, steppingValidator} from "../shared/validators";
@@ -219,7 +219,7 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
         const nextBubblePos = normalizedSliderVal * sliderWidth + bubbleOffset;
         bubblePosSetter(nextBubblePos);
 
-        bubbleForm.setValue(Number(this.sliderFormControl.value));
+        bubbleForm.setValue(Number(sliderForm.value));
         bubbleElem.style.left = `calc(${nextBubblePos}px)`;
     }
 
@@ -242,30 +242,24 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
     }
 
     setGradient() {
+        const sliderWidth = this.sliderElem.nativeElement.clientWidth;
+
         const upper =
             this.sliderFormControl.value >= this.sliderFormControlUpper.value
                 ? this.bubbleElement.nativeElement.offsetLeft
                 : this.bubbleElementUpper.nativeElement.offsetLeft;
-        const upperSliderWidth = this.sliderElemUpper.nativeElement.clientWidth;
-        this.sliderElem.nativeElement.style.setProperty(
+        const upperPercentage = this.sliderElem.nativeElement.style.setProperty(
             "--pos-upper",
-            (
-                (upper / this.sliderElem.nativeElement.clientWidth) *
-                100
-            ).toString(10) + "%",
+            ((upper / sliderWidth) * 100).toString(10) + "%",
         );
 
         const lower =
             this.sliderFormControl.value < this.sliderFormControlUpper.value
                 ? this.bubbleElement.nativeElement.offsetLeft
                 : this.bubbleElementUpper.nativeElement.offsetLeft;
-        const lowerSliderWidth = this.sliderElem.nativeElement.clientWidth;
         this.sliderElem.nativeElement.style.setProperty(
             "--pos-lower",
-            (
-                (lower / this.sliderElem.nativeElement.clientWidth) *
-                100
-            ).toString(10) + "%",
+            ((lower / sliderWidth) * 100).toString(10) + "%",
         );
     }
 

@@ -70,7 +70,6 @@ export class SliderComponent implements OnInit, AfterViewInit {
             }
         });
         if (this.defaultValue) {
-            // default value might be string ???
             this.sliderFormControl.setValue(
                 this.flip(Number(this.defaultValue)),
             );
@@ -101,7 +100,6 @@ export class SliderComponent implements OnInit, AfterViewInit {
             clearTimeout(this.timer);
             this.timer = setTimeout(() => {
                 if (this.publishMessage) {
-                    // is Number(...) cast necessary (not used in line below) ???
                     this.publishMessage(
                         this.flip(Number(this.sliderFormControl.value)),
                     );
