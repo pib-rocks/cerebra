@@ -262,7 +262,6 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
     onSliderClick(event: MouseEvent, id: string) {
         //The variables load all the required values
         const clickLocation = event.clientX;
-        console.log(clickLocation);
         const elementWidth = document.getElementById(id)?.offsetWidth;
         const offsetLeft = document.getElementById(id)?.getBoundingClientRect()
             .left;
