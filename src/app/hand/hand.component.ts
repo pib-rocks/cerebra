@@ -136,7 +136,7 @@ export class HandComponent implements OnInit {
                 .forEach((child) => {
                     if (child.sliderFormControl.value != 0) {
                         child.setSliderValue(0);
-                        child.sendAllMessagesCombined();
+                        child.sendJointTrajectoryMessage();
                     }
                 });
         } else {
@@ -149,7 +149,7 @@ export class HandComponent implements OnInit {
                 .forEach((child) => {
                     if (child.sliderFormControl.value != 0) {
                         child.setSliderValue(0);
-                        child.sendAllMessagesCombined();
+                        child.sendJointTrajectoryMessage();
                     }
                 });
         }
