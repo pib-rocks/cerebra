@@ -13,7 +13,6 @@ import {RosService} from "../shared/ros.service";
 import {Message} from "../shared/message";
 import {Observable} from "rxjs";
 import {notNullValidator, steppingValidator} from "../shared/validators";
-import {horizontalPosition} from "blockly/core/positionable_helpers";
 @Component({
     selector: "app-slider",
     templateUrl: "./slider.component.html",
@@ -136,11 +135,10 @@ export class SliderComponent implements OnInit, AfterViewInit {
         ) {
             if (this.sliderFormControl.value !== null) {
                 this.isInputVisible = !this.isInputVisible;
-                if (this.bubbleFormControl.hasError("required")) {
-                    this.bubbleFormControl.setValue(
-                        this.flip(this.sliderFormControl.value),
-                    );
-                } else if (this.bubbleFormControl.hasError("pattern")) {
+                if (
+                    this.bubbleFormControl.hasError("required") ||
+                    this.bubbleFormControl.hasError("pattern")
+                ) {
                     this.bubbleFormControl.setValue(
                         this.flip(this.sliderFormControl.value),
                     );

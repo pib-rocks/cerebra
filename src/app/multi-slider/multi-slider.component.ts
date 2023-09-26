@@ -248,7 +248,7 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
             this.sliderFormControl.value >= this.sliderFormControlUpper.value
                 ? this.bubbleElement.nativeElement.offsetLeft
                 : this.bubbleElementUpper.nativeElement.offsetLeft;
-        const upperPercentage = this.sliderElem.nativeElement.style.setProperty(
+        this.sliderElem.nativeElement.style.setProperty(
             "--pos-upper",
             ((upper / sliderWidth) * 100).toString(10) + "%",
         );

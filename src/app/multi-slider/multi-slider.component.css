@@ -167,7 +167,6 @@ input[type="range"].bottom-layer {
 input[type="range"]::-webkit-slider-thumb {
     appearance: none;
     -webkit-appearance: none;
-    border: none;
     /* height: 24px;
     width: 24px;
     border-radius: 50%;
