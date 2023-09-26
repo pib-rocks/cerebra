@@ -65,7 +65,7 @@ export class SliderComponent implements OnInit, AfterViewInit {
                     this.getValueWithinRange(this.flip(Number(value))),
                 );
                 if (this.sliderElem && this.bubbleElement) {
-                    this.setThumbPosition();
+                    setTimeout(() => this.setThumbPosition());
                 }
             }
         });
@@ -200,7 +200,9 @@ export class SliderComponent implements OnInit, AfterViewInit {
         this.bubbleFormControl.setValue(
             this.flip(this.sliderFormControl.value),
         );
-        this.bubbleElement.nativeElement.style.left = `calc(${nextBubblePos}px)`;
+        this.bubbleElement.nativeElement.style.left = `calc(${
+            (nextBubblePos / sliderWidth) * 100
+        }%)`;
         this.sliderElem.nativeElement.style.setProperty(
             "--pos-relative",
             ((nextBubblePos / sliderWidth) * 100).toString(10) + "%",
