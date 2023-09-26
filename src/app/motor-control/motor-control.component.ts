@@ -230,6 +230,7 @@ export class MotorControlComponent implements OnInit {
                 motorNames.forEach((mn) => {
                     const message: MotorSettingsMessage = {
                         motorName: mn,
+                        turnedOn: this.motorFormControl.value,
                         pulse_widths_min: this.pulseMinRange.value,
                         pulse_widths_max: this.pulseMaxRange.value,
                         rotation_range_min: this.degreeMinFormControl.value,
@@ -244,6 +245,7 @@ export class MotorControlComponent implements OnInit {
             } else {
                 const message: MotorSettingsMessage = {
                     motorName: this.motorName,
+                    turnedOn: this.motorFormControl.value,
                     pulse_widths_min: this.pulseMinRange.value,
                     pulse_widths_max: this.pulseMaxRange.value,
                     rotation_range_min: this.degreeMinFormControl.value,

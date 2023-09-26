@@ -206,11 +206,35 @@ export class RosService {
             return {...key, ...value};
         }, {});
 
-        console.log(
+        let consoleString =
             sentReceivedPrefix +
-                " settings message for motor: " +
-                jsonObject.motorName,
-        );
+            " settings message for motorName: " +
+            jsonObject.motorName +
+            ", turnedOn: " +
+            jsonObject.turnedOn;
+
+        if (jsonObject.turnedOn) {
+            consoleString =
+                consoleString +
+                ", pulse_widths_min: " +
+                jsonObject.pulse_widths_min +
+                ", pulse_widths_max: " +
+                jsonObject.pulse_widths_max +
+                ", rotation_range_min: " +
+                jsonObject.rotation_range_min +
+                ", rotation_range_max: " +
+                jsonObject.rotation_range_max +
+                ", velocity: " +
+                jsonObject.velocity +
+                ", acceleration: " +
+                jsonObject.acceleration +
+                ", deceleration: " +
+                jsonObject.deceleration +
+                ", period: " +
+                jsonObject.period;
+        }
+
+        console.log(consoleString);
     }
 
     sendVoiceActivationMessage(msg: VoiceAssistant) {
