@@ -1,6 +1,7 @@
 export class MotorSettings {
     velocity: number;
     acceleration: number;
+    deceleration: number;
     effort?: number;
     period: number;
     pulse_width_min: number;
@@ -11,6 +12,7 @@ export class MotorSettings {
     constructor(
         velocity: number,
         acceleration: number,
+        deceleration: number,
         period: number,
         pulse_width_min: number,
         pulse_width_max: number,
@@ -19,6 +21,7 @@ export class MotorSettings {
     ) {
         this.velocity = velocity;
         this.acceleration = acceleration;
+        this.deceleration = deceleration;
         this.period = period;
         this.pulse_width_min = pulse_width_min;
         this.pulse_width_max = pulse_width_max;
@@ -32,6 +35,8 @@ export class MotorSettings {
             this.velocity +
             "\nAcceleration: " +
             this.acceleration +
+            "\nDeceleration: " +
+            this.deceleration +
             "\nPeriod: " +
             this.period +
             "\nPulse Width min: " +

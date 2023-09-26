@@ -10,8 +10,7 @@ export class Motor {
     settings: MotorSettings;
     group: Group;
     turned_on: boolean;
-    jtSubject: Subject<any>;
-    settingsSubject: Subject<any>;
+    motorSubject: Subject<Motor>;
 
     constructor(
         name: string,
@@ -25,12 +24,11 @@ export class Motor {
         this.settings = !!settings ? settings : this.createDefaultSettings();
         this.group = group;
         this.turned_on = !!turned_on ? turned_on : true;
-        this.jtSubject = new Subject<any>();
-        this.settingsSubject = new Subject<any>();
+        this.motorSubject = new Subject<Motor>();
     }
 
     createDefaultSettings(): MotorSettings {
-        return new MotorSettings(0, 0, 0, 0, 65535, -9000, 9000);
+        return new MotorSettings(0, 0, 0, 0, 0, 65535, -9000, 9000);
     }
 
     toString(): string {
@@ -48,5 +46,14 @@ export class Motor {
             "\nSettings: " +
             this.settings.toString()
         );
+    }
+
+    clone(): Motor {
+        const name = "" + this.name;
+        const position = "0" + this.position;
+        const group = this.group;
+        const turned_on = true && this.turned_on;
+        const settings = this.settings;
+        return new Motor(name, +position, group, settings, turned_on);
     }
 }

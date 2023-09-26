@@ -1,8 +1,9 @@
 import {Injectable} from "@angular/core";
 import {RosService} from "./ros.service";
-import {BehaviorSubject, Subscription} from "rxjs";
+import {BehaviorSubject} from "rxjs";
 import {Motor} from "./types/motor.class";
 import {Group} from "./types/motor.enum";
+import {Message} from "./message";
 
 @Injectable({
     providedIn: "root",
@@ -46,6 +47,7 @@ export class MotorService {
     constructor(private rosService: RosService) {
         // this.motorCurrentConsumptionTopicSubscription =
         //     this.subscribeCurrentReceiver();
+        this.subscribeMotorValueSubject();
         this.createMotors();
         this.printAllMotors();
     }
@@ -101,6 +103,19 @@ export class MotorService {
         return this.motors.filter((m) => m.turned_on === turned_on);
     }
 
+    public updateMotorFromComponent(motor: Motor) {
+        //Vergleich incoming motor und bestehendem Motor
+        //Werte sanitize
+        //Änderungen anpassen
+        //rostopic message senden
+        //Subject.next(upgedateter bestehender Motor)
+    }
+    public updateMotorFromRos(motor: Motor) {
+        //Vergleich incoming motor und bestehendem Motor
+        //Änderungen anpassen
+        //Subject.next(upgedateter bestehender Motor)
+    }
+
     public sendDummyMessageForGroup(group: Group) {
         for (const motor of this.motors) {
             if (motor.group === group) {
@@ -144,6 +159,48 @@ export class MotorService {
     //         },
     //     );
     // }
+
+    subscribeMotorValueSubject() {
+        this.rosService.motorValueSubject.subscribe((message: Message) => {
+            this.updateMotorFromMessage(message);
+        });
+    }
+
+    updateMotorFromMessage(message: Message) {
+        const motor = this.getMotorByName(message.motor);
+        if (motor != undefined) {
+            motor.position = !!message.value ? +message.value : motor.position;
+            motor.turned_on = !!message.turnedOn
+                ? message.turnedOn
+                : motor.turned_on;
+            motor.settings.acceleration = !!message.acceleration
+                ? +message.acceleration
+                : motor.settings.acceleration;
+            motor.settings.deceleration = !!message.deceleration
+                ? +message.deceleration
+                : motor.settings.deceleration;
+            motor.settings.pulse_width_max = !!message.pule_widths_max
+                ? +message.pule_widths_max
+                : motor.settings.pulse_width_max;
+            motor.settings.pulse_width_min = !!message.pule_widths_min
+                ? +message.pule_widths_min
+                : motor.settings.pulse_width_min;
+            motor.settings.velocity = !!message.velocity
+                ? +message.velocity
+                : motor.settings.velocity;
+            motor.settings.period = !!message.period
+                ? +message.period
+                : motor.settings.period;
+            motor.settings.rotation_range_max = !!message.rotation_range_max
+                ? +message.rotation_range_max
+                : motor.settings.rotation_range_max;
+            motor.settings.rotation_range_min = !!message.rotation_range_min
+                ? +message.rotation_range_min
+                : motor.settings.rotation_range_max;
+        }
+        const copy = motor?.clone();
+        motor?.motorSubject.next(copy!);
+    }
 
     getMotorHandNames(str: string) {
         return [];
