@@ -2,12 +2,13 @@ import {Injectable} from "@angular/core";
 import {RosService} from "./ros.service";
 import {BehaviorSubject, Subscription} from "rxjs";
 import {Motor} from "./types/motor.class";
+import {Group} from "./types/motor.enum";
 
 @Injectable({
     providedIn: "root",
 })
 export class MotorService {
-    motorCurrentConsumptionTopicSubscription: Subscription;
+    // motorCurrentConsumptionTopicSubscription: Subscription;
 
     leftFingers = [
         "thumb_left_stretch",
@@ -43,9 +44,10 @@ export class MotorService {
     motors: Motor[] = [];
 
     constructor(private rosService: RosService) {
-        this.motorCurrentConsumptionTopicSubscription =
-            this.subscribeCurrentReceiver();
+        // this.motorCurrentConsumptionTopicSubscription =
+        //     this.subscribeCurrentReceiver();
         this.createMotors();
+        this.printAllMotors();
     }
 
     //Defaultinit
@@ -72,6 +74,12 @@ export class MotorService {
         }
         for (const s of this.head) {
             this.motors.push(new Motor(s, 0, Group.head, undefined, undefined));
+        }
+    }
+
+    printAllMotors() {
+        for (const m of this.motors) {
+            console.log(m.toString());
         }
     }
 
@@ -104,44 +112,40 @@ export class MotorService {
         }
     }
 
-    public getMotorSubjectByName(
-        name: string | undefined,
-    ): BehaviorSubject<any> | null {
-        // console.log("passed name " + name);
-        // console.log(this.motors);
-        for (const x of this.motors) {
-            if (x.name === name) {
-                // console.log(x);
-            }
-        }
+    // public getMotorSubjectByName(
+    //     name: string | undefined,
+    // ): BehaviorSubject<any> | null {
+    //     const foundMotors = this.motors.filter((m) => m.name === name);
+    //     if (foundMotors.length != 1) {
+    //         console.warn(
+    //             name +
+    //                 " is " +
+    //                 (foundMotors.length > 1
+    //                     ? "ambigous"
+    //                     : "not a registered Motor"),
+    //         );
+    //         return null;
+    //     }
+    //     // console.log(foundMotors);
+    //     return foundMotors.map((m) => m.subject)[0];
+    // }
 
-        const foundMotors = this.motors.filter((m) => m.name === name);
-        if (foundMotors.length != 1) {
-            console.warn(
-                name +
-                    " is " +
-                    (foundMotors.length > 1
-                        ? "ambigous"
-                        : "not a registered Motor"),
-            );
-            return null;
-        }
-        // console.log(foundMotors);
-        return foundMotors.map((m) => m.subject)[0];
-    }
+    // subscribeCurrentReceiver(): Subscription {
+    //     return this.rosService.currentReceiver$.subscribe(
+    //         (message: MotorCurrentMessage) => {
+    //             console.log(message);
+    //             console.log(message["motor"]);
+    //             for (const motor of this.motors) {
+    //                 if (motor.name === message.motor) {
+    //                     // console.log(message);
+    //                     motor.subject.next(message.currentValue);
+    //                 }
+    //             }
+    //         },
+    //     );
+    // }
 
-    subscribeCurrentReceiver(): Subscription {
-        return this.rosService.currentReceiver$.subscribe(
-            (message: MotorCurrentMessage) => {
-                console.log(message);
-                console.log(message["motor"]);
-                for (const motor of this.motors) {
-                    if (motor.name === message.motor) {
-                        // console.log(message);
-                        motor.subject.next(message.currentValue);
-                    }
-                }
-            },
-        );
+    getMotorHandNames(str: string) {
+        return [];
     }
 }

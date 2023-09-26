@@ -1,4 +1,7 @@
 import {Subject} from "rxjs";
+import {MotorSettings} from "./motor-settings.class";
+import {Group} from "./motor.enum";
+// import {}
 
 export class Motor {
     name: string;
@@ -28,5 +31,22 @@ export class Motor {
 
     createDefaultSettings(): MotorSettings {
         return new MotorSettings(0, 0, 0, 0, 65535, -9000, 9000);
+    }
+
+    toString(): string {
+        return (
+            "Name: " +
+            this.name +
+            "\nPosition: " +
+            this.position +
+            "\nHardware ID: " +
+            this.hardware_id +
+            "\nGroup: " +
+            this.group +
+            "\nTurnedOn: " +
+            this.turned_on +
+            "\nSettings: " +
+            this.settings.toString()
+        );
     }
 }

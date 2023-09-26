@@ -1,4 +1,4 @@
-class MotorSettings {
+export class MotorSettings {
     velocity: number;
     acceleration: number;
     effort?: number;
@@ -24,5 +24,24 @@ class MotorSettings {
         this.pulse_width_max = pulse_width_max;
         this.rotation_range_min = rotation_range_min;
         this.rotation_range_max = rotation_range_max;
+    }
+
+    toString(): string {
+        return (
+            "Velocity: " +
+            this.velocity +
+            "\nAcceleration: " +
+            this.acceleration +
+            "\nPeriod: " +
+            this.period +
+            "\nPulse Width min: " +
+            this.pulse_width_min +
+            "\nPulse Width max: " +
+            this.pulse_width_max +
+            "\nRotation Range min: " +
+            this.rotation_range_min +
+            "\nRotation Range max: " +
+            this.rotation_range_max
+        );
     }
 }
