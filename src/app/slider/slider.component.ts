@@ -36,6 +36,10 @@ export class SliderComponent implements OnInit, AfterViewInit {
     sliderFormControl = new FormControl();
     bubbleFormControl = new FormControl();
 
+    sliderResizeObserver: ResizeObserver = new ResizeObserver(() =>
+        this.calculateBubbles(),
+    );
+
     timer: any = null;
 
     thumbWidth: number = 24;
@@ -80,6 +84,7 @@ export class SliderComponent implements OnInit, AfterViewInit {
 
     ngAfterViewInit() {
         this.calculateBubbles();
+        this.sliderResizeObserver.observe(this.sliderElem.nativeElement);
     }
 
     calculateBubbles() {

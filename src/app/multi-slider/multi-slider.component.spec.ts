@@ -135,7 +135,7 @@ describe("MultiSliderComponent", () => {
         const expectedLower = (posBubbleLower / sliderWidth) * 100;
         const expectedUpper = (posBubbleUpper / sliderWidth) * 100;
 
-        expect(posLowerNum).toBeCloseTo(expectedLower);
-        expect(posUpperNum).toBeCloseTo(expectedUpper);
+        expect(posLowerNum).toBeCloseTo(expectedLower, 5);
+        expect(posUpperNum).toBeCloseTo(expectedUpper, 5);
     });
 });
