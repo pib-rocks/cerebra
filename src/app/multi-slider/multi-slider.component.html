@@ -59,9 +59,9 @@
         >{{ maxValue }}{{ unitShort }}</span
     >
     <div
-        id="slider"
         class="wrap"
-        (click)="onSliderClick($event, 'slider')">
+        (click)="onSliderClick($event)"
+        #slider>
         <input
             class="range bottom-layer"
             type="range"

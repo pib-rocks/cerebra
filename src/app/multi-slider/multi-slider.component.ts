@@ -26,6 +26,7 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
     @ViewChild("bubbleInputUpper") bubbleInputUpper!: ElementRef;
     @ViewChild("range") sliderElem!: ElementRef;
     @ViewChild("rangeUpper") sliderElemUpper!: ElementRef;
+    @ViewChild("slider") slider!: ElementRef;
 
     @Input() minValue: number = 0;
     @Input() maxValue: number = 100;
@@ -259,76 +260,70 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
         return name.replace(" ", "_").toLowerCase();
     }
 
-    onSliderClick(event: MouseEvent, id: string) {
+    onSliderClick(event: MouseEvent) {
         //The variables load all the required values
         const clickLocation = event.clientX;
-        const elementWidth = document.getElementById(id)?.offsetWidth;
-        const offsetLeft = document.getElementById(id)?.getBoundingClientRect()
-            .left;
-        const upperThumb = getComputedStyle(this.sliderElem.nativeElement)
+        const elementWidth = this.slider.nativeElement.offsetWidth;
+        const offsetLeft =
+            this.slider.nativeElement.getBoundingClientRect().left;
+
+        //Makes sure that the thumb never exceeds the edges of the slider
+        if (
+            clickLocation >= elementWidth + offsetLeft ||
+            clickLocation <= offsetLeft
+        ) {
+            return;
+        }
+
+        const upperThumb = this.sliderElem.nativeElement.style
             .getPropertyValue("--pos-upper")
             .trim();
-        const lowerThumb = getComputedStyle(this.sliderElem.nativeElement)
+        const lowerThumb = this.sliderElem.nativeElement.style
             .getPropertyValue("--pos-lower")
             .trim();
         const initialLowerThumbValue = this.sliderFormControl.value;
         const initialUpperThumbValue = this.sliderFormControlUpper.value;
 
-        let thumbMovePercentage;
-        if (elementWidth != undefined && offsetLeft != undefined) {
-            const upperThumbPosition = Number(
-                upperThumb.substring(0, upperThumb.length - 1),
-            );
+        const upperThumbPosition = Number(
+            upperThumb.substring(0, upperThumb.length - 1),
+        );
+        const lowerThumbPosition = Number(
+            lowerThumb.substring(0, lowerThumb.length - 1),
+        );
 
-            const lowerThumbPosition = Number(
-                lowerThumb.substring(0, lowerThumb.length - 1),
-            );
+        let thumbMovePercentage =
+            ((clickLocation - offsetLeft) / elementWidth) * 100;
 
-            thumbMovePercentage =
-                ((clickLocation - offsetLeft) / elementWidth) * 100;
+        let sliderValue =
+            this.minValue < 0
+                ? this.minValue +
+                  (thumbMovePercentage / 100) *
+                      (this.maxValue + Math.abs(this.minValue))
+                : (thumbMovePercentage / 100) * this.maxValue;
 
-            let sliderValue = (thumbMovePercentage / 100) * this.maxValue; //Assuming slider has a minValue of 0
-
-            if (this.minValue < 0) {
-                //In case the slider has a negative minValue and a positive maxValue
-                sliderValue =
-                    this.minValue +
-                    (thumbMovePercentage / 100) *
-                        (this.maxValue + Math.abs(this.minValue));
-            }
-
-            //Makes sure that the thumb never exceeds the edges of the slider
-            sliderValue =
-                sliderValue < this.minValue ? this.minValue : sliderValue;
-            sliderValue =
-                sliderValue > this.maxValue ? this.maxValue : sliderValue;
-
-            //Finds the closest slider to move
+        //Finds the closest slider to move
+        if (
+            Math.abs(thumbMovePercentage - upperThumbPosition) >
+            Math.abs(thumbMovePercentage - lowerThumbPosition)
+        ) {
             if (
-                Math.abs(thumbMovePercentage - upperThumbPosition) >
-                Math.abs(thumbMovePercentage - lowerThumbPosition)
+                this.bubbleFormControl.value >=
+                this.bubbleFormControlUpper.value
             ) {
-                if (
-                    this.bubbleFormControl.value >=
-                    this.bubbleFormControlUpper.value
-                ) {
-                    this.sliderFormControlUpper.setValue(
-                        initialLowerThumbValue,
-                    );
-                }
-                this.sliderFormControl.setValue(Math.floor(sliderValue));
-            } else {
-                if (
-                    this.bubbleFormControlUpper.value <=
-                    this.bubbleFormControl.value
-                ) {
-                    this.sliderFormControl.setValue(initialUpperThumbValue);
-                }
-                this.sliderFormControlUpper.setValue(Math.floor(sliderValue));
+                this.sliderFormControlUpper.setValue(initialLowerThumbValue);
             }
-
-            this.setThumbPosition();
-            this.sendEvent();
+            this.sliderFormControl.setValue(Math.floor(sliderValue));
+        } else {
+            if (
+                this.bubbleFormControlUpper.value <=
+                this.bubbleFormControl.value
+            ) {
+                this.sliderFormControl.setValue(initialUpperThumbValue);
+            }
+            this.sliderFormControlUpper.setValue(Math.floor(sliderValue));
         }
+
+        this.setThumbPosition();
+        this.sendEvent();
     }
 }
