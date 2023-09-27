@@ -49,4 +49,21 @@ export class MotorSettings {
             this.rotation_range_max
         );
     }
+
+    public getChecked(settingsCopy: MotorSettings) {
+        if (
+            settingsCopy.velocity == this.velocity ||
+            settingsCopy.acceleration == this.acceleration ||
+            settingsCopy.deceleration == this.deceleration ||
+            settingsCopy.period == this.period ||
+            settingsCopy.pulse_width_min == this.pulse_width_min ||
+            settingsCopy.pulse_width_max == this.pulse_width_max ||
+            settingsCopy.rotation_range_min == this.rotation_range_min ||
+            settingsCopy.rotation_range_max == this.rotation_range_max ||
+            settingsCopy.effort == this.effort
+        ) {
+            return true;
+        }
+        return false;
+    }
 }

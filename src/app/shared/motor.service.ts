@@ -4,11 +4,14 @@ import {BehaviorSubject} from "rxjs";
 import {Motor} from "./types/motor.class";
 import {Group} from "./types/motor.enum";
 import {Message} from "./message";
+import * as ROSLIB from "roslib";
 
 @Injectable({
     providedIn: "root",
 })
 export class MotorService {
+    private motorCurrentConsumptionTopic!: ROSLIB.Topic;
+    private sliderMessageTopic!: ROSLIB.Topic;
     // motorCurrentConsumptionTopicSubscription: Subscription;
 
     leftFingers = [
@@ -56,26 +59,28 @@ export class MotorService {
     createMotors() {
         for (const s of this.leftFingers) {
             this.motors.push(
-                new Motor(s, 0, Group.left_hand, undefined, undefined),
+                new Motor(s, 0, Group.left_hand, undefined, undefined).init(),
             );
         }
         for (const s of this.rightFingers) {
             this.motors.push(
-                new Motor(s, 0, Group.right_hand, undefined, undefined),
+                new Motor(s, 0, Group.right_hand, undefined, undefined).init(),
             );
         }
         for (const s of this.leftArm) {
             this.motors.push(
-                new Motor(s, 0, Group.left_arm, undefined, undefined),
+                new Motor(s, 0, Group.left_arm, undefined, undefined).init(),
             );
         }
         for (const s of this.rightArm) {
             this.motors.push(
-                new Motor(s, 0, Group.right_arm, undefined, undefined),
+                new Motor(s, 0, Group.right_arm, undefined, undefined).init(),
             );
         }
         for (const s of this.head) {
-            this.motors.push(new Motor(s, 0, Group.head, undefined, undefined));
+            this.motors.push(
+                new Motor(s, 0, Group.head, undefined, undefined).init(),
+            );
         }
     }
 
@@ -102,18 +107,20 @@ export class MotorService {
     public getMotorByTurnedOn(turned_on: boolean): Motor[] {
         return this.motors.filter((m) => m.turned_on === turned_on);
     }
-
-    public updateMotorFromComponent(motor: Motor) {
-        //Vergleich incoming motor und bestehendem Motor
-        //Werte sanitize
-        //Änderungen anpassen
-        //rostopic message senden
-        //Subject.next(upgedateter bestehender Motor)
+    public getMotorSubjectByName(
+        name: string,
+    ): BehaviorSubject<Motor> | undefined {
+        return this.motors.find((m) => m.name === name)?.motorSubject;
     }
-    public updateMotorFromRos(motor: Motor) {
-        //Vergleich incoming motor und bestehendem Motor
-        //Änderungen anpassen
-        //Subject.next(upgedateter bestehender Motor)
+
+    public updateMotorFromComponent(motorCopy: Motor) {
+        const motor = this.getMotorByName(motorCopy.name);
+        if (motor!.updateChangedAttribute(motorCopy)) {
+            const message = this.parseMotorToMessage(motor!);
+            //Werte sanitize
+            this.sendSliderMessage(message);
+            motor!.motorSubject.next(motor!);
+        }
     }
 
     public sendDummyMessageForGroup(group: Group) {
@@ -127,24 +134,31 @@ export class MotorService {
         }
     }
 
-    // public getMotorSubjectByName(
-    //     name: string | undefined,
-    // ): BehaviorSubject<any> | null {
-    //     const foundMotors = this.motors.filter((m) => m.name === name);
-    //     if (foundMotors.length != 1) {
-    //         console.warn(
-    //             name +
-    //                 " is " +
-    //                 (foundMotors.length > 1
-    //                     ? "ambigous"
-    //                     : "not a registered Motor"),
-    //         );
-    //         return null;
-    //     }
-    //     // console.log(foundMotors);
-    //     return foundMotors.map((m) => m.subject)[0];
-    // }
+    parseMotorToMessage(motor: Motor): Message {
+        return {
+            motor: motor.name,
+            value: "" + motor.position,
+            turnedOn: motor.turned_on,
+            pule_widths_max: "" + motor.settings.pulse_width_max,
+            pule_widths_min: "" + motor.settings.pulse_width_min,
+            velocity: "" + motor.settings.velocity,
+            rotation_range_max: "" + motor.settings.rotation_range_max,
+            rotation_range_min: "" + motor.settings.rotation_range_min,
+            deceleration: "" + motor.settings.deceleration,
+            acceleration: "" + motor.settings.acceleration,
+            period: "" + motor.settings.period,
+        } as Message;
+    }
 
+    sendSliderMessage(msg: Message) {
+        const json = JSON.parse(JSON.stringify(msg));
+        const parameters = Object.keys(json).map((key) => ({[key]: json[key]}));
+        const message = new ROSLIB.Message({data: JSON.stringify(parameters)});
+        this.sliderMessageTopic?.publish(message);
+        console.log("Sent message " + JSON.stringify(message));
+    }
+
+    // Later with PR-253
     // subscribeCurrentReceiver(): Subscription {
     //     return this.rosService.currentReceiver$.subscribe(
     //         (message: MotorCurrentMessage) => {
@@ -168,36 +182,8 @@ export class MotorService {
 
     updateMotorFromMessage(message: Message) {
         const motor = this.getMotorByName(message.motor);
-        if (motor != undefined) {
-            motor.position = !!message.value ? +message.value : motor.position;
-            motor.turned_on = !!message.turnedOn
-                ? message.turnedOn
-                : motor.turned_on;
-            motor.settings.acceleration = !!message.acceleration
-                ? +message.acceleration
-                : motor.settings.acceleration;
-            motor.settings.deceleration = !!message.deceleration
-                ? +message.deceleration
-                : motor.settings.deceleration;
-            motor.settings.pulse_width_max = !!message.pule_widths_max
-                ? +message.pule_widths_max
-                : motor.settings.pulse_width_max;
-            motor.settings.pulse_width_min = !!message.pule_widths_min
-                ? +message.pule_widths_min
-                : motor.settings.pulse_width_min;
-            motor.settings.velocity = !!message.velocity
-                ? +message.velocity
-                : motor.settings.velocity;
-            motor.settings.period = !!message.period
-                ? +message.period
-                : motor.settings.period;
-            motor.settings.rotation_range_max = !!message.rotation_range_max
-                ? +message.rotation_range_max
-                : motor.settings.rotation_range_max;
-            motor.settings.rotation_range_min = !!message.rotation_range_min
-                ? +message.rotation_range_min
-                : motor.settings.rotation_range_max;
-        }
+        motor?.updateMotorFromRosMessage(message);
+
         const copy = motor?.clone();
         motor?.motorSubject.next(copy!);
     }
