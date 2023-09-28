@@ -31,6 +31,7 @@ describe("MultiSliderComponent", () => {
         component.maxInit = 80;
         component.step = 1;
         component.name = "test";
+        component.thumbWidth = 24;
         component.multiSliderEvent = new EventEmitter<number[]>();
         component.ngOnInit();
         fixture.detectChanges();
@@ -71,12 +72,16 @@ describe("MultiSliderComponent", () => {
     it("should set bubblePositions appropriately when calling setThumbPosition", fakeAsync(() => {
         component.sliderFormControl.setValue(0);
         component.sliderFormControlUpper.setValue(200);
+        const sliderWidth = component.sliderElem.nativeElement.clientWidth;
+        const thumbWidth = component.thumbWidth;
         const spySetGradient = spyOn(component, "setGradient");
         component.setThumbPosition();
         tick(300);
         fixture.detectChanges();
-        expect(component.bubblePosition).toBe(50);
-        expect(component.bubblePositionUpper).toBe(100);
+        expect(component.bubblePosition).toBe(sliderWidth / 2);
+        expect(component.bubblePositionUpper).toBe(
+            sliderWidth - thumbWidth / 2,
+        );
         expect(spySetGradient).toHaveBeenCalled();
     }));
 
@@ -109,6 +114,7 @@ describe("MultiSliderComponent", () => {
         component.ngAfterViewInit();
         component.sliderFormControl.setValue(0);
         component.sliderFormControlUpper.setValue(200);
+
         const debugElement = fixture.debugElement.query(
             By.css("input.bottom-layer"),
         );
@@ -119,7 +125,17 @@ describe("MultiSliderComponent", () => {
         fixture.detectChanges();
         const poslower = htmlElement.style.getPropertyValue("--pos-lower");
         const posupper = htmlElement.style.getPropertyValue("--pos-upper");
-        expect(poslower).toBe("50%");
-        expect(posupper).toBe("100%");
+        const posLowerNum = Number(poslower.substring(0, poslower.length - 1));
+        const posUpperNum = Number(posupper.substring(0, posupper.length - 1));
+
+        const posBubbleLower = component.bubbleElement.nativeElement.offsetLeft;
+        const posBubbleUpper =
+            component.bubbleElementUpper.nativeElement.offsetLeft;
+        const sliderWidth = component.sliderElem.nativeElement.clientWidth;
+        const expectedLower = (posBubbleLower / sliderWidth) * 100;
+        const expectedUpper = (posBubbleUpper / sliderWidth) * 100;
+
+        expect(posLowerNum).toBeCloseTo(expectedLower, 5);
+        expect(posUpperNum).toBeCloseTo(expectedUpper, 5);
     });
 });

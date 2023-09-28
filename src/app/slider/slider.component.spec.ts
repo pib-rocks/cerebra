@@ -24,6 +24,8 @@ describe("SliderComponent", () => {
         fixture = TestBed.createComponent(SliderComponent);
         component = fixture.componentInstance;
         component.messageReceiver$ = testSubject;
+        component.minValue = 0;
+        component.maxValue = 100;
         fixture.detectChanges();
     });
 
