@@ -178,6 +178,7 @@ export class RosService {
         this.sendJointTrajectoryConsoleLog("Sent", message);
     }
 
+    //Remove this function after establishing a new test concept
     sendJointTrajectoryConsoleLog(
         sentReceivedPrefix: string,
         jtMessage: ROSLIB.Message,
@@ -195,6 +196,7 @@ export class RosService {
         }
     }
 
+    //Remove this function after establishing a new test concept
     sendMotorSettingsConsoleLog(
         sentReceivedPrefix: string,
         motorSettingsMessage: ROSLIB.Message,
