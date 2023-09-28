@@ -5,6 +5,7 @@ import {Motor} from "./types/motor.class";
 import {Group} from "./types/motor.enum";
 import {Message} from "./message";
 import * as ROSLIB from "roslib";
+import {MotorSettingsMessage} from "./motorSettingsMessage";
 
 @Injectable({
     providedIn: "root",
@@ -100,7 +101,7 @@ export class MotorService {
         return this.motors.find((m) => m.hardware_id === hwId);
     }
     public getMotorByTurnedOn(turned_on: boolean): Motor[] {
-        return this.motors.filter((m) => m.turned_on === turned_on);
+        return this.motors.filter((m) => m.settings.turnedOn === turned_on);
     }
     public getMotorSubjectByName(
         name: string,
@@ -110,8 +111,11 @@ export class MotorService {
 
     public updateMotorFromComponent(motorCopy: Motor) {
         const motor = this.getMotorByName(motorCopy.name);
+        this.sendMessage(motorCopy);
+
+        //deprecated: can be removed once components are refactored to use JT and Setting only
         if (motor!.updateChangedAttribute(motorCopy)) {
-            const message = this.parseMotorToMessage(motor!);
+            const message = motor!.parseMotorToMessage();
             //Werte sanitize
             this.sendSliderMessage(message);
             motor!.motorSubject.next(motor!);
@@ -129,28 +133,35 @@ export class MotorService {
         }
     }
 
-    parseMotorToMessage(motor: Motor): Message {
-        return {
-            motor: motor.name,
-            value: "" + motor.position,
-            turnedOn: motor.turned_on,
-            pule_widths_max: "" + motor.settings.pulse_width_max,
-            pule_widths_min: "" + motor.settings.pulse_width_min,
-            velocity: "" + motor.settings.velocity,
-            rotation_range_max: "" + motor.settings.rotation_range_max,
-            rotation_range_min: "" + motor.settings.rotation_range_min,
-            deceleration: "" + motor.settings.deceleration,
-            acceleration: "" + motor.settings.acceleration,
-            period: "" + motor.settings.period,
-        } as Message;
-    }
-
     sendSliderMessage(msg: Message) {
         const json = JSON.parse(JSON.stringify(msg));
         const parameters = Object.keys(json).map((key) => ({[key]: json[key]}));
         const message = new ROSLIB.Message({data: JSON.stringify(parameters)});
         this.sliderMessageTopic?.publish(message);
         console.log("Sent message " + JSON.stringify(message));
+    }
+
+    sendMessage(motorCopy: Motor) {
+        const motor = this.getMotorByName(motorCopy.name);
+        if (motor!.position !== motorCopy.position) {
+            this.rosService.sendJointTrajectoryMessage(
+                motor!.parseMotorToJointTrajectoryMessage(),
+            );
+        }
+        if (!motor!.settings.getChecked(motorCopy.settings)) {
+            this.rosService.sendMotorSettingsMessage({
+                motorName: motor?.name,
+                turnedOn: motor?.settings.turnedOn,
+                pulse_widths_min: motor?.settings.pulse_width_min,
+                pulse_widths_max: motor?.settings.pulse_width_max,
+                rotation_range_min: motor?.settings.rotation_range_min,
+                rotation_range_max: motor?.settings.rotation_range_max,
+                velocity: motor?.settings.velocity,
+                acceleration: motor?.settings.acceleration,
+                deceleration: motor?.settings.deceleration,
+                period: motor?.settings.period,
+            } as MotorSettingsMessage);
+        }
     }
 
     // Later with PR-253
@@ -178,7 +189,6 @@ export class MotorService {
     updateMotorFromMessage(message: Message) {
         const motor = this.getMotorByName(message.motor);
         motor?.updateMotorFromRosMessage(message);
-
         const copy = motor?.clone();
         motor?.motorSubject.next(copy!);
     }
