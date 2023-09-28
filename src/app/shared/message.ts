@@ -1,3 +1,4 @@
+//Remove in PR-319
 export interface Message {
     motor: string;
     value?: string;
