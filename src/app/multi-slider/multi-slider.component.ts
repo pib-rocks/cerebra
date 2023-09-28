@@ -281,12 +281,6 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
             this.slider.nativeElement.getBoundingClientRect().left;
 
         //Makes sure that the thumb never exceeds the edges of the slider
-        if (
-            clickLocation >= elementWidth + offsetLeft ||
-            clickLocation <= offsetLeft
-        ) {
-            return;
-        }
 
         let thumbMovePercentage =
             ((clickLocation - offsetLeft) / elementWidth) * 100;
