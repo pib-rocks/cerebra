@@ -44,6 +44,8 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
     @Input() sliderFormControlUpper = new FormControl();
     bubbleFormControl = new FormControl();
     bubbleFormControlUpper = new FormControl();
+    upper!: number;
+    lower!: number;
 
     timer: any = null;
 
@@ -53,6 +55,7 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
     maxBubblePosition = 100;
     minBubblePosition = 0;
     pixelsFromEdge = 60;
+    mouseDownX!: number;
     @Output() multiSliderEvent = new EventEmitter<number[]>();
 
     constructor(
@@ -229,14 +232,14 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
 
     setGradient() {
         const total = this.maxValue - this.minValue;
-        const upper =
+        this.upper =
             (((this.sliderFormControl.value >= this.sliderFormControlUpper.value
                 ? this.sliderFormControl.value
                 : this.sliderFormControlUpper.value) -
                 this.minValue) *
                 100) /
             total;
-        const lower =
+        this.lower =
             (((this.sliderFormControl.value < this.sliderFormControlUpper.value
                 ? this.sliderFormControl.value
                 : this.sliderFormControlUpper.value) -
@@ -245,11 +248,11 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
             total;
         this.sliderElem.nativeElement.style.setProperty(
             "--pos-upper",
-            upper.toString(10) + "%",
+            this.upper.toString(10) + "%",
         );
         this.sliderElem.nativeElement.style.setProperty(
             "--pos-lower",
-            lower.toString(10) + "%",
+            this.lower.toString(10) + "%",
         );
     }
 
@@ -260,9 +263,19 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
         return name.replace(" ", "_").toLowerCase();
     }
 
+    onMouseDown(event: MouseEvent) {
+        this.mouseDownX = event.clientX;
+    }
+
     onSliderClick(event: MouseEvent) {
         //The variables load all the required values
         const clickLocation = event.clientX;
+        if (clickLocation != this.mouseDownX) {
+            //if mouse was dragged
+            this.setThumbPosition();
+            this.sendEvent();
+            return;
+        }
         const elementWidth = this.slider.nativeElement.offsetWidth;
         const offsetLeft =
             this.slider.nativeElement.getBoundingClientRect().left;
@@ -275,51 +288,20 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
             return;
         }
 
-        const upperThumb = this.sliderElem.nativeElement.style
-            .getPropertyValue("--pos-upper")
-            .trim();
-        const lowerThumb = this.sliderElem.nativeElement.style
-            .getPropertyValue("--pos-lower")
-            .trim();
-        const initialLowerThumbValue = this.sliderFormControl.value;
-        const initialUpperThumbValue = this.sliderFormControlUpper.value;
-
-        const upperThumbPosition = Number(
-            upperThumb.substring(0, upperThumb.length - 1),
-        );
-        const lowerThumbPosition = Number(
-            lowerThumb.substring(0, lowerThumb.length - 1),
-        );
-
         let thumbMovePercentage =
             ((clickLocation - offsetLeft) / elementWidth) * 100;
 
         let sliderValue =
-            this.minValue < 0
-                ? this.minValue +
-                  (thumbMovePercentage / 100) *
-                      (this.maxValue + Math.abs(this.minValue))
-                : (thumbMovePercentage / 100) * this.maxValue;
+            (thumbMovePercentage / 100) * (this.maxValue - this.minValue) +
+            this.minValue;
 
         //Finds the closest slider to move
         if (
-            Math.abs(thumbMovePercentage - upperThumbPosition) >
-            Math.abs(thumbMovePercentage - lowerThumbPosition)
+            Math.abs(thumbMovePercentage - this.upper) >
+            Math.abs(thumbMovePercentage - this.lower)
         ) {
-            if (
-                this.bubbleFormControl.value >=
-                this.bubbleFormControlUpper.value
-            ) {
-                this.sliderFormControlUpper.setValue(initialLowerThumbValue);
-            }
             this.sliderFormControl.setValue(Math.floor(sliderValue));
         } else {
-            if (
-                this.bubbleFormControlUpper.value <=
-                this.bubbleFormControl.value
-            ) {
-                this.sliderFormControl.setValue(initialUpperThumbValue);
-            }
             this.sliderFormControlUpper.setValue(Math.floor(sliderValue));
         }
 
