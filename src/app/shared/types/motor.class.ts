@@ -77,11 +77,11 @@ export class Motor {
         this.settings.deceleration = !!message.deceleration
             ? +message.deceleration
             : this.settings.deceleration;
-        this.settings.pulse_width_max = !!message.pule_widths_max
-            ? +message.pule_widths_max
+        this.settings.pulse_width_max = !!message.pulse_widths_max
+            ? +message.pulse_widths_max
             : this.settings.pulse_width_max;
-        this.settings.pulse_width_min = !!message.pule_widths_min
-            ? +message.pule_widths_min
+        this.settings.pulse_width_min = !!message.pulse_widths_min
+            ? +message.pulse_widths_min
             : this.settings.pulse_width_min;
         this.settings.velocity = !!message.velocity
             ? +message.velocity

@@ -40,6 +40,7 @@ export class RosService {
     private timerPeriodTopic!: ROSLIB.Topic;
     private previewSizeTopic!: ROSLIB.Topic;
     private qualityFactorTopic!: ROSLIB.Topic;
+    private jointTrajectoryTopic!: ROSLIB.Topic;
     //to be removed in PR-319
 
     private readonly topicName = "/motor_settings";
@@ -281,25 +282,6 @@ export class RosService {
         });
     }
 
-    subscribeJointTrajectoryTopic() {
-        this.jointTrajectoryTopic.subscribe((jointTrajectoryMessage) => {
-            const jsonString = JSON.stringify(jointTrajectoryMessage);
-            const parsedJtJson = JSON.parse(jsonString);
-
-            const receivers$ = this.getJtReceiversByMotorName(
-                parsedJtJson.joint_names,
-            );
-            receivers$.forEach((r) => {
-                r.next(parsedJtJson);
-            });
-
-            this.sendJointTrajectoryConsoleLog(
-                "Received",
-                jointTrajectoryMessage,
-            );
-        });
-    }
-
     subscribeMotorSettingsTopic() {
         this.motorSettingsTopic.subscribe((message) => {
             const jsonStr = JSON.stringify(message);
@@ -339,29 +321,6 @@ export class RosService {
                 "Received",
                 jointTrajectoryMessage,
             );
-        });
-    }
-
-    subscribeMotorSettingsTopic() {
-        this.motorSettingsTopic.subscribe((message) => {
-            const jsonStr = JSON.stringify(message);
-            const json = JSON.parse(jsonStr);
-            const jsonArray = JSON.parse(json["data"]);
-            const jsonObject = jsonArray.reduce(
-                (key: object, value: object) => {
-                    return {...key, ...value};
-                },
-                {},
-            );
-
-            this.sendMotorSettingsConsoleLog("Received", message);
-
-            const receivers$ = this.getMotorSettingsReceiversByMotorName(
-                jsonObject["motorName"],
-            );
-            receivers$.forEach((r) => {
-                r.next(jsonObject);
-            });
         });
     }
 
