@@ -126,8 +126,8 @@ describe("MultiSliderComponent", () => {
     fit("should choose the nearest bubble to move when clicking somewhere on the slider", () => {
         //Using the slider width doesnt work. The seems to expect the html width for the maximum slider input.
         const slider = component.slider.nativeElement;
-        let sliderWidth = slider.clientWidth;
-        let margin = (document.documentElement.clientWidth - sliderWidth) / 2;
+        const sliderWidth = slider.clientWidth;
+        const margin = (document.documentElement.clientWidth - sliderWidth) / 2;
         //check init-values
         expect(component.sliderFormControl.getRawValue()).toEqual(20);
         expect(component.sliderFormControlUpper.getRawValue()).toEqual(80);

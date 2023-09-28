@@ -282,10 +282,10 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
 
         //Makes sure that the thumb never exceeds the edges of the slider
 
-        let thumbMovePercentage =
+        const thumbMovePercentage =
             ((clickLocation - offsetLeft) / elementWidth) * 100;
 
-        let sliderValue =
+        const sliderValue =
             (thumbMovePercentage / 100) * (this.maxValue - this.minValue) +
             this.minValue;
 
