@@ -55,28 +55,24 @@ export class MotorService {
     createMotors() {
         for (const s of this.leftFingers) {
             this.motors.push(
-                new Motor(s, 0, Group.left_hand, undefined, undefined).init(),
+                new Motor(s, 0, Group.left_hand, undefined).init(),
             );
         }
         for (const s of this.rightFingers) {
             this.motors.push(
-                new Motor(s, 0, Group.right_hand, undefined, undefined).init(),
+                new Motor(s, 0, Group.right_hand, undefined).init(),
             );
         }
         for (const s of this.leftArm) {
-            this.motors.push(
-                new Motor(s, 0, Group.left_arm, undefined, undefined).init(),
-            );
+            this.motors.push(new Motor(s, 0, Group.left_arm, undefined).init());
         }
         for (const s of this.rightArm) {
             this.motors.push(
-                new Motor(s, 0, Group.right_arm, undefined, undefined).init(),
+                new Motor(s, 0, Group.right_arm, undefined).init(),
             );
         }
         for (const s of this.head) {
-            this.motors.push(
-                new Motor(s, 0, Group.head, undefined, undefined).init(),
-            );
+            this.motors.push(new Motor(s, 0, Group.head, undefined).init());
         }
     }
 
