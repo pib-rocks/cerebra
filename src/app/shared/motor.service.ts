@@ -10,10 +10,7 @@ import * as ROSLIB from "roslib";
     providedIn: "root",
 })
 export class MotorService {
-    private motorCurrentConsumptionTopic!: ROSLIB.Topic;
     private sliderMessageTopic!: ROSLIB.Topic;
-    // motorCurrentConsumptionTopicSubscription: Subscription;
-
     leftFingers = [
         "thumb_left_stretch",
         "thumb_left_opposition",
@@ -48,8 +45,6 @@ export class MotorService {
     motors: Motor[] = [];
 
     constructor(private rosService: RosService) {
-        // this.motorCurrentConsumptionTopicSubscription =
-        //     this.subscribeCurrentReceiver();
         this.subscribeMotorValueSubject();
         this.createMotors();
         this.printAllMotors();

@@ -10,6 +10,7 @@ import {MotorCurrentMessage} from "./currentMessage";
     providedIn: "root",
 })
 export class RosService {
+    //to be removed in PR-319
     private isInitializedSubject = new BehaviorSubject<boolean>(false);
     isInitialized$ = this.isInitializedSubject.asObservable();
     currentReceiver$: Subject<MotorCurrentMessage> =
@@ -32,6 +33,7 @@ export class RosService {
     private timerPeriodTopic!: ROSLIB.Topic;
     private previewSizeTopic!: ROSLIB.Topic;
     private qualityFactorTopic!: ROSLIB.Topic;
+    //to be removed in PR-319
     sharedAllFingersValueSource = new Subject<Message>();
     sharedValue$ = this.sharedAllFingersValueSource.asObservable();
 
@@ -40,6 +42,9 @@ export class RosService {
     private readonly topicCurrentName = "/motor_status";
     private readonly topicCameratName = "/camera_topic";
     private motors: Motor[] = [];
+
+    //PR-287
+    public motorValueSubject = new Subject<Message>();
 
     constructor() {
         this.ros = this.setUpRos();
@@ -53,7 +58,7 @@ export class RosService {
             this.cameraTopic = this.createCameraTopic();
             this.previewSizeTopic = this.createPreviewSizeTopic();
             this.timerPeriodTopic = this.createTimePeriodTopic();
-            this.qualityFactorTopic = this.createQualityFactorPublisher();
+            this.qualityFactorTopic = this.createQualityFactorTopic();
             this.subscribeSliderTopic();
             this.subscribeCurrentConsumptionTopic();
             this.subscribePreviewSize();
@@ -83,7 +88,7 @@ export class RosService {
             messageType: "std_msgs/Int32MultiArray",
         });
     }
-
+    //to be removed in PR-319
     registerMotor(motorName: string, motorReceiver$: Subject<Message>) {
         let isRegistered = false;
         if (this.ros.isConnected) {
@@ -103,18 +108,11 @@ export class RosService {
             }
         }
     }
-
-    public printMotors() {
-        console.log("MotorsLength: " + this.motors.length);
-        this.motors.forEach((m) => {
-            console.log("MotorsForEach: " + m.motor);
-        });
-    }
-
+    //to be removed in PR-319
     updateSharedValue(value: Message) {
         this.sharedAllFingersValueSource.next(value);
     }
-
+    //to be moved to motor.service in PR-287
     sendSliderMessage(msg: Message | VoiceAssistant | MotorCurrentMessage) {
         const json = JSON.parse(JSON.stringify(msg));
         const parameters = Object.keys(json).map((key) => ({[key]: json[key]}));
@@ -136,6 +134,7 @@ export class RosService {
         console.log("Sent message " + JSON.stringify(message));
     }
 
+    //to be removed in PR-287
     getReceiversByMotorName(motorName: string): Subject<Message>[] {
         const foundMotors = this.motors.filter((m) => m.motor === motorName);
         return foundMotors.length > 0
@@ -146,7 +145,7 @@ export class RosService {
     setUpRos() {
         let rosUrl: string;
         if (isDevMode()) {
-            rosUrl = "192.168.220.110";
+            rosUrl = "192.168.220.84";
         } else {
             rosUrl = window.location.hostname;
         }
@@ -155,6 +154,7 @@ export class RosService {
         });
     }
 
+    //to be removed in PR-287
     subscribeSliderTopic() {
         this.sliderMessageTopic.subscribe((message) => {
             const jsonStr = JSON.stringify(message);
@@ -178,9 +178,11 @@ export class RosService {
             receivers$.forEach((r) => {
                 r.next(jsonObject);
             });
+            this.motorValueSubject.next(jsonObject);
         });
     }
 
+    //to be removed in PR-287
     subscribeCurrentConsumptionTopic() {
         this.motorCurrentConsumptionTopic.subscribe((message) => {
             const jsonStr = JSON.stringify(message);
@@ -238,10 +240,6 @@ export class RosService {
 
     get Ros(): ROSLIB.Ros {
         return this.ros;
-    }
-
-    get Topic(): ROSLIB.Topic {
-        return this.sliderMessageTopic;
     }
 
     createMessageTopic(): ROSLIB.Topic {
@@ -304,7 +302,7 @@ export class RosService {
         this.qualityFactorTopic.publish(message);
     }
 
-    createQualityFactorPublisher() {
+    createQualityFactorTopic() {
         return new ROSLIB.Topic({
             ros: this.ros,
             name: "quality_factor_topic",
