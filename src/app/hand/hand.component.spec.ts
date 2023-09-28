@@ -271,7 +271,7 @@ describe("HandComponent", () => {
                 (slider) =>
                     slider.componentInstance.motorName === "all_left_stretch",
             )[0].componentInstance,
-            "sendMessage",
+            "sendJointTrajectoryMessage",
         );
         sliders
             .filter(
@@ -296,7 +296,9 @@ describe("HandComponent", () => {
                 expect(child.componentInstance.sliderFormControl.value).toBe(
                     500,
                 );
-                expect(child.componentInstance.sendMessage).toHaveBeenCalled();
+                expect(
+                    child.componentInstance.sendJointTrajectoryMessage,
+                ).toHaveBeenCalled();
             });
         expect(component.displayAll).toBe("none");
         expect(component.displayIndividual).toBe("block");
@@ -315,7 +317,7 @@ describe("HandComponent", () => {
             By.css("app-motor-control"),
         );
         sliders.forEach((slider) =>
-            spyOn(slider.componentInstance, "sendMessage"),
+            spyOn(slider.componentInstance, "sendJointTrajectoryMessage"),
         );
         sliders
             .filter(
@@ -336,7 +338,9 @@ describe("HandComponent", () => {
                 expect(child.componentInstance.sliderFormControl.value).toBe(
                     500,
                 );
-                expect(child.componentInstance.sendMessage).toHaveBeenCalled();
+                expect(
+                    child.componentInstance.sendJointTrajectoryMessage,
+                ).toHaveBeenCalled();
             });
         expect(component.displayAll).toBe("none");
         expect(component.displayIndividual).toBe("block");

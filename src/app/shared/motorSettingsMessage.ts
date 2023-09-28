@@ -1,7 +1,5 @@
-//Remove in PR-319
-export interface Message {
-    motor: string;
-    value?: string;
+export interface MotorSettingsMessage {
+    motorName: string;
     turnedOn?: boolean;
     pulse_widths_min?: string;
     pulse_widths_max?: string;

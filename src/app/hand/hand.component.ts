@@ -136,7 +136,7 @@ export class HandComponent implements OnInit {
                 .forEach((child) => {
                     if (child.sliderFormControl.value != 0) {
                         child.setSliderValue(0);
-                        child.sendAllMessagesCombined();
+                        child.sendJointTrajectoryMessage();
                     }
                 });
         } else {
@@ -149,7 +149,7 @@ export class HandComponent implements OnInit {
                 .forEach((child) => {
                     if (child.sliderFormControl.value != 0) {
                         child.setSliderValue(0);
-                        child.sendAllMessagesCombined();
+                        child.sendJointTrajectoryMessage();
                     }
                 });
         }
@@ -261,6 +261,7 @@ export class HandComponent implements OnInit {
             }
             if (child.motorName === "all_right_stretch") {
                 child.sendAllMessagesCombined();
+                child.sendJointTrajectoryMessage();
             }
             if (
                 child.motorName.includes("right_opposition") &&
@@ -268,13 +269,16 @@ export class HandComponent implements OnInit {
             ) {
                 calledOposite = true;
                 child.sendAllMessagesCombined();
+                child.sendJointTrajectoryMessage();
             }
             if (child.motorName === "all_left_stretch") {
                 child.sendAllMessagesCombined();
+                child.sendJointTrajectoryMessage();
             }
             if (child.motorName.includes("left_opposition") && !calledOposite) {
                 calledOposite = true;
                 child.sendAllMessagesCombined();
+                child.sendJointTrajectoryMessage();
             }
         });
     }
@@ -305,6 +309,7 @@ export class HandComponent implements OnInit {
             this.childComponents.forEach((child) => {
                 if (child.motorName === "all_right_stretch") {
                     child.sendAllMessagesCombined();
+                    child.sendJointTrajectoryMessage();
                 }
                 if (
                     child.motorName.includes("right_opposition") &&
@@ -312,12 +317,14 @@ export class HandComponent implements OnInit {
                 ) {
                     calledOposite = true;
                     child.sendAllMessagesCombined();
+                    child.sendJointTrajectoryMessage();
                 }
             });
         } else {
             this.childComponents.forEach((child) => {
                 if (child.motorName === "all_left_stretch") {
                     child.sendAllMessagesCombined();
+                    child.sendJointTrajectoryMessage();
                 }
                 if (
                     child.motorName.includes("left_opposition") &&
@@ -325,6 +332,7 @@ export class HandComponent implements OnInit {
                 ) {
                     calledOposite = true;
                     child.sendAllMessagesCombined();
+                    child.sendJointTrajectoryMessage();
                 }
             });
         }
