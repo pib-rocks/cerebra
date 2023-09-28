@@ -23,7 +23,6 @@ export class Motor {
         position: number,
         group: Group,
         settings?: MotorSettings,
-        turned_on?: boolean,
     ) {
         this.name = name;
         this.position = position;

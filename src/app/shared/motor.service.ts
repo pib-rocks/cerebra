@@ -143,24 +143,26 @@ export class MotorService {
 
     sendMessage(motorCopy: Motor) {
         const motor = this.getMotorByName(motorCopy.name);
-        if (motor!.position !== motorCopy.position) {
-            this.rosService.sendJointTrajectoryMessage(
-                motor!.parseMotorToJointTrajectoryMessage(),
-            );
-        }
-        if (!motor!.settings.getChecked(motorCopy.settings)) {
-            this.rosService.sendMotorSettingsMessage({
-                motorName: motor?.name,
-                turnedOn: motor?.settings.turnedOn,
-                pulse_widths_min: motor?.settings.pulse_width_min,
-                pulse_widths_max: motor?.settings.pulse_width_max,
-                rotation_range_min: motor?.settings.rotation_range_min,
-                rotation_range_max: motor?.settings.rotation_range_max,
-                velocity: motor?.settings.velocity,
-                acceleration: motor?.settings.acceleration,
-                deceleration: motor?.settings.deceleration,
-                period: motor?.settings.period,
-            } as MotorSettingsMessage);
+        if (motor) {
+            if (motor.position !== motorCopy.position) {
+                this.rosService.sendJointTrajectoryMessage(
+                    motor.parseMotorToJointTrajectoryMessage(),
+                );
+            }
+            if (!motor.settings.getChecked(motorCopy.settings)) {
+                this.rosService.sendMotorSettingsMessage({
+                    motorName: motor.name,
+                    turnedOn: motor.settings.turnedOn,
+                    pulse_widths_min: "" + motor.settings.pulse_width_min,
+                    pulse_widths_max: "" + motor.settings.pulse_width_max,
+                    rotation_range_min: "" + motor.settings.rotation_range_min,
+                    rotation_range_max: "" + motor.settings.rotation_range_max,
+                    velocity: "" + motor.settings.velocity,
+                    acceleration: "" + motor.settings.acceleration,
+                    deceleration: "" + motor.settings.deceleration,
+                    period: "" + motor.settings.period,
+                } as MotorSettingsMessage);
+            }
         }
     }
 
