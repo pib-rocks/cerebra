@@ -49,7 +49,7 @@ describe("HeadComponent", () => {
             By.css("app-motor-control"),
         );
         for (const slider of sliders) {
-            spyOn(slider.componentInstance, "sendMessage");
+            spyOn(slider.componentInstance, "sendJointTrajectoryMessage");
         }
 
         spyOn(component, "reset").and.callThrough();
