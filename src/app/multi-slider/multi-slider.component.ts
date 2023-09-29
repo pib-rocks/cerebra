@@ -268,7 +268,6 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
     }
 
     onSliderClick(event: MouseEvent) {
-        //The variables load all the required values
         const clickLocation = event.clientX;
         if (clickLocation != this.mouseDownX) {
             //if mouse was dragged
@@ -280,8 +279,6 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
         const offsetLeft =
             this.slider.nativeElement.getBoundingClientRect().left;
 
-        //Makes sure that the thumb never exceeds the edges of the slider
-
         const thumbMovePercentage =
             ((clickLocation - offsetLeft) / elementWidth) * 100;
 
@@ -289,7 +286,6 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
             (thumbMovePercentage / 100) * (this.maxValue - this.minValue) +
             this.minValue;
 
-        //Finds the closest slider to move
         if (
             Math.abs(thumbMovePercentage - this.upper) >
             Math.abs(thumbMovePercentage - this.lower)

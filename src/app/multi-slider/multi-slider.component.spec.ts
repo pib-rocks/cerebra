@@ -123,16 +123,14 @@ describe("MultiSliderComponent", () => {
         expect(posupper).toBe("100%");
     });
 
-    fit("should choose the nearest bubble to move when clicking somewhere on the slider", () => {
-        //Using the slider width doesnt work. The seems to expect the html width for the maximum slider input.
+    it("should choose the nearest bubble to move when clicking somewhere on the slider", () => {
         const slider = component.slider.nativeElement;
         const sliderWidth = slider.clientWidth;
         const margin = (document.documentElement.clientWidth - sliderWidth) / 2;
-        //check init-values
+
         expect(component.sliderFormControl.getRawValue()).toEqual(20);
         expect(component.sliderFormControlUpper.getRawValue()).toEqual(80);
 
-        //move to min-value of sliderFormControl
         const clickEventMin = new MouseEvent("minClick", {
             clientX: margin,
         });
@@ -141,7 +139,6 @@ describe("MultiSliderComponent", () => {
         expect(component.sliderFormControl.getRawValue()).toEqual(-200);
         expect(component.sliderFormControlUpper.getRawValue()).toEqual(80);
 
-        //move to max-value of sliderFormControlUpper
         const clickEventMax = new MouseEvent("maxClick", {
             clientX: sliderWidth + margin,
         });
@@ -150,7 +147,6 @@ describe("MultiSliderComponent", () => {
         expect(component.sliderFormControl.getRawValue()).toEqual(-200);
         expect(component.sliderFormControlUpper.getRawValue()).toEqual(200);
 
-        //check middle-value (only the right slider should move)
         const clickEventMiddle = new MouseEvent("middleClick", {
             clientX: Math.round(sliderWidth / 2 + margin),
         });
