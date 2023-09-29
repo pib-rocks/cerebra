@@ -270,7 +270,6 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
     onSliderClick(event: MouseEvent) {
         const clickLocation = event.clientX;
         if (clickLocation != this.mouseDownX) {
-            //if mouse was dragged
             this.setThumbPosition();
             this.sendEvent();
             return;
@@ -278,10 +277,8 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
         const elementWidth = this.slider.nativeElement.offsetWidth;
         const offsetLeft =
             this.slider.nativeElement.getBoundingClientRect().left;
-
         const thumbMovePercentage =
             ((clickLocation - offsetLeft) / elementWidth) * 100;
-
         const sliderValue =
             (thumbMovePercentage / 100) * (this.maxValue - this.minValue) +
             this.minValue;
@@ -294,7 +291,6 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
         } else {
             this.sliderFormControlUpper.setValue(Math.floor(sliderValue));
         }
-
         this.setThumbPosition();
         this.sendEvent();
     }
