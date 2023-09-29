@@ -277,15 +277,20 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
         const elementWidth = this.slider.nativeElement.offsetWidth;
         const offsetLeft =
             this.slider.nativeElement.getBoundingClientRect().left;
-        const thumbMovePercentage =
-            ((clickLocation - offsetLeft) / elementWidth) * 100;
+
+        const relativeThumbMove = (clickLocation - offsetLeft) / elementWidth;
+
         const sliderValue =
-            (thumbMovePercentage / 100) * (this.maxValue - this.minValue) +
-            this.minValue;
+            relativeThumbMove * (this.maxValue - this.minValue) + this.minValue;
+
+        const diff = this.maxValue - this.minValue;
+        const upper =
+            (this.sliderFormControlUpper.value - this.minValue) / diff;
+        const lower = (this.sliderFormControl.value - this.minValue) / diff;
 
         if (
-            Math.abs(thumbMovePercentage - this.upper) >
-            Math.abs(thumbMovePercentage - this.lower)
+            Math.abs(relativeThumbMove - upper) >
+            Math.abs(relativeThumbMove - lower)
         ) {
             this.sliderFormControl.setValue(Math.floor(sliderValue));
         } else {
