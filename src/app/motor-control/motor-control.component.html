@@ -150,8 +150,8 @@
         <div class="col-3 ml-2 mr-2 ">
             <app-vertical-slider
                 name="Velocity"
-                [rangeFormControl]="velocityFormControl"
-                [parentFunction]="inputSendSettingsMsg"
+                [messageReceiver$]="velocitySubject$"
+                (sliderEvent)="setVelocity($event)"
                 [unitLong]="'(°/100s)'"
                 [minValue]="0"
                 [maxValue]="500000"></app-vertical-slider>
@@ -159,16 +159,16 @@
         <div class="col-3 ml-2 mr-2">
             <app-vertical-slider
                 name="Acceleration"
-                [rangeFormControl]="accelerationFormControl"
-                [parentFunction]="inputSendSettingsMsg"
+                [messageReceiver$]="accelerationSubject$"
+                (sliderEvent)="setAcceleration($event)"
                 [minValue]="0"
                 [maxValue]="500000"></app-vertical-slider>
         </div>
         <div class="col-3 ml-2 mr-2">
             <app-vertical-slider
                 name="Deceleration"
-                [rangeFormControl]="decelerationFormControl"
-                [parentFunction]="inputSendSettingsMsg"
+                [messageReceiver$]="decelerationSubject$"
+                (sliderEvent)="setDeceleration($event)"
                 [minValue]="0"
                 [maxValue]="500000"></app-vertical-slider>
         </div>

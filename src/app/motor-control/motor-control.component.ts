@@ -12,6 +12,7 @@ import {
 } from "../shared/validators";
 import {JointTrajectoryMessage} from "../shared/rosMessageTypes/jointTrajectoryMessage";
 import {SliderComponent} from "../slider/slider.component";
+import {Motor} from "../shared/types/motor.class";
 @Component({
     selector: "app-motor-control",
     templateUrl: "./motor-control.component.html",
@@ -24,6 +25,7 @@ export class MotorControlComponent implements OnInit {
     @Input() isGroup = false;
     @Input() showCheckBox = true;
     @Input() showMotorSettingsButton = true;
+    @Input() motor!: Motor | undefined;
 
     @ViewChild(SliderComponent) sliderComponent!: SliderComponent;
 
@@ -36,6 +38,9 @@ export class MotorControlComponent implements OnInit {
     pulseWidthSubject$ = new Subject<number[]>();
     degreeSubject$ = new Subject<number[]>();
     periodSubject$ = new Subject<number>();
+    accelerationSubject$ = new Subject<number>();
+    decelerationSubject$ = new Subject<number>();
+    velocitySubject$ = new Subject<number>();
 
     sliderFormControl: FormControl = new FormControl(0);
     motorFormControl: FormControl = new FormControl(true);
@@ -63,6 +68,9 @@ export class MotorControlComponent implements OnInit {
             compareValuesPulseValidator(this.pulseMinRange, this.pulseMaxRange),
             notNullValidator,
         ]);
+        this.motor?.motorSubject.subscribe((motor) =>
+            console.log(motor.toString()),
+        );
         this.pulseMinRange.setValidators([
             Validators.min(0),
             Validators.max(65535),
@@ -405,6 +413,18 @@ export class MotorControlComponent implements OnInit {
     }
     setPeriod(number: number) {
         this.periodFormControl.setValue(number);
+        this.sendMotorSettingsMessage();
+    }
+    setDeceleration(number: number) {
+        this.decelerationFormControl.setValue(number);
+        this.sendMotorSettingsMessage();
+    }
+    setAcceleration(number: number) {
+        this.accelerationFormControl.setValue(number);
+        this.sendMotorSettingsMessage();
+    }
+    setVelocity(number: number) {
+        this.velocityFormControl.setValue(number);
         this.sendMotorSettingsMessage();
     }
 }
