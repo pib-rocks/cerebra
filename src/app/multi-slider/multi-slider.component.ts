@@ -44,8 +44,6 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
     @Input() sliderFormControlUpper = new FormControl();
     bubbleFormControl = new FormControl();
     bubbleFormControlUpper = new FormControl();
-    upper!: number;
-    lower!: number;
 
     timer: any = null;
 
