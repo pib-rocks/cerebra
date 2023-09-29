@@ -72,7 +72,7 @@ export class SliderComponent implements OnInit, AfterViewInit {
                 }
             }
         });
-        if (this.defaultValue) {
+        if (this.defaultValue !== undefined) {
             this.sliderFormControl.setValue(
                 this.flip(Number(this.defaultValue)),
             );
