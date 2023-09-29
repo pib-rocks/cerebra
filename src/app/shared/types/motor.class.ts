@@ -17,11 +17,13 @@ export class Motor {
     settings: MotorSettings;
     group: Group;
     motorSubject: BehaviorSubject<Motor>;
+    label: string;
 
     constructor(
         name: string,
         position: number,
         group: Group,
+        label: string,
         settings?: MotorSettings,
     ) {
         this.name = name;
@@ -29,6 +31,7 @@ export class Motor {
         this.settings = !!settings ? settings : this.createDefaultSettings();
         this.group = group;
         this.motorSubject = new BehaviorSubject<Motor>({} as Motor);
+        this.label = label;
     }
 
     public init(): Motor {
@@ -61,11 +64,12 @@ export class Motor {
     }
 
     public clone(): Motor {
-        const name = "" + this.name;
-        const position = "0" + this.position;
+        const name = this.name;
+        const position = this.position;
         const group = this.group;
         const settings = this.settings;
-        return new Motor(name, +position, group, settings);
+        const label = this.label;
+        return new Motor(name, position, group, label, settings);
     }
 
     public updateMotorFromRosMessage(message: Message) {

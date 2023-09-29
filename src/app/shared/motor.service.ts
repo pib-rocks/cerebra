@@ -13,66 +13,93 @@ import {MotorSettingsMessage} from "./motorSettingsMessage";
 export class MotorService {
     private sliderMessageTopic!: ROSLIB.Topic;
     leftFingers = [
-        "thumb_left_stretch",
-        "thumb_left_opposition",
-        "index_left_stretch",
-        "middle_left_stretch",
-        "ring_left_stretch",
-        "pinky_left_stretch",
+        {name: "thumb_left_stretch", label: "Thumb"},
+        {name: "thumb_left_opposition", label: "Thumb opposition"},
+        {name: "index_left_stretch", label: "Index finger"},
+        {name: "middle_left_stretch", label: "Middle finger"},
+        {name: "ring_left_stretch", label: "Ring finger"},
+        {name: "pinky_left_stretch", label: "Pinky finger"},
     ];
     rightFingers = [
-        "thumb_right_stretch",
-        "thumb_right_opposition",
-        "index_right_stretch",
-        "middle_right_stretch",
-        "ring_right_stretch",
-        "pinky_right_stretch",
+        {name: "thumb_right_stretch", label: "Thumb"},
+        {name: "thumb_right_opposition", label: "Thumb opposition"},
+        {name: "index_right_stretch", label: "Index finger"},
+        {name: "middle_right_stretch", label: "Middle finger"},
+        {name: "ring_right_stretch", label: "Ring finger"},
+        {name: "pinky_right_stretch", label: "Pinky finger"},
     ];
     leftArm = [
-        "upper_arm_left_rotation",
-        "elbow_left",
-        "lower_arm_left_rotation",
-        "wrist_left",
+        {name: "upper_arm_left_rotation", label: "Upper arm rotation"},
+        {name: "elbow_left", label: "Elbow Position"},
+        {name: "lower_arm_left_rotation", label: "Lower arm rotation"},
+        {name: "wrist_left", label: "Wrist Position"},
+        {name: "shoulder_vertical_left", label: "Shoulder Vertical"},
+        {name: "shoulder_horizontal_left", label: "Shoulder Horizontal"},
     ];
     rightArm = [
-        "upper_arm_right_rotation",
-        "elbow_right",
-        "lower_arm_right_rotation",
-        "wrist_right",
+        {name: "upper_arm_right_rotation", label: "Upper arm rotation"},
+        {name: "elbow_right", label: "Elbow Position"},
+        {name: "lower_arm_right_rotation", label: "Lower arm rotation"},
+        {name: "wrist_right", label: "Wrist Position"},
+        {name: "shoulder_vertical_right", label: "Shoulder Vertical"},
+        {name: "shoulder_horizontal_right", label: "Shoulder Horizontal"},
     ];
-
-    head = ["tilt_forward_motor", "tilt_sideways_motor", "turn_head_motor"];
+    head = [
+        {name: "tilt_forward_motor", label: "Tilt Forward"},
+        {name: "tilt_sideways_motor", label: "Tilt Sideways"},
+        {name: "turn_head_motor", label: "Head Rotation"},
+    ];
 
     motors: Motor[] = [];
 
     constructor(private rosService: RosService) {
         this.subscribeMotorValueSubject();
         this.createMotors();
-        this.printAllMotors();
     }
 
-    //Defaultinit
     createMotors() {
         for (const s of this.leftFingers) {
             this.motors.push(
-                new Motor(s, 0, Group.left_hand, undefined).init(),
+                new Motor(
+                    s.name,
+                    0,
+                    Group.left_hand,
+                    s.label,
+                    undefined,
+                ).init(),
             );
         }
         for (const s of this.rightFingers) {
             this.motors.push(
-                new Motor(s, 0, Group.right_hand, undefined).init(),
+                new Motor(
+                    s.name,
+                    0,
+                    Group.right_hand,
+                    s.label,
+                    undefined,
+                ).init(),
             );
         }
         for (const s of this.leftArm) {
-            this.motors.push(new Motor(s, 0, Group.left_arm, undefined).init());
+            this.motors.push(
+                new Motor(s.name, 0, Group.left_arm, s.label, undefined).init(),
+            );
         }
         for (const s of this.rightArm) {
             this.motors.push(
-                new Motor(s, 0, Group.right_arm, undefined).init(),
+                new Motor(
+                    s.name,
+                    0,
+                    Group.right_arm,
+                    s.label,
+                    undefined,
+                ).init(),
             );
         }
         for (const s of this.head) {
-            this.motors.push(new Motor(s, 0, Group.head, undefined).init());
+            this.motors.push(
+                new Motor(s.name, 0, Group.head, s.label, undefined).init(),
+            );
         }
     }
 
@@ -90,8 +117,8 @@ export class MotorService {
             (m: Motor) => !m.name.includes("opposition"),
         );
     }
-    public getMotorByName(name: string): Motor | undefined {
-        return this.motors.find((m) => m.name === name);
+    public getMotorByName(name: string): Motor {
+        return this.motors.find((m) => m.name === name)!;
     }
     public getMotorByHardwareId(hwId: string): Motor | undefined {
         return this.motors.find((m) => m.hardware_id === hwId);
