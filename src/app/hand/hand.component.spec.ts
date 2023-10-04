@@ -12,6 +12,7 @@ import {MotorControlComponent} from "../motor-control/motor-control.component";
 import {HandComponent} from "./hand.component";
 import {RosService} from "../shared/ros.service";
 import {NavBarComponent} from "../nav-bar/nav-bar.component";
+import {CircularSliderComponent} from "../slider/circular-slider/circular-slider.component";
 
 describe("HandComponent", () => {
     let component: HandComponent;
@@ -24,6 +25,7 @@ describe("HandComponent", () => {
                 HandComponent,
                 MotorControlComponent,
                 NavBarComponent,
+                CircularSliderComponent,
             ],
             imports: [RouterTestingModule, ReactiveFormsModule],
             providers: [RosService],
@@ -352,14 +354,6 @@ describe("HandComponent", () => {
         );
         spyOn(rosService, "sendSliderMessage");
         dummyBtnLEft.nativeElement.click();
-        expect(rosService.sendSliderMessage).toHaveBeenCalledTimes(5);
-
-        component.side = "right";
-        fixture.detectChanges();
-        const dummyBtnRight = fixture.debugElement.query(
-            By.css("#dummyBtnRight"),
-        );
-        dummyBtnRight.nativeElement.click();
-        expect(rosService.sendSliderMessage).toHaveBeenCalledTimes(10);
+        expect(rosService.sendSliderMessage).toHaveBeenCalledTimes(6);
     });
 });

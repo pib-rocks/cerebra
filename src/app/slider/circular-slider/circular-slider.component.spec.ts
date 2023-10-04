@@ -18,7 +18,6 @@ describe("CircularSliderComponent", () => {
         fixture = TestBed.createComponent(CircularSliderComponent);
         component = fixture.componentInstance;
         component.name = "thumb_left_stretch";
-        component.ngAfterViewInit();
 
         fixture.detectChanges();
     });
@@ -28,14 +27,7 @@ describe("CircularSliderComponent", () => {
     });
 
     it("should set a value when subscribed Subject emits value", () => {
-        component.ngAfterViewInit();
         const spyPercentage = spyOn(component, "percentage");
-
-        component.gradientCircle = fixture.nativeElement.querySelector(
-            "#thumb_left_stretch_gradientCircle",
-        );
-        // currentService.sendDummyMessageForGroup("left_hand");
-        fixture.detectChanges();
         const subject =
             currentService.getMotorSubjectByName("thumb_left_stretch");
         subject?.next("1000");
