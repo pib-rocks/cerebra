@@ -13,6 +13,7 @@ import {HandComponent} from "./hand.component";
 import {RosService} from "../shared/ros.service";
 import {NavBarComponent} from "../nav-bar/nav-bar.component";
 import {CircularSliderComponent} from "../slider/circular-slider/circular-slider.component";
+import {SliderComponent} from "../slider/slider.component";
 
 describe("HandComponent", () => {
     let component: HandComponent;
@@ -26,6 +27,7 @@ describe("HandComponent", () => {
                 MotorControlComponent,
                 NavBarComponent,
                 CircularSliderComponent,
+                SliderComponent,
             ],
             imports: [RouterTestingModule, ReactiveFormsModule],
             providers: [RosService],
@@ -271,12 +273,8 @@ describe("HandComponent", () => {
                 (slider) =>
                     slider.componentInstance.motorName === "all_left_stretch",
             )[0].componentInstance,
-            "sendMessage",
+            "sendJointTrajectoryMessage",
         );
-        const slider = sliders.filter(
-            (slider) =>
-                slider.componentInstance.motorName === "all_left_stretch",
-        )[0];
         sliders
             .filter(
                 (slider) =>
@@ -300,7 +298,9 @@ describe("HandComponent", () => {
                 expect(child.componentInstance.sliderFormControl.value).toBe(
                     500,
                 );
-                expect(child.componentInstance.sendMessage).toHaveBeenCalled();
+                expect(
+                    child.componentInstance.sendJointTrajectoryMessage,
+                ).toHaveBeenCalled();
             });
         expect(component.displayAll).toBe("none");
         expect(component.displayIndividual).toBe("block");
@@ -319,7 +319,7 @@ describe("HandComponent", () => {
             By.css("app-motor-control"),
         );
         sliders.forEach((slider) =>
-            spyOn(slider.componentInstance, "sendMessage"),
+            spyOn(slider.componentInstance, "sendJointTrajectoryMessage"),
         );
         sliders
             .filter(
@@ -340,7 +340,9 @@ describe("HandComponent", () => {
                 expect(child.componentInstance.sliderFormControl.value).toBe(
                     500,
                 );
-                expect(child.componentInstance.sendMessage).toHaveBeenCalled();
+                expect(
+                    child.componentInstance.sendJointTrajectoryMessage,
+                ).toHaveBeenCalled();
             });
         expect(component.displayAll).toBe("none");
         expect(component.displayIndividual).toBe("block");

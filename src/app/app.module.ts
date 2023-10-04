@@ -22,6 +22,15 @@ import {SliderComponent} from "./slider/slider.component";
 import {CircularSliderComponent} from "./slider/circular-slider/circular-slider.component";
 import {MotorCurrentService} from "./shared/motor-current.mock.service";
 
+import {VoiceAssistantNavComponent} from "./voice-assistant-nav/voice-assistant-nav.component";
+import {VoiceAssistantChatComponent} from "./voice-assistant-chat/voice-assistant-chat.component";
+import {VoiceAssistantPersonalityComponent} from "./voice-assistant-personality/voice-assistant-personality.component";
+import {FormsModule} from "@angular/forms";
+import {VoiceAssistantSidebarRightComponent} from "./voice-assistant-sidebar-right/voice-assistant-sidebar-right.component";
+
+import {VerticalSliderComponent} from "./vertical-slider/vertical-slider.component";
+import {MultiSliderComponent} from "./multi-slider/multi-slider.component";
+
 @NgModule({
     declarations: [
         AppComponent,
@@ -36,6 +45,12 @@ import {MotorCurrentService} from "./shared/motor-current.mock.service";
         NavBarComponent,
         SliderComponent,
         CircularSliderComponent,
+        VoiceAssistantNavComponent,
+        VoiceAssistantChatComponent,
+        VoiceAssistantPersonalityComponent,
+        VoiceAssistantSidebarRightComponent,
+        VerticalSliderComponent,
+        MultiSliderComponent,
     ],
     imports: [
         BrowserModule,
@@ -47,6 +62,7 @@ import {MotorCurrentService} from "./shared/motor-current.mock.service";
         MatSliderModule,
         BrowserAnimationsModule,
         NgbDropdownModule,
+        FormsModule,
     ],
     providers: [MotorCurrentService],
     bootstrap: [AppComponent],

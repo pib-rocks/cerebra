@@ -14,6 +14,7 @@ import {RosService} from "../shared/ros.service";
 import {MotorCurrentMessage} from "../shared/currentMessage";
 import {Subject} from "rxjs";
 import {MotorCurrentService} from "../shared/motor-current.mock.service";
+import {SliderComponent} from "../slider/slider.component";
 
 @Component({
     selector: "app-hand",
@@ -23,6 +24,8 @@ import {MotorCurrentService} from "../shared/motor-current.mock.service";
 export class HandComponent implements OnInit {
     @ViewChildren(MotorControlComponent)
     childComponents!: QueryList<MotorControlComponent>;
+    @ViewChildren(SliderComponent)
+    sliderComponents!: QueryList<SliderComponent>;
 
     @Input() side = "left";
     messageReceiver$: Subject<MotorCurrentMessage> =
@@ -149,7 +152,7 @@ export class HandComponent implements OnInit {
                 .forEach((child) => {
                     if (child.sliderFormControl.value != 0) {
                         child.setSliderValue(0);
-                        child.sendAllMessagesCombined();
+                        child.sendJointTrajectoryMessage();
                     }
                 });
         } else {
@@ -162,7 +165,7 @@ export class HandComponent implements OnInit {
                 .forEach((child) => {
                     if (child.sliderFormControl.value != 0) {
                         child.setSliderValue(0);
-                        child.sendAllMessagesCombined();
+                        child.sendJointTrajectoryMessage();
                     }
                 });
         }
@@ -266,15 +269,16 @@ export class HandComponent implements OnInit {
                 );
                 child.pulseMaxRange.setValue(indexFinger.pulseMaxRange.value);
                 child.pulseMinRange.setValue(indexFinger.pulseMinRange.value);
-                child.degreeMaxFormcontrol.setValue(
-                    indexFinger.degreeMaxFormcontrol.value,
+                child.degreeMaxFormControl.setValue(
+                    indexFinger.degreeMaxFormControl.value,
                 );
-                child.degreeMinFormcontrol.setValue(
-                    indexFinger.degreeMinFormcontrol.value,
+                child.degreeMinFormControl.setValue(
+                    indexFinger.degreeMinFormControl.value,
                 );
             }
             if (child.motorName === "all_right_stretch") {
                 child.sendAllMessagesCombined();
+                child.sendJointTrajectoryMessage();
             }
             if (
                 child.motorName.includes("right_opposition") &&
@@ -282,13 +286,16 @@ export class HandComponent implements OnInit {
             ) {
                 calledOposite = true;
                 child.sendAllMessagesCombined();
+                child.sendJointTrajectoryMessage();
             }
             if (child.motorName === "all_left_stretch") {
                 child.sendAllMessagesCombined();
+                child.sendJointTrajectoryMessage();
             }
             if (child.motorName.includes("left_opposition") && !calledOposite) {
                 calledOposite = true;
                 child.sendAllMessagesCombined();
+                child.sendJointTrajectoryMessage();
             }
         });
     }
@@ -306,6 +313,9 @@ export class HandComponent implements OnInit {
             (child) => child.labelName === "Open/Close all fingers",
         )[0];
         this.childComponents.forEach((child) => {
+            setTimeout(() => {
+                child.sliderComponent.calculateBubbles();
+            }, 0);
             if (child.labelName != "Thumb opposition") {
                 child.sliderFormControl.setValue(
                     sliderAll.sliderFormControl.value,
@@ -316,6 +326,7 @@ export class HandComponent implements OnInit {
             this.childComponents.forEach((child) => {
                 if (child.motorName === "all_right_stretch") {
                     child.sendAllMessagesCombined();
+                    child.sendJointTrajectoryMessage();
                 }
                 if (
                     child.motorName.includes("right_opposition") &&
@@ -323,12 +334,14 @@ export class HandComponent implements OnInit {
                 ) {
                     calledOposite = true;
                     child.sendAllMessagesCombined();
+                    child.sendJointTrajectoryMessage();
                 }
             });
         } else {
             this.childComponents.forEach((child) => {
                 if (child.motorName === "all_left_stretch") {
                     child.sendAllMessagesCombined();
+                    child.sendJointTrajectoryMessage();
                 }
                 if (
                     child.motorName.includes("left_opposition") &&
@@ -336,6 +349,7 @@ export class HandComponent implements OnInit {
                 ) {
                     calledOposite = true;
                     child.sendAllMessagesCombined();
+                    child.sendJointTrajectoryMessage();
                 }
             });
         }

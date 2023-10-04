@@ -7,6 +7,7 @@ import {MotorControlComponent} from "../motor-control/motor-control.component";
 import {ReactiveFormsModule} from "@angular/forms";
 import {NavBarComponent} from "../nav-bar/nav-bar.component";
 import {RouterTestingModule} from "@angular/router/testing";
+import {SliderComponent} from "../slider/slider.component";
 
 describe("HeadComponent", () => {
     let component: HeadComponent;
@@ -19,6 +20,7 @@ describe("HeadComponent", () => {
                 HeadComponent,
                 MotorControlComponent,
                 NavBarComponent,
+                SliderComponent,
             ],
             imports: [ReactiveFormsModule, RouterTestingModule],
             providers: [RosService],
@@ -47,7 +49,7 @@ describe("HeadComponent", () => {
             By.css("app-motor-control"),
         );
         for (const slider of sliders) {
-            spyOn(slider.componentInstance, "sendMessage");
+            spyOn(slider.componentInstance, "sendJointTrajectoryMessage");
         }
 
         spyOn(component, "reset").and.callThrough();
@@ -64,13 +66,8 @@ describe("HeadComponent", () => {
             new MouseEvent("click"),
         );
         expect(component.reset).toHaveBeenCalled();
-
-        for (const slider of sliders) {
-            if (slider.componentInstance.showMotorSettingsButton === true) {
-                const input = slider.children[1].children[1];
-                expect(input.nativeElement.value).toBe("0");
-                expect(slider.componentInstance.sendMessage).toHaveBeenCalled();
-            }
-        }
+        component.childComponents.forEach((child) => {
+            expect(child.sliderFormControl.value).toBe(0);
+        });
     });
 });

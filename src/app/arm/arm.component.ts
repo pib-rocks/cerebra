@@ -83,7 +83,7 @@ export class ArmComponent implements OnInit {
         this.childSilderComponents.forEach((child) => {
             if (child.sliderFormControl.value != 0) {
                 child.setSliderValue(0);
-                child.sendMessage();
+                child.sendJointTrajectoryMessage();
             }
         });
     }

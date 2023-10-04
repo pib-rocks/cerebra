@@ -44,7 +44,7 @@ export class HeadComponent {
         this.childComponents.forEach((child) => {
             if (child.sliderFormControl.value != 0) {
                 child.setSliderValue(0);
-                child.sendMessage();
+                child.sendJointTrajectoryMessage();
             }
         });
     }

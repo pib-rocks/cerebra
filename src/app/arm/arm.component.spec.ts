@@ -8,6 +8,7 @@ import {ArmComponent} from "./arm.component";
 import {RosService} from "../shared/ros.service";
 import {NavBarComponent} from "../nav-bar/nav-bar.component";
 import {RouterTestingModule} from "@angular/router/testing";
+import {SliderComponent} from "../slider/slider.component";
 
 describe("ArmComponent", () => {
     let component: ArmComponent;
@@ -20,6 +21,7 @@ describe("ArmComponent", () => {
                 ArmComponent,
                 MotorControlComponent,
                 NavBarComponent,
+                SliderComponent,
             ],
             imports: [
                 AppRoutingModule,
@@ -54,9 +56,11 @@ describe("ArmComponent", () => {
         const childComponents = fixture.debugElement.queryAll(
             By.css("app-motor-control"),
         );
-        const spies: jasmine.Spy<any>[] = [];
         for (const childComponent of childComponents) {
-            spyOn(childComponent.componentInstance, "sendMessage");
+            spyOn(
+                childComponent.componentInstance,
+                "sendJointTrajectoryMessage",
+            );
         }
         const button = fixture.debugElement.query(By.css("#home-position-btn"));
         console.log(button);
@@ -70,7 +74,9 @@ describe("ArmComponent", () => {
             expect(child.componentInstance.sliderFormControl.value).toBe(0);
         }
         for (const spy of childComponents) {
-            expect(spy.componentInstance.sendMessage).toHaveBeenCalled();
+            expect(
+                spy.componentInstance.sendJointTrajectoryMessage,
+            ).toHaveBeenCalled();
         }
     });
     it("should send dummy values", () => {

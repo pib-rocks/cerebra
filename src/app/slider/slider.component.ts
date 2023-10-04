@@ -11,7 +11,7 @@ import {
 import {FormControl, Validators} from "@angular/forms";
 import {RosService} from "../shared/ros.service";
 import {Message} from "../shared/message";
-import {Subject} from "rxjs";
+import {Observable} from "rxjs";
 import {notNullValidator, steppingValidator} from "../shared/validators";
 @Component({
     selector: "app-slider",
@@ -26,24 +26,28 @@ export class SliderComponent implements OnInit, AfterViewInit {
     @Input() sliderName: string = "";
     @Input() minValue: number = 0;
     @Input() maxValue: number = 100;
-    @Input() defaultValue!: number;
+    @Input() defaultValue!: number | string;
     @Input() step: number = 1;
     @Input() unitOfMeasurement!: string;
-    @Input() rotate: boolean = false;
+    @Input() flipped: boolean = false;
     @Input() publishMessage!: (args: number) => void;
-    @Input() messageReceiver$!: Subject<any>;
+    @Input() messageReceiver$!: Observable<any>;
 
     sliderFormControl = new FormControl();
     bubbleFormControl = new FormControl();
 
+    sliderResizeObserver: ResizeObserver = new ResizeObserver(() =>
+        this.calculateBubbles(),
+    );
+
     timer: any = null;
 
+    thumbWidth: number = 24;
     bubblePosition!: number;
     isInputVisible = false;
     maxBubblePosition = 100;
     minBubblePosition = 0;
     pixelsFromEdge = 60;
-    transformBoundaries = this.minValue + this.maxValue;
     imageSrc!: string;
     @Output() sliderEvent = new EventEmitter<number>();
 
@@ -59,33 +63,35 @@ export class SliderComponent implements OnInit, AfterViewInit {
             steppingValidator(this.step),
         ]);
         this.messageReceiver$.subscribe((value) => {
-            if (value) {
+            if (value !== undefined) {
                 this.sliderFormControl.setValue(
-                    this.getValueWithinRange(Number(value)),
+                    this.getValueWithinRange(this.flip(Number(value))),
                 );
                 if (this.sliderElem && this.bubbleElement) {
-                    this.setThumbPosition();
+                    setTimeout(() => this.setThumbPosition());
                 }
             }
         });
-        this.bubbleFormControl.setValue(this.sliderFormControl.value);
+        if (this.defaultValue) {
+            this.sliderFormControl.setValue(
+                this.flip(Number(this.defaultValue)),
+            );
+        }
+        this.bubbleFormControl.setValue(
+            this.flip(this.sliderFormControl.value),
+        );
     }
 
     ngAfterViewInit() {
-        const sliderWidth = document.getElementById("slider_" + this.sliderName)
-            ?.clientWidth;
-        if (sliderWidth !== undefined) {
-            this.minBubblePosition = (this.pixelsFromEdge * 100) / sliderWidth;
-            this.maxBubblePosition =
-                ((sliderWidth - this.pixelsFromEdge) * 100) / sliderWidth;
-        }
+        this.calculateBubbles();
+        this.sliderResizeObserver.observe(this.sliderElem.nativeElement);
+    }
+
+    calculateBubbles() {
+        const sliderWidth = this.sliderElem.nativeElement.clientWidth;
+        this.minBubblePosition = this.pixelsFromEdge;
+        this.maxBubblePosition = sliderWidth - this.pixelsFromEdge;
         this.setThumbPosition();
-        if (this.rotate) {
-            this.sliderElem.nativeElement.style.setProperty(
-                "transform",
-                "rotate(180deg)",
-            );
-        }
     }
 
     setSliderValue(value: number) {
@@ -95,13 +101,14 @@ export class SliderComponent implements OnInit, AfterViewInit {
 
     inputSendMsg(): void {
         if (this.sliderFormControl.value !== null) {
-            this.sliderEvent.emit(this.sliderFormControl.value);
+            clearTimeout(this.timer);
             this.timer = setTimeout(() => {
                 if (this.publishMessage) {
-                    this.publishMessage(Number(this.sliderFormControl.value));
-                } else {
-                    this.sendMessage();
+                    this.publishMessage(
+                        this.flip(Number(this.sliderFormControl.value)),
+                    );
                 }
+                this.sliderEvent.emit(this.flip(this.sliderFormControl.value));
             }, 100);
         }
     }
@@ -109,7 +116,7 @@ export class SliderComponent implements OnInit, AfterViewInit {
     sendMessage() {
         const message: Message = {
             motor: this.sliderName,
-            value: this.sliderFormControl.value,
+            value: this.flip(this.sliderFormControl.value).toString(),
         };
         this.rosService.sendSliderMessage(message);
     }
@@ -126,23 +133,25 @@ export class SliderComponent implements OnInit, AfterViewInit {
         }
     }
 
-    toggleInputUnvisible() {
-        if (this.bubbleFormControl.value !== this.sliderFormControl.value) {
+    toggleInputInvisible() {
+        if (
+            this.bubbleFormControl.value !==
+            this.flip(this.sliderFormControl.value)
+        ) {
             if (this.sliderFormControl.value !== null) {
                 this.isInputVisible = !this.isInputVisible;
-                if (this.bubbleFormControl.hasError("required")) {
+                if (
+                    this.bubbleFormControl.hasError("required") ||
+                    this.bubbleFormControl.hasError("pattern")
+                ) {
                     this.bubbleFormControl.setValue(
-                        this.sliderFormControl.value,
-                    );
-                } else if (this.bubbleFormControl.hasError("pattern")) {
-                    this.bubbleFormControl.setValue(
-                        this.sliderFormControl.value,
+                        this.flip(this.sliderFormControl.value),
                     );
                 } else if (this.bubbleFormControl.hasError("min")) {
-                    this.setSliderValue(this.minValue);
+                    this.setSliderValue(this.flip(this.minValue));
                     this.inputSendMsg();
                 } else if (this.bubbleFormControl.hasError("max")) {
-                    this.setSliderValue(this.maxValue);
+                    this.setSliderValue(this.flip(this.maxValue));
                     this.inputSendMsg();
                 } else if (this.bubbleFormControl.hasError("steppingError")) {
                     let intBubbleFormControl = Math.floor(
@@ -152,10 +161,12 @@ export class SliderComponent implements OnInit, AfterViewInit {
                         intBubbleFormControl % Math.floor(this.step * 1000);
                     intBubbleFormControl -= moduloValue;
                     intBubbleFormControl /= 1000;
-                    this.setSliderValue(intBubbleFormControl);
+                    this.setSliderValue(this.flip(intBubbleFormControl));
                     this.inputSendMsg();
                 } else {
-                    this.setSliderValue(Number(this.bubbleFormControl.value));
+                    this.setSliderValue(
+                        this.flip(Number(this.bubbleFormControl.value)),
+                    );
                     this.inputSendMsg();
                 }
             }
@@ -177,20 +188,33 @@ export class SliderComponent implements OnInit, AfterViewInit {
     }
 
     setThumbPosition() {
-        let val =
-            ((this.sliderFormControl.value - this.minValue) * 100) /
+        const sliderWidth = this.sliderElem.nativeElement.clientWidth;
+
+        const normalizedSliderVal =
+            (this.sliderFormControl.value - this.minValue) /
             (this.maxValue - this.minValue);
-        if (this.rotate) {
-            val = this.transformBoundaries - val;
-        }
+
+        const bubbleOffset = (0.5 - normalizedSliderVal) * this.thumbWidth;
+        const nextBubblePos = normalizedSliderVal * sliderWidth + bubbleOffset;
         setTimeout(() => {
-            this.bubblePosition = val;
+            this.bubblePosition = nextBubblePos;
         }, 0);
-        this.bubbleFormControl.setValue(this.sliderFormControl.value);
-        this.bubbleElement.nativeElement.style.left = /*this.rotate? `calc(1-${val})`: */ `calc(${val}%)`;
+
+        this.bubbleFormControl.setValue(
+            this.flip(this.sliderFormControl.value),
+        );
+        this.bubbleElement.nativeElement.style.left = `calc(${
+            (nextBubblePos / sliderWidth) * 100
+        }%)`;
         this.sliderElem.nativeElement.style.setProperty(
             "--pos-relative",
-            val.toString(10) + "%",
+            ((nextBubblePos / sliderWidth) * 100).toString(10) + "%",
         );
+    }
+
+    flip(sliderVal: number): number {
+        return this.flipped
+            ? this.maxValue - (sliderVal - this.minValue)
+            : sliderVal;
     }
 }

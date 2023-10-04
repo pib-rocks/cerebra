@@ -117,7 +117,7 @@
                 </label>
                 <app-slider
                     #qualityFactor
-                    [rotate]="true"
+                    [flipped]="true"
                     sliderName="qualityFactor"
                     [messageReceiver$]="qualityReceiver$"
                     [publishMessage]="qualityControlPublish"
@@ -131,8 +131,9 @@
     </div>
     <div class="row justify-content-center pb-5 mb-5">
         <div
-            class="col-auto pb-5"
-            id="cameraColumn">
+            class="col-auto pb-5 d-flex justify-content-center"
+            id="cameraColumn"
+            #videobox>
             <img
                 [src]="imageSrc"
                 alt="camera"
