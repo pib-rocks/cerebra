@@ -8,22 +8,11 @@ import {MotorControlComponent} from "../motor-control/motor-control.component";
     templateUrl: "./head.component.html",
     styleUrls: ["./head.component.css"],
 })
-export class HeadComponent implements OnInit {
+export class HeadComponent {
     @ViewChildren(MotorControlComponent)
     childComponents!: QueryList<MotorControlComponent>;
 
     constructor(private rosService: RosService) {}
-
-    ngOnInit(): void {
-        this.rosService.currentReceiver$.subscribe((message) => {
-            for (const cc of this.currentConsumptionOfMotors) {
-                if (message["motor"] === cc["motor"]) {
-                    console.log("current value" + message["currentValue"]);
-                    cc["value"] = message["currentValue"];
-                }
-            }
-        });
-    }
 
     sliders = [
         {name: "tilt_forward_motor", label: "Tilt Forward"},

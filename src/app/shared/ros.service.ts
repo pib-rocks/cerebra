@@ -5,6 +5,7 @@ import {Message} from "./message";
 import {Motor} from "./motor";
 import {VoiceAssistant} from "./voice-assistant";
 import {MotorCurrentMessage} from "./currentMessage";
+import {DiagnosticStatus} from "./DiagnosticStatus.message";
 
 @Injectable({
     providedIn: "root",
@@ -12,8 +13,8 @@ import {MotorCurrentMessage} from "./currentMessage";
 export class RosService {
     private isInitializedSubject = new BehaviorSubject<boolean>(false);
     isInitialized$ = this.isInitializedSubject.asObservable();
-    currentReceiver$: Subject<MotorCurrentMessage> =
-        new Subject<MotorCurrentMessage>();
+    currentReceiver$: Subject<DiagnosticStatus> =
+        new Subject<DiagnosticStatus>();
     timerPeriodReceiver$: BehaviorSubject<number> = new BehaviorSubject<number>(
         0.1,
     );
@@ -146,7 +147,7 @@ export class RosService {
     setUpRos() {
         let rosUrl: string;
         if (isDevMode()) {
-            rosUrl = "192.168.220.110";
+            rosUrl = "192.168.1.112";
         } else {
             rosUrl = window.location.hostname;
         }
@@ -200,17 +201,17 @@ export class RosService {
             //     },
             //     {},
             // );
-            console.log(message);
-            const json = (message as {data: string})["data"];
+            // console.log(message);
+            // const json = (message as {data: string})["data"];
             // const json = message.data;
-            const jsonArray = JSON.parse(json);
-            console.log(jsonArray);
-            const jsonObject = jsonArray.reduce(
-                (key: object, value: object) => {
-                    return {...key, ...value};
-                },
-                {},
-            );
+            // const jsonArray = JSON.parse(json);
+            // console.log(jsonArray);
+            // const jsonObject = jsonArray.reduce(
+            //     (key: object, value: object) => {
+            //         return {...key, ...value};
+            //     },
+            //     {},
+            // );
             // console.log(message);
             // const jsonStr = JSON.stringify(message);
             // console.log(jsonStr);
@@ -224,7 +225,7 @@ export class RosService {
             //     },
             //     {},
             // );
-            this.currentReceiver$.next(jsonObject);
+            this.currentReceiver$.next(message as DiagnosticStatus);
         });
     }
 
@@ -290,7 +291,7 @@ export class RosService {
         return new ROSLIB.Topic({
             ros: this.ros,
             name: this.topicCurrentName,
-            messageType: "std_msgs/String",
+            messageType: "diagnostic_msgs/msg/DiagnosticStatus",
         });
     }
 

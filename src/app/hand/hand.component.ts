@@ -128,18 +128,18 @@ export class HandComponent implements OnInit {
         if (!(this.side === "right" || this.side === "left")) {
             this.router.navigate(["/head"]);
         }
-        this.rosService.currentReceiver$.subscribe((message) => {
-            for (const cl of this.currentLeft) {
-                if (message["motor"] === cl["motor"]) {
-                    cl["value"] = message["currentValue"];
-                }
-            }
-            for (const cr of this.currentRight) {
-                if (message["motor"] === cr["motor"]) {
-                    cr["value"] = message["currentValue"];
-                }
-            }
-        });
+        // this.rosService.currentReceiver$.subscribe((message) => {
+        //     for (const cl of this.currentLeft) {
+        //         if (message["motor"] === cl["motor"]) {
+        //             cl["value"] = message["currentValue"];
+        //         }
+        //     }
+        //     for (const cr of this.currentRight) {
+        //         if (message["motor"] === cr["motor"]) {
+        //             cr["value"] = message["currentValue"];
+        //         }
+        //     }
+        // });
     }
 
     reset() {

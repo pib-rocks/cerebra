@@ -2,6 +2,7 @@ import {Inject, Injectable, OnDestroy, OnInit} from "@angular/core";
 import {MotorCurrentMessage} from "./currentMessage";
 import {RosService} from "./ros.service";
 import {BehaviorSubject, Subscription} from "rxjs";
+import {DiagnosticStatus} from "./DiagnosticStatus.message";
 
 export interface CurrentMotor {
     name: string;
@@ -124,13 +125,12 @@ export class MotorCurrentService {
 
     subscribeCurrentReceiver(): Subscription {
         return this.rosService.currentReceiver$.subscribe(
-            (message: MotorCurrentMessage) => {
+            (message: DiagnosticStatus) => {
                 console.log(message);
-                console.log(message["motor"]);
+                // console.log(message["motor"]);
                 for (const motor of this.motors) {
-                    if (motor.name === message.motor) {
-                        // console.log(message);
-                        motor.subject.next(message.currentValue);
+                    if (motor.name === message.name) {
+                        motor.subject.next(message.values[0].value);
                     }
                 }
             },
