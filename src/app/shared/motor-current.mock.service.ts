@@ -1,15 +1,16 @@
-import {Inject, Injectable, OnDestroy, OnInit} from "@angular/core";
-import {MotorCurrentMessage} from "./currentMessage";
+import {Injectable} from "@angular/core";
 import {RosService} from "./ros.service";
 import {BehaviorSubject, Subscription} from "rxjs";
 import {DiagnosticStatus} from "./DiagnosticStatus.message";
 
+// probably decrepit with service refactoring
 export interface CurrentMotor {
     name: string;
     group: string;
     subject: BehaviorSubject<any>;
 }
 
+// Mock Service, should be updated once service-refactoring (PR-287) is done
 @Injectable({
     providedIn: "root",
 })
@@ -52,7 +53,7 @@ export class MotorCurrentService {
         this.createMotors();
     }
 
-    //MOCK --- Eventually get motors from database
+    //MOCK --- Eventually get motors from motorservice
     createMotors() {
         for (const s of this.leftFingers) {
             this.motors.push({
@@ -82,13 +83,11 @@ export class MotorCurrentService {
                 subject: new BehaviorSubject<number>(0),
             });
         }
-        // console.log(this.motors);
     }
 
     public sendDummyMessageForGroup(group: string) {
         for (const motor of this.motors) {
             if (motor.group === group) {
-                // motor.subject.next(Math.floor(Math.random() * 2000));
                 this.rosService.sendSliderMessage({
                     motor: motor.name,
                     currentValue: Math.floor(Math.random() * 2000),
@@ -106,8 +105,6 @@ export class MotorCurrentService {
     subscribeCurrentReceiver(): Subscription {
         return this.rosService.currentReceiver$.subscribe(
             (message: DiagnosticStatus) => {
-                console.log(message);
-                // console.log(message["motor"]);
                 for (const motor of this.motors) {
                     if (motor.name === message.name) {
                         motor.subject.next(message.values[0].value);

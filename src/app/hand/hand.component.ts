@@ -80,15 +80,12 @@ export class HandComponent implements OnInit {
         {motor: "pinky_right_stretch", label: "Pinky finger"},
     ];
     rightFingersAll = [
-        {motor: "thumb_right_stretch", label: "Thumb"},
-        {motor: "index_right_stretch", label: "Index finger"},
-        {motor: "middle_right_stretch", label: "Middle finger"},
-        {motor: "ring_right_stretch", label: "Ring finger"},
         {motor: "pinky_right_stretch", label: "Pinky finger"},
-        {
-            motor: "thumb_right_opposition",
-            label: "Thumb opposition",
-        },
+        {motor: "ring_right_stretch", label: "Ring finger"},
+        {motor: "middle_right_stretch", label: "Middle finger"},
+        {motor: "index_right_stretch", label: "Index finger"},
+        {motor: "thumb_right_opposition", label: "Thumb opposition"},
+        {motor: "thumb_right_stretch", label: "Thumb"},
     ];
     thumbOppositionRight = {
         motor: "thumb_right_opposition",
