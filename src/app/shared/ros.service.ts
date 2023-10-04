@@ -147,10 +147,6 @@ export class RosService {
         });
     }
 
-    updateSharedValue(value: Message) {
-        this.sharedAllFingersValueSource.next(value);
-    }
-
     sendSliderMessage(msg: Message | MotorCurrentMessage) {
         const json = JSON.parse(JSON.stringify(msg));
         const parameters = Object.keys(json).map((key) => ({[key]: json[key]}));
@@ -273,7 +269,7 @@ export class RosService {
     setUpRos() {
         let rosUrl: string;
         if (isDevMode()) {
-            rosUrl = "192.168.1.112";
+            rosUrl = "192.168.220.109";
         } else {
             rosUrl = window.location.hostname;
         }
@@ -350,8 +346,8 @@ export class RosService {
         });
     }
 
-    subscribeCurrentConsumptionTopic() {
-        this.motorCurrentConsumptionTopic.subscribe((message) => {
+    subscribeCurrentTopic() {
+        this.motorCurrentTopic.subscribe((message) => {
             this.currentReceiver$.next(message as DiagnosticStatus);
         });
     }
