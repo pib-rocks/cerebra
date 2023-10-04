@@ -184,47 +184,6 @@ export class RosService {
 
     subscribeCurrentConsumptionTopic() {
         this.motorCurrentConsumptionTopic.subscribe((message) => {
-            // console.log('####');
-            // console.log(message);
-            // const jsonStr = JSON.stringify(message);
-            // console.log(jsonStr);
-
-            // const json = JSON.parse(jsonStr);
-            // console.log(json);
-
-            // const jsonArray = JSON.parse(json["data"]);
-            // console.log(jsonArray);
-            // console.log('++++');
-            // const jsonObject = jsonArray.reduce(
-            //     (key: object, value: object) => {
-            //         return {...key, ...value};
-            //     },
-            //     {},
-            // );
-            // console.log(message);
-            // const json = (message as {data: string})["data"];
-            // const json = message.data;
-            // const jsonArray = JSON.parse(json);
-            // console.log(jsonArray);
-            // const jsonObject = jsonArray.reduce(
-            //     (key: object, value: object) => {
-            //         return {...key, ...value};
-            //     },
-            //     {},
-            // );
-            // console.log(message);
-            // const jsonStr = JSON.stringify(message);
-            // console.log(jsonStr);
-
-            // const json = JSON.parse(JSON.stringify((message as {data: ""})['data']));
-            // console.log(json);
-            // const jsonArray = JSON.parse(json["data"]);
-            // const jsonObject = jsonArray.reduce(
-            //     (key: object, value: object) => {
-            //         return {...key, ...value};
-            //     },
-            //     {},
-            // );
             this.currentReceiver$.next(message as DiagnosticStatus);
         });
     }
