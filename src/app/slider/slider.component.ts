@@ -113,14 +113,6 @@ export class SliderComponent implements OnInit, AfterViewInit {
         }
     }
 
-    sendMessage() {
-        const message: Message = {
-            motor: this.sliderName,
-            value: this.flip(this.sliderFormControl.value).toString(),
-        };
-        this.rosService.sendSliderMessage(message);
-    }
-
     toggleInputVisible() {
         if (this.sliderFormControl.value !== null) {
             this.isInputVisible = !this.isInputVisible;
