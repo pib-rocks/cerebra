@@ -113,7 +113,6 @@ export class MotorSettings {
     }
 
     public updateChangedAttribute(settingsCopy: MotorSettings) {
-        console.log("equalsSettings: " + this.equals(settingsCopy));
         if (!this.equals(settingsCopy)) {
             this.velocity = settingsCopy.velocity;
             this.acceleration = settingsCopy.acceleration;

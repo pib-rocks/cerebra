@@ -42,7 +42,6 @@ export class MotorControlComponent implements OnInit {
 
     ngOnInit(): void {
         this.motor!.motorSubject.subscribe((motor) => {
-            console.log(motor.toString());
             this.motor = motor;
             this.pulseWidthSubject$.next([
                 this.motor.settings.pulse_width_min,
@@ -61,7 +60,6 @@ export class MotorControlComponent implements OnInit {
         });
 
         this.motorFormControl.valueChanges.subscribe(() => {
-            console.log("Hurdur" + this.motorFormControl.value);
             this.motor.settings.turnedOn = this.motorFormControl.value;
             this.motorService.updateMotorFromComponent(this.motor);
         });
@@ -89,7 +87,6 @@ export class MotorControlComponent implements OnInit {
                     this.closeResult = `Dismissed ${this.getDismissReason(
                         reason,
                     )}`;
-                    console.log(this.closeResult);
                 },
             );
     }

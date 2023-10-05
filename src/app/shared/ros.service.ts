@@ -121,13 +121,6 @@ export class RosService {
         });
     }
 
-    public printMotors() {
-        console.log("MotorsLength: " + this.motors.length);
-        this.motors.forEach((m) => {
-            console.log("MotorsForEach: " + m.motor);
-        });
-    }
-
     sendMotorSettingsMessage(motorSettingsMessage: MotorSettingsMessage) {
         this.motorSettingsTopic.publish(motorSettingsMessage);
         console.log("sent " + JSON.stringify(motorSettingsMessage));
@@ -204,7 +197,6 @@ export class RosService {
     sendVoiceActivationMessage(msg: VoiceAssistant) {
         const message = new ROSLIB.Message({data: JSON.stringify(msg)});
         this.voiceAssistantTopic.publish(message);
-        console.log("Sent message " + JSON.stringify(message));
     }
 
     getJtReceiversByMotorName(
@@ -230,7 +222,7 @@ export class RosService {
     setUpRos() {
         let rosUrl: string;
         if (isDevMode()) {
-            rosUrl = "192.168.1.111";
+            rosUrl = "192.168.220.109";
         } else {
             rosUrl = window.location.hostname;
         }

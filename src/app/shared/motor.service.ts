@@ -139,11 +139,9 @@ export class MotorService {
     public updateMotorFromComponent(motorCopy: Motor) {
         const motor = this.getMotorByName(motorCopy.name);
         if (motor!.updateChangedAttribute(motorCopy)) {
-            console.log("updatejt");
             this.sendJointTrajectoryMessage(motor!);
         }
         if (motor!.settings.updateChangedAttribute(motorCopy.settings)) {
-            console.log(motor);
             this.sendMotorSettingsMessage(motor!);
         }
     }
@@ -164,18 +162,15 @@ export class MotorService {
         const parameters = Object.keys(json).map((key) => ({[key]: json[key]}));
         const message = new ROSLIB.Message({data: JSON.stringify(parameters)});
         this.sliderMessageTopic?.publish(message);
-        console.log("Sent message " + JSON.stringify(message));
     }
 
     sendJointTrajectoryMessage(motor: Motor) {
-        console.log(motor.parseMotorToJointTrajectoryMessage());
         this.rosService.sendJointTrajectoryMessage(
             motor.parseMotorToJointTrajectoryMessage(),
         );
     }
 
     sendMotorSettingsMessage(motor: Motor) {
-        console.log(motor.parseMotorToSettingsMessage());
         this.rosService.sendMotorSettingsMessage(
             motor.parseMotorToSettingsMessage(),
         );
@@ -199,7 +194,6 @@ export class MotorService {
     subscribeJointTrajectorySubject() {
         this.rosService.jointTrajectoryReceiver$.subscribe(
             (message: JointTrajectoryMessage) => {
-                console.log(message);
                 this.updateMotorFromJointTrajectoryMessage(message);
             },
         );
@@ -208,7 +202,6 @@ export class MotorService {
     subscribeMotorSettingsSubject() {
         this.rosService.motorSettingsReceiver$.subscribe(
             (message: MotorSettingsMessage) => {
-                console.log(message);
                 this.updateMotorSettingsFromMotorSettingsMessage(message);
             },
         );
@@ -225,7 +218,6 @@ export class MotorService {
     updateMotorSettingsFromMotorSettingsMessage(message: MotorSettingsMessage) {
         const motor = this.getMotorByName(message.motor_name);
         motor?.settings.updateMotorSettingsFromMotorSettingsMessage(message);
-        console.log("updateMotorSettings" + motor.toString());
         const copy = motor?.clone();
         motor?.motorSubject.next(copy!);
     }
