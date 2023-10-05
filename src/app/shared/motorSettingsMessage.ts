@@ -1,12 +1,12 @@
 export interface MotorSettingsMessage {
-    motorName: string;
-    turnedOn?: boolean;
-    pulse_widths_min?: string;
-    pulse_widths_max?: string;
-    rotation_range_min?: string;
-    rotation_range_max?: string;
-    velocity?: string;
-    acceleration?: string;
-    deceleration?: string;
-    period?: string;
+    motor_name: string;
+    turned_on: boolean;
+    pulse_width_min: number;
+    pulse_width_max: number;
+    rotation_range_min: number;
+    rotation_range_max: number;
+    velocity: number;
+    acceleration: number;
+    deceleration: number;
+    period: number;
 }

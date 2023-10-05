@@ -36,8 +36,9 @@ export class RosService {
     voiceAssistantReceiver$: Subject<any> = new Subject<any>();
     jointTrajectoryReceiver$: Subject<JointTrajectoryMessage> =
         new Subject<JointTrajectoryMessage>();
+    motorSettingsReceiver$: Subject<MotorSettingsMessage> =
+        new Subject<MotorSettingsMessage>();
     private ros!: ROSLIB.Ros;
-    private sliderMessageTopic!: ROSLIB.Topic;
     private motorSettingsTopic!: ROSLIB.Topic;
     private voiceAssistantTopic!: ROSLIB.Topic;
     private motorCurrentTopic!: ROSLIB.Topic;
@@ -48,8 +49,7 @@ export class RosService {
     private jointTrajectoryTopic!: ROSLIB.Topic;
     //to be removed in PR-319
 
-    private readonly topicName = "/motor_settings";
-    private readonly topicMotorSettingsName = "/motorSettings";
+    private readonly topicMotorSettingsName = "/motor_settings";
     private readonly topicVoiceName = "/cerebra_voice_settings";
     private readonly topicCurrentName = "/motor_status";
     private readonly topicCameratName = "/camera_topic";
@@ -65,7 +65,6 @@ export class RosService {
         this.ros.on("connection", () => {
             console.log("Connected to ROS");
             this.isInitializedSubject.next(true);
-            this.sliderMessageTopic = this.createMessageTopic();
             this.motorSettingsTopic = this.createMotorSettingsTopic();
             this.voiceAssistantTopic = this.createVoiceAssistantTopic();
             this.motorCurrentTopic = this.createMotorCurrentTopic();
@@ -74,7 +73,6 @@ export class RosService {
             this.timerPeriodTopic = this.createTimePeriodTopic();
             this.qualityFactorTopic = this.createQualityFactorTopic();
             this.jointTrajectoryTopic = this.createJointTrajectoryTopic();
-            this.subscribeSliderTopic();
             this.subscribeMotorSettingsTopic();
             this.subscribeCurrentTopic();
             this.subscribePreviewSize();
@@ -104,7 +102,7 @@ export class RosService {
         return new ROSLIB.Topic({
             ros: this.ros,
             name: this.topicMotorSettingsName,
-            messageType: "std_msgs/String",
+            messageType: "datatypes/msg/MotorSettings",
         });
     }
 
@@ -122,32 +120,6 @@ export class RosService {
             messageType: "std_msgs/Int32MultiArray",
         });
     }
-    //to be removed in PR-319
-    registerMotor(
-        motorName: string,
-        motorSettingsReceiver$: Subject<MotorSettingsMessage>,
-        jtMotorReceiver$: Subject<JointTrajectoryMessage>,
-    ) {
-        let isRegistered = false;
-        if (this.ros.isConnected) {
-            this.motors.forEach((m) => {
-                if (m.motor === motorName) {
-                    m.motorSettingsReceiver$ = motorSettingsReceiver$;
-                    m.jointTrajectoryReceiver$ = jtMotorReceiver$;
-                    isRegistered = true;
-                }
-            });
-
-            if (!isRegistered) {
-                const motor: Motor = {
-                    motor: motorName,
-                    motorSettingsReceiver$: motorSettingsReceiver$,
-                    jointTrajectoryReceiver$: jtMotorReceiver$,
-                };
-                this.motors.push(motor);
-            }
-        }
-    }
 
     public printMotors() {
         console.log("MotorsLength: " + this.motors.length);
@@ -156,30 +128,10 @@ export class RosService {
         });
     }
 
-    sendSliderMessage(msg: Message | VoiceAssistant | MotorCurrentMessage) {
-        const json = JSON.parse(JSON.stringify(msg));
-        const parameters = Object.keys(json).map((key) => ({[key]: json[key]}));
-        const message = new ROSLIB.Message({data: JSON.stringify(parameters)});
-
-        if ("motor" in msg) {
-            if ("currentValue" in msg) {
-                this.motorCurrentTopic?.publish(message);
-                console.log("Sent message " + JSON.stringify(message));
-            } else {
-                this.sliderMessageTopic?.publish(message);
-                console.log("Sent message " + JSON.stringify(message));
-            }
-        } else {
-            this.voiceAssistantTopic.publish(message);
-        }
-    }
-
     sendMotorSettingsMessage(motorSettingsMessage: MotorSettingsMessage) {
-        const json = JSON.parse(JSON.stringify(motorSettingsMessage));
-        const parameters = Object.keys(json).map((key) => ({[key]: json[key]}));
-        const message = new ROSLIB.Message({data: JSON.stringify(parameters)});
-        this.motorSettingsTopic.publish(message);
-        this.sendMotorSettingsConsoleLog("Sent", message);
+        this.motorSettingsTopic.publish(motorSettingsMessage);
+        console.log("sent " + JSON.stringify(motorSettingsMessage));
+        // this.sendMotorSettingsConsoleLog("Sent: ", motorSettingsMessage);
     }
 
     sendJointTrajectoryMessage(jointTrajectoryMessage: JointTrajectoryMessage) {
@@ -278,7 +230,7 @@ export class RosService {
     setUpRos() {
         let rosUrl: string;
         if (isDevMode()) {
-            rosUrl = "192.168.220.84";
+            rosUrl = "192.168.1.111";
         } else {
             rosUrl = window.location.hostname;
         }
@@ -289,71 +241,16 @@ export class RosService {
 
     subscribeMotorSettingsTopic() {
         this.motorSettingsTopic.subscribe((message) => {
-            const jsonStr = JSON.stringify(message);
-            const json = JSON.parse(jsonStr);
-            const jsonArray = JSON.parse(json["data"]);
-            const jsonObject = jsonArray.reduce(
-                (key: object, value: object) => {
-                    return {...key, ...value};
-                },
-                {},
-            );
-
-            this.sendMotorSettingsConsoleLog("Received", message);
-
-            const receivers$ = this.getMotorSettingsReceiversByMotorName(
-                jsonObject["motorName"],
-            );
-            receivers$.forEach((r) => {
-                r.next(jsonObject);
-            });
+            console.log(message);
+            this.motorSettingsReceiver$.next(message as MotorSettingsMessage);
         });
     }
 
     subscribeJointTrajectoryTopic() {
         this.jointTrajectoryTopic.subscribe((jointTrajectoryMessage) => {
-            const jsonString = JSON.stringify(jointTrajectoryMessage);
-            const parsedJtJson = JSON.parse(jsonString);
-
-            const receivers$ = this.getJtReceiversByMotorName(
-                parsedJtJson.joint_names,
+            this.jointTrajectoryReceiver$.next(
+                jointTrajectoryMessage as JointTrajectoryMessage,
             );
-            receivers$.forEach((r) => {
-                r.next(parsedJtJson);
-            });
-
-            this.sendJointTrajectoryConsoleLog(
-                "Received",
-                jointTrajectoryMessage,
-            );
-        });
-    }
-
-    //to be removed in PR-287
-    subscribeSliderTopic() {
-        this.sliderMessageTopic.subscribe((message) => {
-            const jsonStr = JSON.stringify(message);
-            const json = JSON.parse(jsonStr);
-            const jsonArray = JSON.parse(json["data"]);
-            const jsonObject = jsonArray.reduce(
-                (key: object, value: object) => {
-                    return {...key, ...value};
-                },
-                {},
-            );
-            console.log(
-                "Received message for " +
-                    jsonObject["motor"] +
-                    ": " +
-                    JSON.stringify(jsonObject),
-            );
-            const receivers$ = this.getMotorSettingsReceiversByMotorName(
-                jsonObject["motor"],
-            );
-            receivers$.forEach((r) => {
-                r.next(jsonObject);
-            });
-            this.motorValueSubject.next(jsonObject);
         });
     }
 
@@ -414,14 +311,6 @@ export class RosService {
 
     get Ros(): ROSLIB.Ros {
         return this.ros;
-    }
-
-    createMessageTopic(): ROSLIB.Topic {
-        return new ROSLIB.Topic({
-            ros: this.ros,
-            name: this.topicName,
-            messageType: "std_msgs/String",
-        });
     }
 
     createVoiceAssistantTopic(): ROSLIB.Topic {

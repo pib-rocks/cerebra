@@ -1,4 +1,5 @@
 import {MotorSettingsMessage} from "../motorSettingsMessage";
+import {Motor} from "./motor.class";
 
 export class MotorSettings {
     velocity: number;
@@ -63,10 +64,10 @@ export class MotorSettings {
         settings: MotorSettingsMessage,
     ) {
         if (
-            motorName !== settings.motorName ||
-            this.turnedOn !== settings.turnedOn ||
-            this.pulse_width_max !== +settings.pulse_widths_max! ||
-            this.pulse_width_min !== +settings.pulse_widths_min! ||
+            motorName !== settings.motor_name ||
+            this.turnedOn !== settings.turned_on ||
+            this.pulse_width_max !== +settings.pulse_width_max! ||
+            this.pulse_width_min !== +settings.pulse_width_min! ||
             this.rotation_range_max !== +settings.rotation_range_max! ||
             this.rotation_range_min !== +settings.rotation_range_min! ||
             this.velocity !== +settings.velocity! ||
@@ -80,20 +81,65 @@ export class MotorSettings {
         return true;
     }
 
-    public getChecked(settingsCopy: MotorSettings) {
+    public updateMotorSettingsFromMotorSettingsMessage(
+        message: MotorSettingsMessage,
+    ) {
+        this.turnedOn = message.turned_on;
+        this.pulse_width_max = message.pulse_width_max;
+        this.pulse_width_min = message.pulse_width_min;
+        this.rotation_range_max = message.rotation_range_max;
+        this.rotation_range_min = message.rotation_range_min;
+        this.velocity = message.velocity;
+        this.acceleration = message.acceleration;
+        this.deceleration = message.deceleration;
+        this.period = message.period;
+    }
+
+    public equals(settingsCopy: MotorSettings) {
         if (
-            settingsCopy.velocity !== this.velocity ||
-            settingsCopy.acceleration !== this.acceleration ||
-            settingsCopy.deceleration !== this.deceleration ||
-            settingsCopy.period !== this.period ||
-            settingsCopy.pulse_width_min !== this.pulse_width_min ||
-            settingsCopy.pulse_width_max !== this.pulse_width_max ||
-            settingsCopy.rotation_range_min !== this.rotation_range_min ||
-            settingsCopy.rotation_range_max !== this.rotation_range_max ||
-            settingsCopy.effort !== this.effort
+            settingsCopy.velocity == this.velocity &&
+            settingsCopy.acceleration == this.acceleration &&
+            settingsCopy.deceleration == this.deceleration &&
+            settingsCopy.period == this.period &&
+            settingsCopy.pulse_width_min == this.pulse_width_min &&
+            settingsCopy.pulse_width_max == this.pulse_width_max &&
+            settingsCopy.rotation_range_min == this.rotation_range_min &&
+            settingsCopy.rotation_range_max == this.rotation_range_max &&
+            settingsCopy.effort == this.effort
         ) {
-            return false;
+            return true;
         }
-        return true;
+        return false;
+    }
+
+    public updateChangedAttribute(settingsCopy: MotorSettings) {
+        console.log("equalsSettings: " + this.equals(settingsCopy));
+        if (!this.equals(settingsCopy)) {
+            this.velocity = settingsCopy.velocity;
+            this.acceleration = settingsCopy.acceleration;
+            this.deceleration = settingsCopy.deceleration;
+            this.period = settingsCopy.period;
+            this.pulse_width_min = settingsCopy.pulse_width_min;
+            this.pulse_width_max = settingsCopy.pulse_width_max;
+            this.rotation_range_min = settingsCopy.rotation_range_min;
+            this.rotation_range_max = settingsCopy.rotation_range_max;
+            this.effort = settingsCopy.effort;
+            return true;
+        }
+        return false;
+    }
+
+    public clone(): MotorSettings {
+        return new MotorSettings(
+            this.velocity,
+            this.acceleration,
+            this.deceleration,
+            this.period,
+            this.pulse_width_min,
+            this.pulse_width_max,
+            this.rotation_range_min,
+            this.rotation_range_max,
+            this.turnedOn,
+        );
     }
 }

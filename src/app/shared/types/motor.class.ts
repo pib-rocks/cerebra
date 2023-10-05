@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 /* eslint-disable no-extra-boolean-cast */
 import {BehaviorSubject} from "rxjs";
 import {MotorSettings} from "./motor-settings.class";
@@ -40,9 +41,8 @@ export class Motor {
     }
 
     public updateChangedAttribute(motorCopy: Motor): boolean | void {
-        if (this.getChecked(motorCopy)) {
+        if (!this.equals(motorCopy)) {
             this.position = motorCopy.position;
-            this.settings = motorCopy.settings;
             return true;
         }
         return false;
@@ -67,7 +67,7 @@ export class Motor {
         const name = this.name;
         const position = this.position;
         const group = this.group;
-        const settings = this.settings;
+        const settings = this.settings.clone();
         const label = this.label;
         return new Motor(name, position, group, label, settings);
     }
@@ -103,12 +103,17 @@ export class Motor {
             : this.settings.rotation_range_max;
     }
 
-    private getChecked(motorCopy: Motor): boolean {
+    public updateMotorFromJointTrajectoryMessage(
+        jtPoint: JointTrajectoryPoint,
+    ) {
+        this.position = jtPoint.positions[0];
+    }
+
+    private equals(motorCopy: Motor): boolean {
         if (
-            motorCopy.name == this.name ||
-            motorCopy.position == this.position ||
-            motorCopy.hardware_id == this.hardware_id ||
-            this.settings.getChecked(motorCopy.settings)
+            motorCopy.name == this.name &&
+            motorCopy.position == this.position &&
+            motorCopy.hardware_id == this.hardware_id
         ) {
             return true;
         }
@@ -136,17 +141,17 @@ export class Motor {
     }
     parseMotorToSettingsMessage(): MotorSettingsMessage {
         return {
-            motorName: this.name,
-            turnedOn: this.settings.turnedOn,
-            pule_widths_max: "" + this.settings.pulse_width_max,
-            pule_widths_min: "" + this.settings.pulse_width_min,
-            velocity: "" + this.settings.velocity,
-            rotation_range_max: "" + this.settings.rotation_range_max,
-            rotation_range_min: "" + this.settings.rotation_range_min,
-            deceleration: "" + this.settings.deceleration,
-            acceleration: "" + this.settings.acceleration,
-            period: "" + this.settings.period,
-        } as MotorSettingsMessage;
+            motor_name: this.name,
+            turned_on: this.settings.turnedOn,
+            pulse_width_max: this.settings.pulse_width_max,
+            pulse_width_min: this.settings.pulse_width_min,
+            velocity: this.settings.velocity,
+            rotation_range_max: this.settings.rotation_range_max,
+            rotation_range_min: this.settings.rotation_range_min,
+            deceleration: this.settings.deceleration,
+            acceleration: this.settings.acceleration,
+            period: this.settings.period,
+        };
     }
     parseMotorToJointTrajectoryMessage(): JointTrajectoryMessage {
         return {

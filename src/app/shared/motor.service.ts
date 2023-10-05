@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import {Injectable} from "@angular/core";
 import {RosService} from "./ros.service";
 import {BehaviorSubject} from "rxjs";
@@ -6,6 +7,7 @@ import {Group} from "./types/motor.enum";
 import {Message} from "./message";
 import * as ROSLIB from "roslib";
 import {MotorSettingsMessage} from "./motorSettingsMessage";
+import {JointTrajectoryMessage} from "./rosMessageTypes/jointTrajectoryMessage";
 
 @Injectable({
     providedIn: "root",
@@ -53,8 +55,10 @@ export class MotorService {
     motors: Motor[] = [];
 
     constructor(private rosService: RosService) {
-        this.subscribeMotorValueSubject();
+        // this.subscribeMotorValueSubject();
         this.createMotors();
+        this.subscribeJointTrajectorySubject();
+        this.subscribeMotorSettingsSubject();
     }
 
     createMotors() {
@@ -134,24 +138,23 @@ export class MotorService {
 
     public updateMotorFromComponent(motorCopy: Motor) {
         const motor = this.getMotorByName(motorCopy.name);
-        this.sendMessage(motorCopy);
-
-        //deprecated: can be removed once components are refactored to use JT and Setting only
         if (motor!.updateChangedAttribute(motorCopy)) {
-            const message = motor!.parseMotorToMessage();
-            //Werte sanitize
-            this.sendSliderMessage(message);
-            motor!.motorSubject.next(motor!);
+            console.log("updatejt");
+            this.sendJointTrajectoryMessage(motor!);
+        }
+        if (motor!.settings.updateChangedAttribute(motorCopy.settings)) {
+            console.log(motor);
+            this.sendMotorSettingsMessage(motor!);
         }
     }
 
     public sendDummyMessageForGroup(group: Group) {
         for (const motor of this.motors) {
             if (motor.group === group) {
-                this.rosService.sendSliderMessage({
-                    motor: motor.name,
-                    currentValue: Math.floor(Math.random() * 2000),
-                });
+                // this.rosService.sendSliderMessage({
+                //     motor: motor.name,
+                //     currentValue: Math.floor(Math.random() * 2000),
+                // });
             }
         }
     }
@@ -164,31 +167,19 @@ export class MotorService {
         console.log("Sent message " + JSON.stringify(message));
     }
 
-    sendMessage(motorCopy: Motor) {
-        const motor = this.getMotorByName(motorCopy.name);
-        if (motor) {
-            if (motor.position !== motorCopy.position) {
-                this.rosService.sendJointTrajectoryMessage(
-                    motor.parseMotorToJointTrajectoryMessage(),
-                );
-            }
-            if (!motor.settings.getChecked(motorCopy.settings)) {
-                this.rosService.sendMotorSettingsMessage({
-                    motorName: motor.name,
-                    turnedOn: motor.settings.turnedOn,
-                    pulse_widths_min: "" + motor.settings.pulse_width_min,
-                    pulse_widths_max: "" + motor.settings.pulse_width_max,
-                    rotation_range_min: "" + motor.settings.rotation_range_min,
-                    rotation_range_max: "" + motor.settings.rotation_range_max,
-                    velocity: "" + motor.settings.velocity,
-                    acceleration: "" + motor.settings.acceleration,
-                    deceleration: "" + motor.settings.deceleration,
-                    period: "" + motor.settings.period,
-                } as MotorSettingsMessage);
-            }
-        }
+    sendJointTrajectoryMessage(motor: Motor) {
+        console.log(motor.parseMotorToJointTrajectoryMessage());
+        this.rosService.sendJointTrajectoryMessage(
+            motor.parseMotorToJointTrajectoryMessage(),
+        );
     }
 
+    sendMotorSettingsMessage(motor: Motor) {
+        console.log(motor.parseMotorToSettingsMessage());
+        this.rosService.sendMotorSettingsMessage(
+            motor.parseMotorToSettingsMessage(),
+        );
+    }
     // Later with PR-253
     // subscribeCurrentReceiver(): Subscription {
     //     return this.rosService.currentReceiver$.subscribe(
@@ -205,15 +196,36 @@ export class MotorService {
     //     );
     // }
 
-    subscribeMotorValueSubject() {
-        this.rosService.motorValueSubject.subscribe((message: Message) => {
-            this.updateMotorFromMessage(message);
-        });
+    subscribeJointTrajectorySubject() {
+        this.rosService.jointTrajectoryReceiver$.subscribe(
+            (message: JointTrajectoryMessage) => {
+                console.log(message);
+                this.updateMotorFromJointTrajectoryMessage(message);
+            },
+        );
     }
 
-    updateMotorFromMessage(message: Message) {
-        const motor = this.getMotorByName(message.motor);
-        motor?.updateMotorFromRosMessage(message);
+    subscribeMotorSettingsSubject() {
+        this.rosService.motorSettingsReceiver$.subscribe(
+            (message: MotorSettingsMessage) => {
+                console.log(message);
+                this.updateMotorSettingsFromMotorSettingsMessage(message);
+            },
+        );
+    }
+
+    updateMotorFromJointTrajectoryMessage(message: JointTrajectoryMessage) {
+        message.joint_names.forEach((motorname, index) => {
+            const motor = this.getMotorByName(motorname);
+            motor?.updateMotorFromJointTrajectoryMessage(message.points[index]);
+            const copy = motor?.clone();
+            motor?.motorSubject.next(copy!);
+        });
+    }
+    updateMotorSettingsFromMotorSettingsMessage(message: MotorSettingsMessage) {
+        const motor = this.getMotorByName(message.motor_name);
+        motor?.settings.updateMotorSettingsFromMotorSettingsMessage(message);
+        console.log("updateMotorSettings" + motor.toString());
         const copy = motor?.clone();
         motor?.motorSubject.next(copy!);
     }
