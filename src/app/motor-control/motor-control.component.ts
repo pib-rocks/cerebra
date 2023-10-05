@@ -23,9 +23,6 @@ export class MotorControlComponent implements OnInit {
     closeResult!: string;
     isCombinedSlider = false;
 
-    motorSettingsMessageReceiver$ = new Subject<MotorSettingsMessage>();
-    jointTrajectoryMessageReceiver$ = new Subject<JointTrajectoryMessage>();
-
     pulseWidthSubject$ = new Subject<number[]>();
     degreeSubject$ = new Subject<number[]>();
     periodSubject$ = new Subject<number>();
@@ -47,9 +44,28 @@ export class MotorControlComponent implements OnInit {
         this.motor!.motorSubject.subscribe((motor) => {
             console.log(motor.toString());
             this.motor = motor;
+            this.pulseWidthSubject$.next([
+                this.motor.settings.pulse_width_min,
+                this.motor.settings.pulse_width_max,
+            ]);
+            this.degreeSubject$.next([
+                this.motor.settings.rotation_range_min,
+                this.motor.settings.rotation_range_max,
+            ]);
+            this.accelerationSubject$.next(this.motor.settings.acceleration);
+            this.decelerationSubject$.next(this.motor.settings.deceleration);
+            this.velocitySubject$.next(this.motor.settings.velocity);
+            this.positionSubject$.next(this.motor.position);
+            this.motorFormControl.setValue(this.motor.settings.turnedOn);
+            this.periodSubject$.next(this.motor.settings.period);
+        });
+
+        this.motorFormControl.valueChanges.subscribe(() => {
+            console.log("Hurdur" + this.motorFormControl.value);
+            this.motor.settings.turnedOn = this.motorFormControl.value;
+            this.motorService.updateMotorFromComponent(this.motor);
         });
     }
-
     changeIcon() {
         if (this.imgSrc === "../../assets/toggle-switch-left.png") {
             this.imgSrc = "../../assets/toggle-switch-right.png";
@@ -57,7 +73,6 @@ export class MotorControlComponent implements OnInit {
             this.imgSrc = "../../assets/toggle-switch-left.png";
         }
     }
-
     openPopup(content: TemplateRef<any>) {
         this.modalService
             .open(content, {
@@ -78,7 +93,6 @@ export class MotorControlComponent implements OnInit {
                 },
             );
     }
-
     private getDismissReason(reason: any): string {
         if (reason === ModalDismissReasons.ESC) {
             return "by pressing ESC";
@@ -88,7 +102,6 @@ export class MotorControlComponent implements OnInit {
             return `with: ${reason}`;
         }
     }
-
     setMotorPositionValue(number: number) {
         this.motor.position = number;
         this.motorService.updateMotorFromComponent(this.motor);
