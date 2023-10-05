@@ -59,11 +59,11 @@ export class HandComponent implements OnInit {
     ];
     leftFingersAll = [
         {motor: "thumb_left_stretch", label: "Thumb"},
+        {motor: "thumb_left_opposition", label: "Thumb opposition"},
         {motor: "index_left_stretch", label: "Index finger"},
         {motor: "middle_left_stretch", label: "Middle finger"},
         {motor: "ring_left_stretch", label: "Ring finger"},
         {motor: "pinky_left_stretch", label: "Pinky finger"},
-        {motor: "thumb_left_opposition", label: "Thumb opposition"},
     ];
 
     thumbOppositionLeft = {
@@ -128,18 +128,6 @@ export class HandComponent implements OnInit {
         if (!(this.side === "right" || this.side === "left")) {
             this.router.navigate(["/head"]);
         }
-        // this.rosService.currentReceiver$.subscribe((message) => {
-        //     for (const cl of this.currentLeft) {
-        //         if (message["motor"] === cl["motor"]) {
-        //             cl["value"] = message["currentValue"];
-        //         }
-        //     }
-        //     for (const cr of this.currentRight) {
-        //         if (message["motor"] === cr["motor"]) {
-        //             cr["value"] = message["currentValue"];
-        //         }
-        //     }
-        // });
     }
 
     reset() {
@@ -169,29 +157,6 @@ export class HandComponent implements OnInit {
                     }
                 });
         }
-    }
-
-    sendDummyMessage() {
-        this.motorCurrentService.sendDummyMessageForGroup(this.side + "_hand");
-        // if (this.side === "left") {
-        // for (const cl of this.currentLeft) {
-        //     const message: MotorCurrentMessage = {
-        //         motor: cl["motor"],
-        //         currentValue: Math.floor(Math.random() * 2000),
-        //     };
-        //     this.rosService.sendSliderMessage(message);
-        // }
-        // }
-
-        // if (this.side === "right") {
-        //     for (const cr of this.currentRight) {
-        //         const message: MotorCurrentMessage = {
-        //             motor: cr["motor"],
-        //             currentValue: Math.floor(Math.random() * 2000),
-        //         };
-        //         this.rosService.sendSliderMessage(message);
-        //     }
-        // }
     }
 
     switchView(swichedPage: boolean) {

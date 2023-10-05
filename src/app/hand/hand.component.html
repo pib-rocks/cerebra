@@ -4,7 +4,7 @@
         <div
             class="col-3"
             *ngIf="side === 'right'">
-            <div class="custom-control custom-switch custom-switch-pib my-3">
+            <div class="custom-switch-pib my-3">
                 <input
                     class="custom-control-input"
                     type="checkbox"
@@ -23,7 +23,7 @@
         <div
             class="col-3"
             *ngIf="side === 'left'">
-            <div class="custom-control custom-switch custom-switch-pib my-3">
+            <div class="custom-switch-pib my-3">
                 <input
                     class="custom-control-input"
                     type="checkbox"
@@ -51,14 +51,6 @@
                     width="19px"
                     height="24px" />
                 Home position
-            </button>
-        </div>
-        <div class="col-3 mt-2 mb-2 d-flex justify-content-end">
-            <button
-                (click)="sendDummyMessage()"
-                class="btn btn-primary"
-                id="dummyBtnLeft">
-                Dummy Values
             </button>
         </div>
     </div>
@@ -165,29 +157,3 @@
         </div>
     </div>
 </div>
-
-<!-- <ng-container *ngFor="let obj of currentLeft">
-                    <div [class]="obj['motor']">
-                        <span class="current">{{ obj["value"] }} mA</span>
-                        <div
-                            [style.height]="obj['value'] / 40 + 'px'"
-                            class="color-indicator"
-                            [class.color-indicator50-80]="
-                obj['value'] / 20 > 50 && obj['value'] / 20 < 80
-            "
-                            [class.color-indicator80-100]="obj['value'] / 20 >= 80"></div>
-                    </div>
-                </ng-container> -->
-
-<!-- <ng-container *ngFor="let obj of currentRight">
-                    <div [class]="obj['motor']">
-                        <span class="current">{{ obj["value"] }} mA</span>
-                        <div
-                            [style.height]="obj['value'] / 40 + 'px'"
-                            class="color-indicator"
-                            [class.color-indicator50-80]="
-              obj['value'] / 20 > 50 && obj['value'] / 20 < 80
-            "
-                            [class.color-indicator80-100]="obj['value'] / 20 >= 80"></div>
-                    </div>
-                </ng-container> -->
