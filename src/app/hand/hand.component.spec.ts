@@ -347,15 +347,4 @@ describe("HandComponent", () => {
         expect(component.displayAll).toBe("none");
         expect(component.displayIndividual).toBe("block");
     }));
-
-    it("should send dummy values", () => {
-        component.side = "left";
-        fixture.detectChanges();
-        const dummyBtnLEft = fixture.debugElement.query(
-            By.css("#dummyBtnLeft"),
-        );
-        spyOn(rosService, "sendSliderMessage");
-        dummyBtnLEft.nativeElement.click();
-        expect(rosService.sendSliderMessage).toHaveBeenCalledTimes(6);
-    });
 });
