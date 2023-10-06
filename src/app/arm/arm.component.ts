@@ -28,12 +28,6 @@ export class ArmComponent implements OnInit {
         });
     }
     reset() {
-        // this.motorService.resetGroup(id);
-        // this.childSilderComponents.forEach((child) => {
-        //     if (child.sliderFormControl.value != 0) {
-        //         child.setSliderValue(0);
-        //         child.sendJointTrajectoryMessage();
-        //     }
-        // });
+        this.motorService.resetMotorGroupPosition(this.motors[0].group);
     }
 }

@@ -1,5 +1,4 @@
 import {MotorSettingsMessage} from "../motorSettingsMessage";
-import {Motor} from "./motor.class";
 
 export class MotorSettings {
     velocity: number;
@@ -14,15 +13,15 @@ export class MotorSettings {
     turnedOn: boolean;
 
     constructor(
-        velocity: number,
-        acceleration: number,
-        deceleration: number,
-        period: number,
-        pulse_width_min: number,
-        pulse_width_max: number,
-        rotation_range_min: number,
-        rotation_range_max: number,
-        turnedOn: boolean,
+        velocity: number = 0,
+        acceleration: number = 0,
+        deceleration: number = 0,
+        period: number = 0,
+        pulse_width_min: number = 0,
+        pulse_width_max: number = 65535,
+        rotation_range_min: number = -9000,
+        rotation_range_max: number = 9000,
+        turnedOn: boolean = true,
     ) {
         this.velocity = velocity;
         this.acceleration = acceleration;

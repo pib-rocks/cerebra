@@ -8,6 +8,7 @@ import {Message} from "./message";
 import * as ROSLIB from "roslib";
 import {MotorSettingsMessage} from "./motorSettingsMessage";
 import {JointTrajectoryMessage} from "./rosMessageTypes/jointTrajectoryMessage";
+import {MotorSettings} from "./types/motor-settings.class";
 
 @Injectable({
     providedIn: "root",
@@ -138,11 +139,13 @@ export class MotorService {
 
     public updateMotorFromComponent(motorCopy: Motor) {
         const motor = this.getMotorByName(motorCopy.name);
-        if (motor!.updateChangedAttribute(motorCopy)) {
-            this.sendJointTrajectoryMessage(motor!);
-        }
-        if (motor!.settings.updateChangedAttribute(motorCopy.settings)) {
-            this.sendMotorSettingsMessage(motor!);
+        if (motor) {
+            if (motor.updateChangedAttribute(motorCopy)) {
+                this.sendJointTrajectoryMessage(motor);
+            }
+            if (motor.settings.updateChangedAttribute(motorCopy.settings)) {
+                this.sendMotorSettingsMessage(motor);
+            }
         }
     }
 
@@ -212,16 +215,37 @@ export class MotorService {
             const motor = this.getMotorByName(motorname);
             motor?.updateMotorFromJointTrajectoryMessage(message.points[index]);
             const copy = motor?.clone();
-            motor?.motorSubject.next(copy!);
+            motor?.motorSubject.next(copy);
         });
     }
     updateMotorSettingsFromMotorSettingsMessage(message: MotorSettingsMessage) {
         const motor = this.getMotorByName(message.motor_name);
         motor?.settings.updateMotorSettingsFromMotorSettingsMessage(message);
         const copy = motor?.clone();
-        motor?.motorSubject.next(copy!);
+        motor?.motorSubject.next(copy);
     }
 
+    resetMotorGroupPosition(groupIdentifier: number, position = 0) {
+        const group: Motor[] = this.motors.filter(
+            (m) => m.group === groupIdentifier,
+        );
+        group.forEach((m) => {
+            m.position = position;
+            this.sendJointTrajectoryMessage(m);
+        });
+    }
+    resetMotorGroupSettings(
+        groupIdentifier: number,
+        settings: MotorSettings = new MotorSettings(),
+    ) {
+        const group: Motor[] = this.motors.filter(
+            (m) => m.group === groupIdentifier,
+        );
+        group.forEach((m) => {
+            m.settings = settings;
+            this.sendMotorSettingsMessage(m);
+        });
+    }
     getMotorHandNames(str: string) {
         return [];
     }
