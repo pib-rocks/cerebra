@@ -10,7 +10,6 @@ import {
 } from "@angular/core";
 import {FormControl, Validators} from "@angular/forms";
 import {RosService} from "../shared/ros.service";
-import {Message} from "../shared/message";
 import {Observable} from "rxjs";
 import {notNullValidator, steppingValidator} from "../shared/validators";
 @Component({

@@ -1,10 +1,8 @@
 import {Injectable, isDevMode} from "@angular/core";
 import * as ROSLIB from "roslib";
 import {BehaviorSubject, Subject} from "rxjs";
-import {Message} from "./message";
 import {MotorSettingsMessage} from "./motorSettingsMessage";
 import {VoiceAssistant} from "./voice-assistant";
-import {MotorCurrentMessage} from "./currentMessage";
 import {JointTrajectoryMessage} from "../shared/rosMessageTypes/jointTrajectoryMessage";
 import {
     JointTrajectoryPoint,
@@ -21,8 +19,8 @@ export class RosService {
     //to be removed in PR-319
     private isInitializedSubject = new BehaviorSubject<boolean>(false);
     isInitialized$ = this.isInitializedSubject.asObservable();
-    currentReceiver$: Subject<MotorCurrentMessage> =
-        new Subject<MotorCurrentMessage>();
+    // currentReceiver$: Subject<MotorCurrentMessage> =
+    //     new Subject<MotorCurrentMessage>();
     timerPeriodReceiver$: BehaviorSubject<number> = new BehaviorSubject<number>(
         0.1,
     );
@@ -116,13 +114,12 @@ export class RosService {
 
     sendMotorSettingsMessage(motorSettingsMessage: MotorSettingsMessage) {
         this.motorSettingsTopic.publish(motorSettingsMessage);
-        console.log("sent " + JSON.stringify(motorSettingsMessage));
     }
 
     sendJointTrajectoryMessage(jointTrajectoryMessage: JointTrajectoryMessage) {
         const message = new ROSLIB.Message(jointTrajectoryMessage);
         this.jointTrajectoryTopic.publish(message);
-        this.sendJointTrajectoryConsoleLog("Sent", message);
+        // this.sendJointTrajectoryConsoleLog("Sent", message);
     }
 
     //Remove this function after establishing a new test concept
@@ -205,7 +202,6 @@ export class RosService {
 
     subscribeMotorSettingsTopic() {
         this.motorSettingsTopic.subscribe((message) => {
-            console.log(message);
             this.motorSettingsReceiver$.next(message as MotorSettingsMessage);
         });
     }
@@ -235,7 +231,7 @@ export class RosService {
                     ": " +
                     JSON.stringify(jsonObject),
             );
-            this.currentReceiver$.next(jsonObject);
+            // this.currentReceiver$.next(jsonObject);
         });
     }
 
@@ -333,24 +329,5 @@ export class RosService {
             name: "quality_factor_topic",
             messageType: "std_msgs/Int32",
         });
-    }
-
-    createEmptyJointTrajectoryMessage(): JointTrajectoryMessage {
-        const jointTrajectoryMessage: JointTrajectoryMessage = {
-            header: createDefaultStdMessageHeader(),
-            joint_names: <string[]>[],
-            points: <JointTrajectoryPoint[]>[],
-        };
-
-        return jointTrajectoryMessage;
-    }
-
-    createJointTrajectoryPoint(position: number): JointTrajectoryPoint {
-        const jointTrajectoryPoint: JointTrajectoryPoint = {
-            positions: new Array<number>(),
-            time_from_start: createDefaultRosTime(),
-        };
-        jointTrajectoryPoint.positions.push(position);
-        return jointTrajectoryPoint;
     }
 }

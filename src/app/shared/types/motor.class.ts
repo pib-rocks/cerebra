@@ -3,7 +3,6 @@
 import {BehaviorSubject} from "rxjs";
 import {MotorSettings} from "./motor-settings.class";
 import {Group} from "./motor.enum";
-import {Message} from "../message";
 import {MotorSettingsMessage} from "../motorSettingsMessage";
 import {JointTrajectoryMessage} from "../rosMessageTypes/jointTrajectoryMessage";
 import {createDefaultStdMessageHeader} from "../rosMessageTypes/stdMessageHeader";
@@ -72,37 +71,6 @@ export class Motor {
         return new Motor(name, position, group, label, settings);
     }
 
-    public updateMotorFromRosMessage(message: Message) {
-        this.position = !!message.value ? +message.value : this.position;
-        this.settings.turnedOn = !!message.turnedOn
-            ? message.turnedOn
-            : this.settings.turnedOn;
-        this.settings.acceleration = !!message.acceleration
-            ? +message.acceleration
-            : this.settings.acceleration;
-        this.settings.deceleration = !!message.deceleration
-            ? +message.deceleration
-            : this.settings.deceleration;
-        this.settings.pulse_width_max = !!message.pulse_widths_max
-            ? +message.pulse_widths_max
-            : this.settings.pulse_width_max;
-        this.settings.pulse_width_min = !!message.pulse_widths_min
-            ? +message.pulse_widths_min
-            : this.settings.pulse_width_min;
-        this.settings.velocity = !!message.velocity
-            ? +message.velocity
-            : this.settings.velocity;
-        this.settings.period = !!message.period
-            ? +message.period
-            : this.settings.period;
-        this.settings.rotation_range_max = !!message.rotation_range_max
-            ? +message.rotation_range_max
-            : this.settings.rotation_range_max;
-        this.settings.rotation_range_min = !!message.rotation_range_min
-            ? +message.rotation_range_min
-            : this.settings.rotation_range_max;
-    }
-
     public updateMotorFromJointTrajectoryMessage(
         jtPoint: JointTrajectoryPoint,
     ) {
@@ -124,21 +92,6 @@ export class Motor {
         return new MotorSettings(0, 0, 0, 0, 0, 65535, -9000, 9000, true);
     }
 
-    parseMotorToMessage(): Message {
-        return {
-            motor: this.name,
-            value: "" + this.position,
-            turnedOn: this.settings.turnedOn,
-            pule_widths_max: "" + this.settings.pulse_width_max,
-            pule_widths_min: "" + this.settings.pulse_width_min,
-            velocity: "" + this.settings.velocity,
-            rotation_range_max: "" + this.settings.rotation_range_max,
-            rotation_range_min: "" + this.settings.rotation_range_min,
-            deceleration: "" + this.settings.deceleration,
-            acceleration: "" + this.settings.acceleration,
-            period: "" + this.settings.period,
-        } as Message;
-    }
     parseMotorToSettingsMessage(): MotorSettingsMessage {
         return {
             motor_name: this.name,
