@@ -14,7 +14,7 @@
                 id="checkbox_{{ motor.name }}"
                 type="checkbox"
                 [formControl]="motorFormControl"
-                (change)="changeTurnedOn()" />
+                (click)="changeTurnedOn()" />
             <label
                 class="form-check-label"
                 for="checkbox_{{ motor.name }}">

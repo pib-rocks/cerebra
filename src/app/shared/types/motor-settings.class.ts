@@ -104,7 +104,8 @@ export class MotorSettings {
             settingsCopy.pulse_width_max == this.pulse_width_max &&
             settingsCopy.rotation_range_min == this.rotation_range_min &&
             settingsCopy.rotation_range_max == this.rotation_range_max &&
-            settingsCopy.effort == this.effort
+            settingsCopy.effort == this.effort &&
+            settingsCopy.turnedOn == this.turnedOn
         ) {
             return true;
         }
@@ -122,6 +123,7 @@ export class MotorSettings {
             this.rotation_range_min = settingsCopy.rotation_range_min;
             this.rotation_range_max = settingsCopy.rotation_range_max;
             this.effort = settingsCopy.effort;
+            this.turnedOn = settingsCopy.turnedOn;
             return true;
         }
         return false;
