@@ -1,7 +1,7 @@
-import {Component, OnInit, QueryList, ViewChildren} from "@angular/core";
-import {RosService} from "../shared/ros.service";
-import {MotorCurrentMessage} from "../shared/currentMessage";
-import {MotorControlComponent} from "../motor-control/motor-control.component";
+import {Component, OnInit} from "@angular/core";
+import {MotorService} from "../shared/motor.service";
+import {Group} from "../shared/types/motor.enum";
+import {Motor} from "../shared/types/motor.class";
 
 @Component({
     selector: "app-head",
@@ -9,54 +9,13 @@ import {MotorControlComponent} from "../motor-control/motor-control.component";
     styleUrls: ["./head.component.css"],
 })
 export class HeadComponent implements OnInit {
-    @ViewChildren(MotorControlComponent)
-    childComponents!: QueryList<MotorControlComponent>;
-
-    constructor(private rosService: RosService) {}
+    motors?: Motor[];
+    constructor(private motorService: MotorService) {}
 
     ngOnInit(): void {
-        this.rosService.currentReceiver$.subscribe((message) => {
-            for (const cc of this.currentConsumptionOfMotors) {
-                if (message["motor"] === cc["motor"]) {
-                    console.log("current value" + message["currentValue"]);
-                    cc["value"] = message["currentValue"];
-                }
-            }
-        });
+        this.motors = this.motorService.getMotorsByGroup(Group.head);
     }
-
-    sliders = [
-        {name: "tilt_forward_motor", label: "Tilt Forward"},
-        {name: "tilt_sideways_motor", label: "Tilt Sideways"},
-        {name: "turn_head_motor", label: "Head Rotation"},
-    ];
-    tiltForwardMotor = {name: "tilt_forward_motor", label: "Tilt Forward"};
-
-    tiltSideWaysMotor = {name: "tilt_sideways_motor", label: "Tilt Sideways"};
-
-    turnHeadMotor = {name: "turn_head_motor", label: "Head Rotation"};
-
-    currentConsumptionOfMotors = [
-        {motor: "currentConsumption", value: 1230},
-        {motor: "secondCurrentCnsumption", value: 60},
-    ];
-
-    sendDummyMessage() {
-        for (const cc of this.currentConsumptionOfMotors) {
-            const message: MotorCurrentMessage = {
-                motor: cc["motor"],
-                currentValue: Math.floor(Math.random() * 2000),
-            };
-            this.rosService.sendSliderMessage(message);
-        }
-    }
-
     reset() {
-        this.childComponents.forEach((child) => {
-            if (child.sliderFormControl.value != 0) {
-                child.setSliderValue(0);
-                child.sendJointTrajectoryMessage();
-            }
-        });
+        this.motorService.resetMotorGroupPosition(Group.head);
     }
 }
