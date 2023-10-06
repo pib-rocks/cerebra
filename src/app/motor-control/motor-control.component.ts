@@ -55,7 +55,6 @@ export class MotorControlComponent implements OnInit {
             this.decelerationSubject$.next(this.motor.settings.deceleration);
             this.velocitySubject$.next(this.motor.settings.velocity);
             this.positionSubject$.next(this.motor.position);
-            console.log("inc: " + this.motor.settings.turnedOn);
             this.motorFormControl.setValue(this.motor.settings.turnedOn);
             this.periodSubject$.next(this.motor.settings.period);
         });

@@ -22,6 +22,7 @@ export class MotorService {
         {name: "middle_left_stretch", label: "Middle finger"},
         {name: "ring_left_stretch", label: "Ring finger"},
         {name: "pinky_left_stretch", label: "Pinky finger"},
+        {name: "all_fingers_left", label: "Open/Close all fingers"},
     ];
     rightFingers = [
         {name: "thumb_right_stretch", label: "Thumb"},
@@ -30,6 +31,7 @@ export class MotorService {
         {name: "middle_right_stretch", label: "Middle finger"},
         {name: "ring_right_stretch", label: "Ring finger"},
         {name: "pinky_right_stretch", label: "Pinky finger"},
+        {name: "all_fingers_right", label: "Open/Close all fingers"},
     ];
     leftArm = [
         {name: "upper_arm_left_rotation", label: "Upper arm rotation"},
@@ -139,9 +141,11 @@ export class MotorService {
 
     public updateMotorFromComponent(motorCopy: Motor) {
         const motor = this.getMotorByName(motorCopy.name);
+        console.log(motor.position);
         if (motor) {
             if (motor.updateChangedAttribute(motorCopy)) {
                 this.sendJointTrajectoryMessage(motor);
+                console.log(motor.position);
             }
             if (motor.settings.updateChangedAttribute(motorCopy.settings)) {
                 this.sendMotorSettingsMessage(motor);
@@ -217,8 +221,36 @@ export class MotorService {
             const copy = motor?.clone();
             motor?.motorSubject.next(copy);
         });
+        if (message.joint_names[0].includes("all")) {
+            const motor = this.getMotorByName(message.joint_names[0]);
+            const groupMotors = this.motors
+                .filter((m) => m.group == motor.group)
+                .filter(
+                    (m) =>
+                        !m.name.includes("opposition") &&
+                        !m.name.includes("all"),
+                );
+            groupMotors.forEach((m) => {
+                message.joint_names[0] = m.name;
+                this.updateMotorFromJointTrajectoryMessage(message);
+            });
+        }
     }
     updateMotorSettingsFromMotorSettingsMessage(message: MotorSettingsMessage) {
+        if (message.motor_name.includes("all")) {
+            const motor = this.getMotorByName(message.motor_name);
+            const groupMotors = this.motors
+                .filter((m) => m.group == motor.group)
+                .filter(
+                    (m) =>
+                        !m.name.includes("opposition") &&
+                        !m.name.includes("all"),
+                );
+            groupMotors.forEach((m) => {
+                message.motor_name = m.name;
+                this.updateMotorSettingsFromMotorSettingsMessage(message);
+            });
+        }
         const motor = this.getMotorByName(message.motor_name);
         motor?.settings.updateMotorSettingsFromMotorSettingsMessage(message);
         const copy = motor?.clone();
