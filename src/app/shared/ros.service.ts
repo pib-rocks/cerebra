@@ -3,7 +3,6 @@ import * as ROSLIB from "roslib";
 import {BehaviorSubject, Subject} from "rxjs";
 import {Message} from "./message";
 import {MotorSettingsMessage} from "./motorSettingsMessage";
-import {Motor} from "./motor";
 import {VoiceAssistant} from "./voice-assistant";
 import {MotorCurrentMessage} from "./currentMessage";
 import {JointTrajectoryMessage} from "../shared/rosMessageTypes/jointTrajectoryMessage";
@@ -47,18 +46,12 @@ export class RosService {
     private previewSizeTopic!: ROSLIB.Topic;
     private qualityFactorTopic!: ROSLIB.Topic;
     private jointTrajectoryTopic!: ROSLIB.Topic;
-    //to be removed in PR-319
 
     private readonly topicMotorSettingsName = "/motor_settings";
     private readonly topicVoiceName = "/cerebra_voice_settings";
     private readonly topicCurrentName = "/motor_status";
     private readonly topicCameratName = "/camera_topic";
     private readonly topicJointTrajectoryName = "/joint_trajectory";
-
-    private motors: Motor[] = [];
-
-    //PR-287
-    public motorValueSubject = new Subject<Message>();
 
     constructor() {
         this.ros = this.setUpRos();
@@ -124,7 +117,6 @@ export class RosService {
     sendMotorSettingsMessage(motorSettingsMessage: MotorSettingsMessage) {
         this.motorSettingsTopic.publish(motorSettingsMessage);
         console.log("sent " + JSON.stringify(motorSettingsMessage));
-        // this.sendMotorSettingsConsoleLog("Sent: ", motorSettingsMessage);
     }
 
     sendJointTrajectoryMessage(jointTrajectoryMessage: JointTrajectoryMessage) {
@@ -199,30 +191,10 @@ export class RosService {
         this.voiceAssistantTopic.publish(message);
     }
 
-    getJtReceiversByMotorName(
-        motorNames: string[],
-    ): Subject<JointTrajectoryMessage>[] {
-        const foundMotors = this.motors.filter((m) =>
-            motorNames.includes(m.motor),
-        );
-        return foundMotors.length > 0
-            ? foundMotors.map((m) => m["jointTrajectoryReceiver$"])
-            : [];
-    }
-
-    getMotorSettingsReceiversByMotorName(
-        motorName: string,
-    ): Subject<MotorSettingsMessage>[] {
-        const foundMotors = this.motors.filter((m) => m.motor === motorName);
-        return foundMotors.length > 0
-            ? foundMotors.map((m) => m["motorSettingsReceiver$"])
-            : [];
-    }
-
     setUpRos() {
         let rosUrl: string;
         if (isDevMode()) {
-            rosUrl = "192.168.220.109";
+            rosUrl = "192.168.220.84";
         } else {
             rosUrl = window.location.hostname;
         }
