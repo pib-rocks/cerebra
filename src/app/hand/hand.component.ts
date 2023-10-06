@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import {Component, OnInit} from "@angular/core";
+import {Component, OnDestroy, OnInit} from "@angular/core";
 import {ActivatedRoute, Params} from "@angular/router";
 import {MotorService} from "../shared/motor.service";
 import {Motor} from "../shared/types/motor.class";
@@ -10,7 +10,7 @@ import {Group} from "../shared/types/motor.enum";
     templateUrl: "./hand.component.html",
     styleUrls: ["./hand.component.css"],
 })
-export class HandComponent implements OnInit {
+export class HandComponent implements OnInit, OnDestroy {
     side!: string;
     motors!: Motor[];
     displayMotors!: Motor[];
@@ -22,6 +22,10 @@ export class HandComponent implements OnInit {
         private motorService: MotorService,
     ) {}
 
+    ngOnDestroy(): void {
+        console.log("kapuitt");
+    }
+
     ngOnInit(): void {
         this.route.params.subscribe((params: Params) => {
             this.side = params["side"];
@@ -32,22 +36,14 @@ export class HandComponent implements OnInit {
             this.displayAllFingers = JSON.parse(
                 localStorage.getItem(`cerebra-hand-${this.side}`) || "false",
             );
-            console.log(this.displayAllFingers);
             this.displayMotors = this.displayAllFingers
-                ? this.motors.filter(
-                      (m) =>
-                          !m.name.includes("all") &&
-                          !m.name.includes("opposition"),
-                  )
+                ? this.motors.filter((m) => !m.name.includes("all"))
                 : this.motors.filter(
                       (m) =>
-                          m.name.includes("all") &&
-                          !m.name.includes("opposition"),
+                          m.name.includes("all") ||
+                          m.name.includes("opposition"),
                   );
-
-            this.oppositionMotor = this.motors.find((m) =>
-                m.name.includes("opposition"),
-            );
+            console.log(this.motors);
         });
     }
 
@@ -66,13 +62,10 @@ export class HandComponent implements OnInit {
         }
         this.displayAllFingers = !this.displayAllFingers;
         this.displayMotors = this.displayAllFingers
-            ? this.motors.filter(
-                  (m) =>
-                      !m.name.includes("all") && !m.name.includes("opposition"),
-              )
+            ? this.motors.filter((m) => !m.name.includes("all"))
             : this.motors.filter(
                   (m) =>
-                      m.name.includes("all") && !m.name.includes("opposition"),
+                      m.name.includes("all") || m.name.includes("opposition"),
               );
         localStorage.setItem(
             `cerebra-hand-${this.side}`,

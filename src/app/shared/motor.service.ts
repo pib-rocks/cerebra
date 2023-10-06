@@ -4,7 +4,6 @@ import {RosService} from "./ros.service";
 import {BehaviorSubject} from "rxjs";
 import {Motor} from "./types/motor.class";
 import {Group} from "./types/motor.enum";
-import {Message} from "./message";
 import * as ROSLIB from "roslib";
 import {MotorSettingsMessage} from "./motorSettingsMessage";
 import {JointTrajectoryMessage} from "./rosMessageTypes/jointTrajectoryMessage";
@@ -16,8 +15,8 @@ import {MotorSettings} from "./types/motor-settings.class";
 export class MotorService {
     private sliderMessageTopic!: ROSLIB.Topic;
     leftFingers = [
-        {name: "thumb_left_stretch", label: "Thumb"},
         {name: "thumb_left_opposition", label: "Thumb opposition"},
+        {name: "thumb_left_stretch", label: "Thumb"},
         {name: "index_left_stretch", label: "Index finger"},
         {name: "middle_left_stretch", label: "Middle finger"},
         {name: "ring_left_stretch", label: "Ring finger"},
@@ -25,8 +24,8 @@ export class MotorService {
         {name: "all_fingers_left", label: "Open/Close all fingers"},
     ];
     rightFingers = [
-        {name: "thumb_right_stretch", label: "Thumb"},
         {name: "thumb_right_opposition", label: "Thumb opposition"},
+        {name: "thumb_right_stretch", label: "Thumb"},
         {name: "index_right_stretch", label: "Index finger"},
         {name: "middle_right_stretch", label: "Middle finger"},
         {name: "ring_right_stretch", label: "Ring finger"},
@@ -141,11 +140,9 @@ export class MotorService {
 
     public updateMotorFromComponent(motorCopy: Motor) {
         const motor = this.getMotorByName(motorCopy.name);
-        console.log(motor.position);
         if (motor) {
             if (motor.updateChangedAttribute(motorCopy)) {
                 this.sendJointTrajectoryMessage(motor);
-                console.log(motor.position);
             }
             if (motor.settings.updateChangedAttribute(motorCopy.settings)) {
                 this.sendMotorSettingsMessage(motor);
@@ -162,13 +159,6 @@ export class MotorService {
                 // });
             }
         }
-    }
-
-    sendSliderMessage(msg: Message) {
-        const json = JSON.parse(JSON.stringify(msg));
-        const parameters = Object.keys(json).map((key) => ({[key]: json[key]}));
-        const message = new ROSLIB.Message({data: JSON.stringify(parameters)});
-        this.sliderMessageTopic?.publish(message);
     }
 
     sendJointTrajectoryMessage(motor: Motor) {

@@ -31,10 +31,6 @@
                             >Control fingers individually</label
                         >
                     </div>
-                    <app-motor-control
-                        *ngIf="oppositionMotor"
-                        [motor]="oppositionMotor">
-                    </app-motor-control>
                     <div *ngFor="let motor of displayMotors">
                         <app-motor-control [motor]="motor"></app-motor-control>
                     </div>
