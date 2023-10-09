@@ -56,21 +56,8 @@ export class RosService {
         this.ros.on("connection", () => {
             console.log("Connected to ROS");
             this.isInitializedSubject.next(true);
-            this.motorSettingsTopic = this.createMotorSettingsTopic();
-            this.voiceAssistantTopic = this.createVoiceAssistantTopic();
-            this.motorCurrentTopic = this.createMotorCurrentTopic();
-            this.cameraTopic = this.createCameraTopic();
-            this.previewSizeTopic = this.createPreviewSizeTopic();
-            this.timerPeriodTopic = this.createTimePeriodTopic();
-            this.qualityFactorTopic = this.createQualityFactorTopic();
-            this.jointTrajectoryTopic = this.createJointTrajectoryTopic();
-            this.subscribeMotorSettingsTopic();
-            this.subscribeCurrentTopic();
-            this.subscribePreviewSize();
-            this.subscribeQualityFactorTopic();
-            this.subscribeTimePeriod();
-            this.subscribeVoiceAssistant();
-            this.subscribeJointTrajectoryTopic();
+            this.initTopics();
+            this.initSubscribers();
         });
         this.ros.on("error", (error: string) => {
             console.log("Error connecting to ROSBridge server:", error);
@@ -79,6 +66,26 @@ export class RosService {
         this.ros.on("close", () => {
             console.log("Disconnected from ROSBridge server.");
         });
+    }
+    initTopics() {
+        this.motorSettingsTopic = this.createMotorSettingsTopic();
+        this.voiceAssistantTopic = this.createVoiceAssistantTopic();
+        this.motorCurrentTopic = this.createMotorCurrentTopic();
+        this.cameraTopic = this.createCameraTopic();
+        this.previewSizeTopic = this.createPreviewSizeTopic();
+        this.timerPeriodTopic = this.createTimePeriodTopic();
+        this.qualityFactorTopic = this.createQualityFactorTopic();
+        this.jointTrajectoryTopic = this.createJointTrajectoryTopic();
+    }
+
+    initSubscribers() {
+        this.subscribeMotorSettingsTopic();
+        this.subscribeCurrentTopic();
+        this.subscribePreviewSize();
+        this.subscribeQualityFactorTopic();
+        this.subscribeTimePeriod();
+        this.subscribeVoiceAssistant();
+        this.subscribeJointTrajectoryTopic();
     }
 
     createJointTrajectoryTopic() {
