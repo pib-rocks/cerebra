@@ -6,6 +6,7 @@ import {MotorSettingsMessage} from "./motorSettingsMessage";
 import {Motor} from "./motor";
 import {VoiceAssistant} from "./voice-assistant";
 import {MotorCurrentMessage} from "./currentMessage";
+import {DiagnosticStatus} from "./DiagnosticStatus.message";
 import {JointTrajectoryMessage} from "../shared/rosMessageTypes/jointTrajectoryMessage";
 import {JointTrajectoryPoint} from "./rosMessageTypes/jointTrajectoryPoint";
 import {RosTime} from "./rosMessageTypes/rosTime";
@@ -16,8 +17,8 @@ import {StdMessageHeader} from "./rosMessageTypes/stdMessageHeader";
 export class RosService {
     private isInitializedSubject = new BehaviorSubject<boolean>(false);
     isInitialized$ = this.isInitializedSubject.asObservable();
-    currentReceiver$: Subject<MotorCurrentMessage> =
-        new Subject<MotorCurrentMessage>();
+    currentReceiver$: Subject<DiagnosticStatus> =
+        new Subject<DiagnosticStatus>();
     timerPeriodReceiver$: BehaviorSubject<number> = new BehaviorSubject<number>(
         0.1,
     );
@@ -44,7 +45,7 @@ export class RosService {
     private readonly topicName = "/motor_settings";
     private readonly topicMotorSettingsName = "/motorSettings";
     private readonly topicVoiceName = "/cerebra_voice_settings";
-    private readonly topicCurrentName = "/motor_status";
+    private readonly topicCurrentName = "/motor_current";
     private readonly topicCameratName = "/camera_topic";
     private readonly topicJointTrajectoryName = "/joint_trajectory";
 
@@ -146,7 +147,7 @@ export class RosService {
         });
     }
 
-    sendSliderMessage(msg: Message | VoiceAssistant | MotorCurrentMessage) {
+    sendSliderMessage(msg: Message | MotorCurrentMessage) {
         const json = JSON.parse(JSON.stringify(msg));
         const parameters = Object.keys(json).map((key) => ({[key]: json[key]}));
         const message = new ROSLIB.Message({data: JSON.stringify(parameters)});
@@ -268,7 +269,7 @@ export class RosService {
     setUpRos() {
         let rosUrl: string;
         if (isDevMode()) {
-            rosUrl = "192.168.220.110";
+            rosUrl = "192.168.220.109";
         } else {
             rosUrl = window.location.hostname;
         }
@@ -347,22 +348,7 @@ export class RosService {
 
     subscribeCurrentTopic() {
         this.motorCurrentTopic.subscribe((message) => {
-            const jsonStr = JSON.stringify(message);
-            const json = JSON.parse(jsonStr);
-            const jsonArray = JSON.parse(json["data"]);
-            const jsonObject = jsonArray.reduce(
-                (key: object, value: object) => {
-                    return {...key, ...value};
-                },
-                {},
-            );
-            console.log(
-                "Received message for " +
-                    jsonObject["motor"] +
-                    ": " +
-                    JSON.stringify(jsonObject),
-            );
-            this.currentReceiver$.next(jsonObject);
+            this.currentReceiver$.next(message as DiagnosticStatus);
         });
     }
 
@@ -428,7 +414,7 @@ export class RosService {
         return new ROSLIB.Topic({
             ros: this.ros,
             name: this.topicCurrentName,
-            messageType: "std_msgs/String",
+            messageType: "diagnostic_msgs/msg/DiagnosticStatus",
         });
     }
 

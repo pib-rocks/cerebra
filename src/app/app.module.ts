@@ -19,6 +19,8 @@ import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
 import {DialogContentComponent} from "./program/dialog-content/dialog-content.component";
 import {NavBarComponent} from "./nav-bar/nav-bar.component";
 import {SliderComponent} from "./slider/slider.component";
+import {CircularSliderComponent} from "./slider/circular-slider/circular-slider.component";
+import {MotorCurrentService} from "./shared/motor-current.mock.service";
 
 import {VoiceAssistantNavComponent} from "./voice-assistant-nav/voice-assistant-nav.component";
 import {VoiceAssistantChatComponent} from "./voice-assistant-chat/voice-assistant-chat.component";
@@ -42,6 +44,7 @@ import {MultiSliderComponent} from "./multi-slider/multi-slider.component";
         DialogContentComponent,
         NavBarComponent,
         SliderComponent,
+        CircularSliderComponent,
         VoiceAssistantNavComponent,
         VoiceAssistantChatComponent,
         VoiceAssistantPersonalityComponent,
@@ -61,7 +64,7 @@ import {MultiSliderComponent} from "./multi-slider/multi-slider.component";
         NgbDropdownModule,
         FormsModule,
     ],
-    providers: [],
+    providers: [MotorCurrentService],
     bootstrap: [AppComponent],
     entryComponents: [MatDialogModule],
 })

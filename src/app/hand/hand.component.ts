@@ -13,6 +13,7 @@ import {MotorControlComponent} from "../motor-control/motor-control.component";
 import {RosService} from "../shared/ros.service";
 import {MotorCurrentMessage} from "../shared/currentMessage";
 import {Subject} from "rxjs";
+import {MotorCurrentService} from "../shared/motor-current.mock.service";
 import {SliderComponent} from "../slider/slider.component";
 
 @Component({
@@ -39,6 +40,7 @@ export class HandComponent implements OnInit {
         private route: ActivatedRoute,
         private rosService: RosService,
         private router: Router,
+        private motorCurrentService: MotorCurrentService,
     ) {}
 
     @ViewChild("leftSwitch") leftHandSwitch?: ElementRef;
@@ -50,6 +52,14 @@ export class HandComponent implements OnInit {
 
     leftFingers = [
         {motor: "thumb_left_stretch", label: "Thumb"},
+        {motor: "index_left_stretch", label: "Index finger"},
+        {motor: "middle_left_stretch", label: "Middle finger"},
+        {motor: "ring_left_stretch", label: "Ring finger"},
+        {motor: "pinky_left_stretch", label: "Pinky finger"},
+    ];
+    leftFingersAll = [
+        {motor: "thumb_left_stretch", label: "Thumb"},
+        {motor: "thumb_left_opposition", label: "Thumb opposition"},
         {motor: "index_left_stretch", label: "Index finger"},
         {motor: "middle_left_stretch", label: "Middle finger"},
         {motor: "ring_left_stretch", label: "Ring finger"},
@@ -71,6 +81,14 @@ export class HandComponent implements OnInit {
         {motor: "middle_right_stretch", label: "Middle finger"},
         {motor: "ring_right_stretch", label: "Ring finger"},
         {motor: "pinky_right_stretch", label: "Pinky finger"},
+    ];
+    rightFingersAll = [
+        {motor: "pinky_right_stretch", label: "Pinky finger"},
+        {motor: "ring_right_stretch", label: "Ring finger"},
+        {motor: "middle_right_stretch", label: "Middle finger"},
+        {motor: "index_right_stretch", label: "Index finger"},
+        {motor: "thumb_right_opposition", label: "Thumb opposition"},
+        {motor: "thumb_right_stretch", label: "Thumb"},
     ];
     thumbOppositionRight = {
         motor: "thumb_right_opposition",
@@ -110,20 +128,6 @@ export class HandComponent implements OnInit {
         if (!(this.side === "right" || this.side === "left")) {
             this.router.navigate(["/head"]);
         }
-        this.rosService.currentReceiver$.subscribe((message) => {
-            for (const cl of this.currentLeft) {
-                if (message["motor"] === cl["motor"]) {
-                    console.log("current value" + message["currentValue"]);
-                    cl["value"] = message["currentValue"];
-                }
-            }
-            for (const cr of this.currentRight) {
-                if (message["motor"] === cr["motor"]) {
-                    console.log("current value" + message["currentValue"]);
-                    cr["value"] = message["currentValue"];
-                }
-            }
-        });
     }
 
     reset() {
@@ -152,28 +156,6 @@ export class HandComponent implements OnInit {
                         child.sendJointTrajectoryMessage();
                     }
                 });
-        }
-    }
-
-    sendDummyMessage() {
-        if (this.side === "left") {
-            for (const cl of this.currentLeft) {
-                const message: MotorCurrentMessage = {
-                    motor: cl["motor"],
-                    currentValue: Math.floor(Math.random() * 2000),
-                };
-                this.rosService.sendSliderMessage(message);
-            }
-        }
-
-        if (this.side === "right") {
-            for (const cr of this.currentRight) {
-                const message: MotorCurrentMessage = {
-                    motor: cr["motor"],
-                    currentValue: Math.floor(Math.random() * 2000),
-                };
-                this.rosService.sendSliderMessage(message);
-            }
         }
     }
 
