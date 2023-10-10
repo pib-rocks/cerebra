@@ -15,7 +15,8 @@
         <a
             id="left-hand-nav"
             class="nav-link sidebar-btn"
-            [routerLink]="['/hand/left']">
+            [routerLink]="['/hand/left']"
+            [queryParams]="{side: 'left'}">
             Left Hand
         </a>
     </li>
@@ -25,7 +26,8 @@
         <a
             id="right-hand-nav"
             class="nav-link sidebar-btn"
-            [routerLink]="['/hand/right']">
+            [routerLink]="['/hand/right']"
+            [queryParams]="{side: 'right'}">
             Right Hand
         </a>
     </li>

@@ -10,6 +10,9 @@
               "plugin:@angular-eslint/recommended",
               "plugin:@angular-eslint/template/process-inline-templates"
           ],
+          "plugins": [
+            "prettier"
+          ],    
           "rules": {
               "@angular-eslint/directive-selector": [
                   "error",
@@ -32,13 +35,14 @@
           }
       },
       {
-          "files": ["*.html"],
-          "extends": ["plugin:@angular-eslint/template/recommended"],
+        "files": [
+            "*.html"
+          ],
+          "extends": [
+            "plugin:@angular-eslint/template/recommended",
+            "prettier"
+          ],
           "rules": {}
-      },
-      {
-          "files": ["*"],
-          "extends": ["plugin:prettier/recommended"]
       }
   ]
 }

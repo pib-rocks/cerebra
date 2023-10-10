@@ -1,7 +1,7 @@
 import {Component, Input, OnInit, TemplateRef, ViewChild} from "@angular/core";
 import {FormControl, Validators} from "@angular/forms";
-import {Subject} from "rxjs";
-import {Message} from "../shared/message";
+import {Subject, map} from "rxjs";
+import {MotorSettingsMessage} from "../shared/motorSettingsMessage";
 import {MotorService} from "../shared/motor.service";
 import {RosService} from "../shared/ros.service";
 import {ModalDismissReasons, NgbModal} from "@ng-bootstrap/ng-bootstrap";
@@ -10,6 +10,7 @@ import {
     compareValuesPulseValidator,
     notNullValidator,
 } from "../shared/validators";
+import {JointTrajectoryMessage} from "../shared/rosMessageTypes/jointTrajectoryMessage";
 import {SliderComponent} from "../slider/slider.component";
 @Component({
     selector: "app-motor-control",
@@ -29,7 +30,8 @@ export class MotorControlComponent implements OnInit {
     closeResult!: string;
     isCombinedSlider = false;
 
-    messageReceiver$ = new Subject<Message>();
+    motorSettingsMessageReceiver$ = new Subject<MotorSettingsMessage>();
+    jointTrajectoryMessageReceiver$ = new Subject<JointTrajectoryMessage>();
 
     pulseWidthSubject$ = new Subject<number[]>();
     degreeSubject$ = new Subject<number[]>();
@@ -88,80 +90,48 @@ export class MotorControlComponent implements OnInit {
         this.isCombinedSlider =
             this.motorName === "all_right_stretch" ||
             this.motorName === "all_left_stretch";
-        if (this.isCombinedSlider) {
-            this.rosService.sharedValue$.subscribe((json) => {
-                if (
-                    (this.motorName === "all_left_stretch" &&
-                        json.motor === "index_left_stretch") ||
-                    (this.motorName === "all_right_stretch" &&
-                        json.motor === "index_right_stretch")
-                ) {
-                    if (
-                        !Number.isNaN(json.value) &&
-                        Number.isFinite(json.value)
-                    ) {
-                        this.sliderFormControl.setValue(Number(json.value));
-                    }
-                    if (json.turnedOn !== undefined) {
-                        this.motorFormControl.setValue(json.turnedOn);
-                    }
-                }
-            });
-        }
-        this.messageReceiver$.subscribe((json) => {
-            const value: any = json.value;
-            const motorCheckbox = json.turnedOn;
-            const motor = json.motor;
-            const message: Message = {
-                motor: this.motorName,
-                value: value,
-            };
-            if (
-                motor === "index_right_stretch" ||
-                motor === "index_left_stretch" ||
-                motor === "all_left_stretch" ||
-                motor === "all_right_stretch"
-            ) {
-                if (!Number.isNaN(value) && Number.isFinite(value)) {
-                    if (json.turnedOn) {
-                        message.turnedOn = motorCheckbox;
-                    }
-                    this.rosService.updateSharedValue(message);
-                }
-                message.turnedOn = json.turnedOn;
-                this.rosService.updateSharedValue(message);
-            }
 
-            if (value !== undefined) {
-                this.sliderFormControl.setValue(Number(json.value));
+        this.motorSettingsMessageReceiver$.subscribe((motorSettingsMessage) => {
+            if (motorSettingsMessage.turnedOn !== undefined) {
+                this.motorFormControl.setValue(motorSettingsMessage.turnedOn);
             }
-
-            if (json.turnedOn !== undefined) {
-                this.motorFormControl.setValue(json.turnedOn);
+            if (motorSettingsMessage.acceleration !== undefined) {
+                this.accelerationFormControl.setValue(
+                    motorSettingsMessage.acceleration,
+                );
             }
-            if (json.acceleration !== undefined) {
-                this.accelerationFormControl.setValue(json.acceleration);
+            if (motorSettingsMessage.deceleration !== undefined) {
+                this.decelerationFormControl.setValue(
+                    motorSettingsMessage.deceleration,
+                );
             }
-            if (json.deceleration !== undefined) {
-                this.decelerationFormControl.setValue(json.deceleration);
+            if (motorSettingsMessage.period !== undefined) {
+                this.periodFormControl.setValue(motorSettingsMessage.period);
             }
-            if (json.period !== undefined) {
-                this.periodFormControl.setValue(json.period);
+            if (motorSettingsMessage.pulse_widths_max !== undefined) {
+                this.pulseMaxRange.setValue(
+                    motorSettingsMessage.pulse_widths_max,
+                );
             }
-            if (json.pule_widths_max !== undefined) {
-                this.pulseMaxRange.setValue(json.pule_widths_max);
+            if (motorSettingsMessage.pulse_widths_min !== undefined) {
+                this.pulseMinRange.setValue(
+                    motorSettingsMessage.pulse_widths_min,
+                );
             }
-            if (json.pule_widths_min !== undefined) {
-                this.pulseMinRange.setValue(json.pule_widths_min);
+            if (motorSettingsMessage.rotation_range_max !== undefined) {
+                this.degreeMaxFormControl.setValue(
+                    motorSettingsMessage.rotation_range_max,
+                );
             }
-            if (json.rotation_range_max !== undefined) {
-                this.degreeMaxFormControl.setValue(json.rotation_range_max);
+            if (motorSettingsMessage.rotation_range_min !== undefined) {
+                this.degreeMinFormControl.setValue(
+                    motorSettingsMessage.rotation_range_min,
+                );
             }
-            if (json.rotation_range_min !== undefined) {
-                this.degreeMinFormControl.setValue(json.rotation_range_min);
-            }
-            if (json.velocity !== undefined) {
-                this.velocityFormControl.setValue(json.velocity);
+            if (motorSettingsMessage.velocity !== undefined) {
+                this.velocityFormControl.setValue(
+                    motorSettingsMessage.velocity,
+                );
             }
             this.degreeSubject$.next([
                 Number(this.degreeMinFormControl.value),
@@ -174,36 +144,67 @@ export class MotorControlComponent implements OnInit {
             this.periodSubject$.next(Number(this.periodFormControl.value));
         });
 
+        this.jointTrajectoryMessageReceiver$
+            .pipe(
+                map((jtMessage) => {
+                    const index = jtMessage.joint_names.indexOf(this.motorName);
+                    if (index === -1) {
+                        return {};
+                    } else {
+                        const name = jtMessage.joint_names[index];
+                        const position = jtMessage.points[index].positions[0];
+                        return {name: name, position: position};
+                    }
+                }),
+            )
+            .subscribe((object: {name?: string; position?: number}) => {
+                const position = object["position"];
+                const positionIsValid: boolean =
+                    position !== undefined &&
+                    !Number.isNaN(position) &&
+                    Number.isFinite(position);
+
+                if (positionIsValid) {
+                    this.setSliderValue(position!);
+                }
+            });
+
         this.rosService.isInitialized$.subscribe((isInitialized: boolean) => {
             if (isInitialized) {
                 console.log("register " + this.motorName);
                 this.rosService.registerMotor(
                     this.motorName,
-                    this.messageReceiver$,
+                    this.motorSettingsMessageReceiver$,
+                    this.jointTrajectoryMessageReceiver$,
                 );
             }
         });
     }
 
-    sendMessage() {
+    sendJointTrajectoryMessage() {
         let motorNames: string[] = [];
+
+        const jointTrajectoryMessage: JointTrajectoryMessage =
+            this.rosService.createEmptyJointTrajectoryMessage();
         if (this.isCombinedSlider) {
             motorNames = this.motorService.getMotorHandNames(this.groupSide);
-
-            motorNames.forEach((mn) => {
-                const message: Message = {
-                    motor: mn,
-                    value: this.sliderFormControl.value,
-                };
-                this.rosService.sendSliderMessage(message);
-            });
+            for (const index in motorNames) {
+                jointTrajectoryMessage.joint_names.push(motorNames[index]);
+                jointTrajectoryMessage.points.push(
+                    this.rosService.createJointTrajectoryPoint(
+                        this.sliderFormControl.value,
+                    ),
+                );
+            }
         } else {
-            const message: Message = {
-                motor: this.motorName,
-                value: this.sliderFormControl.value,
-            };
-            this.rosService.sendSliderMessage(message);
+            jointTrajectoryMessage.joint_names.push(this.motorName);
+            jointTrajectoryMessage.points.push(
+                this.rosService.createJointTrajectoryPoint(
+                    this.sliderFormControl.value,
+                ),
+            );
         }
+        this.rosService.sendJointTrajectoryMessage(jointTrajectoryMessage);
     }
 
     checkValidity(): boolean {
@@ -219,7 +220,7 @@ export class MotorControlComponent implements OnInit {
         );
     }
 
-    sendSettingMessage() {
+    sendMotorSettingsMessage() {
         if (this.checkValidity()) {
             let motorNames: string[] = [];
             if (this.isCombinedSlider) {
@@ -227,10 +228,11 @@ export class MotorControlComponent implements OnInit {
                     this.groupSide,
                 );
                 motorNames.forEach((mn) => {
-                    const message: Message = {
-                        motor: mn,
-                        pule_widths_min: this.pulseMinRange.value,
-                        pule_widths_max: this.pulseMaxRange.value,
+                    const message: MotorSettingsMessage = {
+                        motorName: mn,
+                        turnedOn: this.motorFormControl.value,
+                        pulse_widths_min: this.pulseMinRange.value,
+                        pulse_widths_max: this.pulseMaxRange.value,
                         rotation_range_min: this.degreeMinFormControl.value,
                         rotation_range_max: this.degreeMaxFormControl.value,
                         velocity: this.velocityFormControl.value,
@@ -238,13 +240,14 @@ export class MotorControlComponent implements OnInit {
                         deceleration: this.decelerationFormControl.value,
                         period: this.periodFormControl.value,
                     };
-                    this.rosService.sendSliderMessage(message);
+                    this.rosService.sendMotorSettingsMessage(message);
                 });
             } else {
-                const message: Message = {
-                    motor: this.motorName,
-                    pule_widths_min: this.pulseMinRange.value,
-                    pule_widths_max: this.pulseMaxRange.value,
+                const message: MotorSettingsMessage = {
+                    motorName: this.motorName,
+                    turnedOn: this.motorFormControl.value,
+                    pulse_widths_min: this.pulseMinRange.value,
+                    pulse_widths_max: this.pulseMaxRange.value,
                     rotation_range_min: this.degreeMinFormControl.value,
                     rotation_range_max: this.degreeMaxFormControl.value,
                     velocity: this.velocityFormControl.value,
@@ -252,7 +255,7 @@ export class MotorControlComponent implements OnInit {
                     deceleration: this.decelerationFormControl.value,
                     period: this.periodFormControl.value,
                 };
-                this.rosService.sendSliderMessage(message);
+                this.rosService.sendMotorSettingsMessage(message);
             }
         }
     }
@@ -262,18 +265,18 @@ export class MotorControlComponent implements OnInit {
         if (this.isCombinedSlider) {
             motorNames = this.motorService.getMotorHandNames(this.groupSide);
             motorNames.forEach((mn) => {
-                const message: Message = {
-                    motor: mn,
+                const message: MotorSettingsMessage = {
+                    motorName: mn,
                     turnedOn: this.motorFormControl.value,
                 };
-                this.rosService.sendSliderMessage(message);
+                this.rosService.sendMotorSettingsMessage(message);
             });
         } else {
-            const message: Message = {
-                motor: this.motorName,
+            const message: MotorSettingsMessage = {
+                motorName: this.motorName,
                 turnedOn: this.motorFormControl.value,
             };
-            this.rosService.sendSliderMessage(message);
+            this.rosService.sendMotorSettingsMessage(message);
         }
     }
 
@@ -324,12 +327,11 @@ export class MotorControlComponent implements OnInit {
                     this.groupSide,
                 );
                 motorNames.forEach((mn) => {
-                    const message: Message = {
-                        motor: mn,
-                        value: this.sliderFormControl.value,
+                    const message: MotorSettingsMessage = {
+                        motorName: mn,
                         turnedOn: this.motorFormControl.value,
-                        pule_widths_min: this.pulseMinRange.value,
-                        pule_widths_max: this.pulseMaxRange.value,
+                        pulse_widths_min: this.pulseMinRange.value,
+                        pulse_widths_max: this.pulseMaxRange.value,
                         rotation_range_min: this.degreeMinFormControl.value,
                         rotation_range_max: this.degreeMaxFormControl.value,
                         velocity: this.velocityFormControl.value,
@@ -337,15 +339,14 @@ export class MotorControlComponent implements OnInit {
                         deceleration: this.decelerationFormControl.value,
                         period: this.periodFormControl.value,
                     };
-                    this.rosService.sendSliderMessage(message);
+                    this.rosService.sendMotorSettingsMessage(message);
                 });
             } else {
-                const message: Message = {
-                    motor: this.motorName,
-                    value: this.sliderFormControl.value,
+                const message: MotorSettingsMessage = {
+                    motorName: this.motorName,
                     turnedOn: this.motorFormControl.value,
-                    pule_widths_min: this.pulseMinRange.value,
-                    pule_widths_max: this.pulseMaxRange.value,
+                    pulse_widths_min: this.pulseMinRange.value,
+                    pulse_widths_max: this.pulseMaxRange.value,
                     rotation_range_min: this.degreeMinFormControl.value,
                     rotation_range_max: this.degreeMaxFormControl.value,
                     velocity: this.velocityFormControl.value,
@@ -353,7 +354,7 @@ export class MotorControlComponent implements OnInit {
                     deceleration: this.decelerationFormControl.value,
                     period: this.periodFormControl.value,
                 };
-                this.rosService.sendSliderMessage(message);
+                this.rosService.sendMotorSettingsMessage(message);
             }
         } else {
             if (this.isCombinedSlider) {
@@ -361,20 +362,18 @@ export class MotorControlComponent implements OnInit {
                     this.groupSide,
                 );
                 motorNames.forEach((mn) => {
-                    const message: Message = {
-                        motor: mn,
-                        value: this.sliderFormControl.value,
+                    const message: MotorSettingsMessage = {
+                        motorName: mn,
                         turnedOn: this.motorFormControl.value,
                     };
-                    this.rosService.sendSliderMessage(message);
+                    this.rosService.sendMotorSettingsMessage(message);
                 });
             } else {
-                const message: Message = {
-                    motor: this.motorName,
-                    value: this.sliderFormControl.value,
+                const message: MotorSettingsMessage = {
+                    motorName: this.motorName,
                     turnedOn: this.motorFormControl.value,
                 };
-                this.rosService.sendSliderMessage(message);
+                this.rosService.sendMotorSettingsMessage(message);
             }
         }
     }
@@ -382,7 +381,7 @@ export class MotorControlComponent implements OnInit {
     inputSendSettingsMsg = () => {
         clearTimeout(this.timer);
         this.timer = setTimeout(() => {
-            this.sendSettingMessage();
+            this.sendMotorSettingsMessage();
         }, 100);
     };
 
@@ -391,21 +390,21 @@ export class MotorControlComponent implements OnInit {
     }
     setMotorPositionValue = (value: number) => {
         this.sliderFormControl.setValue(value);
-        this.sendMessage();
+        this.sendJointTrajectoryMessage();
     };
 
     setPulseRanges(number: number[]) {
         this.pulseMinRange.setValue(number[0]);
         this.pulseMaxRange.setValue(number[1]);
-        this.sendSettingMessage();
+        this.sendMotorSettingsMessage();
     }
     setDegree(number: number[]) {
         this.degreeMinFormControl.setValue(number[0]);
         this.degreeMaxFormControl.setValue(number[1]);
-        this.sendSettingMessage();
+        this.sendMotorSettingsMessage();
     }
     setPeriod(number: number) {
         this.periodFormControl.setValue(number);
-        this.sendSettingMessage();
+        this.sendMotorSettingsMessage();
     }
 }

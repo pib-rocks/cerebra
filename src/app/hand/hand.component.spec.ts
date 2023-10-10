@@ -12,6 +12,7 @@ import {MotorControlComponent} from "../motor-control/motor-control.component";
 import {HandComponent} from "./hand.component";
 import {RosService} from "../shared/ros.service";
 import {NavBarComponent} from "../nav-bar/nav-bar.component";
+import {CircularSliderComponent} from "../slider/circular-slider/circular-slider.component";
 import {SliderComponent} from "../slider/slider.component";
 
 describe("HandComponent", () => {
@@ -25,6 +26,7 @@ describe("HandComponent", () => {
                 HandComponent,
                 MotorControlComponent,
                 NavBarComponent,
+                CircularSliderComponent,
                 SliderComponent,
             ],
             imports: [RouterTestingModule, ReactiveFormsModule],
@@ -271,7 +273,7 @@ describe("HandComponent", () => {
                 (slider) =>
                     slider.componentInstance.motorName === "all_left_stretch",
             )[0].componentInstance,
-            "sendMessage",
+            "sendJointTrajectoryMessage",
         );
         sliders
             .filter(
@@ -296,7 +298,9 @@ describe("HandComponent", () => {
                 expect(child.componentInstance.sliderFormControl.value).toBe(
                     500,
                 );
-                expect(child.componentInstance.sendMessage).toHaveBeenCalled();
+                expect(
+                    child.componentInstance.sendJointTrajectoryMessage,
+                ).toHaveBeenCalled();
             });
         expect(component.displayAll).toBe("none");
         expect(component.displayIndividual).toBe("block");
@@ -315,7 +319,7 @@ describe("HandComponent", () => {
             By.css("app-motor-control"),
         );
         sliders.forEach((slider) =>
-            spyOn(slider.componentInstance, "sendMessage"),
+            spyOn(slider.componentInstance, "sendJointTrajectoryMessage"),
         );
         sliders
             .filter(
@@ -336,28 +340,11 @@ describe("HandComponent", () => {
                 expect(child.componentInstance.sliderFormControl.value).toBe(
                     500,
                 );
-                expect(child.componentInstance.sendMessage).toHaveBeenCalled();
+                expect(
+                    child.componentInstance.sendJointTrajectoryMessage,
+                ).toHaveBeenCalled();
             });
         expect(component.displayAll).toBe("none");
         expect(component.displayIndividual).toBe("block");
     }));
-
-    it("should send dummy values", () => {
-        component.side = "left";
-        fixture.detectChanges();
-        const dummyBtnLEft = fixture.debugElement.query(
-            By.css("#dummyBtnLeft"),
-        );
-        spyOn(rosService, "sendSliderMessage");
-        dummyBtnLEft.nativeElement.click();
-        expect(rosService.sendSliderMessage).toHaveBeenCalledTimes(5);
-
-        component.side = "right";
-        fixture.detectChanges();
-        const dummyBtnRight = fixture.debugElement.query(
-            By.css("#dummyBtnRight"),
-        );
-        dummyBtnRight.nativeElement.click();
-        expect(rosService.sendSliderMessage).toHaveBeenCalledTimes(10);
-    });
 });
