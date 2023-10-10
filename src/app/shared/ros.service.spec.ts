@@ -15,7 +15,6 @@ describe("RosService", () => {
     let spyOnPreviewSizeTopic: jasmine.Spy<() => void>;
     let spyOnQualityFactorTopic: jasmine.Spy<() => void>;
     let spyOnJointTrajectoryTopic: jasmine.Spy<() => void>;
-    let spyOnInitTopic: jasmine.Spy<() => void>;
     let spyOnInitSubscribers: jasmine.Spy<() => void>;
     let spyOnMotorSettingsTopc: jasmine.Spy<() => void>;
 
@@ -35,7 +34,6 @@ describe("RosService", () => {
         rosService = TestBed.inject(RosService);
         rosService.initTopics();
         spyOnSetupRos = spyOn(rosService, "setUpRos").and.callThrough();
-        spyOnInitTopic = spyOn(rosService, "initTopics").and.callThrough();
         spyOnInitSubscribers = spyOn(
             rosService,
             "initSubscribers",
