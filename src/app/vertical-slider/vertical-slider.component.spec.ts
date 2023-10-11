@@ -6,6 +6,7 @@ import {
 } from "@angular/core/testing";
 import {FormControl, ReactiveFormsModule} from "@angular/forms";
 import {VerticalSliderComponent} from "./vertical-slider.component";
+import {Subject} from "rxjs";
 
 describe("VerticalSliderComponent", () => {
     let component: VerticalSliderComponent;
@@ -22,6 +23,7 @@ describe("VerticalSliderComponent", () => {
         component.maxValue = 1000;
         component.minValue = 0;
         component.rangeFormControl = new FormControl(0);
+        component.messageReceiver$ = new Subject<number>();
         component.ngOnInit();
         fixture.detectChanges();
     });

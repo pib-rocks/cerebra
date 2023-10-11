@@ -4,14 +4,6 @@ import {BehaviorSubject, Subject} from "rxjs";
 import {MotorSettingsMessage} from "./motorSettingsMessage";
 import {VoiceAssistant} from "./voice-assistant";
 import {JointTrajectoryMessage} from "../shared/rosMessageTypes/jointTrajectoryMessage";
-import {
-    JointTrajectoryPoint,
-    createDefaultRosTime,
-} from "./rosMessageTypes/jointTrajectoryPoint";
-import {
-    StdMessageHeader,
-    createDefaultStdMessageHeader,
-} from "./rosMessageTypes/stdMessageHeader";
 @Injectable({
     providedIn: "root",
 })
@@ -126,7 +118,6 @@ export class RosService {
     sendJointTrajectoryMessage(jointTrajectoryMessage: JointTrajectoryMessage) {
         const message = new ROSLIB.Message(jointTrajectoryMessage);
         this.jointTrajectoryTopic.publish(message);
-        // this.sendJointTrajectoryConsoleLog("Sent", message);
     }
 
     //Remove this function after establishing a new test concept
@@ -238,7 +229,6 @@ export class RosService {
                     ": " +
                     JSON.stringify(jsonObject),
             );
-            // this.currentReceiver$.next(jsonObject);
         });
     }
 

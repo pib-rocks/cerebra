@@ -227,6 +227,10 @@ export class MotorService {
         }
     }
     updateMotorSettingsFromMotorSettingsMessage(message: MotorSettingsMessage) {
+        const motor = this.getMotorByName(message.motor_name);
+        motor?.settings.updateMotorSettingsFromMotorSettingsMessage(message);
+        const copy = motor?.clone();
+        motor?.motorSubject.next(copy);
         if (message.motor_name.includes("all")) {
             const motor = this.getMotorByName(message.motor_name);
             const groupMotors = this.motors
@@ -241,10 +245,6 @@ export class MotorService {
                 this.updateMotorSettingsFromMotorSettingsMessage(message);
             });
         }
-        const motor = this.getMotorByName(message.motor_name);
-        motor?.settings.updateMotorSettingsFromMotorSettingsMessage(message);
-        const copy = motor?.clone();
-        motor?.motorSubject.next(copy);
     }
 
     resetMotorGroupPosition(groupIdentifier: number, position = 0) {

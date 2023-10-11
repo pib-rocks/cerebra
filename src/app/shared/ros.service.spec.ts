@@ -3,6 +3,7 @@ import * as ROSLIB from "roslib";
 import {RosService} from "./ros.service";
 import {createEmptyJointTrajectoryMessage} from "./rosMessageTypes/jointTrajectoryMessage";
 import {VoiceAssistant} from "./voice-assistant";
+import {MotorSettingsMessage} from "./motorSettingsMessage";
 
 describe("RosService", () => {
     let rosService: RosService;
@@ -14,7 +15,6 @@ describe("RosService", () => {
     let spyOnPreviewSizeTopic: jasmine.Spy<() => void>;
     let spyOnQualityFactorTopic: jasmine.Spy<() => void>;
     let spyOnJointTrajectoryTopic: jasmine.Spy<() => void>;
-    let spyOnInitTopic: jasmine.Spy<() => void>;
     let spyOnInitSubscribers: jasmine.Spy<() => void>;
     let spyOnMotorSettingsTopc: jasmine.Spy<() => void>;
 
@@ -34,7 +34,6 @@ describe("RosService", () => {
         rosService = TestBed.inject(RosService);
         rosService.initTopics();
         spyOnSetupRos = spyOn(rosService, "setUpRos").and.callThrough();
-        spyOnInitTopic = spyOn(rosService, "initTopics").and.callThrough();
         spyOnInitSubscribers = spyOn(
             rosService,
             "initSubscribers",
@@ -152,7 +151,7 @@ describe("RosService", () => {
         expect(rosService["previewSizeReceiver$"]).toBeTruthy();
     });
 
-    it("should publish the message onto the voiceAssistantTopic when the sendVoiceActivationMessage-function is called.", () => {
+    it("should publish the message on calling sendVoiceActivationMessage", () => {
         const spySendVoiceActivationMessage = spyOn(
             rosService,
             "sendVoiceActivationMessage",
@@ -171,15 +170,88 @@ describe("RosService", () => {
         );
     });
 
-    it("should publish the message onto the jointTrajectoryTopic when calling the sendJointTrajectoryMessage method", () => {
-        const spySendMessage = spyOn(
+    it("should publish the JointTrajectoryMessage on calling sendJointTrajectoryMessage", () => {
+        const spySendJointTrajectoryMessage = spyOn(
             rosService,
             "sendJointTrajectoryMessage",
         ).and.callThrough();
-        const spyPublish = spyOn(rosService["jointTrajectoryTopic"], "publish");
+        const spyJointTrajectoryTopicPublish = spyOn(
+            rosService["jointTrajectoryTopic"],
+            "publish",
+        );
         const jtMessage = createEmptyJointTrajectoryMessage();
         rosService.sendJointTrajectoryMessage(jtMessage);
-        expect(spySendMessage).toHaveBeenCalled();
-        expect(spyPublish).toHaveBeenCalledWith(new ROSLIB.Message(jtMessage));
+        expect(spySendJointTrajectoryMessage).toHaveBeenCalled();
+        expect(spyJointTrajectoryTopicPublish).toHaveBeenCalledWith(
+            new ROSLIB.Message(jtMessage),
+        );
+    });
+
+    it("should publish the MotorSettingsMessage on calling sendMotorSettingsMessage", () => {
+        const spyOnSendMotorSettingsMessage = spyOn(
+            rosService,
+            "sendMotorSettingsMessage",
+        ).and.callThrough();
+        const spyMotorSettingsTopicPublish = spyOn(
+            rosService["motorSettingsTopic"],
+            "publish",
+        );
+        const motorSettingsMessage: MotorSettingsMessage = {
+            motor_name: "test",
+            turned_on: true,
+            pulse_width_min: 100,
+            pulse_width_max: 100,
+            rotation_range_min: 100,
+            rotation_range_max: 100,
+            velocity: 100,
+            acceleration: 100,
+            deceleration: 100,
+            period: 100,
+        };
+        rosService.sendMotorSettingsMessage(motorSettingsMessage);
+        expect(spyOnSendMotorSettingsMessage).toHaveBeenCalled();
+        expect(spyMotorSettingsTopicPublish).toHaveBeenCalled();
+    });
+
+    it("should publish the preview size on calling setPreviewsize", () => {
+        const spyOnSetPreviewSize = spyOn(
+            rosService,
+            "setPreviewSize",
+        ).and.callThrough();
+        const spyOnPreviewSizeTopicPublish = spyOn(
+            rosService["previewSizeTopic"],
+            "publish",
+        ).and.callThrough();
+        rosService.setPreviewSize(400, 400);
+        expect(spyOnSetPreviewSize).toHaveBeenCalledWith(400, 400);
+        expect(spyOnPreviewSizeTopicPublish).toHaveBeenCalled();
+    });
+
+    it("should publish the quality factor on calling setQualityFactor", () => {
+        const spyOnSetQualityFactor = spyOn(
+            rosService,
+            "setQualityFactor",
+        ).and.callThrough();
+        const spyOnQualityFactorTopicPublish = spyOn(
+            rosService["qualityFactorTopic"],
+            "publish",
+        ).and.callThrough();
+        rosService.setQualityFactor(50);
+        expect(spyOnSetQualityFactor).toHaveBeenCalledWith(50);
+        expect(spyOnQualityFactorTopicPublish).toHaveBeenCalled();
+    });
+
+    it("should publish the timer perio on calling setTimerPeriod", () => {
+        const spyOnSetTimerPeriod = spyOn(
+            rosService,
+            "setTimerPeriod",
+        ).and.callThrough();
+        const spyOnTimerPeriodTopicPublish = spyOn(
+            rosService["timerPeriodTopic"],
+            "publish",
+        ).and.callThrough();
+        rosService.setTimerPeriod(0.5);
+        expect(spyOnSetTimerPeriod).toHaveBeenCalledWith(0.5);
+        expect(spyOnTimerPeriodTopicPublish).toHaveBeenCalled();
     });
 });
