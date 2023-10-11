@@ -164,28 +164,26 @@ describe("HandComponent", () => {
         const sliders: MotorControlComponent[] = fixture.debugElement
             .queryAll(By.css("app-motor-control"))
             .map((slider) => slider.componentInstance);
+        sliders.forEach((slider) =>
+            slider.sliderComponent.sliderFormControl.setValue(10),
+        );
 
         const resetSpy = spyOn(component, "reset").and.callThrough();
         const motorResetGroupSpy = spyOn(
             motorService,
             "resetMotorGroupPosition",
         ).and.callThrough();
+
         const homeButton =
             fixture.nativeElement.querySelector("#home-position-btn");
-
-        sliders.forEach((slider) =>
-            slider.sliderComponent.sliderFormControl.setValue(10),
-        );
-
         homeButton.click();
 
+        expect(resetSpy).toHaveBeenCalled();
+        expect(motorResetGroupSpy).toHaveBeenCalledWith(Group.left_hand);
+        expect(rosSendJointTrajectorySpy).toHaveBeenCalled();
         sliders.forEach((slider) =>
             expect(slider.sliderComponent.sliderFormControl.value).toBe(0),
         );
-
-        expect(rosSendJointTrajectorySpy).toHaveBeenCalled();
-        expect(resetSpy).toHaveBeenCalled();
-        expect(motorResetGroupSpy).toHaveBeenCalledWith(Group.left_hand);
     });
 
     it("should call reset() and set all slider values to 0 after clicking reset button (right)", () => {
@@ -197,68 +195,96 @@ describe("HandComponent", () => {
         const sliders: MotorControlComponent[] = fixture.debugElement
             .queryAll(By.css("app-motor-control"))
             .map((slider) => slider.componentInstance);
+        sliders.forEach((slider) =>
+            slider.sliderComponent.sliderFormControl.setValue(10),
+        );
 
         const resetSpy = spyOn(component, "reset").and.callThrough();
         const motorResetGroupSpy = spyOn(
             motorService,
             "resetMotorGroupPosition",
         ).and.callThrough();
+
         const homeButton =
             fixture.nativeElement.querySelector("#home-position-btn");
-
-        sliders.forEach((slider) =>
-            slider.sliderComponent.sliderFormControl.setValue(10),
-        );
-
         homeButton.click();
 
+        expect(resetSpy).toHaveBeenCalled();
+        expect(motorResetGroupSpy).toHaveBeenCalledWith(Group.right_hand);
+        expect(rosSendJointTrajectorySpy).toHaveBeenCalled();
         sliders.forEach((slider) =>
             expect(slider.sliderComponent.sliderFormControl.value).toBe(0),
         );
-
-        expect(rosSendJointTrajectorySpy).toHaveBeenCalled();
-        expect(resetSpy).toHaveBeenCalled();
-        expect(motorResetGroupSpy).toHaveBeenCalledWith(Group.right_hand);
     });
 
-    it("should set all values to the index finger value if switched from all to individual", () => {
+    it("should set all_fingers value to the index finger value if switched from all to individual", () => {
         paramsSubject.next({side: "right"});
         if (!component.displayAllFingers)
             fixture.componentInstance.switchView();
         fixture.detectChanges();
-
         expect(fixture.componentInstance.displayAllFingers).toBeTrue();
 
-        const indexPosition = 53;
-        const indexMotorCpy = motorService
-            .getMotorByName("index_right_stretch")
-            .clone();
-        expect(indexMotorCpy).toBeTruthy();
-        indexMotorCpy.position = indexPosition;
-        motorService.updateMotorFromComponent(indexMotorCpy);
+        const indexPos = 10;
+        const otherPos = 0;
+        motorService
+            .getMotorsByGroup(Group.right_hand)
+            .map((motor) => motor.clone())
+            .forEach((motorClone) => {
+                motorClone.position =
+                    motorClone.name == "index_right_stretch"
+                        ? indexPos
+                        : otherPos;
+                motorService.updateMotorFromComponent(motorClone);
+            });
 
-        const motorServiceUpdateSpy = spyOn(
+        const motorSendJointTrajectorySpy = spyOn(
             motorService,
-            "updateMotorFromJointTrajectoryMessage",
+            "sendJointTrajectoryMessage",
         ).and.callThrough();
+        const motorMotorSettingsSpy = spyOn(
+            motorService,
+            "sendMotorSettingsMessage",
+        ).and.callThrough();
+
         component.switchView();
         fixture.detectChanges();
-        expect(motorServiceUpdateSpy).toHaveBeenCalled();
 
-        let motorControls: MotorControlComponent[] = fixture.debugElement
+        const expectedMotorObj = jasmine.objectContaining({
+            name: "all_fingers_right",
+            position: indexPos,
+        });
+        expect(motorSendJointTrajectorySpy).toHaveBeenCalledOnceWith(
+            expectedMotorObj,
+        );
+        expect(motorMotorSettingsSpy).toHaveBeenCalledOnceWith(
+            expectedMotorObj,
+        );
+
+        const motorControls: MotorControlComponent[] = fixture.debugElement
             .queryAll(By.css("app-motor-control"))
-            .map((control) => control.componentInstance);
-        const allControl = motorControls.find((control) =>
-            control.motor.name.includes("all"),
+            .map((debugElem) => debugElem.componentInstance);
+        const allControl = motorControls.find(
+            (mc) => mc.motor.name == "all_fingers_right",
         );
-        expect(allControl).toBeTruthy();
-
+        const oppositionControl = motorControls.find(
+            (mc) => mc.motor.name == "thumb_right_opposition",
+        );
         expect(allControl?.sliderComponent.sliderFormControl.value).toBe(
-            indexPosition,
+            indexPos,
         );
-        expect(motorService.getMotorByName("all_fingers_right").position).toBe(
-            indexPosition,
+        expect(oppositionControl?.sliderComponent.sliderFormControl.value).toBe(
+            otherPos,
         );
+
+        motorService
+            .getMotorsByGroup(Group.right_hand)
+            .forEach((motor) =>
+                expect(motor.position).toBe(
+                    motor.name == "thumb_right_opposition"
+                        ? otherPos
+                        : indexPos,
+                ),
+            );
     });
 
     it("should set all values to the value of the all_fingers slider", () => {
