@@ -305,7 +305,7 @@ describe("HandComponent", () => {
         component.switchView();
         fixture.detectChanges();
 
-        let motorControls: MotorControlComponent[] = fixture.debugElement
+        const motorControls: MotorControlComponent[] = fixture.debugElement
             .queryAll(By.css("app-motor-control"))
             .map((control) => control.componentInstance);
         expect(motorControls.length).toBe(6);
