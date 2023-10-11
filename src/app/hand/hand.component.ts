@@ -10,7 +10,7 @@ import {Group} from "../shared/types/motor.enum";
     templateUrl: "./hand.component.html",
     styleUrls: ["./hand.component.css"],
 })
-export class HandComponent implements OnInit, OnDestroy {
+export class HandComponent implements OnInit {
     side!: string;
     motors!: Motor[];
     displayMotors!: Motor[];
@@ -21,10 +21,6 @@ export class HandComponent implements OnInit, OnDestroy {
         private route: ActivatedRoute,
         private motorService: MotorService,
     ) {}
-
-    ngOnDestroy(): void {
-        console.log("kapuitt");
-    }
 
     ngOnInit(): void {
         this.route.params.subscribe((params: Params) => {
@@ -43,7 +39,6 @@ export class HandComponent implements OnInit, OnDestroy {
                           m.name.includes("all") ||
                           m.name.includes("opposition"),
                   );
-            console.log(this.motors);
         });
     }
 
