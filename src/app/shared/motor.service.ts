@@ -268,7 +268,4 @@ export class MotorService {
             this.sendMotorSettingsMessage(m);
         });
     }
-    getMotorHandNames(str: string) {
-        return [];
-    }
 }

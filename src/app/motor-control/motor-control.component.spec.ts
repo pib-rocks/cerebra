@@ -25,8 +25,6 @@ describe("MotorControlComponent", () => {
     let motorService: MotorService;
     let modalService: NgbModal;
     let rosService: RosService;
-    let spySendMotorSettings: jasmine.Spy<(msg: MotorSettingsMessage) => void>;
-    let spySendJTMassege: jasmine.Spy<(msg: JointTrajectoryMessage) => void>;
     let motorSubject: BehaviorSubject<Motor> | undefined;
     let updateMotor: Motor;
     beforeEach(async () => {

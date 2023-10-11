@@ -90,7 +90,7 @@ describe("MotorService", () => {
             "getMotorByHardwareId",
         ).and.callThrough();
         const editMotor = service.getMotorByName("thumb_left_stretch");
-        editMotor!.hardware_id = "123";
+        editMotor.hardware_id = "123";
         const actualMotor = service.getMotorByHardwareId("123");
         const undefinedMotor = service.getMotorByHardwareId("undefined_motor");
         expect(spyOnGetMotorByHardwareId).toHaveBeenCalled();
@@ -109,7 +109,7 @@ describe("MotorService", () => {
         expect(activeMotors.length).toBe(29);
         expect(inactiveMotor.length).toBe(0);
         const editMotor = service.getMotorByName("thumb_left_stretch");
-        editMotor!.settings.turnedOn = false;
+        editMotor.settings.turnedOn = false;
         activeMotors = service.getMotorByTurnedOn(true);
         inactiveMotor = service.getMotorByTurnedOn(false);
         expect(activeMotors.length).toBe(28);

@@ -38,7 +38,7 @@ export class MotorControlComponent implements OnInit {
     ) {}
 
     ngOnInit(): void {
-        this.motor!.motorSubject.subscribe((motor) => {
+        this.motor.motorSubject.subscribe((motor) => {
             this.motor = motor;
             this.pulseWidthSubject$.next([
                 this.motor.settings.pulse_width_min,

@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import {Component, OnDestroy, OnInit} from "@angular/core";
+import {Component, OnInit} from "@angular/core";
 import {ActivatedRoute, Params} from "@angular/router";
 import {MotorService} from "../shared/motor.service";
 import {Motor} from "../shared/types/motor.class";
