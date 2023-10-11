@@ -1,11 +1,8 @@
 import {Component, Input, OnInit, TemplateRef, ViewChild} from "@angular/core";
-import {FormControl, Validators} from "@angular/forms";
-import {Subject, map} from "rxjs";
-import {MotorSettingsMessage} from "../shared/motorSettingsMessage";
+import {FormControl} from "@angular/forms";
+import {Subject} from "rxjs";
 import {MotorService} from "../shared/motor.service";
-import {RosService} from "../shared/ros.service";
 import {ModalDismissReasons, NgbModal} from "@ng-bootstrap/ng-bootstrap";
-import {JointTrajectoryMessage} from "../shared/rosMessageTypes/jointTrajectoryMessage";
 import {SliderComponent} from "../slider/slider.component";
 import {Motor} from "../shared/types/motor.class";
 @Component({
@@ -90,7 +87,7 @@ export class MotorControlComponent implements OnInit {
                 },
             );
     }
-    private getDismissReason(reason: any): string {
+    getDismissReason(reason: any): string {
         if (reason === ModalDismissReasons.ESC) {
             return "by pressing ESC";
         } else if (reason === ModalDismissReasons.BACKDROP_CLICK) {
