@@ -124,7 +124,10 @@ export class MotorService {
         );
     }
     public getMotorByName(name: string): Motor {
-        return this.motors.find((m) => m.name === name)!;
+        return (
+            this.motors.find((m) => m.name === name) ??
+            new Motor(name, 0, Group.none, "")
+        );
     }
     public getMotorByHardwareId(hwId: string): Motor | undefined {
         return this.motors.find((m) => m.hardware_id === hwId);

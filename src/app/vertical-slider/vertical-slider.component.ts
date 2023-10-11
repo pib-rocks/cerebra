@@ -54,7 +54,7 @@ export class VerticalSliderComponent implements OnInit, AfterViewInit {
         });
     }
     ngAfterViewInit(): void {
-        this.rangeFormControl.valueChanges.subscribe((value) => {
+        this.rangeFormControl.valueChanges.subscribe(() => {
             if (this.sanitizeValue()) {
                 const slider: ElementRef["nativeElement"] =
                     this.slider?.nativeElement;

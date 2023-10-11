@@ -1,15 +1,10 @@
-import {
-    AbstractControl,
-    FormControl,
-    ValidationErrors,
-    ValidatorFn,
-} from "@angular/forms";
+import {AbstractControl, FormControl, ValidatorFn} from "@angular/forms";
 
 export function compareValuesPulseValidator(
     control1: FormControl,
     control2: FormControl,
 ): ValidatorFn {
-    return (formControl: AbstractControl) => {
+    return () => {
         if (control1.value >= control2.value) {
             control1.setErrors({notGreaterThan: true});
             return {notGreaterThan: true};
@@ -29,7 +24,7 @@ export function compareValuesDegreeValidator(
     control1: FormControl,
     control2: FormControl,
 ): ValidatorFn {
-    return (formControl: AbstractControl) => {
+    return () => {
         if (control1.value >= control2.value) {
             control1.setErrors({notGreaterThan: true});
             return {notGreaterThan: true};

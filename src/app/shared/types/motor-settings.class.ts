@@ -65,14 +65,14 @@ export class MotorSettings {
         if (
             motorName !== settings.motor_name ||
             this.turnedOn !== settings.turned_on ||
-            this.pulse_width_max !== +settings.pulse_width_max! ||
-            this.pulse_width_min !== +settings.pulse_width_min! ||
-            this.rotation_range_max !== +settings.rotation_range_max! ||
-            this.rotation_range_min !== +settings.rotation_range_min! ||
-            this.velocity !== +settings.velocity! ||
-            this.acceleration !== +settings.acceleration! ||
-            this.deceleration !== +settings.deceleration! ||
-            this.period !== +settings.period!
+            this.pulse_width_max !== settings.pulse_width_max ||
+            this.pulse_width_min !== settings.pulse_width_min ||
+            this.rotation_range_max !== settings.rotation_range_max ||
+            this.rotation_range_min !== settings.rotation_range_min ||
+            this.velocity !== settings.velocity ||
+            this.acceleration !== settings.acceleration ||
+            this.deceleration !== settings.deceleration ||
+            this.period !== settings.period
         ) {
             return false;
         }

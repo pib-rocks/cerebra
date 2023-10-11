@@ -10,8 +10,6 @@ import {ModalDismissReasons, NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {MotorService} from "../shared/motor.service";
 import {SliderComponent} from "../slider/slider.component";
 import {MotorControlComponent} from "./motor-control.component";
-import {JointTrajectoryMessage} from "../shared/rosMessageTypes/jointTrajectoryMessage";
-import {MotorSettingsMessage} from "../shared/motorSettingsMessage";
 import {Motor} from "../shared/types/motor.class";
 import {MotorSettings} from "../shared/types/motor-settings.class";
 import {Group} from "../shared/types/motor.enum";
