@@ -241,7 +241,7 @@ describe("RosService", () => {
         expect(spyOnQualityFactorTopicPublish).toHaveBeenCalled();
     });
 
-    it("should publish the timer perio on calling setTimerPeriod", () => {
+    it("should publish the timer period on calling setTimerPeriod", () => {
         const spyOnSetTimerPeriod = spyOn(
             rosService,
             "setTimerPeriod",
