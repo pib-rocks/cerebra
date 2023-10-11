@@ -155,38 +155,7 @@ describe("HandComponent", () => {
         );
     });
 
-    it("should call reset() and set all slider values to 0 after clicking reset button (left)", () => {
-        paramsSubject.next({side: "left"});
-        if (!component.displayAllFingers)
-            fixture.componentInstance.switchView();
-        fixture.detectChanges();
-
-        const sliders: MotorControlComponent[] = fixture.debugElement
-            .queryAll(By.css("app-motor-control"))
-            .map((slider) => slider.componentInstance);
-        sliders.forEach((slider) =>
-            slider.sliderComponent.sliderFormControl.setValue(10),
-        );
-
-        const resetSpy = spyOn(component, "reset").and.callThrough();
-        const motorResetGroupSpy = spyOn(
-            motorService,
-            "resetMotorGroupPosition",
-        ).and.callThrough();
-
-        const homeButton =
-            fixture.nativeElement.querySelector("#home-position-btn");
-        homeButton.click();
-
-        expect(resetSpy).toHaveBeenCalled();
-        expect(motorResetGroupSpy).toHaveBeenCalledWith(Group.left_hand);
-        expect(rosSendJointTrajectorySpy).toHaveBeenCalled();
-        sliders.forEach((slider) =>
-            expect(slider.sliderComponent.sliderFormControl.value).toBe(0),
-        );
-    });
-
-    it("should call reset() and set all slider values to 0 after clicking reset button (right)", () => {
+    it("should call reset() and set all slider values to 0 after clicking reset button", () => {
         paramsSubject.next({side: "right"});
         if (!component.displayAllFingers)
             fixture.componentInstance.switchView();

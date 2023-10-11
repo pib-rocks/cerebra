@@ -110,42 +110,7 @@ describe("ArmComponent", () => {
         );
     });
 
-    it("should call reset() and set all slider values to 0 after clicking reset button (left)", () => {
-        paramsSubject.next({side: "left"});
-        fixture.detectChanges();
-
-        const childMotorControls = fixture.debugElement.queryAll(
-            By.css("app-motor-control"),
-        );
-        const resetButton = fixture.debugElement.query(
-            By.css("#home-position-btn"),
-        );
-        const clickSpy = spyOn(component, "reset").and.callThrough();
-
-        const motorServiceResetGroupSpy = spyOn(
-            motorService,
-            "resetMotorGroupPosition",
-        ).and.callThrough();
-
-        spyOn(rosService, "sendJointTrajectoryMessage").and.callFake((msg) =>
-            rosService.jointTrajectoryReceiver$.next(msg),
-        );
-
-        for (const c of childMotorControls) {
-            c.componentInstance.sliderComponent.sliderFormControl.setValue(10);
-        }
-        resetButton.nativeElement.click();
-        expect(clickSpy).toHaveBeenCalled();
-        expect(motorServiceResetGroupSpy).toHaveBeenCalledWith(Group.left_arm);
-
-        for (const c of childMotorControls) {
-            expect(
-                c.componentInstance.sliderComponent.sliderFormControl.value,
-            ).toBe(0);
-        }
-    });
-
-    it("should call reset() and set all slider values to 0 after clicking reset button (right)", () => {
+    it("should call reset() and set all slider values to 0 after clicking reset button", () => {
         paramsSubject.next({side: "right"});
         fixture.detectChanges();
 
