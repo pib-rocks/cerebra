@@ -8,23 +8,8 @@ import {MotorSettingsMessage} from "./motorSettingsMessage";
 describe("RosService", () => {
     let rosService: RosService;
     let spyOnSetupRos: jasmine.Spy<() => ROSLIB.Ros>;
-    let spyOnVoiceAssistantTopic: jasmine.Spy<() => void>;
-    let spyOnMotorCurrentTopic: jasmine.Spy<() => void>;
-    let spyOnCameraTopicTopic: jasmine.Spy<() => void>;
-    let spyOnTimerPeriodTopic: jasmine.Spy<() => void>;
-    let spyOnPreviewSizeTopic: jasmine.Spy<() => void>;
-    let spyOnQualityFactorTopic: jasmine.Spy<() => void>;
-    let spyOnJointTrajectoryTopic: jasmine.Spy<() => void>;
+    let spyOnInitTopics: jasmine.Spy<() => void>;
     let spyOnInitSubscribers: jasmine.Spy<() => void>;
-    let spyOnMotorSettingsTopc: jasmine.Spy<() => void>;
-
-    let spyOnSubscribeCurrentTopic: jasmine.Spy<() => void>;
-    let spyOnSubscribeMotorSettingsTopic: jasmine.Spy<() => void>;
-    let spyOnSubscribePreviewSize: jasmine.Spy<() => void>;
-    let spyOnSubscribeQualityFactorTopic: jasmine.Spy<() => void>;
-    let spyOnSubscribeTimePeriod: jasmine.Spy<() => void>;
-    let spyOnSubscribeVoiceAssistant: jasmine.Spy<() => void>;
-    let spyOnSubscribeJointTrajectoryTopic: jasmine.Spy<() => void>;
 
     beforeEach(() => {
         TestBed.configureTestingModule({
@@ -39,66 +24,7 @@ describe("RosService", () => {
             "initSubscribers",
         ).and.callThrough();
 
-        spyOnJointTrajectoryTopic = spyOn(
-            rosService,
-            "createJointTrajectoryTopic",
-        ).and.callThrough();
-        spyOnMotorCurrentTopic = spyOn(
-            rosService,
-            "createMotorCurrentTopic",
-        ).and.callThrough();
-        spyOnCameraTopicTopic = spyOn(
-            rosService,
-            "createCameraTopic",
-        ).and.callThrough();
-        spyOnTimerPeriodTopic = spyOn(
-            rosService,
-            "createTimePeriodTopic",
-        ).and.callThrough();
-        spyOnQualityFactorTopic = spyOn(
-            rosService,
-            "createQualityFactorTopic",
-        ).and.callThrough();
-        spyOnPreviewSizeTopic = spyOn(
-            rosService,
-            "createPreviewSizeTopic",
-        ).and.callThrough();
-        spyOnVoiceAssistantTopic = spyOn(
-            rosService,
-            "createVoiceAssistantTopic",
-        ).and.callThrough();
-        spyOnMotorSettingsTopc = spyOn(
-            rosService,
-            "createMotorSettingsTopic",
-        ).and.callThrough();
-        spyOnSubscribeCurrentTopic = spyOn(
-            rosService,
-            "subscribeCurrentTopic",
-        ).and.callThrough();
-        spyOnSubscribeMotorSettingsTopic = spyOn(
-            rosService,
-            "subscribeMotorSettingsTopic",
-        ).and.callThrough();
-        spyOnSubscribePreviewSize = spyOn(
-            rosService,
-            "subscribePreviewSize",
-        ).and.callThrough();
-        spyOnSubscribeQualityFactorTopic = spyOn(
-            rosService,
-            "subscribeQualityFactorTopic",
-        ).and.callThrough();
-        spyOnSubscribeTimePeriod = spyOn(
-            rosService,
-            "subscribeTimePeriod",
-        ).and.callThrough();
-        spyOnSubscribeVoiceAssistant = spyOn(
-            rosService,
-            "subscribeVoiceAssistant",
-        ).and.callThrough();
-        spyOnSubscribeJointTrajectoryTopic = spyOn(
-            rosService,
-            "subscribeJointTrajectoryTopic",
-        ).and.callThrough();
+        spyOnInitTopics = spyOn(rosService, "initTopics").and.callThrough();
     });
 
     it("should be created", () => {
@@ -112,43 +38,14 @@ describe("RosService", () => {
     });
 
     it("should create all ROSLIB topics", () => {
-        rosService.initTopics();
-        expect(spyOnJointTrajectoryTopic).toHaveBeenCalled();
-        expect(spyOnMotorCurrentTopic).toHaveBeenCalled();
-        expect(spyOnCameraTopicTopic).toHaveBeenCalled();
-        expect(spyOnTimerPeriodTopic).toHaveBeenCalled();
-        expect(spyOnQualityFactorTopic).toHaveBeenCalled();
-        expect(spyOnPreviewSizeTopic).toHaveBeenCalled();
-        expect(spyOnVoiceAssistantTopic).toHaveBeenCalled();
-        expect(spyOnMotorSettingsTopc).toHaveBeenCalled();
         expect(rosService["jointTrajectoryTopic"]).toBeTruthy();
         expect(rosService["motorCurrentTopic"]).toBeTruthy();
         expect(rosService["cameraTopic"]).toBeTruthy();
-        expect(rosService["timerPeriodTopic"]).toBeTruthy();
-        expect(rosService["qualityFactorTopic"]).toBeTruthy();
-        expect(rosService["previewSizeTopic"]).toBeTruthy();
+        expect(rosService["cameraTimerPeriodTopic"]).toBeTruthy();
+        expect(rosService["cameraQualityFactorTopic"]).toBeTruthy();
+        expect(rosService["cameraPreviewSizeTopic"]).toBeTruthy();
         expect(rosService["voiceAssistantTopic"]).toBeTruthy();
         expect(rosService["motorSettingsTopic"]).toBeTruthy();
-    });
-
-    it("should create all ROS subscribers", () => {
-        rosService.initTopics();
-        rosService.initSubscribers();
-        expect(spyOnInitSubscribers).toHaveBeenCalled();
-        expect(spyOnSubscribeCurrentTopic).toHaveBeenCalled();
-        expect(spyOnSubscribeMotorSettingsTopic).toHaveBeenCalled();
-        expect(spyOnSubscribePreviewSize).toHaveBeenCalled();
-        expect(spyOnSubscribeQualityFactorTopic).toHaveBeenCalled();
-        expect(spyOnSubscribeTimePeriod).toHaveBeenCalled();
-        expect(spyOnSubscribeVoiceAssistant).toHaveBeenCalled();
-        expect(spyOnSubscribeJointTrajectoryTopic).toHaveBeenCalled();
-        expect(rosService["motorSettingsReceiver$"]).toBeTruthy();
-        expect(rosService["qualityFactorReceiver$"]).toBeTruthy();
-        expect(rosService["jointTrajectoryReceiver$"]).toBeTruthy();
-        expect(rosService["voiceAssistantReceiver$"]).toBeTruthy();
-        expect(rosService["cameraReceiver$"]).toBeTruthy();
-        expect(rosService["timerPeriodReceiver$"]).toBeTruthy();
-        expect(rosService["previewSizeReceiver$"]).toBeTruthy();
     });
 
     it("should publish the message on calling sendVoiceActivationMessage", () => {
@@ -219,7 +116,7 @@ describe("RosService", () => {
             "setPreviewSize",
         ).and.callThrough();
         const spyOnPreviewSizeTopicPublish = spyOn(
-            rosService["previewSizeTopic"],
+            rosService["cameraPreviewSizeTopic"],
             "publish",
         ).and.callThrough();
         rosService.setPreviewSize(400, 400);
@@ -233,7 +130,7 @@ describe("RosService", () => {
             "setQualityFactor",
         ).and.callThrough();
         const spyOnQualityFactorTopicPublish = spyOn(
-            rosService["qualityFactorTopic"],
+            rosService["cameraQualityFactorTopic"],
             "publish",
         ).and.callThrough();
         rosService.setQualityFactor(50);
@@ -247,7 +144,7 @@ describe("RosService", () => {
             "setTimerPeriod",
         ).and.callThrough();
         const spyOnTimerPeriodTopicPublish = spyOn(
-            rosService["timerPeriodTopic"],
+            rosService["cameraTimerPeriodTopic"],
             "publish",
         ).and.callThrough();
         rosService.setTimerPeriod(0.5);

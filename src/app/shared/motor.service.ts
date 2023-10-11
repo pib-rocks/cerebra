@@ -57,7 +57,8 @@ export class MotorService {
     motors: Motor[] = [];
 
     constructor(private rosService: RosService) {
-        // this.subscribeMotorValueSubject();
+        // For reimplementation with PR-253
+        // this.subscribeMotorCurrentSubject();
         this.createMotors();
         this.subscribeJointTrajectorySubject();
         this.subscribeMotorSettingsSubject();
