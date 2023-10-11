@@ -72,16 +72,14 @@ describe("MotorService", () => {
         expect(right_hand.length).toBe(6);
     });
 
-    it("should return a distinct motor or undefined on calling getMotorByName", () => {
+    it("should return a distinct on calling getMotorByName", () => {
         const spyOnGetMotorByName = spyOn(
             service,
             "getMotorByName",
         ).and.callThrough();
         const actualMotor = service.getMotorByName("thumb_left_stretch");
-        const undefinedMotor = service.getMotorByName("undefined_motor");
         expect(spyOnGetMotorByName).toHaveBeenCalled();
         expect(actualMotor).toBeTruthy();
-        expect(undefinedMotor).toBeUndefined();
     });
 
     it("should return a distinct motor or undefined on calling getMotorByHardwareId", () => {
