@@ -28,6 +28,7 @@ export class HandComponent implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         this.route.params.subscribe((params: Params) => {
+            console.info("callback called");
             this.side = params["side"];
             this.motors =
                 this.side === "left"
