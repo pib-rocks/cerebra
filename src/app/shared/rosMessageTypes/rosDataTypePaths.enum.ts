@@ -5,4 +5,5 @@ export enum rosDataTypes {
     string = "std_msgs/String",
     motorSettings = "datatypes/msg/MotorSettings",
     jointTrajectory = "trajectory_msgs/msg/JointTrajectory",
+    DiagnosticStatus = "diagnostic_msgs/msg/DiagnosticStatus",
 }

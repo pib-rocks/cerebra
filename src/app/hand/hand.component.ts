@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import {Component, OnInit} from "@angular/core";
 import {ActivatedRoute, Params} from "@angular/router";
 import {MotorService} from "../shared/motor.service";
@@ -14,7 +13,16 @@ export class HandComponent implements OnInit {
     side!: string;
     motors!: Motor[];
     displayMotors!: Motor[];
+    displayCurrentMotors!: string[];
     displayAllFingers!: boolean;
+    sortOrderDisplayCurrentMotors: string[] = [
+        "thumb",
+        "opposition",
+        "index",
+        "middle",
+        "ring",
+        "pinky",
+    ];
     oppositionMotor: Motor | undefined;
 
     constructor(
@@ -39,6 +47,20 @@ export class HandComponent implements OnInit {
                           m.name.includes("all") ||
                           m.name.includes("opposition"),
                   );
+            this.displayCurrentMotors = this.motors
+                .filter((m) => !m.name.includes("all"))
+                .map((m) => m.name);
+            this.displayCurrentMotors.sort((m, n) => {
+                let aInd = 7;
+                let bInd = 7;
+                this.sortOrderDisplayCurrentMotors.forEach(
+                    (x: string, index: number) => {
+                        aInd = m.includes(x) ? index : aInd;
+                        bInd = n.includes(x) ? index : bInd;
+                    },
+                );
+                return this.side === "left" ? aInd - bInd : bInd - aInd;
+            });
         });
     }
 

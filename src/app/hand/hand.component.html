@@ -40,17 +40,17 @@
         </div>
         <div class="col-md-5 blue-corner-frame mb-2">
             <div class="row mt-3">
-                <ng-container *ngFor="let motor of displayMotors">
+                <ng-container *ngFor="let motorname of displayCurrentMotors">
                     <div class="col-2 pr-0 pl-0">
                         <app-circular-slider
-                            name="{{motor.name}}"></app-circular-slider>
+                            name="{{motorname}}"></app-circular-slider>
                     </div>
                 </ng-container>
             </div>
             <div class="row">
                 <img
                     class="pr-0 pl-0"
-                    src="../../assets/{{side}}.png"
+                    src="../../assets/hand_{{side}}.png"
                     alt="" />
             </div>
         </div>

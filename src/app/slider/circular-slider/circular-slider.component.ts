@@ -9,7 +9,7 @@ import {
     ViewChild,
 } from "@angular/core";
 import {Subscription} from "rxjs";
-import {MotorCurrentService} from "src/app/shared/motor-current.mock.service";
+import {MotorCurrentService} from "src/app/shared/motor-current.service";
 
 @Component({
     selector: "app-circular-slider",

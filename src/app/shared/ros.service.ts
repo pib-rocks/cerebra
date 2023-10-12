@@ -3,8 +3,7 @@ import * as ROSLIB from "roslib";
 import {BehaviorSubject, Subject} from "rxjs";
 import {MotorSettingsMessage} from "./motorSettingsMessage";
 import {VoiceAssistant} from "./voice-assistant";
-import {MotorCurrentMessage} from "./currentMessage";
-import {DiagnosticStatus} from "./DiagnosticStatus.message";
+import {DiagnosticStatus} from "./rosMessageTypes/DiagnosticStatus.message";
 import {JointTrajectoryMessage} from "../shared/rosMessageTypes/jointTrajectoryMessage";
 import {rosDataTypes} from "./rosMessageTypes/rosDataTypePaths.enum";
 import {rosTopics} from "./rosTopics.enum";
@@ -60,7 +59,7 @@ export class RosService {
     setUpRos() {
         let rosUrl: string;
         if (isDevMode()) {
-            rosUrl = "192.168.220.110";
+            rosUrl = "192.168.1.112";
         } else {
             rosUrl = window.location.hostname;
         }
@@ -92,7 +91,7 @@ export class RosService {
         );
         this.motorCurrentTopic = this.createRosTopic(
             rosTopics.motorCurrentTopicName,
-            rosDataTypes.string,
+            rosDataTypes.DiagnosticStatus,
         );
         this.jointTrajectoryTopic = this.createRosTopic(
             rosTopics.jointTrajectoryTopicName,
@@ -167,21 +166,7 @@ export class RosService {
 
     subscribeMotorCurrentTopic() {
         this.motorCurrentTopic.subscribe((message) => {
-            const jsonStr = JSON.stringify(message);
-            const json = JSON.parse(jsonStr);
-            const jsonArray = JSON.parse(json["data"]);
-            const jsonObject = jsonArray.reduce(
-                (key: object, value: object) => {
-                    return {...key, ...value};
-                },
-                {},
-            );
-            console.log(
-                "Received message for " +
-                    jsonObject["motor"] +
-                    ": " +
-                    JSON.stringify(jsonObject),
-            );
+            this.currentReceiver$.next(message as DiagnosticStatus);
         });
     }
 
