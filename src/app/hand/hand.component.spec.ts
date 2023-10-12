@@ -7,6 +7,7 @@ import {MotorControlComponent} from "../motor-control/motor-control.component";
 import {HandComponent} from "./hand.component";
 import {RosService} from "../shared/ros.service";
 import {NavBarComponent} from "../nav-bar/nav-bar.component";
+import {CircularSliderComponent} from "../slider/circular-slider/circular-slider.component";
 import {SliderComponent} from "../slider/slider.component";
 import {MotorService} from "../shared/motor.service";
 import {ActivatedRoute} from "@angular/router";
@@ -38,6 +39,7 @@ describe("HandComponent", () => {
                 HandComponent,
                 MotorControlComponent,
                 NavBarComponent,
+                CircularSliderComponent,
                 SliderComponent,
             ],
             imports: [RouterTestingModule, ReactiveFormsModule],

@@ -3,6 +3,8 @@ import * as ROSLIB from "roslib";
 import {BehaviorSubject, Subject} from "rxjs";
 import {MotorSettingsMessage} from "./motorSettingsMessage";
 import {VoiceAssistant} from "./voice-assistant";
+import {MotorCurrentMessage} from "./currentMessage";
+import {DiagnosticStatus} from "./DiagnosticStatus.message";
 import {JointTrajectoryMessage} from "../shared/rosMessageTypes/jointTrajectoryMessage";
 import {rosDataTypes} from "./rosMessageTypes/rosDataTypePaths.enum";
 import {rosTopics} from "./rosTopics.enum";
@@ -13,8 +15,8 @@ export class RosService {
     //to be removed in PR-319
     private isInitializedSubject = new BehaviorSubject<boolean>(false);
     isInitialized$ = this.isInitializedSubject.asObservable();
-    // currentReceiver$: Subject<MotorCurrentMessage> =
-    //     new Subject<MotorCurrentMessage>();
+    currentReceiver$: Subject<DiagnosticStatus> =
+        new Subject<DiagnosticStatus>();
     cameraTimerPeriodReceiver$: BehaviorSubject<number> =
         new BehaviorSubject<number>(0.1);
     cameraReceiver$: Subject<string> = new Subject<string>();

@@ -26,6 +26,7 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
     @ViewChild("bubbleInputUpper") bubbleInputUpper!: ElementRef;
     @ViewChild("range") sliderElem!: ElementRef;
     @ViewChild("rangeUpper") sliderElemUpper!: ElementRef;
+    @ViewChild("slider") slider!: ElementRef;
 
     @Input() minValue: number = 0;
     @Input() maxValue: number = 100;
@@ -52,7 +53,9 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
     maxBubblePosition = 100;
     minBubblePosition = 0;
     pixelsFromEdge = 60;
+    mouseDownX!: number;
     thumbWidth = 24;
+
     @Output() multiSliderEvent = new EventEmitter<number[]>();
 
     constructor(
@@ -268,5 +271,42 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
             return "NAME_NOT_PASSED";
         }
         return name.replace(" ", "_").toLowerCase();
+    }
+
+    onMouseDown(event: MouseEvent) {
+        this.mouseDownX = event.clientX;
+    }
+
+    onSliderClick(event: MouseEvent) {
+        const clickLocation = event.clientX;
+        if (clickLocation != this.mouseDownX) {
+            this.setThumbPosition();
+            this.sendEvent();
+            return;
+        }
+        const elementWidth = this.slider.nativeElement.offsetWidth;
+        const offsetLeft =
+            this.slider.nativeElement.getBoundingClientRect().left;
+
+        const relativeThumbMove = (clickLocation - offsetLeft) / elementWidth;
+
+        const sliderValue =
+            relativeThumbMove * (this.maxValue - this.minValue) + this.minValue;
+
+        const diff = this.maxValue - this.minValue;
+        const upper =
+            (this.sliderFormControlUpper.value - this.minValue) / diff;
+        const lower = (this.sliderFormControl.value - this.minValue) / diff;
+
+        if (
+            Math.abs(relativeThumbMove - upper) >
+            Math.abs(relativeThumbMove - lower)
+        ) {
+            this.sliderFormControl.setValue(Math.floor(sliderValue));
+        } else {
+            this.sliderFormControlUpper.setValue(Math.floor(sliderValue));
+        }
+        this.setThumbPosition();
+        this.sendEvent();
     }
 }
