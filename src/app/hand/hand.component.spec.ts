@@ -266,8 +266,20 @@ describe("HandComponent", () => {
         allMotorCpy.position = allPosition;
         motorService.updateMotorFromComponent(allMotorCpy);
 
+        const motorSendJointTrajectorySpy = spyOn(
+            motorService,
+            "sendJointTrajectoryMessage",
+        ).and.callThrough();
+        const motorMotorSettingsSpy = spyOn(
+            motorService,
+            "sendMotorSettingsMessage",
+        ).and.callThrough();
+
         component.switchView();
         fixture.detectChanges();
+
+        expect(motorSendJointTrajectorySpy).not.toHaveBeenCalled();
+        expect(motorMotorSettingsSpy).not.toHaveBeenCalled();
 
         const motorControls: MotorControlComponent[] = fixture.debugElement
             .queryAll(By.css("app-motor-control"))
