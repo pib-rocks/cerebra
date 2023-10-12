@@ -154,17 +154,6 @@ export class MotorService {
         }
     }
 
-    public sendDummyMessageForGroup(group: Group) {
-        for (const motor of this.motors) {
-            if (motor.group === group) {
-                // this.rosService.sendSliderMessage({
-                //     motor: motor.name,
-                //     currentValue: Math.floor(Math.random() * 2000),
-                // });
-            }
-        }
-    }
-
     sendJointTrajectoryMessage(motor: Motor) {
         this.rosService.sendJointTrajectoryMessage(
             motor.parseMotorToJointTrajectoryMessage(),
@@ -176,21 +165,6 @@ export class MotorService {
             motor.parseMotorToSettingsMessage(),
         );
     }
-    // Later with PR-253
-    // subscribeCurrentReceiver(): Subscription {
-    //     return this.rosService.currentReceiver$.subscribe(
-    //         (message: MotorCurrentMessage) => {
-    //             console.log(message);
-    //             console.log(message["motor"]);
-    //             for (const motor of this.motors) {
-    //                 if (motor.name === message.motor) {
-    //                     // console.log(message);
-    //                     motor.subject.next(message.currentValue);
-    //                 }
-    //             }
-    //         },
-    //     );
-    // }
 
     subscribeJointTrajectorySubject() {
         this.rosService.jointTrajectoryReceiver$.subscribe(

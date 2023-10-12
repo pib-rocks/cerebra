@@ -2,7 +2,6 @@ import {ComponentFixture, TestBed} from "@angular/core/testing";
 
 import {CircularSliderComponent} from "./circular-slider.component";
 import {MotorCurrentService} from "src/app/shared/motor-current.service";
-import {By} from "@angular/platform-browser";
 
 describe("CircularSliderComponent", () => {
     let component: CircularSliderComponent;

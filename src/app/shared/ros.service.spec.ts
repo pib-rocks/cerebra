@@ -8,8 +8,6 @@ import {MotorSettingsMessage} from "./motorSettingsMessage";
 describe("RosService", () => {
     let rosService: RosService;
     let spyOnSetupRos: jasmine.Spy<() => ROSLIB.Ros>;
-    let spyOnInitTopics: jasmine.Spy<() => void>;
-    let spyOnInitSubscribers: jasmine.Spy<() => void>;
 
     beforeEach(() => {
         TestBed.configureTestingModule({
@@ -19,12 +17,6 @@ describe("RosService", () => {
         rosService = TestBed.inject(RosService);
         rosService.initTopics();
         spyOnSetupRos = spyOn(rosService, "setUpRos").and.callThrough();
-        spyOnInitSubscribers = spyOn(
-            rosService,
-            "initSubscribers",
-        ).and.callThrough();
-
-        spyOnInitTopics = spyOn(rosService, "initTopics").and.callThrough();
     });
 
     it("should be created", () => {
