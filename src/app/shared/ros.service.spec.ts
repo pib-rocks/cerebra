@@ -3,7 +3,7 @@ import * as ROSLIB from "roslib";
 import {RosService} from "./ros.service";
 import {createEmptyJointTrajectoryMessage} from "./rosMessageTypes/jointTrajectoryMessage";
 import {VoiceAssistant} from "./voice-assistant";
-import {MotorSettingsMessage} from "./motorSettingsMessage";
+import {MotorSettingsMessage} from "./rosMessageTypes/motorSettingsMessage";
 
 describe("RosService", () => {
     let rosService: RosService;

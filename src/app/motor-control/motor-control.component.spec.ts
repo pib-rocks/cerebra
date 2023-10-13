@@ -72,7 +72,7 @@ describe("MotorControlComponent", () => {
         expect(component.motor.settings.period).toBe(500);
         expect(component.motor.settings.pulse_width_max).toBe(500);
         expect(component.motor.settings.pulse_width_min).toBe(500);
-        expect(component.motor.settings.turnedOn).toBe(false);
+        expect(component.motor.settings.turned_on).toBe(false);
     });
 
     it("should open settings modal on clicking the settings-button", () => {
@@ -114,7 +114,7 @@ describe("MotorControlComponent", () => {
 
     it("should turn the motor on/off on checking the checkbox", () => {
         motorSubject?.next(updateMotor);
-        expect(component.motor.settings.turnedOn).toBe(false);
+        expect(component.motor.settings.turned_on).toBe(false);
         const spyOnChangeTurnedOn = spyOn(
             component,
             "changeTurnedOn",
@@ -123,7 +123,7 @@ describe("MotorControlComponent", () => {
         fixture.detectChanges();
         checkbox.click();
         expect(spyOnChangeTurnedOn).toHaveBeenCalled();
-        expect(component.motor.settings.turnedOn).toBe(true);
+        expect(component.motor.settings.turned_on).toBe(true);
     });
 
     it("should change the motor position on capturing child-component event", () => {

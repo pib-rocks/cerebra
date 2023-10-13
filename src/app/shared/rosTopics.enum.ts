@@ -3,8 +3,8 @@ export enum rosTopics {
     jointTrajectoryTopicName = "/joint_trajectory",
     motorSettingsTopicName = "/motor_settings",
     motorCurrentTopicName = "/motor_current",
-    cameraPreviewSizeTopicName = "size_topic",
-    cameraTimerPeriodTopicName = "timer_period_topic",
+    cameraPreviewSizeTopicName = "/size_topic",
+    cameraTimerPeriodTopicName = "/timer_period_topic",
     cameraTopicName = "/camera_topic",
-    cameraQualityTopic = "quality_factor_topic",
+    cameraQualityTopic = "/quality_factor_topic",
 }

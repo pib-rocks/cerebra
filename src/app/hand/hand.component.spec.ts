@@ -13,7 +13,7 @@ import {MotorService} from "../shared/motor.service";
 import {ActivatedRoute} from "@angular/router";
 import {BehaviorSubject} from "rxjs";
 import {JointTrajectoryMessage} from "../shared/rosMessageTypes/jointTrajectoryMessage";
-import {MotorSettingsMessage} from "../shared/motorSettingsMessage";
+import {MotorSettingsMessage} from "../shared/rosMessageTypes/motorSettingsMessage";
 import {Group} from "../shared/types/motor.enum";
 
 describe("HandComponent", () => {

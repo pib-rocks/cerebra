@@ -1,7 +1,7 @@
 import {Injectable, isDevMode} from "@angular/core";
 import * as ROSLIB from "roslib";
 import {BehaviorSubject, Subject} from "rxjs";
-import {MotorSettingsMessage} from "./motorSettingsMessage";
+import {MotorSettingsMessage} from "./rosMessageTypes/motorSettingsMessage";
 import {VoiceAssistant} from "./voice-assistant";
 import {DiagnosticStatus} from "./rosMessageTypes/DiagnosticStatus.message";
 import {JointTrajectoryMessage} from "../shared/rosMessageTypes/jointTrajectoryMessage";
@@ -11,9 +11,6 @@ import {rosTopics} from "./rosTopics.enum";
     providedIn: "root",
 })
 export class RosService {
-    //to be removed in PR-319
-    private isInitializedSubject = new BehaviorSubject<boolean>(false);
-    isInitialized$ = this.isInitializedSubject.asObservable();
     currentReceiver$: Subject<DiagnosticStatus> =
         new Subject<DiagnosticStatus>();
     cameraTimerPeriodReceiver$: BehaviorSubject<number> =
@@ -43,7 +40,6 @@ export class RosService {
         this.ros = this.setUpRos();
         this.ros.on("connection", () => {
             console.log("Connected to ROS");
-            this.isInitializedSubject.next(true);
             this.initTopics();
             this.initSubscribers();
         });
@@ -59,13 +55,17 @@ export class RosService {
     setUpRos() {
         let rosUrl: string;
         if (isDevMode()) {
-            rosUrl = "192.168.1.112";
+            rosUrl = "192.168.178.37";
         } else {
             rosUrl = window.location.hostname;
         }
         return new ROSLIB.Ros({
             url: `ws://${rosUrl}:9090`,
         });
+    }
+
+    get Ros(): ROSLIB.Ros {
+        return this.ros;
     }
 
     initTopics() {
@@ -91,7 +91,7 @@ export class RosService {
         );
         this.motorCurrentTopic = this.createRosTopic(
             rosTopics.motorCurrentTopicName,
-            rosDataTypes.DiagnosticStatus,
+            rosDataTypes.diagnosticStatus,
         );
         this.jointTrajectoryTopic = this.createRosTopic(
             rosTopics.jointTrajectoryTopicName,
@@ -247,10 +247,6 @@ export class RosService {
     sendVoiceActivationMessage(msg: VoiceAssistant) {
         const message = new ROSLIB.Message({data: JSON.stringify(msg)});
         this.voiceAssistantTopic.publish(message);
-    }
-
-    get Ros(): ROSLIB.Ros {
-        return this.ros;
     }
 
     setTimerPeriod(period: number | null) {

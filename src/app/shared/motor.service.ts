@@ -5,7 +5,7 @@ import {BehaviorSubject} from "rxjs";
 import {Motor} from "./types/motor.class";
 import {Group} from "./types/motor.enum";
 import * as ROSLIB from "roslib";
-import {MotorSettingsMessage} from "./motorSettingsMessage";
+import {MotorSettingsMessage} from "./rosMessageTypes/motorSettingsMessage";
 import {JointTrajectoryMessage} from "./rosMessageTypes/jointTrajectoryMessage";
 import {MotorSettings} from "./types/motor-settings.class";
 
@@ -13,7 +13,6 @@ import {MotorSettings} from "./types/motor-settings.class";
     providedIn: "root",
 })
 export class MotorService {
-    private sliderMessageTopic!: ROSLIB.Topic;
     leftFingers = [
         {name: "thumb_left_opposition", label: "Thumb opposition"},
         {name: "thumb_left_stretch", label: "Thumb"},
@@ -57,8 +56,6 @@ export class MotorService {
     motors: Motor[] = [];
 
     constructor(private rosService: RosService) {
-        // For reimplementation with PR-253
-        // this.subscribeMotorCurrentSubject();
         this.createMotors();
         this.subscribeJointTrajectorySubject();
         this.subscribeMotorSettingsSubject();
@@ -134,7 +131,7 @@ export class MotorService {
         return this.motors.find((m) => m.hardware_id === hwId);
     }
     public getMotorByTurnedOn(turned_on: boolean): Motor[] {
-        return this.motors.filter((m) => m.settings.turnedOn === turned_on);
+        return this.motors.filter((m) => m.settings.turned_on === turned_on);
     }
     public getMotorSubjectByName(
         name: string,
@@ -144,13 +141,11 @@ export class MotorService {
 
     public updateMotorFromComponent(motorCopy: Motor) {
         const motor = this.getMotorByName(motorCopy.name);
-        if (motor) {
-            if (motor.updateChangedAttribute(motorCopy)) {
-                this.sendJointTrajectoryMessage(motor);
-            }
-            if (motor.settings.updateChangedAttribute(motorCopy.settings)) {
-                this.sendMotorSettingsMessage(motor);
-            }
+        if (motor.updateChangedAttribute(motorCopy)) {
+            this.sendJointTrajectoryMessage(motor);
+        }
+        if (motor.settings.updateChangedAttribute(motorCopy.settings)) {
+            this.sendMotorSettingsMessage(motor);
         }
     }
 
@@ -185,9 +180,9 @@ export class MotorService {
     updateMotorFromJointTrajectoryMessage(message: JointTrajectoryMessage) {
         message.joint_names.forEach((motorname, index) => {
             const motor = this.getMotorByName(motorname);
-            motor?.updateMotorFromJointTrajectoryMessage(message.points[index]);
+            motor.updateMotorFromJointTrajectoryMessage(message.points[index]);
             const copy = motor?.clone();
-            motor?.motorSubject.next(copy);
+            motor.motorSubject.next(copy);
         });
         if (message.joint_names[0].includes("all")) {
             const motor = this.getMotorByName(message.joint_names[0]);
@@ -206,9 +201,9 @@ export class MotorService {
     }
     updateMotorSettingsFromMotorSettingsMessage(message: MotorSettingsMessage) {
         const motor = this.getMotorByName(message.motor_name);
-        motor?.settings.updateMotorSettingsFromMotorSettingsMessage(message);
+        motor.settings.updateChangedAttribute(message);
         const copy = motor?.clone();
-        motor?.motorSubject.next(copy);
+        motor.motorSubject.next(copy);
         if (message.motor_name.includes("all")) {
             const motor = this.getMotorByName(message.motor_name);
             const groupMotors = this.motors

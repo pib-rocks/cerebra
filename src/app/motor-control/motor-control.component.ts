@@ -18,7 +18,6 @@ export class MotorControlComponent implements OnInit {
     @ViewChild(SliderComponent) sliderComponent!: SliderComponent;
 
     closeResult!: string;
-    isCombinedSlider = false;
 
     pulseWidthSubject$ = new Subject<number[]>();
     degreeSubject$ = new Subject<number[]>();
@@ -52,12 +51,12 @@ export class MotorControlComponent implements OnInit {
             this.decelerationSubject$.next(this.motor.settings.deceleration);
             this.velocitySubject$.next(this.motor.settings.velocity);
             this.positionSubject$.next(this.motor.position);
-            this.motorFormControl.setValue(this.motor.settings.turnedOn);
+            this.motorFormControl.setValue(this.motor.settings.turned_on);
             this.periodSubject$.next(this.motor.settings.period);
         });
 
         this.motorFormControl.valueChanges.subscribe(() => {
-            this.motor.settings.turnedOn = this.motorFormControl.value;
+            this.motor.settings.turned_on = this.motorFormControl.value;
             this.motorService.updateMotorFromComponent(this.motor);
         });
     }
@@ -127,7 +126,7 @@ export class MotorControlComponent implements OnInit {
         this.motorService.updateMotorFromComponent(this.motor);
     }
     changeTurnedOn() {
-        this.motor.settings.turnedOn = !this.motor.settings.turnedOn;
+        this.motor.settings.turned_on = !this.motor.settings.turned_on;
         this.motorService.updateMotorFromComponent(this.motor);
     }
 }

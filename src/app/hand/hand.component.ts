@@ -51,15 +51,15 @@ export class HandComponent implements OnInit {
                 .filter((m) => !m.name.includes("all"))
                 .map((m) => m.name);
             this.displayCurrentMotors.sort((m, n) => {
-                let aInd = 7;
-                let bInd = 7;
+                let mIndex = this.sortOrderDisplayCurrentMotors.length;
+                let nIndex = this.sortOrderDisplayCurrentMotors.length;
                 this.sortOrderDisplayCurrentMotors.forEach(
                     (x: string, index: number) => {
-                        aInd = m.includes(x) ? index : aInd;
-                        bInd = n.includes(x) ? index : bInd;
+                        mIndex = m.includes(x) ? index : mIndex;
+                        nIndex = n.includes(x) ? index : nIndex;
                     },
                 );
-                return this.side === "left" ? aInd - bInd : bInd - aInd;
+                return this.side === "left" ? mIndex - nIndex : nIndex - mIndex;
             });
         });
     }

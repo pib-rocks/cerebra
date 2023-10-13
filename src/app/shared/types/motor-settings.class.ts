@@ -1,4 +1,4 @@
-import {MotorSettingsMessage} from "../motorSettingsMessage";
+import {MotorSettingsMessage} from "../rosMessageTypes/motorSettingsMessage";
 
 export class MotorSettings {
     velocity: number;
@@ -10,7 +10,7 @@ export class MotorSettings {
     pulse_width_max: number;
     rotation_range_min: number;
     rotation_range_max: number;
-    turnedOn: boolean;
+    turned_on: boolean;
 
     constructor(
         velocity: number = 0,
@@ -31,7 +31,7 @@ export class MotorSettings {
         this.pulse_width_max = pulse_width_max;
         this.rotation_range_min = rotation_range_min;
         this.rotation_range_max = rotation_range_max;
-        this.turnedOn = turnedOn;
+        this.turned_on = turnedOn;
     }
 
     toString(): string {
@@ -53,18 +53,17 @@ export class MotorSettings {
             "\nRotation Range max: " +
             this.rotation_range_max +
             "\nTurnedOn: " +
-            this.turnedOn
+            this.turned_on
         );
     }
 
-    // Forbidden non null assertion will be resolved when all components are using new way of passing Data by setting the interface MotorSettingsMessage to required attributes
     public equalMotorSettingsMessage(
         motorName: string,
         settings: MotorSettingsMessage,
     ) {
         if (
             motorName !== settings.motor_name ||
-            this.turnedOn !== settings.turned_on ||
+            this.turned_on !== settings.turned_on ||
             this.pulse_width_max !== settings.pulse_width_max ||
             this.pulse_width_min !== settings.pulse_width_min ||
             this.rotation_range_max !== settings.rotation_range_max ||
@@ -80,21 +79,7 @@ export class MotorSettings {
         return true;
     }
 
-    public updateMotorSettingsFromMotorSettingsMessage(
-        message: MotorSettingsMessage,
-    ) {
-        this.turnedOn = message.turned_on;
-        this.pulse_width_max = message.pulse_width_max;
-        this.pulse_width_min = message.pulse_width_min;
-        this.rotation_range_max = message.rotation_range_max;
-        this.rotation_range_min = message.rotation_range_min;
-        this.velocity = message.velocity;
-        this.acceleration = message.acceleration;
-        this.deceleration = message.deceleration;
-        this.period = message.period;
-    }
-
-    public equals(settingsCopy: MotorSettings) {
+    public equals(settingsCopy: MotorSettings | MotorSettingsMessage) {
         if (
             settingsCopy.velocity == this.velocity &&
             settingsCopy.acceleration == this.acceleration &&
@@ -105,14 +90,16 @@ export class MotorSettings {
             settingsCopy.rotation_range_min == this.rotation_range_min &&
             settingsCopy.rotation_range_max == this.rotation_range_max &&
             settingsCopy.effort == this.effort &&
-            settingsCopy.turnedOn == this.turnedOn
+            settingsCopy.turned_on == this.turned_on
         ) {
             return true;
         }
         return false;
     }
 
-    public updateChangedAttribute(settingsCopy: MotorSettings) {
+    public updateChangedAttribute(
+        settingsCopy: MotorSettings | MotorSettingsMessage,
+    ) {
         if (!this.equals(settingsCopy)) {
             this.velocity = settingsCopy.velocity;
             this.acceleration = settingsCopy.acceleration;
@@ -123,7 +110,7 @@ export class MotorSettings {
             this.rotation_range_min = settingsCopy.rotation_range_min;
             this.rotation_range_max = settingsCopy.rotation_range_max;
             this.effort = settingsCopy.effort;
-            this.turnedOn = settingsCopy.turnedOn;
+            this.turned_on = settingsCopy.turned_on;
             return true;
         }
         return false;
@@ -139,7 +126,7 @@ export class MotorSettings {
             this.pulse_width_max,
             this.rotation_range_min,
             this.rotation_range_max,
-            this.turnedOn,
+            this.turned_on,
         );
     }
 }

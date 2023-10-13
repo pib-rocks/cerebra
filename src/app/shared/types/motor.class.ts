@@ -3,7 +3,7 @@
 import {BehaviorSubject} from "rxjs";
 import {MotorSettings} from "./motor-settings.class";
 import {Group} from "./motor.enum";
-import {MotorSettingsMessage} from "../motorSettingsMessage";
+import {MotorSettingsMessage} from "../rosMessageTypes/motorSettingsMessage";
 import {JointTrajectoryMessage} from "../rosMessageTypes/jointTrajectoryMessage";
 import {createDefaultStdMessageHeader} from "../rosMessageTypes/stdMessageHeader";
 import {
@@ -28,13 +28,13 @@ export class Motor {
     ) {
         this.name = name;
         this.position = position;
-        this.settings = !!settings ? settings : this.createDefaultSettings();
+        this.settings = settings ?? this.createDefaultSettings();
         this.group = group;
         this.motorSubject = new BehaviorSubject<Motor>({} as Motor);
         this.label = label;
     }
 
-    public init(): Motor {
+    public init(): this {
         this.motorSubject.next(this.clone());
         return this;
     }
@@ -95,7 +95,7 @@ export class Motor {
     parseMotorToSettingsMessage(): MotorSettingsMessage {
         return {
             motor_name: this.name,
-            turned_on: this.settings.turnedOn,
+            turned_on: this.settings.turned_on,
             pulse_width_max: this.settings.pulse_width_max,
             pulse_width_min: this.settings.pulse_width_min,
             velocity: this.settings.velocity,
