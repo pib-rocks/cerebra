@@ -32,24 +32,24 @@ export class MotorService {
     ];
     leftArm = [
         {name: "upper_arm_left_rotation", label: "Upper arm rotation"},
-        {name: "elbow_left", label: "Elbow Position"},
+        {name: "elbow_left", label: "Elbow position"},
         {name: "lower_arm_left_rotation", label: "Lower arm rotation"},
-        {name: "wrist_left", label: "Wrist Position"},
-        {name: "shoulder_vertical_left", label: "Shoulder Vertical"},
-        {name: "shoulder_horizontal_left", label: "Shoulder Horizontal"},
+        {name: "wrist_left", label: "Wrist position"},
+        {name: "shoulder_vertical_left", label: "Shoulder vertical"},
+        {name: "shoulder_horizontal_left", label: "Shoulder horizontal"},
     ];
     rightArm = [
         {name: "upper_arm_right_rotation", label: "Upper arm rotation"},
-        {name: "elbow_right", label: "Elbow Position"},
+        {name: "elbow_right", label: "Elbow position"},
         {name: "lower_arm_right_rotation", label: "Lower arm rotation"},
-        {name: "wrist_right", label: "Wrist Position"},
-        {name: "shoulder_vertical_right", label: "Shoulder Vertical"},
-        {name: "shoulder_horizontal_right", label: "Shoulder Horizontal"},
+        {name: "wrist_right", label: "Wrist position"},
+        {name: "shoulder_vertical_right", label: "Shoulder vertical"},
+        {name: "shoulder_horizontal_right", label: "Shoulder horizontal"},
     ];
     head = [
-        {name: "tilt_forward_motor", label: "Tilt Forward"},
-        {name: "tilt_sideways_motor", label: "Tilt Sideways"},
-        {name: "turn_head_motor", label: "Head Rotation"},
+        {name: "tilt_forward_motor", label: "Tilt forward"},
+        {name: "tilt_sideways_motor", label: "Tilt sideways"},
+        {name: "turn_head_motor", label: "Head rotation"},
     ];
 
     motors: Motor[] = [];
