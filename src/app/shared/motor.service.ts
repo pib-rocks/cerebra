@@ -4,7 +4,6 @@ import {RosService} from "./ros.service";
 import {BehaviorSubject} from "rxjs";
 import {Motor} from "./types/motor.class";
 import {Group} from "./types/motor.enum";
-import * as ROSLIB from "roslib";
 import {MotorSettingsMessage} from "./rosMessageTypes/motorSettingsMessage";
 import {JointTrajectoryMessage} from "./rosMessageTypes/jointTrajectoryMessage";
 import {MotorSettings} from "./types/motor-settings.class";
