@@ -226,6 +226,8 @@ describe("HandComponent", () => {
             expectedMotorObj,
         );
 
+        expect(rosSendMotorSettingsSpy).toHaveBeenCalled;
+
         const motorControls: MotorControlComponent[] = fixture.debugElement
             .queryAll(By.css("app-motor-control"))
             .map((debugElem) => debugElem.componentInstance);

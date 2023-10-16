@@ -38,7 +38,7 @@ export class HandComponent implements OnInit {
                     ? this.motorService.getMotorsByGroup(Group.left_hand)
                     : this.motorService.getMotorsByGroup(Group.right_hand);
             this.displayAllFingers = JSON.parse(
-                localStorage.getItem(`cerebra-hand-${this.side}`) || "false",
+                localStorage.getItem(`cerebra-hand-${this.side}`) ?? "false",
             );
             this.displayMotors = this.displayAllFingers
                 ? this.motors.filter((m) => !m.name.includes("all"))
