@@ -6,9 +6,9 @@ import {
 } from "@angular/core/testing";
 import {ReactiveFormsModule} from "@angular/forms";
 import {CameraComponent} from "./camera.component";
-import {RosService} from "../shared/ros.service";
+import {RosService} from "../shared/services/ros-service/ros.service";
 import {By} from "@angular/platform-browser";
-import {SliderComponent} from "../slider/slider.component";
+import {SliderComponent} from "../sliders/slider/slider.component";
 import {NgbPopover} from "@ng-bootstrap/ng-bootstrap";
 
 describe("CameraComponent", () => {

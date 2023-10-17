@@ -1,7 +1,7 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {ReactiveFormsModule} from "@angular/forms";
 import {By} from "@angular/platform-browser";
-import {RosService} from "../shared/ros.service";
+import {RosService} from "../shared/services/ros-service/ros.service";
 
 import {VoiceAssistantComponent} from "./voice-assistant.component";
 

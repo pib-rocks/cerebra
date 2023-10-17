@@ -7,7 +7,7 @@ import {
     AfterViewInit,
 } from "@angular/core";
 import {FormControl} from "@angular/forms";
-import {RosService} from "../shared/ros.service";
+import {RosService} from "../shared/services/ros-service/ros.service";
 import {Subject, Subscription, map} from "rxjs";
 
 @Component({

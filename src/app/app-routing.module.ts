@@ -1,13 +1,13 @@
 import {NgModule} from "@angular/core";
 import {RouterModule, Routes} from "@angular/router";
 import {CameraComponent} from "./camera/camera.component";
-import {HandComponent} from "./hand/hand.component";
-import {ArmComponent} from "./arm/arm.component";
+import {HandComponent} from "./joint-control/hand/hand.component";
+import {ArmComponent} from "./joint-control/arm/arm.component";
 import {VoiceAssistantComponent} from "./voice-assistant/voice-assistant.component";
-import {HeadComponent} from "./head/head.component";
+import {HeadComponent} from "./joint-control/head/head.component";
 import {ProgramComponent} from "./program/program.component";
-import {VoiceAssistantPersonalityComponent} from "./voice-assistant-personality/voice-assistant-personality.component";
-import {VoiceAssistantChatComponent} from "./voice-assistant-chat/voice-assistant-chat.component";
+import {VoiceAssistantPersonalityComponent} from "./voice-assistant/voice-assistant-personality/voice-assistant-personality.component";
+import {VoiceAssistantChatComponent} from "./voice-assistant/voice-assistant-chat/voice-assistant-chat.component";
 import {sideGuard} from "./security/side-guard";
 
 const routes: Routes = [

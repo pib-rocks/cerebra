@@ -1,4 +1,4 @@
-import {MotorSettingsMessage} from "../rosMessageTypes/motorSettingsMessage";
+import {MotorSettingsMessage} from "../ros-message-types/motorSettingsMessage";
 
 export class MotorSettings {
     velocity: number;

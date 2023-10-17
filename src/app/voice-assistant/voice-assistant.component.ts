@@ -1,7 +1,7 @@
 import {Component, OnInit} from "@angular/core";
 import {FormControl, FormGroup, Validators} from "@angular/forms";
-import {RosService} from "../shared/ros.service";
-import {VoiceAssistant} from "../shared/voice-assistant";
+import {RosService} from "../shared/services/ros-service/ros.service";
+import {VoiceAssistant} from "../shared/types/voice-assistant";
 
 @Component({
     selector: "app-voice-assistant",
