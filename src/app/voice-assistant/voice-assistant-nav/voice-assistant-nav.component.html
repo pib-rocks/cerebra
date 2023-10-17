@@ -29,7 +29,8 @@
                 <label
                     class="custom-control-label"
                     for="voiceAssistantActivationToggle">
-                    Assistant {{voiceAssistantStatus}}</label
+                    Assistant {{voiceAssistantActiveStatus | boolToOnOffPipe
+                    }}</label
                 >
             </div>
         </div>

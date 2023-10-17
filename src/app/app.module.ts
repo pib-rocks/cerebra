@@ -30,6 +30,7 @@ import {VoiceAssistantSidebarRightComponent} from "./voice-assistant/voice-assis
 
 import {VerticalSliderComponent} from "./sliders/vertical-slider/vertical-slider.component";
 import {MultiSliderComponent} from "./sliders/multi-slider/multi-slider.component";
+import {BoolToOnOffPipe} from "./shared/pipes/bool-to-on-off-pipe.pipe";
 
 @NgModule({
     declarations: [
@@ -38,7 +39,6 @@ import {MultiSliderComponent} from "./sliders/multi-slider/multi-slider.componen
         HandComponent,
         CameraComponent,
         ArmComponent,
-        VoiceAssistantComponent,
         HeadComponent,
         ProgramComponent,
         DialogContentComponent,
@@ -51,6 +51,7 @@ import {MultiSliderComponent} from "./sliders/multi-slider/multi-slider.componen
         VoiceAssistantSidebarRightComponent,
         VerticalSliderComponent,
         MultiSliderComponent,
+        BoolToOnOffPipe,
     ],
     imports: [
         BrowserModule,
