@@ -4,7 +4,7 @@ import {
     VoiceAssistant,
     parseVoiceAssistantToDto,
 } from "../types/voice-assistant";
-import {catchError, tap, throwError} from "rxjs";
+import {BehaviorSubject, catchError, tap, throwError} from "rxjs";
 import {UrlConstants} from "./url.constants";
 
 @Injectable({
@@ -12,8 +12,38 @@ import {UrlConstants} from "./url.constants";
 })
 export class VoiceAssistantService {
     personalities: VoiceAssistant[] = [];
+    personalitiesSubject: BehaviorSubject<VoiceAssistant[]> =
+        new BehaviorSubject<VoiceAssistant[]>([]);
 
-    constructor(private apiService: ApiService) {}
+    constructor(private apiService: ApiService) {
+        this.getAllPersonalities();
+    }
+
+    updatePersonalityById(updatePersonality: VoiceAssistant) {
+        const index = this.personalities.findIndex(
+            (p) => p.personalityId === updatePersonality.personalityId,
+        );
+        this.personalities[index] = updatePersonality;
+        this.personalitiesSubject.next(this.personalities.slice());
+    }
+
+    setPersonalities(personalities: VoiceAssistant[]) {
+        this.personalities = personalities;
+        this.personalitiesSubject.next(this.personalities.slice());
+    }
+
+    addPersonality(personality: VoiceAssistant) {
+        this.personalities.push(personality);
+        this.personalitiesSubject.next(this.personalities.slice());
+    }
+
+    deletePersonality(id: string) {
+        this.personalities.splice(
+            this.personalities.findIndex((p) => p.personalityId === id),
+            1,
+        );
+        this.personalitiesSubject.next(this.personalities.slice());
+    }
 
     getAllPersonalities() {
         this.apiService
@@ -26,9 +56,9 @@ export class VoiceAssistantService {
                 }),
             )
             .subscribe((response) => {
-                this.personalities = response[
-                    "voiceAssistantPersonalities"
-                ] as VoiceAssistant[];
+                this.setPersonalities(
+                    response["voiceAssistantPersonalities"] as VoiceAssistant[],
+                );
                 console.log(this.personalities);
                 console.log(response);
             });
@@ -46,9 +76,7 @@ export class VoiceAssistantService {
                 }),
             )
             .subscribe((response) => {
-                this.personalities = response[
-                    "voiceAssistantPersonalities"
-                ] as VoiceAssistant[];
+                this.updatePersonality(response as VoiceAssistant);
             });
     }
 
@@ -66,7 +94,7 @@ export class VoiceAssistantService {
                 }),
             )
             .subscribe((response) => {
-                console.log(response);
+                this.addPersonality(response as VoiceAssistant);
             });
     }
 
@@ -84,7 +112,7 @@ export class VoiceAssistantService {
                 }),
             )
             .subscribe((response) => {
-                console.log(response);
+                this.updatePersonality(response as VoiceAssistant);
             });
     }
 
@@ -99,8 +127,8 @@ export class VoiceAssistantService {
                     });
                 }),
             )
-            .subscribe((response) => {
-                console.log(response);
+            .subscribe(() => {
+                this.deletePersonality(id);
             });
     }
 }

@@ -22,9 +22,7 @@ export class ApiService {
         return this.http.put(this.baseUrl + url, requestBody);
     }
 
-    delete(url: string, pathParam?: string): Observable<any> {
-        return this.http.delete(
-            this.baseUrl + url + (pathParam ? "/" + pathParam : ""),
-        );
+    delete(url: string): Observable<any> {
+        return this.http.delete(this.baseUrl + url);
     }
 }
