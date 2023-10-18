@@ -10,10 +10,13 @@
     font-weight: bold;
 }
 
+* {
+    font-family: Titillium, sans-serif;
+}
+
 .btn {
     border: 1px solid white;
     color: white;
-    font-family: Titillium, sans-serif;
 }
 
 .btn:hover {
@@ -41,7 +44,7 @@
 
 .custom-control-label {
     color: white;
-    font-family: Titillium, sans-serif;
+
     font-weight: normal !important;
     font-size: 16px;
 }
@@ -52,13 +55,11 @@
 
 label {
     color: #fff;
-    font-family: Titillium, sans-serif;
 }
 
 .myCustomModalClass {
     z-index: 1060 !important;
     color: #fff;
-    font-family: Titillium, sans-serif;
     font-weight: bold;
     vertical-align: middle;
     font-size: 1rem;
