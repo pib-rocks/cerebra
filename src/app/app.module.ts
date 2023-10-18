@@ -12,7 +12,6 @@ import {ArmComponent} from "./arm/arm.component";
 import {MatDialogModule} from "@angular/material/dialog";
 import {NgbModule, NgbDropdownModule} from "@ng-bootstrap/ng-bootstrap";
 import {MatSliderModule} from "@angular/material/slider";
-import {VoiceAssistantComponent} from "./voice-assistant/voice-assistant.component";
 import {HeadComponent} from "./head/head.component";
 import {ProgramComponent} from "./program/program.component";
 import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
@@ -30,6 +29,7 @@ import {VoiceAssistantSidebarRightComponent} from "./voice-assistant-sidebar-rig
 
 import {VerticalSliderComponent} from "./vertical-slider/vertical-slider.component";
 import {MultiSliderComponent} from "./multi-slider/multi-slider.component";
+import {BoolToOnOffPipe} from "./shared/pipes/bool-to-on-off-pipe.pipe";
 
 @NgModule({
     declarations: [
@@ -38,7 +38,6 @@ import {MultiSliderComponent} from "./multi-slider/multi-slider.component";
         HandComponent,
         CameraComponent,
         ArmComponent,
-        VoiceAssistantComponent,
         HeadComponent,
         ProgramComponent,
         DialogContentComponent,
@@ -51,6 +50,7 @@ import {MultiSliderComponent} from "./multi-slider/multi-slider.component";
         VoiceAssistantSidebarRightComponent,
         VerticalSliderComponent,
         MultiSliderComponent,
+        BoolToOnOffPipe,
     ],
     imports: [
         BrowserModule,
