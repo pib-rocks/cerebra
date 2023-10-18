@@ -16,20 +16,15 @@
                     Home position
                 </button>
             </div>
-            <app-motor-control
-                [motorName]="turnHeadMotor.name"
-                [labelName]="turnHeadMotor.label">
-            </app-motor-control>
-            <app-motor-control
-                [motorName]="tiltForwardMotor.name"
-                [labelName]="tiltForwardMotor.label">
-            </app-motor-control>
-            <app-motor-control
-                [motorName]="tiltSideWaysMotor.name"
-                [labelName]="tiltSideWaysMotor.label"
-                [showMotorSettingsButton]="false"
-                [showCheckBox]="false">
-            </app-motor-control>
+            <div>
+                <ng-container *ngFor="let motor of motors">
+                    <app-motor-control
+                        [motor]="motor"
+                        [showCheckBox]="motor.name === 'turn_head_motor' ? false : true"
+                        [showMotorSettingsButton]="motor.name === 'turn_head_motor' ? false : true">
+                    </app-motor-control>
+                </ng-container>
+            </div>
         </div>
         <div class="col">
             <div class="container-div">
@@ -38,26 +33,7 @@
                     style="width: 34rem"
                     src="../../assets/head.png"
                     alt="" />
-                <ng-container *ngFor="let obj of currentConsumptionOfMotors">
-                    <div [class]="obj['motor']">
-                        <span class="current">{{ obj["value"] }} mA</span>
-                        <div
-                            [style.height]="obj['value'] / 40 + 'px'"
-                            class="color-indicator"
-                            [class.color-indicator50-80]="
-                obj['value'] / 20 > 50 && obj['value'] / 20 < 80
-              "
-                            [class.color-indicator80-100]="obj['value'] / 20 >= 80"></div>
-                    </div>
-                </ng-container>
             </div>
-            <button
-                id="dummyValuesButton"
-                (click)="sendDummyMessage()"
-                class="btn btn-primary"
-                id="dummyBtn">
-                Dummy Values
-            </button>
         </div>
     </div>
     <div></div>

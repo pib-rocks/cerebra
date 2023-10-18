@@ -12,7 +12,6 @@ import {BehaviorSubject} from "rxjs";
 describe("SliderComponent", () => {
     let component: SliderComponent;
     let fixture: ComponentFixture<SliderComponent>;
-    let rosService: RosService;
     const testSubject: BehaviorSubject<number> = new BehaviorSubject<number>(0);
     beforeEach(async () => {
         await TestBed.configureTestingModule({
@@ -20,7 +19,6 @@ describe("SliderComponent", () => {
             imports: [ReactiveFormsModule],
             providers: [RosService],
         }).compileComponents();
-        rosService = TestBed.inject(RosService);
         fixture = TestBed.createComponent(SliderComponent);
         component = fixture.componentInstance;
         component.messageReceiver$ = testSubject;
