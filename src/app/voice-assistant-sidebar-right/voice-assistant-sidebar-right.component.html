@@ -6,7 +6,9 @@
                 *ngFor="let element of headerElements"
                 (mouseenter)="onButtonHover(element)"
                 (mouseleave)="onButtonHover(element)">
-                <button class="header headerButtons">
+                <button
+                    class="header headerButtons"
+                    (click)="onClick(element)">
                     <img
                         [src]="element.hovered ? element.active_icon : element.icon"
                         width="16px"

@@ -42,11 +42,144 @@
         </div>
         <div class="col-2 side ">
             <app-voice-assistant-sidebar-right
+                [tabTitle]="tabTitle"
                 [headerElements]="headerElements"
                 [bodyElements]="personalities"
                 [elementIcon]="personalityIcon"
-                [elementIconActive]="activeIcon">
+                [elementIconActive]="activeIcon"
+                (headerButtonClickEvent)="executeSidebarHeaderButtonFunctionality($event)">
             </app-voice-assistant-sidebar-right>
         </div>
     </div>
 </div>
+<ng-template
+    #modalContent
+    let-modal
+    id="template">
+    <div
+        class="row display-flex modal-header"
+        id="modal-header">
+        <div
+            class="col-10"
+            id="header-title">
+            <span id="header-title-text"
+                >{{headerButtonLabel}} PERSONALITY</span
+            >
+        </div>
+        <div
+            class="col-2 text-right"
+            id="close-button">
+            <button
+                id="modal-close-button"
+                type="button"
+                (click)="modal.dismiss('Cross click')"
+                class="btn">
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="10"
+                    height="16">
+                    <text
+                        font-family="Titillium"
+                        fill="#FFF"
+                        font-weight="bold"
+                        font-size="16"
+                        y="11.062">
+                        X
+                    </text>
+                </svg>
+            </button>
+        </div>
+    </div>
+    <div
+        class="row m-2 mt-4 pr-2"
+        id="row-name">
+        <label
+            for="name-input"
+            class="col-3 mt-2 justify-content-end"
+            id="label-name"
+            >Name</label
+        >
+        <input
+            class="col-9"
+            [formControl]="nameFormControl"
+            type="text"
+            name="name-input"
+            id="name-input" />
+    </div>
+    <div
+        class="row m-2 ml-3"
+        id="row-radio-button">
+        <div
+            class="col-5"
+            id="radio-button-female">
+            <input
+                class="m-2"
+                [formControl]="genderFormControl"
+                value="female"
+                (click)="switchGender('female')"
+                type="radio"
+                name="female"
+                id="radio-female" />
+            <label
+                for="radio-female"
+                id="label-radio-female"
+                >Female</label
+            >
+        </div>
+        <div
+            class="col-4"
+            id="radio-button-male">
+            <input
+                class="m-2"
+                [formControl]="genderFormControl"
+                value="male"
+                (click)="switchGender('male')"
+                type="radio"
+                name="male"
+                id="radio-male" />
+            <label
+                for="radio-male"
+                id="label-radio-male"
+                >Male</label
+            >
+        </div>
+    </div>
+    <div
+        class="row m-2 mb-4"
+        id="row-pause-threshold"
+        lang="en-US">
+        <label
+            for="name-input"
+            class="col-6 mt-1"
+            id="label-pause-threshold"
+            >Pause threshold</label
+        >
+        <div class="col-3 input-threshold-col">
+            <div class="row">
+                <div class="col-10 p-0">
+                    <input
+                        type="text"
+                        name="threshold-input"
+                        id="pause-threshold-input"
+                        [(ngModel)]="tresholdString" />
+                </div>
+                <div class="col-2 p-0">
+                    <div class="row mt-1 p-0">
+                        <button
+                            id="up"
+                            (click)="adjustThreshold('up')">
+                            &#9650;
+                        </button>
+                    </div>
+                    <div class="row p-0">
+                        <button
+                            id="down"
+                            (click)="adjustThreshold('down')">
+                            &#9660;
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</ng-template>

@@ -1,4 +1,4 @@
-import {Component, Input} from "@angular/core";
+import {Component, Input, Output, EventEmitter} from "@angular/core";
 
 @Component({
     selector: "app-voice-assistant-sidebar-right",
@@ -6,6 +6,7 @@ import {Component, Input} from "@angular/core";
     styleUrls: ["./voice-assistant-sidebar-right.component.css"],
 })
 export class VoiceAssistantSidebarRightComponent {
+    @Input() tabTitle: string | undefined;
     @Input() headerElements: {
         icon: string;
         active_icon: string;
@@ -19,6 +20,9 @@ export class VoiceAssistantSidebarRightComponent {
     }[] = [];
     @Input() elementIcon: string = "";
     @Input() elementIconActive: string = "";
+
+    @Output() headerButtonClickEvent = new EventEmitter<string>();
+    headerButtonLabel: string | undefined;
 
     getIdString(element: string) {
         return "button_" + element.replaceAll(" ", "-");
@@ -37,5 +41,9 @@ export class VoiceAssistantSidebarRightComponent {
                 el.active = false;
             }
         }
+    }
+
+    onClick(element: any) {
+        this.headerButtonClickEvent.emit(element.label);
     }
 }

@@ -9,6 +9,7 @@ import {Component} from "@angular/core";
     ],
 })
 export class VoiceAssistantChatComponent {
+    tabTitle = "CHAT";
     exportButtonHovered = false;
     activeIcon = "../../assets/voice-assistant-svgs/chat/chat_active.svg";
     chatTopics = [
@@ -28,6 +29,7 @@ export class VoiceAssistantChatComponent {
                 "../../assets/voice-assistant-svgs/chat/chat_add_active.svg",
             label: "ADD",
             hovered: false,
+            clickFunction: this.showAddOrEditModal,
         },
         {
             icon: "../../assets/voice-assistant-svgs/chat/chat_delete.svg",
@@ -35,6 +37,7 @@ export class VoiceAssistantChatComponent {
                 "../../assets/voice-assistant-svgs/chat/chat_delete_active.svg",
             label: "DELETE",
             hovered: false,
+            clickFunction: this.showAddOrEditModal,
         },
         {
             icon: "../../assets/voice-assistant-svgs/chat/chat_edit.svg",
@@ -42,6 +45,7 @@ export class VoiceAssistantChatComponent {
                 "../../assets/voice-assistant-svgs/chat/chat_edit_active.svg",
             label: "EDIT",
             hovered: false,
+            clickFunction: this.showAddOrEditModal,
         },
     ];
     sendButton: string = "M120-160v-240l320-80-320-80v-240l760 320-760 320Z";
@@ -54,4 +58,8 @@ export class VoiceAssistantChatComponent {
         }
         this.message = "";
     };
+
+    showAddOrEditModal() {
+        return;
+    }
 }

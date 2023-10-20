@@ -59,20 +59,19 @@ textarea:focus {
     color: #fff;
 }
 
-.allContent {
-    font-family: Titillium;
-}
-
 @media (max-width: 768px) {
     .allContent {
         display: block;
     }
+
     .side {
         min-width: 200px;
     }
+
     .pink-corner-frame {
         width: 100%;
     }
+
     .saveButtons {
         margin-top: 5px;
         margin-left: 2px;
@@ -82,4 +81,75 @@ textarea:focus {
     textarea {
         margin: 5px;
     }
+}
+
+input {
+    color: #fff;
+}
+
+input:focus {
+    outline: none;
+    color: #fff;
+}
+
+#pause-threshold-input {
+    width: 50px;
+    background-color: #344a69;
+    border: none;
+    height: 30px;
+}
+
+#radio-male,
+#radio-female {
+    display: none;
+}
+
+#label-radio-male::before,
+#label-radio-female::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 15px;
+    margin-top: 2.5px;
+    height: 15px;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    background-color: transparent;
+    box-sizing: border-box;
+    box-shadow: inset 0 0 0 2px #000;
+}
+
+#label-radio-male,
+#label-radio-female {
+    padding-left: 20px;
+}
+
+#radio-male:checked + #label-radio-male::before,
+#radio-female:checked + #label-radio-female::before {
+    background-color: #e10072;
+    border-color: #fff;
+    padding: 5px;
+}
+
+#name-input {
+    width: 200px;
+    background-color: #344a69;
+    border-radius: 5px;
+    border: none;
+}
+
+#up,
+#down {
+    background-color: transparent;
+    color: #f3f3f3;
+    border: none;
+    font-size: 10px;
+    line-height: 10px;
+    padding: 0;
+}
+
+.input-threshold-col {
+    background-color: #344a69;
+    margin: 0;
 }
