@@ -1,6 +1,8 @@
 import {Component, TemplateRef, ViewChild} from "@angular/core";
 import {FormControl, Validators} from "@angular/forms";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
+import {VoiceAssistantService} from "../shared/services/voice-assistant.service";
+import {VoiceAssistant} from "../shared/types/voice-assistant";
 
 @Component({
     selector: "app-voice-assistant-personality",
@@ -17,12 +19,12 @@ export class VoiceAssistantPersonalityComponent {
         "../../assets/voice-assistant-svgs/personality/personality.svg";
     activeIcon: string =
         "../../assets/voice-assistant-svgs/personality/personality_active.svg";
-    personalities = [
-        {description: "Eva", active: true, hovered: false},
-        {description: "Thomas", active: false, hovered: false},
-        {description: "Janina", active: false, hovered: false},
-        {description: "Georg", active: false, hovered: false},
-    ];
+    personalities: {
+        id: string;
+        name: string;
+        active: boolean;
+        hovered: boolean;
+    }[] = [];
     headerElements = [
         {
             icon: "../../assets/voice-assistant-svgs/personality/personality_add.svg",
@@ -65,14 +67,55 @@ export class VoiceAssistantPersonalityComponent {
     saveAsButton: boolean = false;
     headerButtonLabel: string | undefined;
     tresholdString: string | undefined;
+    activePersonality: VoiceAssistant | undefined;
 
-    constructor(private modalService: NgbModal) {}
+    constructor(
+        private modalService: NgbModal,
+        private voiceAssistantService: VoiceAssistantService,
+    ) {}
+
+    ngOnInit() {
+        this.loadPersonalitiesFromService();
+    }
+
+    loadPersonalitiesFromService() {
+        for (
+            let i = 0;
+            i < this.voiceAssistantService.personalities.length;
+            i++
+        ) {
+            const personality = {
+                id: this.voiceAssistantService.personalities[i].personalityId,
+                name: this.voiceAssistantService.personalities[i].name,
+                active: i == 0,
+                hovered: false,
+            };
+            this.personalities.push(personality);
+        }
+        this.activePersonality = this.voiceAssistantService.personalities[0];
+    }
 
     executeSidebarHeaderButtonFunctionality(label: string) {
+        this.headerButtonLabel = label;
+        let personalityId: string;
         if (label == "ADD" || label == "EDIT") {
-            this.headerButtonLabel = label;
             if (label == "EDIT") {
-                //Todo: Add values of active personality to formControl
+                if (this.activePersonality != undefined) {
+                    this.nameFormControl.setValue(this.activePersonality.name);
+                    this.descriptionFormControl.setValue(
+                        this.activePersonality.description,
+                    );
+                    this.genderFormControl.setValue(
+                        this.activePersonality.gender,
+                    );
+                    this.pauseThresholdFormControl.setValue(
+                        this.activePersonality.pauseThreshold,
+                    );
+                    personalityId = this.activePersonality.personalityId;
+                } else {
+                    //Todo: Ask Jürgen what error message to show here if sidebar list is empty.
+                    return;
+                }
             }
             this.modalService
                 .open(this.modalContent, {
@@ -82,30 +125,45 @@ export class VoiceAssistantPersonalityComponent {
                     backdropClass: "myCustomBackdropClass",
                 })
                 .result.then(
-                    (result) => {
-                        if (this.allInputsValid()) {
-                            //Todo: Make service call
-                        }
-                    },
+                    (result) => {},
                     (reason) => {
-                        //Todo: Error handling
+                        if (this.allInputsValid()) {
+                            const personality: VoiceAssistant = {
+                                personalityId: personalityId,
+                                name: this.nameFormControl.value,
+                                description: this.descriptionFormControl.value,
+                                gender: this.genderFormControl.value,
+                                pauseThreshold:
+                                    this.pauseThresholdFormControl.value,
+                            };
+                            if (label == "ADD") {
+                                this.voiceAssistantService.addPersonality(
+                                    personality,
+                                );
+                            } else {
+                                this.voiceAssistantService.updatePersonality(
+                                    personality,
+                                );
+                            }
+                        }
                     },
                 );
         } else if (label == "DELETE") {
-            //ToDo: Implement delete button logic
-            return;
+            if (this.activePersonality) {
+                this.voiceAssistantService.deletePersonalityById(
+                    this.activePersonality?.personalityId,
+                );
+            }
         }
     }
 
     allInputsValid() {
-        const thresholdInput = this.pauseThresholdFormControl.value.substring(
-            0,
-            this.pauseThresholdFormControl.value.length - 1,
-        );
         return (
             this.nameFormControl.value != undefined &&
             this.nameFormControl.value != "" &&
-            this.validPauseThresholdPattern.test(thresholdInput) &&
+            this.validPauseThresholdPattern.test(
+                this.pauseThresholdFormControl.value,
+            ) &&
             (this.genderFormControl.value == "male" ||
                 this.genderFormControl.value == "female")
         );
@@ -125,5 +183,19 @@ export class VoiceAssistantPersonalityComponent {
 
         this.pauseThresholdFormControl.setValue(thresholdValue / 10);
         this.tresholdString = thresholdValue / 10 + "s";
+    }
+
+    activateNewPersonality(id: string) {
+        for (let personality of this.voiceAssistantService.personalities) {
+            if (id == personality.personalityId) {
+                this.activePersonality = personality;
+                break;
+            }
+        }
+
+        for (let personality of this.personalities) {
+            //Todo: check if this is really necessary
+            personality.active = id === personality.id;
+        }
     }
 }

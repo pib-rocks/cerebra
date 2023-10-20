@@ -47,7 +47,8 @@
                 [bodyElements]="personalities"
                 [elementIcon]="personalityIcon"
                 [elementIconActive]="activeIcon"
-                (headerButtonClickEvent)="executeSidebarHeaderButtonFunctionality($event)">
+                (headerButtonClickEvent)="executeSidebarHeaderButtonFunctionality($event)"
+                (bodyElementClickEvent)="activateNewPersonality($event)">
             </app-voice-assistant-sidebar-right>
         </div>
     </div>

@@ -14,7 +14,8 @@ export class VoiceAssistantSidebarRightComponent {
         hovered: boolean;
     }[] = [];
     @Input() bodyElements: {
-        description: string;
+        id: string;
+        name: string;
         active: boolean;
         hovered: boolean;
     }[] = [];
@@ -22,6 +23,7 @@ export class VoiceAssistantSidebarRightComponent {
     @Input() elementIconActive: string = "";
 
     @Output() headerButtonClickEvent = new EventEmitter<string>();
+    @Output() bodyElementClickEvent = new EventEmitter<string>();
     headerButtonLabel: string | undefined;
 
     getIdString(element: string) {
@@ -41,9 +43,10 @@ export class VoiceAssistantSidebarRightComponent {
                 el.active = false;
             }
         }
+        this.bodyElementClickEvent.emit(element.id);
     }
 
-    onClick(element: any) {
+    onHeaderButtonClick(element: any) {
         this.headerButtonClickEvent.emit(element.label);
     }
 }
