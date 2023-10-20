@@ -33,7 +33,7 @@ export class CameraComponent implements OnInit, OnDestroy, AfterViewInit {
     constructor(private rosService: RosService) {}
 
     ngOnInit(): void {
-        this.rosService.previewSizeReceiver$.subscribe((value) => {
+        this.rosService.cameraPreviewSizeReceiver$.subscribe((value) => {
             this.setSize(value[0], value[1], false);
         });
         this.rosService.setPreviewSize(640, 480);
@@ -51,8 +51,8 @@ export class CameraComponent implements OnInit, OnDestroy, AfterViewInit {
                 console.error(error);
             }
         });
-        this.qualityReceiver$ = this.rosService.qualityFactorReceiver$;
-        this.refreshRateReceiver$ = this.rosService.timerPeriodReceiver$;
+        this.qualityReceiver$ = this.rosService.cameraQualityFactorReceiver$;
+        this.refreshRateReceiver$ = this.rosService.cameraTimerPeriodReceiver$;
     }
     ngOnDestroy(): void {
         this.stopCamera();
@@ -60,7 +60,7 @@ export class CameraComponent implements OnInit, OnDestroy, AfterViewInit {
     }
 
     ngAfterViewInit(): void {
-        const tempSub: Subscription = this.rosService.previewSizeReceiver$
+        const tempSub: Subscription = this.rosService.cameraPreviewSizeReceiver$
             .pipe(
                 map((x) => {
                     return x[1].toString(10) + "px";

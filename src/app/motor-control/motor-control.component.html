@@ -1,9 +1,9 @@
 <div class="d-flex justify-content-between">
     <label
-        for="{{ motorName }}"
-        id="label_{{motorName}}"
+        for="{{ motor.name }}"
+        id="label_{{motor.name}}"
         class="form-label"
-        >{{ labelName }}: {{ sliderFormControl.value }}
+        >{{ motor.label }}: {{ motor.position }}
     </label>
     <div class="d-flex align-items-center">
         <div
@@ -11,19 +11,19 @@
             *ngIf="showCheckBox === true">
             <input
                 class="form-check-input"
-                id="checkbox_{{ motorName }}"
+                id="checkbox_{{ motor.name }}"
                 type="checkbox"
                 [formControl]="motorFormControl"
-                (change)="turnTheMotorOnAndOff()" />
+                (click)="changeTurnedOn()" />
             <label
                 class="form-check-label"
-                for="checkbox_{{ motorName }}">
+                for="checkbox_{{ motor.name }}">
                 Active
             </label>
         </div>
         <button
             *ngIf="showMotorSettingsButton === true"
-            id="dialogBtn_{{ motorName }}"
+            id="dialogBtn_{{ motor.name }}"
             class="bi bi-gear btn btn-outline-primary"
             style="margin-left: 10px; border: 0"
             (click)="openPopup(content)"></button>
@@ -31,15 +31,14 @@
 </div>
 
 <app-slider
-    #refreshRate
-    [sliderName]="motorName"
+    [sliderName]="motor.name"
     unitOfMeasurement="°"
-    [messageReceiver$]="sliderFormControl.valueChanges"
-    [publishMessage]="setMotorPositionValue"
+    [messageReceiver$]="positionSubject$"
+    (sliderEvent)="setMotorPositionValue($event)"
     [minValue]="-9000"
     [maxValue]="9000"
     [step]="1"
-    defaultValue="0">
+    [defaultValue]="motor.position">
 </app-slider>
 
 <ng-template
@@ -61,7 +60,6 @@
                     width="10"
                     height="16">
                     <text
-                        font-family="Titillium"
                         fill="#FFF"
                         font-weight="bold"
                         font-size="16"
@@ -102,8 +100,8 @@
                 [step]="1"
                 [unitLong]="'μs'"
                 name="Pulse width"
-                [minInit]="pulseMinRange.value"
-                [maxInit]="pulseMaxRange.value"
+                [minInit]="motor.settings.pulse_width_min"
+                [maxInit]="motor.settings.pulse_width_max"
                 [messageReceiver$]="pulseWidthSubject$"
                 (multiSliderEvent)="setPulseRanges($event)"></app-multi-slider>
         </div>
@@ -119,8 +117,8 @@
                 [unitShort]="'°'"
                 [unitLong]="'°/100'"
                 name="Degree"
-                [minInit]="degreeMinFormControl.value"
-                [maxInit]="degreeMaxFormControl.value"
+                [minInit]="motor.settings.rotation_range_min"
+                [maxInit]="motor.settings.rotation_range_max"
                 [messageReceiver$]="degreeSubject$"
                 (multiSliderEvent)="setDegree($event)"></app-multi-slider>
         </div>
@@ -138,7 +136,7 @@
                 [sliderName]="'Period'"
                 [minValue]="0"
                 [maxValue]="100000"
-                [defaultValue]="periodFormControl.value? periodFormControl.value : 5000"
+                [defaultValue]="motor.settings.period"
                 [step]="1"
                 [messageReceiver$]="periodSubject$"
                 (sliderEvent)="setPeriod($event)"></app-slider>
@@ -150,27 +148,30 @@
         <div class="col-3 ml-2 mr-2 ">
             <app-vertical-slider
                 name="Velocity"
-                [rangeFormControl]="velocityFormControl"
-                [parentFunction]="inputSendSettingsMsg"
+                [messageReceiver$]="velocitySubject$"
+                (sliderEvent)="setVelocity($event)"
                 [unitLong]="'(°/100s)'"
                 [minValue]="0"
-                [maxValue]="500000"></app-vertical-slider>
+                [maxValue]="500000"
+                [defaultValue]="motor.settings.velocity"></app-vertical-slider>
         </div>
         <div class="col-3 ml-2 mr-2">
             <app-vertical-slider
                 name="Acceleration"
-                [rangeFormControl]="accelerationFormControl"
-                [parentFunction]="inputSendSettingsMsg"
+                [messageReceiver$]="accelerationSubject$"
+                (sliderEvent)="setAcceleration($event)"
                 [minValue]="0"
-                [maxValue]="500000"></app-vertical-slider>
+                [maxValue]="500000"
+                [defaultValue]="motor.settings.acceleration"></app-vertical-slider>
         </div>
         <div class="col-3 ml-2 mr-2">
             <app-vertical-slider
                 name="Deceleration"
-                [rangeFormControl]="decelerationFormControl"
-                [parentFunction]="inputSendSettingsMsg"
+                [messageReceiver$]="decelerationSubject$"
+                (sliderEvent)="setDeceleration($event)"
                 [minValue]="0"
-                [maxValue]="500000"></app-vertical-slider>
+                [maxValue]="500000"
+                [defaultValue]="motor.settings.deceleration"></app-vertical-slider>
         </div>
     </div>
 </ng-template>

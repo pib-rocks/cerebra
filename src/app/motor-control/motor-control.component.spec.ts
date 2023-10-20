@@ -4,53 +4,57 @@ import {
     TestBed,
     tick,
 } from "@angular/core/testing";
-import {FormControl, ReactiveFormsModule} from "@angular/forms";
+import {ReactiveFormsModule} from "@angular/forms";
 import {By} from "@angular/platform-browser";
 import {ModalDismissReasons, NgbModal} from "@ng-bootstrap/ng-bootstrap";
-import {Message} from "roslib";
 import {MotorService} from "../shared/motor.service";
-import {RosService} from "../shared/ros.service";
 import {SliderComponent} from "../slider/slider.component";
-import {
-    compareValuesDegreeValidator,
-    compareValuesPulseValidator,
-} from "../shared/validators";
-
 import {MotorControlComponent} from "./motor-control.component";
-import {VoiceAssistantMsg} from "../shared/voice-assistant";
-import {MotorCurrentMessage} from "../shared/currentMessage";
-import {JointTrajectoryMessage} from "../shared/rosMessageTypes/jointTrajectoryMessage";
-import {MotorSettingsMessage} from "../shared/motorSettingsMessage";
+import {Motor} from "../shared/types/motor.class";
+import {MotorSettings} from "../shared/types/motor-settings.class";
+import {Group} from "../shared/types/motor.enum";
+import {BehaviorSubject} from "rxjs";
+import {RosService} from "../shared/ros.service";
+import {VerticalSliderComponent} from "../vertical-slider/vertical-slider.component";
 
 describe("MotorControlComponent", () => {
     let component: MotorControlComponent;
     let fixture: ComponentFixture<MotorControlComponent>;
-    let rosService: RosService;
-    let modalService: NgbModal;
-    let fingerService: MotorService;
     let motorService: MotorService;
-    let spySendMotorSettings: jasmine.Spy<(msg: MotorSettingsMessage) => void>;
-    let spySendMassege: jasmine.Spy<
-        (msg: Message | VoiceAssistantMsg | MotorCurrentMessage) => void
-    >;
-    let spySendJTMassege: jasmine.Spy<(msg: JointTrajectoryMessage) => void>;
-
+    let modalService: NgbModal;
+    let rosService: RosService;
+    let motorSubject: BehaviorSubject<Motor> | undefined;
+    let updateMotor: Motor;
     beforeEach(async () => {
         await TestBed.configureTestingModule({
-            declarations: [MotorControlComponent, SliderComponent],
+            declarations: [
+                MotorControlComponent,
+                SliderComponent,
+                VerticalSliderComponent,
+            ],
             imports: [ReactiveFormsModule],
-            providers: [RosService, MotorService],
+            providers: [RosService, MotorService, NgbModal],
         }).compileComponents();
 
         fixture = TestBed.createComponent(MotorControlComponent);
         component = fixture.componentInstance;
         rosService = TestBed.inject(RosService);
+        rosService.initTopics();
+        rosService.initSubscribers();
         modalService = TestBed.inject(NgbModal);
-        fingerService = TestBed.inject(MotorService);
         motorService = TestBed.inject(MotorService);
-        spySendMassege = spyOn(rosService, "sendSliderMessage");
-        spySendMotorSettings = spyOn(rosService, "sendMotorSettingsMessage");
-        spySendJTMassege = spyOn(rosService, "sendJointTrajectoryMessage");
+        motorService.createMotors();
+        component.motor = motorService.getMotorByName("ring_left_stretch");
+        component.showMotorSettingsButton = true;
+        motorSubject = motorService.getMotorSubjectByName("ring_left_stretch");
+        updateMotor = new Motor(
+            "ring_left_stretch",
+            500,
+            Group.left_hand,
+            "undefined_label",
+            new MotorSettings(500, 500, 500, 500, 500, 500, 500, 500, false),
+        );
+        component.ngOnInit();
         fixture.detectChanges();
     });
 
@@ -58,96 +62,35 @@ describe("MotorControlComponent", () => {
         expect(component).toBeTruthy();
     });
 
-    it("should call sendJointTrajectoryMessage() of rosService when calling sendJointTrajectoryMessage()", () => {
-        spyOn(component, "sendJointTrajectoryMessage").and.callThrough();
-        component.sendJointTrajectoryMessage();
-        expect(component.sendJointTrajectoryMessage).toHaveBeenCalled();
-        expect(rosService.sendJointTrajectoryMessage).toHaveBeenCalled();
-    });
-
-    it("should call sendSettingsMessage() in inputSendSettingsMsg() on input event", fakeAsync(() => {
-        spyOn(window, "clearTimeout");
-        spyOn(window, "setTimeout");
-        spyOn(component, "inputSendSettingsMsg").and.callThrough();
-        spyOn(component, "sendMotorSettingsMessage");
-        component.inputSendSettingsMsg();
-        tick(500);
-        expect(window.clearTimeout).toHaveBeenCalled();
-        expect(window.setTimeout).toHaveBeenCalledWith(
-            jasmine.any(Function),
-            100,
-        );
-        const timeoutCallback = (
-            window.setTimeout as unknown as jasmine.Spy
-        ).calls.mostRecent().args[0];
-        timeoutCallback();
-        expect(component.inputSendSettingsMsg).toHaveBeenCalled();
-        expect(component.sendMotorSettingsMessage).toHaveBeenCalled();
-    }));
-
-    it("should call sendJointTrajectoryMessage() to all finger topics on input from combined slider", () => {
-        component.isCombinedSlider = true;
-        component.groupSide = "left";
-        component.sliderFormControl.setValue(500);
-        fixture.detectChanges();
-        fingerService.getMotorHandNames(component.groupSide);
-        spyOn(component, "sendJointTrajectoryMessage").and.callThrough();
-        component.sendJointTrajectoryMessage();
-        expect(rosService.sendJointTrajectoryMessage).toHaveBeenCalled();
-    });
-
     it("should change value after receiving a message", () => {
-        component.motorName = "thumb_left_stretch";
-        const slider = fixture.nativeElement.querySelector(
-            'input[type="range"]',
-        );
-
-        const jtMessage = rosService.createEmptyJointTrajectoryMessage();
-        jtMessage.joint_names.push("thumb_left_stretch");
-        jtMessage.points.push(rosService.createJointTrajectoryPoint(500));
-        component.jointTrajectoryMessageReceiver$.next(jtMessage);
-
-        fixture.detectChanges();
-        expect(slider.value).toBe("500");
+        motorSubject?.next(updateMotor);
+        expect(component.motor.position).toBe(500);
+        expect(component.motor.settings.acceleration).toBe(500);
+        expect(component.motor.settings.deceleration).toBe(500);
+        expect(component.motor.settings.rotation_range_max).toBe(500);
+        expect(component.motor.settings.rotation_range_min).toBe(500);
+        expect(component.motor.settings.period).toBe(500);
+        expect(component.motor.settings.pulse_width_max).toBe(500);
+        expect(component.motor.settings.pulse_width_min).toBe(500);
+        expect(component.motor.settings.turned_on).toBe(false);
     });
 
-    it("should change the component attributes when a motorSettingsMessage is being received", () => {
-        const message: MotorSettingsMessage = {
-            motorName: component.motorName,
-            pulse_widths_min: "testValue",
-            pulse_widths_max: component.pulseMaxRange.value,
-            rotation_range_min: component.degreeMinFormControl.value,
-            rotation_range_max: component.degreeMaxFormControl.value,
-            velocity: component.velocityFormControl.value,
-            acceleration: component.accelerationFormControl.value,
-            deceleration: component.decelerationFormControl.value,
-            period: component.periodFormControl.value,
-        };
-
-        component.motorSettingsMessageReceiver$.next(message);
-        expect(component.pulseMinRange.value).toEqual("testValue");
-    });
-
-    it("should open dialog when the button has been clicked", () => {
+    it("should open settings modal on clicking the settings-button", () => {
+        motorSubject?.next(updateMotor);
         const spyPopup = spyOn(component, "openPopup").and.callThrough();
-        const spyModal = spyOn(modalService, "open");
-        const motorName = component.motorName;
-        const button = fixture.debugElement.query(
-            By.css("#dialogBtn_" + motorName),
-        );
-        button.nativeElement.click();
+        const spyModal = spyOn(modalService, "open").and.callThrough();
+        const button = fixture.nativeElement.querySelector("#dialogBtn_");
+        fixture.detectChanges();
+        button.click();
         expect(spyPopup).toHaveBeenCalled();
         expect(spyModal).toHaveBeenCalled();
     });
 
     it("should return dismiss reason by clicking on a backdrop", fakeAsync(() => {
-        spyOn(component, "openPopup").and.callThrough();
-        spyOn(modalService, "open").and.callThrough();
-        const motorName = component.motorName;
-        const button = fixture.debugElement.query(
-            By.css("#dialogBtn_" + motorName),
-        );
-        button.nativeElement.click();
+        motorSubject?.next(updateMotor);
+        const button = fixture.nativeElement.querySelector("#dialogBtn_");
+        fixture.detectChanges();
+        button.click();
         modalService.dismissAll(ModalDismissReasons.BACKDROP_CLICK);
         tick(1000);
         expect(component.closeResult).toBe(
@@ -156,168 +99,131 @@ describe("MotorControlComponent", () => {
     }));
 
     it("should return dismiss reason by pressing ESC", fakeAsync(() => {
-        spyOn(component, "openPopup").and.callThrough();
-        spyOn(modalService, "open").and.callThrough();
-        const motorName = component.motorName;
-        const button = fixture.debugElement.query(
-            By.css("#dialogBtn_" + motorName),
-        );
-        button.nativeElement.click();
+        motorSubject?.next(updateMotor);
+        const spyOnGetDismissReason = spyOn(
+            component,
+            "getDismissReason",
+        ).and.callThrough();
+        const button = fixture.nativeElement.querySelector("#dialogBtn_");
+        button.click();
         modalService.dismissAll(ModalDismissReasons.ESC);
         tick(1000);
+        expect(spyOnGetDismissReason).toHaveBeenCalled();
         expect(component.closeResult).toBe("Dismissed by pressing ESC");
     }));
 
     it("should turn the motor on/off on checking the checkbox", () => {
-        spyOn(component, "turnTheMotorOnAndOff").and.callThrough();
-        spyOn(motorService, "getMotorHandNames").and.callThrough();
-        const motorName = component.motorName;
-        const checkbox = fixture.debugElement.query(
-            By.css("#checkbox_" + motorName),
-        );
-        checkbox.nativeElement.dispatchEvent(new Event("change"));
-        expect(component.turnTheMotorOnAndOff).toHaveBeenCalled();
-        expect(spySendMotorSettings).toHaveBeenCalled();
-
-        component.isCombinedSlider = true;
-        component.groupSide = "left";
-        fixture.detectChanges();
-        component.turnTheMotorOnAndOff();
-        expect(motorService.getMotorHandNames).toHaveBeenCalledWith("left");
-        expect(spySendMotorSettings).toHaveBeenCalledTimes(7);
-    });
-
-    it("should send a settings message when changing a value of the setting", () => {
-        const message: Message = {
-            motorName: component.motorName,
-            pulse_widths_min: component.pulseMinRange.value,
-            pulse_widths_max: component.pulseMaxRange.value,
-            rotation_range_min: component.degreeMinFormControl.value,
-            rotation_range_max: component.degreeMaxFormControl.value,
-            velocity: component.velocityFormControl.value,
-            acceleration: component.accelerationFormControl.value,
-            deceleration: component.decelerationFormControl.value,
-            period: component.periodFormControl.value,
-        };
-        component.sendMotorSettingsMessage();
-        expect(rosService.sendMotorSettingsMessage).toHaveBeenCalledWith(
-            jasmine.objectContaining(message),
-        );
-
-        const spyMotorNames = spyOn(
-            motorService,
-            "getMotorHandNames",
-        ).and.callThrough();
-        component.isCombinedSlider = true;
-        component.groupSide = "left";
-        fixture.detectChanges();
-        component.sendMotorSettingsMessage();
-        expect(spyMotorNames).toHaveBeenCalledWith("left");
-        expect(rosService.sendMotorSettingsMessage).toHaveBeenCalledTimes(7);
-    });
-
-    it("should return null if max pulse is greater than min pulse", () => {
-        const formcontrol1 = new FormControl(0);
-        const formControl2 = new FormControl(0);
-        formcontrol1.addValidators(
-            compareValuesPulseValidator(formcontrol1, formControl2),
-        );
-        formControl2.addValidators(
-            compareValuesPulseValidator(formcontrol1, formControl2),
-        );
-        formcontrol1.setValue(10);
-        formControl2.setValue(20);
-        expect(formcontrol1.valid).toBe(true);
-        expect(formControl2.valid).toBe(true);
-    });
-
-    it("should return an error if max pulse is not greater than min pulse", () => {
-        const formcontrol1 = new FormControl(0);
-        const formControl2 = new FormControl(0);
-        formcontrol1.addValidators(
-            compareValuesPulseValidator(formcontrol1, formControl2),
-        );
-        formControl2.addValidators(
-            compareValuesPulseValidator(formcontrol1, formControl2),
-        );
-        formcontrol1.setValue(20);
-        formControl2.setValue(10);
-        expect(formcontrol1.valid).toBe(false);
-        expect(formControl2.valid).toBe(false);
-        expect(formcontrol1.hasError("notGreaterThan")).toBe(true);
-    });
-
-    it("should return an error if max or min pulse are not greater than 0", () => {
-        const formcontrol1 = new FormControl(0);
-        const formControl2 = new FormControl(0);
-        formcontrol1.addValidators(
-            compareValuesPulseValidator(formcontrol1, formControl2),
-        );
-        formControl2.addValidators(
-            compareValuesPulseValidator(formcontrol1, formControl2),
-        );
-        formcontrol1.setValue(-10);
-        formControl2.setValue(20);
-        expect(formcontrol1.valid).toBe(false);
-        expect(formControl2.valid).toBe(false);
-        expect(formcontrol1.hasError("error")).toBe(true);
-    });
-
-    it("should return null if max degree is greater than min degree", () => {
-        const formcontrol1 = new FormControl(0);
-        const formControl2 = new FormControl(0);
-        formcontrol1.addValidators(
-            compareValuesDegreeValidator(formcontrol1, formControl2),
-        );
-        formControl2.addValidators(
-            compareValuesDegreeValidator(formcontrol1, formControl2),
-        );
-        formcontrol1.setValue(10);
-        formControl2.setValue(20);
-        expect(formcontrol1.valid).toBe(true);
-        expect(formControl2.valid).toBe(true);
-    });
-
-    it("should return an error if max degree is not greater than min degree", () => {
-        const formcontrol1 = new FormControl(0);
-        const formControl2 = new FormControl(0);
-        formcontrol1.addValidators(
-            compareValuesDegreeValidator(formcontrol1, formControl2),
-        );
-        formControl2.addValidators(
-            compareValuesDegreeValidator(formcontrol1, formControl2),
-        );
-        formcontrol1.setValue(20);
-        formControl2.setValue(10);
-        expect(formcontrol1.valid).toBe(false);
-        expect(formControl2.valid).toBe(false);
-        expect(formcontrol1.hasError("notGreaterThan")).toBe(true);
-    });
-
-    it("should return an error if max or min pulse are not greater than -9000", () => {
-        const formcontrol1 = new FormControl(0);
-        const formControl2 = new FormControl(0);
-        formcontrol1.addValidators(
-            compareValuesDegreeValidator(formcontrol1, formControl2),
-        );
-        formControl2.addValidators(
-            compareValuesDegreeValidator(formcontrol1, formControl2),
-        );
-        formcontrol1.setValue(-90000);
-        formControl2.setValue(20);
-        expect(formcontrol1.valid).toBe(false);
-        expect(formControl2.valid).toBe(false);
-        expect(formcontrol1.hasError("error")).toBe(true);
-    });
-
-    it("should change sliderFormControl value and call sendMessage after receiving sliderEvent", fakeAsync(() => {
-        const spyOnSendMessage = spyOn(
+        motorSubject?.next(updateMotor);
+        expect(component.motor.settings.turned_on).toBe(false);
+        const spyOnChangeTurnedOn = spyOn(
             component,
-            "sendJointTrajectoryMessage",
+            "changeTurnedOn",
         ).and.callThrough();
-        component.setMotorPositionValue(1000);
-        tick(500);
-        expect(component.sliderFormControl.value).toBe(1000);
-        expect(spyOnSendMessage).toHaveBeenCalled();
-    }));
+        const checkbox = fixture.nativeElement.querySelector("#checkbox_");
+        fixture.detectChanges();
+        checkbox.click();
+        expect(spyOnChangeTurnedOn).toHaveBeenCalled();
+        expect(component.motor.settings.turned_on).toBe(true);
+    });
+
+    it("should change the motor position on capturing child-component event", () => {
+        motorSubject?.next(updateMotor);
+        const spyOnSetMotorPositionValue = spyOn(
+            component,
+            "setMotorPositionValue",
+        ).and.callThrough();
+        expect(component.motor.position).toBe(500);
+        const slider = fixture.debugElement.query(By.css("app-slider"));
+        slider.triggerEventHandler("sliderEvent", 300);
+        expect(spyOnSetMotorPositionValue).toHaveBeenCalled();
+        expect(component.motor.position).toBe(300);
+    });
+
+    it("should change the motor settings on getting events from vertical sliders", () => {
+        motorSubject?.next(updateMotor);
+        fixture.detectChanges();
+        const spyOnSetVelocity = spyOn(
+            component,
+            "setVelocity",
+        ).and.callThrough();
+        const spyOnSetAcceleration = spyOn(
+            component,
+            "setAcceleration",
+        ).and.callThrough();
+        const spyOnSetDeceleration = spyOn(
+            component,
+            "setDeceleration",
+        ).and.callThrough();
+        component.setVelocity(300);
+        expect(spyOnSetVelocity).toHaveBeenCalled();
+        expect(component.motor.settings.velocity).toBe(300);
+        expect(
+            motorService.getMotorByName(component.motor.name).settings.velocity,
+        ).toBe(300);
+        component.setAcceleration(300);
+        expect(spyOnSetAcceleration).toHaveBeenCalled();
+        expect(component.motor.settings.acceleration).toBe(300);
+        expect(
+            motorService.getMotorByName(component.motor.name).settings
+                .acceleration,
+        ).toBe(300);
+        component.setDeceleration(300);
+        expect(spyOnSetDeceleration).toHaveBeenCalled();
+        expect(component.motor.settings.deceleration).toBe(300);
+        expect(
+            motorService.getMotorByName(component.motor.name).settings
+                .deceleration,
+        ).toBe(300);
+    });
+
+    it("should set the degree on calling setDegree", () => {
+        motorSubject?.next(updateMotor);
+        fixture.detectChanges();
+        const spyOnSetDegree = spyOn(component, "setDegree").and.callThrough();
+        component.setDegree([300, 300]);
+        expect(spyOnSetDegree).toHaveBeenCalled();
+        expect(component.motor.settings.rotation_range_max).toBe(300);
+        expect(component.motor.settings.rotation_range_min).toBe(300);
+        expect(
+            motorService.getMotorByName(component.motor.name).settings
+                .rotation_range_max,
+        ).toBe(300);
+        expect(
+            motorService.getMotorByName(component.motor.name).settings
+                .rotation_range_min,
+        ).toBe(300);
+    });
+
+    it("should set the pulse ranges on calling setPulseRanges", () => {
+        motorSubject?.next(updateMotor);
+        fixture.detectChanges();
+        const spyOnSetPulseRanges = spyOn(
+            component,
+            "setPulseRanges",
+        ).and.callThrough();
+        component.setPulseRanges([300, 300]);
+        expect(spyOnSetPulseRanges).toHaveBeenCalled();
+        expect(component.motor.settings.pulse_width_max).toBe(300);
+        expect(component.motor.settings.pulse_width_min).toBe(300);
+        expect(
+            motorService.getMotorByName(component.motor.name).settings
+                .pulse_width_max,
+        ).toBe(300);
+        expect(
+            motorService.getMotorByName(component.motor.name).settings
+                .pulse_width_min,
+        ).toBe(300);
+    });
+
+    it("should set the periodon calling setPeriod", () => {
+        motorSubject?.next(updateMotor);
+        fixture.detectChanges();
+        const spyOnSetPeriod = spyOn(component, "setPeriod").and.callThrough();
+        component.setPeriod(300);
+        expect(spyOnSetPeriod).toHaveBeenCalled();
+        expect(component.motor.settings.period).toBe(300);
+        expect(
+            motorService.getMotorByName(component.motor.name).settings.period,
+        ).toBe(300);
+    });
 });

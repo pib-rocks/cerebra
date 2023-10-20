@@ -1,9 +1,4 @@
-import {
-    ComponentFixture,
-    TestBed,
-    fakeAsync,
-    tick,
-} from "@angular/core/testing";
+import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {ReactiveFormsModule} from "@angular/forms";
 import {By} from "@angular/platform-browser";
 import {RouterTestingModule} from "@angular/router/testing";
@@ -14,11 +9,29 @@ import {RosService} from "../shared/ros.service";
 import {NavBarComponent} from "../nav-bar/nav-bar.component";
 import {CircularSliderComponent} from "../slider/circular-slider/circular-slider.component";
 import {SliderComponent} from "../slider/slider.component";
+import {MotorService} from "../shared/motor.service";
+import {ActivatedRoute} from "@angular/router";
+import {BehaviorSubject} from "rxjs";
+import {JointTrajectoryMessage} from "../shared/rosMessageTypes/jointTrajectoryMessage";
+import {MotorSettingsMessage} from "../shared/rosMessageTypes/motorSettingsMessage";
+import {Group} from "../shared/types/motor.enum";
 
 describe("HandComponent", () => {
     let component: HandComponent;
     let fixture: ComponentFixture<HandComponent>;
     let rosService: RosService;
+    let motorService: MotorService;
+
+    let rosSendJointTrajectorySpy: jasmine.Spy<
+        (jointTrajectoryMessage: JointTrajectoryMessage) => void
+    >;
+    let rosSendMotorSettingsSpy: jasmine.Spy<
+        (jointTrajectoryMessage: MotorSettingsMessage) => void
+    >;
+
+    const paramsSubject = new BehaviorSubject({
+        side: "right",
+    });
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
@@ -30,13 +43,31 @@ describe("HandComponent", () => {
                 SliderComponent,
             ],
             imports: [RouterTestingModule, ReactiveFormsModule],
-            providers: [RosService],
+            providers: [
+                RosService,
+                {
+                    provide: ActivatedRoute,
+                    useValue: {
+                        params: paramsSubject,
+                    },
+                },
+            ],
         }).compileComponents();
 
         fixture = TestBed.createComponent(HandComponent);
         component = fixture.componentInstance;
         rosService = TestBed.inject(RosService);
+        motorService = TestBed.inject(MotorService);
         fixture.detectChanges();
+
+        rosSendJointTrajectorySpy = spyOn(
+            rosService,
+            "sendJointTrajectoryMessage",
+        ).and.callFake((msg) => rosService.jointTrajectoryReceiver$.next(msg));
+        rosSendMotorSettingsSpy = spyOn(
+            rosService,
+            "sendMotorSettingsMessage",
+        ).and.callFake((msg) => rosService.motorSettingsReceiver$.next(msg));
     });
 
     afterEach(() => {
@@ -47,304 +78,229 @@ describe("HandComponent", () => {
         expect(component).toBeTruthy();
     });
 
-    it("should call reset() and set all slider values to 0 after clicking reset button (left and individul fingers)", () => {
-        component.side = "left";
+    it("should replace motor-controls when switching view the sliders (left)", () => {
+        paramsSubject.next({side: "left"});
+        if (component.displayAllFingers) fixture.componentInstance.switchView();
+        fixture.detectChanges();
+        expect(!fixture.componentInstance.displayAllFingers).toBeTrue();
 
-        const sliders = fixture.debugElement.queryAll(
-            By.css("app-motor-control"),
+        let motorControls: MotorControlComponent[] = fixture.debugElement
+            .queryAll(By.css("app-motor-control"))
+            .map((debugElem) => debugElem.componentInstance);
+        let motorNames: string[] = motorControls.map((comp) => comp.motor.name);
+        expect(motorNames).toEqual(
+            jasmine.arrayWithExactContents([
+                "thumb_left_opposition",
+                "all_fingers_left",
+            ]),
         );
 
-        spyOn(component, "reset").and.callThrough();
-
-        const button =
-            fixture.nativeElement.querySelector("#home-position-btn");
-        spyOn(button, "dispatchEvent").and.callThrough();
-        component.leftSwitchControl.setValue(true);
-        component.rightSwitchControl.setValue(false);
-        sliders
-            .filter(
-                (child) => !child.componentInstance.motorName.includes("all"),
-            )
-            .forEach((child) => {
-                spyOn(child.componentInstance, "sendMessage");
-            });
+        fixture.componentInstance.switchView();
         fixture.detectChanges();
+        expect(fixture.componentInstance.displayAllFingers).toBeTrue();
 
-        sliders
-            .filter(
-                (child) => !child.componentInstance.motorName.includes("all"),
-            )
-            .forEach((child) => {
-                expect(
-                    child.componentInstance.sendAllMessagesCombined,
-                ).toHaveBeenCalled();
-            });
+        motorControls = fixture.debugElement
+            .queryAll(By.css("app-motor-control"))
+            .map((debugElem) => debugElem.componentInstance);
+        motorNames = motorControls.map((comp) => comp.motor.name);
+        expect(motorNames).toEqual(
+            jasmine.arrayWithExactContents([
+                "thumb_left_opposition",
+                "thumb_left_stretch",
+                "index_left_stretch",
+                "middle_left_stretch",
+                "ring_left_stretch",
+                "pinky_left_stretch",
+            ]),
+        );
     });
 
-    it("should call reset() and set all slider values to 0 after clicking reset button (right and individul fingers)", () => {
-        component.side = "right";
+    it("should replace motor-controls when switching view (right)", () => {
+        paramsSubject.next({side: "right"});
+        if (component.displayAllFingers) fixture.componentInstance.switchView();
+        fixture.detectChanges();
+        expect(!fixture.componentInstance.displayAllFingers).toBeTrue();
 
-        const sliders = fixture.debugElement.queryAll(
-            By.css("app-motor-control"),
+        let motorControls: MotorControlComponent[] = fixture.debugElement
+            .queryAll(By.css("app-motor-control"))
+            .map((debugElem) => debugElem.componentInstance);
+        let motorNames: string[] = motorControls.map((comp) => comp.motor.name);
+        expect(motorNames).toEqual(
+            jasmine.arrayWithExactContents([
+                "thumb_right_opposition",
+                "all_fingers_right",
+            ]),
         );
 
-        spyOn(component, "reset").and.callThrough();
-
-        const button =
-            fixture.nativeElement.querySelector("#home-position-btn");
-        spyOn(button, "dispatchEvent").and.callThrough();
-        component.leftSwitchControl.setValue(false);
-        component.rightSwitchControl.setValue(true);
-        sliders
-            .filter(
-                (child) => !child.componentInstance.motorName.includes("all"),
-            )
-            .forEach((child) => {
-                spyOn(child.componentInstance, "sendMessage");
-            });
+        fixture.componentInstance.switchView();
         fixture.detectChanges();
+        expect(fixture.componentInstance.displayAllFingers).toBeTrue();
 
-        sliders
-            .filter(
-                (child) => !child.componentInstance.motorName.includes("all"),
-            )
-            .forEach((child) => {
-                expect(
-                    child.componentInstance.sendAllMessagesCombined,
-                ).toHaveBeenCalled();
-            });
+        motorControls = fixture.debugElement
+            .queryAll(By.css("app-motor-control"))
+            .map((debugElem) => debugElem.componentInstance);
+        motorNames = motorControls.map((comp) => comp.motor.name);
+        expect(motorNames).toEqual(
+            jasmine.arrayWithExactContents([
+                "thumb_right_opposition",
+                "thumb_right_stretch",
+                "index_right_stretch",
+                "middle_right_stretch",
+                "ring_right_stretch",
+                "pinky_right_stretch",
+            ]),
+        );
     });
 
-    it("should call reset() and set all slider values to 0 after clicking reset button (right and combained fingers)", () => {
-        component.side = "right";
-
-        const sliders = fixture.debugElement.queryAll(
-            By.css("app-motor-control"),
-        );
-
-        spyOn(component, "reset").and.callThrough();
-
-        const button =
-            fixture.nativeElement.querySelector("#home-position-btn");
-        spyOn(button, "dispatchEvent").and.callThrough();
-        component.leftSwitchControl.setValue(false);
-        component.rightSwitchControl.setValue(false);
-        sliders
-            .filter(
-                (child) =>
-                    child.componentInstance.motorName.includes("all") ||
-                    child.componentInstance.motorName.includes("opposition"),
-            )
-            .forEach((child) => {
-                spyOn(child.componentInstance, "sendMessage");
-            });
+    it("should call reset() and set all slider values to 0 after clicking reset button", () => {
+        paramsSubject.next({side: "right"});
+        if (!component.displayAllFingers)
+            fixture.componentInstance.switchView();
         fixture.detectChanges();
 
-        sliders
-            .filter(
-                (child) =>
-                    child.componentInstance.motorName.includes("all") ||
-                    child.componentInstance.motorName.includes("opposition"),
-            )
-            .forEach((child) => {
-                expect(
-                    child.componentInstance.sendAllMessagesCombined,
-                ).toHaveBeenCalled();
-            });
-    });
-
-    it("should call reset() and set all slider values to 0 after clicking reset button (left and combained fingers)", () => {
-        component.side = "left";
-
-        const sliders = fixture.debugElement.queryAll(
-            By.css("app-motor-control"),
-        );
-
-        spyOn(component, "reset").and.callThrough();
-
-        const button =
-            fixture.nativeElement.querySelector("#home-position-btn");
-        spyOn(button, "dispatchEvent").and.callThrough();
-        component.leftSwitchControl.setValue(false);
-        component.rightSwitchControl.setValue(false);
-        sliders
-            .filter(
-                (child) =>
-                    child.componentInstance.motorName.includes("all") ||
-                    child.componentInstance.motorName.includes("opposition"),
-            )
-            .forEach((child) => {
-                spyOn(child.componentInstance, "sendMessage");
-            });
-        fixture.detectChanges();
-
-        sliders
-            .filter(
-                (child) =>
-                    child.componentInstance.motorName.includes("all") ||
-                    child.componentInstance.motorName.includes("opposition"),
-            )
-            .forEach((child) => {
-                expect(
-                    child.componentInstance.sendAllMessagesCombined,
-                ).toHaveBeenCalled();
-            });
-    });
-
-    // Bugticket: Erst bug fixen dann test reintegrieren
-    // it("should send value of index finger to all finger topics after switching to 2 sliders (left)", () => {
-    //   component.side = "left";
-    //   component.leftSwitchControl.setValue(true);
-    //   fixture.detectChanges();
-    //   const checkInput = fixture.debugElement.query(By.css(".custom-control-input"));
-    //   spyOn(checkInput.componentInstance, "switchView").and.callThrough();
-    //   const sliders = fixture.debugElement.queryAll(By.css("app-motor-control"));
-    //   sliders
-    //     .filter(
-    //       (slider) =>
-    //         slider.children[1].componentInstance.labelName !== "Thumb Opposition" && slider.children[1].componentInstance.motorName === 'all_left_stretch'
-    //     )
-    //     .forEach((slider) =>
-    //       spyOn(slider.componentInstance, "sendAllMessagesCombined")
-    //     );
-    //   sliders
-    //     .filter(
-    //       (slider) => slider.componentInstance.labelName === "Index finger"
-    //     )[0]
-    //     .componentInstance.sliderFormControl.setValue(500);
-
-    //   checkInput.nativeElement.dispatchEvent(new Event("input"));
-    //   fixture.detectChanges();
-    //   expect(checkInput.componentInstance.switchView).toHaveBeenCalled();
-
-    //   component.childComponents
-    //     .filter((child) => child.labelName !== "Thumb opposition" && child.motorName === 'all_left_stretch')
-    //     .forEach((child) => {
-    //       console.log("slider from control" + child.sliderFormControl.value);
-    //       expect(child.sliderFormControl.value).toBe(500);
-    //       expect(child.sendAllMessagesCombined).toHaveBeenCalled();
-    //     });
-    // });
-
-    // it("should send value of index finger to all finger topics after switching to 2 sliders (right)", () => {
-    //   component.side = "right";
-    //   component.rightSwitchControl.setValue(true);
-    //   fixture.detectChanges();
-    //   const checkInput = fixture.debugElement.query(By.css(".custom-control-input"));
-    //   spyOn(checkInput.componentInstance, "switchView").and.callThrough();
-    //   const sliders = fixture.debugElement.queryAll(By.css("app-motor-control"));
-    //   sliders
-    //     .filter(
-    //       (slider) =>
-    //         slider.children[1].componentInstance.labelName !== "Thumb Opposition" && slider.children[1].componentInstance.motorName === 'all_right_stretch'
-    //     )
-    //     .forEach((slider) =>
-    //       spyOn(slider.componentInstance, "sendAllMessagesCombined")
-    //     );
-    //   sliders
-    //     .filter(
-    //       (slider) => slider.componentInstance.labelName === "Index finger"
-    //     )[0]
-    //     .componentInstance.sliderFormControl.setValue(500);
-
-    //   checkInput.nativeElement.dispatchEvent(new Event("input"));
-    //   fixture.detectChanges();
-    //   expect(checkInput.componentInstance.switchView).toHaveBeenCalled();
-
-    //   component.childComponents
-    //     .filter((child) => child.labelName !== "Thumb opposition" && child.motorName === 'all_right_stretch')
-    //     .forEach((child) => {
-    //       expect(child.sliderFormControl.value).toBe(500);
-    //       expect(child.sendAllMessagesCombined).toHaveBeenCalled();
-    //     });
-    // });
-
-    it("should set all values to the value of the all_stretch slider (left)", fakeAsync(() => {
-        component.side = "left";
-        fixture.detectChanges();
-
-        const checkInput = fixture.debugElement.query(By.css("#leftSwitch"));
-        checkInput.nativeElement.checked = true;
-        const sliders = fixture.debugElement.queryAll(
-            By.css("app-motor-control"),
-        );
-        spyOn(
-            sliders.filter(
-                (slider) =>
-                    slider.componentInstance.motorName === "all_left_stretch",
-            )[0].componentInstance,
-            "sendJointTrajectoryMessage",
-        );
-        sliders
-            .filter(
-                (slider) =>
-                    slider.componentInstance.motorName === "all_left_stretch",
-            )[0]
-            .componentInstance.sliderFormControl.setValue(500);
-
-        const input = fixture.debugElement.query(
-            By.css("#slider_all_left_stretch"),
-        );
-        input.nativeElement.dispatchEvent(new Event("input"));
-        checkInput.nativeElement.dispatchEvent(new Event("input"));
-        tick(500);
-        fixture.detectChanges();
-        sliders
-            .filter(
-                (slider) =>
-                    slider.componentInstance.motorName === "all_left_stretch",
-            )
-            .forEach((child) => {
-                expect(child.componentInstance.sliderFormControl.value).toBe(
-                    500,
-                );
-                expect(
-                    child.componentInstance.sendJointTrajectoryMessage,
-                ).toHaveBeenCalled();
-            });
-        expect(component.displayAll).toBe("none");
-        expect(component.displayIndividual).toBe("block");
-    }));
-
-    it("should set all values to the value of the all_stretch slider (right)", fakeAsync(() => {
-        component.side = "right";
-        fixture.detectChanges();
-
-        const checkInput = fixture.debugElement.query(By.css("#rightSwitch"));
-        checkInput.nativeElement.checked = true;
-        const input = fixture.debugElement.query(
-            By.css("#slider_all_right_stretch"),
-        );
-        const sliders = fixture.debugElement.queryAll(
-            By.css("app-motor-control"),
-        );
+        const sliders: MotorControlComponent[] = fixture.debugElement
+            .queryAll(By.css("app-motor-control"))
+            .map((slider) => slider.componentInstance);
         sliders.forEach((slider) =>
-            spyOn(slider.componentInstance, "sendJointTrajectoryMessage"),
+            slider.sliderComponent.sliderFormControl.setValue(10),
         );
-        sliders
-            .filter(
-                (slider) =>
-                    slider.componentInstance.motorName === "all_right_stretch",
-            )[0]
-            .componentInstance.sliderFormControl.setValue(500);
-        input.nativeElement.dispatchEvent(new Event("input"));
-        checkInput.nativeElement.dispatchEvent(new Event("input"));
-        tick(500);
+
+        const resetSpy = spyOn(component, "reset").and.callThrough();
+        const motorResetGroupSpy = spyOn(
+            motorService,
+            "resetMotorGroupPosition",
+        ).and.callThrough();
+
+        const homeButton =
+            fixture.nativeElement.querySelector("#home-position-btn");
+        homeButton.click();
+
+        expect(resetSpy).toHaveBeenCalled();
+        expect(motorResetGroupSpy).toHaveBeenCalledWith(Group.right_hand);
+        expect(rosSendJointTrajectorySpy).toHaveBeenCalled();
+        sliders.forEach((slider) =>
+            expect(slider.sliderComponent.sliderFormControl.value).toBe(0),
+        );
+    });
+
+    it("should set all_fingers value to the index finger value if switched from all to individual", () => {
+        paramsSubject.next({side: "right"});
+        if (!component.displayAllFingers)
+            fixture.componentInstance.switchView();
         fixture.detectChanges();
-        sliders
-            .filter(
-                (slider) =>
-                    slider.componentInstance.motorName === "right_stretch",
-            )
-            .forEach((child) => {
-                expect(child.componentInstance.sliderFormControl.value).toBe(
-                    500,
-                );
-                expect(
-                    child.componentInstance.sendJointTrajectoryMessage,
-                ).toHaveBeenCalled();
+        expect(fixture.componentInstance.displayAllFingers).toBeTrue();
+
+        const indexPos = 10;
+        const otherPos = 0;
+        motorService
+            .getMotorsByGroup(Group.right_hand)
+            .map((motor) => motor.clone())
+            .forEach((motorClone) => {
+                motorClone.position =
+                    motorClone.name == "index_right_stretch"
+                        ? indexPos
+                        : otherPos;
+                motorService.updateMotorFromComponent(motorClone);
             });
-        expect(component.displayAll).toBe("none");
-        expect(component.displayIndividual).toBe("block");
-    }));
+
+        const motorSendJointTrajectorySpy = spyOn(
+            motorService,
+            "sendJointTrajectoryMessage",
+        ).and.callThrough();
+        const motorMotorSettingsSpy = spyOn(
+            motorService,
+            "sendMotorSettingsMessage",
+        ).and.callThrough();
+
+        component.switchView();
+        fixture.detectChanges();
+
+        const expectedMotorObj = jasmine.objectContaining({
+            name: "all_fingers_right",
+            position: indexPos,
+        });
+        expect(motorSendJointTrajectorySpy).toHaveBeenCalledOnceWith(
+            expectedMotorObj,
+        );
+        expect(motorMotorSettingsSpy).toHaveBeenCalledOnceWith(
+            expectedMotorObj,
+        );
+
+        expect(rosSendMotorSettingsSpy).toHaveBeenCalled;
+
+        const motorControls: MotorControlComponent[] = fixture.debugElement
+            .queryAll(By.css("app-motor-control"))
+            .map((debugElem) => debugElem.componentInstance);
+        const allControl = motorControls.find(
+            (mc) => mc.motor.name == "all_fingers_right",
+        );
+        const oppositionControl = motorControls.find(
+            (mc) => mc.motor.name == "thumb_right_opposition",
+        );
+        expect(allControl?.sliderComponent.sliderFormControl.value).toBe(
+            indexPos,
+        );
+        expect(oppositionControl?.sliderComponent.sliderFormControl.value).toBe(
+            otherPos,
+        );
+
+        motorService
+            .getMotorsByGroup(Group.right_hand)
+            .forEach((motor) =>
+                expect(motor.position).toBe(
+                    motor.name == "thumb_right_opposition"
+                        ? otherPos
+                        : indexPos,
+                ),
+            );
+    });
+
+    it("should set all values to the value of the all_fingers slider", () => {
+        paramsSubject.next({side: "right"});
+        if (component.displayAllFingers) fixture.componentInstance.switchView();
+        fixture.detectChanges();
+
+        expect(!fixture.componentInstance.displayAllFingers).toBeTrue();
+
+        const allPosition = 10;
+        const allMotorCpy = motorService
+            .getMotorByName("all_fingers_right")
+            .clone();
+        expect(allMotorCpy).toBeTruthy();
+        allMotorCpy.position = allPosition;
+        motorService.updateMotorFromComponent(allMotorCpy);
+
+        const motorSendJointTrajectorySpy = spyOn(
+            motorService,
+            "sendJointTrajectoryMessage",
+        ).and.callThrough();
+        const motorMotorSettingsSpy = spyOn(
+            motorService,
+            "sendMotorSettingsMessage",
+        ).and.callThrough();
+
+        component.switchView();
+        fixture.detectChanges();
+
+        expect(motorSendJointTrajectorySpy).not.toHaveBeenCalled();
+        expect(motorMotorSettingsSpy).not.toHaveBeenCalled();
+
+        const motorControls: MotorControlComponent[] = fixture.debugElement
+            .queryAll(By.css("app-motor-control"))
+            .map((control) => control.componentInstance);
+        expect(motorControls.length).toBe(6);
+
+        motorControls
+            .map((mc) => mc.motor.name)
+            .filter((motorName) => !motorName.includes("opposition"))
+            .map((motorName) => motorService.getMotorByName(motorName))
+            .forEach((motor) => expect(motor.position).toBe(allPosition));
+        motorControls
+            .filter((mc) => !mc.motor.name.includes("opposition"))
+            .forEach((mc) =>
+                expect(mc.sliderComponent.sliderFormControl.value).toBe(
+                    allPosition,
+                ),
+            );
+    });
 });
