@@ -1,7 +1,7 @@
 import {Component, OnInit} from "@angular/core";
 import {FormControl, FormGroup, Validators} from "@angular/forms";
 import {RosService} from "../shared/ros.service";
-import {VoiceAssistant} from "../shared/voice-assistant";
+import {VoiceAssistantMsg} from "../shared/voice-assistant";
 
 @Component({
     selector: "app-voice-assistant",
@@ -27,7 +27,7 @@ export class VoiceAssistantComponent implements OnInit {
 
     updateVoiceSettings() {
         if (this.voiceFormGroup.valid) {
-            const msg: VoiceAssistant = {
+            const msg: VoiceAssistantMsg = {
                 personality: this.voiceFormGroup.get("personality")?.value,
                 threshold: this.voiceFormGroup.get("threshold")?.value,
                 gender: this.voiceFormGroup.get("gender")?.value,
@@ -38,7 +38,7 @@ export class VoiceAssistantComponent implements OnInit {
     }
 
     sendVoiceActivationFlag() {
-        const msg: VoiceAssistant = {
+        const msg: VoiceAssistantMsg = {
             activationFlag: this.activationFlag.value,
         };
         this.rosService.sendVoiceActivationMessage(msg);

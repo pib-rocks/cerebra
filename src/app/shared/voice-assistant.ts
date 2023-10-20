@@ -1,4 +1,4 @@
-export interface VoiceAssistant {
+export interface VoiceAssistantMsg {
     activationFlag?: boolean;
     personality?: string;
     threshold?: number;

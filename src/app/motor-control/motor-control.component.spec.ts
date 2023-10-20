@@ -17,7 +17,7 @@ import {
 } from "../shared/validators";
 
 import {MotorControlComponent} from "./motor-control.component";
-import {VoiceAssistant} from "../shared/voice-assistant";
+import {VoiceAssistantMsg} from "../shared/voice-assistant";
 import {MotorCurrentMessage} from "../shared/currentMessage";
 import {JointTrajectoryMessage} from "../shared/rosMessageTypes/jointTrajectoryMessage";
 import {MotorSettingsMessage} from "../shared/motorSettingsMessage";
@@ -31,7 +31,7 @@ describe("MotorControlComponent", () => {
     let motorService: MotorService;
     let spySendMotorSettings: jasmine.Spy<(msg: MotorSettingsMessage) => void>;
     let spySendMassege: jasmine.Spy<
-        (msg: Message | VoiceAssistant | MotorCurrentMessage) => void
+        (msg: Message | VoiceAssistantMsg | MotorCurrentMessage) => void
     >;
     let spySendJTMassege: jasmine.Spy<(msg: JointTrajectoryMessage) => void>;
 
