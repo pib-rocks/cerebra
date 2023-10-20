@@ -125,6 +125,5 @@ export class VoiceAssistantPersonalityComponent {
 
         this.pauseThresholdFormControl.setValue(thresholdValue / 10);
         this.tresholdString = thresholdValue / 10 + "s";
-        console.log(thresholdValue);
     }
 }
