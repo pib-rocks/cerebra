@@ -4,7 +4,7 @@ import {BehaviorSubject, Subject} from "rxjs";
 import {Message} from "./message";
 import {MotorSettingsMessage} from "./motorSettingsMessage";
 import {Motor} from "./motor";
-import {VoiceAssistant} from "./voice-assistant";
+import {VoiceAssistantMsg} from "./voice-assistant";
 import {MotorCurrentMessage} from "./currentMessage";
 import {DiagnosticStatus} from "./DiagnosticStatus.message";
 import {JointTrajectoryMessage} from "../shared/rosMessageTypes/jointTrajectoryMessage";
@@ -240,7 +240,7 @@ export class RosService {
         console.log(consoleString);
     }
 
-    sendVoiceActivationMessage(msg: VoiceAssistant) {
+    sendVoiceActivationMessage(msg: VoiceAssistantMsg) {
         const message = new ROSLIB.Message({data: JSON.stringify(msg)});
         this.voiceAssistantTopic.publish(message);
         console.log("Sent message " + JSON.stringify(message));
