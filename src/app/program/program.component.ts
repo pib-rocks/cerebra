@@ -33,7 +33,7 @@ export class ProgramComponent implements OnInit, OnDestroy, AfterViewInit {
                 name: this.json,
             },
         });
-        dialogRef.afterClosed().subscribe((result) => {
+        dialogRef.afterClosed().subscribe(() => {
             console.log("");
         });
     }
@@ -44,7 +44,7 @@ export class ProgramComponent implements OnInit, OnDestroy, AfterViewInit {
         this.workspace = Blockly.inject("blocklyDiv", {
             toolbox: this.toolbox,
         });
-        this.observer = new ResizeObserver((entries: ResizeObserverEntry[]) => {
+        this.observer = new ResizeObserver(() => {
             this.resizeBlockly();
         });
     }

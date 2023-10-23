@@ -10,7 +10,6 @@ import {
 } from "@angular/core";
 import {FormControl, Validators} from "@angular/forms";
 import {RosService} from "../shared/ros.service";
-import {Message} from "../shared/message";
 import {Observable} from "rxjs";
 import {notNullValidator, steppingValidator} from "../shared/validators";
 @Component({
@@ -72,7 +71,7 @@ export class SliderComponent implements OnInit, AfterViewInit {
                 }
             }
         });
-        if (this.defaultValue) {
+        if (this.defaultValue !== undefined) {
             this.sliderFormControl.setValue(
                 this.flip(Number(this.defaultValue)),
             );
@@ -111,14 +110,6 @@ export class SliderComponent implements OnInit, AfterViewInit {
                 this.sliderEvent.emit(this.flip(this.sliderFormControl.value));
             }, 100);
         }
-    }
-
-    sendMessage() {
-        const message: Message = {
-            motor: this.sliderName,
-            value: this.flip(this.sliderFormControl.value).toString(),
-        };
-        this.rosService.sendSliderMessage(message);
     }
 
     toggleInputVisible() {

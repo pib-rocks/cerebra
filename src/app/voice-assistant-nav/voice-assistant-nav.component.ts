@@ -1,24 +1,22 @@
 import {Component} from "@angular/core";
 import {FormControl} from "@angular/forms";
+import {RosService} from "../shared/ros.service";
+import {VoiceAssistant} from "../shared/voice-assistant";
 
 @Component({
     selector: "app-voice-assistant-nav",
     templateUrl: "./voice-assistant-nav.component.html",
-    styleUrls: [
-        "./voice-assistant-nav.component.css",
-        "../camera/camera.component.css",
-        "../nav-bar/nav-bar.component.css",
-        "../voice-assistant/voice-assistant.component.css",
-    ],
+    styleUrls: ["./voice-assistant-nav.component.css"],
 })
 export class VoiceAssistantNavComponent {
+    constructor(private rosService: RosService) {}
+
     voiceAssistantActivationToggle = new FormControl(false);
     voiceAssistantActiveStatus = false;
-    voiceAssistantStatus: string = "OFF";
     toggleVoiceAssistantActivation() {
         this.voiceAssistantActiveStatus = !this.voiceAssistantActiveStatus;
-        this.voiceAssistantStatus = this.voiceAssistantActiveStatus
-            ? "ON"
-            : "OFF";
+        this.rosService.sendVoiceActivationMessage({
+            activationFlag: this.voiceAssistantActiveStatus,
+        } as VoiceAssistant);
     }
 }

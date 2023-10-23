@@ -1,78 +1,47 @@
 import {Injectable, isDevMode} from "@angular/core";
 import * as ROSLIB from "roslib";
 import {BehaviorSubject, Subject} from "rxjs";
-import {Message} from "./message";
-import {MotorSettingsMessage} from "./motorSettingsMessage";
-import {Motor} from "./motor";
+import {MotorSettingsMessage} from "./rosMessageTypes/motorSettingsMessage";
 import {VoiceAssistant} from "./voice-assistant";
-import {MotorCurrentMessage} from "./currentMessage";
-import {DiagnosticStatus} from "./DiagnosticStatus.message";
+import {DiagnosticStatus} from "./rosMessageTypes/DiagnosticStatus.message";
 import {JointTrajectoryMessage} from "../shared/rosMessageTypes/jointTrajectoryMessage";
-import {JointTrajectoryPoint} from "./rosMessageTypes/jointTrajectoryPoint";
-import {RosTime} from "./rosMessageTypes/rosTime";
-import {StdMessageHeader} from "./rosMessageTypes/stdMessageHeader";
+import {rosDataTypes} from "./rosMessageTypes/rosDataTypePaths.enum";
+import {rosTopics} from "./rosTopics.enum";
 @Injectable({
     providedIn: "root",
 })
 export class RosService {
-    private isInitializedSubject = new BehaviorSubject<boolean>(false);
-    isInitialized$ = this.isInitializedSubject.asObservable();
     currentReceiver$: Subject<DiagnosticStatus> =
         new Subject<DiagnosticStatus>();
-    timerPeriodReceiver$: BehaviorSubject<number> = new BehaviorSubject<number>(
-        0.1,
-    );
+    cameraTimerPeriodReceiver$: BehaviorSubject<number> =
+        new BehaviorSubject<number>(0.1);
     cameraReceiver$: Subject<string> = new Subject<string>();
-    previewSizeReceiver$: BehaviorSubject<number[]> = new BehaviorSubject<
+    cameraPreviewSizeReceiver$: BehaviorSubject<number[]> = new BehaviorSubject<
         number[]
     >([640, 480]);
-    qualityFactorReceiver$: BehaviorSubject<number> =
+    cameraQualityFactorReceiver$: BehaviorSubject<number> =
         new BehaviorSubject<number>(80);
     voiceAssistantReceiver$: Subject<any> = new Subject<any>();
     jointTrajectoryReceiver$: Subject<JointTrajectoryMessage> =
         new Subject<JointTrajectoryMessage>();
+    motorSettingsReceiver$: Subject<MotorSettingsMessage> =
+        new Subject<MotorSettingsMessage>();
     private ros!: ROSLIB.Ros;
-    private sliderMessageTopic!: ROSLIB.Topic;
     private motorSettingsTopic!: ROSLIB.Topic;
     private voiceAssistantTopic!: ROSLIB.Topic;
     private motorCurrentTopic!: ROSLIB.Topic;
     private cameraTopic!: ROSLIB.Topic;
-    private timerPeriodTopic!: ROSLIB.Topic;
-    private previewSizeTopic!: ROSLIB.Topic;
-    private qualityFactorTopic!: ROSLIB.Topic;
+    private cameraTimerPeriodTopic!: ROSLIB.Topic;
+    private cameraPreviewSizeTopic!: ROSLIB.Topic;
+    private cameraQualityFactorTopic!: ROSLIB.Topic;
     private jointTrajectoryTopic!: ROSLIB.Topic;
-
-    private readonly topicName = "/motor_settings";
-    private readonly topicMotorSettingsName = "/motorSettings";
-    private readonly topicVoiceName = "/cerebra_voice_settings";
-    private readonly topicCurrentName = "/motor_current";
-    private readonly topicCameratName = "/camera_topic";
-    private readonly topicJointTrajectoryName = "/joint_trajectory";
-
-    private motors: Motor[] = [];
 
     constructor() {
         this.ros = this.setUpRos();
         this.ros.on("connection", () => {
             console.log("Connected to ROS");
-            this.isInitializedSubject.next(true);
-            this.sliderMessageTopic = this.createMessageTopic();
-            this.motorSettingsTopic = this.createMotorSettingsTopic();
-            this.voiceAssistantTopic = this.createVoiceAssistantTopic();
-            this.motorCurrentTopic = this.createMotorCurrentTopic();
-            this.cameraTopic = this.createCameraTopic();
-            this.previewSizeTopic = this.createPreviewSizeTopic();
-            this.timerPeriodTopic = this.createTimePeriodTopic();
-            this.qualityFactorTopic = this.createQualityFactorTopic();
-            this.jointTrajectoryTopic = this.createJointTrajectoryTopic();
-            this.subscribeSliderTopic();
-            this.subscribeMotorSettingsTopic();
-            this.subscribeCurrentTopic();
-            this.subscribePreviewSize();
-            this.subscribeQualityFactorTopic();
-            this.subscribeTimePeriod();
-            this.subscribeVoiceAssistant();
-            this.subscribeJointTrajectoryTopic();
+            this.initTopics();
+            this.initSubscribers();
         });
         this.ros.on("error", (error: string) => {
             console.log("Error connecting to ROSBridge server:", error);
@@ -83,100 +52,135 @@ export class RosService {
         });
     }
 
-    createJointTrajectoryTopic() {
-        return new ROSLIB.Topic({
-            ros: this.Ros,
-            name: this.topicJointTrajectoryName,
-            messageType: "trajectory_msgs/msg/JointTrajectory",
-        });
-    }
-
-    createMotorSettingsTopic(): ROSLIB.Topic {
-        return new ROSLIB.Topic({
-            ros: this.ros,
-            name: this.topicMotorSettingsName,
-            messageType: "std_msgs/String",
-        });
-    }
-
-    createTimePeriodTopic(): ROSLIB.Topic<ROSLIB.Message> {
-        return new ROSLIB.Topic({
-            ros: this.ros,
-            name: "timer_period_topic",
-            messageType: "std_msgs/Float64",
-        });
-    }
-    createPreviewSizeTopic(): ROSLIB.Topic<ROSLIB.Message> {
-        return new ROSLIB.Topic({
-            ros: this.ros,
-            name: "size_topic",
-            messageType: "std_msgs/Int32MultiArray",
-        });
-    }
-
-    registerMotor(
-        motorName: string,
-        motorSettingsReceiver$: Subject<MotorSettingsMessage>,
-        jtMotorReceiver$: Subject<JointTrajectoryMessage>,
-    ) {
-        let isRegistered = false;
-        if (this.ros.isConnected) {
-            this.motors.forEach((m) => {
-                if (m.motor === motorName) {
-                    m.motorSettingsReceiver$ = motorSettingsReceiver$;
-                    m.jointTrajectoryReceiver$ = jtMotorReceiver$;
-                    isRegistered = true;
-                }
-            });
-
-            if (!isRegistered) {
-                const motor: Motor = {
-                    motor: motorName,
-                    motorSettingsReceiver$: motorSettingsReceiver$,
-                    jointTrajectoryReceiver$: jtMotorReceiver$,
-                };
-                this.motors.push(motor);
-            }
-        }
-    }
-
-    public printMotors() {
-        console.log("MotorsLength: " + this.motors.length);
-        this.motors.forEach((m) => {
-            console.log("MotorsForEach: " + m.motor);
-        });
-    }
-
-    sendSliderMessage(msg: Message | MotorCurrentMessage) {
-        const json = JSON.parse(JSON.stringify(msg));
-        const parameters = Object.keys(json).map((key) => ({[key]: json[key]}));
-        const message = new ROSLIB.Message({data: JSON.stringify(parameters)});
-
-        if ("motor" in msg) {
-            if ("currentValue" in msg) {
-                this.motorCurrentTopic?.publish(message);
-                console.log("Sent message " + JSON.stringify(message));
-            } else {
-                this.sliderMessageTopic?.publish(message);
-                console.log("Sent message " + JSON.stringify(message));
-            }
+    setUpRos() {
+        let rosUrl: string;
+        if (isDevMode()) {
+            rosUrl = "192.168.1.112";
         } else {
-            this.voiceAssistantTopic.publish(message);
+            rosUrl = window.location.hostname;
         }
+        return new ROSLIB.Ros({
+            url: `ws://${rosUrl}:9090`,
+        });
+    }
+
+    get Ros(): ROSLIB.Ros {
+        return this.ros;
+    }
+
+    initTopics() {
+        this.cameraTopic = this.createRosTopic(
+            rosTopics.cameraTopicName,
+            rosDataTypes.string,
+        );
+        this.cameraQualityFactorTopic = this.createRosTopic(
+            rosTopics.cameraQualityTopic,
+            rosDataTypes.int32,
+        );
+        this.cameraPreviewSizeTopic = this.createRosTopic(
+            rosTopics.cameraPreviewSizeTopicName,
+            rosDataTypes.int32MultiArray,
+        );
+        this.cameraTimerPeriodTopic = this.createRosTopic(
+            rosTopics.cameraTimerPeriodTopicName,
+            rosDataTypes.float64,
+        );
+        this.motorSettingsTopic = this.createRosTopic(
+            rosTopics.motorSettingsTopicName,
+            rosDataTypes.motorSettings,
+        );
+        this.motorCurrentTopic = this.createRosTopic(
+            rosTopics.motorCurrentTopicName,
+            rosDataTypes.diagnosticStatus,
+        );
+        this.jointTrajectoryTopic = this.createRosTopic(
+            rosTopics.jointTrajectoryTopicName,
+            rosDataTypes.jointTrajectory,
+        );
+        this.voiceAssistantTopic = this.createRosTopic(
+            rosTopics.voiceTopicName,
+            rosDataTypes.string,
+        );
+    }
+
+    createRosTopic(topicName: string, topicMessageType: string): ROSLIB.Topic {
+        return new ROSLIB.Topic({
+            ros: this.ros,
+            name: topicName,
+            messageType: topicMessageType,
+        });
+    }
+
+    initSubscribers() {
+        this.subscribeDefaultRosMessageTopic(
+            this.voiceAssistantTopic,
+            this.voiceAssistantReceiver$,
+        );
+        this.subscribeDefaultRosMessageTopic(
+            this.cameraPreviewSizeTopic,
+            this.cameraPreviewSizeReceiver$,
+        );
+        this.subscribeDefaultRosMessageTopic(
+            this.cameraTimerPeriodTopic,
+            this.cameraTimerPeriodReceiver$,
+        );
+        this.subscribeDefaultRosMessageTopic(
+            this.cameraQualityFactorTopic,
+            this.cameraQualityFactorReceiver$,
+        );
+        this.subscribeMotorSettingsTopic();
+        this.subscribeMotorCurrentTopic();
+        this.subscribeJointTrajectoryTopic();
+    }
+
+    subscribeDefaultRosMessageTopic(
+        topic: ROSLIB.Topic,
+        receiver$: Subject<any>,
+    ) {
+        topic.subscribe((message: any) => {
+            receiver$.next(message.data);
+        });
+    }
+
+    //Has its own method to make it accessible by the camera components "startCamera" method
+    subscribeCameraTopic() {
+        this.subscribeDefaultRosMessageTopic(
+            this.cameraTopic,
+            this.cameraReceiver$,
+        );
+    }
+
+    subscribeMotorSettingsTopic() {
+        this.motorSettingsTopic.subscribe((message) => {
+            this.motorSettingsReceiver$.next(message as MotorSettingsMessage);
+        });
+    }
+
+    subscribeJointTrajectoryTopic() {
+        this.jointTrajectoryTopic.subscribe((jointTrajectoryMessage) => {
+            this.jointTrajectoryReceiver$.next(
+                jointTrajectoryMessage as JointTrajectoryMessage,
+            );
+        });
+    }
+
+    subscribeMotorCurrentTopic() {
+        this.motorCurrentTopic.subscribe((message) => {
+            this.currentReceiver$.next(message as DiagnosticStatus);
+        });
+    }
+
+    unsubscribeCameraTopic() {
+        this.cameraTopic.unsubscribe();
     }
 
     sendMotorSettingsMessage(motorSettingsMessage: MotorSettingsMessage) {
-        const json = JSON.parse(JSON.stringify(motorSettingsMessage));
-        const parameters = Object.keys(json).map((key) => ({[key]: json[key]}));
-        const message = new ROSLIB.Message({data: JSON.stringify(parameters)});
-        this.motorSettingsTopic.publish(message);
-        this.sendMotorSettingsConsoleLog("Sent", message);
+        this.motorSettingsTopic.publish(motorSettingsMessage);
     }
 
     sendJointTrajectoryMessage(jointTrajectoryMessage: JointTrajectoryMessage) {
         const message = new ROSLIB.Message(jointTrajectoryMessage);
         this.jointTrajectoryTopic.publish(message);
-        this.sendJointTrajectoryConsoleLog("Sent", message);
     }
 
     //Remove this function after establishing a new test concept
@@ -243,267 +247,32 @@ export class RosService {
     sendVoiceActivationMessage(msg: VoiceAssistant) {
         const message = new ROSLIB.Message({data: JSON.stringify(msg)});
         this.voiceAssistantTopic.publish(message);
-        console.log("Sent message " + JSON.stringify(message));
     }
 
-    getJtReceiversByMotorName(
-        motorNames: string[],
-    ): Subject<JointTrajectoryMessage>[] {
-        const foundMotors = this.motors.filter((m) =>
-            motorNames.includes(m.motor),
-        );
-        return foundMotors.length > 0
-            ? foundMotors.map((m) => m["jointTrajectoryReceiver$"])
-            : [];
-    }
-
-    getMotorSettingsReceiversByMotorName(
-        motorName: string,
-    ): Subject<MotorSettingsMessage>[] {
-        const foundMotors = this.motors.filter((m) => m.motor === motorName);
-        return foundMotors.length > 0
-            ? foundMotors.map((m) => m["motorSettingsReceiver$"])
-            : [];
-    }
-
-    setUpRos() {
-        let rosUrl: string;
-        if (isDevMode()) {
-            rosUrl = "192.168.220.109";
-        } else {
-            rosUrl = window.location.hostname;
-        }
-        return new ROSLIB.Ros({
-            url: `ws://${rosUrl}:9090`,
-        });
-    }
-
-    subscribeJointTrajectoryTopic() {
-        this.jointTrajectoryTopic.subscribe((jointTrajectoryMessage) => {
-            const jsonString = JSON.stringify(jointTrajectoryMessage);
-            const parsedJtJson = JSON.parse(jsonString);
-
-            const receivers$ = this.getJtReceiversByMotorName(
-                parsedJtJson.joint_names,
-            );
-            receivers$.forEach((r) => {
-                r.next(parsedJtJson);
-            });
-
-            this.sendJointTrajectoryConsoleLog(
-                "Received",
-                jointTrajectoryMessage,
-            );
-        });
-    }
-
-    subscribeMotorSettingsTopic() {
-        this.motorSettingsTopic.subscribe((message) => {
-            const jsonStr = JSON.stringify(message);
-            const json = JSON.parse(jsonStr);
-            const jsonArray = JSON.parse(json["data"]);
-            const jsonObject = jsonArray.reduce(
-                (key: object, value: object) => {
-                    return {...key, ...value};
-                },
-                {},
-            );
-
-            this.sendMotorSettingsConsoleLog("Received", message);
-
-            const receivers$ = this.getMotorSettingsReceiversByMotorName(
-                jsonObject["motorName"],
-            );
-            receivers$.forEach((r) => {
-                r.next(jsonObject);
-            });
-        });
-    }
-
-    subscribeSliderTopic() {
-        this.sliderMessageTopic.subscribe((message) => {
-            const jsonStr = JSON.stringify(message);
-            const json = JSON.parse(jsonStr);
-            const jsonArray = JSON.parse(json["data"]);
-            const jsonObject = jsonArray.reduce(
-                (key: object, value: object) => {
-                    return {...key, ...value};
-                },
-                {},
-            );
-            console.log(
-                "Received message for " +
-                    jsonObject["motor"] +
-                    ": " +
-                    JSON.stringify(jsonObject),
-            );
-            const receivers$ = this.getMotorSettingsReceiversByMotorName(
-                jsonObject["motor"],
-            );
-            receivers$.forEach((r) => {
-                r.next(jsonObject);
-            });
-        });
-    }
-
-    subscribeCurrentTopic() {
-        this.motorCurrentTopic.subscribe((message) => {
-            this.currentReceiver$.next(message as DiagnosticStatus);
-        });
-    }
-
-    subscribeCameraTopic() {
-        this.cameraTopic.subscribe((message: any) => {
-            this.cameraReceiver$.next(message.data);
-        });
-    }
-
-    subscribeQualityFactorTopic() {
-        this.qualityFactorTopic.subscribe((message: any) => {
-            this.qualityFactorReceiver$.next(message.data);
-        });
-    }
-
-    subscribePreviewSize() {
-        this.previewSizeTopic.subscribe((message: any) => {
-            this.previewSizeReceiver$.next(message.data);
-        });
-    }
-
-    subscribeTimePeriod() {
-        this.timerPeriodTopic.subscribe((message: any) => {
-            this.timerPeriodReceiver$.next(message.data);
-        });
-    }
-
-    subscribeVoiceAssistant() {
-        this.voiceAssistantTopic.subscribe((message: any) => {
-            this.voiceAssistantReceiver$.next(message.data);
-        });
-    }
-
-    unsubscribeCameraTopic() {
-        this.cameraTopic.unsubscribe();
-    }
-
-    get Ros(): ROSLIB.Ros {
-        return this.ros;
-    }
-
-    get Topic(): ROSLIB.Topic {
-        return this.sliderMessageTopic;
-    }
-
-    createMessageTopic(): ROSLIB.Topic {
-        return new ROSLIB.Topic({
-            ros: this.ros,
-            name: this.topicName,
-            messageType: "std_msgs/String",
-        });
-    }
-
-    createVoiceAssistantTopic(): ROSLIB.Topic {
-        return new ROSLIB.Topic({
-            ros: this.ros,
-            name: this.topicVoiceName,
-            messageType: "std_msgs/String",
-        });
-    }
-
-    createMotorCurrentTopic(): ROSLIB.Topic {
-        return new ROSLIB.Topic({
-            ros: this.ros,
-            name: this.topicCurrentName,
-            messageType: "diagnostic_msgs/msg/DiagnosticStatus",
-        });
-    }
-
-    createCameraTopic(): ROSLIB.Topic {
-        return new ROSLIB.Topic({
-            ros: this.ros,
-            name: this.topicCameratName,
-            messageType: "std_msgs/String",
-        });
-    }
     setTimerPeriod(period: number | null) {
-        if (!this.timerPeriodTopic) {
+        if (!this.cameraTimerPeriodTopic) {
             console.error("ROS is not connected.");
             return;
         }
         const message = new ROSLIB.Message({data: period});
-        this.timerPeriodTopic.publish(message);
+        this.cameraTimerPeriodTopic.publish(message);
     }
 
     setPreviewSize(width: number, height: number) {
-        if (!this.previewSizeTopic) {
+        if (!this.cameraPreviewSizeTopic) {
             console.error("ROS is not connected.");
             return;
         }
         const message = new ROSLIB.Message({data: [width, height]});
-        this.previewSizeTopic.publish(message);
+        this.cameraPreviewSizeTopic.publish(message);
     }
 
     setQualityFactor(factor: number | null) {
-        if (!this.qualityFactorTopic) {
+        if (!this.cameraQualityFactorTopic) {
             console.error("ROS is not connected.");
             return;
         }
         const message = new ROSLIB.Message({data: factor});
-        this.qualityFactorTopic.publish(message);
-    }
-
-    createQualityFactorTopic() {
-        return new ROSLIB.Topic({
-            ros: this.ros,
-            name: "quality_factor_topic",
-            messageType: "std_msgs/Int32",
-        });
-    }
-
-    createEmptyJointTrajectoryMessage(): JointTrajectoryMessage {
-        const jointTrajectoryMessage: JointTrajectoryMessage = {
-            header: this.createDefaultStdMessageHeader(),
-            joint_names: <string[]>[],
-            points: <JointTrajectoryPoint[]>[],
-        };
-
-        return jointTrajectoryMessage;
-    }
-
-    createJointTrajectoryPoint(position: number): JointTrajectoryPoint {
-        const jointTrajectoryPoint: JointTrajectoryPoint = {
-            positions: new Array<number>(),
-            time_from_start: this.createDefaultRosTime(),
-        };
-        jointTrajectoryPoint.positions.push(position);
-
-        return jointTrajectoryPoint;
-    }
-
-    createDefaultRosTime(): RosTime {
-        const rosTime: RosTime = {
-            sec: 0,
-            nanosec: 100000000,
-        };
-
-        return rosTime;
-    }
-
-    createDefaultStdMessageHeader(): StdMessageHeader {
-        const now = new Date();
-        const stamp: RosTime = {
-            sec: Math.round(now.getTime() / 1000),
-            nanosec: 0,
-        };
-
-        const stdMessageHeader: StdMessageHeader = {
-            stamp,
-            //the frame_id specifies the environment the data should be interpreted it
-            //possible examples could be "camera_frame" oder "lidar_frame"
-            //as of right now, frames are unused in the pib-project, so a default value is assigned
-            frame_id: "motor_frame",
-        };
-
-        return stdMessageHeader;
+        this.cameraQualityFactorTopic.publish(message);
     }
 }
