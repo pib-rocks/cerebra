@@ -11,7 +11,7 @@ import {UrlConstants} from "./url.constants";
     providedIn: "root",
 })
 export class VoiceAssistantService {
-    personalities: VoiceAssistant[] = [];
+    private personalities: VoiceAssistant[] = [];
     personalitiesSubject: BehaviorSubject<VoiceAssistant[]> =
         new BehaviorSubject<VoiceAssistant[]>([]);
 
@@ -19,7 +19,7 @@ export class VoiceAssistantService {
         this.getAllPersonalities();
     }
 
-    updatePersonalityById(updatePersonality: VoiceAssistant) {
+    private updatePersonality(updatePersonality: VoiceAssistant) {
         const index = this.personalities.findIndex(
             (p) => p.personalityId === updatePersonality.personalityId,
         );
@@ -27,22 +27,23 @@ export class VoiceAssistantService {
         this.personalitiesSubject.next(this.personalities.slice());
     }
 
-    setPersonalities(personalities: VoiceAssistant[]) {
+    private setPersonalities(personalities: VoiceAssistant[]) {
         this.personalities = personalities;
         this.personalitiesSubject.next(this.personalities.slice());
     }
 
-    addPersonality(personality: VoiceAssistant) {
+    private addPersonality(personality: VoiceAssistant) {
         this.personalities.push(personality);
         this.personalitiesSubject.next(this.personalities.slice());
     }
 
-    deletePersonality(id: string) {
+    private deletePersonality(id: string) {
         this.personalities.splice(
             this.personalities.findIndex((p) => p.personalityId === id),
             1,
         );
         this.personalitiesSubject.next(this.personalities.slice());
+        console.log(this.personalities);
     }
 
     getAllPersonalities() {
@@ -65,7 +66,6 @@ export class VoiceAssistantService {
     }
 
     getPersonalityById(id: string) {
-        console.log(`/${id}`);
         this.apiService
             .get(UrlConstants.PERSONALITY + `/${id}`)
             .pipe(
@@ -98,7 +98,7 @@ export class VoiceAssistantService {
             });
     }
 
-    updatePersonality(personality: VoiceAssistant) {
+    updatePersonalityById(personality: VoiceAssistant) {
         this.apiService
             .put(
                 UrlConstants.PERSONALITY + `/${personality.personalityId}`,
@@ -117,7 +117,6 @@ export class VoiceAssistantService {
     }
 
     deletePersonalityById(id: string) {
-        console.log(`/${id}`);
         this.apiService
             .delete(UrlConstants.PERSONALITY + `/${id}`)
             .pipe(
