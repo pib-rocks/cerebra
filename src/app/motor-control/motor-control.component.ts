@@ -1,7 +1,7 @@
 import {Component, Input, OnInit, TemplateRef, ViewChild} from "@angular/core";
 import {FormControl} from "@angular/forms";
 import {Subject} from "rxjs";
-import {MotorService} from "../shared/motor.service";
+import {MotorService} from "../shared/services/motor.service";
 import {ModalDismissReasons, NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {SliderComponent} from "../slider/slider.component";
 import {Motor} from "../shared/types/motor.class";

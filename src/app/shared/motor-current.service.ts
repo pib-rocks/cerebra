@@ -2,7 +2,7 @@ import {Injectable} from "@angular/core";
 import {RosService} from "./ros.service";
 import {BehaviorSubject, Subscription} from "rxjs";
 import {DiagnosticStatus} from "./rosMessageTypes/DiagnosticStatus.message";
-import {MotorService} from "./motor.service";
+import {MotorService} from "./services/motor.service";
 import {Motor} from "./types/motor.class";
 
 // probably decrepit with service refactoring

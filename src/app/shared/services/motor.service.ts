@@ -1,12 +1,12 @@
 /* eslint-disable prettier/prettier */
 import {Injectable} from "@angular/core";
-import {RosService} from "./ros.service";
+import {RosService} from "../ros.service";
 import {BehaviorSubject} from "rxjs";
-import {Motor} from "./types/motor.class";
-import {Group} from "./types/motor.enum";
-import {MotorSettingsMessage} from "./rosMessageTypes/motorSettingsMessage";
-import {JointTrajectoryMessage} from "./rosMessageTypes/jointTrajectoryMessage";
-import {MotorSettings} from "./types/motor-settings.class";
+import {Motor} from "../types/motor.class";
+import {Group} from "../types/motor.enum";
+import {MotorSettingsMessage} from "../rosMessageTypes/motorSettingsMessage";
+import {JointTrajectoryMessage} from "../rosMessageTypes/jointTrajectoryMessage";
+import {MotorSettings} from "../types/motor-settings.class";
 
 @Injectable({
     providedIn: "root",

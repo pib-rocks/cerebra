@@ -1,16 +1,16 @@
 import {TestBed} from "@angular/core/testing";
 
 import {MotorService} from "./motor.service";
-import {Group} from "./types/motor.enum";
-import {Motor} from "./types/motor.class";
-import {MotorSettings} from "./types/motor-settings.class";
-import {RosService} from "./ros.service";
+import {Group} from "../types/motor.enum";
+import {Motor} from "../types/motor.class";
+import {MotorSettings} from "../types/motor-settings.class";
+import {RosService} from "../ros.service";
 import {
     JointTrajectoryMessage,
     createEmptyJointTrajectoryMessage,
-} from "./rosMessageTypes/jointTrajectoryMessage";
-import {MotorSettingsMessage} from "./rosMessageTypes/motorSettingsMessage";
-import {createJointTrajectoryPoint} from "./rosMessageTypes/jointTrajectoryPoint";
+} from "../rosMessageTypes/jointTrajectoryMessage";
+import {MotorSettingsMessage} from "../rosMessageTypes/motorSettingsMessage";
+import {createJointTrajectoryPoint} from "../rosMessageTypes/jointTrajectoryPoint";
 
 describe("MotorService", () => {
     let service: MotorService;

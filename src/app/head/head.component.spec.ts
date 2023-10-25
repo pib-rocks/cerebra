@@ -11,7 +11,7 @@ import {SliderComponent} from "../slider/slider.component";
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {JointTrajectoryMessage} from "../shared/rosMessageTypes/jointTrajectoryMessage";
 import {Group} from "../shared/types/motor.enum";
-import {MotorService} from "../shared/motor.service";
+import {MotorService} from "../shared/services/motor.service";
 
 describe("HeadComponent", () => {
     let component: HeadComponent;

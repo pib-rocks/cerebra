@@ -7,7 +7,7 @@ import {
 import {ReactiveFormsModule} from "@angular/forms";
 import {By} from "@angular/platform-browser";
 import {ModalDismissReasons, NgbModal} from "@ng-bootstrap/ng-bootstrap";
-import {MotorService} from "../shared/motor.service";
+import {MotorService} from "../shared/services/motor.service";
 import {SliderComponent} from "../slider/slider.component";
 import {MotorControlComponent} from "./motor-control.component";
 import {Motor} from "../shared/types/motor.class";

@@ -9,7 +9,7 @@ import {RosService} from "../shared/ros.service";
 import {NavBarComponent} from "../nav-bar/nav-bar.component";
 import {RouterTestingModule} from "@angular/router/testing";
 import {SliderComponent} from "../slider/slider.component";
-import {MotorService} from "../shared/motor.service";
+import {MotorService} from "../shared/services/motor.service";
 import {Group} from "../shared/types/motor.enum";
 import {ActivatedRoute} from "@angular/router";
 import {BehaviorSubject} from "rxjs";

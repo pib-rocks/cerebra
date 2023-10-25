@@ -9,7 +9,7 @@ import {RosService} from "../shared/ros.service";
 import {NavBarComponent} from "../nav-bar/nav-bar.component";
 import {CircularSliderComponent} from "../slider/circular-slider/circular-slider.component";
 import {SliderComponent} from "../slider/slider.component";
-import {MotorService} from "../shared/motor.service";
+import {MotorService} from "../shared/services/motor.service";
 import {ActivatedRoute} from "@angular/router";
 import {BehaviorSubject} from "rxjs";
 import {JointTrajectoryMessage} from "../shared/rosMessageTypes/jointTrajectoryMessage";
