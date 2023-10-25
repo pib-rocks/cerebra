@@ -40,23 +40,23 @@ export class MotorControlComponent implements OnInit {
         this.motor.motorSubject.subscribe((motor) => {
             this.motor = motor;
             this.pulseWidthSubject$.next([
-                this.motor.settings.pulse_width_min,
-                this.motor.settings.pulse_width_max,
+                this.motor.settings.pulseWidthMin,
+                this.motor.settings.pulseWidthMax,
             ]);
             this.degreeSubject$.next([
-                this.motor.settings.rotation_range_min,
-                this.motor.settings.rotation_range_max,
+                this.motor.settings.rotationRangeMin,
+                this.motor.settings.rotationRangeMax,
             ]);
             this.accelerationSubject$.next(this.motor.settings.acceleration);
             this.decelerationSubject$.next(this.motor.settings.deceleration);
             this.velocitySubject$.next(this.motor.settings.velocity);
             this.positionSubject$.next(this.motor.position);
-            this.motorFormControl.setValue(this.motor.settings.turned_on);
+            this.motorFormControl.setValue(this.motor.settings.turnedOn);
             this.periodSubject$.next(this.motor.settings.period);
         });
 
         this.motorFormControl.valueChanges.subscribe(() => {
-            this.motor.settings.turned_on = this.motorFormControl.value;
+            this.motor.settings.turnedOn = this.motorFormControl.value;
             this.motorService.updateMotorFromComponent(this.motor);
         });
     }
@@ -100,13 +100,13 @@ export class MotorControlComponent implements OnInit {
         this.motorService.updateMotorFromComponent(this.motor);
     }
     setPulseRanges(number: number[]) {
-        this.motor.settings.pulse_width_min = number[0];
-        this.motor.settings.pulse_width_max = number[1];
+        this.motor.settings.pulseWidthMin = number[0];
+        this.motor.settings.pulseWidthMax = number[1];
         this.motorService.updateMotorFromComponent(this.motor);
     }
     setDegree(number: number[]) {
-        this.motor.settings.rotation_range_min = number[0];
-        this.motor.settings.rotation_range_max = number[1];
+        this.motor.settings.rotationRangeMin = number[0];
+        this.motor.settings.rotationRangeMax = number[1];
         this.motorService.updateMotorFromComponent(this.motor);
     }
     setPeriod(number: number) {
@@ -126,7 +126,7 @@ export class MotorControlComponent implements OnInit {
         this.motorService.updateMotorFromComponent(this.motor);
     }
     changeTurnedOn() {
-        this.motor.settings.turned_on = !this.motor.settings.turned_on;
+        this.motor.settings.turnedOn = !this.motor.settings.turnedOn;
         this.motorService.updateMotorFromComponent(this.motor);
     }
 }

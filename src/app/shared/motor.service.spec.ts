@@ -107,7 +107,7 @@ describe("MotorService", () => {
         expect(activeMotors.length).toBe(29);
         expect(inactiveMotor.length).toBe(0);
         const editMotor = service.getMotorByName("thumb_left_stretch");
-        editMotor.settings.turned_on = false;
+        editMotor.settings.turnedOn = false;
         activeMotors = service.getMotorByTurnedOn(true);
         inactiveMotor = service.getMotorByTurnedOn(false);
         expect(activeMotors.length).toBe(28);
@@ -147,11 +147,11 @@ describe("MotorService", () => {
         expect(updatedMotor.settings.acceleration).toBe(500);
         expect(updatedMotor.settings.deceleration).toBe(500);
         expect(updatedMotor.settings.period).toBe(500);
-        expect(updatedMotor.settings.pulse_width_max).toBe(500);
-        expect(updatedMotor.settings.pulse_width_min).toBe(500);
-        expect(updatedMotor.settings.rotation_range_max).toBe(500);
-        expect(updatedMotor.settings.rotation_range_min).toBe(500);
-        expect(updatedMotor.settings.turned_on).toBe(false);
+        expect(updatedMotor.settings.pulseWidthMax).toBe(500);
+        expect(updatedMotor.settings.pulseWidthMin).toBe(500);
+        expect(updatedMotor.settings.rotationRangeMax).toBe(500);
+        expect(updatedMotor.settings.rotationRangeMin).toBe(500);
+        expect(updatedMotor.settings.turnedOn).toBe(false);
     });
 
     it("should send a JointTrajectoryMessage on sendJointTrajectoryMessage", () => {
@@ -297,11 +297,11 @@ describe("MotorService", () => {
         expect(
             spyOnUpdateMotorSettingsFromMotorSettingsMessage,
         ).toHaveBeenCalled();
-        expect(updatedMotor.settings.turned_on).toBe(false);
-        expect(updatedMotor.settings.pulse_width_min).toBe(500);
-        expect(updatedMotor.settings.pulse_width_max).toBe(500);
-        expect(updatedMotor.settings.rotation_range_min).toBe(500);
-        expect(updatedMotor.settings.rotation_range_max).toBe(500);
+        expect(updatedMotor.settings.turnedOn).toBe(false);
+        expect(updatedMotor.settings.pulseWidthMin).toBe(500);
+        expect(updatedMotor.settings.pulseWidthMax).toBe(500);
+        expect(updatedMotor.settings.rotationRangeMax).toBe(500);
+        expect(updatedMotor.settings.rotationRangeMin).toBe(500);
         expect(updatedMotor.settings.velocity).toBe(500);
         expect(updatedMotor.settings.acceleration).toBe(500);
         expect(updatedMotor.settings.deceleration).toBe(500);
@@ -371,11 +371,11 @@ describe("MotorService", () => {
             expect(m.settings.acceleration).toBe(500);
             expect(m.settings.deceleration).toBe(500);
             expect(m.settings.period).toBe(500);
-            expect(m.settings.pulse_width_min).toBe(500);
-            expect(m.settings.pulse_width_max).toBe(500);
-            expect(m.settings.rotation_range_min).toBe(500);
-            expect(m.settings.rotation_range_max).toBe(500);
-            expect(m.settings.turned_on).toBe(false);
+            expect(m.settings.pulseWidthMin).toBe(500);
+            expect(m.settings.pulseWidthMax).toBe(500);
+            expect(m.settings.rotationRangeMax).toBe(500);
+            expect(m.settings.rotationRangeMin).toBe(500);
+            expect(m.settings.turnedOn).toBe(false);
         });
         service.resetMotorGroupSettings(Group.right_hand);
         expect(spyOnResetMotorGroupSettings).toHaveBeenCalled();
@@ -384,11 +384,11 @@ describe("MotorService", () => {
             expect(m.settings.acceleration).toBe(0);
             expect(m.settings.deceleration).toBe(0);
             expect(m.settings.period).toBe(0);
-            expect(m.settings.pulse_width_min).toBe(0);
-            expect(m.settings.pulse_width_max).toBe(65535);
-            expect(m.settings.rotation_range_min).toBe(-9000);
-            expect(m.settings.rotation_range_max).toBe(9000);
-            expect(m.settings.turned_on).toBe(true);
+            expect(m.settings.pulseWidthMin).toBe(0);
+            expect(m.settings.pulseWidthMax).toBe(65535);
+            expect(m.settings.rotationRangeMin).toBe(-9000);
+            expect(m.settings.rotationRangeMax).toBe(9000);
+            expect(m.settings.turnedOn).toBe(true);
         });
         motors.forEach((m) => {
             expect(m.position).toBe(0);

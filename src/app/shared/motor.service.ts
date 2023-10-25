@@ -129,8 +129,8 @@ export class MotorService {
     public getMotorByHardwareId(hwId: string): Motor | undefined {
         return this.motors.find((m) => m.hardware_id === hwId);
     }
-    public getMotorByTurnedOn(turned_on: boolean): Motor[] {
-        return this.motors.filter((m) => m.settings.turned_on === turned_on);
+    public getMotorByTurnedOn(turnedOn: boolean): Motor[] {
+        return this.motors.filter((m) => m.settings.turnedOn === turnedOn);
     }
     public getMotorSubjectByName(
         name: string,

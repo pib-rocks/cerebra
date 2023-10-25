@@ -67,12 +67,12 @@ describe("MotorControlComponent", () => {
         expect(component.motor.position).toBe(500);
         expect(component.motor.settings.acceleration).toBe(500);
         expect(component.motor.settings.deceleration).toBe(500);
-        expect(component.motor.settings.rotation_range_max).toBe(500);
-        expect(component.motor.settings.rotation_range_min).toBe(500);
+        expect(component.motor.settings.rotationRangeMax).toBe(500);
+        expect(component.motor.settings.rotationRangeMin).toBe(500);
         expect(component.motor.settings.period).toBe(500);
-        expect(component.motor.settings.pulse_width_max).toBe(500);
-        expect(component.motor.settings.pulse_width_min).toBe(500);
-        expect(component.motor.settings.turned_on).toBe(false);
+        expect(component.motor.settings.pulseWidthMax).toBe(500);
+        expect(component.motor.settings.pulseWidthMin).toBe(500);
+        expect(component.motor.settings.turnedOn).toBe(false);
     });
 
     it("should open settings modal on clicking the settings-button", () => {
@@ -114,7 +114,7 @@ describe("MotorControlComponent", () => {
 
     it("should turn the motor on/off on checking the checkbox", () => {
         motorSubject?.next(updateMotor);
-        expect(component.motor.settings.turned_on).toBe(false);
+        expect(component.motor.settings.turnedOn).toBe(false);
         const spyOnChangeTurnedOn = spyOn(
             component,
             "changeTurnedOn",
@@ -123,7 +123,7 @@ describe("MotorControlComponent", () => {
         fixture.detectChanges();
         checkbox.click();
         expect(spyOnChangeTurnedOn).toHaveBeenCalled();
-        expect(component.motor.settings.turned_on).toBe(true);
+        expect(component.motor.settings.turnedOn).toBe(true);
     });
 
     it("should change the motor position on capturing child-component event", () => {
@@ -182,15 +182,15 @@ describe("MotorControlComponent", () => {
         const spyOnSetDegree = spyOn(component, "setDegree").and.callThrough();
         component.setDegree([300, 300]);
         expect(spyOnSetDegree).toHaveBeenCalled();
-        expect(component.motor.settings.rotation_range_max).toBe(300);
-        expect(component.motor.settings.rotation_range_min).toBe(300);
+        expect(component.motor.settings.rotationRangeMax).toBe(300);
+        expect(component.motor.settings.rotationRangeMin).toBe(300);
         expect(
             motorService.getMotorByName(component.motor.name).settings
-                .rotation_range_max,
+                .rotationRangeMax,
         ).toBe(300);
         expect(
             motorService.getMotorByName(component.motor.name).settings
-                .rotation_range_min,
+                .rotationRangeMin,
         ).toBe(300);
     });
 
@@ -203,15 +203,15 @@ describe("MotorControlComponent", () => {
         ).and.callThrough();
         component.setPulseRanges([300, 300]);
         expect(spyOnSetPulseRanges).toHaveBeenCalled();
-        expect(component.motor.settings.pulse_width_max).toBe(300);
-        expect(component.motor.settings.pulse_width_min).toBe(300);
+        expect(component.motor.settings.pulseWidthMin).toBe(300);
+        expect(component.motor.settings.pulseWidthMax).toBe(300);
         expect(
             motorService.getMotorByName(component.motor.name).settings
-                .pulse_width_max,
+                .pulseWidthMax,
         ).toBe(300);
         expect(
             motorService.getMotorByName(component.motor.name).settings
-                .pulse_width_min,
+                .pulseWidthMax,
         ).toBe(300);
     });
 
