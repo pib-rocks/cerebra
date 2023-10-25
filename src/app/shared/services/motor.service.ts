@@ -7,6 +7,8 @@ import {Group} from "../types/motor.enum";
 import {MotorSettingsMessage} from "../rosMessageTypes/motorSettingsMessage";
 import {JointTrajectoryMessage} from "../rosMessageTypes/jointTrajectoryMessage";
 import {MotorSettings} from "../types/motor-settings.class";
+import {ApiService} from "./api.service";
+import {UrlConstants} from "./url.constants";
 
 @Injectable({
     providedIn: "root",
@@ -54,7 +56,10 @@ export class MotorService {
 
     motors: Motor[] = [];
 
-    constructor(private rosService: RosService) {
+    constructor(
+        private rosService: RosService,
+        private apiService: ApiService,
+    ) {
         this.createMotors();
         this.subscribeJointTrajectorySubject();
         this.subscribeMotorSettingsSubject();
@@ -155,6 +160,7 @@ export class MotorService {
     }
 
     sendMotorSettingsMessage(motor: Motor) {
+        this.updateMotorInDb(motor);
         this.rosService.sendMotorSettingsMessage(
             motor.parseMotorToSettingsMessage(),
         );
@@ -239,5 +245,35 @@ export class MotorService {
             m.settings = settings;
             this.sendMotorSettingsMessage(m);
         });
+    }
+
+    updateMotorGroupFromApi(group: number): Motor[] {
+        this.getMotorsByGroup(group).forEach((m) => {
+            this.apiService
+                .get(UrlConstants.MOTORSETTINGS + `/${m.name}`)
+                .subscribe((response) => {
+                    m.settings.acceleration = response["acceleration"];
+                    m.settings.deceleration = response["deceleration"];
+                    m.settings.pulseWidthMin = response["pulseWidthMin"];
+                    m.settings.pulseWidthMax = response["pulseWidthMax"];
+                    m.settings.rotationRangeMin = response["rotationRangeMin"];
+                    m.settings.rotationRangeMax = response["rotationRangeMax"];
+                    m.settings.velocity = response["velocity"];
+                    m.settings.period = response["period"];
+                    m.motorSubject.next(m.clone());
+                });
+        });
+        return this.getMotorsByGroup(group);
+    }
+
+    updateMotorInDb(motor: Motor) {
+        this.apiService
+            .put(
+                UrlConstants.MOTORSETTINGS,
+                motor.parseMotorToSettingsMessage(),
+            )
+            .subscribe((response) => {
+                console.log(response);
+            });
     }
 }
