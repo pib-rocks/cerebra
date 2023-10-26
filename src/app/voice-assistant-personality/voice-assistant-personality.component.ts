@@ -79,8 +79,6 @@ export class VoiceAssistantPersonalityComponent {
     }
 
     ngOnInit() {
-        this.setPauseThreshold();
-
         this.nameFormControl.setValidators([
             Validators.required,
             Validators.minLength(2),
@@ -226,7 +224,7 @@ export class VoiceAssistantPersonalityComponent {
         );
     }
 
-    private setPauseThreshold() {
+    private setPauseThresholdString() {
         if (this.activePersonality && this.activePersonality.pauseThreshold) {
             this.thresholdString = this.activePersonality.pauseThreshold + "s";
         }
@@ -256,6 +254,7 @@ export class VoiceAssistantPersonalityComponent {
         for (let personality of this.personalities) {
             personality.selected = id === personality.id;
         }
+        this.setPauseThresholdString();
         this.voiceAssistantService.lastSelectedIdSubject.next(id);
     }
 }
