@@ -15,6 +15,7 @@ import {BehaviorSubject} from "rxjs";
 import {JointTrajectoryMessage} from "../shared/rosMessageTypes/jointTrajectoryMessage";
 import {MotorSettingsMessage} from "../shared/rosMessageTypes/motorSettingsMessage";
 import {Group} from "../shared/types/motor.enum";
+import {HttpClientTestingModule} from "@angular/common/http/testing";
 
 describe("HandComponent", () => {
     let component: HandComponent;
@@ -42,7 +43,11 @@ describe("HandComponent", () => {
                 CircularSliderComponent,
                 SliderComponent,
             ],
-            imports: [RouterTestingModule, ReactiveFormsModule],
+            imports: [
+                RouterTestingModule,
+                ReactiveFormsModule,
+                HttpClientTestingModule,
+            ],
             providers: [
                 RosService,
                 {

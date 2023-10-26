@@ -16,6 +16,7 @@ import {Group} from "../shared/types/motor.enum";
 import {BehaviorSubject} from "rxjs";
 import {RosService} from "../shared/ros.service";
 import {VerticalSliderComponent} from "../vertical-slider/vertical-slider.component";
+import {HttpClientTestingModule} from "@angular/common/http/testing";
 
 describe("MotorControlComponent", () => {
     let component: MotorControlComponent;
@@ -32,7 +33,7 @@ describe("MotorControlComponent", () => {
                 SliderComponent,
                 VerticalSliderComponent,
             ],
-            imports: [ReactiveFormsModule],
+            imports: [ReactiveFormsModule, HttpClientTestingModule],
             providers: [RosService, MotorService, NgbModal],
         }).compileComponents();
 

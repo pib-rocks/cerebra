@@ -11,13 +11,17 @@ import {
 } from "../rosMessageTypes/jointTrajectoryMessage";
 import {MotorSettingsMessage} from "../rosMessageTypes/motorSettingsMessage";
 import {createJointTrajectoryPoint} from "../rosMessageTypes/jointTrajectoryPoint";
+import {HttpClientTestingModule} from "@angular/common/http/testing";
 
 describe("MotorService", () => {
     let service: MotorService;
     let rosService: RosService;
     let spyOnMotors: jasmine.Spy<() => void>;
     beforeEach(() => {
-        TestBed.configureTestingModule({providers: [MotorService, RosService]});
+        TestBed.configureTestingModule({
+            providers: [MotorService, RosService],
+            imports: [HttpClientTestingModule],
+        });
         service = TestBed.inject(MotorService);
         rosService = TestBed.inject(RosService);
         rosService.initTopics();
