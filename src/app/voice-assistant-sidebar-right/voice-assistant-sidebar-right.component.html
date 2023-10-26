@@ -1,8 +1,10 @@
-<div class="bg-navigation-Kopie col">
-    <div class="container-fluid">
+<div class="bg-navigation-Kopie">
+    <div
+        class="container-fluid"
+        style="width: 100%;">
         <div class="row">
             <div
-                class="col-4 p-0"
+                class="col p-0"
                 *ngFor="let element of headerElements"
                 (mouseenter)="onButtonHover(element)"
                 (mouseleave)="onButtonHover(element)">
@@ -23,28 +25,24 @@
             </div>
         </div>
     </div>
-    <div class="container-fluid">
-        <div
+    <div class="container-fluid body">
+        <button
             class="row buttonRow"
             *ngFor="let element of bodyElements"
             (mouseenter)="onButtonHover(element)"
             (mouseleave)="onButtonHover(element)"
-            (click)="activateBodyElement(element)">
-            <button
-                [id]="getIdString(element.name)"
-                class="container d-flex bodyElements elementButtons"
-                [class.btn-active]="element.selected || element.hovered">
-                <div class="row mt-1 p-1 elementIcon">
-                    <div class="mt-1">
-                        <img
-                            [src]="element.selected || element.hovered ? elementIconActive : elementIcon"
-                            width="16"
-                            height="16"
-                            alt="" />
-                    </div>
-                </div>
-                <div class="row p-2 mt-1 bodyElementText">{{element.name}}</div>
-            </button>
-        </div>
+            (click)="activateBodyElement(element)"
+            [id]="getIdString(element.name)"
+            class="row bodyElements elementButtons"
+            [class.btn-active]="element.selected || element.hovered">
+            <div class="col-2 elementIcon">
+                <img
+                    [src]="element.selected || element.hovered ? elementIconActive : elementIcon"
+                    width="16"
+                    height="16"
+                    alt="" />
+            </div>
+            <label class="col-10 bodyElementText mt-2">{{element.name}}</label>
+        </button>
     </div>
 </div>

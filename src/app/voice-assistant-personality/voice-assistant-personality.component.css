@@ -59,7 +59,7 @@ textarea:focus {
     color: #fff;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1310px) {
     .allContent {
         display: block;
     }
