@@ -2,7 +2,7 @@ import {CameraSetting} from "../types/camera-settings";
 import {ApiService} from "./api.service";
 import {RosService} from "../ros.service";
 import {UrlConstants} from "../../shared/services/url.constants";
-import {BehaviorSubject, catchError, throwError} from "rxjs";
+import {BehaviorSubject, Subject, catchError, throwError} from "rxjs";
 import {Injectable} from "@angular/core";
 
 @Injectable({
@@ -20,6 +20,7 @@ export class CameraService {
         this.getCameraSettings();
         this.subscribeCameraQualityFactorReceiver();
         this.subscribeCameraPreviewSizeReceiver();
+        this.subscribeCameraReseiver();
     }
 
     camera: CameraSetting | undefined;
@@ -35,6 +36,11 @@ export class CameraService {
         new BehaviorSubject<string>("");
     cameraIsActiveSubject: BehaviorSubject<boolean> =
         new BehaviorSubject<boolean>(false);
+    cameraReciver$: Subject<string> = new Subject<string>();
+
+    rosCameraQualityFactorReceiver =
+        this.rosService.cameraQualityFactorReceiver$;
+    rosCameraTimerPeriodReceiver = this.rosService.cameraTimerPeriodReceiver$;
 
     updateCameraSettings(updateCameraSetting: CameraSetting) {
         this.apiService
@@ -101,7 +107,10 @@ export class CameraService {
     subscribeCameraPreviewSizeReceiver() {
         this.rosService.cameraPreviewSizeReceiver$.subscribe(
             (message: number[]) => {
-                if (this.previewSize != message) {
+                if (
+                    message[0] != this.previewSize[0] &&
+                    message[1] != this.previewSize[1]
+                ) {
                     this.cameraPreviewSizeSubject.next(message);
                     this.previewSize = message;
                 }
@@ -118,6 +127,12 @@ export class CameraService {
                 }
             },
         );
+    }
+
+    subscribeCameraReseiver() {
+        this.rosService.cameraReceiver$.subscribe((message: string) => {
+            this.cameraReciver$.next(message);
+        });
     }
 
     qualityControlPublish(formControlValue: number) {

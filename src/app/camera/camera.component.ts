@@ -42,24 +42,28 @@ export class CameraComponent implements OnInit, OnDestroy, OnChanges {
 
     ngOnInit(): void {
         this.imageSrc = "../../assets/camera-placeholder.jpg";
-        this.rosService.cameraReceiver$.subscribe((message) => {
+        this.cameraService.cameraReciver$.subscribe((message) => {
             this.imageSrc = "data:image/jpeg;base64," + message;
             console.log("-------------------------");
             if (message.startsWith("Camera not available")) {
                 this.imageSrc = "../../assets/camera-error-image.svg";
             }
         });
+        //Fragen wie ich das in den Service auslagener kann
         this.rosService.Ros.on("error", (error: string) => {
             if (this.isCameraActive) {
                 this.imageSrc = "../../assets/camera-error-image.svg";
                 console.error(error);
             }
         });
-        //in cameraServie verlagern
-        this.qualityReceiver$ = this.rosService.cameraQualityFactorReceiver$;
-        this.refreshRateReceiver$ = this.rosService.cameraTimerPeriodReceiver$;
+        this.qualityReceiver$ =
+            this.cameraService.rosCameraQualityFactorReceiver;
+        this.refreshRateReceiver$ =
+            this.cameraService.rosCameraTimerPeriodReceiver;
     }
+    //@TODO fix
     ngOnChanges(): void {
+        console.log("asd");
         this.cameraService.saveCameraSettings();
     }
     ngOnDestroy(): void {
@@ -76,7 +80,7 @@ export class CameraComponent implements OnInit, OnDestroy, OnChanges {
             "max-height",
             height + "px",
         );
-
+        this.selectedSize = resolution;
         if (publish) {
             this.isLoading = true;
             this.cameraService.setPreviewSize(width, height);
@@ -156,11 +160,11 @@ export class CameraComponent implements OnInit, OnDestroy, OnChanges {
         this.cameraService.cameraPreviewSizeSubject.subscribe(
             (message: number[]) => {
                 if (message[1] == 480)
-                    this.setSize(message[0], message[1], "SD");
+                    this.setSize(message[0], message[1], "480p (SD)");
                 if (message[1] == 720)
-                    this.setSize(message[0], message[1], "HD");
+                    this.setSize(message[0], message[1], "720p (HD)");
                 if (message[1] == 1080)
-                    this.setSize(message[0], message[1], "FHD");
+                    this.setSize(message[0], message[1], "1080p (FHD)");
             },
         );
     }
