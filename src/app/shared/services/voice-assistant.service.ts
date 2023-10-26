@@ -4,7 +4,7 @@ import {
     VoiceAssistant,
     parseVoiceAssistantToDto,
 } from "../types/voice-assistant";
-import {BehaviorSubject, catchError, tap, throwError} from "rxjs";
+import {BehaviorSubject, catchError, throwError} from "rxjs";
 import {UrlConstants} from "./url.constants";
 
 @Injectable({
@@ -14,6 +14,8 @@ export class VoiceAssistantService {
     personalities: VoiceAssistant[] = [];
     personalitiesSubject: BehaviorSubject<VoiceAssistant[]> =
         new BehaviorSubject<VoiceAssistant[]>([]);
+    lastSelectedIdSubject: BehaviorSubject<string> =
+        new BehaviorSubject<string>("");
 
     constructor(private apiService: ApiService) {
         this.getAllPersonalities();
@@ -59,8 +61,6 @@ export class VoiceAssistantService {
                 this.setPersonalities(
                     response["voiceAssistantPersonalities"] as VoiceAssistant[],
                 );
-                console.log(this.personalities);
-                console.log(response);
             });
     }
 
@@ -94,7 +94,9 @@ export class VoiceAssistantService {
                 }),
             )
             .subscribe((response) => {
-                this.addPersonality(response as VoiceAssistant);
+                let personality = response as VoiceAssistant;
+                this.lastSelectedIdSubject.next(personality.personalityId);
+                this.addPersonality(personality);
             });
     }
 
@@ -112,7 +114,7 @@ export class VoiceAssistantService {
                 }),
             )
             .subscribe((response) => {
-                this.updatePersonality(response as VoiceAssistant);
+                this.updatePersonalityById(response as VoiceAssistant);
             });
     }
 

@@ -13,9 +13,14 @@ export class VoiceAssistantChatComponent {
     exportButtonHovered = false;
     activeIcon = "../../assets/voice-assistant-svgs/chat/chat_active.svg";
     chatTopics = [
-        {id: "", name: "Short stories", active: true, hovered: false},
-        {id: "", name: "Nürnberg", active: false, hovered: false},
-        {id: "", name: "Definition of AI today", active: false, hovered: false},
+        {id: "", name: "Short stories", selected: true, hovered: false},
+        {id: "", name: "Nürnberg", selected: false, hovered: false},
+        {
+            id: "",
+            name: "Definition of AI today",
+            selected: false,
+            hovered: false,
+        },
     ];
     chatIconPaths = {
         icon: "../../assets/voice-assistant-svgs/chat/chat.svg",

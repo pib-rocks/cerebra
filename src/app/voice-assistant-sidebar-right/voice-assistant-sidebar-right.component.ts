@@ -16,7 +16,7 @@ export class VoiceAssistantSidebarRightComponent {
     @Input() bodyElements: {
         id: string;
         name: string;
-        active: boolean;
+        selected: boolean;
         hovered: boolean;
     }[] = [];
     @Input() elementIcon: string = "";
@@ -40,7 +40,7 @@ export class VoiceAssistantSidebarRightComponent {
             if (el == element) {
                 continue;
             } else {
-                el.active = false;
+                el.selected = false;
             }
         }
         this.bodyElementClickEvent.emit(element.id);

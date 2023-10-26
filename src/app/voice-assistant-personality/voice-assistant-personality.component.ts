@@ -1,8 +1,15 @@
-import {Component, TemplateRef, ViewChild} from "@angular/core";
+import {
+    Component,
+    EventEmitter,
+    Output,
+    TemplateRef,
+    ViewChild,
+} from "@angular/core";
 import {FormControl, Validators} from "@angular/forms";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {VoiceAssistantService} from "../shared/services/voice-assistant.service";
 import {VoiceAssistant} from "../shared/types/voice-assistant";
+import {voiceAssistantGenderValidator} from "../shared/validators";
 
 @Component({
     selector: "app-voice-assistant-personality",
@@ -22,7 +29,7 @@ export class VoiceAssistantPersonalityComponent {
     personalities: {
         id: string;
         name: string;
-        active: boolean;
+        selected: boolean;
         hovered: boolean;
     }[] = [];
     headerElements = [
@@ -49,124 +56,180 @@ export class VoiceAssistantPersonalityComponent {
         },
     ];
     validPauseThresholdPattern: RegExp = /^(0\.[1-9]\d*|1\.0*)$/;
-    nameFormControl: FormControl = new FormControl(
-        "",
-        Validators.compose([Validators.required, Validators.minLength(2)]),
-    );
-    genderFormControl: FormControl = new FormControl("", Validators.required);
-    pauseThresholdFormControl: FormControl = new FormControl(
-        0,
-        Validators.compose([
-            Validators.required,
-            Validators.pattern(this.validPauseThresholdPattern),
-        ]),
-    );
+    nameFormControl: FormControl = new FormControl();
+    genderFormControl: FormControl = new FormControl("");
+    pauseThresholdFormControl: FormControl<number> = new FormControl();
     descriptionFormControl: FormControl = new FormControl();
 
     saveButton: boolean = false;
     saveAsButton: boolean = false;
     headerButtonLabel: string | undefined;
-    tresholdString: string | undefined;
+    thresholdString: string | undefined;
     activePersonality: VoiceAssistant | undefined;
+    lastSelectedId: string = "";
+
+    @Output() test = new EventEmitter<object[]>();
 
     constructor(
         private modalService: NgbModal,
         private voiceAssistantService: VoiceAssistantService,
-    ) {}
-
-    ngOnInit() {
-        this.loadPersonalitiesFromService();
+    ) {
+        this.subscribeToLastSelectedIdFromService();
+        this.subscribeToServicePersonalitiesBehaviourSubject();
     }
 
-    loadPersonalitiesFromService() {
-        for (
-            let i = 0;
-            i < this.voiceAssistantService.personalities.length;
-            i++
-        ) {
-            const personality = {
-                id: this.voiceAssistantService.personalities[i].personalityId,
-                name: this.voiceAssistantService.personalities[i].name,
-                active: i == 0,
-                hovered: false,
-            };
-            this.personalities.push(personality);
-        }
-        this.activePersonality = this.voiceAssistantService.personalities[0];
+    ngOnInit() {
+        this.setPauseThreshold();
+
+        this.nameFormControl.setValidators([
+            Validators.required,
+            Validators.minLength(2),
+        ]);
+
+        this.genderFormControl.setValidators([
+            Validators.required,
+            voiceAssistantGenderValidator(this.genderFormControl.value),
+        ]);
+
+        this.pauseThresholdFormControl.setValidators([
+            Validators.required,
+            Validators.pattern(this.validPauseThresholdPattern),
+        ]);
     }
 
     executeSidebarHeaderButtonFunctionality(label: string) {
         this.headerButtonLabel = label;
-        let personalityId: string;
-        if (label == "ADD" || label == "EDIT") {
-            if (label == "EDIT") {
-                if (this.activePersonality != undefined) {
-                    this.nameFormControl.setValue(this.activePersonality.name);
-                    this.descriptionFormControl.setValue(
-                        this.activePersonality.description,
-                    );
-                    this.genderFormControl.setValue(
-                        this.activePersonality.gender,
-                    );
-                    this.pauseThresholdFormControl.setValue(
-                        this.activePersonality.pauseThreshold,
-                    );
-                    personalityId = this.activePersonality.personalityId;
-                } else {
-                    //Todo: Ask Jürgen what error message to show here if sidebar list is empty.
-                    return;
+        let VoiceAssistantRequestObject: VoiceAssistant;
+
+        if (label == "DELETE") {
+            this.deletePersonality();
+            return;
+        } else if (label == "ADD") {
+            this.prepareAddFormControl();
+        } else if (label == "EDIT") {
+            this.prepareEditFormControl();
+        }
+        this.showModal().result.then(
+            (result) => {},
+            (reason) => {
+                if (this.allInputsValid()) {
+                    VoiceAssistantRequestObject =
+                        this.createVoiceAssistantRequestObject(label);
+                    if (label == "ADD") {
+                        this.voiceAssistantService.createPersonality(
+                            VoiceAssistantRequestObject,
+                        );
+                    } else {
+                        this.voiceAssistantService.updatePersonality(
+                            VoiceAssistantRequestObject,
+                        );
+                    }
                 }
-            }
-            this.modalService
-                .open(this.modalContent, {
-                    ariaLabelledBy: "modal-basic-title",
-                    size: "sm",
-                    windowClass: "myCustomModalClass",
-                    backdropClass: "myCustomBackdropClass",
-                })
-                .result.then(
-                    (result) => {},
-                    (reason) => {
-                        if (this.allInputsValid()) {
-                            const personality: VoiceAssistant = {
-                                personalityId: personalityId,
-                                name: this.nameFormControl.value,
-                                description: this.descriptionFormControl.value,
-                                gender: this.genderFormControl.value,
-                                pauseThreshold:
-                                    this.pauseThresholdFormControl.value,
-                            };
-                            if (label == "ADD") {
-                                this.voiceAssistantService.addPersonality(
-                                    personality,
-                                );
-                            } else {
-                                this.voiceAssistantService.updatePersonality(
-                                    personality,
-                                );
-                            }
-                        }
-                    },
-                );
-        } else if (label == "DELETE") {
-            if (this.activePersonality) {
-                this.voiceAssistantService.deletePersonalityById(
-                    this.activePersonality?.personalityId,
-                );
-            }
+            },
+        );
+    }
+
+    private deletePersonality() {
+        if (this.activePersonality) {
+            this.voiceAssistantService.deletePersonalityById(
+                this.activePersonality?.personalityId,
+            );
         }
     }
 
-    allInputsValid() {
+    private prepareAddFormControl() {
+        this.nameFormControl.setValue("");
+        this.descriptionFormControl.setValue("");
+        this.pauseThresholdFormControl.setValue(0);
+        this.thresholdString = "";
+        this.genderFormControl.setValue("");
+    }
+
+    private prepareEditFormControl() {
+        if (this.activePersonality != undefined) {
+            this.nameFormControl.setValue(this.activePersonality.name);
+            this.descriptionFormControl.setValue(
+                this.activePersonality.description,
+            );
+            this.genderFormControl.setValue(this.activePersonality.gender);
+            this.pauseThresholdFormControl.setValue(
+                this.activePersonality.pauseThreshold,
+            );
+        }
+    }
+
+    private showModal() {
+        return this.modalService.open(this.modalContent, {
+            ariaLabelledBy: "modal-basic-title",
+            size: "sm",
+            windowClass: "myCustomModalClass",
+            backdropClass: "myCustomBackdropClass",
+        });
+    }
+
+    private createVoiceAssistantRequestObject(label: string) {
+        let personalityId = this.activePersonality?.personalityId
+            ? this.activePersonality.personalityId
+            : "";
+        const personality: VoiceAssistant = {
+            personalityId: label == "ADD" ? "" : personalityId,
+            name: this.nameFormControl.value,
+            description: this.descriptionFormControl.value,
+            gender: this.genderFormControl.value,
+            pauseThreshold: this.pauseThresholdFormControl.value,
+        };
+
+        return personality;
+    }
+
+    private allInputsValid() {
         return (
             this.nameFormControl.value != undefined &&
             this.nameFormControl.value != "" &&
             this.validPauseThresholdPattern.test(
-                this.pauseThresholdFormControl.value,
+                "" + this.pauseThresholdFormControl.value,
             ) &&
-            (this.genderFormControl.value == "male" ||
-                this.genderFormControl.value == "female")
+            (this.genderFormControl.value.toLowerCase() == "male" ||
+                this.genderFormControl.value.toLowerCase() == "female")
         );
+    }
+
+    private subscribeToLastSelectedIdFromService() {
+        this.voiceAssistantService.lastSelectedIdSubject.subscribe(
+            (id) => (this.lastSelectedId = id),
+        );
+    }
+
+    private subscribeToServicePersonalitiesBehaviourSubject() {
+        this.voiceAssistantService.personalitiesSubject.subscribe(
+            (personalities) => {
+                this.personalities = [];
+                personalities.forEach((dbPersonality) => {
+                    const personality = {
+                        id: dbPersonality.personalityId,
+                        name: dbPersonality.name,
+                        selected:
+                            dbPersonality.personalityId == this.lastSelectedId,
+                        hovered: false,
+                    };
+                    this.personalities.push(personality);
+                });
+                let personality_active = this.personalities.find(
+                    (personality) => personality.selected,
+                );
+                if (personality_active == undefined) {
+                    this.activateNewPersonality(this.personalities[0]?.id);
+                } else {
+                    this.activateNewPersonality(personality_active.id);
+                }
+            },
+        );
+    }
+
+    private setPauseThreshold() {
+        if (this.activePersonality && this.activePersonality.pauseThreshold) {
+            this.thresholdString = this.activePersonality.pauseThreshold + "s";
+        }
     }
 
     switchGender(id: string) {
@@ -182,20 +245,17 @@ export class VoiceAssistantPersonalityComponent {
         }
 
         this.pauseThresholdFormControl.setValue(thresholdValue / 10);
-        this.tresholdString = thresholdValue / 10 + "s";
+        this.thresholdString = thresholdValue / 10 + "s";
     }
 
     activateNewPersonality(id: string) {
-        for (let personality of this.voiceAssistantService.personalities) {
-            if (id == personality.personalityId) {
-                this.activePersonality = personality;
-                break;
-            }
-        }
-
+        this.activePersonality = this.voiceAssistantService.personalities.find(
+            (personality) => personality.personalityId === id,
+        );
+        console.log(this.activePersonality);
         for (let personality of this.personalities) {
-            //Todo: check if this is really necessary
-            personality.active = id === personality.id;
+            personality.selected = id === personality.id;
         }
+        this.voiceAssistantService.lastSelectedIdSubject.next(id);
     }
 }

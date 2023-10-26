@@ -101,6 +101,7 @@
             >Name</label
         >
         <input
+            #name
             class="col-9"
             [formControl]="nameFormControl"
             type="text"
@@ -114,10 +115,12 @@
             class="col-5"
             id="radio-button-female">
             <input
+                #radioFemale
                 class="m-2"
                 [formControl]="genderFormControl"
-                value="female"
-                (click)="switchGender('female')"
+                value="Female"
+                (click)="switchGender('Female')"
+                checked="genderFormControl.value"
                 type="radio"
                 name="female"
                 id="radio-female" />
@@ -131,10 +134,12 @@
             class="col-4"
             id="radio-button-male">
             <input
+                #radioMale
                 class="m-2"
                 [formControl]="genderFormControl"
-                value="male"
-                (click)="switchGender('male')"
+                value="Male"
+                (click)="switchGender('Male')"
+                checked="genderFormControl.value"
                 type="radio"
                 name="male"
                 id="radio-male" />
@@ -159,10 +164,11 @@
             <div class="row">
                 <div class="col-10 p-0">
                     <input
+                        #thresholdInput
                         type="text"
                         name="threshold-input"
                         id="pause-threshold-input"
-                        [(ngModel)]="tresholdString" />
+                        [(ngModel)]="thresholdString" />
                 </div>
                 <div class="col-2 p-0">
                     <div class="row mt-1 p-0">

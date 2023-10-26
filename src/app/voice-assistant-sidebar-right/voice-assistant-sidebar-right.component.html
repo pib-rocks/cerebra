@@ -33,11 +33,11 @@
             <button
                 [id]="getIdString(element.name)"
                 class="container d-flex bodyElements elementButtons"
-                [class.btn-active]="element.active || element.hovered">
+                [class.btn-active]="element.selected || element.hovered">
                 <div class="row mt-1 p-1 elementIcon">
                     <div class="mt-1">
                         <img
-                            [src]="element.active || element.hovered ? elementIconActive : elementIcon"
+                            [src]="element.selected || element.hovered ? elementIconActive : elementIcon"
                             width="16"
                             height="16"
                             alt="" />
