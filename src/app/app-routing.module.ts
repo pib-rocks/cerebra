@@ -8,7 +8,6 @@ import {ProgramComponent} from "./program/program.component";
 import {VoiceAssistantPersonalityComponent} from "./voice-assistant-personality/voice-assistant-personality.component";
 import {VoiceAssistantChatComponent} from "./voice-assistant-chat/voice-assistant-chat.component";
 import {sideGuard} from "./security/side-guard";
-import {motorResolver} from "./security/motor.resolver";
 
 const routes: Routes = [
     {path: "", redirectTo: "head", pathMatch: "full"},
@@ -16,16 +15,14 @@ const routes: Routes = [
         path: "hand/:side",
         component: HandComponent,
         canActivate: [sideGuard],
-        resolve: {Motor: motorResolver},
     },
     {
         path: "arm/:side",
         component: ArmComponent,
         canActivate: [sideGuard],
-        resolve: {Motor: motorResolver},
     },
     {path: "camera", component: CameraComponent},
-    {path: "head", component: HeadComponent, resolve: {Motor: motorResolver}},
+    {path: "head", component: HeadComponent},
     {path: "program", component: ProgramComponent},
     {path: "personality", component: VoiceAssistantPersonalityComponent},
     {path: "chat", component: VoiceAssistantChatComponent},

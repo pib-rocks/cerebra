@@ -63,6 +63,7 @@ export class MotorService {
         this.createMotors();
         this.subscribeJointTrajectorySubject();
         this.subscribeMotorSettingsSubject();
+        this.getAllMotorSettingsFromDb();
     }
 
     createMotors() {
@@ -160,7 +161,6 @@ export class MotorService {
     }
 
     sendMotorSettingsMessage(motor: Motor) {
-        this.updateMotorInDb(motor);
         this.rosService.sendMotorSettingsMessage(
             motor.parseMotorToSettingsMessage(),
         );
@@ -247,25 +247,6 @@ export class MotorService {
         });
     }
 
-    updateMotorGroupFromApi(group: number): Motor[] {
-        this.getMotorsByGroup(group).forEach((m) => {
-            this.apiService
-                .get(UrlConstants.MOTORSETTINGS + `/${m.name}`)
-                .subscribe((response) => {
-                    m.settings.acceleration = response["acceleration"];
-                    m.settings.deceleration = response["deceleration"];
-                    m.settings.pulseWidthMin = response["pulseWidthMin"];
-                    m.settings.pulseWidthMax = response["pulseWidthMax"];
-                    m.settings.rotationRangeMin = response["rotationRangeMin"];
-                    m.settings.rotationRangeMax = response["rotationRangeMax"];
-                    m.settings.velocity = response["velocity"];
-                    m.settings.period = response["period"];
-                    m.motorSubject.next(m.clone());
-                });
-        });
-        return this.getMotorsByGroup(group);
-    }
-
     updateMotorInDb(motor: Motor) {
         this.apiService
             .put(
@@ -274,6 +255,48 @@ export class MotorService {
             )
             .subscribe((response) => {
                 console.log(response);
+            });
+    }
+
+    getMotorSettingsByNameFromDb(motorname: string) {
+        const motor = this.getMotorByName(motorname);
+        this.apiService
+            .get(UrlConstants.MOTORSETTINGS + `/${motorname}`)
+            .subscribe((response) => {
+                motor.settings.acceleration = response["acceleration"];
+                motor.settings.deceleration = response["deceleration"];
+                motor.settings.pulseWidthMin = response["pulseWidthMin"];
+                motor.settings.pulseWidthMax = response["pulseWidthMax"];
+                motor.settings.rotationRangeMin = response["rotationRangeMin"];
+                motor.settings.rotationRangeMax = response["rotationRangeMax"];
+                motor.settings.velocity = response["velocity"];
+                motor.settings.period = response["period"];
+                motor.settings.turnedOn = response["turnedOn"];
+                motor.motorSubject.next(motor.clone());
+            });
+    }
+
+    getAllMotorSettingsFromDb() {
+        this.apiService
+            .get(UrlConstants.MOTORSETTINGS)
+            .subscribe((response) => {
+                const motors: any[] = response["motorSettings"];
+                motors.forEach((response) => {
+                    const motor = this.getMotorByName(response["name"]);
+                    motor.settings.acceleration = response["acceleration"];
+                    motor.settings.deceleration = response["deceleration"];
+                    motor.settings.pulseWidthMin = response["pulseWidthMin"];
+                    motor.settings.pulseWidthMax = response["pulseWidthMax"];
+                    motor.settings.rotationRangeMin =
+                        response["rotationRangeMin"];
+                    motor.settings.rotationRangeMax =
+                        response["rotationRangeMax"];
+                    motor.settings.velocity = response["velocity"];
+                    motor.settings.period = response["period"];
+                    motor.settings.turnedOn = response["turnedOn"];
+                    motor.motorSubject.next(motor.clone());
+                });
+                this.printAllMotors();
             });
     }
 }
