@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 import {Injectable} from "@angular/core";
 import {RosService} from "../ros.service";
-import {BehaviorSubject} from "rxjs";
+import {BehaviorSubject, catchError, throwError} from "rxjs";
 import {Motor} from "../types/motor.class";
 import {Group} from "../types/motor.enum";
 import {MotorSettingsMessage} from "../rosMessageTypes/motorSettingsMessage";
@@ -253,6 +253,13 @@ export class MotorService {
                 UrlConstants.MOTORSETTINGS,
                 motor.parseMotorToSettingsMessage(),
             )
+            .pipe(
+                catchError((err) => {
+                    return throwError(() => {
+                        console.log(err);
+                    });
+                }),
+            )
             .subscribe((response) => {
                 console.log(response);
             });
@@ -262,6 +269,13 @@ export class MotorService {
         const motor = this.getMotorByName(motorname);
         this.apiService
             .get(UrlConstants.MOTORSETTINGS + `/${motorname}`)
+            .pipe(
+                catchError((err) => {
+                    return throwError(() => {
+                        console.log(err);
+                    });
+                }),
+            )
             .subscribe((response) => {
                 motor.settings.acceleration = response["acceleration"];
                 motor.settings.deceleration = response["deceleration"];
@@ -279,6 +293,13 @@ export class MotorService {
     getAllMotorSettingsFromDb() {
         this.apiService
             .get(UrlConstants.MOTORSETTINGS)
+            .pipe(
+                catchError((err) => {
+                    return throwError(() => {
+                        console.log(err);
+                    });
+                }),
+            )
             .subscribe((response) => {
                 const motors: any[] = response["motorSettings"];
                 motors.forEach((response) => {
@@ -296,7 +317,6 @@ export class MotorService {
                     motor.settings.turnedOn = response["turnedOn"];
                     motor.motorSubject.next(motor.clone());
                 });
-                this.printAllMotors();
             });
     }
 }
