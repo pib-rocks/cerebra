@@ -7,17 +7,15 @@ import {
     ViewChild,
 } from "@angular/core";
 import {FormControl} from "@angular/forms";
-import {RosService} from "../shared/ros.service";
 import {Subject} from "rxjs";
 import {CameraService} from "../shared/services/camera.service";
-import {CameraSetting} from "../shared/types/camera-settings";
 
 @Component({
     selector: "app-camera",
     templateUrl: "./camera.component.html",
     styleUrls: ["./camera.component.css"],
 })
-export class CameraComponent implements OnInit, OnDestroy, OnChanges {
+export class CameraComponent implements OnInit, OnDestroy {
     @ViewChild("videobox") videoBox?: ElementRef;
     qualityReceiver$!: Subject<number>;
     refreshRateReceiver$!: Subject<number>;
@@ -27,44 +25,33 @@ export class CameraComponent implements OnInit, OnDestroy, OnChanges {
     imageSrc!: string;
     refreshRateControl: number = 0.1;
     qualityFactorControl: number = 80;
-    selectedSize = "480p (SD)";
+    selectedSize!: string;
+    resX!: number;
+    resY!: number;
+    resolution!: string;
     cameraActiveIcon =
         "M880-275 720-435v111L244-800h416q24 0 42 18t18 42v215l160-160v410ZM848-27 39-836l42-42L890-69l-42 42ZM159-800l561 561v19q0 24-18 42t-42 18H140q-24 0-42-18t-18-42v-520q0-24 18-42t42-18h19Z";
-    constructor(
-        private rosService: RosService,
-        private cameraService: CameraService,
-    ) {
+    constructor(private cameraService: CameraService) {
         this.subscribeCameraQualityFactorSubject();
-        this.subscribeCameraPreviewSizeSubject();
         this.subscribeCameraResolutinSubject();
         this.subscribeCameraTimerPeriodSubject();
+        this.subscribeCameraResXSubject();
+        this.subscribeCameraResYSubject();
     }
 
     ngOnInit(): void {
+        this.cameraService.getCameraSettings();
         this.imageSrc = "../../assets/camera-placeholder.jpg";
         this.cameraService.cameraReciver$.subscribe((message) => {
             this.imageSrc = "data:image/jpeg;base64," + message;
-            console.log("-------------------------");
             if (message.startsWith("Camera not available")) {
                 this.imageSrc = "../../assets/camera-error-image.svg";
-            }
-        });
-        //Fragen wie ich das in den Service auslagener kann
-        this.rosService.Ros.on("error", (error: string) => {
-            if (this.isCameraActive) {
-                this.imageSrc = "../../assets/camera-error-image.svg";
-                console.error(error);
             }
         });
         this.qualityReceiver$ =
             this.cameraService.rosCameraQualityFactorReceiver;
         this.refreshRateReceiver$ =
             this.cameraService.rosCameraTimerPeriodReceiver;
-    }
-    //@TODO fix
-    ngOnChanges(): void {
-        console.log("asd");
-        this.cameraService.saveCameraSettings();
     }
     ngOnDestroy(): void {
         this.stopCamera();
@@ -76,18 +63,25 @@ export class CameraComponent implements OnInit, OnDestroy, OnChanges {
         resolution: string,
         publish: boolean = true,
     ) {
+        this.resX = width;
+        this.resY = height;
+
+        this.cameraService.cameraResXSubject.next(this.resX);
+        this.cameraService.cameraResYSubject.next(this.resY);
+
         this.videoBox?.nativeElement.style.setProperty(
             "max-height",
-            height + "px",
+            this.resY + "px",
         );
         this.selectedSize = resolution;
         if (publish) {
             this.isLoading = true;
-            this.cameraService.setPreviewSize(width, height);
+            this.cameraService.setPreviewSize(this.resX, this.resY);
             setTimeout(() => {
                 this.isLoading = false; // Stop the spinner
             }, 1500);
         }
+        this.saveSettings();
     }
 
     arraysEqual(a: number[], b: number[]) {
@@ -99,11 +93,11 @@ export class CameraComponent implements OnInit, OnDestroy, OnChanges {
     }
 
     startCamera() {
-        this.cameraService.stopCamera();
+        this.cameraService.startCamera();
     }
 
     stopCamera() {
-        this.cameraService.startCamera();
+        this.cameraService.stopCamera();
         this.imageSrc = "../../assets/camera-placeholder.jpg";
     }
 
@@ -156,17 +150,15 @@ export class CameraComponent implements OnInit, OnDestroy, OnChanges {
             this.qualityFactorControl = message;
         });
     }
-    subscribeCameraPreviewSizeSubject() {
-        this.cameraService.cameraPreviewSizeSubject.subscribe(
-            (message: number[]) => {
-                if (message[1] == 480)
-                    this.setSize(message[0], message[1], "480p (SD)");
-                if (message[1] == 720)
-                    this.setSize(message[0], message[1], "720p (HD)");
-                if (message[1] == 1080)
-                    this.setSize(message[0], message[1], "1080p (FHD)");
-            },
-        );
+    subscribeCameraResXSubject() {
+        this.cameraService.cameraResXSubject.subscribe((message: number) => {
+            this.resX = message;
+        });
+    }
+    subscribeCameraResYSubject() {
+        this.cameraService.cameraResYSubject.subscribe((message: number) => {
+            this.resY = message;
+        });
     }
     subscribeCameraTimerPeriodSubject() {
         this.cameraService.cameraTimerPeriodSubject.subscribe(
@@ -178,7 +170,8 @@ export class CameraComponent implements OnInit, OnDestroy, OnChanges {
     subscribeCameraResolutinSubject() {
         this.cameraService.cameraResolutinSubject.subscribe(
             (message: string) => {
-                this.selectedSize = message;
+                this.selectedSize = this.resY + "p (" + message + ")";
+                this.resolution = message;
             },
         );
     }
@@ -188,5 +181,9 @@ export class CameraComponent implements OnInit, OnDestroy, OnChanges {
                 this.isCameraActive = message;
             },
         );
+    }
+
+    saveSettings() {
+        this.cameraService.saveCameraSettings();
     }
 }

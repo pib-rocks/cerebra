@@ -10,7 +10,8 @@ import {Injectable} from "@angular/core";
 })
 export class CameraService {
     qualityFactor!: number;
-    previewSize!: number[];
+    resX!: number;
+    resY!: number;
     timerPeriod!: number;
 
     constructor(
@@ -20,6 +21,7 @@ export class CameraService {
         this.getCameraSettings();
         this.subscribeCameraQualityFactorReceiver();
         this.subscribeCameraPreviewSizeReceiver();
+        this.subscribeCameraTimerPeriodReceiver();
         this.subscribeCameraReseiver();
     }
 
@@ -27,15 +29,14 @@ export class CameraService {
     qualityFactorSubject: BehaviorSubject<number> = new BehaviorSubject<number>(
         0,
     );
-    cameraPreviewSizeSubject: BehaviorSubject<number[]> = new BehaviorSubject<
-        number[]
-    >([640, 480]);
     cameraTimerPeriodSubject: BehaviorSubject<number> =
         new BehaviorSubject<number>(0);
     cameraResolutinSubject: BehaviorSubject<string> =
         new BehaviorSubject<string>("");
     cameraIsActiveSubject: BehaviorSubject<boolean> =
         new BehaviorSubject<boolean>(false);
+    cameraResXSubject: BehaviorSubject<number> = new BehaviorSubject<number>(0);
+    cameraResYSubject: BehaviorSubject<number> = new BehaviorSubject<number>(0);
     cameraReciver$: Subject<string> = new Subject<string>();
 
     rosCameraQualityFactorReceiver =
@@ -70,26 +71,27 @@ export class CameraService {
             .subscribe((response) => {
                 this.qualityFactorSubject.next(response.qualityFactor);
                 this.qualityFactor = response.qualityFactor;
-                this.cameraPreviewSizeSubject.next(
-                    this.getCameraPreviewSize(response.resolution),
-                );
-                this.previewSize = this.getCameraPreviewSize(
-                    response.resolution,
-                );
                 this.cameraTimerPeriodSubject.next(response.refreshRate);
                 this.timerPeriod = response.refreshRate;
                 this.cameraResolutinSubject.next(response.resolution);
                 this.cameraIsActiveSubject.next(response.isActive);
+                this.cameraResXSubject.next(response.resX);
+                this.cameraResYSubject.next(response.resY);
+                this.resX = response.resX;
+                this.resY = response.resY;
             });
     }
 
     saveCameraSettings() {
         let cameraSettings = new CameraSetting(
             this.cameraResolutinSubject.getValue(),
-            this.timerPeriod,
-            this.qualityFactor,
+            this.cameraTimerPeriodSubject.getValue(),
+            this.qualityFactorSubject.getValue(),
             this.cameraIsActiveSubject.getValue(),
+            this.cameraResXSubject.getValue(),
+            this.cameraResYSubject.getValue(),
         );
+        console.log(cameraSettings);
         this.updateCameraSettings(cameraSettings);
     }
 
@@ -108,11 +110,13 @@ export class CameraService {
         this.rosService.cameraPreviewSizeReceiver$.subscribe(
             (message: number[]) => {
                 if (
-                    message[0] != this.previewSize[0] &&
-                    message[1] != this.previewSize[1]
+                    message[0] != this.resX &&
+                    message[1] != this.resY &&
+                    message[0] != 0 &&
+                    message[1] != 0
                 ) {
-                    this.cameraPreviewSizeSubject.next(message);
-                    this.previewSize = message;
+                    this.cameraResXSubject.next(message[0]);
+                    this.cameraResYSubject.next(message[1]);
                 }
             },
         );
@@ -153,12 +157,5 @@ export class CameraService {
 
     stopCamera() {
         this.rosService.unsubscribeCameraTopic();
-    }
-
-    getCameraPreviewSize(resolution: string): number[] {
-        if (resolution == "720p (HD)") return [1280, 720];
-        else if (resolution == "1080p (FHD)") return [1920, 1080];
-
-        return [640, 480];
     }
 }
