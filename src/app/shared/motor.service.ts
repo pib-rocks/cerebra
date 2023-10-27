@@ -5,7 +5,10 @@ import {BehaviorSubject} from "rxjs";
 import {Motor} from "./types/motor.class";
 import {Group} from "./types/motor.enum";
 import {MotorSettingsMessage} from "./rosMessageTypes/motorSettingsMessage";
-import {JointTrajectoryMessage} from "./rosMessageTypes/jointTrajectoryMessage";
+import {
+    JointTrajectoryMessage,
+    createEmptyJointTrajectoryMessage,
+} from "./rosMessageTypes/jointTrajectoryMessage";
 import {MotorSettings} from "./types/motor-settings.class";
 
 @Injectable({
@@ -149,15 +152,34 @@ export class MotorService {
     }
 
     sendJointTrajectoryMessage(motor: Motor) {
-        this.rosService.sendJointTrajectoryMessage(
-            motor.parseMotorToJointTrajectoryMessage(),
-        );
+        let message = motor.parseMotorToJointTrajectoryMessage();
+        if (motor.name.includes("all")) {
+            const allFingers = this.motors.filter(
+                (m) => m.group == motor.group && !m.name.includes("opposition"),
+            );
+            const messageAll = createEmptyJointTrajectoryMessage();
+            allFingers.forEach((m) => {
+                messageAll.joint_names.push(m.name);
+                messageAll.points.push(message.points[0]);
+            });
+            message = messageAll;
+        }
+        this.rosService.sendJointTrajectoryMessage(message);
     }
 
     sendMotorSettingsMessage(motor: Motor) {
-        this.rosService.sendMotorSettingsMessage(
-            motor.parseMotorToSettingsMessage(),
-        );
+        const message = motor.parseMotorToSettingsMessage();
+        if (motor.name.includes("all")) {
+            const allFingers = this.motors.filter(
+                (m) => m.group == motor.group && !m.name.includes("opposition"),
+            );
+            allFingers.forEach((m) => {
+                message.motor_name = m.name;
+                this.rosService.sendMotorSettingsMessage(message);
+            });
+        } else {
+            this.rosService.sendMotorSettingsMessage(message);
+        }
     }
 
     subscribeJointTrajectorySubject() {
@@ -183,40 +205,12 @@ export class MotorService {
             const copy = motor?.clone();
             motor.motorSubject.next(copy);
         });
-        if (message.joint_names[0].includes("all")) {
-            const motor = this.getMotorByName(message.joint_names[0]);
-            const groupMotors = this.motors
-                .filter((m) => m.group == motor.group)
-                .filter(
-                    (m) =>
-                        !m.name.includes("opposition") &&
-                        !m.name.includes("all"),
-                );
-            groupMotors.forEach((m) => {
-                message.joint_names[0] = m.name;
-                this.updateMotorFromJointTrajectoryMessage(message);
-            });
-        }
     }
     updateMotorSettingsFromMotorSettingsMessage(message: MotorSettingsMessage) {
         const motor = this.getMotorByName(message.motor_name);
         motor.settings.updateChangedAttribute(message);
         const copy = motor?.clone();
         motor.motorSubject.next(copy);
-        if (message.motor_name.includes("all")) {
-            const motor = this.getMotorByName(message.motor_name);
-            const groupMotors = this.motors
-                .filter((m) => m.group == motor.group)
-                .filter(
-                    (m) =>
-                        !m.name.includes("opposition") &&
-                        !m.name.includes("all"),
-                );
-            groupMotors.forEach((m) => {
-                message.motor_name = m.name;
-                this.updateMotorSettingsFromMotorSettingsMessage(message);
-            });
-        }
     }
 
     resetMotorGroupPosition(groupIdentifier: number, position = 0) {
