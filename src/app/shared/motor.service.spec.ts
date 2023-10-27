@@ -20,7 +20,7 @@ describe("MotorService", () => {
         TestBed.configureTestingModule({providers: [MotorService, RosService]});
         service = TestBed.inject(MotorService);
         rosService = TestBed.inject(RosService);
-        rosService.initTopics();
+        rosService.initTopicsAndServices();
         rosService.initSubscribers();
         spyOnMotors = spyOn(service, "createMotors").and.callThrough();
     });

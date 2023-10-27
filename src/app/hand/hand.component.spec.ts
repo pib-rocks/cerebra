@@ -26,7 +26,9 @@ describe("HandComponent", () => {
         (jointTrajectoryMessage: JointTrajectoryMessage) => void
     >;
     let rosSendMotorSettingsSpy: jasmine.Spy<
-        (jointTrajectoryMessage: MotorSettingsMessage) => void
+        (
+            jointTrajectoryMessage: MotorSettingsMessage,
+        ) => Promise<MotorSettingsMessage>
     >;
 
     const paramsSubject = new BehaviorSubject({
@@ -67,7 +69,10 @@ describe("HandComponent", () => {
         rosSendMotorSettingsSpy = spyOn(
             rosService,
             "sendMotorSettingsMessage",
-        ).and.callFake((msg) => rosService.motorSettingsReceiver$.next(msg));
+        ).and.callFake((msg: MotorSettingsMessage) => {
+            rosService.motorSettingsReceiver$.next(msg);
+            return Promise.resolve(msg);
+        });
     });
 
     afterEach(() => {

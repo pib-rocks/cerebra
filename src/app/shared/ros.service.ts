@@ -7,6 +7,10 @@ import {DiagnosticStatus} from "./rosMessageTypes/DiagnosticStatus.message";
 import {JointTrajectoryMessage} from "../shared/rosMessageTypes/jointTrajectoryMessage";
 import {rosDataTypes} from "./rosMessageTypes/rosDataTypePaths.enum";
 import {rosTopics} from "./rosTopics.enum";
+import {rosServices} from "./rosServices.enum";
+import {MotorSettingsError} from "./error/motor-settings-error";
+import {MotorSettingsSrvResponse} from "./rosMessageTypes/motorSettingsSrvResponse";
+
 @Injectable({
     providedIn: "root",
 })
@@ -27,7 +31,6 @@ export class RosService {
     motorSettingsReceiver$: Subject<MotorSettingsMessage> =
         new Subject<MotorSettingsMessage>();
     private ros!: ROSLIB.Ros;
-    private motorSettingsTopic!: ROSLIB.Topic;
     private voiceAssistantTopic!: ROSLIB.Topic;
     private motorCurrentTopic!: ROSLIB.Topic;
     private cameraTopic!: ROSLIB.Topic;
@@ -35,12 +38,13 @@ export class RosService {
     private cameraPreviewSizeTopic!: ROSLIB.Topic;
     private cameraQualityFactorTopic!: ROSLIB.Topic;
     private jointTrajectoryTopic!: ROSLIB.Topic;
+    private motorSettingsService!: ROSLIB.Service;
 
     constructor() {
         this.ros = this.setUpRos();
         this.ros.on("connection", () => {
             console.log("Connected to ROS");
-            this.initTopics();
+            this.initTopicsAndServices();
             this.initSubscribers();
         });
         this.ros.on("error", (error: string) => {
@@ -68,7 +72,7 @@ export class RosService {
         return this.ros;
     }
 
-    initTopics() {
+    initTopicsAndServices() {
         this.cameraTopic = this.createRosTopic(
             rosTopics.cameraTopicName,
             rosDataTypes.string,
@@ -85,10 +89,6 @@ export class RosService {
             rosTopics.cameraTimerPeriodTopicName,
             rosDataTypes.float64,
         );
-        this.motorSettingsTopic = this.createRosTopic(
-            rosTopics.motorSettingsTopicName,
-            rosDataTypes.motorSettings,
-        );
         this.motorCurrentTopic = this.createRosTopic(
             rosTopics.motorCurrentTopicName,
             rosDataTypes.diagnosticStatus,
@@ -101,6 +101,18 @@ export class RosService {
             rosTopics.voiceTopicName,
             rosDataTypes.string,
         );
+        this.motorSettingsService = this.createRosService(
+            rosServices.motorSettingsServiceName,
+            rosDataTypes.motorSettingsSrv,
+        );
+    }
+
+    createRosService(serviceName: string, serviceType: string): ROSLIB.Service {
+        return new ROSLIB.Service({
+            ros: this.ros,
+            name: serviceName,
+            serviceType: serviceType,
+        });
     }
 
     createRosTopic(topicName: string, topicMessageType: string): ROSLIB.Topic {
@@ -128,7 +140,6 @@ export class RosService {
             this.cameraQualityFactorTopic,
             this.cameraQualityFactorReceiver$,
         );
-        this.subscribeMotorSettingsTopic();
         this.subscribeMotorCurrentTopic();
         this.subscribeJointTrajectoryTopic();
     }
@@ -150,12 +161,6 @@ export class RosService {
         );
     }
 
-    subscribeMotorSettingsTopic() {
-        this.motorSettingsTopic.subscribe((message) => {
-            this.motorSettingsReceiver$.next(message as MotorSettingsMessage);
-        });
-    }
-
     subscribeJointTrajectoryTopic() {
         this.jointTrajectoryTopic.subscribe((jointTrajectoryMessage) => {
             this.jointTrajectoryReceiver$.next(
@@ -174,8 +179,48 @@ export class RosService {
         this.cameraTopic.unsubscribe();
     }
 
-    sendMotorSettingsMessage(motorSettingsMessage: MotorSettingsMessage) {
-        this.motorSettingsTopic.publish(motorSettingsMessage);
+    sendMotorSettingsMessage(
+        motorSettingsMessage: MotorSettingsMessage,
+    ): Promise<MotorSettingsMessage> {
+        return new Promise((resolve, reject) => {
+            this.motorSettingsService.callService(
+                motorSettingsMessage,
+                (response) => {
+                    if (response["successful"]) {
+                        this.motorSettingsReceiver$.next(motorSettingsMessage);
+                        resolve(motorSettingsMessage);
+                    } else {
+                        reject(new MotorSettingsError(motorSettingsMessage));
+                    }
+                },
+                (errorMsg) => reject(new Error(errorMsg)),
+            );
+        });
+    }
+
+    sendMotorSettingsMessageCallback(
+        motorSettingsMessage: MotorSettingsMessage,
+        failureCallback?: (error: Error) => any,
+        successCallBack?: (msg: MotorSettingsMessage) => any,
+    ) {
+        const wrappedSuccessCallback = (response: MotorSettingsSrvResponse) => {
+            if (response.successful) {
+                this.motorSettingsReceiver$.next(motorSettingsMessage);
+                successCallBack?.(motorSettingsMessage);
+            } else {
+                failureCallback?.(new MotorSettingsError(motorSettingsMessage));
+            }
+        };
+
+        const wrappedFailureCallback = (error: string) => {
+            failureCallback?.(new Error(error));
+        };
+
+        this.motorSettingsService.callService(
+            motorSettingsMessage,
+            wrappedSuccessCallback,
+            wrappedFailureCallback,
+        );
     }
 
     sendJointTrajectoryMessage(jointTrajectoryMessage: JointTrajectoryMessage) {

@@ -4,10 +4,14 @@ import {RosService} from "./ros.service";
 import {createEmptyJointTrajectoryMessage} from "./rosMessageTypes/jointTrajectoryMessage";
 import {VoiceAssistant} from "./voice-assistant";
 import {MotorSettingsMessage} from "./rosMessageTypes/motorSettingsMessage";
+import {MotorSettingsSrvResponse} from "./rosMessageTypes/motorSettingsSrvResponse";
+import {MotorSettingsError} from "./error/motor-settings-error";
 
 describe("RosService", () => {
     let rosService: RosService;
     let spyOnSetupRos: jasmine.Spy<() => ROSLIB.Ros>;
+
+    let motorSettingsMessage: MotorSettingsMessage;
 
     beforeEach(() => {
         TestBed.configureTestingModule({
@@ -15,8 +19,21 @@ describe("RosService", () => {
         });
 
         rosService = TestBed.inject(RosService);
-        rosService.initTopics();
+        rosService.initTopicsAndServices();
         spyOnSetupRos = spyOn(rosService, "setUpRos").and.callThrough();
+
+        motorSettingsMessage = {
+            motor_name: "test",
+            turned_on: true,
+            pulse_width_min: 100,
+            pulse_width_max: 100,
+            rotation_range_min: 100,
+            rotation_range_max: 100,
+            velocity: 100,
+            acceleration: 100,
+            deceleration: 100,
+            period: 100,
+        };
     });
 
     it("should be created", () => {
@@ -29,7 +46,7 @@ describe("RosService", () => {
         expect(rosService.Ros).toBeTruthy();
     });
 
-    it("should create all ROSLIB topics", () => {
+    it("should create all ROSLIB topics and services", () => {
         expect(rosService["jointTrajectoryTopic"]).toBeTruthy();
         expect(rosService["motorCurrentTopic"]).toBeTruthy();
         expect(rosService["cameraTopic"]).toBeTruthy();
@@ -37,7 +54,7 @@ describe("RosService", () => {
         expect(rosService["cameraQualityFactorTopic"]).toBeTruthy();
         expect(rosService["cameraPreviewSizeTopic"]).toBeTruthy();
         expect(rosService["voiceAssistantTopic"]).toBeTruthy();
-        expect(rosService["motorSettingsTopic"]).toBeTruthy();
+        expect(rosService["motorSettingsService"]).toBeTruthy();
     });
 
     it("should publish the message on calling sendVoiceActivationMessage", () => {
@@ -76,30 +93,213 @@ describe("RosService", () => {
         );
     });
 
-    it("should publish the MotorSettingsMessage on calling sendMotorSettingsMessage", () => {
+    it("should call the service with the MotorSettingsMessage on calling sendMotorSettingsMessage", () => {
         const spyOnSendMotorSettingsMessage = spyOn(
             rosService,
             "sendMotorSettingsMessage",
         ).and.callThrough();
-        const spyMotorSettingsTopicPublish = spyOn(
-            rosService["motorSettingsTopic"],
-            "publish",
+        const spyMotorSettingsServiceCall = spyOn(
+            rosService["motorSettingsService"],
+            "callService",
         );
-        const motorSettingsMessage: MotorSettingsMessage = {
-            motor_name: "test",
-            turned_on: true,
-            pulse_width_min: 100,
-            pulse_width_max: 100,
-            rotation_range_min: 100,
-            rotation_range_max: 100,
-            velocity: 100,
-            acceleration: 100,
-            deceleration: 100,
-            period: 100,
-        };
         rosService.sendMotorSettingsMessage(motorSettingsMessage);
         expect(spyOnSendMotorSettingsMessage).toHaveBeenCalled();
-        expect(spyMotorSettingsTopicPublish).toHaveBeenCalled();
+        expect(spyMotorSettingsServiceCall).toHaveBeenCalled();
+    });
+
+    it("should call the service with the MotorSettingsMessage on calling sendMotorSettingsMessageCallback", () => {
+        const spyOnSendMotorSettingsMessage = spyOn(
+            rosService,
+            "sendMotorSettingsMessageCallback",
+        ).and.callThrough();
+        const spyMotorSettingsServiceCall = spyOn(
+            rosService["motorSettingsService"],
+            "callService",
+        );
+        rosService.sendMotorSettingsMessageCallback(motorSettingsMessage);
+        expect(spyOnSendMotorSettingsMessage).toHaveBeenCalled();
+        expect(spyMotorSettingsServiceCall).toHaveBeenCalled();
+    });
+
+    it("should resolve the promise when calling sendMotorSettings and the motorSettingsService calls the callback-function with success-message", async () => {
+        spyOn(rosService["motorSettingsService"], "callService").and.callFake(
+            (msg, callback, failedCallback) => {
+                const res: MotorSettingsSrvResponse = {successful: true};
+                callback(res);
+            },
+        );
+
+        const spyOnMotorSettingsReceiver = spyOn(
+            rosService.motorSettingsReceiver$,
+            "next",
+        );
+
+        await expectAsync(
+            rosService.sendMotorSettingsMessage(motorSettingsMessage),
+        ).toBeResolvedTo(motorSettingsMessage);
+        expect(spyOnMotorSettingsReceiver).toHaveBeenCalledOnceWith(
+            motorSettingsMessage,
+        );
+    });
+
+    it("should reject the promise when calling sendMotorSettings and the motorSettingsService calls the callback-function with failure-message", async () => {
+        spyOn(rosService["motorSettingsService"], "callService").and.callFake(
+            (msg, callback, failedCallback) => {
+                const res: MotorSettingsSrvResponse = {successful: false};
+                callback(res);
+            },
+        );
+
+        const spyOnMotorSettingsReceiver = spyOn(
+            rosService.motorSettingsReceiver$,
+            "next",
+        );
+
+        await expectAsync(
+            rosService.sendMotorSettingsMessage(motorSettingsMessage),
+        ).toBeRejectedWithError(
+            MotorSettingsError,
+            `Failed to apply settings from message: ${JSON.stringify(
+                motorSettingsMessage,
+                null,
+                2,
+            )}.`,
+        );
+        expect(spyOnMotorSettingsReceiver).not.toHaveBeenCalled();
+    });
+
+    it("should reject the promise when calling sendMotorSettings and the motorSettingsService calls the failure-callback-function", async () => {
+        spyOn(rosService["motorSettingsService"], "callService").and.callFake(
+            (msg, callback, failedCallback) => {
+                const res: MotorSettingsSrvResponse = {successful: false};
+                failedCallback?.("test-error-message");
+            },
+        );
+
+        const spyOnMotorSettingsReceiver = spyOn(
+            rosService.motorSettingsReceiver$,
+            "next",
+        );
+
+        await expectAsync(
+            rosService.sendMotorSettingsMessage(motorSettingsMessage),
+        ).toBeRejectedWithError(Error, "test-error-message");
+        expect(spyOnMotorSettingsReceiver).not.toHaveBeenCalled();
+    });
+
+    it("should call the success-callback when calling sendMotorSettings and the motorSettingsService calls the callback-function with success-message", () => {
+        spyOn(rosService["motorSettingsService"], "callService").and.callFake(
+            (msg, callback, failedCallback) => {
+                const res: MotorSettingsSrvResponse = {successful: true};
+                callback(res);
+            },
+        );
+
+        const spyOnMotorSettingsReceiver = spyOn(
+            rosService.motorSettingsReceiver$,
+            "next",
+        );
+
+        const successCallbackSpy = jasmine.createSpy("success", (msg) => {});
+        const failureCallbackSpy = jasmine.createSpy("failure", (err) => {});
+
+        rosService.sendMotorSettingsMessageCallback(
+            motorSettingsMessage,
+            failureCallbackSpy,
+            successCallbackSpy,
+        );
+
+        expect(successCallbackSpy).toHaveBeenCalledOnceWith(
+            motorSettingsMessage,
+        );
+        expect(failureCallbackSpy).not.toHaveBeenCalled();
+        expect(spyOnMotorSettingsReceiver).toHaveBeenCalledOnceWith(
+            motorSettingsMessage,
+        );
+    });
+
+    it("should call the failure-callback when calling sendMotorSettings and the motorSettingsService calls the callback-function with failure-message", () => {
+        spyOn(rosService["motorSettingsService"], "callService").and.callFake(
+            (msg, callback, failedCallback) => {
+                const res: MotorSettingsSrvResponse = {successful: false};
+                callback(res);
+            },
+        );
+
+        const spyOnMotorSettingsReceiver = spyOn(
+            rosService.motorSettingsReceiver$,
+            "next",
+        );
+
+        let wrapper = {failureArg: new Error("not the expected error")};
+        const successCallbackSpy = jasmine.createSpy("success", (msg) => {});
+        const failureCallbackSpy = jasmine
+            .createSpy("failure", (err) => (wrapper.failureArg = err))
+            .and.callThrough();
+
+        rosService.sendMotorSettingsMessageCallback(
+            motorSettingsMessage,
+            failureCallbackSpy,
+            successCallbackSpy,
+        );
+
+        expect(successCallbackSpy).not.toHaveBeenCalled();
+        expect(failureCallbackSpy).toHaveBeenCalledOnceWith(wrapper.failureArg);
+        expect(wrapper.failureArg).toBeInstanceOf(MotorSettingsError);
+        expect(wrapper.failureArg.message).toBe(
+            `Failed to apply settings from message: ${JSON.stringify(
+                motorSettingsMessage,
+                null,
+                2,
+            )}.`,
+        );
+        expect(spyOnMotorSettingsReceiver).not.toHaveBeenCalled();
+    });
+
+    it("should call the faiure-callback when calling sendMotorSettings and the motorSettingsService calls its failure-callback-function with", () => {
+        spyOn(rosService["motorSettingsService"], "callService").and.callFake(
+            (msg, callback, failedCallback) => {
+                failedCallback?.("expected-error-message");
+            },
+        );
+
+        const spyOnMotorSettingsReceiver = spyOn(
+            rosService.motorSettingsReceiver$,
+            "next",
+        );
+
+        let wrapper = {failureArg: new Error("non-expected-error-message")};
+        const successCallbackSpy = jasmine.createSpy("success", (msg) => {});
+        const failureCallbackSpy = jasmine
+            .createSpy("failure", (err) => (wrapper.failureArg = err))
+            .and.callThrough();
+
+        rosService.sendMotorSettingsMessageCallback(
+            motorSettingsMessage,
+            failureCallbackSpy,
+            successCallbackSpy,
+        );
+
+        expect(successCallbackSpy).not.toHaveBeenCalled();
+        expect(failureCallbackSpy).toHaveBeenCalledOnceWith(wrapper.failureArg);
+        expect(wrapper.failureArg).not.toBeInstanceOf(MotorSettingsError);
+        expect(wrapper.failureArg).toBeInstanceOf(Error);
+        expect(wrapper.failureArg.message).toBe("expected-error-message");
+        expect(spyOnMotorSettingsReceiver).not.toHaveBeenCalled();
+    });
+
+    it("should call the service with the MotorSettingsMessage on calling sendMotorSettingsMessage", () => {
+        const spyOnSendMotorSettingsMessage = spyOn(
+            rosService,
+            "sendMotorSettingsMessage",
+        ).and.callThrough();
+        const spyMotorSettingsSeviceCall = spyOn(
+            rosService["motorSettingsService"],
+            "callService",
+        );
+        rosService.sendMotorSettingsMessage(motorSettingsMessage);
+        expect(spyOnSendMotorSettingsMessage).toHaveBeenCalled();
+        expect(spyMotorSettingsSeviceCall).toHaveBeenCalled();
     });
 
     it("should publish the preview size on calling setPreviewsize", () => {
