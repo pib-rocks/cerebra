@@ -250,7 +250,7 @@ export class VoiceAssistantPersonalityComponent {
         this.activePersonality = this.voiceAssistantService.personalities.find(
             (personality) => personality.personalityId === id,
         );
-        console.log(this.activePersonality);
+
         for (let personality of this.personalities) {
             personality.selected = id === personality.id;
         }

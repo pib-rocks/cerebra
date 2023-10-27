@@ -11,7 +11,7 @@
 ::-webkit-scrollbar {
     background-color: #1b2b44;
     scrollbar-width: thin;
-    width: 7px;
+    width: 5px;
 }
 
 ::-webkit-scrollbar:hover {
@@ -20,7 +20,6 @@
 
 ::-webkit-scrollbar-thumb {
     background-color: #cccccc;
-    border-radius: 50%;
     padding: 10%;
 }
 
