@@ -34,7 +34,7 @@
             (click)="activateBodyElement(element)"
             [id]="getIdString(element.name)"
             class="row bodyElements elementButtons"
-            [class.btn-active]="element.selected || element.hovered">
+            [class.add-bottom-border]="element.selected || element.hovered">
             <div class="col-2 elementIcon">
                 <img
                     [src]="element.selected || element.hovered ? elementIconActive : elementIcon"
@@ -42,7 +42,11 @@
                     height="16"
                     alt="" />
             </div>
-            <label class="col-10 bodyElementText mt-2">{{element.name}}</label>
+            <div
+                class="col-10 bodyElementText mt-1"
+                [class.element-selected]="element.selected || element.hovered">
+                {{element.name}}
+            </div>
         </button>
     </div>
 </div>

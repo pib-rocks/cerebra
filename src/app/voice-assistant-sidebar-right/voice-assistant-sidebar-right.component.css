@@ -70,8 +70,10 @@ p {
     color: #0094de;
 }
 
-.btn-active {
-    color: white;
+.add-bottom-border {
     border-bottom: #e10072 solid 4px;
-    flex-wrap: wrap;
+}
+
+.element-selected {
+    color: white;
 }
