@@ -75,7 +75,7 @@ export class VoiceAssistantPersonalityComponent {
         private voiceAssistantService: VoiceAssistantService,
     ) {
         this.subscribeToLastSelectedIdFromService();
-        this.subscribeToServicePersonalitiesBehaviourSubject();
+        this.subscribeToServicePersonalitiesBehaviorSubject();
     }
 
     ngOnInit() {
@@ -198,7 +198,7 @@ export class VoiceAssistantPersonalityComponent {
         );
     }
 
-    private subscribeToServicePersonalitiesBehaviourSubject() {
+    private subscribeToServicePersonalitiesBehaviorSubject() {
         this.voiceAssistantService.personalitiesSubject.subscribe(
             (personalities) => {
                 this.personalities = [];
