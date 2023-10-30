@@ -153,3 +153,11 @@ input:focus {
     background-color: #344a69;
     margin: 0;
 }
+
+.btn-lg {
+    background-color: #0094df;
+}
+
+.btn-lg:hover {
+    background-color: #e10072;
+}

@@ -6,7 +6,7 @@ import {
     ViewChild,
 } from "@angular/core";
 import {FormControl, Validators} from "@angular/forms";
-import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
+import {NgbActiveModal, NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {VoiceAssistantService} from "../shared/services/voice-assistant.service";
 import {VoiceAssistant} from "../shared/types/voice-assistant";
 import {voiceAssistantGenderValidator} from "../shared/validators";
@@ -59,7 +59,7 @@ export class VoiceAssistantPersonalityComponent {
     nameFormControl: FormControl = new FormControl();
     genderFormControl: FormControl = new FormControl("");
     pauseThresholdFormControl: FormControl<number> = new FormControl();
-    descriptionFormControl: FormControl = new FormControl();
+    descriptionFormControl: FormControl = new FormControl(null);
 
     saveButton: boolean = false;
     saveAsButton: boolean = false;
@@ -108,11 +108,9 @@ export class VoiceAssistantPersonalityComponent {
             this.prepareEditFormControl();
         }
         this.showModal().result.then(
-            (result) => {},
-            (reason) => {
+            (result) => {
                 if (this.allInputsValid()) {
-                    VoiceAssistantRequestObject =
-                        this.createVoiceAssistantRequestObject(label);
+                    VoiceAssistantRequestObject = result;
                     if (label == "ADD") {
                         this.voiceAssistantService.createPersonality(
                             VoiceAssistantRequestObject,
@@ -124,7 +122,22 @@ export class VoiceAssistantPersonalityComponent {
                     }
                 }
             },
+            (reason) => {
+                console.log(
+                    "Modal dismissed by " + this.getModalDismissReason(reason),
+                );
+            },
         );
+    }
+
+    private getModalDismissReason(reason: any) {
+        if (reason == 1 || reason == 0) {
+            reason =
+                reason == 1
+                    ? "pressing esc button"
+                    : "clicking outside the modal";
+        }
+        return reason;
     }
 
     private deletePersonality() {
@@ -137,7 +150,7 @@ export class VoiceAssistantPersonalityComponent {
 
     private prepareAddFormControl() {
         this.nameFormControl.setValue("");
-        this.descriptionFormControl.setValue("");
+        this.descriptionFormControl.setValue(null);
         this.pauseThresholdFormControl.setValue(0);
         this.thresholdString = "";
         this.genderFormControl.setValue("");
@@ -147,7 +160,9 @@ export class VoiceAssistantPersonalityComponent {
         if (this.activePersonality != undefined) {
             this.nameFormControl.setValue(this.activePersonality.name);
             this.descriptionFormControl.setValue(
-                this.activePersonality.description,
+                this.activePersonality.description == ""
+                    ? null
+                    : this.activePersonality.description,
             );
             this.genderFormControl.setValue(this.activePersonality.gender);
             this.pauseThresholdFormControl.setValue(
@@ -163,21 +178,6 @@ export class VoiceAssistantPersonalityComponent {
             windowClass: "myCustomModalClass",
             backdropClass: "myCustomBackdropClass",
         });
-    }
-
-    private createVoiceAssistantRequestObject(label: string) {
-        let personalityId = this.activePersonality?.personalityId
-            ? this.activePersonality.personalityId
-            : "";
-        const personality: VoiceAssistant = {
-            personalityId: label == "ADD" ? "" : personalityId,
-            name: this.nameFormControl.value,
-            description: this.descriptionFormControl.value,
-            gender: this.genderFormControl.value,
-            pauseThreshold: this.pauseThresholdFormControl.value,
-        };
-
-        return personality;
     }
 
     private allInputsValid() {
@@ -256,5 +256,19 @@ export class VoiceAssistantPersonalityComponent {
         }
         this.setPauseThresholdString();
         this.voiceAssistantService.lastSelectedIdSubject.next(id);
+    }
+
+    closeModalWithResult(modal: NgbActiveModal) {
+        let personalityId = this.activePersonality?.personalityId
+            ? this.activePersonality.personalityId
+            : "";
+        const personality: VoiceAssistant = {
+            personalityId: this.headerButtonLabel == "ADD" ? "" : personalityId,
+            name: this.nameFormControl.value,
+            description: this.descriptionFormControl.value,
+            gender: this.genderFormControl.value,
+            pauseThreshold: this.pauseThresholdFormControl.value,
+        };
+        modal.close(personality);
     }
 }

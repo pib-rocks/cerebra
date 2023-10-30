@@ -1,11 +1,5 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-
 import {VoiceAssistantPersonalityComponent} from "./voice-assistant-personality.component";
-import {VoiceAssistantNavComponent} from "../voice-assistant-nav/voice-assistant-nav.component";
-import {VoiceAssistantSidebarRightComponent} from "../voice-assistant-sidebar-right/voice-assistant-sidebar-right.component";
-import {RouterTestingModule} from "@angular/router/testing";
-import {NgControl, ReactiveFormsModule} from "@angular/forms";
-import {HttpClient, HttpHandler} from "@angular/common/http";
 import {VoiceAssistant} from "../shared/types/voice-assistant";
 import {VoiceAssistantService} from "../shared/services/voice-assistant.service";
 import {NgbModal, NgbModalRef} from "@ng-bootstrap/ng-bootstrap";
@@ -21,18 +15,7 @@ describe("VoiceAssistantPersonalityComponent", () => {
     let modalService: NgbModal;
     beforeEach(async () => {
         await TestBed.configureTestingModule({
-            declarations: [
-                VoiceAssistantPersonalityComponent,
-                VoiceAssistantNavComponent,
-                VoiceAssistantSidebarRightComponent,
-            ],
-            imports: [RouterTestingModule, ReactiveFormsModule],
             providers: [
-                HttpClient,
-                HttpHandler,
-                NgControl,
-                NgbModal,
-                VoiceAssistantService,
                 {
                     provide: VoiceAssistantService,
                     useValue: {

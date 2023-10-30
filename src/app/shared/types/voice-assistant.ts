@@ -1,14 +1,14 @@
 export interface VoiceAssistant {
     personalityId: string;
     name: string;
-    description: string;
+    description: string | null;
     gender: string;
     pauseThreshold: number;
 }
 
 export interface VoiceAssistantDto {
     name: string;
-    description: string;
+    description: string | null;
     gender: string;
     pauseThreshold: number;
 }
