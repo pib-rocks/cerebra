@@ -78,6 +78,34 @@ describe("VoiceAssistantService", () => {
         expect(service.personalities[1].pauseThreshold).toBe(
             thomas.pauseThreshold,
         );
+        expect(service.personalitiesSubject.getValue()[0].personalityId).toBe(
+            eva.personalityId,
+        );
+        expect(service.personalitiesSubject.getValue()[0].description).toBe(
+            eva.description,
+        );
+        expect(service.personalitiesSubject.getValue()[0].name).toBe(eva.name);
+        expect(service.personalitiesSubject.getValue()[0].gender).toBe(
+            eva.gender,
+        );
+        expect(service.personalitiesSubject.getValue()[0].pauseThreshold).toBe(
+            eva.pauseThreshold,
+        );
+        expect(service.personalitiesSubject.getValue()[1].personalityId).toBe(
+            thomas.personalityId,
+        );
+        expect(service.personalitiesSubject.getValue()[1].description).toBe(
+            thomas.description,
+        );
+        expect(service.personalitiesSubject.getValue()[1].name).toBe(
+            thomas.name,
+        );
+        expect(service.personalitiesSubject.getValue()[1].gender).toBe(
+            thomas.gender,
+        );
+        expect(service.personalitiesSubject.getValue()[1].pauseThreshold).toBe(
+            thomas.pauseThreshold,
+        );
     });
 
     it("should retrun one personality from database", () => {
@@ -106,14 +134,32 @@ describe("VoiceAssistantService", () => {
             "post",
         ).and.returnValue(observableOfKlaus);
         service.createPersonality(klaus);
-        let klasuResponse = service.personalities.find(
+        let index = service.personalities.findIndex(
             (i) => i.personalityId === klaus.personalityId,
         );
         expect(spyOnCreatePersonality).toHaveBeenCalled();
-        expect(klasuResponse!.name).toBe(klaus.name);
-        expect(klasuResponse!.description).toBe(klaus.description);
-        expect(klasuResponse!.pauseThreshold).toBe(klaus.pauseThreshold);
-        expect(klasuResponse!.description).toBe(klaus.description);
+        expect(service.personalities[index].name).toBe(klaus.name);
+        expect(service.personalities[index].description).toBe(
+            klaus.description,
+        );
+        expect(service.personalities[index].pauseThreshold).toBe(
+            klaus.pauseThreshold,
+        );
+        expect(service.personalities[index].description).toBe(
+            klaus.description,
+        );
+        expect(service.personalitiesSubject.getValue()[index].name).toBe(
+            klaus.name,
+        );
+        expect(service.personalitiesSubject.getValue()[index].description).toBe(
+            klaus.description,
+        );
+        expect(
+            service.personalitiesSubject.getValue()[index].pauseThreshold,
+        ).toBe(klaus.pauseThreshold);
+        expect(service.personalitiesSubject.getValue()[index].description).toBe(
+            klaus.description,
+        );
     });
 
     it("should return an updated personality form db", () => {
@@ -125,6 +171,16 @@ describe("VoiceAssistantService", () => {
         );
         service.updatePersonalityById(klausUpdate);
         expect(spyOnUpdatePersonality).toHaveBeenCalled();
+        expect(service.personalityByIdResponse!.name).toBe(klausUpdate.name);
+        expect(service.personalityByIdResponse!.description).toBe(
+            klausUpdate.description,
+        );
+        expect(service.personalityByIdResponse!.gender).toBe(
+            klausUpdate.gender,
+        );
+        expect(service.personalityByIdResponse!.pauseThreshold).toBe(
+            klausUpdate.pauseThreshold,
+        );
     });
 
     it("should return 204", () => {
