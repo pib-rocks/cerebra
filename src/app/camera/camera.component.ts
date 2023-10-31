@@ -1,7 +1,6 @@
 import {
     Component,
     ElementRef,
-    OnChanges,
     OnDestroy,
     OnInit,
     ViewChild,
@@ -41,6 +40,7 @@ export class CameraComponent implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         this.cameraService.getCameraSettings();
+        this.subscribeCameraReseiver();
         this.imageSrc = "../../assets/camera-placeholder.jpg";
         this.cameraService.cameraReciver$.subscribe((message) => {
             this.imageSrc = "data:image/jpeg;base64," + message;
@@ -185,5 +185,9 @@ export class CameraComponent implements OnInit, OnDestroy {
 
     saveSettings() {
         this.cameraService.saveCameraSettings();
+    }
+
+    subscribeCameraReseiver() {
+        this.cameraService.subscribeCameraReseiver();
     }
 }
