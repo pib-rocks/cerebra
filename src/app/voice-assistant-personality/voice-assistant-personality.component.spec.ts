@@ -37,9 +37,15 @@ describe("VoiceAssistantPersonalityComponent", () => {
                             VoiceAssistant[]
                         >([]),
                         lastSelectedIdSubject: new BehaviorSubject<string>(""),
-                        createPersonality: () => {},
-                        updatePersonalityById: () => {},
-                        deletePersonalityById: () => {},
+                        createPersonality: () => {
+                            return;
+                        },
+                        updatePersonalityById: () => {
+                            return;
+                        },
+                        deletePersonalityById: () => {
+                            return;
+                        },
                     },
                 },
             ],
@@ -87,7 +93,7 @@ describe("VoiceAssistantPersonalityComponent", () => {
         };
         spyOn(modalService, "open").and.returnValue({
             result: {
-                then: (resolve, reject) => resolve?.(personality),
+                then: (resolve) => resolve?.(personality),
             } as Promise<any>,
         } as NgbModalRef);
 
@@ -112,7 +118,7 @@ describe("VoiceAssistantPersonalityComponent", () => {
         };
         spyOn(modalService, "open").and.returnValue({
             result: {
-                then: (resolve, reject) => resolve?.(personality),
+                then: (resolve) => resolve?.(personality),
             } as Promise<any>,
         } as NgbModalRef);
 
@@ -125,7 +131,9 @@ describe("VoiceAssistantPersonalityComponent", () => {
     it("should load an empty modal when add button is clicked", () => {
         spyOn<any>(component, "showModal").and.returnValue({
             result: {
-                then: (resolve, reject) => {},
+                then: (resolve, reject) => {
+                    return;
+                },
             } as Promise<any>,
         } as NgbModalRef);
         const prepareAdd = spyOn<any>(
@@ -152,7 +160,9 @@ describe("VoiceAssistantPersonalityComponent", () => {
         component.activePersonality = personality;
         spyOn<any>(component, "showModal").and.returnValue({
             result: {
-                then: (resolve, reject) => {},
+                then: (resolve, reject) => {
+                    return;
+                },
             } as Promise<any>,
         } as NgbModalRef);
         const prepareEdit = spyOn<any>(
