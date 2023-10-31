@@ -119,10 +119,7 @@ describe("VoiceAssistantService", () => {
     it("should return an updated personality form db", () => {
         let klausUpdate = klaus;
         klausUpdate.description = "asdasdadasd";
-        const spyOnUpdatePersonality = spyOn(
-            service,
-            "updatePersonality",
-        ).and.returnValue();
+        const spyOnUpdatePersonality = spyOn(service, "updatePersonalityById");
         const personality = new VoiceAssistant(
             "",
             "TestPersonality",
@@ -130,7 +127,7 @@ describe("VoiceAssistantService", () => {
             "Male",
             0.8,
         );
-        service.updatePersonality(personality);
+        service.updatePersonalityById(personality);
         let arrayItem = service.personalities.find(
             (i) => i.personalityId == klausUpdate.personalityId,
         );
