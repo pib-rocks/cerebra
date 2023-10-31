@@ -11,6 +11,7 @@ import {UrlConstants} from "./url.constants";
     providedIn: "root",
 })
 export class VoiceAssistantService {
+    personalityByIdResponse: VoiceAssistant | undefined;
     personalities: VoiceAssistant[] = [];
     personalitiesSubject: BehaviorSubject<VoiceAssistant[]> =
         new BehaviorSubject<VoiceAssistant[]>([]);
@@ -65,7 +66,6 @@ export class VoiceAssistantService {
     }
 
     getPersonalityById(id: string) {
-        console.log(`/${id}`);
         this.apiService
             .get(UrlConstants.PERSONALITY + `/${id}`)
             .pipe(
@@ -76,7 +76,9 @@ export class VoiceAssistantService {
                 }),
             )
             .subscribe((response) => {
-                this.updatePersonality(response as VoiceAssistant);
+                // Chrisophe Why update in get By id
+                // this.updatePersonality(response as VoiceAssistant);
+                this.personalityByIdResponse = response as VoiceAssistant;
             });
     }
 
@@ -112,7 +114,7 @@ export class VoiceAssistantService {
                 }),
             )
             .subscribe((response) => {
-                this.updatePersonality(response as VoiceAssistant);
+                this.updatePersonalityById(response.personalityId);
             });
     }
 

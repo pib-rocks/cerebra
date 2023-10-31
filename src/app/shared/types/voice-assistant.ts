@@ -1,16 +1,42 @@
-export interface VoiceAssistant {
+export class VoiceAssistant {
     personalityId: string;
     name: string;
     description: string;
     gender: string;
     pauseThreshold: number;
+
+    constructor(
+        personalityId: string,
+        name: string,
+        description: string,
+        gender: string,
+        pauseThreshold: number,
+    ) {
+        this.personalityId = personalityId;
+        this.name = name;
+        this.description = description;
+        this.gender = gender;
+        this.pauseThreshold = pauseThreshold;
+    }
 }
 
-export interface VoiceAssistantDto {
+export class VoiceAssistantDto {
     name: string;
     description: string;
     gender: string;
     pauseThreshold: number;
+
+    constructor(
+        name: string,
+        description: string,
+        gender: string,
+        pauseThreshold: number,
+    ) {
+        this.name = name;
+        this.description = description;
+        this.gender = gender;
+        this.pauseThreshold = pauseThreshold;
+    }
 }
 
 export function parseVoiceAssistantToDto(
