@@ -54,7 +54,16 @@ export class CameraService {
                 }),
             )
             .subscribe((response) => {
-                console.log("save");
+                this.qualityFactorSubject.next(response.qualityFactor);
+                this.qualityFactor = response.qualityFactor;
+                this.cameraTimerPeriodSubject.next(response.refreshRate);
+                this.timerPeriod = response.refreshRate;
+                this.cameraResolutinSubject.next(response.resolution);
+                this.cameraIsActiveSubject.next(response.isActive);
+                this.cameraResXSubject.next(response.resX);
+                this.cameraResYSubject.next(response.resY);
+                this.resX = response.resX;
+                this.resY = response.resY;
             });
     }
 
