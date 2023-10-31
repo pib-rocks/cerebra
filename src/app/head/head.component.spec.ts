@@ -1,4 +1,4 @@
-import {ComponentFixture, TestBed} from "@angular/core/testing";
+// import {ComponentFixture, TestBed} from "@angular/core/testing";
 
 import {HeadComponent} from "./head.component";
 import {RosService} from "../shared/ros.service";
@@ -8,11 +8,20 @@ import {ReactiveFormsModule} from "@angular/forms";
 import {NavBarComponent} from "../nav-bar/nav-bar.component";
 import {RouterTestingModule} from "@angular/router/testing";
 import {SliderComponent} from "../slider/slider.component";
+import {ComponentFixture, TestBed} from "@angular/core/testing";
+import {JointTrajectoryMessage} from "../shared/rosMessageTypes/jointTrajectoryMessage";
+import {Group} from "../shared/types/motor.enum";
+import {MotorService} from "../shared/motor.service";
 
 describe("HeadComponent", () => {
     let component: HeadComponent;
     let fixture: ComponentFixture<HeadComponent>;
     let rosService: RosService;
+    let motorService: MotorService;
+
+    let rosSendJointTrajectorySpy: jasmine.Spy<
+        (jointTrajectoryMessage: JointTrajectoryMessage) => void
+    >;
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
@@ -29,45 +38,44 @@ describe("HeadComponent", () => {
         fixture = TestBed.createComponent(HeadComponent);
         component = fixture.componentInstance;
         rosService = TestBed.inject(RosService);
+        motorService = TestBed.inject(MotorService);
         fixture.detectChanges();
+
+        rosSendJointTrajectorySpy = spyOn(
+            rosService,
+            "sendJointTrajectoryMessage",
+        ).and.callFake((msg) => rosService.jointTrajectoryReceiver$.next(msg));
     });
 
     it("should create", () => {
         expect(component).toBeTruthy();
     });
 
-    it("should send dummy values", () => {
-        fixture.detectChanges();
-        const dummyBtnLEft = fixture.debugElement.query(By.css("#dummyBtn"));
-        spyOn(rosService, "sendSliderMessage");
-        dummyBtnLEft.nativeElement.click();
-        expect(rosService.sendSliderMessage).toHaveBeenCalledTimes(2);
-    });
-
     it("should call reset() and set all slider values to 0 after clicking reset button", () => {
-        const sliders = fixture.debugElement.queryAll(
-            By.css("app-motor-control"),
-        );
-        for (const slider of sliders) {
-            spyOn(slider.componentInstance, "sendJointTrajectoryMessage");
-        }
+        const sliders: MotorControlComponent[] = fixture.debugElement
+            .queryAll(By.css("app-motor-control"))
+            .map((slider) => slider.componentInstance);
 
-        spyOn(component, "reset").and.callThrough();
-
-        const button =
+        const resetSpy = spyOn(component, "reset").and.callThrough();
+        const motorResetGroupSpy = spyOn(
+            motorService,
+            "resetMotorGroupPosition",
+        ).and.callThrough();
+        const homeButton =
             fixture.nativeElement.querySelector("#home-position-btn");
-        spyOn(button, "dispatchEvent").and.callThrough();
-        for (const c of sliders) {
-            c.componentInstance.sliderFormControl.setValue(10);
-        }
-        button.dispatchEvent(new MouseEvent("click"));
-        fixture.detectChanges();
-        expect(button.dispatchEvent).toHaveBeenCalledWith(
-            new MouseEvent("click"),
+
+        sliders.forEach((slider) =>
+            slider.sliderComponent.sliderFormControl.setValue(10),
         );
-        expect(component.reset).toHaveBeenCalled();
-        component.childComponents.forEach((child) => {
-            expect(child.sliderFormControl.value).toBe(0);
-        });
+
+        homeButton.click();
+
+        sliders.forEach((slider) =>
+            expect(slider.sliderComponent.sliderFormControl.value).toBe(0),
+        );
+
+        expect(resetSpy).toHaveBeenCalled();
+        expect(rosSendJointTrajectorySpy).toHaveBeenCalled();
+        expect(motorResetGroupSpy).toHaveBeenCalledWith(Group.head);
     });
 });

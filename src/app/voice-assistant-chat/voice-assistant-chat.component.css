@@ -21,10 +21,6 @@
     }
 }
 
-.allContent {
-    font-family: Titillium;
-}
-
 .chat-container {
     display: flex;
     flex-direction: column;

@@ -5,9 +5,12 @@ import {
     ElementRef,
     ViewChild,
     AfterViewInit,
+    EventEmitter,
+    Output,
 } from "@angular/core";
 import {FormControl, Validators} from "@angular/forms";
 import {notNullValidator, steppingValidator} from "../shared/validators";
+import {Observable} from "rxjs";
 
 @Component({
     selector: "app-vertical-slider",
@@ -19,21 +22,25 @@ export class VerticalSliderComponent implements OnInit, AfterViewInit {
     @Input() defaultValue: number = 0;
     @Input() maxValue: number = 100;
     @Input() minValue: number = 0;
-    @Input() rangeFormControl: FormControl = new FormControl();
     @Input() name?: string;
     @Input() showPrompt: boolean = true;
     @Input() showTextInput: boolean = true;
-    @Input() parentFunction = () => {
-        console.warn("no Parentfunction passed to component");
-    };
+    @Input() parentFunction!: () => void;
     @Input() unitShort?: string;
     @Input() unitLong?: string;
     @Input() id = "";
+    @Input() messageReceiver$!: Observable<any>;
     //Slider
     @ViewChild("slider") slider?: ElementRef;
     @Input() step: number = 1;
 
+    @Output() sliderEvent = new EventEmitter<number>();
+
+    timer: any;
+    rangeFormControl: FormControl = new FormControl();
+
     ngOnInit(): void {
+        this.rangeFormControl.setValue(this.defaultValue);
         this.rangeFormControl.setValidators([
             Validators.min(this.minValue),
             Validators.max(this.maxValue),
@@ -42,9 +49,12 @@ export class VerticalSliderComponent implements OnInit, AfterViewInit {
             notNullValidator,
             steppingValidator(this.step),
         ]);
+        this.messageReceiver$.subscribe((value: number) => {
+            this.rangeFormControl.setValue(value);
+        });
     }
     ngAfterViewInit(): void {
-        this.rangeFormControl.valueChanges.subscribe((value) => {
+        this.rangeFormControl.valueChanges.subscribe(() => {
             if (this.sanitizeValue()) {
                 const slider: ElementRef["nativeElement"] =
                     this.slider?.nativeElement;
@@ -79,4 +89,14 @@ export class VerticalSliderComponent implements OnInit, AfterViewInit {
         }
         return false;
     }
+
+    inputSendMsg = () => {
+        clearTimeout(this.timer);
+        this.timer = setTimeout(() => {
+            this.sliderEvent.emit(this.rangeFormControl.value);
+            if (this.parentFunction) {
+                this.parentFunction();
+            }
+        }, 100);
+    };
 }

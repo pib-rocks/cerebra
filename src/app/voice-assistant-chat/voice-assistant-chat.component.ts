@@ -3,10 +3,7 @@ import {Component} from "@angular/core";
 @Component({
     selector: "app-voice-assistant-chat",
     templateUrl: "./voice-assistant-chat.component.html",
-    styleUrls: [
-        "./voice-assistant-chat.component.css",
-        "../camera/camera.component.css",
-    ],
+    styleUrls: ["./voice-assistant-chat.component.css"],
 })
 export class VoiceAssistantChatComponent {
     tabTitle = "CHAT";

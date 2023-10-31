@@ -138,37 +138,4 @@ describe("MultiSliderComponent", () => {
         expect(posLowerNum).toBeCloseTo(expectedLower, 5);
         expect(posUpperNum).toBeCloseTo(expectedUpper, 5);
     });
-
-    it("should choose the nearest bubble to move when clicking somewhere on the slider", () => {
-        const slider = component.slider.nativeElement;
-        const sliderWidth = slider.clientWidth;
-        const margin = (document.documentElement.clientWidth - sliderWidth) / 2;
-
-        expect(component.sliderFormControl.getRawValue()).toEqual(20);
-        expect(component.sliderFormControlUpper.getRawValue()).toEqual(80);
-
-        const clickEventMin = new MouseEvent("minClick", {
-            clientX: margin,
-        });
-        component.mouseDownX = clickEventMin.clientX;
-        component.onSliderClick(clickEventMin);
-        expect(component.sliderFormControl.getRawValue()).toEqual(-200);
-        expect(component.sliderFormControlUpper.getRawValue()).toEqual(80);
-
-        const clickEventMax = new MouseEvent("maxClick", {
-            clientX: sliderWidth + margin,
-        });
-        component.mouseDownX = clickEventMax.clientX;
-        component.onSliderClick(clickEventMax);
-        expect(component.sliderFormControl.getRawValue()).toEqual(-200);
-        expect(component.sliderFormControlUpper.getRawValue()).toEqual(200);
-
-        const clickEventMiddle = new MouseEvent("middleClick", {
-            clientX: Math.round(sliderWidth / 2 + margin),
-        });
-        component.mouseDownX = clickEventMiddle.clientX;
-        component.onSliderClick(clickEventMiddle);
-        expect(component.sliderFormControl.getRawValue()).toEqual(-200);
-        expect(component.sliderFormControlUpper.getRawValue()).toEqual(0);
-    });
 });

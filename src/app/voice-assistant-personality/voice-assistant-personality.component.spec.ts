@@ -98,7 +98,7 @@ describe("VoiceAssistantPersonalityComponent", () => {
     });
 
     it("should call the updatePersonality method in voice assistant service when 'EDIT' modal is closed", async () => {
-        const callUpdatePersonality = spyOn(
+        const callUpdatePersonality = spyOn<any>(
             voiceAssistantService,
             "updatePersonality",
         );
