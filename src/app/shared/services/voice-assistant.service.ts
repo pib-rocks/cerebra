@@ -95,7 +95,7 @@ export class VoiceAssistantService {
                 }),
             )
             .subscribe((response) => {
-                let personality = response as VoiceAssistant;
+                const personality = response as VoiceAssistant;
                 this.lastSelectedIdSubject.next(personality.personalityId);
                 this.addPersonality(personality);
             });

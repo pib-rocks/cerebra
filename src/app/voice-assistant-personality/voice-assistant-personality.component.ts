@@ -209,7 +209,7 @@ export class VoiceAssistantPersonalityComponent {
                     };
                     this.personalities.push(personality);
                 });
-                let personality_active = this.personalities.find(
+                const personality_active = this.personalities.find(
                     (personality) => personality.selected,
                 );
                 if (personality_active == undefined) {
@@ -248,7 +248,7 @@ export class VoiceAssistantPersonalityComponent {
             (personality) => personality.personalityId === id,
         );
 
-        for (let personality of this.personalities) {
+        for (const personality of this.personalities) {
             personality.selected = id === personality.id;
         }
         this.setPauseThresholdString();
@@ -256,7 +256,7 @@ export class VoiceAssistantPersonalityComponent {
     }
 
     closeModalWithResult(modal: NgbActiveModal) {
-        let personalityId = this.activePersonality?.personalityId
+        const personalityId = this.activePersonality?.personalityId
             ? this.activePersonality.personalityId
             : "";
         const personality: VoiceAssistant = {
