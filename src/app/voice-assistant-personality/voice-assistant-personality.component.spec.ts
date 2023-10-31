@@ -58,7 +58,7 @@ describe("VoiceAssistantPersonalityComponent", () => {
 
     it("should show a modal when 'ADD' button is clicked", () => {
         const openCalled = spyOn(modalService, "open").and.returnValue({
-            result: Promise.reject(),
+            result: Promise.resolve(),
         } as NgbModalRef);
         component.executeSidebarHeaderButtonFunctionality("ADD");
         expect(openCalled).toHaveBeenCalled();
@@ -66,7 +66,7 @@ describe("VoiceAssistantPersonalityComponent", () => {
 
     it("should show a modal when 'EDIT' button is clicked", () => {
         const openCalled = spyOn(modalService, "open").and.returnValue({
-            result: Promise.reject(),
+            result: Promise.resolve(),
         } as NgbModalRef);
         component.executeSidebarHeaderButtonFunctionality("EDIT");
         expect(openCalled).toHaveBeenCalled();
@@ -78,14 +78,6 @@ describe("VoiceAssistantPersonalityComponent", () => {
             "createPersonality",
         );
 
-        spyOn(modalService, "open").and.returnValue({
-            result: {
-                then: (resolve, reject) => reject?.(undefined),
-            } as Promise<any>,
-        } as NgbModalRef);
-
-        spyOn<any>(component, "allInputsValid").and.returnValue(true);
-
         const personality: VoiceAssistant = {
             personalityId: "",
             name: "Test",
@@ -93,11 +85,13 @@ describe("VoiceAssistantPersonalityComponent", () => {
             pauseThreshold: 0.8,
             description: "",
         };
+        spyOn(modalService, "open").and.returnValue({
+            result: {
+                then: (resolve, reject) => resolve?.(personality),
+            } as Promise<any>,
+        } as NgbModalRef);
 
-        spyOn<any>(
-            component,
-            "createVoiceAssistantRequestObject",
-        ).and.returnValue(personality);
+        spyOn<any>(component, "allInputsValid").and.returnValue(true);
 
         component.executeSidebarHeaderButtonFunctionality("ADD");
         expect(callCreatePersonality).toHaveBeenCalledWith(personality);
@@ -109,14 +103,6 @@ describe("VoiceAssistantPersonalityComponent", () => {
             "updatePersonality",
         );
 
-        spyOn(modalService, "open").and.returnValue({
-            result: {
-                then: (resolve, reject) => reject?.(undefined),
-            } as Promise<any>,
-        } as NgbModalRef);
-
-        spyOn<any>(component, "allInputsValid").and.returnValue(true);
-
         const personality: VoiceAssistant = {
             personalityId: "ID-1",
             name: "Test",
@@ -124,11 +110,13 @@ describe("VoiceAssistantPersonalityComponent", () => {
             pauseThreshold: 0.8,
             description: "",
         };
+        spyOn(modalService, "open").and.returnValue({
+            result: {
+                then: (resolve, reject) => resolve?.(personality),
+            } as Promise<any>,
+        } as NgbModalRef);
 
-        spyOn<any>(
-            component,
-            "createVoiceAssistantRequestObject",
-        ).and.returnValue(personality);
+        spyOn<any>(component, "allInputsValid").and.returnValue(true);
 
         component.executeSidebarHeaderButtonFunctionality("EDIT");
         expect(callUpdatePersonality).toHaveBeenCalledWith(personality);
@@ -148,18 +136,18 @@ describe("VoiceAssistantPersonalityComponent", () => {
         expect(prepareAdd).toHaveBeenCalled();
         expect(component.nameFormControl.value).toEqual("");
         expect(component.genderFormControl.value).toEqual("");
-        expect(component.descriptionFormControl.value).toEqual("");
+        expect(component.descriptionFormControl.value).toEqual(null);
         expect(component.pauseThresholdFormControl.value).toEqual(0);
         expect(component.thresholdString).toEqual("");
     });
 
-    it("should load an empty modal when add button is clicked", () => {
+    it("should not load an empty modal when edit button is clicked", () => {
         const personality: VoiceAssistant = {
             personalityId: "ID-1",
             name: "Test",
             gender: "male",
             pauseThreshold: 0.8,
-            description: "",
+            description: null,
         };
         component.activePersonality = personality;
         spyOn<any>(component, "showModal").and.returnValue({

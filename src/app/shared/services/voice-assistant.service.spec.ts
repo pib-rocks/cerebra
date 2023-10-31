@@ -3,7 +3,7 @@ import {VoiceAssistantService} from "./voice-assistant.service";
 import {HttpClient, HttpHandler} from "@angular/common/http";
 import {ApiService} from "./api.service";
 
-fdescribe("VoiceAssistantService", () => {
+describe("VoiceAssistantService", () => {
     let service: VoiceAssistantService;
     let apiSpy: jasmine.SpyObj<ApiService>;
     beforeEach(() => {
