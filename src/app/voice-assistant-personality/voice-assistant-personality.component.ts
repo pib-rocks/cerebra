@@ -113,7 +113,7 @@ export class VoiceAssistantPersonalityComponent {
                             VoiceAssistantRequestObject,
                         );
                     } else {
-                        this.voiceAssistantService.updatePersonality(
+                        this.voiceAssistantService.updatePersonalityById(
                             VoiceAssistantRequestObject,
                         );
                     }

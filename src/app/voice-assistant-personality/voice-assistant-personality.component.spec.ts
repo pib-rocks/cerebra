@@ -38,7 +38,7 @@ describe("VoiceAssistantPersonalityComponent", () => {
                         >([]),
                         lastSelectedIdSubject: new BehaviorSubject<string>(""),
                         createPersonality: () => {},
-                        updatePersonality: () => {},
+                        updatePersonalityById: () => {},
                         deletePersonalityById: () => {},
                     },
                 },
@@ -98,9 +98,9 @@ describe("VoiceAssistantPersonalityComponent", () => {
     });
 
     it("should call the updatePersonality method in voice assistant service when 'EDIT' modal is closed", async () => {
-        const callUpdatePersonality = spyOn<any>(
+        const callUpdatePersonality = spyOn(
             voiceAssistantService,
-            "updatePersonality",
+            "updatePersonalityById",
         );
 
         const personality: VoiceAssistant = {
