@@ -10,7 +10,6 @@ import {HttpClient} from "@angular/common/http";
 
 describe("CameraService", () => {
     let service: CameraService;
-    // let spyOnCameraSettings: jasmine.Spy<() => void>;
     let apiService: ApiService;
     let rosService: RosService;
 
@@ -54,6 +53,12 @@ describe("CameraService", () => {
         expect(service.timerPeriod).toBe(0.1);
         expect(service.resX).toBe(640);
         expect(service.resY).toBe(480);
+        expect(service.cameraIsActiveSubject.getValue()).toBe(false);
+        expect(service.cameraResXSubject.getValue()).toBe(640);
+        expect(service.cameraResYSubject.getValue()).toBe(480);
+        expect(service.cameraResolutinSubject.getValue()).toBe("SD");
+        expect(service.cameraTimerPeriodSubject.getValue()).toBe(0.1);
+        expect(service.qualityFactorSubject.getValue()).toBe(80);
     });
 
     it("should retrun updated camera settings", () => {
@@ -66,6 +71,12 @@ describe("CameraService", () => {
         expect(service.resY).toBe(720);
         expect(service.qualityFactor).toBe(50);
         expect(service.timerPeriod).toBe(0.5);
+        expect(service.cameraIsActiveSubject.getValue()).toBe(false);
+        expect(service.cameraResXSubject.getValue()).toBe(1280);
+        expect(service.cameraResYSubject.getValue()).toBe(720);
+        expect(service.cameraResolutinSubject.getValue()).toBe("HD");
+        expect(service.cameraTimerPeriodSubject.getValue()).toBe(0.5);
+        expect(service.qualityFactorSubject.getValue()).toBe(50);
     });
 
     it("should retrun the saved Camera Settings", () => {
@@ -78,6 +89,12 @@ describe("CameraService", () => {
         expect(service.resY).toBe(720);
         expect(service.qualityFactor).toBe(50);
         expect(service.timerPeriod).toBe(0.5);
+        expect(service.cameraIsActiveSubject.getValue()).toBe(false);
+        expect(service.cameraResXSubject.getValue()).toBe(1280);
+        expect(service.cameraResYSubject.getValue()).toBe(720);
+        expect(service.cameraResolutinSubject.getValue()).toBe("HD");
+        expect(service.cameraTimerPeriodSubject.getValue()).toBe(0.5);
+        expect(service.qualityFactorSubject.getValue()).toBe(50);
     });
 
     it("should return camera quality factor over ros topic", () => {
@@ -108,5 +125,4 @@ describe("CameraService", () => {
         rosService.cameraReceiver$.next("TestString");
         expect(res!).toBe("TestString");
     });
-    //Ros Services methoden ebenfalls testen
 });
