@@ -32,11 +32,12 @@ describe("CameraService", () => {
 
     beforeEach(() => {
         TestBed.configureTestingModule({
-            providers: [CameraService, ApiService, HttpClient],
+            providers: [CameraService, ApiService, HttpClient, RosService],
             imports: [HttpClientTestingModule],
         });
         service = TestBed.inject(CameraService);
         apiService = TestBed.inject(ApiService);
+        rosService = TestBed.inject(RosService);
     });
 
     it("should be created", () => {
@@ -79,5 +80,33 @@ describe("CameraService", () => {
         expect(service.timerPeriod).toBe(0.5);
     });
 
+    it("should return camera quality factor over ros topic", () => {
+        service.subscribeCameraQualityFactorReceiver();
+        rosService.cameraQualityFactorReceiver$.next(40);
+        expect(service.qualityFactorSubject.getValue()).toBe(40);
+    });
+
+    it("should return camera preview size over ros topic", () => {
+        service.subscribeCameraPreviewSizeReceiver();
+        rosService.cameraPreviewSizeReceiver$.next([620, 480]);
+        expect(service.cameraResXSubject.getValue()).toBe(620);
+        expect(service.cameraResYSubject.getValue()).toBe(480);
+    });
+
+    it("should return camera preview size over ros topic", () => {
+        service.subscribeCameraTimerPeriodReceiver();
+        rosService.cameraTimerPeriodReceiver$.next(0.5);
+        expect(service.cameraTimerPeriodSubject.getValue()).toBe(0.5);
+    });
+
+    it("should return camera preview size over ros topic", () => {
+        service.subscribeCameraReseiver();
+        let res: string;
+        service.cameraReciver$.subscribe((response) => {
+            res = response;
+        });
+        rosService.cameraReceiver$.next("TestString");
+        expect(res!).toBe("TestString");
+    });
     //Ros Services methoden ebenfalls testen
 });
