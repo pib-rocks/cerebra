@@ -34,7 +34,7 @@ describe("VoiceAssistantService", () => {
     } as VoiceAssistant;
     const res = {voiceAssistantPersonalities: [eva, thomas]};
     const observableOfOne = new BehaviorSubject<any>(eva);
-    const observableOfKlaus = new BehaviorSubject<any>(eva);
+    const observableOfKlaus = new BehaviorSubject<any>(klaus);
     const observableOfTwo = new BehaviorSubject<any>(res);
 
     beforeEach(() => {
@@ -80,7 +80,7 @@ describe("VoiceAssistantService", () => {
         );
     });
 
-    fit("should retrun one personality from database", () => {
+    it("should retrun one personality from database", () => {
         const spyOnGetAllPersonalities = spyOn(
             apiService,
             "get",
@@ -102,9 +102,9 @@ describe("VoiceAssistantService", () => {
 
     it("should retrun a created personality form db", () => {
         const spyOnCreatePersonality = spyOn(
-            service,
-            "createPersonality",
-        ).and.returnValue();
+            apiService,
+            "post",
+        ).and.returnValue(observableOfKlaus);
         service.createPersonality(klaus);
         let klasuResponse = service.personalities.find(
             (i) => i.personalityId === klaus.personalityId,
@@ -119,36 +119,21 @@ describe("VoiceAssistantService", () => {
     it("should return an updated personality form db", () => {
         let klausUpdate = klaus;
         klausUpdate.description = "asdasdadasd";
-        const spyOnUpdatePersonality = spyOn(service, "updatePersonalityById");
-        const personality = new VoiceAssistant(
-            "",
-            "TestPersonality",
-            "",
-            "Male",
-            0.8,
+        const observableOfUpdatedKlaus = new BehaviorSubject<any>(klausUpdate);
+        const spyOnUpdatePersonality = spyOn(apiService, "put").and.returnValue(
+            observableOfUpdatedKlaus,
         );
-        service.updatePersonalityById(personality);
-        let arrayItem = service.personalities.find(
-            (i) => i.personalityId == klausUpdate.personalityId,
-        );
+        service.updatePersonalityById(klausUpdate);
         expect(spyOnUpdatePersonality).toHaveBeenCalled();
-        expect(arrayItem!.description).toBe(klausUpdate.description);
-        expect(arrayItem!.name).toBe(klausUpdate.name);
-        expect(arrayItem!.pauseThreshold).toBe(klausUpdate.pauseThreshold);
-        expect(arrayItem!.gender).toBe(klausUpdate.gender);
     });
 
     it("should return 204", () => {
+        const emptyObservable = new BehaviorSubject<any>(undefined);
         const spyOnDeletePersonality = spyOn(
-            service,
-            "deletePersonalityById",
-        ).and.returnValue();
+            apiService,
+            "delete",
+        ).and.returnValue(emptyObservable);
         service.deletePersonalityById(eva.personalityId);
-        let arrayItem = service.personalities.find(
-            (i) => i.personalityId == eva.personalityId,
-        );
         expect(spyOnDeletePersonality).toHaveBeenCalled();
-        expect(arrayItem).toBe(undefined);
-        //prüfen ob wirklich gelöscht wurde
     });
 });

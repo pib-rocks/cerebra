@@ -77,8 +77,6 @@ export class VoiceAssistantService {
                 }),
             )
             .subscribe((response) => {
-                // Chrisophe Why update in get By id
-                // this.updatePersonality(response as VoiceAssistant);
                 this.personalityByIdResponse = response as VoiceAssistant;
             });
     }
@@ -115,7 +113,8 @@ export class VoiceAssistantService {
                 }),
             )
             .subscribe((response) => {
-                this.updatePersonalityById(response.personalityId);
+                this.personalityByIdResponse = response as VoiceAssistant;
+                this.updatePersonality(response.personalityId);
             });
     }
 
