@@ -10,43 +10,30 @@ describe("VoiceAssistantPersonalityComponent", () => {
     let fixture: ComponentFixture<VoiceAssistantPersonalityComponent>;
 
     let voiceAssistantService: VoiceAssistantService;
-    let activePersonality: VoiceAssistant;
-    let personalities;
     let modalService: NgbModal;
+
     beforeEach(async () => {
+        const voiceAssistantServiceSpy: VoiceAssistantService =
+            jasmine.createSpyObj(
+                "VoiceAssistantService",
+                [
+                    "createPersonality",
+                    "updatePersonalityById",
+                    "deletePersonalityById",
+                ],
+                {
+                    personalitiesSubject: new BehaviorSubject<VoiceAssistant[]>(
+                        [],
+                    ),
+                    lastSelectedIdSubject: new BehaviorSubject<string>(""),
+                },
+            );
+
         await TestBed.configureTestingModule({
             providers: [
                 {
                     provide: VoiceAssistantService,
-                    useValue: {
-                        personalities: [
-                            {
-                                personalityId: "ID-1",
-                                name: "Eva",
-                                gender: "Female",
-                                pauseThreshold: 0.8,
-                            },
-                            {
-                                personalityId: "ID-2",
-                                name: "Thomas",
-                                gender: "Male",
-                                pauseThreshold: 0.8,
-                            },
-                        ],
-                        personalitiesSubject: new BehaviorSubject<
-                            VoiceAssistant[]
-                        >([]),
-                        lastSelectedIdSubject: new BehaviorSubject<string>(""),
-                        createPersonality: () => {
-                            return;
-                        },
-                        updatePersonalityById: () => {
-                            return;
-                        },
-                        deletePersonalityById: () => {
-                            return;
-                        },
-                    },
+                    useValue: voiceAssistantServiceSpy,
                 },
             ],
         }).compileComponents();
@@ -79,11 +66,6 @@ describe("VoiceAssistantPersonalityComponent", () => {
     });
 
     it("should call the createPersonality method in voice assistant service when 'ADD' modal is closed", () => {
-        const callCreatePersonality = spyOn(
-            voiceAssistantService,
-            "createPersonality",
-        );
-
         const personality: VoiceAssistant = {
             personalityId: "",
             name: "Test",
@@ -100,15 +82,12 @@ describe("VoiceAssistantPersonalityComponent", () => {
         spyOn<any>(component, "allInputsValid").and.returnValue(true);
 
         component.executeSidebarHeaderButtonFunctionality("ADD");
-        expect(callCreatePersonality).toHaveBeenCalledWith(personality);
+        expect(voiceAssistantService.createPersonality).toHaveBeenCalledWith(
+            personality,
+        );
     });
 
     it("should call the updatePersonality method in voice assistant service when 'EDIT' modal is closed", async () => {
-        const callUpdatePersonality = spyOn(
-            voiceAssistantService,
-            "updatePersonalityById",
-        );
-
         const personality: VoiceAssistant = {
             personalityId: "ID-1",
             name: "Test",
@@ -125,7 +104,9 @@ describe("VoiceAssistantPersonalityComponent", () => {
         spyOn<any>(component, "allInputsValid").and.returnValue(true);
 
         component.executeSidebarHeaderButtonFunctionality("EDIT");
-        expect(callUpdatePersonality).toHaveBeenCalledWith(personality);
+        expect(
+            voiceAssistantService.updatePersonalityById,
+        ).toHaveBeenCalledWith(personality);
     });
 
     it("should load an empty modal when add button is clicked", () => {
@@ -182,10 +163,6 @@ describe("VoiceAssistantPersonalityComponent", () => {
     });
 
     it("should call the deletePersonality method in voice assistant service when 'DELETE' modal is closed", () => {
-        const callDeletePersonality = spyOn(
-            voiceAssistantService,
-            "deletePersonalityById",
-        );
         const activePersonality: VoiceAssistant = {
             personalityId: "ID-1",
             name: "Test",
@@ -196,15 +173,32 @@ describe("VoiceAssistantPersonalityComponent", () => {
         component.activePersonality = activePersonality;
 
         component.executeSidebarHeaderButtonFunctionality("DELETE");
-        expect(callDeletePersonality).toHaveBeenCalledWith(
-            activePersonality.personalityId,
-        );
+        expect(
+            voiceAssistantService.deletePersonalityById,
+        ).toHaveBeenCalledWith(activePersonality.personalityId);
     });
 
     it(
         "should activate personality in component correctly and set the value" +
             "of the corresponding lastActivePersonality BehaviorSubject with the id of the active personality",
         () => {
+            voiceAssistantService.personalities = [
+                {
+                    personalityId: "ID-1",
+                    name: "Eva",
+                    gender: "Female",
+                    pauseThreshold: 0.8,
+                    description: "nice person",
+                },
+                {
+                    personalityId: "ID-2",
+                    name: "Thomas",
+                    gender: "Male",
+                    pauseThreshold: 0.8,
+                    description: "nice person",
+                },
+            ];
+
             const spyLastSelectedId = spyOn(
                 voiceAssistantService.lastSelectedIdSubject,
                 "next",
