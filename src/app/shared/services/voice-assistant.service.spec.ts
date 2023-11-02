@@ -87,7 +87,7 @@ describe("VoiceAssistantService", () => {
             "post",
         ).and.returnValue(observableOfKlaus);
         service.createPersonality(klaus);
-        let index = service.personalities.findIndex(
+        const index = service.personalities.findIndex(
             (i) => i.personalityId === klaus.personalityId,
         );
         expect(spyOnCreatePersonality).toHaveBeenCalled();
@@ -96,7 +96,7 @@ describe("VoiceAssistantService", () => {
     });
 
     it("should return an updated personality form db", () => {
-        let klausUpdate = klaus;
+        const klausUpdate = klaus;
         klausUpdate.description = "asdasdadasd";
         const observableOfUpdatedKlaus = new BehaviorSubject<any>(klausUpdate);
         const spyOnUpdatePersonality = spyOn(apiService, "put").and.returnValue(
