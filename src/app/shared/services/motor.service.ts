@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import {Injectable} from "@angular/core";
 import {RosService} from "../ros.service";
 import {BehaviorSubject, catchError, throwError} from "rxjs";
@@ -205,12 +204,12 @@ export class MotorService {
         }
     }
     updateMotorSettingsFromMotorSettingsMessage(message: MotorSettingsMessage) {
-        const motor = this.getMotorByName(message.motor_name);
+        const motor = this.getMotorByName(message.name);
         motor.settings.updateChangedAttribute(message);
         const copy = motor?.clone();
         motor.motorSubject.next(copy);
-        if (message.motor_name.includes("all")) {
-            const motor = this.getMotorByName(message.motor_name);
+        if (message.name.includes("all")) {
+            const motor = this.getMotorByName(message.name);
             const groupMotors = this.motors
                 .filter((m) => m.group == motor.group)
                 .filter(
@@ -219,7 +218,7 @@ export class MotorService {
                         !m.name.includes("all"),
                 );
             groupMotors.forEach((m) => {
-                message.motor_name = m.name;
+                message.name = m.name;
                 this.updateMotorSettingsFromMotorSettingsMessage(message);
             });
         }
