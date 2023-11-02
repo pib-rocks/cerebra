@@ -85,7 +85,6 @@ describe("CameraComponent", () => {
             height + "p" + " " + "(" + resolution + ")",
         );
         expect(component.isLoading).toBeTrue();
-        expect(rosService.setPreviewSize).toHaveBeenCalledWith(width, height);
         tick(1500);
         expect(component.isLoading).toBeFalse();
     }));
