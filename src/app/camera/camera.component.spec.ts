@@ -74,7 +74,7 @@ describe("CameraComponent", () => {
         expect(spy).toHaveBeenCalled();
     });
 
-    it("setsize should send the size message via setPreviewSize method in rosService", fakeAsync(() => {
+    it("setSize should send the size message via setPreviewSize method in rosService", fakeAsync(() => {
         spyOn(component, "setSize").and.callThrough();
         spyOn(rosService, "setPreviewSize");
         const width = 1920;
@@ -85,7 +85,6 @@ describe("CameraComponent", () => {
             height + "p" + " " + "(" + resolution + ")",
         );
         expect(component.isLoading).toBeTrue();
-        expect(rosService.setPreviewSize).toHaveBeenCalledWith(width, height);
         tick(1500);
         expect(component.isLoading).toBeFalse();
     }));

@@ -416,11 +416,10 @@ describe("MotorService", () => {
             "put",
         ).and.returnValue(emptyObservable);
         service.updateMotorInDb(motor);
-        expect(service.updateMotorInDb).toHaveBeenCalled;
-        expect(spyOnApiServiceUpdateMotor).toHaveBeenCalled;
+        expect(spyOnApiServiceUpdateMotor).toHaveBeenCalled();
     });
 
-    it("should call apiSerive to get motor settings by name form a database", () => {
+    it("should call apiSerive to get motor settings by name from a database", () => {
         const motorSettings = new MotorSettings(
             250,
             300,
@@ -438,13 +437,13 @@ describe("MotorService", () => {
             "get",
         ).and.returnValue(observable);
         service.getMotorSettingsByNameFromDb("thumb_left_opposition");
-        expect(spyOnApiServiceUpdateMotor).toHaveBeenCalled;
+        expect(spyOnApiServiceUpdateMotor).toHaveBeenCalled();
         expect(
             service.getMotorByName("thumb_left_opposition").settings,
         ).toEqual(motorSettings);
     });
 
-    it("should call apiSerive to get all motor settings form a database", () => {
+    it("should call apiSerive to get all motor settings from a database", () => {
         const motorSettings1 = {
             acceleration: 10000,
             deceleration: 10000,
@@ -483,7 +482,7 @@ describe("MotorService", () => {
         const motorThumbRightOpposition = service.getMotorByName(
             "thumb_right_opposition",
         );
-        expect(spyOnApiServiceUpdateMotor).toHaveBeenCalled;
+        expect(spyOnApiServiceUpdateMotor).toHaveBeenCalled();
         expect(motorThumbLeftOpposition.name).toEqual(motorSettings1.name);
         expect(motorThumbRightOpposition.name).toEqual(motorSettings2.name);
         expect(motorThumbLeftOpposition.settings.velocity).toEqual(
@@ -510,7 +509,8 @@ describe("MotorService", () => {
         );
         service.subscribeMotorSettingsSubject();
         rosService.motorSettingsReceiver$.next({} as MotorSettingsMessage);
-        expect(spyOnUpdateMotorSettingsFromMotorSettingsMessage)
-            .toHaveBeenCalled;
+        expect(
+            spyOnUpdateMotorSettingsFromMotorSettingsMessage,
+        ).toHaveBeenCalled();
     });
 });
