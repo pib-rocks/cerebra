@@ -9,7 +9,6 @@ import {BehaviorSubject} from "rxjs";
 
 describe("VoiceAssistantService", () => {
     let service: VoiceAssistantService;
-    let spyOnVoiceAssistant: jasmine.Spy<() => void>;
     let apiService: ApiService;
     const eva = {
         personalityId: "8f73b580-927e-41c2-98ac-e5df070e7288",
@@ -44,10 +43,6 @@ describe("VoiceAssistantService", () => {
         });
         service = TestBed.inject(VoiceAssistantService);
         apiService = TestBed.inject(ApiService);
-        spyOnVoiceAssistant = spyOn(
-            service,
-            "getAllPersonalities",
-        ).and.callThrough();
     });
 
     it("should be created", () => {
