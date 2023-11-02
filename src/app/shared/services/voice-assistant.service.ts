@@ -4,7 +4,7 @@ import {
     VoiceAssistant,
     parseVoiceAssistantToDto,
 } from "../types/voice-assistant";
-import {BehaviorSubject, catchError, tap, throwError} from "rxjs";
+import {BehaviorSubject, catchError, throwError} from "rxjs";
 import {UrlConstants} from "./url.constants";
 
 @Injectable({

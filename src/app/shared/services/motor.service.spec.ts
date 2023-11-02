@@ -14,7 +14,6 @@ import {createJointTrajectoryPoint} from "../rosMessageTypes/jointTrajectoryPoin
 import {HttpClientTestingModule} from "@angular/common/http/testing";
 import {ApiService} from "./api.service";
 import {BehaviorSubject} from "rxjs";
-import * as ROSLIB from "roslib";
 
 describe("MotorService", () => {
     let service: MotorService;
