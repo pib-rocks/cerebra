@@ -21,7 +21,6 @@ describe("CameraComponent", () => {
     let spyUnsubscribeCamera: jasmine.Spy<() => void>;
     let videoSettingsButton: HTMLButtonElement;
     let cameraService: CameraService;
-    let apiService: ApiService;
 
     beforeEach(async () => {
         TestBed.configureTestingModule({
@@ -31,7 +30,6 @@ describe("CameraComponent", () => {
         }).compileComponents();
         rosService = TestBed.inject(RosService);
         cameraService = TestBed.inject(CameraService);
-        apiService = TestBed.inject(ApiService);
         fixture = TestBed.createComponent(CameraComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
@@ -69,7 +67,6 @@ describe("CameraComponent", () => {
     });
 
     it("should subscribe to the message receiver when the component is instantiated", () => {
-        const receiver$ = rosService.cameraReceiver$;
         const spy = spyOn(cameraService, "subscribeCameraReseiver");
         component.ngOnInit();
         expect(spy).toHaveBeenCalled();

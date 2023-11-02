@@ -92,7 +92,7 @@ export class CameraService {
     }
 
     saveCameraSettings() {
-        let cameraSettings = new CameraSetting(
+        const cameraSettings = new CameraSetting(
             this.cameraResolutinSubject.getValue(),
             this.cameraTimerPeriodSubject.getValue(),
             this.qualityFactorSubject.getValue(),
