@@ -24,24 +24,12 @@ export class CameraService {
         this.subscribeCameraTimerPeriodReceiver();
         this.subscribeCameraReseiver();
     }
-
-    camera: CameraSetting | undefined;
-    qualityFactorSubject: BehaviorSubject<number> = new BehaviorSubject<number>(
-        0,
-    );
-    cameraTimerPeriodSubject: BehaviorSubject<number> =
-        new BehaviorSubject<number>(0);
-    cameraResolutinSubject: BehaviorSubject<string> =
-        new BehaviorSubject<string>("");
-    cameraIsActiveSubject: BehaviorSubject<boolean> =
-        new BehaviorSubject<boolean>(false);
-    cameraResXSubject: BehaviorSubject<number> = new BehaviorSubject<number>(0);
-    cameraResYSubject: BehaviorSubject<number> = new BehaviorSubject<number>(0);
-    cameraReciver$: Subject<string> = new Subject<string>();
-
     rosCameraQualityFactorReceiver =
         this.rosService.cameraQualityFactorReceiver$;
     rosCameraTimerPeriodReceiver = this.rosService.cameraTimerPeriodReceiver$;
+    cameraReciver$: Subject<string> = new Subject<string>();
+    cameraSettings: BehaviorSubject<CameraSetting> =
+        new BehaviorSubject<CameraSetting>({} as CameraSetting);
 
     updateCameraSettings(updateCameraSetting: CameraSetting) {
         this.apiService
@@ -53,18 +41,7 @@ export class CameraService {
                     });
                 }),
             )
-            .subscribe((response) => {
-                this.qualityFactorSubject.next(response.qualityFactor);
-                this.qualityFactor = response.qualityFactor;
-                this.cameraTimerPeriodSubject.next(response.refreshRate);
-                this.timerPeriod = response.refreshRate;
-                this.cameraResolutinSubject.next(response.resolution);
-                this.cameraIsActiveSubject.next(response.isActive);
-                this.cameraResXSubject.next(response.resX);
-                this.cameraResYSubject.next(response.resY);
-                this.resX = response.resX;
-                this.resY = response.resY;
-            });
+            .subscribe((response) => {});
     }
 
     getCameraSettings() {
@@ -78,38 +55,19 @@ export class CameraService {
                 }),
             )
             .subscribe((response) => {
-                this.qualityFactorSubject.next(response.qualityFactor);
-                this.qualityFactor = response.qualityFactor;
-                this.cameraTimerPeriodSubject.next(response.refreshRate);
-                this.timerPeriod = response.refreshRate;
-                this.cameraResolutinSubject.next(response.resolution);
-                this.cameraIsActiveSubject.next(response.isActive);
-                this.cameraResXSubject.next(response.resX);
-                this.cameraResYSubject.next(response.resY);
-                this.resX = response.resX;
-                this.resY = response.resY;
+                this.cameraSettings.next(response);
             });
-    }
-
-    saveCameraSettings() {
-        const cameraSettings = new CameraSetting(
-            this.cameraResolutinSubject.getValue(),
-            this.cameraTimerPeriodSubject.getValue(),
-            this.qualityFactorSubject.getValue(),
-            this.cameraIsActiveSubject.getValue(),
-            this.cameraResXSubject.getValue(),
-            this.cameraResYSubject.getValue(),
-        );
-        console.log(cameraSettings);
-        this.updateCameraSettings(cameraSettings);
     }
 
     subscribeCameraQualityFactorReceiver() {
         this.rosService.cameraQualityFactorReceiver$.subscribe(
             (message: number) => {
-                if (this.qualityFactor != message) {
-                    this.qualityFactorSubject.next(message);
-                    this.qualityFactor = message;
+                if (
+                    this.cameraSettings.getValue().qualityFactor != message &&
+                    this.cameraSettings.getValue().qualityFactor != undefined
+                ) {
+                    this.cameraSettings.getValue().qualityFactor = message;
+                    this.publishCameraSettings(this.cameraSettings.getValue());
                 }
             },
         );
@@ -119,13 +77,16 @@ export class CameraService {
         this.rosService.cameraPreviewSizeReceiver$.subscribe(
             (message: number[]) => {
                 if (
-                    message[0] != this.resX &&
-                    message[1] != this.resY &&
+                    message[0] != this.cameraSettings.getValue().resX &&
+                    message[1] != this.cameraSettings.getValue().resY &&
                     message[0] != 0 &&
-                    message[1] != 0
+                    message[1] != 0 &&
+                    this.cameraSettings.getValue().resX != undefined &&
+                    this.cameraSettings.getValue().resY != undefined
                 ) {
-                    this.cameraResXSubject.next(message[0]);
-                    this.cameraResYSubject.next(message[1]);
+                    this.cameraSettings.getValue().resX = message[0];
+                    this.cameraSettings.getValue().resY = message[1];
+                    this.publishCameraSettings(this.cameraSettings.getValue());
                 }
             },
         );
@@ -134,9 +95,12 @@ export class CameraService {
     subscribeCameraTimerPeriodReceiver() {
         this.rosService.cameraTimerPeriodReceiver$.subscribe(
             (message: number) => {
-                if (this.timerPeriod != message) {
-                    this.cameraTimerPeriodSubject.next(message);
-                    this.timerPeriod = message;
+                if (
+                    this.cameraSettings.getValue().refreshRate != message &&
+                    this.cameraSettings.getValue().refreshRate != undefined
+                ) {
+                    this.cameraSettings.getValue().refreshRate = message;
+                    this.publishCameraSettings(this.cameraSettings.getValue());
                 }
             },
         );
@@ -149,11 +113,15 @@ export class CameraService {
     }
 
     qualityControlPublish(formControlValue: number) {
+        this.cameraSettings.getValue().qualityFactor = formControlValue;
         this.rosService.setQualityFactor(formControlValue);
+        this.publishCameraSettings(this.cameraSettings.getValue());
     }
 
     refreshRatePublish = (formControlValue: number) => {
+        this.cameraSettings.getValue().refreshRate = formControlValue;
         this.rosService.setTimerPeriod(formControlValue);
+        this.publishCameraSettings(this.cameraSettings.getValue());
     };
 
     setPreviewSize(width: number, height: number) {
@@ -166,5 +134,10 @@ export class CameraService {
 
     stopCamera() {
         this.rosService.unsubscribeCameraTopic();
+    }
+
+    publishCameraSettings(cameraSettings: CameraSetting) {
+        this.cameraSettings.next(cameraSettings);
+        this.updateCameraSettings(cameraSettings);
     }
 }

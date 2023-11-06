@@ -83,7 +83,6 @@ describe("CameraService", () => {
         const spyOnPutCameraSettings = spyOn(apiService, "put").and.returnValue(
             behaviorSubjectOfUpdatedCameraSettings,
         );
-        service.saveCameraSettings();
         expect(spyOnPutCameraSettings).toHaveBeenCalled();
         expect(service.resX).toBe(1280);
         expect(service.resY).toBe(720);

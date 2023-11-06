@@ -1,5 +1,6 @@
 import {Component, OnInit} from "@angular/core";
 import {NavigationEnd, Router} from "@angular/router";
+import {CameraService} from "./shared/services/camera.service";
 
 @Component({
     selector: "app-root",
