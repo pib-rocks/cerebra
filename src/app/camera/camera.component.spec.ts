@@ -10,6 +10,9 @@ import {RosService} from "../shared/ros.service";
 import {By} from "@angular/platform-browser";
 import {SliderComponent} from "../slider/slider.component";
 import {NgbPopover} from "@ng-bootstrap/ng-bootstrap";
+import {CameraService} from "../shared/services/camera.service";
+import {ApiService} from "../shared/services/api.service";
+import {HttpClientTestingModule} from "@angular/common/http/testing";
 
 describe("CameraComponent", () => {
     let component: CameraComponent;
@@ -17,14 +20,16 @@ describe("CameraComponent", () => {
     let rosService: RosService;
     let spyUnsubscribeCamera: jasmine.Spy<() => void>;
     let videoSettingsButton: HTMLButtonElement;
+    let cameraService: CameraService;
 
     beforeEach(async () => {
         TestBed.configureTestingModule({
             declarations: [CameraComponent, SliderComponent],
-            imports: [ReactiveFormsModule, NgbPopover],
-            providers: [RosService],
+            imports: [ReactiveFormsModule, NgbPopover, HttpClientTestingModule],
+            providers: [RosService, CameraService, ApiService],
         }).compileComponents();
         rosService = TestBed.inject(RosService);
+        cameraService = TestBed.inject(CameraService);
         fixture = TestBed.createComponent(CameraComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
@@ -62,14 +67,7 @@ describe("CameraComponent", () => {
     });
 
     it("should subscribe to the message receiver when the component is instantiated", () => {
-        const receiver$ = rosService.cameraReceiver$;
-        const spy = spyOn(receiver$, "subscribe");
-        component.ngOnInit();
-        expect(spy).toHaveBeenCalled();
-    });
-
-    it("size should be set to the value of the behaviourSubject when the component is instantiated", () => {
-        const spy = spyOn(component, "setSize");
+        const spy = spyOn(cameraService, "subscribeCameraReseiver");
         component.ngOnInit();
         expect(spy).toHaveBeenCalled();
     });
@@ -80,10 +78,8 @@ describe("CameraComponent", () => {
         const width = 1920;
         const height = 1080;
         const resolution = "FHD";
-        component.setSize(width, height);
-        expect(component.selectedSize).toBe(
-            height + "p" + " " + "(" + resolution + ")",
-        );
+        component.setSize(width, height, resolution);
+        expect(component.selectedSize).toBe(resolution);
         expect(component.isLoading).toBeTrue();
         tick(1500);
         expect(component.isLoading).toBeFalse();

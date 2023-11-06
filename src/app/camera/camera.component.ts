@@ -4,105 +4,84 @@ import {
     OnDestroy,
     OnInit,
     ViewChild,
-    AfterViewInit,
 } from "@angular/core";
 import {FormControl} from "@angular/forms";
-import {RosService} from "../shared/ros.service";
-import {Subject, Subscription, map} from "rxjs";
+import {Subject} from "rxjs";
+import {CameraService} from "../shared/services/camera.service";
 
 @Component({
     selector: "app-camera",
     templateUrl: "./camera.component.html",
     styleUrls: ["./camera.component.css"],
 })
-export class CameraComponent implements OnInit, OnDestroy, AfterViewInit {
+export class CameraComponent implements OnInit, OnDestroy {
     @ViewChild("videobox") videoBox?: ElementRef;
     qualityReceiver$!: Subject<number>;
     refreshRateReceiver$!: Subject<number>;
     isLoading = false;
     isCameraActive = false;
     toggleCamera = new FormControl(false);
-    resolution = "SD";
     imageSrc!: string;
     refreshRateControl: number = 0.1;
     qualityFactorControl: number = 80;
-    selectedSize = "480p (SD)";
+    selectedSize!: string;
+    resX!: number;
+    resY!: number;
+    resolution!: string;
     cameraActiveIcon =
         "M880-275 720-435v111L244-800h416q24 0 42 18t18 42v215l160-160v410ZM848-27 39-836l42-42L890-69l-42 42ZM159-800l561 561v19q0 24-18 42t-42 18H140q-24 0-42-18t-18-42v-520q0-24 18-42t42-18h19Z";
-    private imageTopic!: ROSLIB.Topic;
-    constructor(private rosService: RosService) {}
+    constructor(private cameraService: CameraService) {
+        this.subscribeCameraQualityFactorSubject();
+        this.subscribeCameraResolutinSubject();
+        this.subscribeCameraTimerPeriodSubject();
+        this.subscribeCameraResXSubject();
+        this.subscribeCameraResYSubject();
+    }
 
     ngOnInit(): void {
-        this.rosService.cameraPreviewSizeReceiver$.subscribe((value) => {
-            this.setSize(value[0], value[1], false);
-        });
-        this.rosService.setPreviewSize(640, 480);
+        this.cameraService.getCameraSettings();
+        this.subscribeCameraReseiver();
         this.imageSrc = "../../assets/camera-placeholder.jpg";
-        this.rosService.cameraReceiver$.subscribe((message) => {
+        this.cameraService.cameraReciver$.subscribe((message) => {
             this.imageSrc = "data:image/jpeg;base64," + message;
-            console.log("-------------------------");
             if (message.startsWith("Camera not available")) {
                 this.imageSrc = "../../assets/camera-error-image.svg";
             }
         });
-        this.rosService.Ros.on("error", (error: string) => {
-            if (this.isCameraActive) {
-                this.imageSrc = "../../assets/camera-error-image.svg";
-                console.error(error);
-            }
-        });
-        this.qualityReceiver$ = this.rosService.cameraQualityFactorReceiver$;
-        this.refreshRateReceiver$ = this.rosService.cameraTimerPeriodReceiver$;
+        this.qualityReceiver$ =
+            this.cameraService.rosCameraQualityFactorReceiver;
+        this.refreshRateReceiver$ =
+            this.cameraService.rosCameraTimerPeriodReceiver;
     }
     ngOnDestroy(): void {
         this.stopCamera();
-        this.rosService.setPreviewSize(640, 480);
     }
 
-    ngAfterViewInit(): void {
-        const tempSub: Subscription = this.rosService.cameraPreviewSizeReceiver$
-            .pipe(
-                map((x) => {
-                    return x[1].toString(10) + "px";
-                }),
-            )
-            .subscribe((value) => {
-                this.videoBox?.nativeElement.style.setProperty(
-                    "max-height",
-                    value,
-                );
-                setTimeout(() => {
-                    tempSub.unsubscribe();
-                }, 25);
-            });
-    }
+    setSize(
+        width: number,
+        height: number,
+        resolution: string,
+        publish: boolean = true,
+    ) {
+        this.resX = width;
+        this.resY = height;
 
-    setSize(width: number, height: number, publish: boolean = true) {
+        this.cameraService.cameraResXSubject.next(this.resX);
+        this.cameraService.cameraResYSubject.next(this.resY);
+
         this.videoBox?.nativeElement.style.setProperty(
             "max-height",
-            height + "px",
+            this.resY + "px",
         );
-        this.resolution = "SD";
-        if (height != null) {
-            if (height >= 1080) {
-                this.resolution = "FHD";
-            } else if (height >= 720) {
-                this.resolution = "HD";
-            } else {
-                this.resolution = "SD";
-            }
-        }
-        const newSize = String(
-            height + "p" + " " + "(" + this.resolution + ")",
-        );
-        this.selectedSize = newSize;
+        this.selectedSize = resolution;
         if (publish) {
             this.isLoading = true;
-            this.rosService.setPreviewSize(width, height);
+            this.cameraService.setPreviewSize(this.resX, this.resY);
             setTimeout(() => {
                 this.isLoading = false; // Stop the spinner
             }, 1500);
         }
+        this.saveSettings();
     }
 
     arraysEqual(a: number[], b: number[]) {
@@ -114,11 +93,11 @@ export class CameraComponent implements OnInit, OnDestroy, AfterViewInit {
     }
 
     startCamera() {
-        this.rosService.subscribeCameraTopic();
+        this.cameraService.startCamera();
     }
 
     stopCamera() {
-        this.rosService.unsubscribeCameraTopic();
+        this.cameraService.stopCamera();
         this.imageSrc = "../../assets/camera-placeholder.jpg";
     }
 
@@ -159,11 +138,56 @@ export class CameraComponent implements OnInit, OnDestroy, AfterViewInit {
         videoSettingsButton?.classList.add("showPopover");
     }
 
-    //Boilerplate? Bessere Lösung gegebenenfalls möglich z.B. pass RosServer.function ?)
     qualityControlPublish = (formControlValue: number) => {
-        this.rosService.setQualityFactor(formControlValue);
+        this.cameraService.qualityControlPublish(formControlValue);
     };
     refreshRatePublish = (formControlValue: number) => {
-        this.rosService.setTimerPeriod(formControlValue);
+        this.cameraService.refreshRatePublish(formControlValue);
     };
+
+    subscribeCameraQualityFactorSubject() {
+        this.cameraService.qualityFactorSubject.subscribe((message: number) => {
+            this.qualityFactorControl = message;
+        });
+    }
+    subscribeCameraResXSubject() {
+        this.cameraService.cameraResXSubject.subscribe((message: number) => {
+            this.resX = message;
+        });
+    }
+    subscribeCameraResYSubject() {
+        this.cameraService.cameraResYSubject.subscribe((message: number) => {
+            this.resY = message;
+        });
+    }
+    subscribeCameraTimerPeriodSubject() {
+        this.cameraService.cameraTimerPeriodSubject.subscribe(
+            (message: number) => {
+                this.refreshRateControl = message;
+            },
+        );
+    }
+    subscribeCameraResolutinSubject() {
+        this.cameraService.cameraResolutinSubject.subscribe(
+            (message: string) => {
+                this.selectedSize = this.resY + "p (" + message + ")";
+                this.resolution = message;
+            },
+        );
+    }
+    subscribeCameraIsActiveSubject() {
+        this.cameraService.cameraIsActiveSubject.subscribe(
+            (message: boolean) => {
+                this.isCameraActive = message;
+            },
+        );
+    }
+
+    saveSettings() {
+        this.cameraService.saveCameraSettings();
+    }
+
+    subscribeCameraReseiver() {
+        this.cameraService.subscribeCameraReseiver();
+    }
 }

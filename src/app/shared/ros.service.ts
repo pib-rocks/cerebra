@@ -18,7 +18,7 @@ export class RosService {
     cameraReceiver$: Subject<string> = new Subject<string>();
     cameraPreviewSizeReceiver$: BehaviorSubject<number[]> = new BehaviorSubject<
         number[]
-    >([640, 480]);
+    >([0, 0]);
     cameraQualityFactorReceiver$: BehaviorSubject<number> =
         new BehaviorSubject<number>(80);
     voiceAssistantReceiver$: Subject<any> = new Subject<any>();
@@ -55,7 +55,7 @@ export class RosService {
     setUpRos() {
         let rosUrl: string;
         if (isDevMode()) {
-            rosUrl = "192.168.220.73";
+            rosUrl = "192.168.220.160";
         } else {
             rosUrl = window.location.hostname;
         }
