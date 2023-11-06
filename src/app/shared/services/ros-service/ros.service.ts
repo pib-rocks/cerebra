@@ -55,7 +55,7 @@ export class RosService {
     setUpRos() {
         let rosUrl: string;
         if (isDevMode()) {
-            rosUrl = "192.168.178.37";
+            rosUrl = "192.168.1.112";
         } else {
             rosUrl = window.location.hostname;
         }

@@ -5,6 +5,7 @@ import {VoiceAssistantNavComponent} from "../voice-assistant-nav/voice-assistant
 import {VoiceAssistantSidebarRightComponent} from "../voice-assistant-sidebar-right/voice-assistant-sidebar-right.component";
 import {RouterTestingModule} from "@angular/router/testing";
 import {ReactiveFormsModule} from "@angular/forms";
+import {BoolToOnOffPipe} from "../../shared/pipes/bool-to-on-off-pipe.pipe";
 
 describe("VoiceAssistantPersonalityComponent", () => {
     let component: VoiceAssistantPersonalityComponent;
@@ -16,6 +17,7 @@ describe("VoiceAssistantPersonalityComponent", () => {
                 VoiceAssistantPersonalityComponent,
                 VoiceAssistantNavComponent,
                 VoiceAssistantSidebarRightComponent,
+                BoolToOnOffPipe,
             ],
             imports: [RouterTestingModule, ReactiveFormsModule],
         }).compileComponents();
