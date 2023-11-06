@@ -1,5 +1,5 @@
 import {Component, OnInit} from "@angular/core";
-import {MotorService} from "../shared/motor.service";
+import {MotorService} from "../shared/services/motor.service";
 import {Group} from "../shared/types/motor.enum";
 import {Motor} from "../shared/types/motor.class";
 
