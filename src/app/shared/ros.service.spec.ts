@@ -6,6 +6,7 @@ import {VoiceAssistant} from "./voice-assistant";
 import {MotorSettingsMessage} from "./rosMessageTypes/motorSettingsMessage";
 import {MotorSettingsSrvResponse} from "./rosMessageTypes/motorSettingsSrvResponse";
 import {MotorSettingsError} from "./error/motor-settings-error";
+import {Observable} from "rxjs";
 
 describe("RosService", () => {
     let rosService: RosService;
@@ -107,184 +108,93 @@ describe("RosService", () => {
         expect(spyMotorSettingsServiceCall).toHaveBeenCalled();
     });
 
-    it("should call the service with the MotorSettingsMessage on calling sendMotorSettingsMessageCallback", () => {
-        const spyOnSendMotorSettingsMessage = spyOn(
-            rosService,
-            "sendMotorSettingsMessageCallback",
-        ).and.callThrough();
-        const spyMotorSettingsServiceCall = spyOn(
-            rosService["motorSettingsService"],
-            "callService",
-        );
-        rosService.sendMotorSettingsMessageCallback(motorSettingsMessage);
-        expect(spyOnSendMotorSettingsMessage).toHaveBeenCalled();
-        expect(spyMotorSettingsServiceCall).toHaveBeenCalled();
-    });
-
-    it("should resolve the promise when calling sendMotorSettings and the motorSettingsService calls the callback-function with success-message", async () => {
+    it("should return an observable that publishes the original message, if the ros-service returns a 'successful'-message after sending motor-settings-message", () => {
         spyOn(rosService["motorSettingsService"], "callService").and.callFake(
-            (msg, callback, failedCallback) => {
+            (_msg, callback, _failedCallback) => {
                 const res: MotorSettingsSrvResponse = {successful: true};
                 callback(res);
             },
         );
-
         const spyOnMotorSettingsReceiver = spyOn(
             rosService.motorSettingsReceiver$,
             "next",
         );
 
-        await expectAsync(
-            rosService.sendMotorSettingsMessage(motorSettingsMessage),
-        ).toBeResolvedTo(motorSettingsMessage);
+        const obs: Observable<MotorSettingsMessage> =
+            rosService.sendMotorSettingsMessage(motorSettingsMessage);
+        const subscribeCallBackSpy = jasmine.createSpyObj("subscriber", [
+            "next",
+            "error",
+        ]);
+        obs.subscribe(subscribeCallBackSpy);
+
+        expect(subscribeCallBackSpy.next).toHaveBeenCalledOnceWith(
+            motorSettingsMessage,
+        );
+        expect(subscribeCallBackSpy.error).not.toHaveBeenCalled();
         expect(spyOnMotorSettingsReceiver).toHaveBeenCalledOnceWith(
             motorSettingsMessage,
         );
     });
 
-    it("should reject the promise when calling sendMotorSettings and the motorSettingsService calls the callback-function with failure-message", async () => {
+    it("should return an observable that publishes an error, if the ros-service returns a 'unsuccessful'-message after sending motor-settings-message", () => {
         spyOn(rosService["motorSettingsService"], "callService").and.callFake(
-            (msg, callback, failedCallback) => {
+            (_msg, callback, _failedCallback) => {
                 const res: MotorSettingsSrvResponse = {successful: false};
                 callback(res);
             },
         );
-
         const spyOnMotorSettingsReceiver = spyOn(
             rosService.motorSettingsReceiver$,
             "next",
         );
 
-        await expectAsync(
-            rosService.sendMotorSettingsMessage(motorSettingsMessage),
-        ).toBeRejectedWithError(
-            MotorSettingsError,
-            `Failed to apply settings from message: ${JSON.stringify(
-                motorSettingsMessage,
-                null,
-                2,
-            )}.`,
+        const obs: Observable<MotorSettingsMessage> =
+            rosService.sendMotorSettingsMessage(motorSettingsMessage);
+        const subscribeCallBackSpy = jasmine.createSpyObj("subscriber", [
+            "next",
+            "error",
+        ]);
+        obs.subscribe(subscribeCallBackSpy);
+
+        expect(subscribeCallBackSpy.next).not.toHaveBeenCalled();
+        expect(subscribeCallBackSpy.error).toHaveBeenCalledOnceWith(
+            jasmine.objectContaining({
+                message: `Failed to apply settings from message: ${JSON.stringify(
+                    motorSettingsMessage,
+                    null,
+                    2,
+                )}.`,
+            }),
         );
         expect(spyOnMotorSettingsReceiver).not.toHaveBeenCalled();
     });
 
-    it("should reject the promise when calling sendMotorSettings and the motorSettingsService calls the failure-callback-function", async () => {
+    it("should return an observable that publishes an error, if failed to send the motor-settings message to ros", () => {
         spyOn(rosService["motorSettingsService"], "callService").and.callFake(
-            (msg, callback, failedCallback) => {
-                const res: MotorSettingsSrvResponse = {successful: false};
-                failedCallback?.("test-error-message");
+            (_msg, _callback, failedCallback) => {
+                failedCallback?.("test error message");
             },
         );
-
         const spyOnMotorSettingsReceiver = spyOn(
             rosService.motorSettingsReceiver$,
             "next",
         );
 
-        await expectAsync(
-            rosService.sendMotorSettingsMessage(motorSettingsMessage),
-        ).toBeRejectedWithError(Error, "test-error-message");
-        expect(spyOnMotorSettingsReceiver).not.toHaveBeenCalled();
-    });
-
-    it("should call the success-callback when calling sendMotorSettings and the motorSettingsService calls the callback-function with success-message", () => {
-        spyOn(rosService["motorSettingsService"], "callService").and.callFake(
-            (msg, callback, failedCallback) => {
-                const res: MotorSettingsSrvResponse = {successful: true};
-                callback(res);
-            },
-        );
-
-        const spyOnMotorSettingsReceiver = spyOn(
-            rosService.motorSettingsReceiver$,
+        const obs: Observable<MotorSettingsMessage> =
+            rosService.sendMotorSettingsMessage(motorSettingsMessage);
+        const subscribeCallBackSpy = jasmine.createSpyObj("subscriber", [
             "next",
+            "error",
+        ]);
+        obs.subscribe(subscribeCallBackSpy);
+
+        expect(subscribeCallBackSpy.next).not.toHaveBeenCalled();
+        expect(subscribeCallBackSpy.error).toHaveBeenCalledOnceWith(
+            jasmine.objectContaining({
+                message: "test error message",
+            }),
         );
-
-        const successCallbackSpy = jasmine.createSpy("success", (msg) => {});
-        const failureCallbackSpy = jasmine.createSpy("failure", (err) => {});
-
-        rosService.sendMotorSettingsMessageCallback(
-            motorSettingsMessage,
-            failureCallbackSpy,
-            successCallbackSpy,
-        );
-
-        expect(successCallbackSpy).toHaveBeenCalledOnceWith(
-            motorSettingsMessage,
-        );
-        expect(failureCallbackSpy).not.toHaveBeenCalled();
-        expect(spyOnMotorSettingsReceiver).toHaveBeenCalledOnceWith(
-            motorSettingsMessage,
-        );
-    });
-
-    it("should call the failure-callback when calling sendMotorSettings and the motorSettingsService calls the callback-function with failure-message", () => {
-        spyOn(rosService["motorSettingsService"], "callService").and.callFake(
-            (msg, callback, failedCallback) => {
-                const res: MotorSettingsSrvResponse = {successful: false};
-                callback(res);
-            },
-        );
-
-        const spyOnMotorSettingsReceiver = spyOn(
-            rosService.motorSettingsReceiver$,
-            "next",
-        );
-
-        let wrapper = {failureArg: new Error("not the expected error")};
-        const successCallbackSpy = jasmine.createSpy("success", (msg) => {});
-        const failureCallbackSpy = jasmine
-            .createSpy("failure", (err) => (wrapper.failureArg = err))
-            .and.callThrough();
-
-        rosService.sendMotorSettingsMessageCallback(
-            motorSettingsMessage,
-            failureCallbackSpy,
-            successCallbackSpy,
-        );
-
-        expect(successCallbackSpy).not.toHaveBeenCalled();
-        expect(failureCallbackSpy).toHaveBeenCalledOnceWith(wrapper.failureArg);
-        expect(wrapper.failureArg).toBeInstanceOf(MotorSettingsError);
-        expect(wrapper.failureArg.message).toBe(
-            `Failed to apply settings from message: ${JSON.stringify(
-                motorSettingsMessage,
-                null,
-                2,
-            )}.`,
-        );
-        expect(spyOnMotorSettingsReceiver).not.toHaveBeenCalled();
-    });
-
-    it("should call the faiure-callback when calling sendMotorSettings and the motorSettingsService calls its failure-callback-function with", () => {
-        spyOn(rosService["motorSettingsService"], "callService").and.callFake(
-            (msg, callback, failedCallback) => {
-                failedCallback?.("expected-error-message");
-            },
-        );
-
-        const spyOnMotorSettingsReceiver = spyOn(
-            rosService.motorSettingsReceiver$,
-            "next",
-        );
-
-        let wrapper = {failureArg: new Error("non-expected-error-message")};
-        const successCallbackSpy = jasmine.createSpy("success", (msg) => {});
-        const failureCallbackSpy = jasmine
-            .createSpy("failure", (err) => (wrapper.failureArg = err))
-            .and.callThrough();
-
-        rosService.sendMotorSettingsMessageCallback(
-            motorSettingsMessage,
-            failureCallbackSpy,
-            successCallbackSpy,
-        );
-
-        expect(successCallbackSpy).not.toHaveBeenCalled();
-        expect(failureCallbackSpy).toHaveBeenCalledOnceWith(wrapper.failureArg);
-        expect(wrapper.failureArg).not.toBeInstanceOf(MotorSettingsError);
-        expect(wrapper.failureArg).toBeInstanceOf(Error);
-        expect(wrapper.failureArg.message).toBe("expected-error-message");
         expect(spyOnMotorSettingsReceiver).not.toHaveBeenCalled();
     });
 

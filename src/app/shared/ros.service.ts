@@ -1,6 +1,6 @@
 import {Injectable, isDevMode} from "@angular/core";
 import * as ROSLIB from "roslib";
-import {BehaviorSubject, Subject} from "rxjs";
+import {BehaviorSubject, ReplaySubject, Observable, Subject} from "rxjs";
 import {MotorSettingsMessage} from "./rosMessageTypes/motorSettingsMessage";
 import {VoiceAssistant} from "./voice-assistant";
 import {DiagnosticStatus} from "./rosMessageTypes/DiagnosticStatus.message";
@@ -181,46 +181,23 @@ export class RosService {
 
     sendMotorSettingsMessage(
         motorSettingsMessage: MotorSettingsMessage,
-    ): Promise<MotorSettingsMessage> {
-        return new Promise((resolve, reject) => {
-            this.motorSettingsService.callService(
-                motorSettingsMessage,
-                (response) => {
-                    if (response["successful"]) {
-                        this.motorSettingsReceiver$.next(motorSettingsMessage);
-                        resolve(motorSettingsMessage);
-                    } else {
-                        reject(new MotorSettingsError(motorSettingsMessage));
-                    }
-                },
-                (errorMsg) => reject(new Error(errorMsg)),
-            );
-        });
-    }
-
-    sendMotorSettingsMessageCallback(
-        motorSettingsMessage: MotorSettingsMessage,
-        failureCallback?: (error: Error) => any,
-        successCallBack?: (msg: MotorSettingsMessage) => any,
-    ) {
-        const wrappedSuccessCallback = (response: MotorSettingsSrvResponse) => {
-            if (response.successful) {
-                this.motorSettingsReceiver$.next(motorSettingsMessage);
-                successCallBack?.(motorSettingsMessage);
-            } else {
-                failureCallback?.(new MotorSettingsError(motorSettingsMessage));
-            }
-        };
-
-        const wrappedFailureCallback = (error: string) => {
-            failureCallback?.(new Error(error));
-        };
-
+    ): Observable<MotorSettingsMessage> {
+        const subject: Subject<MotorSettingsMessage> = new ReplaySubject();
         this.motorSettingsService.callService(
             motorSettingsMessage,
-            wrappedSuccessCallback,
-            wrappedFailureCallback,
+            (response) => {
+                if (response["successful"]) {
+                    this.motorSettingsReceiver$.next(motorSettingsMessage);
+                    subject.next(motorSettingsMessage);
+                } else {
+                    subject.error(new MotorSettingsError(motorSettingsMessage));
+                }
+            },
+            (errorMsg) => {
+                subject.error(new Error(errorMsg));
+            },
         );
+        return subject;
     }
 
     sendJointTrajectoryMessage(jointTrajectoryMessage: JointTrajectoryMessage) {
