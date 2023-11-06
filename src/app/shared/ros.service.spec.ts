@@ -5,7 +5,6 @@ import {createEmptyJointTrajectoryMessage} from "./rosMessageTypes/jointTrajecto
 import {VoiceAssistant} from "./voice-assistant";
 import {MotorSettingsMessage} from "./rosMessageTypes/motorSettingsMessage";
 import {MotorSettingsSrvResponse} from "./rosMessageTypes/motorSettingsSrvResponse";
-import {MotorSettingsError} from "./error/motor-settings-error";
 import {Observable} from "rxjs";
 
 describe("RosService", () => {
