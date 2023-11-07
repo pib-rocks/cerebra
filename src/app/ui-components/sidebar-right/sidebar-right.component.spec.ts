@@ -3,7 +3,7 @@ import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {SideBarRightComponent} from "./sidebar-right.component";
 import {RouterTestingModule} from "@angular/router/testing";
 
-describe("VoiceAssistantSidebarRightComponent", () => {
+describe("SideBarRightComponent", () => {
     let component: SideBarRightComponent;
     let fixture: ComponentFixture<SideBarRightComponent>;
 
