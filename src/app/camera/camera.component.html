@@ -49,19 +49,19 @@
                     <button
                         id="dropdownbutton-item-480px"
                         ngbDropdownItem
-                        (click)="setSize(640, 480)">
+                        (click)="setSize(640, 480, '480p (SD)')">
                         480p (SD)
                     </button>
                     <button
                         id="dropdownbutton-item-720px"
                         ngbDropdownItem
-                        (click)="setSize(1280, 720)">
+                        (click)="setSize(1280, 720, '720p (HD)')">
                         720p (HD)
                     </button>
                     <button
                         id="dropdownbutton-item-1080px"
                         ngbDropdownItem
-                        (click)="setSize(1920, 1080)">
+                        (click)="setSize(1920, 1080, '1080 (FHD)')">
                         1080p (FHD)
                     </button>
                 </div>
@@ -108,7 +108,8 @@
                     [maxValue]="1"
                     [step]="0.1"
                     [defaultValue]="refreshRateControl"
-                    (sliderEvent)="updateRefreshRateLabel($event)"></app-slider>
+                    (sliderEvent)="updateRefreshRateLabel($event)"
+                    (change)="saveSettings()"></app-slider>
                 <label
                     for="qualityFactor"
                     id="qualityFactor_label"
@@ -125,7 +126,8 @@
                     [maxValue]="90"
                     [step]="10"
                     [defaultValue]="qualityFactorControl"
-                    (sliderEvent)="updateQualityFactorLabel($event)"></app-slider>
+                    (sliderEvent)="updateQualityFactorLabel($event)"
+                    (change)="saveSettings()"></app-slider>
             </ng-template>
         </div>
     </div>

@@ -7,7 +7,7 @@ import {
 import {ReactiveFormsModule} from "@angular/forms";
 import {By} from "@angular/platform-browser";
 import {ModalDismissReasons, NgbModal} from "@ng-bootstrap/ng-bootstrap";
-import {MotorService} from "../shared/motor.service";
+import {MotorService} from "../shared/services/motor.service";
 import {SliderComponent} from "../slider/slider.component";
 import {MotorControlComponent} from "./motor-control.component";
 import {Motor} from "../shared/types/motor.class";
@@ -16,6 +16,7 @@ import {Group} from "../shared/types/motor.enum";
 import {BehaviorSubject} from "rxjs";
 import {RosService} from "../shared/ros.service";
 import {VerticalSliderComponent} from "../vertical-slider/vertical-slider.component";
+import {HttpClientTestingModule} from "@angular/common/http/testing";
 
 describe("MotorControlComponent", () => {
     let component: MotorControlComponent;
@@ -32,7 +33,7 @@ describe("MotorControlComponent", () => {
                 SliderComponent,
                 VerticalSliderComponent,
             ],
-            imports: [ReactiveFormsModule],
+            imports: [ReactiveFormsModule, HttpClientTestingModule],
             providers: [RosService, MotorService, NgbModal],
         }).compileComponents();
 

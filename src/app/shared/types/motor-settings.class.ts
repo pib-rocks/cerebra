@@ -1,5 +1,4 @@
 import {MotorSettingsMessage} from "../rosMessageTypes/motorSettingsMessage";
-import {Motor} from "./motor.class";
 
 export class MotorSettings {
     velocity: number;
@@ -63,12 +62,12 @@ export class MotorSettings {
         settings: MotorSettingsMessage,
     ) {
         if (
-            motorName !== settings.motor_name ||
-            this.turnedOn !== settings.turned_on ||
-            this.pulseWidthMax !== settings.pulse_width_max ||
-            this.pulseWidthMin !== settings.pulse_width_min ||
-            this.rotationRangeMax !== settings.rotation_range_max ||
-            this.rotationRangeMin !== settings.rotation_range_min ||
+            motorName !== settings.name ||
+            this.turnedOn !== settings.turnedOn ||
+            this.pulseWidthMax !== settings.pulseWidthMax ||
+            this.pulseWidthMin !== settings.pulseWidthMin ||
+            this.rotationRangeMax !== settings.rotationRangeMax ||
+            this.rotationRangeMin !== settings.rotationRangeMin ||
             this.velocity !== settings.velocity ||
             this.acceleration !== settings.acceleration ||
             this.deceleration !== settings.deceleration ||
@@ -99,11 +98,11 @@ export class MotorSettings {
                     return true;
                 }
             } else if (
-                settingsCopy.pulse_width_min == this.pulseWidthMin &&
-                settingsCopy.pulse_width_max == this.pulseWidthMax &&
-                settingsCopy.rotation_range_min == this.rotationRangeMin &&
-                settingsCopy.rotation_range_max == this.rotationRangeMax &&
-                settingsCopy.turned_on == this.turnedOn
+                settingsCopy.pulseWidthMin == this.pulseWidthMin &&
+                settingsCopy.pulseWidthMax == this.pulseWidthMax &&
+                settingsCopy.rotationRangeMin == this.rotationRangeMin &&
+                settingsCopy.rotationRangeMax == this.rotationRangeMax &&
+                settingsCopy.turnedOn == this.turnedOn
             ) {
                 return true;
             }
@@ -127,11 +126,11 @@ export class MotorSettings {
                 this.rotationRangeMax = settingsCopy.rotationRangeMax;
                 this.turnedOn = settingsCopy.turnedOn;
             } else {
-                this.pulseWidthMin = settingsCopy.pulse_width_min;
-                this.pulseWidthMax = settingsCopy.pulse_width_max;
-                this.rotationRangeMin = settingsCopy.rotation_range_min;
-                this.rotationRangeMax = settingsCopy.rotation_range_max;
-                this.turnedOn = settingsCopy.turned_on;
+                this.pulseWidthMin = settingsCopy.pulseWidthMin;
+                this.pulseWidthMax = settingsCopy.pulseWidthMax;
+                this.rotationRangeMin = settingsCopy.rotationRangeMin;
+                this.rotationRangeMax = settingsCopy.rotationRangeMax;
+                this.turnedOn = settingsCopy.turnedOn;
             }
             return true;
         }

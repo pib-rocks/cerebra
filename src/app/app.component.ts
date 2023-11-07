@@ -1,5 +1,6 @@
 import {Component, OnInit} from "@angular/core";
 import {NavigationEnd, Router} from "@angular/router";
+import {MotorService} from "./shared/services/motor.service";
 
 @Component({
     selector: "app-root",
@@ -22,7 +23,10 @@ export class AppComponent implements OnInit {
 
     voiceNavItemGroup = ["/personality", "/chat"];
 
-    constructor(private router: Router) {}
+    constructor(
+        private router: Router,
+        private motorService: MotorService,
+    ) {}
 
     ngOnInit(): void {
         this.router.events.subscribe((event) => {

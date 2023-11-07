@@ -2,6 +2,7 @@ import {ComponentFixture, TestBed} from "@angular/core/testing";
 
 import {CircularSliderComponent} from "./circular-slider.component";
 import {MotorCurrentService} from "src/app/shared/motor-current.service";
+import {HttpClientTestingModule} from "@angular/common/http/testing";
 
 describe("CircularSliderComponent", () => {
     let component: CircularSliderComponent;
@@ -10,6 +11,7 @@ describe("CircularSliderComponent", () => {
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
+            imports: [HttpClientTestingModule],
             declarations: [CircularSliderComponent],
             providers: [MotorCurrentService],
         }).compileComponents();
