@@ -1,11 +1,11 @@
 import {Component, Input, Output, EventEmitter} from "@angular/core";
 
 @Component({
-    selector: "app-voice-assistant-sidebar-right",
-    templateUrl: "./voice-assistant-sidebar-right.component.html",
-    styleUrls: ["./voice-assistant-sidebar-right.component.css"],
+    selector: "app-sidebar-right",
+    templateUrl: "./sidebar-right.component.html",
+    styleUrls: ["./sidebar-right.component.css"],
 })
-export class VoiceAssistantSidebarRightComponent {
+export class SideBarRightComponent {
     @Input() tabTitle: string | undefined;
     @Input() headerElements: {
         icon: string;
