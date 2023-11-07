@@ -41,7 +41,9 @@ export class CameraService {
                     });
                 }),
             )
-            .subscribe((response) => {});
+            .subscribe((response) => {
+                return;
+            });
     }
 
     getCameraSettings() {
