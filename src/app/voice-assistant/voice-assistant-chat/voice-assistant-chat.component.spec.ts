@@ -2,10 +2,10 @@ import {ComponentFixture, TestBed} from "@angular/core/testing";
 
 import {VoiceAssistantChatComponent} from "./voice-assistant-chat.component";
 import {VoiceAssistantNavComponent} from "../voice-assistant-nav/voice-assistant-nav.component";
-import {VoiceAssistantSidebarRightComponent} from "../voice-assistant-sidebar-right/voice-assistant-sidebar-right.component";
+import {VoiceAssistantSidebarRightComponent} from "../../ui-components/voice-assistant-sidebar-right/voice-assistant-sidebar-right.component";
 import {RouterTestingModule} from "@angular/router/testing";
 import {FormsModule, ReactiveFormsModule} from "@angular/forms";
-import {BoolToOnOffPipe} from "../shared/pipes/bool-to-on-off-pipe.pipe";
+import {BoolToOnOffPipe} from "../../shared/pipes/bool-to-on-off-pipe.pipe";
 
 describe("VoiceAssistantChatComponent", () => {
     let component: VoiceAssistantChatComponent;

@@ -7,9 +7,9 @@ import {
 } from "@angular/core";
 import {FormControl, Validators} from "@angular/forms";
 import {NgbActiveModal, NgbModal} from "@ng-bootstrap/ng-bootstrap";
-import {VoiceAssistantService} from "../shared/services/voice-assistant.service";
-import {VoiceAssistant} from "../shared/types/voice-assistant";
-import {voiceAssistantGenderValidator} from "../shared/validators";
+import {VoiceAssistantService} from "../../shared/services/voice-assistant.service";
+import {VoiceAssistant} from "../../shared/types/voice-assistant";
+import {voiceAssistantGenderValidator} from "../../shared/validators";
 
 @Component({
     selector: "app-voice-assistant-personality",

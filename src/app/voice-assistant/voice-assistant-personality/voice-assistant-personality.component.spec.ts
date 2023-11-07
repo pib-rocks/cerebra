@@ -1,7 +1,7 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {VoiceAssistantPersonalityComponent} from "./voice-assistant-personality.component";
-import {VoiceAssistant} from "../shared/types/voice-assistant";
-import {VoiceAssistantService} from "../shared/services/voice-assistant.service";
+import {VoiceAssistant} from "../../shared/types/voice-assistant";
+import {VoiceAssistantService} from "../../shared/services/voice-assistant.service";
 import {NgbModal, NgbModalRef} from "@ng-bootstrap/ng-bootstrap";
 import {BehaviorSubject} from "rxjs";
 
