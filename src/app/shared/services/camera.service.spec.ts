@@ -49,74 +49,41 @@ describe("CameraService", () => {
         );
         service.getCameraSettings();
         expect(spyOnGetCameraSettings).toHaveBeenCalled();
-        expect(service.qualityFactor).toBe(80);
-        expect(service.timerPeriod).toBe(0.1);
-        expect(service.resX).toBe(640);
-        expect(service.resY).toBe(480);
-        expect(service.cameraIsActiveSubject.getValue()).toBe(false);
-        expect(service.cameraResXSubject.getValue()).toBe(640);
-        expect(service.cameraResYSubject.getValue()).toBe(480);
-        expect(service.cameraResolutinSubject.getValue()).toBe("SD");
-        expect(service.cameraTimerPeriodSubject.getValue()).toBe(0.1);
-        expect(service.qualityFactorSubject.getValue()).toBe(80);
+        expect(service.cameraSettings.getValue()).toEqual(cameraSettings);
     });
 
     it("should retrun updated camera settings", () => {
         const spyOnPutCameraSettings = spyOn(apiService, "put").and.returnValue(
             behaviorSubjectOfUpdatedCameraSettings,
         );
-        service.updateCameraSettings(updateCameraSettings);
+        service.publishCameraSettings(updateCameraSettings);
         expect(spyOnPutCameraSettings).toHaveBeenCalled();
-        expect(service.resX).toBe(1280);
-        expect(service.resY).toBe(720);
-        expect(service.qualityFactor).toBe(50);
-        expect(service.timerPeriod).toBe(0.5);
-        expect(service.cameraIsActiveSubject.getValue()).toBe(false);
-        expect(service.cameraResXSubject.getValue()).toBe(1280);
-        expect(service.cameraResYSubject.getValue()).toBe(720);
-        expect(service.cameraResolutinSubject.getValue()).toBe("HD");
-        expect(service.cameraTimerPeriodSubject.getValue()).toBe(0.5);
-        expect(service.qualityFactorSubject.getValue()).toBe(50);
-    });
-
-    it("should retrun the saved Camera Settings", () => {
-        const spyOnPutCameraSettings = spyOn(apiService, "put").and.returnValue(
-            behaviorSubjectOfUpdatedCameraSettings,
-        );
-        service.saveCameraSettings();
-        expect(spyOnPutCameraSettings).toHaveBeenCalled();
-        expect(service.resX).toBe(1280);
-        expect(service.resY).toBe(720);
-        expect(service.qualityFactor).toBe(50);
-        expect(service.timerPeriod).toBe(0.5);
-        expect(service.cameraIsActiveSubject.getValue()).toBe(false);
-        expect(service.cameraResXSubject.getValue()).toBe(1280);
-        expect(service.cameraResYSubject.getValue()).toBe(720);
-        expect(service.cameraResolutinSubject.getValue()).toBe("HD");
-        expect(service.cameraTimerPeriodSubject.getValue()).toBe(0.5);
-        expect(service.qualityFactorSubject.getValue()).toBe(50);
+        expect(service.cameraSettings.getValue()).toEqual(updateCameraSettings);
     });
 
     it("should return camera quality factor over ros topic", () => {
+        service.cameraSettings.next(updateCameraSettings);
         service.subscribeCameraQualityFactorReceiver();
         rosService.cameraQualityFactorReceiver$.next(40);
-        expect(service.qualityFactorSubject.getValue()).toBe(40);
+        expect(service.cameraSettings.getValue().qualityFactor).toBe(40);
     });
 
     it("should return camera preview size over ros topic", () => {
+        service.cameraSettings.next(updateCameraSettings);
         service.subscribeCameraPreviewSizeReceiver();
         rosService.cameraPreviewSizeReceiver$.next([620, 480]);
-        expect(service.cameraResXSubject.getValue()).toBe(620);
-        expect(service.cameraResYSubject.getValue()).toBe(480);
+        expect(service.cameraSettings.getValue().resX).toBe(620);
+        expect(service.cameraSettings.getValue().resY).toBe(480);
     });
 
-    it("should return camera preview size over ros topic", () => {
+    it("should return camera refreshRate over ros topic", () => {
+        service.cameraSettings.next(updateCameraSettings);
         service.subscribeCameraTimerPeriodReceiver();
         rosService.cameraTimerPeriodReceiver$.next(0.5);
-        expect(service.cameraTimerPeriodSubject.getValue()).toBe(0.5);
+        expect(service.cameraSettings.getValue().refreshRate).toBe(0.5);
     });
 
-    it("should return camera preview size over ros topic", () => {
+    it("should return camera imageString over ros topic", () => {
         service.subscribeCameraReseiver();
         let res: string;
         service.cameraReciver$.subscribe((response) => {
