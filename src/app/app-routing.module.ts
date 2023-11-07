@@ -8,6 +8,7 @@ import {ProgramComponent} from "./program/program.component";
 import {VoiceAssistantPersonalityComponent} from "./voice-assistant/voice-assistant-personality/voice-assistant-personality.component";
 import {VoiceAssistantChatComponent} from "./voice-assistant/voice-assistant-chat/voice-assistant-chat.component";
 import {sideGuard} from "./security/side-guard";
+import {VoiceAssistantComponent} from "./voice-assistant/voice-assistant.component";
 
 const routes: Routes = [
     {path: "", redirectTo: "head", pathMatch: "full"},
@@ -24,8 +25,17 @@ const routes: Routes = [
     {path: "camera", component: CameraComponent},
     {path: "head", component: HeadComponent},
     {path: "program", component: ProgramComponent},
-    {path: "personality", component: VoiceAssistantPersonalityComponent},
-    {path: "chat", component: VoiceAssistantChatComponent},
+    {
+        path: "voice-assistant",
+        component: VoiceAssistantComponent,
+        children: [
+            {
+                path: "personality",
+                component: VoiceAssistantPersonalityComponent,
+            },
+            {path: "chat", component: VoiceAssistantChatComponent},
+        ],
+    },
     {path: "**", redirectTo: "head"},
 ];
 
