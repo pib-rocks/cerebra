@@ -15,7 +15,7 @@ import {By} from "@angular/platform-browser";
 describe("MultiSliderComponent", () => {
     let component: MultiSliderComponent;
     let fixture: ComponentFixture<MultiSliderComponent>;
-
+    const testSubject: Subject<number[]> = new Subject<number[]>();
     beforeEach(async () => {
         await TestBed.configureTestingModule({
             declarations: [MultiSliderComponent],
@@ -24,7 +24,7 @@ describe("MultiSliderComponent", () => {
         }).compileComponents();
         fixture = TestBed.createComponent(MultiSliderComponent);
         component = fixture.componentInstance;
-        component.messageReceiver$ = new Subject<number[]>();
+        component.messageReceiver$ = testSubject;
         component.minValue = -200;
         component.maxValue = 200;
         component.minInit = 20;
@@ -42,7 +42,7 @@ describe("MultiSliderComponent", () => {
     });
 
     it("should change values appropriately for each sliderformcontrol after receiving a message from parent component", () => {
-        component.messageReceiver$.next([0, 100]);
+        testSubject.next([0, 100]);
         const sfc: FormControl = component.sliderFormControl;
         const sfcUpper: FormControl = component.sliderFormControlUpper;
         fixture.detectChanges();
@@ -50,7 +50,7 @@ describe("MultiSliderComponent", () => {
         expect(sfcUpper.value).toBe(100);
         sfc.setValue(110);
         sfcUpper.setValue(30);
-        component.messageReceiver$.next([0, 100]);
+        testSubject.next([0, 100]);
         fixture.detectChanges();
         expect(sfc.value).toBe(100);
         expect(sfcUpper.value).toBe(0);

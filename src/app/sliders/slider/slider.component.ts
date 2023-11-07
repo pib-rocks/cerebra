@@ -9,7 +9,6 @@ import {
     AfterViewInit,
 } from "@angular/core";
 import {FormControl, Validators} from "@angular/forms";
-import {RosService} from "../../shared/services/ros-service/ros.service";
 import {Observable} from "rxjs";
 import {notNullValidator, steppingValidator} from "../../shared/validators";
 @Component({
@@ -49,8 +48,6 @@ export class SliderComponent implements OnInit, AfterViewInit {
     pixelsFromEdge = 60;
     imageSrc!: string;
     @Output() sliderEvent = new EventEmitter<number>();
-
-    constructor(private rosService: RosService) {}
 
     ngOnInit(): void {
         this.bubbleFormControl.setValidators([

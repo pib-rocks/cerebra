@@ -10,8 +10,7 @@ import {
     Renderer2,
 } from "@angular/core";
 import {FormControl, Validators} from "@angular/forms";
-import {RosService} from "../../shared/services/ros-service/ros.service";
-import {Subject} from "rxjs";
+import {Observable} from "rxjs";
 import {notNullValidator, steppingValidator} from "../../shared/validators";
 
 @Component({
@@ -34,7 +33,7 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
     @Input() unitShort!: string;
     @Input() unitLong!: string;
     @Input() publishMessage!: (args: number) => void;
-    @Input() messageReceiver$!: Subject<number[]>;
+    @Input() messageReceiver$!: Observable<number[]>;
     @Input() name?: string;
     @Input() id?: string;
 
@@ -58,10 +57,7 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
 
     @Output() multiSliderEvent = new EventEmitter<number[]>();
 
-    constructor(
-        private rosService: RosService,
-        private renderer: Renderer2,
-    ) {}
+    constructor(private renderer: Renderer2) {}
 
     ngOnInit(): void {
         this.id = this.sanitizeNameForId(this.name);
