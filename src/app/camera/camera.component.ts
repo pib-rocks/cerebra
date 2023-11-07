@@ -9,6 +9,7 @@ import {
 import {FormControl} from "@angular/forms";
 import {RosService} from "../shared/services/ros-service/ros.service";
 import {Subject, Subscription, map} from "rxjs";
+import {asyncScheduler} from "rxjs";
 
 @Component({
     selector: "app-camera",
@@ -71,7 +72,7 @@ export class CameraComponent implements OnInit, OnDestroy, AfterViewInit {
                     "max-height",
                     value,
                 );
-                setTimeout(() => {
+                asyncScheduler.schedule(() => {
                     tempSub.unsubscribe();
                 }, 25);
             });
@@ -99,7 +100,7 @@ export class CameraComponent implements OnInit, OnDestroy, AfterViewInit {
         if (publish) {
             this.isLoading = true;
             this.rosService.setPreviewSize(width, height);
-            setTimeout(() => {
+            asyncScheduler.schedule(() => {
                 this.isLoading = false; // Stop the spinner
             }, 1500);
         }

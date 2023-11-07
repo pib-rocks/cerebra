@@ -11,6 +11,7 @@ import {
 import {FormControl, Validators} from "@angular/forms";
 import {Observable} from "rxjs";
 import {notNullValidator, steppingValidator} from "../../shared/validators";
+import {asapScheduler, asyncScheduler} from "rxjs";
 @Component({
     selector: "app-slider",
     templateUrl: "./slider.component.html",
@@ -64,7 +65,7 @@ export class SliderComponent implements OnInit, AfterViewInit {
                     this.getValueWithinRange(this.flip(Number(value))),
                 );
                 if (this.sliderElem && this.bubbleElement) {
-                    setTimeout(() => this.setThumbPosition());
+                    asapScheduler.schedule(() => this.setThumbPosition());
                 }
             }
         });
@@ -98,7 +99,7 @@ export class SliderComponent implements OnInit, AfterViewInit {
     inputSendMsg(): void {
         if (this.sliderFormControl.value !== null) {
             clearTimeout(this.timer);
-            this.timer = setTimeout(() => {
+            this.timer = asyncScheduler.schedule(() => {
                 if (this.publishMessage) {
                     this.publishMessage(
                         this.flip(Number(this.sliderFormControl.value)),
@@ -112,10 +113,10 @@ export class SliderComponent implements OnInit, AfterViewInit {
     toggleInputVisible() {
         if (this.sliderFormControl.value !== null) {
             this.isInputVisible = !this.isInputVisible;
-            setTimeout(() => {
+            asapScheduler.schedule(() => {
                 this.bubbleInput.nativeElement.focus();
                 this.bubbleInput.nativeElement.select();
-            }, 0);
+            });
         } else {
             this.isInputVisible = !this.isInputVisible;
         }
@@ -184,9 +185,9 @@ export class SliderComponent implements OnInit, AfterViewInit {
 
         const bubbleOffset = (0.5 - normalizedSliderVal) * this.thumbWidth;
         const nextBubblePos = normalizedSliderVal * sliderWidth + bubbleOffset;
-        setTimeout(() => {
+        asapScheduler.schedule(() => {
             this.bubblePosition = nextBubblePos;
-        }, 0);
+        });
 
         this.bubbleFormControl.setValue(
             this.flip(this.sliderFormControl.value),

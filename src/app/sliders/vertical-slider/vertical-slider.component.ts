@@ -11,6 +11,7 @@ import {
 import {FormControl, Validators} from "@angular/forms";
 import {notNullValidator, steppingValidator} from "../../shared/validators";
 import {Observable} from "rxjs";
+import {asyncScheduler} from "rxjs";
 
 @Component({
     selector: "app-vertical-slider",
@@ -92,7 +93,7 @@ export class VerticalSliderComponent implements OnInit, AfterViewInit {
 
     inputSendMsg = () => {
         clearTimeout(this.timer);
-        this.timer = setTimeout(() => {
+        this.timer = asyncScheduler.schedule(() => {
             this.sliderEvent.emit(this.rangeFormControl.value);
             if (this.parentFunction) {
                 this.parentFunction();

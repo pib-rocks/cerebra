@@ -12,6 +12,7 @@ import {
 import {FormControl, Validators} from "@angular/forms";
 import {Observable} from "rxjs";
 import {notNullValidator, steppingValidator} from "../../shared/validators";
+import {asapScheduler, asyncScheduler} from "rxjs";
 
 @Component({
     selector: "app-multi-slider",
@@ -131,7 +132,7 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
                     ? this.sliderFormControlUpper.value
                     : this.sliderFormControl.value;
             clearTimeout(this.timer);
-            this.timer = setTimeout(() => {
+            this.timer = asyncScheduler.schedule(() => {
                 this.multiSliderEvent.emit([lower, upper]);
             }, 100);
         }
@@ -151,10 +152,10 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
         if (sliderFormControl?.value !== null) {
             bubbleFormControl.setValue(sliderFormControl.value);
             this.isInputVisible = true;
-            setTimeout(() => {
+            asapScheduler.schedule(() => {
                 htmlInputElement.focus();
                 htmlInputElement.select();
-            }, 0);
+            });
         }
     }
 
@@ -228,14 +229,15 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
             this.sliderFormControl,
             this.bubbleElement.nativeElement,
             this.bubbleFormControl,
-            (val) => setTimeout(() => (this.bubblePosition = val)),
+            (val) => asapScheduler.schedule(() => (this.bubblePosition = val)),
         );
         this.setSingleThumbPosition(
             this.sliderElemUpper.nativeElement,
             this.sliderFormControlUpper,
             this.bubbleElementUpper.nativeElement,
             this.bubbleFormControlUpper,
-            (val) => setTimeout(() => (this.bubblePositionUpper = val)),
+            (val) =>
+                asapScheduler.schedule(() => (this.bubblePositionUpper = val)),
         );
         this.setGradient();
     }
