@@ -10,7 +10,7 @@
                 (mouseleave)="onButtonHover(element)">
                 <button
                     class="header headerButtons"
-                    (click)="onHeaderButtonClick(element)">
+                    (click)="element.clickCallback()">
                     <img
                         [src]="element.hovered ? element.active_icon : element.icon"
                         width="16px"
@@ -26,27 +26,12 @@
         </div>
     </div>
     <div class="container-fluid body">
-        <button
-            class="row buttonRow"
-            *ngFor="let element of bodyElements"
-            (mouseenter)="onButtonHover(element)"
-            (mouseleave)="onButtonHover(element)"
-            (click)="activateBodyElement(element)"
-            [id]="getIdString(element.name)"
-            class="row bodyElements elementButtons"
-            [class.add-bottom-border]="element.selected || element.hovered">
-            <div class="col-2 elementIcon">
-                <img
-                    [src]="element.selected || element.hovered ? elementIconActive : elementIcon"
-                    width="16"
-                    height="16"
-                    alt="" />
-            </div>
-            <div
-                class="col-10 bodyElementText mt-1"
-                [class.element-selected]="element.selected || element.hovered">
-                {{element.name}}
-            </div>
-        </button>
+        <div
+            class="sidebar-element"
+            *ngFor="let sidebarElement of sidebarElements">
+            <a [routerLink]="sidebarElement.getUUID()"
+                ><img [src]="elementIcon" /> {{ sidebarElement.getName() }}</a
+            >
+        </div>
     </div>
 </div>

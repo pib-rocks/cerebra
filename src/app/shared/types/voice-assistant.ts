@@ -1,22 +1,30 @@
-export class VoiceAssistant {
+import {SidebarElement} from "../interfaces/sidebar-element.interface";
+
+export class VoiceAssistant implements SidebarElement {
     personalityId: string;
     name: string;
-    description: string | null;
+    description: string | undefined;
     gender: string;
     pauseThreshold: number;
 
     constructor(
         personalityId: string,
         name: string,
-        description: string,
         gender: string,
         pauseThreshold: number,
+        description?: string,
     ) {
         this.personalityId = personalityId;
         this.name = name;
-        this.description = description;
+        this.description = description ?? "";
         this.gender = gender;
         this.pauseThreshold = pauseThreshold;
+    }
+    getName(): string {
+        return this.name;
+    }
+    getUUID(): string {
+        return this.personalityId;
     }
 }
 

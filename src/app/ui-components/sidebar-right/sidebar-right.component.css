@@ -76,3 +76,27 @@ p {
 .element-selected {
     color: white;
 }
+
+.sidebar-element {
+    margin-top: 1rem;
+    margin-left: 13%;
+}
+.sidebar-element a {
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.sidebar-element a img {
+    width: 1.1rem;
+    padding-bottom: 2px;
+    margin-right: 0.25rem;
+}
+
+.sidebar-element:hover a img {
+    filter: brightness(0) invert(1);
+}
+
+.sidebar-element:hover a {
+    border-bottom: 0.5rem solid var(--cerebra-pink);
+    color: white;
+}

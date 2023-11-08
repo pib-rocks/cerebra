@@ -4,13 +4,15 @@ import {
     VoiceAssistant,
     parseVoiceAssistantToDto,
 } from "../types/voice-assistant";
-import {BehaviorSubject, catchError, throwError} from "rxjs";
+import {BehaviorSubject, Observable, catchError, throwError} from "rxjs";
 import {UrlConstants} from "./url.constants";
+import {SidebarService} from "../interfaces/sidebar-service.interface";
+import {SidebarElement} from "../interfaces/sidebar-element.interface";
 
 @Injectable({
     providedIn: "root",
 })
-export class VoiceAssistantService {
+export class VoiceAssistantService implements SidebarService {
     personalityByIdResponse: VoiceAssistant | undefined;
     personalities: VoiceAssistant[] = [];
     personalitiesSubject: BehaviorSubject<VoiceAssistant[]> =
@@ -31,7 +33,21 @@ export class VoiceAssistantService {
     }
 
     private setPersonalities(personalities: VoiceAssistant[]) {
-        this.personalities = personalities;
+        const newPersonalities: VoiceAssistant[] = [];
+
+        //ab in die pipe @christopher
+        personalities.forEach((m) => {
+            newPersonalities.push(
+                new VoiceAssistant(
+                    m.personalityId,
+                    m.name,
+                    m.gender,
+                    m.pauseThreshold,
+                    m.description,
+                ),
+            );
+        });
+        this.personalities = newPersonalities;
         this.personalitiesSubject.next(this.personalities.slice());
     }
 
@@ -133,5 +149,21 @@ export class VoiceAssistantService {
             .subscribe(() => {
                 this.deletePersonality(id);
             });
+    }
+
+    add(element: string | SidebarElement): void {
+        throw new Error("Method not implemented.");
+    }
+    update(element: string | SidebarElement): void {
+        throw new Error("Method not implemented.");
+    }
+    delete(element: string | SidebarElement): void {
+        throw new Error("Method not implemented.");
+    }
+    getSubject(): Observable<SidebarElement[]> {
+        return this.personalitiesSubject;
+    }
+    getElements(): SidebarElement[] {
+        throw new Error("Method not implemented.");
     }
 }

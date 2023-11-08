@@ -1,6 +1,7 @@
 import {
     Component,
     EventEmitter,
+    OnInit,
     Output,
     TemplateRef,
     ViewChild,
@@ -10,13 +11,15 @@ import {NgbActiveModal, NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {VoiceAssistantService} from "../../shared/services/voice-assistant.service";
 import {VoiceAssistant} from "../../shared/types/voice-assistant";
 import {voiceAssistantGenderValidator} from "../../shared/validators";
+import {SidebarElement} from "src/app/shared/interfaces/sidebar-element.interface";
+import {BehaviorSubject, Observable} from "rxjs";
 
 @Component({
     selector: "app-voice-assistant-personality",
     templateUrl: "./voice-assistant-personality.component.html",
     styleUrls: ["./voice-assistant-personality.component.css"],
 })
-export class VoiceAssistantPersonalityComponent {
+export class VoiceAssistantPersonalityComponent implements OnInit {
     @ViewChild("modalContent") modalContent: TemplateRef<any> | undefined;
     tabTitle = "PERSONALITY";
     personalityIcon: string =
@@ -29,6 +32,10 @@ export class VoiceAssistantPersonalityComponent {
         selected: boolean;
         hovered: boolean;
     }[] = [];
+
+    logfunc = () => {
+        console.log("hamlo from parent");
+    };
     headerElements = [
         {
             icon: "../../assets/voice-assistant-svgs/personality/personality_add.svg",
@@ -36,6 +43,7 @@ export class VoiceAssistantPersonalityComponent {
                 "../../assets/voice-assistant-svgs/personality/personality_add_active.svg",
             label: "ADD",
             hovered: false,
+            clickCallback: this.logfunc,
         },
         {
             icon: "../../assets/voice-assistant-svgs/personality/personality_delete.svg",
@@ -43,6 +51,7 @@ export class VoiceAssistantPersonalityComponent {
                 "../../assets/voice-assistant-svgs/personality/personality_delete_active.svg",
             label: "DELETE",
             hovered: false,
+            clickCallback: this.logfunc,
         },
         {
             icon: "../../assets/voice-assistant-svgs/personality/personality_edit.svg",
@@ -50,6 +59,7 @@ export class VoiceAssistantPersonalityComponent {
                 "../../assets/voice-assistant-svgs/personality/personality_edit_active.svg",
             label: "EDIT",
             hovered: false,
+            clickCallback: this.logfunc,
         },
     ];
     validPauseThresholdPattern: RegExp = /^(0\.[1-9]\d*|1\.0*)$/;
@@ -65,6 +75,7 @@ export class VoiceAssistantPersonalityComponent {
     activePersonality: VoiceAssistant | undefined;
     lastSelectedId: string = "";
 
+    subject!: Observable<SidebarElement[]>;
     @Output() test = new EventEmitter<object[]>();
 
     constructor(
@@ -76,6 +87,7 @@ export class VoiceAssistantPersonalityComponent {
     }
 
     ngOnInit() {
+        this.subject = this.voiceAssistantService.getSubject();
         this.nameFormControl.setValidators([
             Validators.required,
             Validators.minLength(2),
@@ -265,6 +277,12 @@ export class VoiceAssistantPersonalityComponent {
             description: this.descriptionFormControl.value,
             gender: this.genderFormControl.value,
             pauseThreshold: this.pauseThresholdFormControl.value,
+            getName: () => {
+                return "";
+            },
+            getUUID: () => {
+                return "";
+            },
         };
         modal.close(personality);
     }
