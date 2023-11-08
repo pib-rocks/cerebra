@@ -9,9 +9,8 @@ import {
     AfterViewInit,
 } from "@angular/core";
 import {FormControl, Validators} from "@angular/forms";
-import {Observable} from "rxjs";
+import {Observable, asyncScheduler} from "rxjs";
 import {notNullValidator, steppingValidator} from "../../shared/validators";
-import {asyncScheduler} from "rxjs";
 
 @Component({
     selector: "app-slider",
@@ -137,7 +136,7 @@ export class SliderComponent implements OnInit, AfterViewInit {
 
     validateAndSetBubbleInput(): boolean {
         let updateSliderValue = true;
-        let newSliderValue = this.sliderFormControl.value;
+        let newSliderValue;
 
         if (
             this.bubbleFormControl.hasError("required") ||
@@ -146,7 +145,8 @@ export class SliderComponent implements OnInit, AfterViewInit {
             this.bubbleFormControl.setValue(
                 this.flip(this.sliderFormControl.value),
             );
-            return (updateSliderValue = false);
+            updateSliderValue = false;
+            return updateSliderValue;
         } else if (this.bubbleFormControl.hasError("min")) {
             newSliderValue = this.minValue;
         } else if (this.bubbleFormControl.hasError("max")) {

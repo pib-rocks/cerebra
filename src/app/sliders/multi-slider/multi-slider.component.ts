@@ -10,9 +10,8 @@ import {
     Renderer2,
 } from "@angular/core";
 import {FormControl, Validators} from "@angular/forms";
-import {Observable} from "rxjs";
+import {Observable, asyncScheduler} from "rxjs";
 import {notNullValidator, steppingValidator} from "../../shared/validators";
-import {asyncScheduler} from "rxjs";
 
 @Component({
     selector: "app-multi-slider",

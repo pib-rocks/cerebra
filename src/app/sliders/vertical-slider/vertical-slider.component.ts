@@ -10,8 +10,7 @@ import {
 } from "@angular/core";
 import {FormControl, Validators} from "@angular/forms";
 import {notNullValidator, steppingValidator} from "../../shared/validators";
-import {Observable} from "rxjs";
-import {asyncScheduler} from "rxjs";
+import {Observable, asyncScheduler} from "rxjs";
 
 @Component({
     selector: "app-vertical-slider",

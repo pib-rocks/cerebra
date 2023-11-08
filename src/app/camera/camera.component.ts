@@ -8,8 +8,7 @@ import {
 } from "@angular/core";
 import {FormControl} from "@angular/forms";
 import {RosService} from "../shared/services/ros-service/ros.service";
-import {Subject, Subscription, map} from "rxjs";
-import {asyncScheduler} from "rxjs";
+import {Subject, Subscription, map, asyncScheduler} from "rxjs";
 
 @Component({
     selector: "app-camera",
