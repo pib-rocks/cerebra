@@ -12,7 +12,7 @@ import {
 import {FormControl, Validators} from "@angular/forms";
 import {Observable} from "rxjs";
 import {notNullValidator, steppingValidator} from "../../shared/validators";
-import {asapScheduler, asyncScheduler} from "rxjs";
+import {asyncScheduler} from "rxjs";
 
 @Component({
     selector: "app-multi-slider",
@@ -33,7 +33,6 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
     @Input() step: number = 1;
     @Input() unitShort!: string;
     @Input() unitLong!: string;
-    @Input() publishMessage!: (args: number) => void;
     @Input() messageReceiver$!: Observable<number[]>;
     @Input() name?: string;
     @Input() id?: string;
@@ -144,7 +143,7 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
         this.sendEvent();
     }
 
-    toggleInputVisible(
+    showBubbleInputField(
         htmlInputElement: HTMLInputElement,
         sliderFormControl: FormControl,
         bubbleFormControl: FormControl,
@@ -152,54 +151,61 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
         if (sliderFormControl?.value !== null) {
             bubbleFormControl.setValue(sliderFormControl.value);
             this.isInputVisible = true;
-            asapScheduler.schedule(() => {
+            asyncScheduler.schedule(() => {
                 htmlInputElement.focus();
                 htmlInputElement.select();
             });
         }
     }
 
-    toggleInputInvisible(
+    sliderInputFromBubble(
         bubbleFormControl: FormControl,
         sliderFormControl: FormControl,
     ) {
         if (bubbleFormControl.value !== sliderFormControl.value) {
             if (sliderFormControl.value !== null) {
                 this.isInputVisible = !this.isInputVisible;
-                if (
-                    bubbleFormControl.hasError("required") ||
-                    bubbleFormControl.hasError("pattern")
-                ) {
-                    bubbleFormControl.setValue(sliderFormControl.value);
-                } else if (bubbleFormControl.hasError("min")) {
-                    bubbleFormControl.setValue(this.minValue);
-                    this.setSliderValue(sliderFormControl, this.minValue);
-                } else if (bubbleFormControl.hasError("max")) {
-                    bubbleFormControl.setValue(this.maxValue);
-                    this.setSliderValue(sliderFormControl, this.maxValue);
-                } else if (this.bubbleFormControl.hasError("steppingError")) {
-                    let intBubbleFormControl = Math.floor(
-                        this.bubbleFormControl.value * 1000,
-                    );
-                    const moduloValue =
-                        intBubbleFormControl % Math.floor(this.step * 1000);
-                    intBubbleFormControl -= moduloValue;
-                    intBubbleFormControl /= 1000;
-                    this.setSliderValue(
-                        sliderFormControl,
-                        intBubbleFormControl,
-                    );
-                } else {
-                    this.setSliderValue(
-                        sliderFormControl,
-                        Number(bubbleFormControl.value),
-                    );
-                }
+                this.validateAndSetBubbleInput(
+                    bubbleFormControl,
+                    sliderFormControl,
+                );
             }
         } else {
             this.isInputVisible = !this.isInputVisible;
         }
         this.isInputVisible = false;
+    }
+
+    validateAndSetBubbleInput(
+        bubbleFormControl: FormControl,
+        sliderFormControl: FormControl,
+    ) {
+        if (
+            bubbleFormControl.hasError("required") ||
+            bubbleFormControl.hasError("pattern")
+        ) {
+            bubbleFormControl.setValue(sliderFormControl.value);
+        } else if (bubbleFormControl.hasError("min")) {
+            bubbleFormControl.setValue(this.minValue);
+            this.setSliderValue(sliderFormControl, this.minValue);
+        } else if (bubbleFormControl.hasError("max")) {
+            bubbleFormControl.setValue(this.maxValue);
+            this.setSliderValue(sliderFormControl, this.maxValue);
+        } else if (this.bubbleFormControl.hasError("steppingError")) {
+            let intBubbleFormControl = Math.floor(
+                this.bubbleFormControl.value * 1000,
+            );
+            const moduloValue =
+                intBubbleFormControl % Math.floor(this.step * 1000);
+            intBubbleFormControl -= moduloValue;
+            intBubbleFormControl /= 1000;
+            this.setSliderValue(sliderFormControl, intBubbleFormControl);
+        } else {
+            this.setSliderValue(
+                sliderFormControl,
+                Number(bubbleFormControl.value),
+            );
+        }
     }
 
     setSingleThumbPosition(
@@ -229,7 +235,7 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
             this.sliderFormControl,
             this.bubbleElement.nativeElement,
             this.bubbleFormControl,
-            (val) => asapScheduler.schedule(() => (this.bubblePosition = val)),
+            (val) => asyncScheduler.schedule(() => (this.bubblePosition = val)),
         );
         this.setSingleThumbPosition(
             this.sliderElemUpper.nativeElement,
@@ -237,7 +243,7 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
             this.bubbleElementUpper.nativeElement,
             this.bubbleFormControlUpper,
             (val) =>
-                asapScheduler.schedule(() => (this.bubblePositionUpper = val)),
+                asyncScheduler.schedule(() => (this.bubblePositionUpper = val)),
         );
         this.setGradient();
     }

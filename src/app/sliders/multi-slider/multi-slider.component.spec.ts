@@ -94,19 +94,19 @@ describe("MultiSliderComponent", () => {
         expect(spyEventEmitter).toHaveBeenCalledWith([100, 150]);
     }));
 
-    it("should call respective functions and set values on calling toggleInputInvisible", () => {
+    it("should call respective functions and set values when setting inputs whith slider bubbles", () => {
         const spySetSliderValue = spyOn(component, "setSliderValue");
         const sFC = component.sliderFormControl;
         const bFC = component.bubbleFormControl;
         bFC.setValue(150);
         sFC.setValue(50);
-        component.toggleInputInvisible(bFC, sFC);
+        component.sliderInputFromBubble(bFC, sFC);
         expect(spySetSliderValue).toHaveBeenCalled();
         bFC.setValue("sdf");
-        component.toggleInputInvisible(bFC, sFC);
+        component.sliderInputFromBubble(bFC, sFC);
         expect(bFC.value).not.toBe("sdf");
         bFC.setValue(null);
-        component.toggleInputInvisible(bFC, sFC);
+        component.sliderInputFromBubble(bFC, sFC);
         expect(bFC.value).not.toBe(null);
     });
 

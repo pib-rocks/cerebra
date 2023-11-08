@@ -68,7 +68,7 @@ describe("SliderComponent", () => {
             "nativeElement",
             {select: "select", focus: "focus"},
         );
-        component.handleBubbleInput();
+        component.sliderInputFromBubble();
         tick(500);
         expect(component.sliderFormControl.value).toBeLessThanOrEqual(
             component.bubbleFormControl.value,

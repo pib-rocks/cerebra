@@ -11,7 +11,8 @@ import {
 import {FormControl, Validators} from "@angular/forms";
 import {Observable} from "rxjs";
 import {notNullValidator, steppingValidator} from "../../shared/validators";
-import {asapScheduler, asyncScheduler} from "rxjs";
+import {asyncScheduler} from "rxjs";
+
 @Component({
     selector: "app-slider",
     templateUrl: "./slider.component.html",
@@ -63,7 +64,7 @@ export class SliderComponent implements OnInit, AfterViewInit {
             if (value !== undefined) {
                 this.sliderFormControl.setValue(this.flip(Number(value)));
                 if (this.sliderElem && this.bubbleElement) {
-                    asapScheduler.schedule(() => this.setThumbPosition());
+                    asyncScheduler.schedule(() => this.setThumbPosition());
                 }
             }
         });
@@ -111,7 +112,7 @@ export class SliderComponent implements OnInit, AfterViewInit {
     showBubbleInputField() {
         if (this.sliderFormControl.value !== null) {
             this.isInputVisible = !this.isInputVisible;
-            asapScheduler.schedule(() => {
+            asyncScheduler.schedule(() => {
                 this.bubbleInput.nativeElement.focus();
                 this.bubbleInput.nativeElement.select();
             });
@@ -120,21 +121,21 @@ export class SliderComponent implements OnInit, AfterViewInit {
         }
     }
 
-    handleBubbleInput() {
+    sliderInputFromBubble() {
         if (
             this.bubbleFormControl.value !==
             this.flip(this.sliderFormControl.value)
         ) {
             if (this.sliderFormControl.value !== null) {
                 this.isInputVisible = !this.isInputVisible;
-                if (this.validateSliderInputs()) this.inputSendMsg();
+                if (this.validateAndSetBubbleInput()) this.inputSendMsg();
             }
         } else {
             this.isInputVisible = !this.isInputVisible;
         }
     }
 
-    validateSliderInputs(): boolean {
+    validateAndSetBubbleInput(): boolean {
         let updateSliderValue = true;
         let newSliderValue = this.sliderFormControl.value;
 
@@ -176,7 +177,7 @@ export class SliderComponent implements OnInit, AfterViewInit {
 
         const bubbleOffset = (0.5 - normalizedSliderVal) * this.thumbWidth;
         const nextBubblePos = normalizedSliderVal * sliderWidth + bubbleOffset;
-        asapScheduler.schedule(() => {
+        asyncScheduler.schedule(() => {
             this.bubblePosition = nextBubblePos;
         });
 

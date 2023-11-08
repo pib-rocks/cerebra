@@ -9,8 +9,8 @@
             [max]="maxValue"
             *ngIf="isInputVisible"
             [formControl]="bubbleFormControl"
-            (blur)="handleBubbleInput()"
-            (keydown.enter)="handleBubbleInput()"
+            (blur)="sliderInputFromBubble()"
+            (keydown.enter)="sliderInputFromBubble()"
             #bubbleInput />
         <div
             class="bubble-span overlay"
