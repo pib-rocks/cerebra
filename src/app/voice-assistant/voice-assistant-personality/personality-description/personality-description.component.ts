@@ -9,7 +9,7 @@ import {VoiceAssistant} from "src/app/shared/types/voice-assistant";
     styleUrls: ["./personality-description.component.css"],
 })
 export class PersonalityDescriptionComponent implements OnInit {
-    personality: VoiceAssistant | undefined;
+    personality?: VoiceAssistant;
     textAreaContent: string = "";
 
     constructor(
@@ -18,6 +18,7 @@ export class PersonalityDescriptionComponent implements OnInit {
     ) {}
 
     ngOnInit(): void {
+        this.personality = this.route.snapshot.data["personality"];
         this.route.params.subscribe((params: Params) => {
             this.personality = this.voiceAssistantService.getPersonality(
                 params["uuid"],

@@ -10,6 +10,7 @@ import {VoiceAssistantChatComponent} from "./voice-assistant/voice-assistant-cha
 import {sideGuard} from "./security/side-guard";
 import {VoiceAssistantComponent} from "./voice-assistant/voice-assistant.component";
 import {PersonalityDescriptionComponent} from "./voice-assistant/voice-assistant-personality/personality-description/personality-description.component";
+import {voiceAssistantResolver} from "./voice-assistant/voice-assistant-resolver/voice-assistant.resolver";
 
 const routes: Routes = [
     {path: "", redirectTo: "head", pathMatch: "full"},
@@ -37,6 +38,7 @@ const routes: Routes = [
                     {
                         path: ":uuid",
                         component: PersonalityDescriptionComponent,
+                        resolve: {personality: voiceAssistantResolver},
                     },
                 ],
             },
