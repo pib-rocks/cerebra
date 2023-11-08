@@ -191,9 +191,9 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
         } else if (bubbleFormControl.hasError("max")) {
             bubbleFormControl.setValue(this.maxValue);
             this.setSliderValue(sliderFormControl, this.maxValue);
-        } else if (this.bubbleFormControl.hasError("steppingError")) {
+        } else if (bubbleFormControl.hasError("steppingError")) {
             let intBubbleFormControl = Math.floor(
-                this.bubbleFormControl.value * 1000,
+                bubbleFormControl.value * 1000,
             );
             const moduloValue =
                 intBubbleFormControl % Math.floor(this.step * 1000);
