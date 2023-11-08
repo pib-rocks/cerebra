@@ -74,17 +74,4 @@ describe("SliderComponent", () => {
             component.bubbleFormControl.value,
         );
     }));
-
-    it("should set slider values to min or max if given value out of bounds", () => {
-        const maxOutOfBounds = 300;
-        const minOutOfBounds = -300;
-        component.setSliderValue(component.getValueWithinRange(maxOutOfBounds));
-        expect(component.sliderFormControl.value).toBeLessThanOrEqual(
-            component.maxValue,
-        );
-        component.setSliderValue(component.getValueWithinRange(minOutOfBounds));
-        expect(component.sliderFormControl.value).toBeGreaterThanOrEqual(
-            component.minValue,
-        );
-    });
 });

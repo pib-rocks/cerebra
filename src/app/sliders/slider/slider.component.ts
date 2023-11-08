@@ -61,9 +61,7 @@ export class SliderComponent implements OnInit, AfterViewInit {
         ]);
         this.messageReceiver$.subscribe((value) => {
             if (value !== undefined) {
-                this.sliderFormControl.setValue(
-                    this.getValueWithinRange(this.flip(Number(value))),
-                );
+                this.sliderFormControl.setValue(this.flip(Number(value)));
                 if (this.sliderElem && this.bubbleElement) {
                     asapScheduler.schedule(() => this.setThumbPosition());
                 }
@@ -162,18 +160,6 @@ export class SliderComponent implements OnInit, AfterViewInit {
         } else {
             this.isInputVisible = !this.isInputVisible;
         }
-    }
-
-    getValueWithinRange(value: number) {
-        let validVal;
-        if (value > this.maxValue) {
-            validVal = this.maxValue;
-        } else if (value < this.minValue) {
-            validVal = this.minValue;
-        } else {
-            validVal = value;
-        }
-        return validVal;
     }
 
     setThumbPosition() {
