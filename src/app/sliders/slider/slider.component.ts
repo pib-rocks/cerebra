@@ -108,7 +108,7 @@ export class SliderComponent implements OnInit, AfterViewInit {
         }
     }
 
-    toggleInputVisible() {
+    showBubbleInputField() {
         if (this.sliderFormControl.value !== null) {
             this.isInputVisible = !this.isInputVisible;
             asapScheduler.schedule(() => {
@@ -120,46 +120,51 @@ export class SliderComponent implements OnInit, AfterViewInit {
         }
     }
 
-    toggleInputInvisible() {
+    handleBubbleInput() {
         if (
             this.bubbleFormControl.value !==
             this.flip(this.sliderFormControl.value)
         ) {
             if (this.sliderFormControl.value !== null) {
                 this.isInputVisible = !this.isInputVisible;
-                if (
-                    this.bubbleFormControl.hasError("required") ||
-                    this.bubbleFormControl.hasError("pattern")
-                ) {
-                    this.bubbleFormControl.setValue(
-                        this.flip(this.sliderFormControl.value),
-                    );
-                } else if (this.bubbleFormControl.hasError("min")) {
-                    this.setSliderValue(this.flip(this.minValue));
-                    this.inputSendMsg();
-                } else if (this.bubbleFormControl.hasError("max")) {
-                    this.setSliderValue(this.flip(this.maxValue));
-                    this.inputSendMsg();
-                } else if (this.bubbleFormControl.hasError("steppingError")) {
-                    let intBubbleFormControl = Math.floor(
-                        this.bubbleFormControl.value * 1000,
-                    );
-                    const moduloValue =
-                        intBubbleFormControl % Math.floor(this.step * 1000);
-                    intBubbleFormControl -= moduloValue;
-                    intBubbleFormControl /= 1000;
-                    this.setSliderValue(this.flip(intBubbleFormControl));
-                    this.inputSendMsg();
-                } else {
-                    this.setSliderValue(
-                        this.flip(Number(this.bubbleFormControl.value)),
-                    );
-                    this.inputSendMsg();
-                }
+                if (this.validateSliderInputs()) this.inputSendMsg();
             }
         } else {
             this.isInputVisible = !this.isInputVisible;
         }
+    }
+
+    validateSliderInputs(): boolean {
+        let updateSliderValue = true;
+        let newSliderValue = this.sliderFormControl.value;
+
+        if (
+            this.bubbleFormControl.hasError("required") ||
+            this.bubbleFormControl.hasError("pattern")
+        ) {
+            this.bubbleFormControl.setValue(
+                this.flip(this.sliderFormControl.value),
+            );
+            return (updateSliderValue = false);
+        } else if (this.bubbleFormControl.hasError("min")) {
+            newSliderValue = this.minValue;
+        } else if (this.bubbleFormControl.hasError("max")) {
+            newSliderValue = this.maxValue;
+        } else if (this.bubbleFormControl.hasError("steppingError")) {
+            let intBubbleFormControl = Math.floor(
+                this.bubbleFormControl.value * 1000,
+            );
+            const moduloValue =
+                intBubbleFormControl % Math.floor(this.step * 1000);
+            intBubbleFormControl -= moduloValue;
+            intBubbleFormControl /= 1000;
+            newSliderValue = intBubbleFormControl;
+        } else {
+            newSliderValue = Number(this.bubbleFormControl.value);
+        }
+
+        if (updateSliderValue) this.setSliderValue(this.flip(newSliderValue));
+        return updateSliderValue;
     }
 
     setThumbPosition() {

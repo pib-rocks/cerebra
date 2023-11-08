@@ -9,14 +9,14 @@
             [max]="maxValue"
             *ngIf="isInputVisible"
             [formControl]="bubbleFormControl"
-            (blur)="toggleInputInvisible()"
-            (keydown.enter)="toggleInputInvisible()"
+            (blur)="handleBubbleInput()"
+            (keydown.enter)="handleBubbleInput()"
             #bubbleInput />
         <div
             class="bubble-span overlay"
             id="bubble_span_{{ sliderName }}"
             *ngIf="!isInputVisible"
-            (dblclick)="toggleInputVisible()">
+            (dblclick)="showBubbleInputField()">
             {{ bubbleFormControl.value }}{{ unitOfMeasurement }}
         </div>
     </div>

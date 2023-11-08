@@ -71,10 +71,11 @@ export class VerticalSliderComponent implements OnInit, AfterViewInit {
     }
 
     sanitizeValue() {
-        if (this.rangeFormControl.hasError("required")) {
-            this.rangeFormControl.setValue(0);
-        } else if (this.rangeFormControl.hasError("pattern")) {
-            this.rangeFormControl.setValue(0);
+        if (
+            this.rangeFormControl.hasError("required") ||
+            this.rangeFormControl.hasError("pattern")
+        ) {
+            this.rangeFormControl.setValue(this.defaultValue);
         } else if (this.rangeFormControl.hasError("min")) {
             this.rangeFormControl.setValue(this.minValue);
         } else if (this.rangeFormControl.hasError("max")) {
