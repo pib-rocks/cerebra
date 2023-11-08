@@ -1,6 +1,8 @@
 import {Component, OnInit} from "@angular/core";
 import {NavigationEnd, Router} from "@angular/router";
 import {MotorService} from "./shared/services/motor.service";
+import {VoiceAssistant} from "./shared/types/voice-assistant";
+import {VoiceAssistantService} from "./shared/services/voice-assistant.service";
 
 @Component({
     selector: "app-root",
@@ -23,6 +25,7 @@ export class AppComponent implements OnInit {
     constructor(
         private router: Router,
         private motorService: MotorService,
+        private voiceAssistantService: VoiceAssistantService,
     ) {}
 
     ngOnInit(): void {

@@ -16,6 +16,7 @@
 
 :root {
     --cerebra-pink: #e10072;
+    --cerebra-button-color: #0094df;
 }
 
 .btn {
@@ -27,6 +28,18 @@
     border: 1px solid white;
     background-color: #009fe3;
     color: white;
+}
+
+.btn-regular {
+    border: none !important;
+    color: white;
+    background-color: var(--cerebra-button-color);
+}
+
+.btn-regular:hover {
+    border: none !important;
+    color: white;
+    background-color: var(--cerebra-pink);
 }
 
 .custom-switch.custom-switch-pib .custom-control-label::before {

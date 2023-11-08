@@ -35,7 +35,7 @@ export class VoiceAssistantService implements SidebarService {
     private setPersonalities(personalities: VoiceAssistant[]) {
         const newPersonalities: VoiceAssistant[] = [];
 
-        //ab in die pipe @christopher
+        //FIXME ab in die pipe @christopher
         personalities.forEach((m) => {
             newPersonalities.push(
                 new VoiceAssistant(
@@ -63,6 +63,12 @@ export class VoiceAssistantService implements SidebarService {
         );
         this.personalitiesSubject.next(this.personalities.slice());
         console.log(this.personalities);
+    }
+
+    getPersonality(uuid: string) {
+        return this.personalities.find((voiceAssistant) => {
+            return voiceAssistant.personalityId === uuid;
+        });
     }
 
     getAllPersonalities() {
