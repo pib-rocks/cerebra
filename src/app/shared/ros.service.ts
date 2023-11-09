@@ -9,7 +9,6 @@ import {rosDataTypes} from "./rosMessageTypes/rosDataTypePaths.enum";
 import {rosTopics} from "./rosTopics.enum";
 import {rosServices} from "./rosServices.enum";
 import {MotorSettingsError} from "./error/motor-settings-error";
-import {MotorSettingsSrvResponse} from "./rosMessageTypes/motorSettingsSrvResponse";
 
 @Injectable({
     providedIn: "root",

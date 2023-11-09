@@ -1,3 +1,4 @@
 export interface MotorSettingsSrvResponse {
-    successful: boolean;
+    settings_applied: boolean;
+    settings_persisted: boolean;
 }
