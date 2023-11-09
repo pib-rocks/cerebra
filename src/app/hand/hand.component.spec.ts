@@ -71,7 +71,7 @@ describe("HandComponent", () => {
             "sendMotorSettingsMessage",
         ).and.callFake((msg: MotorSettingsMessage) => {
             rosService.motorSettingsReceiver$.next(msg);
-            return {} as Observable<MotorSettingsMessage>;
+            return new Observable();
         });
     });
 
