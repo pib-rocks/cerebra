@@ -6,11 +6,8 @@
         <app-sidebar-right
             [headerElements]="headerElements"
             [subject]="subject"
-            [bodyElements]="personalities"
-            [elementIcon]="personalityIcon"
-            [elementIconActive]="activeIcon"
-            (headerButtonClickEvent)="executeSidebarHeaderButtonFunctionality($event)"
-            (bodyElementClickEvent)="activateNewPersonality($event)">
+            [lStorage]="'personality'"
+            [elementIcon]="personalityIcon">
         </app-sidebar-right>
     </div>
 </div>
@@ -25,9 +22,7 @@
         <div
             class="col-10"
             id="header-title">
-            <span id="header-title-text"
-                >{{headerButtonLabel}} PERSONALITY</span
-            >
+            <span id="header-title-text">PERSONALITY</span>
         </div>
         <div
             class="col-2 text-right"

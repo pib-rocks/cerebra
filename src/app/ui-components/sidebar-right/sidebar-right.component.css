@@ -1,11 +1,6 @@
-.bg-navigation-Kopie {
-    height: 500px;
-    width: auto;
+.sidebar-right-wrapper {
     background-color: #1b2b44;
-}
-.body {
-    height: 445px;
-    overflow-y: scroll;
+    min-height: 500px;
 }
 
 ::-webkit-scrollbar {
@@ -23,58 +18,20 @@
     padding: 10%;
 }
 
-p {
-    color: #0094de;
-}
-
-.header {
-    background-color: #192021;
-}
-
-.elementButtons {
-    background-color: #1b2b44;
-    border: none;
-    border-radius: 5%;
-    border-bottom: #1b2b44 solid 4px;
-    width: 100%;
-    height: 50px;
-    align-items: center;
-    font-weight: normal;
-    padding: 0;
-}
-
-.elementButtons:hover {
-    color: white;
-    border-bottom: #e10072 solid 4px;
-}
-
-.elementButtons:active {
-    color: white;
-    border-bottom: #e10072 solid 4px;
-    flex-wrap: wrap;
-}
-
-.headerButtons {
+.header-button {
     background-color: #192021;
     border: none;
     width: 100%;
+    color: var(--cerebra-button-color);
 }
 
-.headerButtonActive {
-    color: white;
+.header-button:hover img,
+.header-button:hover p {
+    filter: brightness(0) invert(1);
 }
 
-.bodyElementText {
-    text-align: left;
-    color: #0094de;
-}
-
-.add-bottom-border {
-    border-bottom: #e10072 solid 4px;
-}
-
-.element-selected {
-    color: white;
+.header-button img {
+    width: 1em;
 }
 
 .sidebar-element {
@@ -92,11 +49,13 @@ p {
     margin-right: 0.25rem;
 }
 
-.sidebar-element:hover a img {
+.sidebar-element:hover a img,
+.sidebar-element-active a img {
     filter: brightness(0) invert(1);
 }
 
-.sidebar-element:hover a {
+.sidebar-element:hover a,
+.sidebar-element-active a {
     border-bottom: 0.5rem solid var(--cerebra-pink);
     color: white;
 }
