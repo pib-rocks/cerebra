@@ -33,7 +33,6 @@ export class CameraComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit(): void {
-        this.cameraService.getCameraSettings();
         this.subscribeCameraReseiver();
         this.imageSrc = "../../assets/camera-placeholder.jpg";
         this.cameraService.cameraReciver$.subscribe((message) => {
