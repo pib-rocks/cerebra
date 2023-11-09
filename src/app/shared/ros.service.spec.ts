@@ -107,7 +107,7 @@ describe("RosService", () => {
         expect(spyMotorSettingsServiceCall).toHaveBeenCalled();
     });
 
-    it("should return an observable that publishes the original message, if the ros-service returns a 'successful'-message after sending motor-settings-message", () => {
+    it("should handle the case correctly, where, after calling sendMotorSettingsMessage(), the motorSettingsService calls the success-callback with a message that indicates, that both application as well as persistence were successul", () => {
         spyOn(rosService["motorSettingsService"], "callService").and.callFake(
             (_msg, callback, _failedCallback) => {
                 const res: MotorSettingsSrvResponse = {
@@ -139,7 +139,7 @@ describe("RosService", () => {
         );
     });
 
-    it("should return an observable that publishes an error, if the ros-service returns a 'unsuccessful'-message after sending motor-settings-message", () => {
+    it("should handle the case correctly, where, after calling sendMotorSettingsMessage(), the motorSettingsService calls the success-callback with a message that indicates, that application was successful but persistence was unsuccessful", () => {
         spyOn(rosService["motorSettingsService"], "callService").and.callFake(
             (_msg, callback, _failedCallback) => {
                 const res: MotorSettingsSrvResponse = {
@@ -175,7 +175,7 @@ describe("RosService", () => {
         expect(spyOnMotorSettingsReceiver).toHaveBeenCalled();
     });
 
-    it("should return an observable that publishes an error, if the ros-service returns a 'unsuccessful'-message after sending motor-settings-message", () => {
+    it("should handle the case correctly, where, after calling sendMotorSettingsMessage(), the motorSettingsService calls the success-callback with a message that indicates, that neither application nor persistence were succesul", () => {
         spyOn(rosService["motorSettingsService"], "callService").and.callFake(
             (_msg, callback, _failedCallback) => {
                 const res: MotorSettingsSrvResponse = {
@@ -211,7 +211,7 @@ describe("RosService", () => {
         expect(spyOnMotorSettingsReceiver).not.toHaveBeenCalled();
     });
 
-    it("should return an observable that publishes an error, if failed to send the motor-settings message to ros", () => {
+    it("should handle the case correctly, where, after calling sendMotorSettingsMessage(), the motorSettingsService calls the failure-callback", () => {
         spyOn(rosService["motorSettingsService"], "callService").and.callFake(
             (_msg, _callback, failedCallback) => {
                 failedCallback?.("test error message");
