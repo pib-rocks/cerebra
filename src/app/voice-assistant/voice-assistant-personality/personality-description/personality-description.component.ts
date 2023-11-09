@@ -19,11 +19,19 @@ export class PersonalityDescriptionComponent implements OnInit {
 
     ngOnInit(): void {
         this.personality = this.route.snapshot.data["personality"];
+        localStorage.setItem(
+            "personality",
+            this.personality?.personalityId ?? "",
+        );
         this.route.params.subscribe((params: Params) => {
             this.personality = this.voiceAssistantService.getPersonality(
                 params["uuid"],
             );
             this.textAreaContent = this.personality?.description ?? "";
+            localStorage.setItem(
+                "personality",
+                this.personality?.personalityId ?? "",
+            );
         });
     }
 
