@@ -110,7 +110,10 @@ describe("RosService", () => {
     it("should return an observable that publishes the original message, if the ros-service returns a 'successful'-message after sending motor-settings-message", () => {
         spyOn(rosService["motorSettingsService"], "callService").and.callFake(
             (_msg, callback, _failedCallback) => {
-                const res: MotorSettingsSrvResponse = {successful: true};
+                const res: MotorSettingsSrvResponse = {
+                    settings_applied: true,
+                    settings_persisted: true,
+                };
                 callback(res);
             },
         );
@@ -139,7 +142,10 @@ describe("RosService", () => {
     it("should return an observable that publishes an error, if the ros-service returns a 'unsuccessful'-message after sending motor-settings-message", () => {
         spyOn(rosService["motorSettingsService"], "callService").and.callFake(
             (_msg, callback, _failedCallback) => {
-                const res: MotorSettingsSrvResponse = {successful: false};
+                const res: MotorSettingsSrvResponse = {
+                    settings_applied: true,
+                    settings_persisted: false,
+                };
                 callback(res);
             },
         );
@@ -159,11 +165,47 @@ describe("RosService", () => {
         expect(subscribeCallBackSpy.next).not.toHaveBeenCalled();
         expect(subscribeCallBackSpy.error).toHaveBeenCalledOnceWith(
             jasmine.objectContaining({
-                message: `Failed to apply settings from message: ${JSON.stringify(
+                message: `Error while processing motor-settings-message: ${JSON.stringify(
                     motorSettingsMessage,
                     null,
                     2,
-                )}.`,
+                )}. Settings were successfully applied to motor, but failed to persist.`,
+            }),
+        );
+        expect(spyOnMotorSettingsReceiver).toHaveBeenCalled();
+    });
+
+    it("should return an observable that publishes an error, if the ros-service returns a 'unsuccessful'-message after sending motor-settings-message", () => {
+        spyOn(rosService["motorSettingsService"], "callService").and.callFake(
+            (_msg, callback, _failedCallback) => {
+                const res: MotorSettingsSrvResponse = {
+                    settings_applied: false,
+                    settings_persisted: false,
+                };
+                callback(res);
+            },
+        );
+        const spyOnMotorSettingsReceiver = spyOn(
+            rosService.motorSettingsReceiver$,
+            "next",
+        );
+
+        const obs: Observable<MotorSettingsMessage> =
+            rosService.sendMotorSettingsMessage(motorSettingsMessage);
+        const subscribeCallBackSpy = jasmine.createSpyObj("subscriber", [
+            "next",
+            "error",
+        ]);
+        obs.subscribe(subscribeCallBackSpy);
+
+        expect(subscribeCallBackSpy.next).not.toHaveBeenCalled();
+        expect(subscribeCallBackSpy.error).toHaveBeenCalledOnceWith(
+            jasmine.objectContaining({
+                message: `Error while processing motor-settings-message: ${JSON.stringify(
+                    motorSettingsMessage,
+                    null,
+                    2,
+                )}. Setting were neither applied to motor, nor were they persisted.`,
             }),
         );
         expect(spyOnMotorSettingsReceiver).not.toHaveBeenCalled();

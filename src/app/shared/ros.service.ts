@@ -9,6 +9,7 @@ import {rosDataTypes} from "./rosMessageTypes/rosDataTypePaths.enum";
 import {rosTopics} from "./rosTopics.enum";
 import {rosServices} from "./rosServices.enum";
 import {MotorSettingsError} from "./error/motor-settings-error";
+import {MotorSettingsSrvResponse} from "./rosMessageTypes/motorSettingsSrvResponse";
 
 @Injectable({
     providedIn: "root",
@@ -185,11 +186,19 @@ export class RosService {
         this.motorSettingsService.callService(
             motorSettingsMessage,
             (response) => {
-                if (response["successful"]) {
+                if (response["settings_applied"]) {
                     this.motorSettingsReceiver$.next(motorSettingsMessage);
-                    subject.next(motorSettingsMessage);
+                    if (response["settings_persisted"]) {
+                        subject.next(motorSettingsMessage);
+                    } else {
+                        subject.error(
+                            new MotorSettingsError(motorSettingsMessage, true),
+                        );
+                    }
                 } else {
-                    subject.error(new MotorSettingsError(motorSettingsMessage));
+                    subject.error(
+                        new MotorSettingsError(motorSettingsMessage, false),
+                    );
                 }
             },
             (errorMsg) => {
