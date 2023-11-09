@@ -169,7 +169,9 @@ describe("RosService", () => {
                     motorSettingsMessage,
                     null,
                     2,
-                )}. Settings were successfully applied to motor, but failed to persist.`,
+                )}. Settings successfully applied to motor, but failed to persist.`,
+                settingsApplied: true,
+                failedMsg: motorSettingsMessage,
             }),
         );
         expect(spyOnMotorSettingsReceiver).toHaveBeenCalled();
@@ -206,6 +208,8 @@ describe("RosService", () => {
                     null,
                     2,
                 )}. Setting were neither applied to motor, nor were they persisted.`,
+                settingsApplied: false,
+                failedMsg: motorSettingsMessage,
             }),
         );
         expect(spyOnMotorSettingsReceiver).not.toHaveBeenCalled();

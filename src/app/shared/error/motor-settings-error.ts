@@ -12,7 +12,7 @@ export class MotorSettingsError extends Error {
                 2,
             )}. ${
                 applied
-                    ? "Settings were successfully applied to motor, but failed to persist."
+                    ? "Settings successfully applied to motor, but failed to persist."
                     : "Setting were neither applied to motor, nor were they persisted."
             }`,
         );
