@@ -13,15 +13,8 @@ describe("CameraService", () => {
     let apiService: ApiService;
     let rosService: RosService;
 
-    const updateCameraSettings = new CameraSetting(
-        "HD",
-        0.5,
-        50,
-        false,
-        1280,
-        720,
-    );
-    const cameraSettings = new CameraSetting("SD", 0.1, 80, false, 640, 480);
+    const updateCameraSettings = new CameraSetting("HD", 0.5, 50, 1280, 720);
+    const cameraSettings = new CameraSetting("SD", 0.1, 80, 640, 480);
     const behaviorSubjectOfCameraSettings = new BehaviorSubject<any>(
         cameraSettings,
     );
