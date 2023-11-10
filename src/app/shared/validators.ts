@@ -56,12 +56,3 @@ export function steppingValidator(step: number): ValidatorFn {
         }
     };
 }
-
-export function voiceAssistantGenderValidator(gender: string) {
-    return (FormControl: AbstractControl) => {
-        return gender.toLowerCase() === "male" ||
-            gender.toLowerCase() === "female"
-            ? null
-            : {error: true};
-    };
-}
