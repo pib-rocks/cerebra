@@ -1,11 +1,4 @@
-import {
-    Component,
-    EventEmitter,
-    OnInit,
-    Output,
-    TemplateRef,
-    ViewChild,
-} from "@angular/core";
+import {Component, OnInit, TemplateRef, ViewChild} from "@angular/core";
 import {FormControl, Validators} from "@angular/forms";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {VoiceAssistantService} from "../../shared/services/voice-assistant.service";
@@ -23,19 +16,12 @@ export class VoiceAssistantPersonalityComponent implements OnInit {
     @ViewChild("modalContent") modalContent: TemplateRef<any> | undefined;
     personalityIcon: string =
         "../../assets/voice-assistant-svgs/personality/personality.svg";
-
     validPauseThresholdPattern: RegExp = /^(0\.[1-9]\d*|1\.0*)$/;
     nameFormControl: FormControl = new FormControl("");
     genderFormControl: FormControl = new FormControl("");
     pauseThresholdFormControl: FormControl<number> = new FormControl();
-
-    saveButton: boolean = false;
-    saveAsButton: boolean = false;
-    headerButtonLabel: string | undefined;
     thresholdString: string | undefined;
-
     subject!: Observable<SidebarElement[]>;
-    @Output() test = new EventEmitter<object[]>();
 
     constructor(
         private modalService: NgbModal,
@@ -51,9 +37,7 @@ export class VoiceAssistantPersonalityComponent implements OnInit {
             Validators.minLength(2),
             Validators.maxLength(255),
         ]);
-
         this.genderFormControl.setValidators([Validators.required]);
-
         this.pauseThresholdFormControl.setValidators([
             Validators.required,
             Validators.pattern(this.validPauseThresholdPattern),
