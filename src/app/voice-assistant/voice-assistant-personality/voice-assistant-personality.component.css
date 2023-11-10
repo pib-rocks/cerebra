@@ -1,43 +1,9 @@
-.saveButtons {
-    float: right;
-    font-size: medium;
-    width: auto;
-    border: none;
-    background-color: #0094df;
-    white-space: nowrap;
-}
-
-.saveButtons:hover {
-    float: right;
-    font-size: medium;
-    width: auto;
-    border: none;
-    background-color: #e10072;
-    white-space: nowrap;
-}
-
-.personalityName {
-    font-size: large;
-    font-weight: bold;
-    font-stretch: normal;
-    font-style: normal;
-    line-height: normal;
-    letter-spacing: 0.4px;
-    text-align: left;
-    color: #fff;
-}
-
-input {
-    color: #fff;
-}
-
-input:focus {
-    outline: none;
-    color: #fff;
+label {
+    font-weight: normal !important;
 }
 
 #pause-threshold-input {
-    width: 50px;
+    width: 60px;
     background-color: #344a69;
     border: none;
     height: 30px;
@@ -52,7 +18,7 @@ input:focus {
 #label-radio-female::before {
     content: "";
     position: absolute;
-    top: 0;
+    top: 3px;
     left: 0;
     width: 15px;
     margin-top: 2.5px;
@@ -66,7 +32,7 @@ input:focus {
 
 #label-radio-male,
 #label-radio-female {
-    padding-left: 20px;
+    padding-left: 10px;
 }
 
 #radio-male:checked + #label-radio-male::before,
@@ -74,13 +40,6 @@ input:focus {
     background-color: #e10072;
     border-color: #fff;
     padding: 5px;
-}
-
-#name-input {
-    width: 200px;
-    background-color: #344a69;
-    border-radius: 5px;
-    border: none;
 }
 
 #up,
@@ -91,17 +50,4 @@ input:focus {
     font-size: 10px;
     line-height: 10px;
     padding: 0;
-}
-
-.input-threshold-col {
-    background-color: #344a69;
-    margin: 0;
-}
-
-.btn-lg {
-    background-color: #0094df;
-}
-
-.btn-lg:hover {
-    background-color: #e10072;
 }

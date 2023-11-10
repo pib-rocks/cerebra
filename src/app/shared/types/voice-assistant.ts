@@ -26,6 +26,16 @@ export class VoiceAssistant implements SidebarElement {
     getUUID(): string {
         return this.personalityId;
     }
+
+    clone(): VoiceAssistant {
+        return new VoiceAssistant(
+            String(this.personalityId),
+            String(this.name),
+            String(this.gender),
+            Number(this.pauseThreshold),
+            String(this.description),
+        );
+    }
 }
 
 export class VoiceAssistantDto {
@@ -56,4 +66,16 @@ export function parseVoiceAssistantToDto(
         gender: voiceAssistant.gender,
         pauseThreshold: voiceAssistant.pauseThreshold,
     } as VoiceAssistantDto;
+}
+
+export function parseDtoToVoiceAssistant(
+    dummyVoiceAssistant: VoiceAssistant,
+): VoiceAssistant {
+    return new VoiceAssistant(
+        dummyVoiceAssistant.personalityId,
+        dummyVoiceAssistant.name,
+        dummyVoiceAssistant.gender,
+        dummyVoiceAssistant.pauseThreshold,
+        dummyVoiceAssistant.description,
+    );
 }

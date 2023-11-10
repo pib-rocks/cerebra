@@ -132,3 +132,15 @@ label {
         url("assets/ep-bl.png") bottom left no-repeat,
         url("assets/bg-gesamt.png") center scroll;
 }
+
+input {
+    color: #fff;
+    background-color: #344a69;
+    border-radius: 5px;
+    border: none;
+}
+
+input:focus {
+    outline: none;
+    color: #fff;
+}

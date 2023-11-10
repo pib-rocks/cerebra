@@ -2,7 +2,7 @@
     <div class="main col-10 pink-corner-frame">
         <router-outlet></router-outlet>
     </div>
-    <div class="col-2 side ">
+    <div class="col-2">
         <app-sidebar-right
             [headerElements]="headerElements"
             [subject]="subject"
@@ -58,28 +58,22 @@
             >Name</label
         >
         <input
-            #name
             class="col-9"
             [formControl]="nameFormControl"
             type="text"
             name="name-input"
             id="name-input" />
     </div>
-    <div
-        class="row m-2 ml-3"
-        id="row-radio-button">
+    <div class="row m-2 ml-3">
         <div
-            class="col-5"
+            class="col-4"
             id="radio-button-female">
             <input
-                #radioFemale
                 class="m-2"
-                [formControl]="genderFormControl"
+                name="gender"
                 value="Female"
-                (click)="switchGender('Female')"
-                checked="genderFormControl.value"
+                [formControl]="genderFormControl"
                 type="radio"
-                name="female"
                 id="radio-female" />
             <label
                 for="radio-female"
@@ -91,14 +85,11 @@
             class="col-4"
             id="radio-button-male">
             <input
-                #radioMale
                 class="m-2"
-                [formControl]="genderFormControl"
+                name="gender"
                 value="Male"
-                (click)="switchGender('Male')"
-                checked="genderFormControl.value"
+                [formControl]="genderFormControl"
                 type="radio"
-                name="male"
                 id="radio-male" />
             <label
                 for="radio-male"
@@ -108,7 +99,7 @@
         </div>
     </div>
     <div
-        class="row m-2"
+        class="row m-2 mb-5"
         id="row-pause-threshold"
         lang="en-US">
         <label
@@ -117,11 +108,10 @@
             id="label-pause-threshold"
             >Pause threshold</label
         >
-        <div class="col-3 input-threshold-col">
+        <div class="col-3">
             <div class="row">
                 <div class="col-10 p-0">
                     <input
-                        #thresholdInput
                         type="text"
                         name="threshold-input"
                         id="pause-threshold-input"
@@ -131,33 +121,19 @@
                     <div class="row mt-1 p-0">
                         <button
                             id="up"
-                            (click)="adjustThreshold('up')">
+                            (click)="adjustThreshold('0.1')">
                             &#9650;
                         </button>
                     </div>
                     <div class="row p-0">
                         <button
                             id="down"
-                            (click)="adjustThreshold('down')">
+                            (click)="adjustThreshold('-0.1')">
                             &#9660;
                         </button>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-    <div
-        class="row mt-3 mb-4"
-        id="submit">
-        <div
-            class="col text-center"
-            id="buttonSubmit">
-            <button
-                class="btn btn-lg btn-primary"
-                id="submitButton"
-                (click)="closeModalWithResult(modal)">
-                Submit
-            </button>
         </div>
     </div>
 </ng-template>

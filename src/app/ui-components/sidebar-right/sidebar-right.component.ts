@@ -25,10 +25,8 @@ export class SideBarRightComponent implements OnInit {
     ) {}
 
     ngOnInit() {
-        this.subject.subscribe((serviceElements) => {
+        this.subject.subscribe((serviceElements: SidebarElement[]) => {
             this.sidebarElements = serviceElements;
-            console.log(localStorage.getItem(this.lStorage));
-            console.log(this.sidebarElements);
             if (localStorage.getItem(this.lStorage)) {
                 this.router.navigate([localStorage.getItem(this.lStorage)], {
                     relativeTo: this.route,
