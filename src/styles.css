@@ -42,6 +42,10 @@
     background-color: var(--cerebra-pink);
 }
 
+input::placeholder {
+    color: #ccc;
+}
+
 .custom-switch.custom-switch-pib .custom-control-label::before {
     background-color: transparent;
     border-color: white;
