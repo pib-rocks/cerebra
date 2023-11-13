@@ -12,9 +12,11 @@ export class ProgramService {
     programsSubject: BehaviorSubject<Program[]> = new BehaviorSubject<
         Program[]
     >([]);
-    programByIdResponse: Program | undefined;
+    programByProgramNumberResponse: Program | undefined;
 
-    constructor(private apiService: ApiService) {}
+    constructor(private apiService: ApiService) {
+        this.getAllPrograms();
+    }
 
     private updateProgram(updateProgram: Program) {
         console.info(this.programs);
@@ -57,19 +59,24 @@ export class ProgramService {
             .get(UrlConstants.PROGRAM + `/${programNumber}`)
             .subscribe({
                 next: (response) => {
-                    this.programByIdResponse = response as Program;
+                    this.programByProgramNumberResponse = response as Program;
                 },
                 error: console.log,
             });
     }
 
     createProgram(program: Program) {
-        this.apiService.post(UrlConstants.PROGRAM, program).subscribe({
-            next: (response) => {
-                this.addProgram(response as Program);
-            },
-            error: console.log,
-        });
+        this.apiService
+            .post(UrlConstants.PROGRAM, {
+                name: program.name,
+                program: program.program,
+            })
+            .subscribe({
+                next: (response) => {
+                    this.addProgram(response as Program);
+                },
+                error: console.log,
+            });
     }
 
     updateProgramByProgramNumber(program: Program) {
@@ -77,7 +84,7 @@ export class ProgramService {
             .put(UrlConstants.PROGRAM + `/${program.programNumber}`, program)
             .subscribe({
                 next: (response) => {
-                    this.programByIdResponse = response as Program;
+                    this.programByProgramNumberResponse = response as Program;
                     this.updateProgram(response);
                 },
                 error: console.log,

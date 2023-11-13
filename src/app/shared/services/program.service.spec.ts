@@ -45,18 +45,19 @@ describe("ProgramService", () => {
         newObs = new BehaviorSubject(newPro);
         obsAll = new BehaviorSubject({programs: pro});
 
-        const apiServiceSpy: ApiService = jasmine.createSpyObj(
+        const apiServiceSpy: jasmine.SpyObj<ApiService> = jasmine.createSpyObj(
             ApiService.name,
             ["get", "post", "put", "delete"],
         );
+        apiServiceSpy.get.and.returnValue(new BehaviorSubject({programs: []}));
 
         TestBed.configureTestingModule({
             providers: [
-                ProgramService,
                 {
                     provide: ApiService,
                     useValue: apiServiceSpy,
                 },
+                ProgramService,
             ],
         });
 
@@ -66,6 +67,7 @@ describe("ProgramService", () => {
             BehaviorSubject<Program[]>
         >("programSubjectSpy", ["next"]);
         apiService = TestBed.inject(ApiService) as jasmine.SpyObj<ApiService>;
+        apiService.get = jasmine.createSpy();
     });
 
     it("should be created", () => {
