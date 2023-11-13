@@ -14,6 +14,11 @@
     font-family: Titillium, sans-serif;
 }
 
+:root {
+    --cerebra-pink: #e10072;
+    --cerebra-button-color: #0094df;
+}
+
 .btn {
     border: 1px solid white;
     color: white;
@@ -23,6 +28,18 @@
     border: 1px solid white;
     background-color: #009fe3;
     color: white;
+}
+
+.btn-regular {
+    border: none !important;
+    color: white;
+    background-color: var(--cerebra-button-color);
+}
+
+.btn-regular:hover {
+    border: none !important;
+    color: white;
+    background-color: var(--cerebra-pink);
 }
 
 .custom-switch.custom-switch-pib .custom-control-label::before {
@@ -114,4 +131,16 @@ label {
         url("assets/ep-tl.png") top left no-repeat,
         url("assets/ep-bl.png") bottom left no-repeat,
         url("assets/bg-gesamt.png") center scroll;
+}
+
+input {
+    color: #fff;
+    background-color: #344a69;
+    border-radius: 5px;
+    border: none;
+}
+
+input:focus {
+    outline: none;
+    color: #fff;
 }

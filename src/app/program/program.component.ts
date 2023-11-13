@@ -10,6 +10,9 @@ import * as Blockly from "blockly";
 import {MatDialog} from "@angular/material/dialog";
 import {DialogContentComponent} from "./dialog-content/dialog-content.component";
 import {toolbox} from "./blockly";
+import {Observable} from "rxjs";
+import {ProgramElement} from "../shared/interfaces/program-element.interface";
+import {FormControl} from "@angular/forms";
 
 @Component({
     selector: "app-program",
@@ -23,6 +26,10 @@ export class ProgramComponent implements OnInit, OnDestroy, AfterViewInit {
 
     observer!: ResizeObserver;
     @ViewChild("blocklyDiv") blocklyDiv!: ElementRef<HTMLDivElement>;
+
+    subject!: Observable<ProgramElement[]>;
+    programIcon: string = "";
+    nameFormControl: FormControl = new FormControl("");
 
     constructor(public dialog: MatDialog) {}
 
@@ -60,4 +67,30 @@ export class ProgramComponent implements OnInit, OnDestroy, AfterViewInit {
     ngOnDestroy(): void {
         this.observer.unobserve(this.blocklyDiv.nativeElement);
     }
+
+    openAddModal = () => {
+        this.nameFormControl.setValue("");
+        return;
+        // this.showModal();
+    };
+
+    headerElements = [
+        {
+            icon: "../../assets/voice-assistant-svgs/program/program-add.svg",
+            label: "ADD",
+            clickCallback: this.openAddModal,
+        },
+        {
+            icon: "../../assets/voice-assistant-svgs/program/program-delete.svg",
+            label: "DELETE",
+            clickCallback: this.openAddModal,
+            // clickCallback: this.deletePersonality,
+        },
+        {
+            icon: "../../assets/voice-assistant-svgs/program/program-edit.svg",
+            label: "EDIT",
+            clickCallback: this.openAddModal,
+            // clickCallback: this.openEditModal,
+        },
+    ];
 }

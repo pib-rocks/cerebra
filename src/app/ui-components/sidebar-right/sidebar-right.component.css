@@ -1,0 +1,61 @@
+.sidebar-right-wrapper {
+    background-color: #1b2b44;
+    min-height: 500px;
+}
+
+::-webkit-scrollbar {
+    background-color: #1b2b44;
+    scrollbar-width: thin;
+    width: 5px;
+}
+
+::-webkit-scrollbar:hover {
+    width: 7px;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #cccccc;
+    padding: 10%;
+}
+
+.header-button {
+    background-color: #192021;
+    border: none;
+    width: 100%;
+    color: var(--cerebra-button-color);
+}
+
+.header-button:hover img,
+.header-button:hover p {
+    filter: brightness(0) invert(1);
+}
+
+.header-button img {
+    width: 1em;
+}
+
+.sidebar-element {
+    margin-top: 1rem;
+    margin-left: 13%;
+}
+.sidebar-element a {
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.sidebar-element a img {
+    width: 1.1rem;
+    padding-bottom: 2px;
+    margin-right: 0.25rem;
+}
+
+.sidebar-element:hover a img,
+.sidebar-element-active a img {
+    filter: brightness(0) invert(1);
+}
+
+.sidebar-element:hover a,
+.sidebar-element-active a {
+    border-bottom: 0.5rem solid var(--cerebra-pink);
+    color: white;
+}

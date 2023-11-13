@@ -2,15 +2,18 @@ import {Injectable} from "@angular/core";
 import {ApiService} from "./api.service";
 import {
     VoiceAssistant,
+    parseDtoToVoiceAssistant,
     parseVoiceAssistantToDto,
 } from "../types/voice-assistant";
-import {BehaviorSubject, catchError, throwError} from "rxjs";
+import {BehaviorSubject, Observable, catchError, throwError} from "rxjs";
 import {UrlConstants} from "./url.constants";
+import {SidebarService} from "../interfaces/sidebar-service.interface";
+import {SidebarElement} from "../interfaces/sidebar-element.interface";
 
 @Injectable({
     providedIn: "root",
 })
-export class VoiceAssistantService {
+export class VoiceAssistantService implements SidebarService {
     personalityByIdResponse: VoiceAssistant | undefined;
     personalities: VoiceAssistant[] = [];
     personalitiesSubject: BehaviorSubject<VoiceAssistant[]> =
@@ -29,7 +32,21 @@ export class VoiceAssistantService {
     }
 
     private setPersonalities(personalities: VoiceAssistant[]) {
-        this.personalities = personalities;
+        const newPersonalities: VoiceAssistant[] = [];
+
+        //FIXME ab in die pipe @christopher
+        personalities.forEach((m) => {
+            newPersonalities.push(
+                new VoiceAssistant(
+                    m.personalityId,
+                    m.name,
+                    m.gender,
+                    m.pauseThreshold,
+                    m.description,
+                ),
+            );
+        });
+        this.personalities = newPersonalities;
         this.personalitiesSubject.next(this.personalities.slice());
     }
 
@@ -47,6 +64,12 @@ export class VoiceAssistantService {
         console.log(this.personalities);
     }
 
+    getPersonality(uuid: string) {
+        return this.personalities.find((voiceAssistant) => {
+            return voiceAssistant.personalityId === uuid;
+        });
+    }
+
     getAllPersonalities() {
         this.apiService
             .get(UrlConstants.PERSONALITY)
@@ -61,8 +84,6 @@ export class VoiceAssistantService {
                 this.setPersonalities(
                     response["voiceAssistantPersonalities"] as VoiceAssistant[],
                 );
-                console.log(this.personalities);
-                console.log(response);
             });
     }
 
@@ -95,7 +116,9 @@ export class VoiceAssistantService {
                 }),
             )
             .subscribe((response) => {
-                this.addPersonality(response as VoiceAssistant);
+                this.addPersonality(
+                    parseDtoToVoiceAssistant(response as VoiceAssistant),
+                );
             });
     }
 
@@ -113,8 +136,9 @@ export class VoiceAssistantService {
                 }),
             )
             .subscribe((response) => {
-                this.personalityByIdResponse = response as VoiceAssistant;
-                this.updatePersonality(response.personalityId);
+                this.updatePersonality(
+                    parseDtoToVoiceAssistant(response as VoiceAssistant),
+                );
             });
     }
 
@@ -131,5 +155,9 @@ export class VoiceAssistantService {
             .subscribe(() => {
                 this.deletePersonality(id);
             });
+    }
+
+    getSubject(): Observable<SidebarElement[]> {
+        return this.personalitiesSubject;
     }
 }

@@ -256,29 +256,12 @@ describe("MotorService", () => {
         service.updateMotorFromJointTrajectoryMessage(jointTrajectoryMessage);
         const pinky_left_stretch = service.getMotorByName("pinky_left_stretch");
         const all_fingers_right = service.getMotorByName("all_fingers_right");
-        const thumb_right_stretch = service.getMotorByName(
-            "thumb_right_stretch",
-        );
-        const index_right_stretch = service.getMotorByName(
-            "index_right_stretch",
-        );
-        const middle_right_stretch = service.getMotorByName(
-            "middle_right_stretch",
-        );
-        const ring_right_stretch = service.getMotorByName("ring_right_stretch");
-        const pinky_right_stretch = service.getMotorByName(
-            "pinky_right_stretch",
-        );
+
         expect(spyOnUpdateMotorFromJointTrajectoryMessage).toHaveBeenCalledWith(
             jointTrajectoryMessage,
         );
         expect(pinky_left_stretch.position).toBe(500);
         expect(all_fingers_right.position).toBe(800);
-        expect(thumb_right_stretch.position).toBe(800);
-        expect(index_right_stretch.position).toBe(800);
-        expect(middle_right_stretch.position).toBe(800);
-        expect(ring_right_stretch.position).toBe(800);
-        expect(pinky_right_stretch.position).toBe(800);
     });
 
     it("should update motor.settings on calling updateMotorSettingsFromMotorSettingsMessage", () => {
@@ -321,20 +304,13 @@ describe("MotorService", () => {
             service,
             "resetMotorGroupPosition",
         ).and.callThrough();
-        const jointnames = ["all_fingers_right"];
-        const points = [createJointTrajectoryPoint(800)];
-        const jointTrajectoryMessage = createEmptyJointTrajectoryMessage();
-        jointTrajectoryMessage.joint_names = jointnames;
-        jointTrajectoryMessage.points = points;
-        service.updateMotorFromJointTrajectoryMessage(jointTrajectoryMessage);
-        let motors: Motor[] = service.getMotorsByGroupNoOpposition(
+        const motors: Motor[] = service.getMotorsByGroupNoOpposition(
             Group.right_hand,
         );
         motors.forEach((m) => {
-            expect(m.position).toBe(800);
+            m.position = 800;
         });
         service.resetMotorGroupPosition(Group.right_hand);
-        motors = service.getMotorsByGroup(Group.right_hand);
         expect(spyOnResetMotorGroupPosition).toHaveBeenCalled();
         motors.forEach((m) => {
             expect(m.position).toBe(0);

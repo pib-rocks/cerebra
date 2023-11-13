@@ -1,21 +1,19 @@
-<div class="container-fluid">
-    <div class="row">
-        <div class="col">
-            <div class="first-div">
-                <button
-                    (click)="openDialog()"
-                    id="savebutton"
-                    class="btn btn-primary">
-                    Save
-                </button>
-            </div>
-            <div
-                class="second-div"
-                style="height: 93vh">
+<div class="row pt-5 pl-3 pr-3">
+    <div class="main col-10 pink-corner-frame">
+        <div class="row h-100">
+            <div class="col">
                 <div
-                    id="blocklyDiv"
-                    #blocklyDiv></div>
+                    class="h-100 w-100 p-10"
+                    id="blocklyDiv"></div>
             </div>
         </div>
+    </div>
+    <div class="col-2">
+        <app-sidebar-right
+            [headerElements]="headerElements"
+            [subject]="subject"
+            [lStorage]="'personality'"
+            [elementIcon]="programIcon">
+        </app-sidebar-right>
     </div>
 </div>

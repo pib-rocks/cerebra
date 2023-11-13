@@ -21,15 +21,17 @@ import {SliderComponent} from "./slider/slider.component";
 import {CircularSliderComponent} from "./slider/circular-slider/circular-slider.component";
 import {MotorCurrentService} from "./shared/motor-current.service";
 
-import {VoiceAssistantNavComponent} from "./voice-assistant-nav/voice-assistant-nav.component";
-import {VoiceAssistantChatComponent} from "./voice-assistant-chat/voice-assistant-chat.component";
-import {VoiceAssistantPersonalityComponent} from "./voice-assistant-personality/voice-assistant-personality.component";
+import {VoiceAssistantNavComponent} from "./voice-assistant/voice-assistant-nav/voice-assistant-nav.component";
+import {VoiceAssistantChatComponent} from "./voice-assistant/voice-assistant-chat/voice-assistant-chat.component";
+import {VoiceAssistantPersonalityComponent} from "./voice-assistant/voice-assistant-personality/voice-assistant-personality.component";
 import {FormsModule} from "@angular/forms";
-import {VoiceAssistantSidebarRightComponent} from "./voice-assistant-sidebar-right/voice-assistant-sidebar-right.component";
+import {SideBarRightComponent} from "./ui-components/sidebar-right/sidebar-right.component";
 
 import {VerticalSliderComponent} from "./vertical-slider/vertical-slider.component";
 import {MultiSliderComponent} from "./multi-slider/multi-slider.component";
 import {BoolToOnOffPipe} from "./shared/pipes/bool-to-on-off-pipe.pipe";
+import {VoiceAssistantComponent} from "./voice-assistant/voice-assistant.component";
+import {PersonalityDescriptionComponent} from "./voice-assistant/voice-assistant-personality/personality-description/personality-description.component";
 
 @NgModule({
     declarations: [
@@ -47,10 +49,12 @@ import {BoolToOnOffPipe} from "./shared/pipes/bool-to-on-off-pipe.pipe";
         VoiceAssistantNavComponent,
         VoiceAssistantChatComponent,
         VoiceAssistantPersonalityComponent,
-        VoiceAssistantSidebarRightComponent,
+        SideBarRightComponent,
         VerticalSliderComponent,
         MultiSliderComponent,
         BoolToOnOffPipe,
+        VoiceAssistantComponent,
+        PersonalityDescriptionComponent,
     ],
     imports: [
         BrowserModule,
