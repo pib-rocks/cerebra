@@ -28,6 +28,16 @@ const routes: Routes = [
     {path: "head", component: HeadComponent},
     {path: "program", component: ProgramComponent},
     {
+        path: "program",
+        component: ProgramComponent,
+        children: [
+            {
+                path: ":uuid",
+                component: ProgramComponent,
+            },
+        ],
+    },
+    {
         path: "voice-assistant",
         component: VoiceAssistantComponent,
         children: [
