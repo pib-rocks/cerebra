@@ -26,7 +26,16 @@ const routes: Routes = [
     },
     {path: "camera", component: CameraComponent},
     {path: "head", component: HeadComponent},
-    {path: "program", component: ProgramComponent},
+    {
+        path: "program",
+        component: ProgramComponent,
+        children: [
+            {
+                path: ":uuid",
+                component: ProgramComponent,
+            },
+        ],
+    },
     {
         path: "voice-assistant",
         component: VoiceAssistantComponent,

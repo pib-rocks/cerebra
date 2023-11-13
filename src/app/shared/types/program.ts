@@ -1,6 +1,6 @@
-import {ProgramElement} from "../interfaces/program-element.interface";
+import {SidebarElement} from "../interfaces/sidebar-element.interface";
 
-export class Program implements ProgramElement {
+export class Program implements SidebarElement {
     programNumber: string;
     name: string;
     program: string;

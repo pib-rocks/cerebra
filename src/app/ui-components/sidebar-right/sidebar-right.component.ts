@@ -32,9 +32,10 @@ export class SideBarRightComponent implements OnInit {
                     relativeTo: this.route,
                 });
             } else if (this.sidebarElements.length > 0) {
-                this.router.navigate([this.sidebarElements[0].getUUID()], {
-                    relativeTo: this.route,
-                });
+                console.log(this.sidebarElements[0].getUUID()),
+                    this.router.navigate([this.sidebarElements[0].getUUID()], {
+                        relativeTo: this.route,
+                    });
             }
         });
     }
