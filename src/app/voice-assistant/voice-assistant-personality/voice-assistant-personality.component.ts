@@ -90,8 +90,8 @@ export class VoiceAssistantPersonalityComponent implements OnInit {
     }
     openAddModal = () => {
         this.nameFormControl.setValue("");
-        this.genderFormControl.setValue("");
-        this.pauseThresholdFormControl.setValue(0.0);
+        this.genderFormControl.setValue("Female");
+        this.pauseThresholdFormControl.setValue(0.8);
         this.thresholdString = this.pauseThresholdFormControl.value + "s";
         this.showModal();
     };
