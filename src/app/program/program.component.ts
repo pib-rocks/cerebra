@@ -11,11 +11,13 @@ import * as Blockly from "blockly";
 import {MatDialog} from "@angular/material/dialog";
 import {DialogContentComponent} from "./dialog-content/dialog-content.component";
 import {toolbox} from "./blockly";
-import {BehaviorSubject} from "rxjs";
+import {BehaviorSubject, Observable} from "rxjs";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {FormControl, Validators} from "@angular/forms";
-import {Router} from "@angular/router";
+import {ActivatedRoute, Router} from "@angular/router";
 import {Program} from "../shared/types/program";
+import {SidebarElement} from "../shared/interfaces/sidebar-element.interface";
+import {ProgramService} from "../shared/services/program.service";
 
 @Component({
     selector: "app-program",
@@ -31,10 +33,7 @@ export class ProgramComponent implements OnInit, OnDestroy, AfterViewInit {
     observer!: ResizeObserver;
     @ViewChild("blocklyDiv") blocklyDiv!: ElementRef<HTMLDivElement>;
 
-    subject: BehaviorSubject<Program[]> = new BehaviorSubject<Program[]>([
-        new Program("102a598b-b205-40a2-959c-6f449eed9d89", "asd", "asd"),
-        new Program("182a598b-b205-40a2-959c-6f449eed9d89", "test", "test"),
-    ]);
+    subject!: Observable<SidebarElement[]>;
     programIcon: string = "";
     nameFormControl: FormControl = new FormControl("");
 
@@ -42,6 +41,8 @@ export class ProgramComponent implements OnInit, OnDestroy, AfterViewInit {
         public dialog: MatDialog,
         private modalService: NgbModal,
         private router: Router,
+        private route: ActivatedRoute,
+        private programService: ProgramService,
     ) {}
 
     openDialog() {
@@ -59,6 +60,7 @@ export class ProgramComponent implements OnInit, OnDestroy, AfterViewInit {
     toolbox: string = toolbox;
 
     ngOnInit(): void {
+        this.subject = this.programService.programsSubject;
         this.nameFormControl.setValidators([
             Validators.required,
             Validators.minLength(2),
