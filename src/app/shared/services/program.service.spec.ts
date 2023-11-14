@@ -3,7 +3,7 @@ import {TestBed} from "@angular/core/testing";
 import {ProgramService} from "./program.service";
 import {ApiService} from "./api.service";
 import {BehaviorSubject} from "rxjs";
-import {Program, cloneProgram} from "../types/program";
+import {Program} from "../types/program";
 
 describe("ProgramService", () => {
     let programService: ProgramService;
@@ -18,28 +18,12 @@ describe("ProgramService", () => {
 
     beforeEach(() => {
         pro = [
-            {
-                programNumber: "id-0",
-                name: "program_0",
-                program: '{ x: "program_0" }',
-            },
-            {
-                programNumber: "id-1",
-                name: "program_1",
-                program: '{ x: "program_1" }',
-            },
-            {
-                programNumber: "id-2",
-                name: "program_2",
-                program: '{ x: "program_2" }',
-            },
+            new Program("id-0", "program_0", '{ x: "program_0" }'),
+            new Program("id-1", "program_1", '{ x: "program_1" }'),
+            new Program("id-2", "program_2", '{ x: "program_2" }'),
         ];
 
-        newPro = {
-            programNumber: "id-new",
-            name: "program_new",
-            program: '{ x: "program_new" }',
-        };
+        newPro = new Program("id-new", "program_new", '{ x: "program_new" }');
 
         obs = pro.map((p) => new BehaviorSubject(p));
         newObs = new BehaviorSubject(newPro);
@@ -62,7 +46,7 @@ describe("ProgramService", () => {
         });
 
         programService = TestBed.inject(ProgramService);
-        programService.programs = pro.map((p) => cloneProgram(p));
+        programService.programs = pro.map((p) => p.clone());
         programService.programsSubject = jasmine.createSpyObj<
             BehaviorSubject<Program[]>
         >("programSubjectSpy", ["next"]);
@@ -114,7 +98,7 @@ describe("ProgramService", () => {
     });
 
     it("should delete one program", () => {
-        programService["deleteProgram"](pro[1].programNumber!);
+        programService["deleteProgram"](pro[1].programNumber);
         const expectedPrograms = jasmine.arrayWithExactContents([
             jasmine.objectContaining(pro[0]),
             jasmine.objectContaining(pro[2]),
@@ -137,7 +121,7 @@ describe("ProgramService", () => {
 
     it("should get one program from database", () => {
         apiService.get.and.returnValue(obs[0]);
-        programService.getProgramByProgramNumber(pro[0].programNumber!);
+        programService.getProgramByProgramNumber(pro[0].programNumber);
         expect(apiService.get).toHaveBeenCalledOnceWith("/program/id-0");
         expect(programService.programByProgramNumberResponse).toEqual(
             jasmine.objectContaining(pro[0]),
@@ -177,7 +161,7 @@ describe("ProgramService", () => {
     it("should delete one program in db", () => {
         const deleteProgramSpy = spyOn<any>(programService, "deleteProgram");
         apiService.delete.and.returnValue(new BehaviorSubject(undefined));
-        programService.deleteProgramByProgramNumber(pro[2].programNumber!);
+        programService.deleteProgramByProgramNumber(pro[2].programNumber);
         expect(apiService.delete).toHaveBeenCalledOnceWith("/program/id-2");
         expect(deleteProgramSpy).toHaveBeenCalledOnceWith("id-2");
     });

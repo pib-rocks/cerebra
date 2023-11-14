@@ -21,4 +21,8 @@ export class Program implements SidebarElement {
     clone(): Program {
         return new Program(this.programNumber, this.name, this.program);
     }
+
+    static fromDTO(dto: Program) {
+        return new Program(dto.programNumber, dto.name, dto.program);
+    }
 }

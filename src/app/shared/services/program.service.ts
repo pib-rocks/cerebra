@@ -48,7 +48,10 @@ export class ProgramService {
     getAllPrograms() {
         this.apiService.get(UrlConstants.PROGRAM).subscribe({
             next: (response) => {
-                this.setPrograms(response["programs"] as Program[]);
+                const programDTOs: Program[] = response["programs"];
+                this.setPrograms(
+                    programDTOs.map((dto) => Program.fromDTO(dto)),
+                );
             },
             error: console.log,
         });
@@ -59,7 +62,8 @@ export class ProgramService {
             .get(UrlConstants.PROGRAM + `/${programNumber}`)
             .subscribe({
                 next: (response) => {
-                    this.programByProgramNumberResponse = response as Program;
+                    this.programByProgramNumberResponse =
+                        Program.fromDTO(response);
                 },
                 error: console.log,
             });
@@ -73,7 +77,7 @@ export class ProgramService {
             })
             .subscribe({
                 next: (response) => {
-                    this.addProgram(response as Program);
+                    this.addProgram(Program.fromDTO(response));
                 },
                 error: console.log,
             });
@@ -84,8 +88,9 @@ export class ProgramService {
             .put(UrlConstants.PROGRAM + `/${program.programNumber}`, program)
             .subscribe({
                 next: (response) => {
-                    this.programByProgramNumberResponse = response as Program;
-                    this.updateProgram(response);
+                    const program = Program.fromDTO(response);
+                    this.programByProgramNumberResponse = program;
+                    this.updateProgram(program);
                 },
                 error: console.log,
             });
