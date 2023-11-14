@@ -57,6 +57,17 @@ export class ProgramService {
         });
     }
 
+    getProgram(programNumber: string) {
+        const program = this.programs.find(
+            (program) => program.programNumber === programNumber,
+        );
+        if (program) return program;
+        else
+            throw new Error(
+                `no program with program-number '${programNumber}' in local cache.`,
+            );
+    }
+
     getProgramByProgramNumber(programNumber: string) {
         this.apiService
             .get(UrlConstants.PROGRAM + `/${programNumber}`)
