@@ -144,7 +144,13 @@ export class VoiceAssistantPersonalityComponent implements OnInit {
                 .segments[2].path,
         );
         this.router.navigate(
-            [this.voiceAssistantService.personalities[0].personalityId],
+            [
+                this.voiceAssistantService.personalities[0].personalityId ===
+                this.router.parseUrl(this.router.url).root.children["primary"]
+                    .segments[2].path
+                    ? this.voiceAssistantService.personalities[1].personalityId
+                    : this.voiceAssistantService.personalities[0].personalityId,
+            ],
             {relativeTo: this.route},
         );
     };
