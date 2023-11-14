@@ -14,7 +14,6 @@ import {SidebarElement} from "../interfaces/sidebar-element.interface";
     providedIn: "root",
 })
 export class VoiceAssistantService implements SidebarService {
-    personalityByIdResponse: VoiceAssistant | undefined;
     personalities: VoiceAssistant[] = [];
     personalitiesSubject: BehaviorSubject<VoiceAssistant[]> =
         new BehaviorSubject<VoiceAssistant[]>([]);
@@ -84,21 +83,6 @@ export class VoiceAssistantService implements SidebarService {
                 this.setPersonalities(
                     response["voiceAssistantPersonalities"] as VoiceAssistant[],
                 );
-            });
-    }
-
-    getPersonalityById(id: string) {
-        this.apiService
-            .get(UrlConstants.PERSONALITY + `/${id}`)
-            .pipe(
-                catchError((err) => {
-                    return throwError(() => {
-                        console.log(err);
-                    });
-                }),
-            )
-            .subscribe((response) => {
-                this.personalityByIdResponse = response as VoiceAssistant;
             });
     }
 

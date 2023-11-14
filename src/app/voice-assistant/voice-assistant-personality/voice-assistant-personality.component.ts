@@ -97,8 +97,7 @@ export class VoiceAssistantPersonalityComponent implements OnInit {
     };
 
     openEditModal = () => {
-        const uuid: string = this.router.parseUrl(this.router.url).root
-            .children["primary"].segments[2].path;
+        const uuid: string | undefined = this.router.url.split("/").pop();
         if (uuid) {
             const updatePersonality =
                 this.voiceAssistantService.getPersonality(uuid);
@@ -139,20 +138,21 @@ export class VoiceAssistantPersonalityComponent implements OnInit {
     };
 
     deletePersonality = () => {
-        this.voiceAssistantService.deletePersonalityById(
-            this.router.parseUrl(this.router.url).root.children["primary"]
-                .segments[2].path,
-        );
-        this.router.navigate(
-            [
-                this.voiceAssistantService.personalities[0].personalityId ===
-                this.router.parseUrl(this.router.url).root.children["primary"]
-                    .segments[2].path
-                    ? this.voiceAssistantService.personalities[1].personalityId
-                    : this.voiceAssistantService.personalities[0].personalityId,
-            ],
-            {relativeTo: this.route},
-        );
+        const uuid = this.router.url.split("/").pop();
+        if (uuid) {
+            this.voiceAssistantService.deletePersonalityById(uuid);
+            this.router.navigate(
+                [
+                    this.voiceAssistantService.personalities[0]
+                        .personalityId === uuid
+                        ? this.voiceAssistantService.personalities[1]
+                              .personalityId
+                        : this.voiceAssistantService.personalities[0]
+                              .personalityId,
+                ],
+                {relativeTo: this.route},
+            );
+        }
     };
 
     headerElements = [
