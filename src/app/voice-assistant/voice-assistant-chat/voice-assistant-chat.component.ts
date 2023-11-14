@@ -44,6 +44,7 @@ export class VoiceAssistantChatComponent implements OnInit {
     //
 
     ngOnInit() {
+        localStorage.setItem("voice-assistant-tab", "chat");
         //FIXME: Implement chatService
         // this.subject = this.chatService.getSubject();
         this.subject = this.mockSubject;

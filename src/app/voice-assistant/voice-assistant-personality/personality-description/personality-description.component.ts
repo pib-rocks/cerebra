@@ -1,4 +1,4 @@
-import {Component, OnDestroy, OnInit, ViewChild} from "@angular/core";
+import {Component, OnInit} from "@angular/core";
 import {ActivatedRoute, Params} from "@angular/router";
 import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
 import {VoiceAssistant} from "src/app/shared/types/voice-assistant";

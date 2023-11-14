@@ -31,6 +31,7 @@ export class VoiceAssistantPersonalityComponent implements OnInit {
     ) {}
 
     ngOnInit() {
+        localStorage.setItem("voice-assistant-tab", "personality");
         this.subject = this.voiceAssistantService.getSubject();
         this.nameFormControl.setValidators([
             Validators.required,
