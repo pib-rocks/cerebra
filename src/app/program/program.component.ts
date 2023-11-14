@@ -40,6 +40,7 @@ export class ProgramComponent implements OnInit, OnDestroy, AfterViewInit {
     route!: ActivatedRoute;
 
     currentProgram!: Program;
+    programContentCache: any = {};
 
     constructor(
         public dialog: MatDialog,
@@ -47,6 +48,19 @@ export class ProgramComponent implements OnInit, OnDestroy, AfterViewInit {
         private router: Router,
         private programService: ProgramService,
     ) {}
+
+    get workspaceContent(): string {
+        return JSON.stringify(
+            Blockly.serialization.workspaces.save(this.workspace),
+        );
+    }
+
+    set workspaceContent(content: string) {
+        Blockly.serialization.workspaces.load(
+            JSON.parse(content),
+            this.workspace,
+        );
+    }
 
     openDialog() {
         this.json = Blockly.serialization.workspaces.save(this.workspace);
@@ -87,13 +101,18 @@ export class ProgramComponent implements OnInit, OnDestroy, AfterViewInit {
         );
 
         this.route.params.subscribe((param) => {
+            if (this.currentProgram) {
+                this.programContentCache[this.currentProgram.programNumber] =
+                    this.workspaceContent;
+            }
             const programNumber: string = param["uuid"];
-            this.currentProgram = this.programService.getProgram(programNumber);
-            const programContent = JSON.parse(this.currentProgram.program);
-            Blockly.serialization.workspaces.load(
-                programContent,
-                this.workspace,
-            );
+            this.currentProgram = this.programService
+                .getProgram(programNumber)
+                .clone();
+            console.info("current pro: " + JSON.stringify(this.currentProgram));
+            this.workspaceContent =
+                this.programContentCache[this.currentProgram.programNumber] ??
+                this.currentProgram.program;
         });
     }
 
@@ -132,23 +151,43 @@ export class ProgramComponent implements OnInit, OnDestroy, AfterViewInit {
     };
 
     openAddModal = () => {
+        this.nameFormControl.setValue("");
         this.showModal();
     };
 
     openEditModal = () => {
-        const uuid = "";
-        this.showModal(uuid);
+        if (this.currentProgram) {
+            this.nameFormControl.setValue(this.currentProgram.name);
+            this.showModal(this.currentProgram.programNumber);
+        }
     };
 
-    deleteProgram = () => {};
+    addProgram() {
+        if (this.nameFormControl.valid) {
+            this.programService.createProgram(
+                new Program("", this.nameFormControl.value, "{}"),
+            );
+        }
+    }
 
     editProgram() {
-        return;
+        if (this.nameFormControl.valid) {
+            this.currentProgram.name = this.nameFormControl.value;
+            this.currentProgram.program = this.workspaceContent;
+            this.programService.updateProgramByProgramNumber(
+                this.currentProgram,
+            );
+        }
     }
 
-    addProgram() {
-        return;
-    }
+    deleteProgram = () => {
+        if (this.currentProgram) {
+            this.programService.deleteProgramByProgramNumber(
+                this.currentProgram.programNumber,
+            );
+            // TODO: routing
+        }
+    };
 
     headerElements = [
         {

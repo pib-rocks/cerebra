@@ -96,7 +96,10 @@ export class ProgramService {
 
     updateProgramByProgramNumber(program: Program) {
         this.apiService
-            .put(UrlConstants.PROGRAM + `/${program.programNumber}`, program)
+            .put(UrlConstants.PROGRAM + `/${program.programNumber}`, {
+                name: program.name,
+                program: program.program,
+            })
             .subscribe({
                 next: (response) => {
                     const program = Program.fromDTO(response);
