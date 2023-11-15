@@ -11,10 +11,15 @@ import * as Blockly from "blockly";
 import {MatDialog} from "@angular/material/dialog";
 import {DialogContentComponent} from "./dialog-content/dialog-content.component";
 import {toolbox} from "./blockly";
-import {BehaviorSubject, Observable} from "rxjs";
+import {BehaviorSubject, Observable, filter, map} from "rxjs";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {FormControl, Validators} from "@angular/forms";
-import {ActivatedRoute, ActivatedRouteSnapshot, Router} from "@angular/router";
+import {
+    ActivatedRoute,
+    ActivatedRouteSnapshot,
+    NavigationStart,
+    Router,
+} from "@angular/router";
 import {Program} from "../shared/types/program";
 import {SidebarElement} from "../shared/interfaces/sidebar-element.interface";
 import {ProgramService} from "../shared/services/program.service";
@@ -39,7 +44,7 @@ export class ProgramComponent implements OnInit, OnDestroy, AfterViewInit {
 
     route!: ActivatedRoute;
 
-    currentProgram!: Program;
+    currentProgram?: Program;
     programContentCache: any = {};
 
     constructor(
@@ -76,6 +81,39 @@ export class ProgramComponent implements OnInit, OnDestroy, AfterViewInit {
 
     toolbox: string = toolbox;
 
+    setCurrentProgram(programNumber: string | undefined) {
+        if (!programNumber) {
+            this.currentProgram = undefined;
+        } else {
+            if (this.currentProgram) {
+                this.programContentCache[this.currentProgram.programNumber] =
+                    this.workspaceContent;
+            }
+            try {
+                this.currentProgram = this.programService
+                    .getProgramFromCache(programNumber)
+                    .clone();
+            } catch (err) {
+                this.currentProgram = undefined;
+                this.workspaceContent = "{}";
+                throw err;
+            }
+        }
+        if (this.currentProgram) {
+            this.workspaceContent =
+                this.programContentCache[this.currentProgram.programNumber] ??
+                this.currentProgram.program;
+        } else {
+            this.workspaceContent = "{}";
+        }
+    }
+
+    navigateTo(programNumber: string | undefined) {
+        this.router.navigate(
+            programNumber ? ["program", programNumber] : ["program"],
+        );
+    }
+
     ngOnInit(): void {
         this.subject = this.programService.programsSubject;
         this.nameFormControl.setValidators([
@@ -100,19 +138,15 @@ export class ProgramComponent implements OnInit, OnDestroy, AfterViewInit {
                 .unsubscribe(),
         );
 
-        this.route.params.subscribe((param) => {
-            if (this.currentProgram) {
-                this.programContentCache[this.currentProgram.programNumber] =
-                    this.workspaceContent;
-            }
-            const programNumber: string = param["uuid"];
-            this.currentProgram = this.programService
-                .getProgram(programNumber)
-                .clone();
-            console.info("current pro: " + JSON.stringify(this.currentProgram));
-            this.workspaceContent =
-                this.programContentCache[this.currentProgram.programNumber] ??
-                this.currentProgram.program;
+        this.programService.getAllPrograms().subscribe((_) => {
+            this.router.events.subscribe((event) => {
+                if (event instanceof NavigationStart) {
+                    const urlFragments = event.url.split("/");
+                    if (urlFragments[1] !== "program") return;
+                    this.setCurrentProgram(urlFragments[2]);
+                }
+            });
+            this.setCurrentProgram(this.router.url.split("/")[2]);
         });
     }
 
@@ -164,16 +198,17 @@ export class ProgramComponent implements OnInit, OnDestroy, AfterViewInit {
 
     addProgram() {
         if (this.nameFormControl.valid) {
-            this.programService.createProgram(
-                new Program("", this.nameFormControl.value, "{}"),
-            );
+            this.programService
+                .createProgram(
+                    new Program("", this.nameFormControl.value, "{}"),
+                )
+                .subscribe((program) => this.navigateTo(program.programNumber));
         }
     }
 
     editProgram() {
-        if (this.nameFormControl.valid) {
+        if (this.nameFormControl.valid && this.currentProgram) {
             this.currentProgram.name = this.nameFormControl.value;
-            this.currentProgram.program = this.workspaceContent;
             this.programService.updateProgramByProgramNumber(
                 this.currentProgram,
             );
@@ -182,10 +217,13 @@ export class ProgramComponent implements OnInit, OnDestroy, AfterViewInit {
 
     deleteProgram = () => {
         if (this.currentProgram) {
-            this.programService.deleteProgramByProgramNumber(
-                this.currentProgram.programNumber,
-            );
-            // TODO: routing
+            this.programService
+                .deleteProgramByProgramNumber(this.currentProgram.programNumber)
+                .subscribe((_) =>
+                    this.navigateTo(
+                        this.programService.programs[0]?.programNumber,
+                    ),
+                );
         }
     };
 

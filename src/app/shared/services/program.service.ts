@@ -1,8 +1,9 @@
 import {Injectable} from "@angular/core";
 import {ApiService} from "./api.service";
 import {Program} from "../types/program";
-import {BehaviorSubject} from "rxjs";
+import {BehaviorSubject, Observable, catchError, map, throwError} from "rxjs";
 import {UrlConstants} from "./url.constants";
+import {NameType} from "blockly/core/names";
 
 @Injectable({
     providedIn: "root",
@@ -45,79 +46,90 @@ export class ProgramService {
         this.programsSubject.next(this.programs.slice());
     }
 
-    getAllPrograms() {
-        this.apiService.get(UrlConstants.PROGRAM).subscribe({
-            next: (response) => {
-                const programDTOs: Program[] = response["programs"];
-                this.setPrograms(
-                    programDTOs.map((dto) => Program.fromDTO(dto)),
-                );
-            },
-            error: console.log,
-        });
+    private finalizeObs<Type>(
+        obs: Observable<any>,
+        mapper: (response: any) => Type,
+    ): Observable<Type> {
+        return obs.pipe(map(mapper)).pipe(
+            catchError((err) => {
+                console.log(err);
+                return throwError(() => err);
+            }),
+        );
     }
 
-    getProgram(programNumber: string) {
+    getProgramFromCache(programNumber: string): Program {
         const program = this.programs.find(
             (program) => program.programNumber === programNumber,
         );
-        if (program) return program;
-        else
+        if (program) {
+            return program;
+        } else {
             throw new Error(
-                `no program with program-number '${programNumber}' in local cache.`,
+                `no program with program-number '${programNumber}' in local cache.
+                cache contains the following numbers: ${this.programs.map(
+                    (p) => p.programNumber,
+                )}`,
             );
+        }
     }
 
-    getProgramByProgramNumber(programNumber: string) {
-        this.apiService
-            .get(UrlConstants.PROGRAM + `/${programNumber}`)
-            .subscribe({
-                next: (response) => {
-                    this.programByProgramNumberResponse =
-                        Program.fromDTO(response);
-                },
-                error: console.log,
-            });
+    getAllPrograms(): Observable<Program[]> {
+        const result = this.finalizeObs(
+            this.apiService.get(UrlConstants.PROGRAM),
+            (response) =>
+                (response["programs"] as Program[]).map((dto) =>
+                    Program.fromDTO(dto),
+                ),
+        );
+        result.subscribe((programs) => this.setPrograms(programs));
+        return result;
     }
 
-    createProgram(program: Program) {
-        this.apiService
-            .post(UrlConstants.PROGRAM, {
+    getProgramByProgramNumber(programNumber: string): Observable<Program> {
+        const result = this.finalizeObs(
+            this.apiService.get(UrlConstants.PROGRAM + `/${programNumber}`),
+            (response) => Program.fromDTO(response),
+        );
+        result.subscribe(
+            (program) => (this.programByProgramNumberResponse = program),
+        );
+        return result;
+    }
+
+    createProgram(program: Program): Observable<Program> {
+        const result = this.finalizeObs(
+            this.apiService.post(UrlConstants.PROGRAM, {
                 name: program.name,
                 program: program.program,
-            })
-            .subscribe({
-                next: (response) => {
-                    this.addProgram(Program.fromDTO(response));
-                },
-                error: console.log,
-            });
+            }),
+            (response) => Program.fromDTO(response),
+        );
+        result.subscribe((program) => this.addProgram(program));
+        return result;
     }
 
-    updateProgramByProgramNumber(program: Program) {
-        this.apiService
-            .put(UrlConstants.PROGRAM + `/${program.programNumber}`, {
-                name: program.name,
-                program: program.program,
-            })
-            .subscribe({
-                next: (response) => {
-                    const program = Program.fromDTO(response);
-                    this.programByProgramNumberResponse = program;
-                    this.updateProgram(program);
+    updateProgramByProgramNumber(program: Program): Observable<Program> {
+        const result = this.finalizeObs(
+            this.apiService.put(
+                UrlConstants.PROGRAM + `/${program.programNumber}`,
+                {
+                    name: program.name,
+                    program: program.program,
                 },
-                error: console.log,
-            });
+            ),
+            (response) => Program.fromDTO(response),
+        );
+        result.subscribe((program) => this.updateProgram(program));
+        return result;
     }
 
-    deleteProgramByProgramNumber(programNumber: string) {
-        this.apiService
-            .delete(UrlConstants.PROGRAM + `/${programNumber}`)
-            .subscribe({
-                next: () => {
-                    this.deleteProgram(programNumber);
-                },
-                error: console.log,
-            });
+    deleteProgramByProgramNumber(programNumber: string): Observable<void> {
+        const result = this.finalizeObs(
+            this.apiService.delete(UrlConstants.PROGRAM + `/${programNumber}`),
+            (_) => {},
+        );
+        result.subscribe((_) => this.deleteProgram(programNumber));
+        return result;
     }
 }
