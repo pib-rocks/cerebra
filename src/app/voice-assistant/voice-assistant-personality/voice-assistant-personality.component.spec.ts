@@ -2,46 +2,61 @@ import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {VoiceAssistantPersonalityComponent} from "./voice-assistant-personality.component";
 import {VoiceAssistant} from "../../shared/types/voice-assistant";
 import {VoiceAssistantService} from "../../shared/services/voice-assistant.service";
-import {NgbModal, NgbModalRef} from "@ng-bootstrap/ng-bootstrap";
-import {BehaviorSubject} from "rxjs";
+import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
+import {ActivatedRoute, Router} from "@angular/router";
+import {HttpClientTestingModule} from "@angular/common/http/testing";
+import {ReactiveFormsModule} from "@angular/forms";
+import {RouterTestingModule} from "@angular/router/testing";
+
+export class MockNgbModalRef {
+    componentInstance = {
+        prompt: undefined,
+        title: undefined,
+    };
+    result: Promise<any> = new Promise((resolve) => resolve(true));
+}
 
 describe("VoiceAssistantPersonalityComponent", () => {
     let component: VoiceAssistantPersonalityComponent;
     let fixture: ComponentFixture<VoiceAssistantPersonalityComponent>;
-
     let voiceAssistantService: VoiceAssistantService;
     let modalService: NgbModal;
-
+    const mockModalRef: MockNgbModalRef = new MockNgbModalRef();
     beforeEach(async () => {
-        const voiceAssistantServiceSpy: VoiceAssistantService =
-            jasmine.createSpyObj(
-                "VoiceAssistantService",
-                [
-                    "createPersonality",
-                    "updatePersonalityById",
-                    "deletePersonalityById",
-                ],
-                {
-                    personalitiesSubject: new BehaviorSubject<VoiceAssistant[]>(
-                        [],
-                    ),
-                    lastSelectedIdSubject: new BehaviorSubject<string>(""),
-                },
-            );
-
         await TestBed.configureTestingModule({
             providers: [
                 {
-                    provide: VoiceAssistantService,
-                    useValue: voiceAssistantServiceSpy,
+                    provide: ActivatedRoute,
+                    useValue: {},
                 },
+                {
+                    provide: Router,
+                    useValue: {
+                        url: "voice-assistant/personality/1234",
+                    },
+                },
+            ],
+            imports: [
+                HttpClientTestingModule,
+                ReactiveFormsModule,
+                RouterTestingModule,
             ],
         }).compileComponents();
 
         fixture = TestBed.createComponent(VoiceAssistantPersonalityComponent);
+        TestBed.inject(ActivatedRoute);
         component = fixture.componentInstance;
         modalService = TestBed.inject(NgbModal);
         voiceAssistantService = TestBed.inject(VoiceAssistantService);
+        voiceAssistantService.personalities = [
+            new VoiceAssistant(
+                "1234",
+                "Testuser",
+                "Male",
+                0.8,
+                "TestDescription",
+            ),
+        ];
         fixture.detectChanges();
     });
 
@@ -49,199 +64,81 @@ describe("VoiceAssistantPersonalityComponent", () => {
         expect(component).toBeTruthy();
     });
 
-    it("should show a modal when 'ADD' button is clicked", () => {
-        const openCalled = spyOn(modalService, "open").and.returnValue({
-            result: Promise.resolve(),
-        } as NgbModalRef);
-        component.executeSidebarHeaderButtonFunctionality("ADD");
-        expect(openCalled).toHaveBeenCalled();
+    it("should set a localStorage value after init", () => {
+        component.ngOnInit();
+        expect(localStorage.getItem("voice-assistant-tab")).toBe("personality");
     });
 
-    it("should show a modal when 'EDIT' button is clicked", () => {
-        const openCalled = spyOn(modalService, "open").and.returnValue({
-            result: Promise.resolve(),
-        } as NgbModalRef);
-        component.executeSidebarHeaderButtonFunctionality("EDIT");
-        expect(openCalled).toHaveBeenCalled();
+    it("should validate the modal form when calling formControlsValid", () => {
+        component.nameFormControl.setValue("test");
+        component.genderFormControl.setValue("Male");
+        component.pauseThresholdFormControl.setValue(0.5);
+        let checkValid = component.formControlsValid();
+        expect(checkValid).toBe(true);
+        component.nameFormControl.setValue("t");
+        checkValid = component.formControlsValid();
+        expect(checkValid).toBe(false);
+        component.nameFormControl.setValue("test");
+        component.genderFormControl.setValue(null);
+        checkValid = component.formControlsValid();
+        expect(checkValid).toBe(false);
+        component.genderFormControl.setValue("Male");
+        component.pauseThresholdFormControl.setValue(-3);
+        checkValid = component.formControlsValid();
+        expect(checkValid).toBe(false);
+        component.pauseThresholdFormControl.setValue(0.8);
+        checkValid = component.formControlsValid();
+        expect(checkValid).toBe(true);
     });
 
-    it("should call the createPersonality method in voice assistant service when 'ADD' modal is closed", () => {
-        const personality: VoiceAssistant = {
-            personalityId: "",
-            name: "Test",
-            gender: "male",
-            pauseThreshold: 0.8,
-            description: "",
-        };
-        spyOn(modalService, "open").and.returnValue({
-            result: {
-                then: (resolve) => resolve?.(personality),
-            } as Promise<any>,
-        } as NgbModalRef);
-
-        spyOn<any>(component, "allInputsValid").and.returnValue(true);
-
-        component.executeSidebarHeaderButtonFunctionality("ADD");
-        expect(voiceAssistantService.createPersonality).toHaveBeenCalledWith(
-            personality,
-        );
-    });
-
-    it("should call the updatePersonality method in voice assistant service when 'EDIT' modal is closed", async () => {
-        const personality: VoiceAssistant = {
-            personalityId: "ID-1",
-            name: "Test",
-            gender: "male",
-            pauseThreshold: 0.8,
-            description: "",
-        };
-        spyOn(modalService, "open").and.returnValue({
-            result: {
-                then: (resolve) => resolve?.(personality),
-            } as Promise<any>,
-        } as NgbModalRef);
-
-        spyOn<any>(component, "allInputsValid").and.returnValue(true);
-
-        component.executeSidebarHeaderButtonFunctionality("EDIT");
-        expect(
-            voiceAssistantService.updatePersonalityById,
-        ).toHaveBeenCalledWith(personality);
-    });
-
-    it("should load an empty modal when add button is clicked", () => {
-        spyOn<any>(component, "showModal").and.returnValue({
-            result: {
-                then: (resolve, reject) => {
-                    return;
-                },
-            } as Promise<any>,
-        } as NgbModalRef);
-        const prepareAdd = spyOn<any>(
+    it("should adjust the displayed thresholdString when calling adjustThreshold", () => {
+        const spyOnAdjustThreshold = spyOn(
             component,
-            "prepareAddFormControl",
+            "adjustThreshold",
         ).and.callThrough();
-        component.executeSidebarHeaderButtonFunctionality("ADD");
-        expect(prepareAdd).toHaveBeenCalled();
-        expect(component.nameFormControl.value).toEqual("");
-        expect(component.genderFormControl.value).toEqual("");
-        expect(component.descriptionFormControl.value).toEqual(null);
-        expect(component.pauseThresholdFormControl.value).toEqual(0);
-        expect(component.thresholdString).toEqual("");
+        component.pauseThresholdFormControl.setValue(0.5);
+        component.adjustThreshold("0.1");
+        expect(spyOnAdjustThreshold).toHaveBeenCalled();
+        expect(component.thresholdString).toBe("0.6s");
     });
 
-    it("should not load an empty modal when edit button is clicked", () => {
-        const personality: VoiceAssistant = {
-            personalityId: "ID-1",
-            name: "Test",
-            gender: "male",
-            pauseThreshold: 0.8,
-            description: null,
-        };
-        component.activePersonality = personality;
-        spyOn<any>(component, "showModal").and.returnValue({
-            result: {
-                then: (resolve, reject) => {
-                    return;
-                },
-            } as Promise<any>,
-        } as NgbModalRef);
-        const prepareEdit = spyOn<any>(
+    it("should show a modal when calling showModal", () => {
+        const spyOnShowModal = spyOn(modalService, "open").and.returnValue(
+            mockModalRef as any,
+        );
+        component.showModal();
+        expect(spyOnShowModal).toHaveBeenCalled();
+    });
+
+    it("should set the formcontrols to defined values and open a modal when calling openAddModal", () => {
+        const spyOnOpenAddModal = spyOn(
             component,
-            "prepareEditFormControl",
+            "openAddModal",
         ).and.callThrough();
-        component.executeSidebarHeaderButtonFunctionality("EDIT");
-        expect(prepareEdit).toHaveBeenCalled();
-        expect(component.nameFormControl.value).toEqual(personality.name);
-        expect(component.genderFormControl.value).toEqual(personality.gender);
-        expect(component.descriptionFormControl.value).toEqual(
-            personality.description,
+        const spyOnShowModal = spyOn(modalService, "open").and.returnValue(
+            mockModalRef as any,
         );
-        expect(component.pauseThresholdFormControl.value).toEqual(
-            personality.pauseThreshold,
-        );
+        component.openAddModal();
+        expect(component.nameFormControl.value).toBe("");
+        expect(component.genderFormControl.value).toBe("Female");
+        expect(component.pauseThresholdFormControl.value).toBe(0.8);
+        expect(spyOnOpenAddModal).toHaveBeenCalled();
+        expect(spyOnShowModal).toHaveBeenCalled();
     });
 
-    it("should call the deletePersonality method in voice assistant service when 'DELETE' modal is closed", () => {
-        const activePersonality: VoiceAssistant = {
-            personalityId: "ID-1",
-            name: "Test",
-            gender: "male",
-            pauseThreshold: 0.8,
-            description: "",
-        };
-        component.activePersonality = activePersonality;
-
-        component.executeSidebarHeaderButtonFunctionality("DELETE");
-        expect(
-            voiceAssistantService.deletePersonalityById,
-        ).toHaveBeenCalledWith(activePersonality.personalityId);
+    it("should set the formcontrols to the values of the personality to be edited and open a modal when calling openEditModal", () => {
+        const spyOnOpenEditModal = spyOn(
+            component,
+            "openEditModal",
+        ).and.callThrough();
+        const spyOnShowModal = spyOn(modalService, "open").and.returnValue(
+            mockModalRef as any,
+        );
+        component.openEditModal();
+        expect(component.nameFormControl.value).toBe("Testuser");
+        expect(component.genderFormControl.value).toBe("Male");
+        expect(component.pauseThresholdFormControl.value).toBe(0.8);
+        expect(spyOnOpenEditModal).toHaveBeenCalled();
+        expect(spyOnShowModal).toHaveBeenCalled();
     });
-
-    it(
-        "should activate personality in component correctly and set the value" +
-            "of the corresponding lastActivePersonality BehaviorSubject with the id of the active personality",
-        () => {
-            voiceAssistantService.personalities = [
-                {
-                    personalityId: "ID-1",
-                    name: "Eva",
-                    gender: "Female",
-                    pauseThreshold: 0.8,
-                    description: "nice person",
-                },
-                {
-                    personalityId: "ID-2",
-                    name: "Thomas",
-                    gender: "Male",
-                    pauseThreshold: 0.8,
-                    description: "nice person",
-                },
-            ];
-
-            const spyLastSelectedId = spyOn(
-                voiceAssistantService.lastSelectedIdSubject,
-                "next",
-            );
-            const spySetPauseThreshold = spyOn<any>(
-                component,
-                "setPauseThresholdString",
-            ).and.callThrough();
-
-            component.personalities = [
-                {
-                    id: "ID-1",
-                    name: "Eva",
-                    selected: true,
-                    hovered: false,
-                },
-                {
-                    id: "ID-2",
-                    name: "Thomas",
-                    selected: false,
-                    hovered: false,
-                },
-            ];
-            component.activePersonality = {
-                personalityId: "ID-1",
-                name: "Eva",
-                gender: "Female",
-                pauseThreshold: 0.8,
-            } as VoiceAssistant;
-
-            component.activateNewPersonality("ID-2");
-            expect(component.activePersonality?.personalityId).toEqual("ID-2");
-            expect(component.personalities[0].selected).toBeFalse();
-            expect(component.personalities[1].selected).toBeTrue();
-            expect(component.activePersonality).toEqual(
-                jasmine.objectContaining({
-                    name: "Thomas",
-                    personalityId: "ID-2",
-                }),
-            );
-            expect(spyLastSelectedId).toHaveBeenCalledOnceWith("ID-2");
-            expect(spySetPauseThreshold).toHaveBeenCalled();
-            expect(component.thresholdString).toEqual("0.8s");
-        },
-    );
 });

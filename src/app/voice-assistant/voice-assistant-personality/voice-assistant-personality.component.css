@@ -37,7 +37,7 @@ label {
 
 #radio-male:checked + #label-radio-male::before,
 #radio-female:checked + #label-radio-female::before {
-    background-color: #e10072;
+    background-color: var(--cerebra-pink);
     border-color: #fff;
     padding: 5px;
 }

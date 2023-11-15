@@ -11,6 +11,7 @@ import {sideGuard} from "./security/side-guard";
 import {VoiceAssistantComponent} from "./voice-assistant/voice-assistant.component";
 import {PersonalityDescriptionComponent} from "./voice-assistant/voice-assistant-personality/personality-description/personality-description.component";
 import {voiceAssistantResolver} from "./voice-assistant/voice-assistant-resolver/voice-assistant.resolver";
+import {ChatWindowComponent} from "./voice-assistant/voice-assistant-chat/chat-window/chat-window.component";
 
 const routes: Routes = [
     {path: "", redirectTo: "head", pathMatch: "full"},
@@ -51,7 +52,16 @@ const routes: Routes = [
                     },
                 ],
             },
-            {path: "chat", component: VoiceAssistantChatComponent},
+            {
+                path: "chat",
+                component: VoiceAssistantChatComponent,
+                children: [
+                    {
+                        path: ":uuid",
+                        component: ChatWindowComponent,
+                    },
+                ],
+            },
         ],
     },
     {path: "**", redirectTo: "head"},
