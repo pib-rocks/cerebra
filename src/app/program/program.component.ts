@@ -32,8 +32,16 @@ export class ProgramComponent implements OnInit, OnDestroy, AfterViewInit {
     @ViewChild("blocklyDiv") blocklyDiv!: ElementRef<HTMLDivElement>;
 
     subject: BehaviorSubject<Program[]> = new BehaviorSubject<Program[]>([
-        new Program("102a598b-b205-40a2-959c-6f449eed9d89", "asd", "asd"),
-        new Program("182a598b-b205-40a2-959c-6f449eed9d89", "test", "test"),
+        new Program(
+            "102a598b-b205-40a2-959c-6f449eed9d89",
+            "Hand tracking",
+            "Hand tracking",
+        ),
+        new Program(
+            "182a598b-b205-40a2-959c-6f449eed9d89",
+            "Face recognition",
+            "Hand recognition",
+        ),
     ]);
     programIcon: string = "";
     nameFormControl: FormControl = new FormControl("");
