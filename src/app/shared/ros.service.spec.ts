@@ -86,12 +86,12 @@ describe("RosService", () => {
             "publish",
         );
         const motorSettingsMessage: MotorSettingsMessage = {
-            name: "test",
-            turnedOn: true,
-            pulseWidthMin: 100,
-            pulseWidthMax: 100,
-            rotationRangeMin: 100,
-            rotationRangeMax: 100,
+            motor_name: "test",
+            turned_on: true,
+            pulse_width_min: 100,
+            pulse_width_max: 100,
+            rotation_range_min: 100,
+            rotation_range_max: 100,
             velocity: 100,
             acceleration: 100,
             deceleration: 100,
