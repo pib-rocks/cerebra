@@ -9,12 +9,13 @@ import {RosService} from "../shared/ros.service";
 import {NavBarComponent} from "../nav-bar/nav-bar.component";
 import {CircularSliderComponent} from "../slider/circular-slider/circular-slider.component";
 import {SliderComponent} from "../slider/slider.component";
-import {MotorService} from "../shared/motor.service";
+import {MotorService} from "../shared/services/motor.service";
 import {ActivatedRoute} from "@angular/router";
 import {BehaviorSubject, Observable} from "rxjs";
 import {JointTrajectoryMessage} from "../shared/rosMessageTypes/jointTrajectoryMessage";
 import {MotorSettingsMessage} from "../shared/rosMessageTypes/motorSettingsMessage";
 import {Group} from "../shared/types/motor.enum";
+import {HttpClientTestingModule} from "@angular/common/http/testing";
 
 describe("HandComponent", () => {
     let component: HandComponent;
@@ -44,7 +45,11 @@ describe("HandComponent", () => {
                 CircularSliderComponent,
                 SliderComponent,
             ],
-            imports: [RouterTestingModule, ReactiveFormsModule],
+            imports: [
+                RouterTestingModule,
+                ReactiveFormsModule,
+                HttpClientTestingModule,
+            ],
             providers: [
                 RosService,
                 {
@@ -231,7 +236,7 @@ describe("HandComponent", () => {
             expectedMotorObj,
         );
 
-        expect(rosSendMotorSettingsSpy).toHaveBeenCalled;
+        expect(rosSendMotorSettingsSpy).toHaveBeenCalled();
 
         const motorControls: MotorControlComponent[] = fixture.debugElement
             .queryAll(By.css("app-motor-control"))

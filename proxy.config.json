@@ -1,7 +1,9 @@
 {
   "/api/*": {
-    "target": "http://localhost:8080",
+    "target": "http://192.168.220.160:5000",
     "secure": false,
+    "changeOrigin": true,
+    "pathRewrite": {"/api" : ""},
     "logLevel": "debug"
   }
 }

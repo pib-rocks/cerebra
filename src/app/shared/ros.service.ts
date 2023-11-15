@@ -2,7 +2,7 @@ import {Injectable, isDevMode} from "@angular/core";
 import * as ROSLIB from "roslib";
 import {BehaviorSubject, ReplaySubject, Observable, Subject} from "rxjs";
 import {MotorSettingsMessage} from "./rosMessageTypes/motorSettingsMessage";
-import {VoiceAssistant} from "./voice-assistant";
+import {VoiceAssistantMsg} from "./voice-assistant";
 import {DiagnosticStatus} from "./rosMessageTypes/DiagnosticStatus.message";
 import {JointTrajectoryMessage} from "../shared/rosMessageTypes/jointTrajectoryMessage";
 import {rosDataTypes} from "./rosMessageTypes/rosDataTypePaths.enum";
@@ -22,7 +22,7 @@ export class RosService {
     cameraReceiver$: Subject<string> = new Subject<string>();
     cameraPreviewSizeReceiver$: BehaviorSubject<number[]> = new BehaviorSubject<
         number[]
-    >([640, 480]);
+    >([0, 0]);
     cameraQualityFactorReceiver$: BehaviorSubject<number> =
         new BehaviorSubject<number>(80);
     voiceAssistantReceiver$: Subject<any> = new Subject<any>();
@@ -59,7 +59,7 @@ export class RosService {
     setUpRos() {
         let rosUrl: string;
         if (isDevMode()) {
-            rosUrl = "192.168.1.112";
+            rosUrl = "192.168.220.160";
         } else {
             rosUrl = window.location.hostname;
         }
@@ -274,7 +274,7 @@ export class RosService {
         console.log(consoleString);
     }
 
-    sendVoiceActivationMessage(msg: VoiceAssistant) {
+    sendVoiceActivationMessage(msg: VoiceAssistantMsg) {
         const message = new ROSLIB.Message({data: JSON.stringify(msg)});
         this.voiceAssistantTopic.publish(message);
     }

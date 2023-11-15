@@ -2,7 +2,7 @@ import {TestBed} from "@angular/core/testing";
 import * as ROSLIB from "roslib";
 import {RosService} from "./ros.service";
 import {createEmptyJointTrajectoryMessage} from "./rosMessageTypes/jointTrajectoryMessage";
-import {VoiceAssistant} from "./voice-assistant";
+import {VoiceAssistantMsg} from "./voice-assistant";
 import {MotorSettingsMessage} from "./rosMessageTypes/motorSettingsMessage";
 import {MotorSettingsSrvResponse} from "./rosMessageTypes/motorSettingsSrvResponse";
 import {Observable} from "rxjs";
@@ -23,12 +23,12 @@ describe("RosService", () => {
         spyOnSetupRos = spyOn(rosService, "setUpRos").and.callThrough();
 
         motorSettingsMessage = {
-            motor_name: "test",
-            turned_on: true,
-            pulse_width_min: 100,
-            pulse_width_max: 100,
-            rotation_range_min: 100,
-            rotation_range_max: 100,
+            name: "test",
+            turnedOn: true,
+            pulseWidthMin: 100,
+            pulseWidthMax: 100,
+            rotationRangeMin: 100,
+            rotationRangeMax: 100,
             velocity: 100,
             acceleration: 100,
             deceleration: 100,
@@ -63,7 +63,7 @@ describe("RosService", () => {
             "sendVoiceActivationMessage",
         ).and.callThrough();
         const spyPublish = spyOn(rosService["voiceAssistantTopic"], "publish");
-        const message: VoiceAssistant = {
+        const message: VoiceAssistantMsg = {
             activationFlag: true,
             personality: "1",
             threshold: 1.3,
