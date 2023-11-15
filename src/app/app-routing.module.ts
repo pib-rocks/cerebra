@@ -16,7 +16,11 @@ const routes: Routes = [
         component: HandComponent,
         canActivate: [sideGuard],
     },
-    {path: "arm/:side", component: ArmComponent, canActivate: [sideGuard]},
+    {
+        path: "arm/:side",
+        component: ArmComponent,
+        canActivate: [sideGuard],
+    },
     {path: "camera", component: CameraComponent},
     {path: "head", component: HeadComponent},
     {path: "program", component: ProgramComponent},

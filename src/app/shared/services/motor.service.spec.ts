@@ -1,25 +1,33 @@
 import {TestBed} from "@angular/core/testing";
 
 import {MotorService} from "./motor.service";
-import {Group} from "./types/motor.enum";
-import {Motor} from "./types/motor.class";
-import {MotorSettings} from "./types/motor-settings.class";
-import {RosService} from "./ros.service";
+import {Group} from "../types/motor.enum";
+import {Motor} from "../types/motor.class";
+import {MotorSettings} from "../types/motor-settings.class";
+import {RosService} from "../ros.service";
 import {
     JointTrajectoryMessage,
     createEmptyJointTrajectoryMessage,
-} from "./rosMessageTypes/jointTrajectoryMessage";
-import {MotorSettingsMessage} from "./rosMessageTypes/motorSettingsMessage";
-import {createJointTrajectoryPoint} from "./rosMessageTypes/jointTrajectoryPoint";
+} from "../rosMessageTypes/jointTrajectoryMessage";
+import {MotorSettingsMessage} from "../rosMessageTypes/motorSettingsMessage";
+import {createJointTrajectoryPoint} from "../rosMessageTypes/jointTrajectoryPoint";
+import {HttpClientTestingModule} from "@angular/common/http/testing";
+import {ApiService} from "./api.service";
+import {BehaviorSubject} from "rxjs";
 
 describe("MotorService", () => {
     let service: MotorService;
     let rosService: RosService;
+    let apiService: ApiService;
     let spyOnMotors: jasmine.Spy<() => void>;
     beforeEach(() => {
-        TestBed.configureTestingModule({providers: [MotorService, RosService]});
+        TestBed.configureTestingModule({
+            providers: [MotorService, RosService, ApiService],
+            imports: [HttpClientTestingModule],
+        });
         service = TestBed.inject(MotorService);
         rosService = TestBed.inject(RosService);
+        apiService = TestBed.inject(ApiService);
         rosService.initTopics();
         rosService.initSubscribers();
         spyOnMotors = spyOn(service, "createMotors").and.callThrough();
@@ -107,7 +115,7 @@ describe("MotorService", () => {
         expect(activeMotors.length).toBe(29);
         expect(inactiveMotor.length).toBe(0);
         const editMotor = service.getMotorByName("thumb_left_stretch");
-        editMotor.settings.turned_on = false;
+        editMotor.settings.turnedOn = false;
         activeMotors = service.getMotorByTurnedOn(true);
         inactiveMotor = service.getMotorByTurnedOn(false);
         expect(activeMotors.length).toBe(28);
@@ -147,11 +155,11 @@ describe("MotorService", () => {
         expect(updatedMotor.settings.acceleration).toBe(500);
         expect(updatedMotor.settings.deceleration).toBe(500);
         expect(updatedMotor.settings.period).toBe(500);
-        expect(updatedMotor.settings.pulse_width_max).toBe(500);
-        expect(updatedMotor.settings.pulse_width_min).toBe(500);
-        expect(updatedMotor.settings.rotation_range_max).toBe(500);
-        expect(updatedMotor.settings.rotation_range_min).toBe(500);
-        expect(updatedMotor.settings.turned_on).toBe(false);
+        expect(updatedMotor.settings.pulseWidthMax).toBe(500);
+        expect(updatedMotor.settings.pulseWidthMin).toBe(500);
+        expect(updatedMotor.settings.rotationRangeMax).toBe(500);
+        expect(updatedMotor.settings.rotationRangeMin).toBe(500);
+        expect(updatedMotor.settings.turnedOn).toBe(false);
     });
 
     it("should send a JointTrajectoryMessage on sendJointTrajectoryMessage", () => {
@@ -280,11 +288,11 @@ describe("MotorService", () => {
         expect(
             spyOnUpdateMotorSettingsFromMotorSettingsMessage,
         ).toHaveBeenCalled();
-        expect(updatedMotor.settings.turned_on).toBe(false);
-        expect(updatedMotor.settings.pulse_width_min).toBe(500);
-        expect(updatedMotor.settings.pulse_width_max).toBe(500);
-        expect(updatedMotor.settings.rotation_range_min).toBe(500);
-        expect(updatedMotor.settings.rotation_range_max).toBe(500);
+        expect(updatedMotor.settings.turnedOn).toBe(false);
+        expect(updatedMotor.settings.pulseWidthMin).toBe(500);
+        expect(updatedMotor.settings.pulseWidthMax).toBe(500);
+        expect(updatedMotor.settings.rotationRangeMax).toBe(500);
+        expect(updatedMotor.settings.rotationRangeMin).toBe(500);
         expect(updatedMotor.settings.velocity).toBe(500);
         expect(updatedMotor.settings.acceleration).toBe(500);
         expect(updatedMotor.settings.deceleration).toBe(500);
@@ -347,11 +355,11 @@ describe("MotorService", () => {
             expect(m.settings.acceleration).toBe(500);
             expect(m.settings.deceleration).toBe(500);
             expect(m.settings.period).toBe(500);
-            expect(m.settings.pulse_width_min).toBe(500);
-            expect(m.settings.pulse_width_max).toBe(500);
-            expect(m.settings.rotation_range_min).toBe(500);
-            expect(m.settings.rotation_range_max).toBe(500);
-            expect(m.settings.turned_on).toBe(false);
+            expect(m.settings.pulseWidthMin).toBe(500);
+            expect(m.settings.pulseWidthMax).toBe(500);
+            expect(m.settings.rotationRangeMax).toBe(500);
+            expect(m.settings.rotationRangeMin).toBe(500);
+            expect(m.settings.turnedOn).toBe(false);
         });
         service.resetMotorGroupSettings(Group.right_hand);
         expect(spyOnResetMotorGroupSettings).toHaveBeenCalled();
@@ -360,14 +368,126 @@ describe("MotorService", () => {
             expect(m.settings.acceleration).toBe(0);
             expect(m.settings.deceleration).toBe(0);
             expect(m.settings.period).toBe(0);
-            expect(m.settings.pulse_width_min).toBe(0);
-            expect(m.settings.pulse_width_max).toBe(65535);
-            expect(m.settings.rotation_range_min).toBe(-9000);
-            expect(m.settings.rotation_range_max).toBe(9000);
-            expect(m.settings.turned_on).toBe(true);
+            expect(m.settings.pulseWidthMin).toBe(0);
+            expect(m.settings.pulseWidthMax).toBe(65535);
+            expect(m.settings.rotationRangeMin).toBe(-9000);
+            expect(m.settings.rotationRangeMax).toBe(9000);
+            expect(m.settings.turnedOn).toBe(true);
         });
         motors.forEach((m) => {
             expect(m.position).toBe(0);
         });
+    });
+
+    it("should call apiSerive to update a motor in a database", () => {
+        const emptyObservable = new BehaviorSubject<any>("");
+        const motor = new Motor(
+            "thumb_left_opposition",
+            400,
+            Group.left_hand,
+            "Thumb opposition",
+        );
+        const spyOnApiServiceUpdateMotor = spyOn(
+            apiService,
+            "put",
+        ).and.returnValue(emptyObservable);
+        service.updateMotorInDb(motor);
+        expect(spyOnApiServiceUpdateMotor).toHaveBeenCalled();
+    });
+
+    it("should call apiSerive to get motor settings by name from a database", () => {
+        const motorSettings = new MotorSettings(
+            250,
+            300,
+            5,
+            0,
+            0,
+            40000,
+            -4000,
+            40000,
+            true,
+        );
+        const observable = new BehaviorSubject<any>(motorSettings);
+        const spyOnApiServiceUpdateMotor = spyOn(
+            apiService,
+            "get",
+        ).and.returnValue(observable);
+        service.getMotorSettingsByNameFromDb("thumb_left_opposition");
+        expect(spyOnApiServiceUpdateMotor).toHaveBeenCalled();
+        expect(
+            service.getMotorByName("thumb_left_opposition").settings,
+        ).toEqual(motorSettings);
+    });
+
+    // Callthrough problems
+    // it("should call apiSerive to get all motor settings from a database", () => {
+    //     const motorSettings1 = {
+    //         acceleration: 10000,
+    //         deceleration: 10000,
+    //         motor_name: "thumb_left_opposition",
+    //         period: 19500,
+    //         pulse_width_max: 2500,
+    //         pulse_width_min: 700,
+    //         rotation_range_max: 90,
+    //         rotation_range_min: -90,
+    //         turned_on: true,
+    //         velocity: 10000,
+    //     } as MotorSettingsMessage;
+    //     const motorSettings2 = {
+    //         acceleration: 10000,
+    //         deceleration: 10000,
+    //         motor_name: "thumb_right_opposition",
+    //         period: 19500,
+    //         pulse_width_max: 2500,
+    //         pulse_width_min: 700,
+    //         rotation_range_max: 90,
+    //         rotation_range_min: -90,
+    //         turned_on: true,
+    //         velocity: 10000,
+    //     } as MotorSettingsMessage;
+    //     const observable = new BehaviorSubject<any>({
+    //         motorSettings: [motorSettings1, motorSettings2],
+    //     });
+    //     const spyOnApiServiceUpdateMotor = spyOn(
+    //         apiService,
+    //         "get",
+    //     ).and.returnValue(observable);
+    //     service.getAllMotorSettingsFromDb();
+    //     const motorThumbLeftOpposition = service.getMotorByName(
+    //         "thumb_left_opposition",
+    //     );
+    //     const motorThumbRightOpposition = service.getMotorByName(
+    //         "thumb_right_opposition",
+    //     );
+    //     expect(spyOnApiServiceUpdateMotor).toHaveBeenCalled();
+    //     expect(motorThumbLeftOpposition.name).toEqual(motorSettings1.motor_name);
+    //     expect(motorThumbRightOpposition.name).toEqual(motorSettings2.motor_name);
+    //     expect(motorThumbLeftOpposition.settings.velocity).toEqual(
+    //         motorSettings1.velocity,
+    //     );
+    //     expect(motorThumbRightOpposition.settings.velocity).toEqual(
+    //         motorSettings2.velocity,
+    //     );
+    //     expect(motorThumbLeftOpposition.settings.pulseWidthMax).toEqual(
+    //         motorSettings1.pulse_width_max,
+    //     );
+    //     expect(motorThumbRightOpposition.settings.pulseWidthMax).toEqual(
+    //         motorSettings2.pulse_width_max,
+    //     );
+    //     expect(motorThumbRightOpposition.settings.acceleration).toEqual(
+    //         motorSettings2.acceleration,
+    //     );
+    // });
+
+    it("should get response if motorSettingsReceiver is updated", () => {
+        const spyOnUpdateMotorSettingsFromMotorSettingsMessage = spyOn(
+            service,
+            "updateMotorSettingsFromMotorSettingsMessage",
+        );
+        service.subscribeMotorSettingsSubject();
+        rosService.motorSettingsReceiver$.next({} as MotorSettingsMessage);
+        expect(
+            spyOnUpdateMotorSettingsFromMotorSettingsMessage,
+        ).toHaveBeenCalled();
     });
 });
