@@ -16,7 +16,6 @@ export class VoiceAssistantPersonalityComponent implements OnInit {
     @ViewChild("modalContent") modalContent: TemplateRef<any> | undefined;
     personalityIcon: string =
         "../../assets/voice-assistant-svgs/personality/personality.svg";
-    validPauseThresholdPattern: RegExp = /^(0\.[1-9]\d*|1\.0*)$/;
     nameFormControl: FormControl = new FormControl("");
     genderFormControl: FormControl = new FormControl("");
     pauseThresholdFormControl: FormControl<number> = new FormControl();
@@ -41,7 +40,6 @@ export class VoiceAssistantPersonalityComponent implements OnInit {
         this.genderFormControl.setValidators([Validators.required]);
         this.pauseThresholdFormControl.setValidators([
             Validators.required,
-            Validators.pattern(this.validPauseThresholdPattern),
             Validators.max(3),
             Validators.min(0.1),
         ]);
