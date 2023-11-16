@@ -1,19 +1,13 @@
-.first-div {
-    position: relative;
-    text-align: right;
+.buttonColor {
+    background-color: #0094df;
+    pointer-events: auto;
 }
 
-.second-div {
-    position: relative;
+.buttonColor:hover {
+    background: #e10072;
+    pointer-events: auto;
 }
 
-#blocklyDiv {
-    position: absolute;
-    box-sizing: border-box;
-    height: 100%;
-    width: 100%;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    padding: 10px;
+.click {
+    pointer-events: none;
 }
