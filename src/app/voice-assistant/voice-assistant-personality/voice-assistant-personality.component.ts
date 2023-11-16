@@ -21,7 +21,7 @@ export class VoiceAssistantPersonalityComponent implements OnInit {
     pauseThresholdFormControl: FormControl<number> = new FormControl();
     thresholdString: string | undefined;
     subject!: Observable<SidebarElement[]>;
-    uuid?: string;
+    uuid: string | undefined;
 
     constructor(
         private modalService: NgbModal,
