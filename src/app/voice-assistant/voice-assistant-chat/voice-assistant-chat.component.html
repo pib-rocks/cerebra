@@ -1,56 +1,105 @@
-<div class="row allContent mt-4">
-    <div class="col-10 pink-corner-frame main ">
-        <div class="row mt-2">
-            <div class="col-10">
-                <label class="personalityName mt-1">Personality Name</label>
-            </div>
-            <div class="col-2">
-                <button
-                    id="exportButton"
-                    class="btn-sm col btn-primary exportButton"
-                    [class.exportButtonHovered]="exportButtonHovered">
-                    Export chat
-                </button>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-12">
-                <div class="chat-container">
-                    <div class="messages">
-                        <div *ngFor="let message of messages">
-                            <p
-                                class="message"
-                                id="user-message">
-                                {{message}}
-                            </p>
-                        </div>
-                    </div>
-                    <div class="chat-input">
-                        <input
-                            type="text"
-                            id="message-input"
-                            placeholder="Send a message"
-                            [(ngModel)]="message"
-                            (keyup.enter)="sendMessage()" />
-                        <button id="chat-send-button">
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                height="24px"
-                                viewBox="0 -960 960 960"
-                                width="24px"
-                                (click)="sendMessage()">
-                                <path [attr.d]="sendButton" />
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
+<div class="row allContent mt-4 ">
+    <div class="main col-10 pink-corner-frame">
+        <router-outlet></router-outlet>
     </div>
-    <!-- <div class="side col-2">
+    <div class="col-2">
         <app-sidebar-right
             [headerElements]="headerElements"
-            [elementIcon]="chatIcon">
+            [subject]="subject"
+            [lStorage]="'chat'"
+            [elementIcon]="personalityIcon">
         </app-sidebar-right>
-    </div> -->
+    </div>
 </div>
+
+<ng-template
+    #modalContent
+    let-modal
+    id="template">
+    <div
+        class="row display-flex modal-header"
+        id="modal-header">
+        <div
+            class="col-10"
+            id="header-title">
+            <span id="header-title-text">TOPIC</span>
+        </div>
+        <div
+            class="col-2 text-right"
+            id="close-button">
+            <button
+                id="modal-close-button"
+                type="button"
+                (click)="modal.dismiss('Cross click')"
+                class="btn">
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="10"
+                    height="16">
+                    <text
+                        font-family="Titillium"
+                        fill="#FFF"
+                        font-weight="bold"
+                        font-size="16"
+                        y="11.062">
+                        X
+                    </text>
+                </svg>
+            </button>
+        </div>
+    </div>
+</ng-template>
+
+<ng-template
+    #modalContent
+    let-modal
+    id="template">
+    <div
+        class="row display-flex modal-header"
+        id="modal-header">
+        <div
+            class="col-10"
+            id="header-title">
+            <span id="header-title-text">TOPIC</span>
+        </div>
+        <div
+            class="col-2 text-right"
+            id="close-button">
+            <button
+                id="modal-close-button"
+                type="button"
+                (click)="modal.dismiss('Cross click')"
+                class="btn">
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="10"
+                    height="16">
+                    <text
+                        font-family="Titillium"
+                        fill="#FFF"
+                        font-weight="bold"
+                        font-size="16"
+                        y="11.062">
+                        X
+                    </text>
+                </svg>
+            </button>
+        </div>
+    </div>
+    <div
+        class="row m-2 mt-4 pr-2"
+        id="row-name">
+        <label
+            for="name-input"
+            class="col-3 mt-2 justify-content-end"
+            id="label-name"
+            >Name</label
+        >
+        <input
+            class="col-9"
+            [formControl]="nameFormControl"
+            type="text"
+            name="name-input"
+            id="name-input" />
+    </div>
+</ng-template>

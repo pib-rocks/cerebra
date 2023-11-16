@@ -32,6 +32,7 @@ import {MultiSliderComponent} from "./multi-slider/multi-slider.component";
 import {BoolToOnOffPipe} from "./shared/pipes/bool-to-on-off-pipe.pipe";
 import {VoiceAssistantComponent} from "./voice-assistant/voice-assistant.component";
 import {PersonalityDescriptionComponent} from "./voice-assistant/voice-assistant-personality/personality-description/personality-description.component";
+import {ChatWindowComponent} from "./voice-assistant/voice-assistant-chat/chat-window/chat-window.component";
 
 @NgModule({
     declarations: [
@@ -55,6 +56,7 @@ import {PersonalityDescriptionComponent} from "./voice-assistant/voice-assistant
         BoolToOnOffPipe,
         VoiceAssistantComponent,
         PersonalityDescriptionComponent,
+        ChatWindowComponent,
     ],
     imports: [
         BrowserModule,

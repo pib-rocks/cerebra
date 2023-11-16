@@ -40,7 +40,7 @@ export class ProgramComponent implements OnInit, OnDestroy, AfterViewInit {
         new Program(
             "182a598b-b205-40a2-959c-6f449eed9d89",
             "Face recognition",
-            "Hand recognition",
+            "Face recognition",
         ),
     ]);
     programIcon: string = "";
