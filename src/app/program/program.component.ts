@@ -146,7 +146,7 @@ export class ProgramComponent implements OnInit, OnDestroy, AfterViewInit {
                     this.setCurrentProgram(urlFragments[2]);
                 }
             });
-            this.setCurrentProgram(this.router.url.split("/")[2]);
+            this.navigateTo(this.programService.programs[0]?.programNumber);
         });
     }
 
@@ -209,9 +209,9 @@ export class ProgramComponent implements OnInit, OnDestroy, AfterViewInit {
     editProgram() {
         if (this.nameFormControl.valid && this.currentProgram) {
             this.currentProgram.name = this.nameFormControl.value;
-            this.programService.updateProgramByProgramNumber(
-                this.currentProgram,
-            );
+            this.programService
+                .updateProgramByProgramNumber(this.currentProgram)
+                .subscribe((program) => this.navigateTo(program.programNumber));
         }
     }
 

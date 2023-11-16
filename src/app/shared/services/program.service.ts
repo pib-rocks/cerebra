@@ -1,7 +1,14 @@
 import {Injectable} from "@angular/core";
 import {ApiService} from "./api.service";
 import {Program} from "../types/program";
-import {BehaviorSubject, Observable, catchError, map, throwError} from "rxjs";
+import {
+    BehaviorSubject,
+    Observable,
+    ReplaySubject,
+    catchError,
+    map,
+    throwError,
+} from "rxjs";
 import {UrlConstants} from "./url.constants";
 import {NameType} from "blockly/core/names";
 
@@ -13,7 +20,6 @@ export class ProgramService {
     programsSubject: BehaviorSubject<Program[]> = new BehaviorSubject<
         Program[]
     >([]);
-    programByProgramNumberResponse: Program | undefined;
 
     constructor(private apiService: ApiService) {
         this.getAllPrograms();
@@ -46,16 +52,19 @@ export class ProgramService {
         this.programsSubject.next(this.programs.slice());
     }
 
-    private finalizeObs<Type>(
+    private createResultObservable<Type>(
         obs: Observable<any>,
         mapper: (response: any) => Type,
     ): Observable<Type> {
-        return obs.pipe(map(mapper)).pipe(
-            catchError((err) => {
+        const result: ReplaySubject<Type> = new ReplaySubject();
+        obs.subscribe({
+            next: (res) => result.next(mapper(res)),
+            error: (err) => {
                 console.log(err);
-                return throwError(() => err);
-            }),
-        );
+                result.error(err);
+            },
+        });
+        return result;
     }
 
     getProgramFromCache(programNumber: string): Program {
@@ -75,42 +84,41 @@ export class ProgramService {
     }
 
     getAllPrograms(): Observable<Program[]> {
-        const result = this.finalizeObs(
+        return this.createResultObservable(
             this.apiService.get(UrlConstants.PROGRAM),
-            (response) =>
-                (response["programs"] as Program[]).map((dto) =>
-                    Program.fromDTO(dto),
-                ),
+            (response) => {
+                const programs = (response["programs"] as Program[]).map(
+                    (dto) => Program.fromDTO(dto),
+                );
+                this.setPrograms(programs);
+                return programs;
+            },
         );
-        result.subscribe((programs) => this.setPrograms(programs));
-        return result;
     }
 
     getProgramByProgramNumber(programNumber: string): Observable<Program> {
-        const result = this.finalizeObs(
+        return this.createResultObservable(
             this.apiService.get(UrlConstants.PROGRAM + `/${programNumber}`),
             (response) => Program.fromDTO(response),
         );
-        result.subscribe(
-            (program) => (this.programByProgramNumberResponse = program),
-        );
-        return result;
     }
 
     createProgram(program: Program): Observable<Program> {
-        const result = this.finalizeObs(
+        return this.createResultObservable(
             this.apiService.post(UrlConstants.PROGRAM, {
                 name: program.name,
                 program: program.program,
             }),
-            (response) => Program.fromDTO(response),
+            (response) => {
+                const program = Program.fromDTO(response);
+                this.addProgram(program);
+                return program;
+            },
         );
-        result.subscribe((program) => this.addProgram(program));
-        return result;
     }
 
     updateProgramByProgramNumber(program: Program): Observable<Program> {
-        const result = this.finalizeObs(
+        return this.createResultObservable(
             this.apiService.put(
                 UrlConstants.PROGRAM + `/${program.programNumber}`,
                 {
@@ -118,18 +126,18 @@ export class ProgramService {
                     program: program.program,
                 },
             ),
-            (response) => Program.fromDTO(response),
+            (response) => {
+                const program = Program.fromDTO(response);
+                this.updateProgram(program);
+                return program;
+            },
         );
-        result.subscribe((program) => this.updateProgram(program));
-        return result;
     }
 
     deleteProgramByProgramNumber(programNumber: string): Observable<void> {
-        const result = this.finalizeObs(
+        return this.createResultObservable(
             this.apiService.delete(UrlConstants.PROGRAM + `/${programNumber}`),
-            (_) => {},
+            (_) => this.deleteProgram(programNumber),
         );
-        result.subscribe((_) => this.deleteProgram(programNumber));
-        return result;
     }
 }

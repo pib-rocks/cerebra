@@ -27,16 +27,16 @@ export class SideBarRightComponent implements OnInit {
     ngOnInit() {
         this.subject.subscribe((serviceElements: SidebarElement[]) => {
             this.sidebarElements = serviceElements;
-            // if (localStorage.getItem(this.lStorage)) {
-            //     this.router.navigate([localStorage.getItem(this.lStorage)], {
-            //         relativeTo: this.route,
-            //     });
-            // } else if (this.sidebarElements.length > 0) {
-            //     console.log(this.sidebarElements[0].getUUID());
-            //     this.router.navigate([this.sidebarElements[0].getUUID()], {
-            //         relativeTo: this.route,
-            //     });
-            // }
+            if (localStorage.getItem(this.lStorage)) {
+                this.router.navigate([localStorage.getItem(this.lStorage)], {
+                    relativeTo: this.route,
+                });
+            } else if (this.sidebarElements.length > 0) {
+                console.log(this.sidebarElements[0].getUUID());
+                this.router.navigate([this.sidebarElements[0].getUUID()], {
+                    relativeTo: this.route,
+                });
+            }
         });
     }
 }
