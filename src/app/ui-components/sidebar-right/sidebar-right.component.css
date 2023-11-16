@@ -30,6 +30,15 @@
     filter: brightness(0) invert(1);
 }
 
+.header-button:focus-visible {
+    position: relative;
+    z-index: 1030;
+}
+.header-button:focus-visible img,
+.header-button:focus-visible p {
+    filter: brightness(0) invert(1);
+}
+
 .header-button img {
     width: 1em;
 }
