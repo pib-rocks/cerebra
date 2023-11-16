@@ -35,16 +35,27 @@
 }
 
 .sidebar-element {
-    margin-top: 1rem;
-    margin-left: 13%;
+    margin-top: 0.5rem;
 }
+
+.sidebar-element div {
+    width: 100%;
+}
+
 .sidebar-element a {
     font-weight: bold;
-    font-size: 1.1rem;
+    font-size: 1rem;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    display: inline-block;
+    max-width: 95%;
+    border-bottom: 0.5rem solid #1b2b44;
+    margin-left: 13%;
 }
 
 .sidebar-element a img {
-    width: 1.1rem;
+    width: 1rem;
     padding-bottom: 2px;
     margin-right: 0.25rem;
 }
