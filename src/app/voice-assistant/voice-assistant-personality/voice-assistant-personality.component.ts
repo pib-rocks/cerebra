@@ -21,6 +21,7 @@ export class VoiceAssistantPersonalityComponent implements OnInit {
     pauseThresholdFormControl: FormControl<number> = new FormControl();
     thresholdString: string | undefined;
     subject!: Observable<SidebarElement[]>;
+    uuid?: string;
 
     constructor(
         private modalService: NgbModal,
@@ -95,17 +96,18 @@ export class VoiceAssistantPersonalityComponent implements OnInit {
     };
 
     openEditModal = () => {
-        const uuid: string | undefined = this.router.url.split("/").pop();
-        if (uuid) {
-            const updatePersonality =
-                this.voiceAssistantService.getPersonality(uuid);
+        this.uuid = this.router.url.split("/").pop();
+        if (this.uuid) {
+            const updatePersonality = this.voiceAssistantService.getPersonality(
+                this.uuid,
+            );
             this.nameFormControl.setValue(updatePersonality?.name ?? "");
             this.genderFormControl.setValue(updatePersonality?.gender ?? "");
             this.pauseThresholdFormControl.setValue(
                 updatePersonality?.pauseThreshold ?? 0,
             );
             this.thresholdString = this.pauseThresholdFormControl.value + "s";
-            this.showModal(uuid);
+            this.showModal(this.uuid);
         }
     };
 
@@ -133,6 +135,7 @@ export class VoiceAssistantPersonalityComponent implements OnInit {
                 this.pauseThresholdFormControl.value;
             this.voiceAssistantService.updatePersonalityById(updatePersonality);
         }
+        this.uuid = undefined;
     };
 
     deletePersonality = () => {
