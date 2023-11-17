@@ -50,92 +50,111 @@
             </button>
         </div>
     </div>
-    <div
-        class="row m-2 mt-4 pr-2"
-        id="row-name">
-        <label
-            for="name-input"
-            class="col-3 mt-2 justify-content-end"
-            id="label-name"
-            >Name</label
-        >
-        <input
-            class="col-9"
-            [formControl]="nameFormControl"
-            type="text"
-            name="name-input"
-            id="name-input" />
-    </div>
-    <div class="row m-2 ml-3">
+    <form [formGroup]="personalityForm">
         <div
-            class="col-4"
-            id="radio-button-female">
-            <input
-                class="m-2"
-                name="gender"
-                value="Female"
-                [formControl]="genderFormControl"
-                type="radio"
-                id="radio-female" />
+            class="row m-2 mt-4 pr-2"
+            id="row-name">
             <label
-                for="radio-female"
-                id="label-radio-female"
-                >Female</label
+                for="nameinput"
+                class="col-3 mt-2 justify-content-end"
+                id="label-name"
+                >Name</label
             >
+            <input
+                [ngClass]="(!this.personalityForm.controls['nameinput'].valid && !this.personalityForm.controls['nameinput'].pristine) ? 'invalid-form' : '' "
+                class="col-9"
+                type="text"
+                formControlName="nameinput"
+                id="nameinput" />
+        </div>
+        <div class="row m-2 ml-3">
+            <div
+                class="col-4"
+                id="radio-button-female">
+                <input
+                    value="Female"
+                    formControlName="gender"
+                    type="radio"
+                    id="radio-female" />
+                <label
+                    for="radio-female"
+                    id="label-radio-female"
+                    >Female</label
+                >
+            </div>
+            <div
+                class="col-4"
+                id="radio-button-male">
+                <input
+                    value="Male"
+                    formControlName="gender"
+                    type="radio"
+                    id="radio-male" />
+                <label
+                    for="radio-male"
+                    id="label-radio-male"
+                    >Male</label
+                >
+            </div>
         </div>
         <div
-            class="col-4"
-            id="radio-button-male">
-            <input
-                class="m-2"
-                name="gender"
-                value="Male"
-                [formControl]="genderFormControl"
-                type="radio"
-                id="radio-male" />
+            class="row m-2"
+            id="row-pause-threshold"
+            lang="en-US">
             <label
-                for="radio-male"
-                id="label-radio-male"
-                >Male</label
+                for="name-input"
+                class="col-6 mt-1"
+                id="label-pause-threshold"
+                >Pause threshold</label
             >
-        </div>
-    </div>
-    <div
-        class="row m-2 mb-5"
-        id="row-pause-threshold"
-        lang="en-US">
-        <label
-            for="name-input"
-            class="col-6 mt-1"
-            id="label-pause-threshold"
-            >Pause threshold</label
-        >
-        <div class="col-3">
-            <div class="row">
-                <div class="col-10 p-0">
-                    <input
-                        type="text"
-                        name="threshold-input"
-                        id="pause-threshold-input"
-                        [(ngModel)]="thresholdString" />
-                </div>
-                <div class="col-2 p-0">
-                    <div class="row mt-1 p-0">
-                        <button
-                            id="up"
-                            (click)="adjustThreshold('0.1')">
-                            &#9650;
-                        </button>
+            <div class="col-3">
+                <div class="row">
+                    <div class="col-10 p-0">
+                        <input
+                            type="text"
+                            id="pause-threshold-input"
+                            [(ngModel)]="thresholdString"
+                            [ngModelOptions]="{standalone: true}"
+                            readonly />
                     </div>
-                    <div class="row p-0">
-                        <button
-                            id="down"
-                            (click)="adjustThreshold('-0.1')">
-                            &#9660;
-                        </button>
+                    <div class="col-2 p-0">
+                        <div class="row mt-1 p-0">
+                            <button
+                                id="up"
+                                (click)="adjustThreshold('0.1')">
+                                &#9650;
+                            </button>
+                        </div>
+                        <div class="row p-0">
+                            <button
+                                id="down"
+                                (click)="adjustThreshold('-0.1')">
+                                &#9660;
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+        <div class="row justify-content-center mt-2 mb-3">
+            <div class="col-3 align-self-center">
+                <button
+                    type="button"
+                    class="btn btn-regular"
+                    id="modal-save-button"
+                    (click)="this.savePersonality()">
+                    Save
+                </button>
+            </div>
+            <div class="col-3 align-self-center">
+                <button
+                    type="button"
+                    class="btn btn-regular"
+                    id="modal-cancel-button"
+                    (click)="this.closeModal()">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </form>
 </ng-template>
