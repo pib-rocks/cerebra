@@ -1,25 +1,9 @@
-import {
-    AfterViewInit,
-    OnInit,
-    Component,
-    ElementRef,
-    OnDestroy,
-    ViewChild,
-    TemplateRef,
-} from "@angular/core";
-import * as Blockly from "blockly";
-import {MatDialog} from "@angular/material/dialog";
-import {DialogContentComponent} from "./dialog-content/dialog-content.component";
-import {toolbox} from "./blockly";
-import {BehaviorSubject, Observable, filter, map} from "rxjs";
+import {OnInit, Component, ViewChild, TemplateRef} from "@angular/core";
+
+import {Observable, Subject} from "rxjs";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {FormControl, Validators} from "@angular/forms";
-import {
-    ActivatedRoute,
-    ActivatedRouteSnapshot,
-    NavigationStart,
-    Router,
-} from "@angular/router";
+import {ActivatedRoute, Router} from "@angular/router";
 import {Program} from "../shared/types/program";
 import {SidebarElement} from "../shared/interfaces/sidebar-element.interface";
 import {ProgramService} from "../shared/services/program.service";
@@ -29,14 +13,9 @@ import {ProgramService} from "../shared/services/program.service";
     templateUrl: "./program.component.html",
     styleUrls: ["./program.component.css"],
 })
-export class ProgramComponent implements OnInit, OnDestroy, AfterViewInit {
+export class ProgramComponent implements OnInit {
     @ViewChild("modalContent") modalContent: TemplateRef<any> | undefined;
     closeResult!: string;
-    workspace: any;
-    json: any;
-
-    observer!: ResizeObserver;
-    @ViewChild("blocklyDiv") blocklyDiv!: ElementRef<HTMLDivElement>;
 
     subject!: Observable<SidebarElement[]>;
     programIcon: string = "";
@@ -44,75 +23,13 @@ export class ProgramComponent implements OnInit, OnDestroy, AfterViewInit {
 
     route!: ActivatedRoute;
 
-    currentProgram?: Program;
-    programContentCache: any = {};
+    selected: Subject<string> = new Subject();
 
     constructor(
-        public dialog: MatDialog,
         private modalService: NgbModal,
         private router: Router,
         private programService: ProgramService,
     ) {}
-
-    get workspaceContent(): string {
-        return JSON.stringify(
-            Blockly.serialization.workspaces.save(this.workspace),
-        );
-    }
-
-    set workspaceContent(content: string) {
-        Blockly.serialization.workspaces.load(
-            JSON.parse(content),
-            this.workspace,
-        );
-    }
-
-    openDialog() {
-        this.json = Blockly.serialization.workspaces.save(this.workspace);
-        const dialogRef = this.dialog.open(DialogContentComponent, {
-            data: {
-                name: this.json,
-            },
-        });
-        dialogRef.afterClosed().subscribe(() => {
-            console.log("");
-        });
-    }
-
-    toolbox: string = toolbox;
-
-    setCurrentProgram(programNumber: string | undefined) {
-        if (!programNumber) {
-            this.currentProgram = undefined;
-        } else {
-            if (this.currentProgram) {
-                this.programContentCache[this.currentProgram.programNumber] =
-                    this.workspaceContent;
-            }
-            try {
-                this.currentProgram = this.programService
-                    .getProgramFromCache(programNumber)
-                    .clone();
-            } catch (err) {
-                this.currentProgram = undefined;
-                this.workspaceContent = "{}";
-                throw err;
-            }
-        }
-        if (this.currentProgram) {
-            this.workspaceContent =
-                this.programContentCache[this.currentProgram.programNumber] ??
-                this.currentProgram.program;
-        } else {
-            this.workspaceContent = "{}";
-        }
-    }
-
-    navigateTo(programNumber: string | undefined) {
-        this.router.navigate(
-            programNumber ? ["program", programNumber] : ["program"],
-        );
-    }
 
     ngOnInit(): void {
         this.subject = this.programService.programsSubject;
@@ -121,117 +38,71 @@ export class ProgramComponent implements OnInit, OnDestroy, AfterViewInit {
             Validators.minLength(2),
             Validators.maxLength(255),
         ]);
-        this.workspace = Blockly.inject("blocklyDiv", {
-            toolbox: this.toolbox,
-        });
-        this.observer = new ResizeObserver(() => {
-            this.resizeBlockly();
-        });
-
-        this.router.routerState.root.children.forEach((child) =>
-            child.url
-                .subscribe((url) => {
-                    if (url[0].path == "program" && child.firstChild) {
-                        this.route = child.firstChild;
-                    }
-                })
-                .unsubscribe(),
-        );
-
-        this.programService.getAllPrograms().subscribe((_) => {
-            this.router.events.subscribe((event) => {
-                if (event instanceof NavigationStart) {
-                    const urlFragments = event.url.split("/");
-                    if (urlFragments[1] !== "program") return;
-                    this.setCurrentProgram(urlFragments[2]);
-                }
-            });
-            this.navigateTo(this.programService.programs[0]?.programNumber);
-        });
     }
 
-    ngAfterViewInit() {
-        this.observer.observe(this.blocklyDiv.nativeElement);
+    getProgramFromRoute(): Program | undefined {
+        const programNumber: string | undefined = this.router.url
+            .split("/")
+            .pop();
+        if (!programNumber) return;
+        return this.programService.getProgramFromCache(programNumber);
     }
 
-    resizeBlockly() {
-        Blockly.svgResize(this.workspace);
-    }
-
-    ngOnDestroy(): void {
-        this.observer.unobserve(this.blocklyDiv.nativeElement);
-    }
-
-    showModal = (uuid?: string) => {
-        return this.modalService
-            .open(this.modalContent, {
+    showModal: () => Promise<void> = async () => {
+        let result;
+        try {
+            result = await this.modalService.open(this.modalContent, {
                 ariaLabelledBy: "modal-basic-title",
                 size: "sm",
                 windowClass: "myCustomModalClass",
                 backdropClass: "myCustomBackdropClass",
-            })
-            .result.then(
-                (result) => {
-                    console.log(`Closed with: ${result}`);
-                },
-                () => {
-                    if (uuid) {
-                        this.editProgram();
-                    } else {
-                        this.addProgram();
-                    }
-                },
-            );
+            }).result;
+        } catch (_) {
+            return;
+        }
+        throw new Error(`unexpected result: ${JSON.stringify(result)}`);
     };
 
-    openAddModal = () => {
+    addProgram = () => {
         this.nameFormControl.setValue("");
-        this.showModal();
+        this.showModal().then(() => {
+            if (this.nameFormControl.valid) {
+                this.programService
+                    .createProgram(new Program(this.nameFormControl.value))
+                    .subscribe((program) =>
+                        this.selected.next(program.programNumber),
+                    );
+            }
+        });
     };
 
-    openEditModal = () => {
-        if (this.currentProgram) {
-            this.nameFormControl.setValue(this.currentProgram.name);
-            this.showModal(this.currentProgram.programNumber);
-        }
+    editProgram = () => {
+        const program = this.getProgramFromRoute()?.clone();
+        if (!program) return;
+        this.nameFormControl.setValue(program.name);
+        this.showModal().then(() => {
+            if (this.nameFormControl.valid) {
+                program.name = this.nameFormControl.value;
+                this.programService
+                    .updateProgramByProgramNumber(program)
+                    .subscribe((program) =>
+                        this.selected.next(program.programNumber),
+                    );
+            }
+        });
     };
-
-    addProgram() {
-        if (this.nameFormControl.valid) {
-            this.programService
-                .createProgram(
-                    new Program("", this.nameFormControl.value, "{}"),
-                )
-                .subscribe((program) => this.navigateTo(program.programNumber));
-        }
-    }
-
-    editProgram() {
-        if (this.nameFormControl.valid && this.currentProgram) {
-            this.currentProgram.name = this.nameFormControl.value;
-            this.programService
-                .updateProgramByProgramNumber(this.currentProgram)
-                .subscribe((program) => this.navigateTo(program.programNumber));
-        }
-    }
 
     deleteProgram = () => {
-        if (this.currentProgram) {
-            this.programService
-                .deleteProgramByProgramNumber(this.currentProgram.programNumber)
-                .subscribe((_) =>
-                    this.navigateTo(
-                        this.programService.programs[0]?.programNumber,
-                    ),
-                );
-        }
+        const program = this.getProgramFromRoute();
+        if (!program) return;
+        this.programService.deleteProgramByProgramNumber(program.programNumber);
     };
 
     headerElements = [
         {
             icon: "../../assets/voice-assistant-svgs/program/program-add.svg",
             label: "ADD",
-            clickCallback: this.openAddModal,
+            clickCallback: this.addProgram,
         },
         {
             icon: "../../assets/voice-assistant-svgs/program/program-delete.svg",
@@ -241,7 +112,7 @@ export class ProgramComponent implements OnInit, OnDestroy, AfterViewInit {
         {
             icon: "../../assets/voice-assistant-svgs/program/program-edit.svg",
             label: "EDIT",
-            clickCallback: this.openEditModal,
+            clickCallback: this.editProgram,
         },
     ];
 }

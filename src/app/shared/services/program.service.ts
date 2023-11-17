@@ -1,16 +1,8 @@
 import {Injectable} from "@angular/core";
 import {ApiService} from "./api.service";
-import {Program} from "../types/program";
-import {
-    BehaviorSubject,
-    Observable,
-    ReplaySubject,
-    catchError,
-    map,
-    throwError,
-} from "rxjs";
+import {Program, ProgramDTO} from "../types/program";
+import {BehaviorSubject, Observable, ReplaySubject} from "rxjs";
 import {UrlConstants} from "./url.constants";
-import {NameType} from "blockly/core/names";
 
 @Injectable({
     providedIn: "root",
@@ -67,27 +59,25 @@ export class ProgramService {
         return result;
     }
 
-    getProgramFromCache(programNumber: string): Program {
+    getProgramFromCache(programNumber: string): Program | undefined {
         const program = this.programs.find(
             (program) => program.programNumber === programNumber,
         );
-        if (program) {
-            return program;
-        } else {
-            throw new Error(
+        if (!program)
+            console.warn(
                 `no program with program-number '${programNumber}' in local cache.
-                cache contains the following numbers: ${this.programs.map(
-                    (p) => p.programNumber,
-                )}`,
+            cache contains the following numbers: ${this.programs.map(
+                (p) => p.programNumber,
+            )}`,
             );
-        }
+        return program;
     }
 
     getAllPrograms(): Observable<Program[]> {
         return this.createResultObservable(
             this.apiService.get(UrlConstants.PROGRAM),
             (response) => {
-                const programs = (response["programs"] as Program[]).map(
+                const programs = (response["programs"] as ProgramDTO[]).map(
                     (dto) => Program.fromDTO(dto),
                 );
                 this.setPrograms(programs);
@@ -99,16 +89,13 @@ export class ProgramService {
     getProgramByProgramNumber(programNumber: string): Observable<Program> {
         return this.createResultObservable(
             this.apiService.get(UrlConstants.PROGRAM + `/${programNumber}`),
-            (response) => Program.fromDTO(response),
+            (response) => Program.fromDTO(response as ProgramDTO),
         );
     }
 
     createProgram(program: Program): Observable<Program> {
         return this.createResultObservable(
-            this.apiService.post(UrlConstants.PROGRAM, {
-                name: program.name,
-                program: program.program,
-            }),
+            this.apiService.post(UrlConstants.PROGRAM, program.toDTO(false)),
             (response) => {
                 const program = Program.fromDTO(response);
                 this.addProgram(program);
@@ -121,10 +108,7 @@ export class ProgramService {
         return this.createResultObservable(
             this.apiService.put(
                 UrlConstants.PROGRAM + `/${program.programNumber}`,
-                {
-                    name: program.name,
-                    program: program.program,
-                },
+                program.toDTO(false),
             ),
             (response) => {
                 const program = Program.fromDTO(response);
