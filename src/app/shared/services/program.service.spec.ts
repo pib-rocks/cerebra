@@ -2,32 +2,57 @@ import {TestBed} from "@angular/core/testing";
 
 import {ProgramService} from "./program.service";
 import {ApiService} from "./api.service";
-import {BehaviorSubject} from "rxjs";
-import {Program} from "../types/program";
+import {BehaviorSubject, Observable} from "rxjs";
+import {Program, ProgramDTO} from "../types/program";
 
-describe("ProgramService", () => {
+fdescribe("ProgramService", () => {
     let programService: ProgramService;
     let apiService: jasmine.SpyObj<ApiService>;
+
+    let proDto: ProgramDTO[];
+    let newProDto: ProgramDTO;
 
     let pro: Program[];
     let newPro: Program;
 
-    let obs: BehaviorSubject<Program>[];
-    let newObs: BehaviorSubject<Program>;
-    let obsAll: BehaviorSubject<any>;
+    let obs: BehaviorSubject<ProgramDTO>[];
+    let newObs: BehaviorSubject<ProgramDTO>;
+    let obsAll: BehaviorSubject<{programs: ProgramDTO[]}>;
 
     beforeEach(() => {
-        pro = [
-            new Program("id-0", "program_0", '{ x: "program_0" }'),
-            new Program("id-1", "program_1", '{ x: "program_1" }'),
-            new Program("id-2", "program_2", '{ x: "program_2" }'),
+        proDto = [
+            {
+                name: "name-0",
+                program: '{"testfield": "0"}',
+                programNumber: "id-0",
+            },
+            {
+                name: "name-1",
+                program: '{"testfield": "1"}',
+                programNumber: "id-1",
+            },
+            {
+                name: "name-2",
+                program: '{"testfield": "2"}',
+                programNumber: "id-2",
+            },
         ];
+        newProDto = {
+            name: "name-new",
+            program: '{"testfield": "new"}',
+            programNumber: "id-new",
+        };
 
-        newPro = new Program("id-new", "program_new", '{ x: "program_new" }');
+        pro = [
+            new Program("name-0", {testfield: "0"}, "id-0"),
+            new Program("name-1", {testfield: "1"}, "id-1"),
+            new Program("name-2", {testfield: "2"}, "id-2"),
+        ];
+        newPro = new Program("name-new", {testfield: "new"}, "id-new");
 
-        obs = pro.map((p) => new BehaviorSubject(p));
-        newObs = new BehaviorSubject(newPro);
-        obsAll = new BehaviorSubject({programs: pro});
+        obs = proDto.map((p) => new BehaviorSubject(p));
+        newObs = new BehaviorSubject(newProDto);
+        obsAll = new BehaviorSubject({programs: proDto});
 
         const apiServiceSpy: jasmine.SpyObj<ApiService> = jasmine.createSpyObj(
             ApiService.name,
@@ -46,7 +71,7 @@ describe("ProgramService", () => {
         });
 
         programService = TestBed.inject(ProgramService);
-        programService.programs = pro.map((p) => p.clone());
+        programService.programs = pro.map((program) => program.clone());
         programService.programsSubject = jasmine.createSpyObj<
             BehaviorSubject<Program[]>
         >("programSubjectSpy", ["next"]);
@@ -62,9 +87,9 @@ describe("ProgramService", () => {
         newPro.programNumber = pro[0].programNumber;
         programService["updateProgram"](newPro);
         const expectedPrograms = jasmine.arrayWithExactContents([
-            jasmine.objectContaining(newPro),
-            jasmine.objectContaining(pro[1]),
-            jasmine.objectContaining(pro[2]),
+            newPro,
+            pro[1],
+            pro[2],
         ]);
         expect(programService.programs).toEqual(expectedPrograms);
         expect(programService.programsSubject.next).toHaveBeenCalledOnceWith(
@@ -86,10 +111,10 @@ describe("ProgramService", () => {
     it("should add one program", () => {
         programService["addProgram"](newPro);
         const expectedPrograms = jasmine.arrayWithExactContents([
-            jasmine.objectContaining(newPro),
-            jasmine.objectContaining(pro[0]),
-            jasmine.objectContaining(pro[1]),
-            jasmine.objectContaining(pro[2]),
+            newPro,
+            pro[0],
+            pro[1],
+            pro[2],
         ]);
         expect(programService.programs).toEqual(expectedPrograms);
         expect(programService.programsSubject.next).toHaveBeenCalledOnceWith(
@@ -98,70 +123,135 @@ describe("ProgramService", () => {
     });
 
     it("should delete one program", () => {
+        const expectedPrograms = [pro[0], pro[2]];
         programService["deleteProgram"](pro[1].programNumber);
-        const expectedPrograms = jasmine.arrayWithExactContents([
-            jasmine.objectContaining(pro[0]),
-            jasmine.objectContaining(pro[2]),
-        ]);
         expect(programService.programs).toEqual(expectedPrograms);
         expect(programService.programsSubject.next).toHaveBeenCalledOnceWith(
             expectedPrograms,
         );
     });
 
-    it("should get all programs from database", () => {
-        const setPersonalitiesSpy = spyOn<any>(programService, "setPrograms");
+    it("should create a correct result observable with successful base observable", async () => {
+        const baseObservable = new Observable((subscriber) =>
+            subscriber.next(1),
+        );
+        const baseSubscribeSpy = spyOn(
+            baseObservable,
+            "subscribe",
+        ).and.callThrough();
+        const mapper = jasmine.createSpy("mapper", (_) => 2).and.callThrough();
+        const resultObservable = programService["createResultObservable"](
+            baseObservable,
+            mapper,
+        );
+        const result = await new Promise((resolve, _) => {
+            resultObservable.subscribe({next: (val) => resolve(val)});
+        });
+        expect(baseSubscribeSpy).toHaveBeenCalledTimes(1);
+        expect(result).toEqual(2);
+        expect(mapper).toHaveBeenCalledOnceWith(1);
+    });
+
+    it("should create a correct result observable with successful base observable", async () => {
+        const baseObservable = new Observable((subscriber) =>
+            subscriber.error(1),
+        );
+        const baseSubscribeSpy = spyOn(
+            baseObservable,
+            "subscribe",
+        ).and.callThrough();
+        const mapper = jasmine.createSpy("mapper", (_) => 2);
+        const resultObservable = programService["createResultObservable"](
+            baseObservable,
+            mapper,
+        );
+        const error = await new Promise((resolve, _) => {
+            resultObservable.subscribe({error: (val) => resolve(val)});
+        });
+        expect(baseSubscribeSpy).toHaveBeenCalledTimes(1);
+        expect(error).toEqual(1);
+        expect(mapper).not.toHaveBeenCalled();
+    });
+
+    it("should get one program from cache", () => {
+        const result = programService.getProgramFromCache("id-0");
+        expect(result).toEqual(pro[0]);
+    });
+
+    it("should get all programs from database", async () => {
+        const setProgramSpy = spyOn<any>(programService, "setPrograms");
         apiService.get.and.returnValue(obsAll);
-        programService.getAllPrograms();
+        const resultPrograms = await new Promise((resolve, _) => {
+            programService.getAllPrograms().subscribe((val) => resolve(val));
+        });
         expect(apiService.get).toHaveBeenCalledOnceWith("/program");
-        expect(setPersonalitiesSpy).toHaveBeenCalledOnceWith(
+        expect(setProgramSpy).toHaveBeenCalledOnceWith(
             jasmine.arrayWithExactContents(pro),
         );
+        expect(resultPrograms).toEqual(jasmine.arrayWithExactContents(pro));
     });
 
-    it("should get one program from database", () => {
+    it("should get one program from database", async () => {
         apiService.get.and.returnValue(obs[0]);
-        programService.getProgramByProgramNumber(pro[0].programNumber);
+        const resultProgram = await new Promise((resolve, _) => {
+            programService
+                .getProgramByProgramNumber("id-0")
+                .subscribe((val) => resolve(val));
+        });
         expect(apiService.get).toHaveBeenCalledOnceWith("/program/id-0");
-        expect(programService.programByProgramNumberResponse).toEqual(
-            jasmine.objectContaining(pro[0]),
-        );
+        expect(resultProgram).toEqual(pro[0]);
     });
 
-    it("should create one program in db", () => {
+    it("should create one program in db", async () => {
         const addProgramSpy = spyOn<any>(programService, "addProgram");
         apiService.post.and.returnValue(newObs);
-        programService.createProgram(newPro);
+        const resultProgram = await new Promise((resolve, _) => {
+            programService
+                .createProgram(newPro)
+                .subscribe((val) => resolve(val));
+        });
         expect(apiService.post).toHaveBeenCalledOnceWith(
             "/program",
             jasmine.objectContaining({
-                name: newPro.name,
-                program: newPro.program,
+                name: "name-new",
+                program: JSON.stringify({testfield: "new"}),
             }),
         );
         expect(addProgramSpy).toHaveBeenCalledOnceWith(
             jasmine.objectContaining(newPro),
         );
+        expect(resultProgram).toEqual(newPro);
     });
 
-    it("should update one program in db", () => {
+    it("should update one program in db", async () => {
         const updateProgramSpy = spyOn<any>(programService, "updateProgram");
         apiService.put.and.returnValue(newObs);
-        programService.updateProgramByProgramNumber(pro[1]);
+        const resultProgram = await new Promise((resolve, _) => {
+            programService
+                .updateProgramByProgramNumber(pro[1])
+                .subscribe((val) => resolve(val));
+        });
         expect(apiService.put).toHaveBeenCalledOnceWith(
             "/program/id-1",
-            pro[1],
+            jasmine.objectContaining({
+                name: "name-1",
+                program: JSON.stringify({testfield: "1"}),
+            }),
         );
         expect(updateProgramSpy).toHaveBeenCalledOnceWith(
             jasmine.objectContaining(newPro),
         );
-        expect();
+        expect(resultProgram).toEqual(newPro);
     });
 
-    it("should delete one program in db", () => {
+    it("should delete one program in db", async () => {
         const deleteProgramSpy = spyOn<any>(programService, "deleteProgram");
         apiService.delete.and.returnValue(new BehaviorSubject(undefined));
-        programService.deleteProgramByProgramNumber(pro[2].programNumber);
+        await new Promise((resolve, _) => {
+            programService
+                .deleteProgramByProgramNumber("id-2")
+                .subscribe((val) => resolve(val));
+        });
         expect(apiService.delete).toHaveBeenCalledOnceWith("/program/id-2");
         expect(deleteProgramSpy).toHaveBeenCalledOnceWith("id-2");
     });
