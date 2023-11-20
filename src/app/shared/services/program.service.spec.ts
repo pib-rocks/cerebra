@@ -5,7 +5,7 @@ import {ApiService} from "./api.service";
 import {BehaviorSubject, Observable} from "rxjs";
 import {Program, ProgramDTO} from "../types/program";
 
-fdescribe("ProgramService", () => {
+describe("ProgramService", () => {
     let programService: ProgramService;
     let apiService: jasmine.SpyObj<ApiService>;
 
