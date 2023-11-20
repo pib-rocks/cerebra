@@ -43,7 +43,8 @@ export class ProgramComponent implements OnInit, OnDestroy, AfterViewInit {
             "Face recognition",
         ),
     ]);
-    programIcon: string = "";
+    programIcon: string =
+        "../assets/voice-assistant-svgs/personality/personality.svg";
     nameFormControl: FormControl = new FormControl("");
 
     constructor(
@@ -135,17 +136,17 @@ export class ProgramComponent implements OnInit, OnDestroy, AfterViewInit {
 
     headerElements = [
         {
-            icon: "../../assets/voice-assistant-svgs/program/program-add.svg",
+            icon: "../../assets/program/program-add.svg",
             label: "ADD",
             clickCallback: this.openAddModal,
         },
         {
-            icon: "../../assets/voice-assistant-svgs/program/program-delete.svg",
+            icon: "../../assets/program/program-delete.svg",
             label: "DELETE",
             clickCallback: this.deleteProgram,
         },
         {
-            icon: "../../assets/voice-assistant-svgs/program/program-edit.svg",
+            icon: "../../assets/program/program-edit.svg",
             label: "EDIT",
             clickCallback: this.openEditModal,
         },
