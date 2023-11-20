@@ -33,6 +33,7 @@ import {BoolToOnOffPipe} from "./shared/pipes/bool-to-on-off-pipe.pipe";
 import {VoiceAssistantComponent} from "./voice-assistant/voice-assistant.component";
 import {PersonalityDescriptionComponent} from "./voice-assistant/voice-assistant-personality/personality-description/personality-description.component";
 import {ChatWindowComponent} from "./voice-assistant/voice-assistant-chat/chat-window/chat-window.component";
+import {ProgramWorkspaceComponent} from "./program/program-workspace/program-workspace.component";
 
 @NgModule({
     declarations: [
@@ -57,6 +58,7 @@ import {ChatWindowComponent} from "./voice-assistant/voice-assistant-chat/chat-w
         VoiceAssistantComponent,
         PersonalityDescriptionComponent,
         ChatWindowComponent,
+        ProgramWorkspaceComponent,
     ],
     imports: [
         BrowserModule,

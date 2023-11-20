@@ -8,6 +8,7 @@ import {
 import {FormControl} from "@angular/forms";
 import {Subject} from "rxjs";
 import {CameraService} from "../shared/services/camera.service";
+import {CameraSetting} from "../shared/types/camera-settings";
 
 @Component({
     selector: "app-camera",
@@ -19,27 +20,19 @@ export class CameraComponent implements OnInit, OnDestroy {
     qualityReceiver$!: Subject<number>;
     refreshRateReceiver$!: Subject<number>;
     isLoading = false;
-    isCameraActive = false;
     toggleCamera = new FormControl(false);
     imageSrc!: string;
-    refreshRateControl: number = 0.1;
-    qualityFactorControl: number = 80;
     selectedSize!: string;
-    resX!: number;
-    resY!: number;
-    resolution!: string;
     cameraActiveIcon =
         "M880-275 720-435v111L244-800h416q24 0 42 18t18 42v215l160-160v410ZM848-27 39-836l42-42L890-69l-42 42ZM159-800l561 561v19q0 24-18 42t-42 18H140q-24 0-42-18t-18-42v-520q0-24 18-42t42-18h19Z";
+
+    cameraSettings: CameraSetting | undefined;
+
     constructor(private cameraService: CameraService) {
-        this.subscribeCameraQualityFactorSubject();
-        this.subscribeCameraResolutinSubject();
-        this.subscribeCameraTimerPeriodSubject();
-        this.subscribeCameraResXSubject();
-        this.subscribeCameraResYSubject();
+        this.subscribeCameraSettings();
     }
 
     ngOnInit(): void {
-        this.cameraService.getCameraSettings();
         this.subscribeCameraReseiver();
         this.imageSrc = "../../assets/camera-placeholder.jpg";
         this.cameraService.cameraReciver$.subscribe((message) => {
@@ -53,6 +46,7 @@ export class CameraComponent implements OnInit, OnDestroy {
         this.refreshRateReceiver$ =
             this.cameraService.rosCameraTimerPeriodReceiver;
     }
+
     ngOnDestroy(): void {
         this.stopCamera();
     }
@@ -63,25 +57,23 @@ export class CameraComponent implements OnInit, OnDestroy {
         resolution: string,
         publish: boolean = true,
     ) {
-        this.resX = width;
-        this.resY = height;
-
-        this.cameraService.cameraResXSubject.next(this.resX);
-        this.cameraService.cameraResYSubject.next(this.resY);
+        this.cameraSettings!.resX = width;
+        this.cameraSettings!.resY = height;
 
         this.videoBox?.nativeElement.style.setProperty(
             "max-height",
-            this.resY + "px",
+            height + "px",
         );
-        this.selectedSize = resolution;
+        this.cameraSettings!.resolution = resolution;
+        this.selectedSize = height + "px" + "(" + resolution + ")";
         if (publish) {
             this.isLoading = true;
-            this.cameraService.setPreviewSize(this.resX, this.resY);
+            this.cameraService.setPreviewSize(width, height);
             setTimeout(() => {
                 this.isLoading = false; // Stop the spinner
             }, 1500);
         }
-        this.saveSettings();
+        this.publishCameraSettings(this.cameraSettings!);
     }
 
     arraysEqual(a: number[], b: number[]) {
@@ -102,17 +94,18 @@ export class CameraComponent implements OnInit, OnDestroy {
     }
 
     toggleCameraState() {
-        if (!this.isCameraActive) {
+        if (!this.cameraSettings!.isActive) {
             this.startCamera();
         } else {
             this.stopCamera();
         }
-        this.isCameraActive = !this.isCameraActive;
+        this.cameraSettings!.isActive = !this.cameraSettings!.isActive;
         this.changeCameraIcon();
+        this.publishCameraSettings(this.cameraSettings!);
     }
 
     changeCameraIcon() {
-        if (this.isCameraActive) {
+        if (this.cameraSettings!.isActive) {
             this.cameraActiveIcon =
                 "M140-160q-24 0-42-18t-18-42v-520q0-24 18-42t42-18h520q24 0 42 18t18 42v215l160-160v410L720-435v215q0 24-18 42t-42 18H140Z";
         } else {
@@ -122,11 +115,11 @@ export class CameraComponent implements OnInit, OnDestroy {
     }
 
     updateRefreshRateLabel(sliderNumber: number) {
-        this.refreshRateControl = sliderNumber;
+        this.cameraSettings!.refreshRate = sliderNumber;
     }
 
     updateQualityFactorLabel(sliderNumber: number) {
-        this.qualityFactorControl = sliderNumber;
+        this.cameraSettings!.qualityFactor = sliderNumber;
     }
 
     removeCssClass() {
@@ -138,56 +131,27 @@ export class CameraComponent implements OnInit, OnDestroy {
         videoSettingsButton?.classList.add("showPopover");
     }
 
-    qualityControlPublish = (formControlValue: number) => {
-        this.cameraService.qualityControlPublish(formControlValue);
-    };
-    refreshRatePublish = (formControlValue: number) => {
-        this.cameraService.refreshRatePublish(formControlValue);
-    };
-
-    subscribeCameraQualityFactorSubject() {
-        this.cameraService.qualityFactorSubject.subscribe((message: number) => {
-            this.qualityFactorControl = message;
-        });
-    }
-    subscribeCameraResXSubject() {
-        this.cameraService.cameraResXSubject.subscribe((message: number) => {
-            this.resX = message;
-        });
-    }
-    subscribeCameraResYSubject() {
-        this.cameraService.cameraResYSubject.subscribe((message: number) => {
-            this.resY = message;
-        });
-    }
-    subscribeCameraTimerPeriodSubject() {
-        this.cameraService.cameraTimerPeriodSubject.subscribe(
-            (message: number) => {
-                this.refreshRateControl = message;
-            },
-        );
-    }
-    subscribeCameraResolutinSubject() {
-        this.cameraService.cameraResolutinSubject.subscribe(
-            (message: string) => {
-                this.selectedSize = this.resY + "p (" + message + ")";
-                this.resolution = message;
-            },
-        );
-    }
-    subscribeCameraIsActiveSubject() {
-        this.cameraService.cameraIsActiveSubject.subscribe(
-            (message: boolean) => {
-                this.isCameraActive = message;
-            },
-        );
-    }
-
-    saveSettings() {
-        this.cameraService.saveCameraSettings();
-    }
-
     subscribeCameraReseiver() {
         this.cameraService.subscribeCameraReseiver();
     }
+
+    subscribeCameraSettings() {
+        this.cameraService.cameraSettings.subscribe(
+            (message: CameraSetting) => {
+                this.cameraSettings = message;
+            },
+        );
+    }
+
+    publishCameraSettings(cameraSettings: CameraSetting) {
+        this.cameraService.publishCameraSettings(cameraSettings);
+    }
+
+    qualityControlPublish = (formControlValue: number) => {
+        this.cameraService.qualityControlPublish(formControlValue);
+    };
+
+    refreshRatePublish = (formControlValue: number) => {
+        this.cameraService.refreshRatePublish(formControlValue);
+    };
 }

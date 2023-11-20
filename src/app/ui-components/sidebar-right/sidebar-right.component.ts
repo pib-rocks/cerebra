@@ -17,6 +17,7 @@ export class SideBarRightComponent implements OnInit {
     @Input() elementIcon: string = "";
     @Input() subject!: Observable<SidebarElement[]>;
     @Input() lStorage!: string;
+    @Input() selectedObservable?: Observable<string | undefined>;
     sidebarElements!: SidebarElement[];
 
     constructor(
@@ -36,11 +37,15 @@ export class SideBarRightComponent implements OnInit {
                     relativeTo: this.route,
                 });
             } else if (this.sidebarElements.length > 0) {
-                console.log(this.sidebarElements[0].getUUID()),
-                    this.router.navigate([this.sidebarElements[0].getUUID()], {
-                        relativeTo: this.route,
-                    });
+                this.router.navigate([this.sidebarElements[0].getUUID()], {
+                    relativeTo: this.route,
+                });
+            } else {
+                this.router.navigate([], {relativeTo: this.route});
             }
+        });
+        this.selectedObservable?.subscribe((uuid?: string) => {
+            if (uuid) this.router.navigate([uuid], {relativeTo: this.route});
         });
     }
 }

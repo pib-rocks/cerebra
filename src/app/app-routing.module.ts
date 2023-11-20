@@ -12,6 +12,7 @@ import {VoiceAssistantComponent} from "./voice-assistant/voice-assistant.compone
 import {PersonalityDescriptionComponent} from "./voice-assistant/voice-assistant-personality/personality-description/personality-description.component";
 import {voiceAssistantResolver} from "./voice-assistant/voice-assistant-resolver/voice-assistant.resolver";
 import {ChatWindowComponent} from "./voice-assistant/voice-assistant-chat/chat-window/chat-window.component";
+import {ProgramWorkspaceComponent} from "./program/program-workspace/program-workspace.component";
 
 const routes: Routes = [
     {path: "", redirectTo: "head", pathMatch: "full"},
@@ -33,7 +34,7 @@ const routes: Routes = [
         children: [
             {
                 path: ":uuid",
-                component: ProgramComponent,
+                component: ProgramWorkspaceComponent,
             },
         ],
     },
