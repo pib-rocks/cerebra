@@ -204,12 +204,12 @@ export class MotorService {
         }
     }
     updateMotorSettingsFromMotorSettingsMessage(message: MotorSettingsMessage) {
-        const motor = this.getMotorByName(message.name);
+        const motor = this.getMotorByName(message.motor_name);
         motor.settings.updateChangedAttribute(message);
         const copy = motor?.clone();
         motor.motorSubject.next(copy);
-        if (message.name.includes("all")) {
-            const motor = this.getMotorByName(message.name);
+        if (message.motor_name.includes("all")) {
+            const motor = this.getMotorByName(message.motor_name);
             const groupMotors = this.motors
                 .filter((m) => m.group == motor.group)
                 .filter(
@@ -218,7 +218,7 @@ export class MotorService {
                         !m.name.includes("all"),
                 );
             groupMotors.forEach((m) => {
-                message.name = m.name;
+                message.motor_name = m.name;
                 this.updateMotorSettingsFromMotorSettingsMessage(message);
             });
         }
