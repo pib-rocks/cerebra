@@ -56,7 +56,9 @@ describe("ProgramWorkspaceComponent", () => {
         fixture.detectChanges();
     });
 
-    it("should create", () => {});
+    it("should create", () => {
+        expect(component).toBeTruthy();
+    });
 
     it("should update the workspace content when route params are changed", () => {
         const selectedProgram = new Program("name-1", {testfield: "1"}, "id-1");
