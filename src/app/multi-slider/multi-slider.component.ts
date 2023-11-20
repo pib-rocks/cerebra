@@ -256,10 +256,8 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
     }
 
     getRelativeMousePosition(mouseX: number) {
-        const elementWidth = this.slider.nativeElement.offsetWidth;
-        const offsetLeft =
-            this.slider.nativeElement.getBoundingClientRect().left;
-        return (mouseX - offsetLeft) / elementWidth;
+        const {left, right} = this.slider.nativeElement.getBoundingClientRect();
+        return (mouseX - left) / (right - left);
     }
 
     selectClosestSlider(mouseX: number) {

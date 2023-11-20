@@ -138,4 +138,49 @@ describe("MultiSliderComponent", () => {
         expect(posLowerNum).toBeCloseTo(expectedLower, 5);
         expect(posUpperNum).toBeCloseTo(expectedUpper, 5);
     });
+
+    fit("should compute the correct reltive slider value", () => {
+        expect(component.getRelativeSliderValue(-160)).toBeCloseTo(0.1, 3);
+    });
+
+    fit("should compute the correct absolute slider value", () => {
+        expect(component.getAbsoluteSliderValue(0.1)).toBeCloseTo(-160, 3);
+    });
+
+    fit("should compute the correct relative mouse position", () => {
+        spyOn(
+            component.slider.nativeElement,
+            "getBoundingClientRect",
+        ).and.returnValue({
+            left: 100,
+            right: 200,
+        });
+        expect(component.getRelativeMousePosition(120)).toBeCloseTo(0.2, 3);
+    });
+
+    fit("should select the correct values, if lower is closer", () => {
+        component.sliderFormControlLower.setValue(100);
+        component.sliderFormControlUpper.setValue(200);
+        spyOn(component, "getAbsoluteSliderValue").and.returnValue(120);
+        component.selectClosestSlider(0);
+        expect(component.bubbleFormControlSelected).toBe(
+            component.bubbleFormControlLower,
+        );
+        expect(component.sliderFormControlSelected).toBe(
+            component.sliderFormControlLower,
+        );
+    });
+
+    fit("should select the correct values, if upper is closer", () => {
+        component.sliderFormControlLower.setValue(100);
+        component.sliderFormControlUpper.setValue(200);
+        spyOn(component, "getAbsoluteSliderValue").and.returnValue(180);
+        component.selectClosestSlider(0);
+        expect(component.bubbleFormControlSelected).toBe(
+            component.bubbleFormControlUpper,
+        );
+        expect(component.sliderFormControlSelected).toBe(
+            component.sliderFormControlUpper,
+        );
+    });
 });
