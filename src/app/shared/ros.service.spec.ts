@@ -11,7 +11,18 @@ describe("RosService", () => {
     let rosService: RosService;
     let spyOnSetupRos: jasmine.Spy<() => ROSLIB.Ros>;
 
-    let motorSettingsMessage: MotorSettingsMessage;
+    const motorSettingsMessage: MotorSettingsMessage = {
+        motor_name: "test",
+        turned_on: true,
+        pulse_width_min: 100,
+        pulse_width_max: 100,
+        rotation_range_min: 100,
+        rotation_range_max: 100,
+        velocity: 100,
+        acceleration: 100,
+        deceleration: 100,
+        period: 100,
+    };
 
     beforeEach(() => {
         TestBed.configureTestingModule({
@@ -21,19 +32,6 @@ describe("RosService", () => {
         rosService = TestBed.inject(RosService);
         rosService.initTopicsAndServices();
         spyOnSetupRos = spyOn(rosService, "setUpRos").and.callThrough();
-
-        motorSettingsMessage = {
-            name: "test",
-            turnedOn: true,
-            pulseWidthMin: 100,
-            pulseWidthMax: 100,
-            rotationRangeMin: 100,
-            rotationRangeMax: 100,
-            velocity: 100,
-            acceleration: 100,
-            deceleration: 100,
-            period: 100,
-        };
     });
 
     it("should be created", () => {
@@ -133,21 +131,8 @@ describe("RosService", () => {
         expect(subscribeCallBackSpy.next).toHaveBeenCalledOnceWith(
             motorSettingsMessage,
         );
-        const motorSettingsMessage: MotorSettingsMessage = {
-            motor_name: "test",
-            turned_on: true,
-            pulse_width_min: 100,
-            pulse_width_max: 100,
-            rotation_range_min: 100,
-            rotation_range_max: 100,
-            velocity: 100,
-            acceleration: 100,
-            deceleration: 100,
-            period: 100,
-        };
         rosService.sendMotorSettingsMessage(motorSettingsMessage);
-        expect(spyOnSendMotorSettingsMessage).toHaveBeenCalled();
-        expect(spyMotorSettingsSeviceCall).toHaveBeenCalled();
+        expect(spyOnMotorSettingsReceiver).toHaveBeenCalled();
     });
 
     it("should publish the preview size on calling setPreviewsize", () => {
