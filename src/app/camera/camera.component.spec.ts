@@ -79,7 +79,7 @@ describe("CameraComponent", () => {
         const height = 1080;
         const resolution = "FHD";
         component.setSize(width, height, resolution);
-        expect(component.selectedSize).toBe(resolution);
+        expect(component.selectedSize).toBe(height + "px(" + resolution + ")");
         expect(component.isLoading).toBeTrue();
         tick(1500);
         expect(component.isLoading).toBeFalse();
@@ -104,7 +104,7 @@ describe("CameraComponent", () => {
     it("should change the running state of the camera when clicking camera icon", () => {
         const spyOnToggleCamera = spyOn(component, "toggleCameraState");
         const toggleBtn = fixture.debugElement.query(By.css("#toggleCamera"));
-        const cameraActiveState = component.isCameraActive;
+        const cameraActiveState = component.cameraSettings?.isActive;
         toggleBtn.nativeElement.click();
         expect(spyOnToggleCamera).toHaveBeenCalled();
         fixture.detectChanges();
