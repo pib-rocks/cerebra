@@ -1,0 +1,67 @@
+<div class="row allContent mt-4 ">
+    <div class="main col-10 pink-corner-frame">
+        <router-outlet></router-outlet>
+    </div>
+    <div class="col-2">
+        <app-sidebar-right
+            [headerElements]="headerElements"
+            [subject]="subject"
+            [lStorage]="'chat'"
+            [elementIcon]="personalityIcon">
+        </app-sidebar-right>
+    </div>
+</div>
+
+<ng-template
+    #modalContent
+    let-modal
+    id="template">
+    <div
+        class="row display-flex modal-header"
+        id="modal-header">
+        <div
+            class="col-10"
+            id="header-title">
+            <span id="header-title-text">TOPIC</span>
+        </div>
+        <div
+            class="col-2 text-right"
+            id="close-button">
+            <button
+                id="modal-close-button"
+                type="button"
+                (click)="modal.dismiss('Cross click')"
+                class="btn">
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="10"
+                    height="16">
+                    <text
+                        font-family="Titillium"
+                        fill="#FFF"
+                        font-weight="bold"
+                        font-size="16"
+                        y="11.062">
+                        X
+                    </text>
+                </svg>
+            </button>
+        </div>
+    </div>
+    <div
+        class="row m-2 mt-4 pr-2"
+        id="row-name">
+        <label
+            for="name-input"
+            class="col-3 mt-2 justify-content-end"
+            id="label-name"
+            >Name</label
+        >
+        <input
+            class="col-9"
+            [formControl]="nameFormControl"
+            type="text"
+            name="name-input"
+            id="name-input" />
+    </div>
+</ng-template>

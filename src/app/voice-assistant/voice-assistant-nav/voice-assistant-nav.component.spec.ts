@@ -3,7 +3,7 @@ import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {VoiceAssistantNavComponent} from "./voice-assistant-nav.component";
 import {RouterTestingModule} from "@angular/router/testing";
 import {ReactiveFormsModule} from "@angular/forms";
-import {BoolToOnOffPipe} from "../shared/pipes/bool-to-on-off-pipe.pipe";
+import {BoolToOnOffPipe} from "../../shared/pipes/bool-to-on-off-pipe.pipe";
 
 describe("VoiceAssistantNavComponent", () => {
     let component: VoiceAssistantNavComponent;
