@@ -77,10 +77,14 @@ export class VoiceAssistantChatComponent implements OnInit {
     };
 
     addChat() {
-        this.chatService.createChat(
-            new ChatDto(this.topicFormControl.value, ""),
-        );
-        this.ngbModalRef?.close("saved");
+        if (this.personalityId) {
+            this.chatService.createChat(
+                new ChatDto(this.topicFormControl.value, this.personalityId),
+            );
+            this.ngbModalRef?.close("saved");
+        } else {
+            this.ngbModalRef?.close("failed");
+        }
     }
 
     editChat = () => {
