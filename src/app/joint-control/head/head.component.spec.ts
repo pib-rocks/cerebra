@@ -1,5 +1,3 @@
-// import {ComponentFixture, TestBed} from "@angular/core/testing";
-
 import {HeadComponent} from "./head.component";
 import {RosService} from "../../shared/services/ros-service/ros.service";
 import {By} from "@angular/platform-browser";
@@ -12,6 +10,7 @@ import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {JointTrajectoryMessage} from "../../shared/ros-message-types/jointTrajectoryMessage";
 import {Group} from "../../shared/types/motor.enum";
 import {MotorService} from "../../shared/services/motor-service/motor.service";
+import {HttpClientTestingModule} from "@angular/common/http/testing";
 
 describe("HeadComponent", () => {
     let component: HeadComponent;
@@ -31,7 +30,11 @@ describe("HeadComponent", () => {
                 NavBarComponent,
                 SliderComponent,
             ],
-            imports: [ReactiveFormsModule, RouterTestingModule],
+            imports: [
+                ReactiveFormsModule,
+                RouterTestingModule,
+                HttpClientTestingModule,
+            ],
             providers: [RosService],
         }).compileComponents();
 

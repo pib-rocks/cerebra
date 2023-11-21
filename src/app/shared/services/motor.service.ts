@@ -1,13 +1,13 @@
 import {Injectable} from "@angular/core";
-import {RosService} from "../ros-service/ros.service";
+import {RosService} from "./ros-service/ros.service";
 import {BehaviorSubject, catchError, throwError} from "rxjs";
-import {Motor} from "../../types/motor.class";
-import {Group} from "../../types/motor.enum";
-import {MotorSettingsMessage} from "../../ros-message-types/motorSettingsMessage";
-import {JointTrajectoryMessage} from "../../ros-message-types/jointTrajectoryMessage";
-import {MotorSettings} from "../../types/motor-settings.class";
-import {ApiService} from "../api.service";
-import {UrlConstants} from "../url.constants";
+import {Motor} from "../types/motor.class";
+import {Group} from "../types/motor.enum";
+import {MotorSettingsMessage} from "../ros-message-types/motorSettingsMessage";
+import {JointTrajectoryMessage} from "../ros-message-types/jointTrajectoryMessage";
+import {MotorSettings} from "../types/motor-settings.class";
+import {UrlConstants} from "./url.constants";
+import {ApiService} from "./api.service";
 
 @Injectable({
     providedIn: "root",
@@ -259,7 +259,7 @@ export class MotorService {
                     });
                 }),
             )
-            .subscribe((response) => {
+            .subscribe((response: any) => {
                 console.log(response);
             });
     }
@@ -275,7 +275,7 @@ export class MotorService {
                     });
                 }),
             )
-            .subscribe((response) => {
+            .subscribe((response: any) => {
                 motor.settings.acceleration = response["acceleration"];
                 motor.settings.deceleration = response["deceleration"];
                 motor.settings.pulseWidthMin = response["pulseWidthMin"];
@@ -299,7 +299,7 @@ export class MotorService {
                     });
                 }),
             )
-            .subscribe((response) => {
+            .subscribe((response: any) => {
                 const motors: any[] = response["motorSettings"];
                 motors.forEach((response) => {
                     const motor = this.getMotorByName(response["name"]);

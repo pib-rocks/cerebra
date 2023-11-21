@@ -15,6 +15,7 @@ import {BehaviorSubject} from "rxjs";
 import {JointTrajectoryMessage} from "../../shared/ros-message-types/jointTrajectoryMessage";
 import {MotorSettingsMessage} from "../../shared/ros-message-types/motorSettingsMessage";
 import {Group} from "../../shared/types/motor.enum";
+import {HttpClientTestingModule} from "@angular/common/http/testing";
 
 describe("HandComponent", () => {
     let component: HandComponent;
@@ -42,7 +43,11 @@ describe("HandComponent", () => {
                 CircularSliderComponent,
                 SliderComponent,
             ],
-            imports: [RouterTestingModule, ReactiveFormsModule],
+            imports: [
+                RouterTestingModule,
+                ReactiveFormsModule,
+                HttpClientTestingModule,
+            ],
             providers: [
                 RosService,
                 {
@@ -226,7 +231,7 @@ describe("HandComponent", () => {
             expectedMotorObj,
         );
 
-        expect(rosSendMotorSettingsSpy).toHaveBeenCalled;
+        expect(rosSendMotorSettingsSpy).toHaveBeenCalled();
 
         const motorControls: MotorControlComponent[] = fixture.debugElement
             .queryAll(By.css("app-motor-control"))

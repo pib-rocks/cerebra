@@ -1,7 +1,7 @@
 import {Component} from "@angular/core";
 import {FormControl} from "@angular/forms";
 import {RosService} from "../../shared/services/ros-service/ros.service";
-import {VoiceAssistant} from "../../shared/types/voice-assistant";
+import {VoiceAssistantMsg} from "src/app/shared/ros-message-types/voiceAssistant";
 
 @Component({
     selector: "app-voice-assistant-nav",
@@ -17,6 +17,6 @@ export class VoiceAssistantNavComponent {
         this.voiceAssistantActiveStatus = !this.voiceAssistantActiveStatus;
         this.rosService.sendVoiceActivationMessage({
             activationFlag: this.voiceAssistantActiveStatus,
-        } as VoiceAssistant);
+        } as VoiceAssistantMsg);
     }
 }

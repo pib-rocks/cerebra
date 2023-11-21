@@ -1,18 +1,18 @@
 import {TestBed} from "@angular/core/testing";
 
+import {ApiService} from "../../shared/services/api.service";
+import {HttpClientTestingModule} from "@angular/common/http/testing";
 import {MotorService} from "./motor.service";
-import {Group} from "../../types/motor.enum";
-import {Motor} from "../../types/motor.class";
-import {MotorSettings} from "../../types/motor-settings.class";
-import {RosService} from "../ros-service/ros.service";
+import {Group} from "../types/motor.enum";
+import {Motor} from "../types/motor.class";
+import {MotorSettings} from "../types/motor-settings.class";
+import {RosService} from "../services/ros-service/ros.service";
 import {
     JointTrajectoryMessage,
     createEmptyJointTrajectoryMessage,
-} from "../../ros-message-types/jointTrajectoryMessage";
-import {MotorSettingsMessage} from "../../ros-message-types/motorSettingsMessage";
-import {createJointTrajectoryPoint} from "../../ros-message-types/jointTrajectoryPoint";
-import {ApiService} from "../api.service";
-import {HttpClientTestingModule} from "@angular/common/http/testing";
+} from "../ros-message-types/jointTrajectoryMessage";
+import {MotorSettingsMessage} from "../ros-message-types/motorSettingsMessage";
+import {createJointTrajectoryPoint} from "../ros-message-types/jointTrajectoryPoint";
 import {BehaviorSubject} from "rxjs";
 
 describe("MotorService", () => {

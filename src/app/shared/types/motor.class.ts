@@ -95,12 +95,12 @@ export class Motor {
     parseMotorToSettingsMessage(): MotorSettingsMessage {
         return {
             motor_name: this.name,
-            turned_on: this.settings.turned_on,
-            pulse_width_max: this.settings.pulse_width_max,
-            pulse_width_min: this.settings.pulse_width_min,
+            turned_on: this.settings.turnedOn,
+            pulse_width_max: this.settings.pulseWidthMax,
+            pulse_width_min: this.settings.pulseWidthMin,
             velocity: this.settings.velocity,
-            rotation_range_max: this.settings.rotation_range_max,
-            rotation_range_min: this.settings.rotation_range_min,
+            rotation_range_max: this.settings.rotationRangeMax,
+            rotation_range_min: this.settings.rotationRangeMin,
             deceleration: this.settings.deceleration,
             acceleration: this.settings.acceleration,
             period: this.settings.period,

@@ -13,6 +13,7 @@ import {MotorService} from "../../shared/services/motor-service/motor.service";
 import {Group} from "../../shared/types/motor.enum";
 import {ActivatedRoute} from "@angular/router";
 import {BehaviorSubject} from "rxjs";
+import {HttpClientTestingModule} from "@angular/common/http/testing";
 
 describe("ArmComponent", () => {
     let component: ArmComponent;
@@ -35,6 +36,7 @@ describe("ArmComponent", () => {
                 AppRoutingModule,
                 ReactiveFormsModule,
                 RouterTestingModule,
+                HttpClientTestingModule,
             ],
             providers: [
                 RosService,
