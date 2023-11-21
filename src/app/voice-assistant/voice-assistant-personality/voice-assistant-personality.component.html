@@ -50,7 +50,9 @@
             </button>
         </div>
     </div>
-    <form [formGroup]="personalityForm">
+    <form
+        [formGroup]="personalityForm"
+        (keydown)="($event).key ==='Enter' ? this.savePersonality(): ''">
         <div
             class="row m-2 mt-4 pr-2"
             id="row-name">
@@ -121,6 +123,7 @@
                         <div class="row mt-1 p-0">
                             <button
                                 id="up"
+                                type="button"
                                 (click)="adjustThreshold('0.1')">
                                 &#9650;
                             </button>
@@ -128,6 +131,7 @@
                         <div class="row p-0">
                             <button
                                 id="down"
+                                type="button"
                                 (click)="adjustThreshold('-0.1')">
                                 &#9660;
                             </button>

@@ -111,8 +111,11 @@ export class VoiceAssistantPersonalityComponent implements OnInit {
     };
 
     openEditModal = () => {
-        this.uuid = this.router.url.split("/").pop();
-        if (this.uuid) {
+        this.uuid =
+            this.router.url.split("/").length > 3
+                ? this.router.url.split("/").pop()
+                : undefined;
+        if (this.uuid && this.voiceAssistantService.personalities.length > 0) {
             const updatePersonality = this.voiceAssistantService.getPersonality(
                 this.uuid,
             );
@@ -158,19 +161,9 @@ export class VoiceAssistantPersonalityComponent implements OnInit {
 
     deletePersonality = () => {
         const uuid = this.router.url.split("/").pop();
-        if (uuid) {
+        if (uuid && this.voiceAssistantService.personalities.length > 0) {
             this.voiceAssistantService.deletePersonalityById(uuid);
-            this.router.navigate(
-                [
-                    this.voiceAssistantService.personalities[0]
-                        .personalityId === uuid
-                        ? this.voiceAssistantService.personalities[1]
-                              .personalityId
-                        : this.voiceAssistantService.personalities[0]
-                              .personalityId,
-                ],
-                {relativeTo: this.route},
-            );
+            localStorage.setItem("personality", "");
         }
     };
 

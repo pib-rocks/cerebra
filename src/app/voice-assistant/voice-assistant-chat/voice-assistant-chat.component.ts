@@ -2,7 +2,7 @@ import {Component, OnInit, TemplateRef, ViewChild} from "@angular/core";
 import {FormControl, Validators} from "@angular/forms";
 import {ActivatedRoute, Router} from "@angular/router";
 import {NgbModal, NgbModalRef} from "@ng-bootstrap/ng-bootstrap";
-import {Observable} from "rxjs";
+import {BehaviorSubject, Observable} from "rxjs";
 import {SidebarElement} from "src/app/shared/interfaces/sidebar-element.interface";
 import {ChatService} from "src/app/shared/services/chat.service";
 import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
@@ -27,24 +27,17 @@ export class VoiceAssistantChatComponent implements OnInit {
         private router: Router,
         private chatService: ChatService,
         private voiceAssistantService: VoiceAssistantService,
-        private route: ActivatedRoute,
     ) {}
 
     ngOnInit() {
-        localStorage.setItem("voice-assistant-tab", "chat");
-        if (localStorage.getItem("personality")) {
-            this.personalityId = localStorage.getItem("personality");
-        } else if (this.uuid) {
-            this.personalityId = this.chatService.getChat(this.uuid)
-                ?.personalityId;
-        } else if (this.voiceAssistantService.personalities.length > 0) {
-            this.personalityId =
-                this.voiceAssistantService.personalities[0].clone().personalityId;
-        }
-        if (this.personalityId) {
+        this.personalityId = localStorage.getItem("personality");
+        if (
+            this.personalityId &&
+            this.voiceAssistantService.getPersonality(this.personalityId)
+        ) {
             this.subject = this.chatService.getSubject(this.personalityId);
         }
-
+        localStorage.setItem("voice-assistant-tab", "chat");
         this.topicFormControl.setValidators([
             Validators.required,
             Validators.minLength(2),
@@ -116,19 +109,12 @@ export class VoiceAssistantChatComponent implements OnInit {
     };
 
     deleteChat = () => {
-        this.uuid = this.router.url.split("/").pop();
-        if (this.uuid) {
-            this.chatService.deleteChatById(this.uuid);
-            this.router.navigate(
-                [
-                    this.chatService.chats[0].chatId === this.uuid
-                        ? this.chatService.chats[1].chatId
-                        : this.chatService.chats[0].chatId,
-                ],
-                {relativeTo: this.route},
-            );
+        const uuid = this.router.url.split("/").pop();
+        if (uuid) {
+            this.chatService.deleteChatById(uuid);
+            localStorage.removeItem("chat");
         } else {
-            throw Error("not implemented");
+            throw Error("no id provided");
         }
     };
 
