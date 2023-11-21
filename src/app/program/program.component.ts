@@ -1,7 +1,7 @@
 import {OnInit, Component, ViewChild, TemplateRef} from "@angular/core";
 
 import {Observable, Subject} from "rxjs";
-import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
+import {NgbModal, NgbModalRef} from "@ng-bootstrap/ng-bootstrap";
 import {FormControl, Validators} from "@angular/forms";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Program} from "../shared/types/program";
@@ -16,7 +16,7 @@ import {ProgramService} from "../shared/services/program.service";
 export class ProgramComponent implements OnInit {
     @ViewChild("modalContent") modalContent: TemplateRef<any> | undefined;
     closeResult!: string;
-
+    ngbModalRef?: NgbModalRef;
     subject!: Observable<SidebarElement[]>;
     programIcon: string = "";
     nameFormControl: FormControl = new FormControl("");
@@ -51,16 +51,23 @@ export class ProgramComponent implements OnInit {
     showModal: () => Promise<void> = async () => {
         let result;
         try {
-            result = await this.modalService.open(this.modalContent, {
-                ariaLabelledBy: "modal-basic-title",
-                size: "sm",
-                windowClass: "myCustomModalClass",
-                backdropClass: "myCustomBackdropClass",
-            }).result;
+            result = await (this.ngbModalRef = this.modalService.open(
+                this.modalContent,
+                {
+                    ariaLabelledBy: "modal-basic-title",
+                    size: "sm",
+                    windowClass: "myCustomModalClass",
+                    backdropClass: "myCustomBackdropClass",
+                },
+            )).result;
         } catch (_) {
             return;
         }
         throw new Error(`unexpected result: ${JSON.stringify(result)}`);
+    };
+
+    closeModal = () => {
+        this.ngbModalRef?.close("cancelled");
     };
 
     addProgram = () => {
@@ -97,6 +104,11 @@ export class ProgramComponent implements OnInit {
         if (!program) return;
         this.programService.deleteProgramByProgramNumber(program.programNumber);
     };
+
+    saveProgram() {
+        //Add logic in subsequent story
+        this.ngbModalRef?.close("saved");
+    }
 
     headerElements = [
         {
