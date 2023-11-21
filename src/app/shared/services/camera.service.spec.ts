@@ -5,8 +5,8 @@ import {ApiService} from "./api.service";
 import {CameraService} from "./camera.service";
 import {CameraSetting} from "../types/camera-settings";
 import {BehaviorSubject} from "rxjs";
-import {RosService} from "../ros.service";
 import {HttpClient} from "@angular/common/http";
+import {RosService} from "./ros-service/ros.service";
 
 describe("CameraService", () => {
     let service: CameraService;
