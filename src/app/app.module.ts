@@ -15,7 +15,6 @@ import {MatSliderModule} from "@angular/material/slider";
 import {HeadComponent} from "./head/head.component";
 import {ProgramComponent} from "./program/program.component";
 import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
-import {DialogContentComponent} from "./program/dialog-content/dialog-content.component";
 import {NavBarComponent} from "./nav-bar/nav-bar.component";
 import {SliderComponent} from "./slider/slider.component";
 import {CircularSliderComponent} from "./slider/circular-slider/circular-slider.component";
@@ -44,7 +43,6 @@ import {ProgramWorkspaceComponent} from "./program/program-workspace/program-wor
         ArmComponent,
         HeadComponent,
         ProgramComponent,
-        DialogContentComponent,
         NavBarComponent,
         SliderComponent,
         CircularSliderComponent,
