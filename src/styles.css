@@ -17,6 +17,7 @@
 :root {
     --cerebra-pink: #e10072;
     --cerebra-button-color: #0094df;
+    --cerebra-text-color-default: #fff: ;
 }
 
 .btn {
