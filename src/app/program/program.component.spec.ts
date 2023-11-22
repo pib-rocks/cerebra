@@ -69,7 +69,7 @@ describe("ProgramComponent", () => {
         expect(component).toBeTruthy();
     });
 
-    it("should get the correct rpogram from the current route", () => {
+    it("should get the correct program from the current route", () => {
         router.url = "program/id-0";
         const expected = new Program("testname");
         programService.getProgramFromCache.and.returnValue(expected);
