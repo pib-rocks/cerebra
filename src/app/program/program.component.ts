@@ -59,8 +59,8 @@ export class ProgramComponent implements OnInit {
 
     addProgram = () => {
         this.nameFormControl.setValue("");
-        this.showModal().then(
-            () => {
+        this.showModal()
+            .then(() => {
                 if (this.nameFormControl.valid) {
                     this.programService
                         .createProgram(new Program(this.nameFormControl.value))
@@ -68,17 +68,16 @@ export class ProgramComponent implements OnInit {
                             this.selected.next(program.programNumber),
                         );
                 }
-            },
-            () => {},
-        );
+            })
+            .catch(() => undefined);
     };
 
     editProgram = () => {
         const program = this.getProgramFromRoute()?.clone();
         if (!program) return;
         this.nameFormControl.setValue(program.name);
-        this.showModal().then(
-            () => {
+        this.showModal()
+            .then(() => {
                 if (this.nameFormControl.valid) {
                     program.name = this.nameFormControl.value;
                     this.programService
@@ -87,9 +86,8 @@ export class ProgramComponent implements OnInit {
                             this.selected.next(program.programNumber),
                         );
                 }
-            },
-            () => {},
-        );
+            })
+            .catch(() => undefined);
     };
 
     deleteProgram = () => {
