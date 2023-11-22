@@ -32,7 +32,7 @@ export class VoiceAssistantPersonalityComponent implements OnInit {
     ngOnInit() {
         localStorage.setItem("voice-assistant-tab", "personality");
         this.personalityForm = new FormGroup({
-            nameinput: new FormControl("", {
+            "name-input": new FormControl("", {
                 nonNullable: true,
                 validators: [
                     Validators.required,
@@ -120,7 +120,7 @@ export class VoiceAssistantPersonalityComponent implements OnInit {
                 this.uuid,
             );
             this.personalityForm.patchValue({
-                nameinput: updatePersonality?.name,
+                "name-input": updatePersonality?.name,
                 gender: updatePersonality?.gender,
                 pausethreshold: updatePersonality?.pauseThreshold,
             });
@@ -135,7 +135,7 @@ export class VoiceAssistantPersonalityComponent implements OnInit {
             this.voiceAssistantService.createPersonality(
                 new VoiceAssistant(
                     "",
-                    this.personalityForm.controls["nameinput"].value,
+                    this.personalityForm.controls["name-input"].value,
                     this.personalityForm.controls["gender"].value,
                     this.personalityForm.controls["pausethreshold"].value,
                 ),
@@ -149,7 +149,7 @@ export class VoiceAssistantPersonalityComponent implements OnInit {
             ?.clone();
         if (updatePersonality) {
             updatePersonality.name =
-                this.personalityForm.controls["nameinput"].value;
+                this.personalityForm.controls["name-input"].value;
             updatePersonality.gender =
                 this.personalityForm.controls["gender"].value;
             updatePersonality.pauseThreshold =

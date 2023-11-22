@@ -57,17 +57,17 @@
             class="row m-2 mt-4 pr-2"
             id="row-name">
             <label
-                for="nameinput"
+                for="name-input"
                 class="col-3 mt-2 justify-content-end"
                 id="label-name"
                 >Name</label
             >
             <input
-                [ngClass]="(!this.personalityForm.controls['nameinput'].valid && !this.personalityForm.controls['nameinput'].pristine) ? 'invalid-form' : '' "
+                [ngClass]="(!this.personalityForm.controls['name-input'].valid && !this.personalityForm.controls['name-input'].pristine) ? 'invalid-form' : '' "
                 class="col-9"
                 type="text"
-                formControlName="nameinput"
-                id="nameinput" />
+                formControlName="name-input"
+                id="name-input" />
         </div>
         <div class="row m-2 ml-3">
             <div

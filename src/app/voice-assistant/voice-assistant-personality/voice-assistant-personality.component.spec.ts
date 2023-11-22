@@ -71,17 +71,17 @@ describe("VoiceAssistantPersonalityComponent", () => {
 
     it("should validate the modal form when calling formControlsValid", () => {
         component.personalityForm.patchValue({
-            nameinput: "test",
+            "name-input": "test",
             gender: "Male",
             pausethreshold: 0.5,
         });
         expect(component.personalityForm.valid).toBe(true);
         component.personalityForm.patchValue({
-            nameinput: "1",
+            "name-input": "1",
         });
         expect(component.personalityForm.valid).toBe(false);
         component.personalityForm.patchValue({
-            nameinput: "test",
+            "name-input": "test",
             gender: null,
         });
         expect(component.personalityForm.valid).toBe(false);
@@ -124,7 +124,7 @@ describe("VoiceAssistantPersonalityComponent", () => {
             mockModalRef as any,
         );
         component.openAddModal();
-        expect(component.personalityForm.controls["nameinput"].value).toBe("");
+        expect(component.personalityForm.controls["name-input"].value).toBe("");
         expect(component.personalityForm.controls["gender"].value).toBe(
             "Female",
         );
@@ -149,7 +149,7 @@ describe("VoiceAssistantPersonalityComponent", () => {
         ).and.returnValue(voiceAssistantService.personalities[0]);
         component.openEditModal();
         expect(spyOnGetPersonality).toHaveBeenCalled();
-        expect(component.personalityForm.controls["nameinput"].value).toBe(
+        expect(component.personalityForm.controls["name-input"].value).toBe(
             "Testuser",
         );
         expect(component.personalityForm.controls["gender"].value).toBe("Male");
