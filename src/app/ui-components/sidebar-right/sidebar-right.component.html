@@ -22,8 +22,10 @@
             routerLinkActive="sidebar-element-active">
             <div class="col-auto">
                 <a [routerLink]="sidebarElement.getUUID()"
-                    ><img [src]="elementIcon" /> {{ sidebarElement.getName()
-                    }}</a
+                    ><img
+                        *ngIf="elementIcon"
+                        [src]="elementIcon" />
+                    {{ sidebarElement.getName() }}</a
                 >
             </div>
         </div>
