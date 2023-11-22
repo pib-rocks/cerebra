@@ -60,7 +60,10 @@ export class VoiceAssistantChatComponent implements OnInit {
     };
 
     openEditModal = () => {
-        this.uuid = this.router.url.split("/").pop();
+        this.uuid =
+            this.router.url.split("/").length > 3
+                ? this.router.url.split("/").pop()
+                : undefined;
         console.log(this.uuid);
         if (this.uuid) {
             const updateChat = this.chatService.getChat(this.uuid);
@@ -109,12 +112,13 @@ export class VoiceAssistantChatComponent implements OnInit {
     };
 
     deleteChat = () => {
-        const uuid = this.router.url.split("/").pop();
+        const uuid =
+            this.router.url.split("/").length > 3
+                ? this.router.url.split("/").pop()
+                : undefined;
         if (uuid) {
             this.chatService.deleteChatById(uuid);
             localStorage.removeItem("chat");
-        } else {
-            throw Error("no id provided");
         }
     };
 

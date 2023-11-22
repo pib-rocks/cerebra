@@ -1,7 +1,6 @@
 import {Component, OnInit} from "@angular/core";
 import {FormControl} from "@angular/forms";
 import {ActivatedRoute, Params} from "@angular/router";
-import {throwError} from "rxjs";
 import {ChatService} from "src/app/shared/services/chat.service";
 import {Chat} from "src/app/shared/types/chat.class";
 
