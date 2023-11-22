@@ -48,55 +48,48 @@ export class ProgramComponent implements OnInit {
         return this.programService.getProgramFromCache(programNumber);
     }
 
-    showModal: () => Promise<void> = async () => {
-        let result;
-        try {
-            result = await (this.ngbModalRef = this.modalService.open(
-                this.modalContent,
-                {
-                    ariaLabelledBy: "modal-basic-title",
-                    size: "sm",
-                    windowClass: "myCustomModalClass",
-                    backdropClass: "myCustomBackdropClass",
-                },
-            )).result;
-        } catch (_) {
-            return;
-        }
-        throw new Error(`unexpected result: ${JSON.stringify(result)}`);
-    };
-
-    closeModal = () => {
-        this.ngbModalRef?.close("cancelled");
-    };
+    showModal(): Promise<string> {
+        return this.modalService.open(this.modalContent, {
+            ariaLabelledBy: "modal-basic-title",
+            size: "sm",
+            windowClass: "myCustomModalClass",
+            backdropClass: "myCustomBackdropClass",
+        }).result;
+    }
 
     addProgram = () => {
         this.nameFormControl.setValue("");
-        this.showModal().then(() => {
-            if (this.nameFormControl.valid) {
-                this.programService
-                    .createProgram(new Program(this.nameFormControl.value))
-                    .subscribe((program) =>
-                        this.selected.next(program.programNumber),
-                    );
-            }
-        });
+        this.showModal().then(
+            () => {
+                if (this.nameFormControl.valid) {
+                    this.programService
+                        .createProgram(new Program(this.nameFormControl.value))
+                        .subscribe((program) =>
+                            this.selected.next(program.programNumber),
+                        );
+                }
+            },
+            () => {},
+        );
     };
 
     editProgram = () => {
         const program = this.getProgramFromRoute()?.clone();
         if (!program) return;
         this.nameFormControl.setValue(program.name);
-        this.showModal().then(() => {
-            if (this.nameFormControl.valid) {
-                program.name = this.nameFormControl.value;
-                this.programService
-                    .updateProgramByProgramNumber(program)
-                    .subscribe((program) =>
-                        this.selected.next(program.programNumber),
-                    );
-            }
-        });
+        this.showModal().then(
+            () => {
+                if (this.nameFormControl.valid) {
+                    program.name = this.nameFormControl.value;
+                    this.programService
+                        .updateProgramByProgramNumber(program)
+                        .subscribe((program) =>
+                            this.selected.next(program.programNumber),
+                        );
+                }
+            },
+            () => {},
+        );
     };
 
     deleteProgram = () => {
@@ -104,11 +97,6 @@ export class ProgramComponent implements OnInit {
         if (!program) return;
         this.programService.deleteProgramByProgramNumber(program.programNumber);
     };
-
-    saveProgram() {
-        //Add logic in subsequent story
-        this.ngbModalRef?.close("saved");
-    }
 
     headerElements = [
         {

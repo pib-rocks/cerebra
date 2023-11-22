@@ -31,7 +31,7 @@
             <button
                 id="modal-close-button"
                 type="button"
-                (click)="modal.dismiss('Cross click')"
+                (click)="modal.dismiss('Cross')"
                 class="btn">
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -71,7 +71,7 @@
                 type="button"
                 class="btn btn-regular"
                 id="modal-save-button"
-                (click)="this.saveProgram()">
+                (click)="modal.close('Save')">
                 Save
             </button>
         </div>
@@ -80,7 +80,7 @@
                 type="button"
                 class="btn btn-regular"
                 id="modal-cancel-button"
-                (click)="this.closeModal()">
+                (click)="modal.dismiss('Cancel')">
                 Cancel
             </button>
         </div>

@@ -28,8 +28,6 @@ export class SideBarRightComponent implements OnInit {
     ngOnInit() {
         this.subject.subscribe((serviceElements: SidebarElement[]) => {
             this.sidebarElements = serviceElements;
-            console.log(this.sidebarElements.length);
-
             if (this.sidebarElements.length == 0) {
                 this.router.navigate(["."], {relativeTo: this.route});
             } else if (localStorage.getItem(this.lStorage)) {

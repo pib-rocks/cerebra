@@ -18,7 +18,6 @@ export class ProgramService {
     }
 
     private updateProgram(updateProgram: Program) {
-        console.info(this.programs);
         const index = this.programs.findIndex(
             (p) => p.programNumber === updateProgram.programNumber,
         );
