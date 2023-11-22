@@ -69,24 +69,6 @@ describe("ProgramComponent", () => {
         expect(component).toBeTruthy();
     });
 
-    it("should process the promise returned by showModal() correctly, if it rejects", async () => {
-        modalService.open.and.returnValue({
-            result: Promise.reject(new Error("")),
-        } as NgbModalRef);
-        const result = fixture.componentInstance.showModal();
-        await expectAsync(result).toBeResolved();
-    });
-
-    it("should process the promise returned by showModal() correctly, if it resolves", async () => {
-        modalService.open.and.returnValue({
-            result: Promise.resolve("result"),
-        } as NgbModalRef);
-        const result = fixture.componentInstance.showModal();
-        await expectAsync(result).toBeRejectedWith(
-            new Error('unexpected result: "result"'),
-        );
-    });
-
     it("should get the correct rpogram from the current route", () => {
         router.url = "program/id-0";
         const expected = new Program("testname");
@@ -105,9 +87,9 @@ describe("ProgramComponent", () => {
                     "",
                 );
                 fixture.componentInstance.nameFormControl.setValue("new-name");
-                callback?.();
+                callback?.("");
             },
-        } as Promise<void>);
+        } as Promise<string>);
         const selectedSpy = spyOn(fixture.componentInstance.selected, "next");
         programService.createProgram.and.returnValue(
             new BehaviorSubject(new Program("new-name", {}, "id-0")),
@@ -133,9 +115,9 @@ describe("ProgramComponent", () => {
         ).and.returnValue({
             then: (callback) => {
                 fixture.componentInstance.nameFormControl.setValue("new-name");
-                callback?.();
+                callback?.("");
             },
-        } as Promise<void>);
+        } as Promise<string>);
         const expected = new Program("testname", {}, "id-0");
         const selectedSpy = spyOn(fixture.componentInstance.selected, "next");
         const getProgramSpy = spyOn(
