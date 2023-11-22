@@ -17,11 +17,11 @@ import {Observable, asyncScheduler} from "rxjs";
     styleUrls: ["./multi-slider.component.css"],
 })
 export class MultiSliderComponent implements OnInit, AfterViewInit {
-    @ViewChild("bubble") bubbleElement!: ElementRef;
+    @ViewChild("bubbleLower") bubbleElementLower!: ElementRef;
     @ViewChild("bubbleUpper") bubbleElementUpper!: ElementRef;
-    @ViewChild("bubbleInput") bubbleInput!: ElementRef;
+    @ViewChild("bubbleInputLower") bubbleInputLower!: ElementRef;
     @ViewChild("bubbleInputUpper") bubbleInputUpper!: ElementRef;
-    @ViewChild("range") sliderElem!: ElementRef;
+    @ViewChild("rangeLower") sliderElemLower!: ElementRef;
     @ViewChild("rangeUpper") sliderElemUpper!: ElementRef;
     @ViewChild("slider") slider!: ElementRef;
 
@@ -47,7 +47,7 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
 
     timer: any = null;
 
-    bubblePosition!: number;
+    bubblePositionLower!: number;
     bubblePositionUpper!: number;
     isInputVisible?: boolean;
     maxBubblePosition = 100;
@@ -89,13 +89,13 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
 
     ngAfterViewInit() {
         this.setThumbPosition();
-        const sliderWidth = this.sliderElem?.nativeElement.clientWidth;
+        const sliderWidth = this.sliderElemLower?.nativeElement.clientWidth;
         if (sliderWidth !== undefined) {
             this.minBubblePosition = this.pixelsFromEdge;
             this.maxBubblePosition = sliderWidth - this.pixelsFromEdge;
         }
         this.renderer.setStyle(
-            this.sliderElem.nativeElement,
+            this.sliderElemLower.nativeElement,
             "background",
             "linear-gradient(to right, #324c71, #324c71 var(--pos-lower), #e10072 var(--pos-lower), #e10072 var(--pos-upper), #324c71 var(--pos-upper), #324c71)",
         );
@@ -154,6 +154,20 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
         }
     }
 
+    toggleInputInvisible(
+        bubbleFormControl: FormControl,
+        sliderFormControl: FormControl,
+    ) {
+        const value = this.sanitizedSliderValue(bubbleFormControl.value);
+        if (isNaN(value)) {
+            bubbleFormControl.setValue(sliderFormControl.value);
+        } else {
+            bubbleFormControl.setValue(value);
+            this.setSliderValue(sliderFormControl, value);
+            this.isInputVisible = false;
+        }
+    }
+
     sliderInputFromBubble(
         bubbleFormControl: FormControl,
         sliderFormControl: FormControl,
@@ -166,38 +180,6 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
             bubbleFormControl.setValue(value);
             this.setSliderValue(sliderFormControl, value);
             this.isInputVisible = false;
-        }
-    }
-
-    validateAndSetBubbleInput(
-        bubbleFormControl: FormControl,
-        sliderFormControl: FormControl,
-    ) {
-        if (
-            bubbleFormControl.hasError("required") ||
-            bubbleFormControl.hasError("pattern")
-        ) {
-            bubbleFormControl.setValue(sliderFormControl.value);
-        } else if (bubbleFormControl.hasError("min")) {
-            bubbleFormControl.setValue(this.minValue);
-            this.setSliderValue(sliderFormControl, this.minValue);
-        } else if (bubbleFormControl.hasError("max")) {
-            bubbleFormControl.setValue(this.maxValue);
-            this.setSliderValue(sliderFormControl, this.maxValue);
-        } else if (bubbleFormControl.hasError("steppingError")) {
-            let intBubbleFormControl = Math.floor(
-                bubbleFormControl.value * 1000,
-            );
-            const moduloValue =
-                intBubbleFormControl % Math.floor(this.step * 1000);
-            intBubbleFormControl -= moduloValue;
-            intBubbleFormControl /= 1000;
-            this.setSliderValue(sliderFormControl, intBubbleFormControl);
-        } else {
-            this.setSliderValue(
-                sliderFormControl,
-                Number(bubbleFormControl.value),
-            );
         }
     }
 
@@ -219,16 +201,17 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
         bubblePosSetter(nextBubblePos);
 
         bubbleForm.setValue(Number(sliderForm.value));
-        bubbleElem.style.left = `calc(${nextBubblePos}px)`;
+        bubbleElem.style.left = `calc(${(nextBubblePos / sliderWidth) * 100}%)`;
     }
 
     setThumbPosition() {
         this.setSingleThumbPosition(
-            this.sliderElem.nativeElement,
+            this.sliderElemLower.nativeElement,
             this.sliderFormControlLower,
-            this.bubbleElement.nativeElement,
+            this.bubbleElementLower.nativeElement,
             this.bubbleFormControlLower,
-            (val) => setTimeout(() => (this.bubblePosition = val)),
+            (val) =>
+                asyncScheduler.schedule(() => (this.bubblePositionLower = val)),
         );
         this.setSingleThumbPosition(
             this.sliderElemUpper.nativeElement,
@@ -242,14 +225,14 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
     }
 
     setGradient() {
-        const sliderWidth = this.sliderElem.nativeElement.clientWidth;
+        const sliderWidth = this.sliderElemLower.nativeElement.clientWidth;
 
         const upper =
             this.sliderFormControlLower.value >=
             this.sliderFormControlUpper.value
-                ? this.bubbleElement.nativeElement.offsetLeft
+                ? this.bubbleElementLower.nativeElement.offsetLeft
                 : this.bubbleElementUpper.nativeElement.offsetLeft;
-        this.sliderElem.nativeElement.style.setProperty(
+        this.sliderElemLower.nativeElement.style.setProperty(
             "--pos-upper",
             ((upper / sliderWidth) * 100).toString(10) + "%",
         );
@@ -257,9 +240,9 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
         const lower =
             this.sliderFormControlLower.value <
             this.sliderFormControlUpper.value
-                ? this.bubbleElement.nativeElement.offsetLeft
+                ? this.bubbleElementLower.nativeElement.offsetLeft
                 : this.bubbleElementUpper.nativeElement.offsetLeft;
-        this.sliderElem.nativeElement.style.setProperty(
+        this.sliderElemLower.nativeElement.style.setProperty(
             "--pos-lower",
             ((lower / sliderWidth) * 100).toString(10) + "%",
         );

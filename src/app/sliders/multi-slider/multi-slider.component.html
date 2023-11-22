@@ -8,7 +8,7 @@
 <div class="range-wrap">
     <div
         class="range-value"
-        #bubble>
+        #bubbleLower>
         <input
             class="bubble-input overlay"
             id="input_{{id}}"
@@ -18,12 +18,12 @@
             [formControl]="bubbleFormControlLower"
             (blur)="toggleInputInvisible(bubbleFormControlLower, sliderFormControlLower)"
             (keydown.enter)="toggleInputInvisible(bubbleFormControlLower, sliderFormControlLower)"
-            #bubbleInput />
+            #bubbleInputLower />
         <div
             class="bubble-span overlay"
             id="bubble_span_{{ id }}"
             [ngClass]="isInputVisible ? 'invisible' : ''"
-            (dblclick)="toggleInputVisible(bubbleInput, sliderFormControlLower, bubbleFormControlLower)">
+            (dblclick)="toggleInputVisible(bubbleInputLower, sliderFormControlLower, bubbleFormControlLower)">
             {{ sliderFormControlLower.value }}{{ unitShort }}
         </div>
     </div>
@@ -37,24 +37,24 @@
             [min]="minValue"
             [max]="maxValue"
             [formControl]="bubbleFormControlUpper"
-            (blur)="sliderInputFromBubble(bubbleFormControlUpper, sliderFormControlUpper)"
-            (keydown.enter)="sliderInputFromBubble(bubbleFormControlUpper, sliderFormControlUpper)"
+            (blur)="toggleInputInvisible(bubbleFormControlUpper, sliderFormControlUpper)"
+            (keydown.enter)="toggleInputInvisible(bubbleFormControlUpper, sliderFormControlUpper)"
             #bubbleInputUpper />
         <div
             class="bubble-span overlay"
             id="bubble_span_upper_{{ id }}"
             [ngClass]="isInputVisible ? 'invisible' : ''"
-            (dblclick)="showBubbleInputField(bubbleInputUpper, sliderFormControlUpper, bubbleFormControlUpper)">
+            (dblclick)="toggleInputVisible(bubbleInputUpper, sliderFormControlUpper, bubbleFormControlUpper)">
             {{ sliderFormControlUpper.value }}{{ unitShort }}
         </div>
     </div>
     <span
-        *ngIf="bubblePosition >= minBubblePosition && bubblePositionUpper >= minBubblePosition"
+        *ngIf="minBubblePosition <= bubblePositionLower && minBubblePosition <= bubblePositionUpper"
         class="bubble-span-min"
         >{{ minValue }}{{ unitShort }}</span
     >
     <span
-        *ngIf="bubblePosition <= maxBubblePosition && bubblePositionUpper <= maxBubblePosition"
+        *ngIf="maxBubblePosition >= bubblePositionLower && maxBubblePosition >= bubblePositionUpper"
         class="bubble-span-max"
         >{{ maxValue }}{{ unitShort }}</span
     >
@@ -75,7 +75,7 @@
             [step]="step"
             [formControl]="sliderFormControlLower"
             (input)="setThumbPosition(); sendEvent();"
-            #range />
+            #rangeLower />
         <input
             class="range top-layer"
             type="range"
