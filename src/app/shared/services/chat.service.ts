@@ -15,7 +15,6 @@ export class ChatService implements SidebarService {
 
     constructor(private apiService: ApiService) {
         this.getAllChats();
-        console.log(this.chats);
     }
 
     getSubject(uuid: string): Observable<SidebarElement[]> {

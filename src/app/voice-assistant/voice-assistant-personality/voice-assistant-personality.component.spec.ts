@@ -32,7 +32,7 @@ describe("VoiceAssistantPersonalityComponent", () => {
                 {
                     provide: Router,
                     useValue: {
-                        url: "voice-assistant/personality/1234",
+                        url: "localhost/voice-assistant/personality/1234",
                     },
                 },
             ],
@@ -143,7 +143,12 @@ describe("VoiceAssistantPersonalityComponent", () => {
         const spyOnShowModal = spyOn(modalService, "open").and.returnValue(
             mockModalRef as any,
         );
+        const spyOnGetPersonality = spyOn(
+            voiceAssistantService,
+            "getPersonality",
+        ).and.returnValue(voiceAssistantService.personalities[0]);
         component.openEditModal();
+        expect(spyOnGetPersonality).toHaveBeenCalled();
         expect(component.personalityForm.controls["nameinput"].value).toBe(
             "Testuser",
         );
