@@ -50,6 +50,7 @@
 
 .sidebar-element div {
     width: 100%;
+    min-height: 2.5rem;
 }
 
 .sidebar-element a {
@@ -77,6 +78,6 @@
 
 .sidebar-element:hover a,
 .sidebar-element-active a {
-    border-bottom: 0.5rem solid var(--cerebra-pink);
+    border-bottom: 4px solid var(--cerebra-pink);
     color: white;
 }
