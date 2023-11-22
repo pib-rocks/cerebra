@@ -42,8 +42,8 @@ describe("MultiSliderComponent", () => {
     });
 
     it("should change values appropriately for each sliderformcontrol after receiving a message from parent component", () => {
-        testSubject.next([0, 100]);
-        const sfc: FormControl = component.sliderFormControl;
+        (component.messageReceiver$ as Subject<number[]>).next([0, 100]);
+        const sfc: FormControl = component.sliderFormControlLower;
         const sfcUpper: FormControl = component.sliderFormControlUpper;
         fixture.detectChanges();
         expect(sfc.value).toBe(0);
@@ -59,8 +59,8 @@ describe("MultiSliderComponent", () => {
     it("should set the value and thumb for the respective form control and send the event when calling setSliderValue", () => {
         const spySendEvent = spyOn(component, "sendEvent");
         const spySetThumbPosition = spyOn(component, "setThumbPosition");
-        component.setSliderValue(component.sliderFormControl, 55);
-        expect(component.sliderFormControl.value).toBe(55);
+        component.setSliderValue(component.sliderFormControlLower, 55);
+        expect(component.sliderFormControlLower.value).toBe(55);
         expect(spySendEvent).toHaveBeenCalled();
         expect(spySetThumbPosition).toHaveBeenCalled();
         component.setSliderValue(component.sliderFormControlUpper, 133);
@@ -70,7 +70,7 @@ describe("MultiSliderComponent", () => {
     });
 
     it("should set bubblePositions appropriately when calling setThumbPosition", fakeAsync(() => {
-        component.sliderFormControl.setValue(0);
+        component.sliderFormControlLower.setValue(0);
         component.sliderFormControlUpper.setValue(200);
         const sliderWidth = component.sliderElem.nativeElement.clientWidth;
         const thumbWidth = component.thumbWidth;
@@ -87,7 +87,7 @@ describe("MultiSliderComponent", () => {
 
     it("should emit an event when sendEvent has been called", fakeAsync(() => {
         const spyEventEmitter = spyOn(component.multiSliderEvent, "emit");
-        component.sliderFormControl.setValue(100);
+        component.sliderFormControlLower.setValue(100);
         component.sliderFormControlUpper.setValue(150);
         component.sendEvent();
         tick(200);
@@ -96,8 +96,8 @@ describe("MultiSliderComponent", () => {
 
     it("should call respective functions and set values when setting inputs whith slider bubbles", () => {
         const spySetSliderValue = spyOn(component, "setSliderValue");
-        const sFC = component.sliderFormControl;
-        const bFC = component.bubbleFormControl;
+        const sFC = component.sliderFormControlLower;
+        const bFC = component.bubbleFormControlLower;
         bFC.setValue(150);
         sFC.setValue(50);
         component.sliderInputFromBubble(bFC, sFC);
@@ -112,7 +112,7 @@ describe("MultiSliderComponent", () => {
 
     it("should change the color gradient when calling setGradient", () => {
         component.ngAfterViewInit();
-        component.sliderFormControl.setValue(0);
+        component.sliderFormControlLower.setValue(0);
         component.sliderFormControlUpper.setValue(200);
 
         const debugElement = fixture.debugElement.query(
@@ -137,5 +137,50 @@ describe("MultiSliderComponent", () => {
 
         expect(posLowerNum).toBeCloseTo(expectedLower, 5);
         expect(posUpperNum).toBeCloseTo(expectedUpper, 5);
+    });
+
+    it("should compute the correct reltive slider value", () => {
+        expect(component.getRelativeSliderValue(-160)).toBeCloseTo(0.1, 3);
+    });
+
+    it("should compute the correct absolute slider value", () => {
+        expect(component.getAbsoluteSliderValue(0.1)).toBeCloseTo(-160, 3);
+    });
+
+    it("should compute the correct relative mouse position", () => {
+        spyOn(
+            component.slider.nativeElement,
+            "getBoundingClientRect",
+        ).and.returnValue({
+            left: 100,
+            right: 200,
+        });
+        expect(component.getRelativeMousePosition(120)).toBeCloseTo(0.2, 3);
+    });
+
+    it("should select the correct values, if lower is closer", () => {
+        component.sliderFormControlLower.setValue(100);
+        component.sliderFormControlUpper.setValue(200);
+        spyOn(component, "getAbsoluteSliderValue").and.returnValue(120);
+        component.selectClosestSlider(0);
+        expect(component.bubbleFormControlSelected).toBe(
+            component.bubbleFormControlLower,
+        );
+        expect(component.sliderFormControlSelected).toBe(
+            component.sliderFormControlLower,
+        );
+    });
+
+    it("should select the correct values, if upper is closer", () => {
+        component.sliderFormControlLower.setValue(100);
+        component.sliderFormControlUpper.setValue(200);
+        spyOn(component, "getAbsoluteSliderValue").and.returnValue(180);
+        component.selectClosestSlider(0);
+        expect(component.bubbleFormControlSelected).toBe(
+            component.bubbleFormControlUpper,
+        );
+        expect(component.sliderFormControlSelected).toBe(
+            component.sliderFormControlUpper,
+        );
     });
 });

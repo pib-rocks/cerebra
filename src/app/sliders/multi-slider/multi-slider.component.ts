@@ -9,10 +9,8 @@ import {
     AfterViewInit,
     Renderer2,
 } from "@angular/core";
-import {FormControl, Validators} from "@angular/forms";
+import {FormControl} from "@angular/forms";
 import {Observable, asyncScheduler} from "rxjs";
-import {notNullValidator, steppingValidator} from "../../shared/validators";
-
 @Component({
     selector: "app-multi-slider",
     templateUrl: "./multi-slider.component.html",
@@ -38,10 +36,14 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
 
     @Input() minInit?: number;
     @Input() maxInit?: number;
-    @Input() sliderFormControl = new FormControl();
+
+    @Input() sliderFormControlLower = new FormControl();
     @Input() sliderFormControlUpper = new FormControl();
-    bubbleFormControl = new FormControl();
+    sliderFormControlSelected: FormControl | null = null;
+
+    bubbleFormControlLower = new FormControl();
     bubbleFormControlUpper = new FormControl();
+    bubbleFormControlSelected: FormControl | null = null;
 
     timer: any = null;
 
@@ -60,42 +62,26 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
 
     ngOnInit(): void {
         this.id = this.sanitizeNameForId(this.name);
-        this.bubbleFormControl.setValidators([
-            Validators.min(this.minValue),
-            Validators.max(this.maxValue),
-            Validators.pattern("^-?[0-9]{1,}\\.?[0-9]*$"),
-            Validators.required,
-            notNullValidator,
-            steppingValidator(this.step),
-        ]);
-        this.bubbleFormControlUpper.setValidators([
-            Validators.min(this.minValue),
-            Validators.max(this.maxValue),
-            Validators.pattern("^-?[0-9]{1,}\\.?[0-9]*$"),
-            Validators.required,
-            notNullValidator,
-            steppingValidator(this.step),
-        ]);
 
-        this.sliderFormControl.setValue(
+        this.sliderFormControlLower.setValue(
             this.minInit ? this.minInit : this.minValue,
         );
         this.sliderFormControlUpper.setValue(
             this.maxInit ? this.maxInit : this.maxValue,
         );
-        this.bubbleFormControl.setValue(this.sliderFormControl.value);
+        this.bubbleFormControlLower.setValue(this.sliderFormControlLower.value);
         this.bubbleFormControlUpper.setValue(this.sliderFormControlUpper.value);
 
         this.messageReceiver$?.subscribe((value: number[]) => {
             if (
-                Number(this.sliderFormControl.value) <
+                Number(this.sliderFormControlLower.value) <
                 Number(this.sliderFormControlUpper.value)
             ) {
-                this.sliderFormControl.setValue(value[0]);
+                this.sliderFormControlLower.setValue(value[0]);
                 this.sliderFormControlUpper.setValue(value[1]);
             } else {
                 this.sliderFormControlUpper.setValue(value[0]);
-                this.sliderFormControl.setValue(value[1]);
+                this.sliderFormControlLower.setValue(value[1]);
             }
             this.setThumbPosition();
         });
@@ -117,18 +103,19 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
 
     sendEvent() {
         if (
-            this.sliderFormControl?.value != null &&
+            this.sliderFormControlLower?.value != null &&
             this.sliderFormControlUpper?.value != null
         ) {
             const lower =
-                this.sliderFormControl.value >=
+                this.sliderFormControlLower.value >=
                 this.sliderFormControlUpper.value
                     ? this.sliderFormControlUpper.value
-                    : this.sliderFormControl.value;
+                    : this.sliderFormControlLower.value;
             const upper =
-                this.sliderFormControl.value < this.sliderFormControlUpper.value
+                this.sliderFormControlLower.value <
+                this.sliderFormControlUpper.value
                     ? this.sliderFormControlUpper.value
-                    : this.sliderFormControl.value;
+                    : this.sliderFormControlLower.value;
             clearTimeout(this.timer);
             this.timer = asyncScheduler.schedule(() => {
                 this.multiSliderEvent.emit([lower, upper]);
@@ -142,7 +129,17 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
         this.sendEvent();
     }
 
-    showBubbleInputField(
+    sanitizedSliderValue(value: any): number {
+        value = Number(value);
+        if (isNaN(value)) return value;
+        value = Math.min(Math.max(this.minValue, value), this.maxValue);
+        value *= 1000;
+        value -= value % Math.floor(this.step * 1000);
+        value /= 1000;
+        return value;
+    }
+
+    toggleInputVisible(
         htmlInputElement: HTMLInputElement,
         sliderFormControl: FormControl,
         bubbleFormControl: FormControl,
@@ -161,18 +158,15 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
         bubbleFormControl: FormControl,
         sliderFormControl: FormControl,
     ) {
-        if (bubbleFormControl.value !== sliderFormControl.value) {
-            if (sliderFormControl.value !== null) {
-                this.isInputVisible = !this.isInputVisible;
-                this.validateAndSetBubbleInput(
-                    bubbleFormControl,
-                    sliderFormControl,
-                );
-            }
+        const value = this.sanitizedSliderValue(bubbleFormControl.value);
+        if (isNaN(value)) {
+            bubbleFormControl.setValue(sliderFormControl.value);
+            return;
         } else {
-            this.isInputVisible = !this.isInputVisible;
+            bubbleFormControl.setValue(value);
+            this.setSliderValue(sliderFormControl, value);
+            this.isInputVisible = false;
         }
-        this.isInputVisible = false;
     }
 
     validateAndSetBubbleInput(
@@ -231,10 +225,10 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
     setThumbPosition() {
         this.setSingleThumbPosition(
             this.sliderElem.nativeElement,
-            this.sliderFormControl,
+            this.sliderFormControlLower,
             this.bubbleElement.nativeElement,
-            this.bubbleFormControl,
-            (val) => asyncScheduler.schedule(() => (this.bubblePosition = val)),
+            this.bubbleFormControlLower,
+            (val) => setTimeout(() => (this.bubblePosition = val)),
         );
         this.setSingleThumbPosition(
             this.sliderElemUpper.nativeElement,
@@ -251,7 +245,8 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
         const sliderWidth = this.sliderElem.nativeElement.clientWidth;
 
         const upper =
-            this.sliderFormControl.value >= this.sliderFormControlUpper.value
+            this.sliderFormControlLower.value >=
+            this.sliderFormControlUpper.value
                 ? this.bubbleElement.nativeElement.offsetLeft
                 : this.bubbleElementUpper.nativeElement.offsetLeft;
         this.sliderElem.nativeElement.style.setProperty(
@@ -260,7 +255,8 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
         );
 
         const lower =
-            this.sliderFormControl.value < this.sliderFormControlUpper.value
+            this.sliderFormControlLower.value <
+            this.sliderFormControlUpper.value
                 ? this.bubbleElement.nativeElement.offsetLeft
                 : this.bubbleElementUpper.nativeElement.offsetLeft;
         this.sliderElem.nativeElement.style.setProperty(
@@ -276,40 +272,82 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
         return name.replace(" ", "_").toLowerCase();
     }
 
-    onMouseDown(event: MouseEvent) {
-        this.mouseDownX = event.clientX;
+    getRelativeSliderValue(absoluteValue: number) {
+        return (
+            (absoluteValue - this.minValue) / (this.maxValue - this.minValue)
+        );
     }
 
-    onSliderClick(event: MouseEvent) {
-        const clickLocation = event.clientX;
-        if (clickLocation != this.mouseDownX) {
-            this.setThumbPosition();
-            this.sendEvent();
-            return;
-        }
-        const elementWidth = this.slider.nativeElement.offsetWidth;
-        const offsetLeft =
-            this.slider.nativeElement.getBoundingClientRect().left;
+    getAbsoluteSliderValue(relativeValue: number) {
+        return relativeValue * (this.maxValue - this.minValue) + this.minValue;
+    }
 
-        const relativeThumbMove = (clickLocation - offsetLeft) / elementWidth;
+    getRelativeMousePosition(mouseX: number) {
+        const {left, right} = this.slider.nativeElement.getBoundingClientRect();
+        return (mouseX - left) / (right - left);
+    }
 
-        const sliderValue =
-            relativeThumbMove * (this.maxValue - this.minValue) + this.minValue;
+    selectClosestSlider(mouseX: number) {
+        const targetSliderVal = this.getAbsoluteSliderValue(
+            this.getRelativeMousePosition(mouseX),
+        );
+        [this.sliderFormControlSelected, this.bubbleFormControlSelected] =
+            Math.abs(targetSliderVal - this.sliderFormControlUpper.value) <
+            Math.abs(targetSliderVal - this.sliderFormControlLower.value)
+                ? [this.sliderFormControlUpper, this.bubbleFormControlUpper]
+                : [this.sliderFormControlLower, this.bubbleFormControlLower];
+    }
 
-        const diff = this.maxValue - this.minValue;
-        const upper =
-            (this.sliderFormControlUpper.value - this.minValue) / diff;
-        const lower = (this.sliderFormControl.value - this.minValue) / diff;
-
-        if (
-            Math.abs(relativeThumbMove - upper) >
-            Math.abs(relativeThumbMove - lower)
-        ) {
-            this.sliderFormControl.setValue(Math.floor(sliderValue));
-        } else {
-            this.sliderFormControlUpper.setValue(Math.floor(sliderValue));
-        }
+    moveSelectedSlider(mouseX: number) {
+        if (!this.sliderFormControlSelected) return;
+        let nextValue = Math.floor(
+            this.getAbsoluteSliderValue(this.getRelativeMousePosition(mouseX)),
+        );
+        nextValue = this.sanitizedSliderValue(nextValue);
+        this.sliderFormControlSelected.setValue(nextValue);
         this.setThumbPosition();
         this.sendEvent();
+    }
+
+    unselectSlider() {
+        this.sliderFormControlSelected = null;
+        this.bubbleFormControlSelected = null;
+    }
+
+    primaryButtonPressed(buttons: number): boolean {
+        return (buttons & 1) === 1;
+    }
+
+    onMouseDown(event: MouseEvent) {
+        if (this.primaryButtonPressed(event.buttons)) {
+            this.selectClosestSlider(event.x);
+            this.moveSelectedSlider(event.x);
+        }
+    }
+
+    onMouseLeave(event: MouseEvent) {
+        if (this.primaryButtonPressed(event.buttons)) {
+            this.moveSelectedSlider(event.x);
+        }
+        this.unselectSlider();
+    }
+
+    onMouseMove(event: MouseEvent) {
+        this.moveSelectedSlider(event.x);
+    }
+
+    onMouseUp(event: MouseEvent) {
+        if (!this.primaryButtonPressed(event.buttons)) {
+            this.unselectSlider();
+        }
+    }
+
+    onMouseEnter(event: MouseEvent) {
+        if (this.primaryButtonPressed(event.buttons)) {
+            this.selectClosestSlider(event.x);
+            this.moveSelectedSlider(event.x);
+        } else {
+            this.unselectSlider();
+        }
     }
 }

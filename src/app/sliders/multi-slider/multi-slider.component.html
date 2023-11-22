@@ -15,16 +15,16 @@
             [ngClass]="isInputVisible ? '' : 'invisible'"
             [min]="minValue"
             [max]="maxValue"
-            [formControl]="bubbleFormControl"
-            (blur)="sliderInputFromBubble(bubbleFormControl, sliderFormControl)"
-            (keydown.enter)="sliderInputFromBubble(bubbleFormControl, sliderFormControl)"
+            [formControl]="bubbleFormControlLower"
+            (blur)="toggleInputInvisible(bubbleFormControlLower, sliderFormControlLower)"
+            (keydown.enter)="toggleInputInvisible(bubbleFormControlLower, sliderFormControlLower)"
             #bubbleInput />
         <div
             class="bubble-span overlay"
             id="bubble_span_{{ id }}"
             [ngClass]="isInputVisible ? 'invisible' : ''"
-            (dblclick)="showBubbleInputField(bubbleInput, sliderFormControl, bubbleFormControl)">
-            {{ sliderFormControl.value }}{{ unitShort }}
+            (dblclick)="toggleInputVisible(bubbleInput, sliderFormControlLower, bubbleFormControlLower)">
+            {{ sliderFormControlLower.value }}{{ unitShort }}
         </div>
     </div>
     <div
@@ -61,7 +61,10 @@
     <div
         class="wrap"
         (mousedown)="onMouseDown($event)"
-        (click)="onSliderClick($event)"
+        (mouseleave)="onMouseLeave($event)"
+        (mousemove)="onMouseMove($event)"
+        (mouseup)="onMouseUp($event)"
+        (mouseenter)="onMouseEnter($event)"
         #slider>
         <input
             class="range bottom-layer"
@@ -70,7 +73,7 @@
             [min]="minValue"
             [max]="maxValue"
             [step]="step"
-            [formControl]="sliderFormControl"
+            [formControl]="sliderFormControlLower"
             (input)="setThumbPosition(); sendEvent();"
             #range />
         <input
