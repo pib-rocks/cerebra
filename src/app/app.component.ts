@@ -1,7 +1,6 @@
 import {Component, OnInit} from "@angular/core";
 import {NavigationEnd, Router} from "@angular/router";
 import {MotorService} from "./shared/services/motor.service";
-import {VoiceAssistant} from "./shared/types/voice-assistant";
 import {VoiceAssistantService} from "./shared/services/voice-assistant.service";
 import {ChatService} from "./shared/services/chat.service";
 

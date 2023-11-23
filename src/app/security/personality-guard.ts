@@ -1,10 +1,8 @@
 import {inject} from "@angular/core";
-import {ActivatedRouteSnapshot, CanActivateFn, Router} from "@angular/router";
+import {CanActivateFn, Router} from "@angular/router";
 import {VoiceAssistantService} from "../shared/services/voice-assistant.service";
 
-export const personalityGuard: CanActivateFn = (
-    route: ActivatedRouteSnapshot,
-) => {
+export const personalityGuard: CanActivateFn = () => {
     const personality = localStorage.getItem("personality");
     if (
         personality &&

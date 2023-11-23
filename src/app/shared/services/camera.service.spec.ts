@@ -118,11 +118,11 @@ describe("CameraService", () => {
 
     it("should return camera preview size over ros topic", () => {
         service.subscribeCameraReseiver();
-        let res: string;
+        let res: string | undefined;
         service.cameraReciver$.subscribe((response) => {
             res = response;
         });
         rosService.cameraReceiver$.next("TestString");
-        expect(res!).toBe("TestString");
+        expect(res).toBe("TestString");
     });
 });

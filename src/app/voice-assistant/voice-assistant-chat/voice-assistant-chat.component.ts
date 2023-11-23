@@ -1,8 +1,8 @@
 import {Component, OnInit, TemplateRef, ViewChild} from "@angular/core";
 import {FormControl, Validators} from "@angular/forms";
-import {ActivatedRoute, Router} from "@angular/router";
+import {Router} from "@angular/router";
 import {NgbModal, NgbModalRef} from "@ng-bootstrap/ng-bootstrap";
-import {BehaviorSubject, Observable} from "rxjs";
+import {Observable} from "rxjs";
 import {SidebarElement} from "src/app/shared/interfaces/sidebar-element.interface";
 import {ChatService} from "src/app/shared/services/chat.service";
 import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
@@ -46,12 +46,13 @@ export class VoiceAssistantChatComponent implements OnInit {
     }
 
     showModal = () => {
-        return (this.ngbModalRef = this.modalService.open(this.modalContent, {
+        this.ngbModalRef = this.modalService.open(this.modalContent, {
             ariaLabelledBy: "modal-basic-title",
             size: "sm",
             windowClass: "myCustomModalClass",
             backdropClass: "myCustomBackdropClass",
-        }));
+        });
+        return this.ngbModalRef;
     };
 
     openAddModal = () => {
