@@ -23,22 +23,20 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
     @ViewChild("bubbleInputUpper") bubbleInputUpper!: ElementRef;
     @ViewChild("rangeLower") sliderElemLower!: ElementRef;
     @ViewChild("rangeUpper") sliderElemUpper!: ElementRef;
-    @ViewChild("slider") slider!: ElementRef;
+    @ViewChild("slider") slider!: ElementRef; // TODO: remove ?
 
-    @Input() minValue: number = 0;
-    @Input() maxValue: number = 100;
+    @Input() minValue!: number;
+    @Input() maxValue!: number;
+    @Input() defaultValueLower?: number;
+    @Input() defaultValueUpper?: number;
     @Input() step: number = 1;
     @Input() unitShort!: string;
     @Input() unitLong!: string;
     @Input() messageReceiver$!: Observable<number[]>;
-    @Input() name?: string;
-    @Input() id?: string;
+    @Input() name: string = "";
 
-    @Input() minInit?: number;
-    @Input() maxInit?: number;
-
-    @Input() sliderFormControlLower = new FormControl();
-    @Input() sliderFormControlUpper = new FormControl();
+    sliderFormControlLower = new FormControl();
+    sliderFormControlUpper = new FormControl();
     sliderFormControlSelected: FormControl | null = null;
 
     bubbleFormControlLower = new FormControl();
@@ -47,35 +45,33 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
 
     timer: any = null;
 
+    thumbWidth = 24;
     bubblePositionLower!: number;
     bubblePositionUpper!: number;
-    isInputVisible?: boolean;
+    isInputVisibleLower: boolean = false;
+    isInputVisibleUpper: boolean = false;
     maxBubblePosition = 100;
     minBubblePosition = 0;
     pixelsFromEdge = 60;
     mouseDownX!: number;
-    thumbWidth = 24;
 
     @Output() multiSliderEvent = new EventEmitter<number[]>();
 
     constructor(private renderer: Renderer2) {}
 
     ngOnInit(): void {
-        this.id = this.sanitizeNameForId(this.name);
-
         this.sliderFormControlLower.setValue(
-            this.minInit ? this.minInit : this.minValue,
+            this.defaultValueLower ?? this.minValue,
         );
         this.sliderFormControlUpper.setValue(
-            this.maxInit ? this.maxInit : this.maxValue,
+            this.defaultValueUpper ?? this.maxValue,
         );
         this.bubbleFormControlLower.setValue(this.sliderFormControlLower.value);
         this.bubbleFormControlUpper.setValue(this.sliderFormControlUpper.value);
-
         this.messageReceiver$?.subscribe((value: number[]) => {
             if (
-                Number(this.sliderFormControlLower.value) <
-                Number(this.sliderFormControlUpper.value)
+                this.sliderFormControlLower.value <
+                this.sliderFormControlUpper.value
             ) {
                 this.sliderFormControlLower.setValue(value[0]);
                 this.sliderFormControlUpper.setValue(value[1]);
@@ -83,50 +79,44 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
                 this.sliderFormControlUpper.setValue(value[0]);
                 this.sliderFormControlLower.setValue(value[1]);
             }
-            this.setThumbPosition();
+            asyncScheduler.schedule(() => this.setThumbPosition());
         });
     }
 
     ngAfterViewInit() {
         this.setThumbPosition();
-        const sliderWidth = this.sliderElemLower?.nativeElement.clientWidth;
-        if (sliderWidth !== undefined) {
-            this.minBubblePosition = this.pixelsFromEdge;
-            this.maxBubblePosition = sliderWidth - this.pixelsFromEdge;
-        }
+        const sliderWidth = this.sliderElemLower.nativeElement.clientWidth;
+        this.minBubblePosition = this.pixelsFromEdge;
+        this.maxBubblePosition = sliderWidth - this.pixelsFromEdge;
         this.renderer.setStyle(
+            // TODO : ???
             this.sliderElemLower.nativeElement,
             "background",
             "linear-gradient(to right, #324c71, #324c71 var(--pos-lower), #e10072 var(--pos-lower), #e10072 var(--pos-upper), #324c71 var(--pos-upper), #324c71)",
         );
     }
 
-    sendEvent() {
-        if (
-            this.sliderFormControlLower?.value != null &&
-            this.sliderFormControlUpper?.value != null
-        ) {
-            const lower =
-                this.sliderFormControlLower.value >=
-                this.sliderFormControlUpper.value
-                    ? this.sliderFormControlUpper.value
-                    : this.sliderFormControlLower.value;
-            const upper =
-                this.sliderFormControlLower.value <
-                this.sliderFormControlUpper.value
-                    ? this.sliderFormControlUpper.value
-                    : this.sliderFormControlLower.value;
-            clearTimeout(this.timer);
-            this.timer = asyncScheduler.schedule(() => {
-                this.multiSliderEvent.emit([lower, upper]);
-            }, 100);
-        }
-    }
-
     setSliderValue(sliderFormControl: FormControl, value: number) {
         sliderFormControl.setValue(value);
         this.setThumbPosition();
         this.sendEvent();
+    }
+
+    sendEvent() {
+        if (
+            this.sliderFormControlLower.value != null &&
+            this.sliderFormControlUpper.value != null
+        ) {
+            clearTimeout(this.timer);
+            this.timer = asyncScheduler.schedule(() => {
+                this.multiSliderEvent.emit(
+                    [
+                        this.sliderFormControlLower.value,
+                        this.sliderFormControlUpper.value,
+                    ].sort((l, r) => l - r),
+                );
+            }, 100);
+        }
     }
 
     sanitizedSliderValue(value: any): number {
@@ -143,10 +133,12 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
         htmlInputElement: HTMLInputElement,
         sliderFormControl: FormControl,
         bubbleFormControl: FormControl,
+        lower: boolean,
     ) {
-        if (sliderFormControl?.value !== null) {
+        if (sliderFormControl.value !== null) {
             bubbleFormControl.setValue(sliderFormControl.value);
-            this.isInputVisible = true;
+            if (lower) this.isInputVisibleLower = true;
+            else this.isInputVisibleUpper = true;
             asyncScheduler.schedule(() => {
                 htmlInputElement.focus();
                 htmlInputElement.select();
@@ -157,6 +149,7 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
     toggleInputInvisible(
         bubbleFormControl: FormControl,
         sliderFormControl: FormControl,
+        lower: boolean,
     ) {
         const value = this.sanitizedSliderValue(bubbleFormControl.value);
         if (isNaN(value)) {
@@ -164,22 +157,8 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
         } else {
             bubbleFormControl.setValue(value);
             this.setSliderValue(sliderFormControl, value);
-            this.isInputVisible = false;
-        }
-    }
-
-    sliderInputFromBubble(
-        bubbleFormControl: FormControl,
-        sliderFormControl: FormControl,
-    ) {
-        const value = this.sanitizedSliderValue(bubbleFormControl.value);
-        if (isNaN(value)) {
-            bubbleFormControl.setValue(sliderFormControl.value);
-            return;
-        } else {
-            bubbleFormControl.setValue(value);
-            this.setSliderValue(sliderFormControl, value);
-            this.isInputVisible = false;
+            if (lower) this.isInputVisibleLower = false;
+            else this.isInputVisibleUpper = false;
         }
     }
 
@@ -246,13 +225,6 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
             "--pos-lower",
             ((lower / sliderWidth) * 100).toString(10) + "%",
         );
-    }
-
-    sanitizeNameForId(name: string | undefined) {
-        if (!name) {
-            return "NAME_NOT_PASSED";
-        }
-        return name.replace(" ", "_").toLowerCase();
     }
 
     getRelativeSliderValue(absoluteValue: number) {

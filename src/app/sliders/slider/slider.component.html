@@ -4,19 +4,17 @@
         #bubble>
         <input
             class="bubble-input overlay"
-            id="slider_bubbleinput_{{ sliderName }}"
             [min]="minValue"
             [max]="maxValue"
             *ngIf="isInputVisible"
             [formControl]="bubbleFormControl"
-            (blur)="sliderInputFromBubble()"
-            (keydown.enter)="sliderInputFromBubble()"
+            (blur)="toggleInputInvisible()"
+            (keydown.enter)="toggleInputInvisible()"
             #bubbleInput />
         <div
             class="bubble-span overlay"
-            id="bubble_span_{{ sliderName }}"
             *ngIf="!isInputVisible"
-            (dblclick)="showBubbleInputField()">
+            (dblclick)="toggleInputVisible()">
             {{ bubbleFormControl.value }}{{ unitOfMeasurement }}
         </div>
     </div>
@@ -33,11 +31,11 @@
     <input
         class="range"
         type="range"
-        id="slider_{{ sliderName }}"
+        id="slider_{{ name }}"
         [min]="minValue"
         [max]="maxValue"
         [step]="step"
         [formControl]="sliderFormControl"
-        (input)="setThumbPosition(); inputSendMsg()"
+        (input)="setThumbPosition(); sendEvent()"
         #range />
 </div>

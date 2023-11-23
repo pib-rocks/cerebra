@@ -1,7 +1,21 @@
+.range {
+    margin: 20px 0;
+    width: 100%;
+}
+
+.range:focus {
+    outline: none;
+}
+
+.range:hover {
+    cursor: pointer;
+}
+
 .range-wrap {
     margin-top: 20px;
     position: relative;
 }
+
 .range-value {
     position: absolute;
     top: -30%;
@@ -117,20 +131,6 @@ p span {
     margin-top: -1px;
 }
 
-/* Styling Input Ranges */
-.range {
-    margin: 20px 0;
-    width: 100%;
-}
-
-.range:focus {
-    outline: none;
-}
-
-.range:hover {
-    cursor: pointer;
-}
-
 .wrap {
     display: grid;
     grid-template-rows: max-content;
@@ -151,12 +151,14 @@ input[type="range"] {
     background: #344a69;
     outline: none;
 }
+
 input[type="range"].top-layer {
     --pos-upper: 0;
     background: none;
     border: none;
     border-radius: 5px;
 }
+
 input[type="range"].bottom-layer {
     --pos-lower: 0;
     --pos-upper: 0;

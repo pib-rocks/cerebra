@@ -1,7 +1,3 @@
-.overlay {
-    z-index: 9;
-}
-
 .range {
     margin: 20px 0;
     width: 100%;
@@ -19,6 +15,7 @@
     margin-top: 20px;
     position: relative;
 }
+
 .range-value {
     position: absolute;
     top: -30%;
@@ -36,7 +33,7 @@
     display: block;
     position: absolute;
     left: 50%;
-    transform: translate(-50%, -3px);
+    transform: translate(-50%, 0);
     top: -25%;
     border-radius: 6px;
 }
@@ -168,8 +165,4 @@
 
 .range-wrap .range::-webkit-slider-runnable-track {
     -webkit-appearance: none;
-}
-
-.rotateRange {
-    transform: rotate(-90deg);
 }

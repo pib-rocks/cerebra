@@ -43,7 +43,7 @@ describe("SliderComponent", () => {
 
     it("should call sendMessage after changing the slider", fakeAsync(() => {
         component.ngOnInit();
-        const spyOninputSendMsg = spyOn(component, "inputSendMsg");
+        const spyOnSendEvent = spyOn(component, "sendEvent");
         const slider = fixture.nativeElement.querySelector(
             'input[type="range"]',
         );
@@ -51,7 +51,7 @@ describe("SliderComponent", () => {
         slider.dispatchEvent(new Event("input"));
         tick(1000);
         fixture.detectChanges();
-        expect(spyOninputSendMsg).toHaveBeenCalled();
+        expect(spyOnSendEvent).toHaveBeenCalled();
     }));
 
     it("should adjust the slider when using textinput on bubble", fakeAsync(() => {

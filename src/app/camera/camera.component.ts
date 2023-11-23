@@ -126,6 +126,7 @@ export class CameraComponent implements OnInit, OnDestroy {
         const videoSettingsButton = document.getElementById("videosettings");
         videoSettingsButton?.classList.remove("showPopover");
     }
+
     addCssClass() {
         const videoSettingsButton = document.getElementById("videosettings");
         videoSettingsButton?.classList.add("showPopover");

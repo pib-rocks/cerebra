@@ -11,19 +11,17 @@
         #bubbleLower>
         <input
             class="bubble-input overlay"
-            id="input_{{id}}"
-            [ngClass]="isInputVisible ? '' : 'invisible'"
+            [ngClass]="isInputVisibleLower ? '' : 'invisible'"
             [min]="minValue"
             [max]="maxValue"
             [formControl]="bubbleFormControlLower"
-            (blur)="toggleInputInvisible(bubbleFormControlLower, sliderFormControlLower)"
-            (keydown.enter)="toggleInputInvisible(bubbleFormControlLower, sliderFormControlLower)"
+            (blur)="toggleInputInvisible(bubbleFormControlLower, sliderFormControlLower, true)"
+            (keydown.enter)="toggleInputInvisible(bubbleFormControlLower, sliderFormControlLower, true)"
             #bubbleInputLower />
         <div
             class="bubble-span overlay"
-            id="bubble_span_{{ id }}"
-            [ngClass]="isInputVisible ? 'invisible' : ''"
-            (dblclick)="toggleInputVisible(bubbleInputLower, sliderFormControlLower, bubbleFormControlLower)">
+            [ngClass]="isInputVisibleLower ? 'invisible' : ''"
+            (dblclick)="toggleInputVisible(bubbleInputLower, sliderFormControlLower, bubbleFormControlLower, true)">
             {{ sliderFormControlLower.value }}{{ unitShort }}
         </div>
     </div>
@@ -32,19 +30,17 @@
         #bubbleUpper>
         <input
             class="bubble-input overlay"
-            id="input_upper_{{id}}"
-            [ngClass]="isInputVisible ? '' : 'invisible'"
+            [ngClass]="isInputVisibleUpper ? '' : 'invisible'"
             [min]="minValue"
             [max]="maxValue"
             [formControl]="bubbleFormControlUpper"
-            (blur)="toggleInputInvisible(bubbleFormControlUpper, sliderFormControlUpper)"
-            (keydown.enter)="toggleInputInvisible(bubbleFormControlUpper, sliderFormControlUpper)"
+            (blur)="toggleInputInvisible(bubbleFormControlUpper, sliderFormControlUpper, false)"
+            (keydown.enter)="toggleInputInvisible(bubbleFormControlUpper, sliderFormControlUpper, false)"
             #bubbleInputUpper />
         <div
             class="bubble-span overlay"
-            id="bubble_span_upper_{{ id }}"
-            [ngClass]="isInputVisible ? 'invisible' : ''"
-            (dblclick)="toggleInputVisible(bubbleInputUpper, sliderFormControlUpper, bubbleFormControlUpper)">
+            [ngClass]="isInputVisibleUpper ? 'invisible' : ''"
+            (dblclick)="toggleInputVisible(bubbleInputUpper, sliderFormControlUpper, bubbleFormControlUpper, false)">
             {{ sliderFormControlUpper.value }}{{ unitShort }}
         </div>
     </div>
@@ -69,7 +65,6 @@
         <input
             class="range bottom-layer"
             type="range"
-            id="slider_{{ id }}"
             [min]="minValue"
             [max]="maxValue"
             [step]="step"
@@ -79,7 +74,6 @@
         <input
             class="range top-layer"
             type="range"
-            id="slider_upper_{{ id }}"
             [min]="minValue"
             [max]="maxValue"
             [formControl]="sliderFormControlUpper"

@@ -31,7 +31,7 @@
 </div>
 
 <app-slider
-    [sliderName]="motor.name"
+    [name]="motor.name"
     unitOfMeasurement="°"
     [messageReceiver$]="positionSubject$"
     (sliderEvent)="setMotorPositionValue($event)"
@@ -100,8 +100,8 @@
                 [step]="1"
                 [unitLong]="'μs'"
                 name="Pulse width"
-                [minInit]="motor.settings.pulseWidthMin"
-                [maxInit]="motor.settings.pulseWidthMax"
+                [defaultValueLower]="motor.settings.pulseWidthMin"
+                [defaultValueUpper]="motor.settings.pulseWidthMax"
                 [messageReceiver$]="pulseWidthSubject$"
                 (multiSliderEvent)="setPulseRanges($event)"></app-multi-slider>
         </div>
@@ -117,8 +117,8 @@
                 [unitShort]="'°'"
                 [unitLong]="'°/100'"
                 name="Degree"
-                [minInit]="motor.settings.rotationRangeMin"
-                [maxInit]="motor.settings.rotationRangeMax"
+                [defaultValueLower]="motor.settings.rotationRangeMin"
+                [defaultValueUpper]="motor.settings.rotationRangeMax"
                 [messageReceiver$]="degreeSubject$"
                 (multiSliderEvent)="setDegree($event)"></app-multi-slider>
         </div>
@@ -133,7 +133,7 @@
                 Period <span style="font-weight:normal">(μs)</span>
             </p>
             <app-slider
-                [sliderName]="'Period'"
+                [name]="'Period'"
                 [minValue]="0"
                 [maxValue]="100000"
                 [defaultValue]="motor.settings.period"
