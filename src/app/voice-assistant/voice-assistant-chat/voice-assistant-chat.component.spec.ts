@@ -13,7 +13,7 @@ export class MockNgbModalRef {
         prompt: undefined,
         title: undefined,
     };
-    result: Promise<any> = new Promise((resolve) => resolve(true));
+    result: Promise<any> = Promise.resolve(true);
 }
 describe("VoiceAssistantChatComponent", () => {
     let component: VoiceAssistantChatComponent;
