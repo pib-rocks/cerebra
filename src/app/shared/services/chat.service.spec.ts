@@ -102,9 +102,7 @@ describe("ChatService", () => {
     it("should return a chat or undefined when calling getChat", () => {
         service.chats = [testChat0, testChat1, testChat2];
         let result: Chat | undefined = service.getChat("54321");
-        expect(result?.chatId).toBe("54321");
-        expect(result?.personalityId).toBe("12345");
-        expect(result?.topic).toBe("Pib0");
+        expect(result).toEqual(testChat0);
         result = service.getChat("undefinedTestId");
         expect(result).toBeFalsy();
     });
