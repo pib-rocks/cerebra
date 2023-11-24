@@ -8,40 +8,6 @@
 <div
     class="range-wrap"
     #rangeDiv>
-    <div
-        class="range-value"
-        #bubbleLower>
-        <input
-            class="bubble-input overlay"
-            [ngClass]="thumbs[0].inputVisible ? '' : 'invisible'"
-            [formControl]="thumbs[0].bubbleFormControl"
-            (blur)="toggleInputInvisible(thumbs[0])"
-            (keydown.enter)="toggleInputInvisible(thumbs[0])"
-            #bubbleInputLower />
-        <div
-            class="bubble-span overlay"
-            [ngClass]="thumbs[0].inputVisible ? 'invisible' : ''"
-            (dblclick)="toggleInputVisible(thumbs[0])">
-            {{ thumbs[0].value }}{{ unitShort }}
-        </div>
-    </div>
-    <div
-        class="range-value"
-        #bubbleUpper>
-        <input
-            class="bubble-input overlay"
-            [ngClass]="thumbs[1].inputVisible ? '' : 'invisible'"
-            [formControl]="thumbs[1].bubbleFormControl"
-            (blur)="toggleInputInvisible(thumbs[1])"
-            (keydown.enter)="toggleInputInvisible(thumbs[1])"
-            #bubbleInputLower />
-        <div
-            class="bubble-span overlay"
-            [ngClass]="thumbs[1].inputVisible ? 'invisible' : ''"
-            (dblclick)="toggleInputVisible(thumbs[1])">
-            {{ thumbs[1].value }}{{ unitShort }}
-        </div>
-    </div>
     <span
         *ngIf="minBubblePosition <= trackForegroundLeft"
         class="bubble-span-min"
@@ -52,6 +18,23 @@
         class="bubble-span-max"
         >{{ maxValue }}{{ unitShort }}</span
     >
+    <div
+        *ngFor="let thumb of thumbs"
+        class="range-value"
+        #bubble>
+        <input
+            class="bubble-input overlay"
+            [ngClass]="thumb.inputVisible ? '' : 'invisible'"
+            [formControl]="thumb.bubbleFormControl"
+            (blur)="toggleInputInvisible(thumb)"
+            (keydown.enter)="toggleInputInvisible(thumb)" />
+        <div
+            class="bubble-span overlay"
+            [ngClass]="thumb.inputVisible ? 'invisible' : ''"
+            (dblclick)="toggleInputVisible(thumb)">
+            {{ thumb.value }}{{ unitShort }}
+        </div>
+    </div>
     <div
         id="svg-div"
         (mousedown)="onMouseDown($event)"

@@ -7,6 +7,8 @@ import {
     EventEmitter,
     OnInit,
     AfterViewInit,
+    ViewChildren,
+    QueryList,
 } from "@angular/core";
 import {FormControl} from "@angular/forms";
 import {Observable, asyncScheduler} from "rxjs";
@@ -17,8 +19,7 @@ import {SliderThumb} from "./slider-thumb";
     styleUrls: ["./multi-slider.component.css"],
 })
 export class MultiSliderComponent implements OnInit, AfterViewInit {
-    @ViewChild("bubbleLower") bubbleElementLower!: ElementRef;
-    @ViewChild("bubbleUpper") bubbleElementUpper!: ElementRef;
+    @ViewChildren("bubble") bubbelElements!: QueryList<ElementRef>;
     @ViewChild("rangeDiv") rangeDiv!: ElementRef;
 
     @Input() minValue!: number;
@@ -61,20 +62,18 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
                 inputVisible: false,
             });
         }
-
         this.messageReceiver$?.subscribe((values: number[]) =>
             this.setAllThumbValues(values),
         );
     }
 
     ngAfterViewInit() {
-        this.thumbs[0].bubbleElement = this.bubbleElementLower;
-        this.thumbs[1].bubbleElement = this.bubbleElementUpper;
-
+        this.bubbelElements.forEach(
+            (elem, idx) => (this.thumbs[idx].bubbleElement = elem),
+        );
         asyncScheduler.schedule(() =>
             this.setAllThumbValues(this.defaultValues),
         );
-
         this.sliderWidth = this.rangeDiv.nativeElement.clientWidth;
         this.minBubblePosition = this.pixelsFromEdge;
         this.maxBubblePosition = this.sliderWidth - this.pixelsFromEdge;
