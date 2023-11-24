@@ -26,7 +26,6 @@ export class VoiceAssistantPersonalityComponent implements OnInit {
         private modalService: NgbModal,
         private voiceAssistantService: VoiceAssistantService,
         private router: Router,
-        private route: ActivatedRoute,
     ) {}
 
     ngOnInit() {

@@ -65,7 +65,6 @@ export class VoiceAssistantChatComponent implements OnInit {
             this.router.url.split("/").length > 3
                 ? this.router.url.split("/").pop()
                 : undefined;
-        console.log(this.uuid);
         if (this.uuid) {
             const updateChat = this.chatService.getChat(this.uuid);
             this.topicFormControl.setValue(updateChat?.topic ?? "");
@@ -87,7 +86,6 @@ export class VoiceAssistantChatComponent implements OnInit {
     editChat = () => {
         if (this.uuid) {
             const updateChat = this.chatService.getChat(this.uuid)?.clone();
-            console.log(updateChat);
             if (updateChat) {
                 updateChat.topic = this.topicFormControl.value;
                 this.chatService.updateChatById(updateChat);

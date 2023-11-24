@@ -41,7 +41,7 @@ describe("ChatService", () => {
         );
         service.getAllChats();
         expect(spyOnGetAllChats).toHaveBeenCalled();
-        expect(service.chatSubject.getValue().length).toBe(3);
+        expect(service.chatSubject.getValue().length).toEqual(3);
         expect(service.chats.length).toBe(3);
     });
 
@@ -54,11 +54,7 @@ describe("ChatService", () => {
             (i) => i.chatId === testChat0.chatId,
         );
         expect(spyOnCreateChat).toHaveBeenCalled();
-        expect(service.chats[index].chatId).toBe(testChat0.chatId);
-        expect(service.chats[index].topic).toBe(testChat0.topic);
-        expect(service.chats[index].personalityId).toBe(
-            testChat0.personalityId,
-        );
+        expect(service.chats[index]).toEqual(testChat0);
     });
 
     it("should return a chat identified by chatId when calling getChatById", () => {
