@@ -39,7 +39,6 @@ export class PersonalityDescriptionComponent implements OnInit {
         if (this.personality) {
             this.personality.description = this.textAreaContent ?? "";
             this.voiceAssistantService.updatePersonalityById(this.personality);
-            console.log(this.personality.description);
         }
     }
 

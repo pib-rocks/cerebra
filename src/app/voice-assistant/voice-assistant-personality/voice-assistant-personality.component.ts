@@ -1,6 +1,6 @@
 import {Component, OnInit, TemplateRef, ViewChild} from "@angular/core";
-import {FormControl, Validators} from "@angular/forms";
-import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
+import {FormControl, FormGroup, Validators} from "@angular/forms";
+import {NgbModal, NgbModalRef} from "@ng-bootstrap/ng-bootstrap";
 import {VoiceAssistantService} from "../../shared/services/voice-assistant.service";
 import {VoiceAssistant} from "../../shared/types/voice-assistant";
 import {SidebarElement} from "src/app/shared/interfaces/sidebar-element.interface";
@@ -14,111 +14,129 @@ import {ActivatedRoute, Router} from "@angular/router";
 })
 export class VoiceAssistantPersonalityComponent implements OnInit {
     @ViewChild("modalContent") modalContent: TemplateRef<any> | undefined;
+    ngbModalRef?: NgbModalRef;
     personalityIcon: string =
         "../../assets/voice-assistant-svgs/personality/personality.svg";
-    nameFormControl: FormControl = new FormControl("");
-    genderFormControl: FormControl = new FormControl("");
-    pauseThresholdFormControl: FormControl<number> = new FormControl();
     thresholdString: string | undefined;
     subject!: Observable<SidebarElement[]>;
     uuid: string | undefined;
+    personalityForm!: FormGroup;
 
     constructor(
         private modalService: NgbModal,
         private voiceAssistantService: VoiceAssistantService,
         private router: Router,
-        private route: ActivatedRoute,
     ) {}
 
     ngOnInit() {
         localStorage.setItem("voice-assistant-tab", "personality");
+        this.personalityForm = new FormGroup({
+            "name-input": new FormControl("", {
+                nonNullable: true,
+                validators: [
+                    Validators.required,
+                    Validators.minLength(2),
+                    Validators.maxLength(255),
+                ],
+            }),
+            gender: new FormControl("Female", {
+                nonNullable: true,
+                validators: [Validators.required],
+            }),
+            pausethreshold: new FormControl(0.8, {
+                nonNullable: true,
+                validators: [
+                    Validators.required,
+                    Validators.min(0.1),
+                    Validators.max(3),
+                ],
+            }),
+        });
         this.subject = this.voiceAssistantService.getSubject();
-        this.nameFormControl.setValidators([
-            Validators.required,
-            Validators.minLength(2),
-            Validators.maxLength(255),
-        ]);
-        this.genderFormControl.setValidators([Validators.required]);
-        this.pauseThresholdFormControl.setValidators([
-            Validators.required,
-            Validators.max(3),
-            Validators.min(0.1),
-        ]);
     }
 
-    showModal = (uuid?: string) => {
-        return this.modalService
-            .open(this.modalContent, {
-                ariaLabelledBy: "modal-basic-title",
-                size: "sm",
-                windowClass: "myCustomModalClass",
-                backdropClass: "myCustomBackdropClass",
-            })
-            .result.then(
-                (result) => {
-                    console.log(`Closed with: ${result}`);
-                },
-                () => {
-                    if (uuid) {
-                        this.editPersonality(uuid);
-                    } else {
-                        this.addPersonality();
-                    }
-                },
-            );
+    showModal = () => {
+        return (this.ngbModalRef = this.modalService.open(this.modalContent, {
+            ariaLabelledBy: "modal-basic-title",
+            size: "sm",
+            windowClass: "myCustomModalClass",
+            backdropClass: "myCustomBackdropClass",
+        }));
+    };
+
+    savePersonality = () => {
+        if (this.personalityForm.valid) {
+            if (this.uuid) {
+                this.editPersonality(this.uuid);
+            } else {
+                this.addPersonality();
+            }
+        }
+        this.ngbModalRef?.close("saved");
+    };
+
+    closeModal = () => {
+        this.ngbModalRef?.close("cancelled");
     };
 
     adjustThreshold(step: string) {
-        this.pauseThresholdFormControl.setValue(
-            (Number(this.pauseThresholdFormControl.value) * 10 +
+        const newValue =
+            (Number(this.personalityForm.controls["pausethreshold"].value) *
+                10 +
                 Number(step) * 10) /
-                10,
-        );
-        this.thresholdString = this.pauseThresholdFormControl.value + "s";
+            10;
+        this.personalityForm.patchValue({
+            pausethreshold: newValue,
+        });
+        if (this.personalityForm.controls["pausethreshold"].hasError("min")) {
+            this.personalityForm.patchValue({
+                pausethreshold: 0.1,
+            });
+        }
+        if (this.personalityForm.controls["pausethreshold"].hasError("max")) {
+            this.personalityForm.patchValue({
+                pausethreshold: 3,
+            });
+        }
+        this.thresholdString =
+            this.personalityForm.controls["pausethreshold"].value + "s";
     }
 
-    formControlsValid() {
-        if (
-            this.nameFormControl.valid &&
-            this.genderFormControl.valid &&
-            this.pauseThresholdFormControl.valid
-        ) {
-            return true;
-        }
-        return false;
-    }
     openAddModal = () => {
-        this.nameFormControl.setValue("");
-        this.genderFormControl.setValue("Female");
-        this.pauseThresholdFormControl.setValue(0.8);
-        this.thresholdString = this.pauseThresholdFormControl.value + "s";
+        this.personalityForm.reset();
+        this.thresholdString =
+            this.personalityForm.controls["pausethreshold"].value + "s";
         this.showModal();
     };
 
     openEditModal = () => {
-        this.uuid = this.router.url.split("/").pop();
-        if (this.uuid) {
+        this.uuid =
+            this.router.url.split("/").length > 3
+                ? this.router.url.split("/").pop()
+                : undefined;
+        if (this.uuid && this.voiceAssistantService.personalities.length > 0) {
             const updatePersonality = this.voiceAssistantService.getPersonality(
                 this.uuid,
             );
-            this.nameFormControl.setValue(updatePersonality?.name ?? "");
-            this.genderFormControl.setValue(updatePersonality?.gender ?? "");
-            this.pauseThresholdFormControl.setValue(
-                updatePersonality?.pauseThreshold ?? 0,
-            );
-            this.thresholdString = this.pauseThresholdFormControl.value + "s";
-            this.showModal(this.uuid);
+            this.personalityForm.patchValue({
+                "name-input": updatePersonality?.name,
+                gender: updatePersonality?.gender,
+                pausethreshold: updatePersonality?.pauseThreshold,
+            });
+            this.thresholdString =
+                this.personalityForm.controls["pausethreshold"].value + "s";
+            this.showModal();
         }
     };
 
     addPersonality() {
-        if (this.formControlsValid()) {
+        if (this.personalityForm.valid) {
             this.voiceAssistantService.createPersonality(
                 new VoiceAssistant(
                     "",
-                    this.nameFormControl.value,
-                    this.genderFormControl.value,
-                    this.pauseThresholdFormControl.value,
+                    this.personalityForm.controls["name-input"].value,
+                    this.personalityForm.controls["gender"].value,
+                    this.personalityForm.controls["pausethreshold"].value,
                 ),
             );
         }
@@ -129,10 +147,12 @@ export class VoiceAssistantPersonalityComponent implements OnInit {
             .getPersonality(uuid)
             ?.clone();
         if (updatePersonality) {
-            updatePersonality.name = this.nameFormControl.value;
-            updatePersonality.gender = this.genderFormControl.value;
+            updatePersonality.name =
+                this.personalityForm.controls["name-input"].value;
+            updatePersonality.gender =
+                this.personalityForm.controls["gender"].value;
             updatePersonality.pauseThreshold =
-                this.pauseThresholdFormControl.value;
+                this.personalityForm.controls["pausethreshold"].value;
             this.voiceAssistantService.updatePersonalityById(updatePersonality);
         }
         this.uuid = undefined;
@@ -140,19 +160,9 @@ export class VoiceAssistantPersonalityComponent implements OnInit {
 
     deletePersonality = () => {
         const uuid = this.router.url.split("/").pop();
-        if (uuid) {
+        if (uuid && this.voiceAssistantService.personalities.length > 0) {
             this.voiceAssistantService.deletePersonalityById(uuid);
-            this.router.navigate(
-                [
-                    this.voiceAssistantService.personalities[0]
-                        .personalityId === uuid
-                        ? this.voiceAssistantService.personalities[1]
-                              .personalityId
-                        : this.voiceAssistantService.personalities[0]
-                              .personalityId,
-                ],
-                {relativeTo: this.route},
-            );
+            localStorage.setItem("personality", "");
         }
     };
 
