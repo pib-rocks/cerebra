@@ -12,6 +12,7 @@
 }
 
 .range-wrap {
+    width: 100%;
     margin-top: 20px;
     position: relative;
 }
@@ -21,6 +22,11 @@
     top: -30%;
     left: 1%;
 }
+
+svg {
+    width: 100%;
+}
+
 p {
     font-weight: bold;
 }

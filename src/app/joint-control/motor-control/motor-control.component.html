@@ -100,8 +100,7 @@
                 [step]="1"
                 [unitLong]="'μs'"
                 name="Pulse width"
-                [defaultValueLower]="motor.settings.pulseWidthMin"
-                [defaultValueUpper]="motor.settings.pulseWidthMax"
+                [defaultValues]="[motor.settings.pulseWidthMin, motor.settings.pulseWidthMax]"
                 [messageReceiver$]="pulseWidthSubject$"
                 (multiSliderEvent)="setPulseRanges($event)"></app-multi-slider>
         </div>
@@ -117,8 +116,7 @@
                 [unitShort]="'°'"
                 [unitLong]="'°/100'"
                 name="Degree"
-                [defaultValueLower]="motor.settings.rotationRangeMin"
-                [defaultValueUpper]="motor.settings.rotationRangeMax"
+                [defaultValues]="[motor.settings.rotationRangeMin, motor.settings.rotationRangeMax]"
                 [messageReceiver$]="degreeSubject$"
                 (multiSliderEvent)="setDegree($event)"></app-multi-slider>
         </div>

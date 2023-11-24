@@ -44,6 +44,10 @@ export class SliderComponent implements OnInit, AfterViewInit {
     pixelsFromEdge = 60;
     imageSrc!: string;
 
+    sliderResizeObserver: ResizeObserver = new ResizeObserver(() =>
+        this.calculateBubbles(),
+    );
+
     @Output() sliderEvent = new EventEmitter<number>();
 
     ngOnInit(): void {
@@ -60,10 +64,15 @@ export class SliderComponent implements OnInit, AfterViewInit {
     }
 
     ngAfterViewInit() {
-        this.setThumbPosition();
+        this.sliderResizeObserver.observe(this.sliderElem.nativeElement);
+        this.calculateBubbles();
+    }
+
+    calculateBubbles() {
         const sliderWidth = this.sliderElem.nativeElement.clientWidth;
         this.minBubblePosition = this.pixelsFromEdge;
         this.maxBubblePosition = sliderWidth - this.pixelsFromEdge;
+        this.setThumbPosition();
     }
 
     setSliderValue(value: number) {
