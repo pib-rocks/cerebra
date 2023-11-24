@@ -50,7 +50,15 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
 
     @Output() multiSliderEvent = new EventEmitter<number[]>();
 
-    constructor() {}
+    sliderResizeObserver: ResizeObserver = new ResizeObserver(() =>
+        this.calculateOffsets(),
+    );
+
+    calculateOffsets() {
+        this.sliderWidth = this.rangeDiv.nativeElement.clientWidth;
+        this.minBubblePosition = this.pixelsFromEdge;
+        this.maxBubblePosition = this.sliderWidth - this.pixelsFromEdge;
+    }
 
     ngOnInit(): void {
         this.thumbs = [];
@@ -74,9 +82,8 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
         asyncScheduler.schedule(() =>
             this.setAllThumbValues(this.defaultValues),
         );
-        this.sliderWidth = this.rangeDiv.nativeElement.clientWidth;
-        this.minBubblePosition = this.pixelsFromEdge;
-        this.maxBubblePosition = this.sliderWidth - this.pixelsFromEdge;
+        this.sliderResizeObserver.observe(this.rangeDiv.nativeElement);
+        this.calculateOffsets();
     }
 
     linearTransform(
