@@ -2,7 +2,7 @@ export class CameraSetting {
     resolution: string;
     refreshRate: number;
     qualityFactor: number;
-    isActive: boolean;
+    isActive?: boolean;
     resX: number;
     resY: number;
 
@@ -10,14 +10,14 @@ export class CameraSetting {
         resolution: string,
         refreshRate: number,
         qualityFactor: number,
-        isActive: boolean,
         resX: number,
         resY: number,
+        isActive?: boolean,
     ) {
         this.resolution = resolution;
         this.refreshRate = refreshRate;
         this.qualityFactor = qualityFactor;
-        this.isActive = isActive;
+        this.isActive = isActive ?? false;
         this.resX = resX;
         this.resY = resY;
     }

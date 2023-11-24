@@ -40,7 +40,10 @@
                         <path
                             d="M77.478-75.717V-525.5h449.783v449.783H77.478Zm0-527.479v-84.63h113.174v84.63H77.478Zm0-166.152v-113.174h113.174v113.174H77.478Zm47.978 599.913H480L364.565-325.348l-84.717 111.435-60.718-81.435-93.674 125.913Zm146.718-599.913v-113.174h84.63v113.174h-84.63Zm166.391 0v-113.174h84.631v113.174h-84.631Zm166.392 693.63V-188.89h84.391v113.174h-84.391Zm0-693.63v-113.174h84.391v113.174h-84.391Zm166.152 693.63V-188.89h113.174v113.174H771.109Zm0-194.934v-84.391h113.174v84.391H771.109Zm0-166.152v-84.631h113.174v84.631H771.109Zm0-166.392v-84.63h113.174v84.63H771.109Zm0-166.152v-113.174h113.174v113.174H771.109Z" />
                     </svg>
-                    <span>{{ selectedSize }}</span>
+                    <span
+                        >{{cameraSettings!.resY}}p ({{
+                        cameraSettings!.resolution }})</span
+                    >
                 </button>
                 <div
                     ngbDropdownMenu
@@ -49,19 +52,19 @@
                     <button
                         id="dropdownbutton-item-480px"
                         ngbDropdownItem
-                        (click)="setSize(640, 480, '480p (SD)')">
+                        (click)="setSize(640, 480, 'SD')">
                         480p (SD)
                     </button>
                     <button
                         id="dropdownbutton-item-720px"
                         ngbDropdownItem
-                        (click)="setSize(1280, 720, '720p (HD)')">
+                        (click)="setSize(1280, 720, 'HD')">
                         720p (HD)
                     </button>
                     <button
                         id="dropdownbutton-item-1080px"
                         ngbDropdownItem
-                        (click)="setSize(1920, 1080, '1080 (FHD)')">
+                        (click)="setSize(1920, 1080, 'FHD')">
                         1080p (FHD)
                     </button>
                 </div>
@@ -96,38 +99,36 @@
                     for="refreshRate"
                     id="refreshRate_label"
                     class="form-label my-3 video-settings-label">
-                    Refresh rate: {{ refreshRateControl }}s
+                    Refresh rate: {{ cameraSettings!.refreshRate }}s
                 </label>
                 <app-slider
                     #refreshRate
                     sliderName="refreshRate"
                     unitOfMeasurement="s"
                     [messageReceiver$]="refreshRateReceiver$"
-                    [publishMessage]="refreshRatePublish"
+                    [publishMessage]="refreshRatePublish "
                     [minValue]="0.1"
                     [maxValue]="1"
                     [step]="0.1"
-                    [defaultValue]="refreshRateControl"
-                    (sliderEvent)="updateRefreshRateLabel($event)"
-                    (change)="saveSettings()"></app-slider>
+                    [defaultValue]="cameraSettings!.refreshRate"
+                    (sliderEvent)="updateRefreshRateLabel($event)"></app-slider>
                 <label
                     for="qualityFactor"
                     id="qualityFactor_label"
                     class="form-label my-3 video-settings-label">
-                    Quality Factor: {{ qualityFactorControl }}
+                    Quality Factor: {{ cameraSettings!.qualityFactor }}
                 </label>
                 <app-slider
                     #qualityFactor
                     [flipped]="true"
                     sliderName="qualityFactor"
                     [messageReceiver$]="qualityReceiver$"
-                    [publishMessage]="qualityControlPublish"
+                    [publishMessage]="qualityControlPublish "
                     [minValue]="10"
                     [maxValue]="90"
                     [step]="10"
-                    [defaultValue]="qualityFactorControl"
-                    (sliderEvent)="updateQualityFactorLabel($event)"
-                    (change)="saveSettings()"></app-slider>
+                    [defaultValue]="cameraSettings!.qualityFactor"
+                    (sliderEvent)="updateQualityFactorLabel($event)"></app-slider>
             </ng-template>
         </div>
     </div>
