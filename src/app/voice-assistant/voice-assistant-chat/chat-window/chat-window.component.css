@@ -8,6 +8,17 @@
     overflow: hidden;
 }
 
+#chat-window-header {
+    display: inline-block;
+    font-size: 1rem;
+    border-bottom: 4px solid var(--cerebra-pink);
+    color: white;
+}
+
+#chat-window-header span {
+    font-weight: bold;
+}
+
 .content-window {
     height: 83.33%;
 }

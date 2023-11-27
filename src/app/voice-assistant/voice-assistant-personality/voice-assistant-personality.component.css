@@ -2,6 +2,10 @@ label {
     font-weight: normal !important;
 }
 
+.invalid-form {
+    border: 1px solid red !important;
+}
+
 #pause-threshold-input {
     width: 60px;
     background-color: #344a69;

@@ -13,6 +13,8 @@ import {PersonalityDescriptionComponent} from "./voice-assistant/voice-assistant
 import {voiceAssistantResolver} from "./voice-assistant/voice-assistant-resolver/voice-assistant.resolver";
 import {ChatWindowComponent} from "./voice-assistant/voice-assistant-chat/chat-window/chat-window.component";
 import {ProgramWorkspaceComponent} from "./program/program-workspace/program-workspace.component";
+import {chatResolver} from "./voice-assistant/voice-assistant-resolver/chat.resolver";
+import {personalityGuard} from "./security/personality-guard";
 
 const routes: Routes = [
     {path: "", redirectTo: "head", pathMatch: "full"},
@@ -56,10 +58,12 @@ const routes: Routes = [
             {
                 path: "chat",
                 component: VoiceAssistantChatComponent,
+                canActivate: [personalityGuard],
                 children: [
                     {
                         path: ":uuid",
                         component: ChatWindowComponent,
+                        resolve: {chat: chatResolver},
                     },
                 ],
             },

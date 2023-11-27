@@ -202,14 +202,8 @@ export class MotorService {
                 this.updateMotorFromJointTrajectoryMessage(message);
             });
         }
-    }
-    updateMotorSettingsFromMotorSettingsMessage(message: MotorSettingsMessage) {
-        const motor = this.getMotorByName(message.name);
-        motor.settings.updateChangedAttribute(message);
-        const copy = motor?.clone();
-        motor.motorSubject.next(copy);
-        if (message.name.includes("all")) {
-            const motor = this.getMotorByName(message.name);
+        if (message.joint_names[0].includes("all")) {
+            const motor = this.getMotorByName(message.joint_names[0]);
             const groupMotors = this.motors
                 .filter((m) => m.group == motor.group)
                 .filter(
@@ -218,7 +212,27 @@ export class MotorService {
                         !m.name.includes("all"),
                 );
             groupMotors.forEach((m) => {
-                message.name = m.name;
+                message.joint_names[0] = m.name;
+                this.updateMotorFromJointTrajectoryMessage(message);
+            });
+        }
+    }
+    updateMotorSettingsFromMotorSettingsMessage(message: MotorSettingsMessage) {
+        const motor = this.getMotorByName(message.motor_name);
+        motor.settings.updateChangedAttribute(message);
+        const copy = motor?.clone();
+        motor.motorSubject.next(copy);
+        if (message.motor_name.includes("all")) {
+            const motor = this.getMotorByName(message.motor_name);
+            const groupMotors = this.motors
+                .filter((m) => m.group == motor.group)
+                .filter(
+                    (m) =>
+                        !m.name.includes("opposition") &&
+                        !m.name.includes("all"),
+                );
+            groupMotors.forEach((m) => {
+                message.motor_name = m.name;
                 this.updateMotorSettingsFromMotorSettingsMessage(message);
             });
         }

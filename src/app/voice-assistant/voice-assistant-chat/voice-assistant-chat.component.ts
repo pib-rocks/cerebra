@@ -1,11 +1,12 @@
 import {Component, OnInit, TemplateRef, ViewChild} from "@angular/core";
 import {FormControl, Validators} from "@angular/forms";
-import {Router, ActivatedRoute} from "@angular/router";
-import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
-import {BehaviorSubject, Observable} from "rxjs";
+import {Router} from "@angular/router";
+import {NgbModal, NgbModalRef} from "@ng-bootstrap/ng-bootstrap";
+import {Observable} from "rxjs";
 import {SidebarElement} from "src/app/shared/interfaces/sidebar-element.interface";
+import {ChatService} from "src/app/shared/services/chat.service";
 import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
-import {MockElement} from "src/app/voice-assistant/voice-assistant-chat/mock-element.class";
+import {ChatDto} from "src/app/shared/types/chat.class";
 
 @Component({
     selector: "app-voice-assistant-chat",
@@ -14,122 +15,110 @@ import {MockElement} from "src/app/voice-assistant/voice-assistant-chat/mock-ele
 })
 export class VoiceAssistantChatComponent implements OnInit {
     @ViewChild("modalContent") modalContent: TemplateRef<any> | undefined;
+    ngbModalRef?: NgbModalRef;
     personalityIcon: string = "../../assets/voice-assistant-svgs/chat/chat.svg";
-
-    nameFormControl: FormControl = new FormControl("");
+    topicFormControl: FormControl = new FormControl("");
     subject!: Observable<SidebarElement[]>;
+    personalityId?: string | null;
+    uuid: string | undefined;
 
     constructor(
         private modalService: NgbModal,
-        private voiceAssistantService: VoiceAssistantService,
         private router: Router,
-        private route: ActivatedRoute,
+        private chatService: ChatService,
+        private voiceAssistantService: VoiceAssistantService,
     ) {}
 
-    // FIXME: mockObjects for allowing basic functionality, delete after implementing chatService and Chat
-    mockElements: MockElement[] = [
-        new MockElement("Nürnberg", "12345678-9abc-def0-1234-56789abc"),
-        new MockElement(
-            "Humanoide Roboter",
-            "22345678-9abc-def0-1234-56789abc",
-        ),
-        new MockElement(
-            "Mockige Mockelemente",
-            "32345678-9abc-def0-1234-56789abc",
-        ),
-    ];
-    mockSubject: BehaviorSubject<SidebarElement[]> = new BehaviorSubject<
-        SidebarElement[]
-    >(this.mockElements);
-    //
-
     ngOnInit() {
+        this.personalityId = localStorage.getItem("personality");
+        if (
+            this.personalityId &&
+            this.voiceAssistantService.getPersonality(this.personalityId)
+        ) {
+            this.subject = this.chatService.getSubject(this.personalityId);
+        }
         localStorage.setItem("voice-assistant-tab", "chat");
-        //FIXME: Implement chatService
-        // this.subject = this.chatService.getSubject();
-        this.subject = this.mockSubject;
-        this.nameFormControl.setValidators([
+        this.topicFormControl.setValidators([
             Validators.required,
             Validators.minLength(2),
             Validators.maxLength(255),
         ]);
     }
 
-    showModal = (uuid?: string) => {
-        return this.modalService
-            .open(this.modalContent, {
-                ariaLabelledBy: "modal-basic-title",
-                size: "sm",
-                windowClass: "myCustomModalClass",
-                backdropClass: "myCustomBackdropClass",
-            })
-            .result.then(
-                (result) => {
-                    console.log(`Closed with: ${result}`);
-                },
-                () => {
-                    if (uuid) {
-                        this.editChat(uuid);
-                    } else {
-                        this.addChat();
-                    }
-                },
-            );
+    showModal = () => {
+        this.ngbModalRef = this.modalService.open(this.modalContent, {
+            ariaLabelledBy: "modal-basic-title",
+            size: "sm",
+            windowClass: "myCustomModalClass",
+            backdropClass: "myCustomBackdropClass",
+        });
+        return this.ngbModalRef;
     };
 
     openAddModal = () => {
-        this.nameFormControl.setValue("");
+        this.topicFormControl.setValue("");
         this.showModal();
     };
 
     openEditModal = () => {
-        const uuid: string = this.router.parseUrl(this.router.url).root
-            .children["primary"].segments[2].path;
-        if (uuid) {
-            // FIXME: implement chatService
-            // const updateChat =
-            //     this.chatService.getPersonality(uuid);
-            // this.nameFormControl.setValue(updateChat?.name ?? "");
-            this.showModal(uuid);
+        this.uuid =
+            this.router.url.split("/").length > 3
+                ? this.router.url.split("/").pop()
+                : undefined;
+        if (this.uuid) {
+            const updateChat = this.chatService.getChat(this.uuid);
+            this.topicFormControl.setValue(updateChat?.topic ?? "");
+            this.showModal();
         }
     };
 
     addChat() {
-        if (this.nameFormControl.valid) {
-            // FIXME: implement chatService, implement Chat
-            // this.chatService.createChat(
-            //     new Chat(
-            //         "",
-            //         this.nameFormControl.value,
-            //     ),
-            // );
+        if (this.personalityId) {
+            this.chatService.createChat(
+                new ChatDto(this.topicFormControl.value, this.personalityId),
+            );
+            this.ngbModalRef?.close("saved");
+        } else {
+            this.ngbModalRef?.close("failed");
         }
-        throw Error("not implemented");
     }
 
-    editChat = (uuid: string) => {
-        // FIXME: implement chatService, implement Chat
-        // const updatePersonality = this.chatService
-        //     .getChat(uuid)
-        //     ?.clone();
-        // if (updatePersonality) {
-        //     updatePersonality.name = this.nameFormControl.value;
-        //     this.chatService.updateChatById(updatePersonality);
-        // }
-        throw Error("not implemented");
+    editChat = () => {
+        if (this.uuid) {
+            const updateChat = this.chatService.getChat(this.uuid)?.clone();
+            if (updateChat) {
+                updateChat.topic = this.topicFormControl.value;
+                this.chatService.updateChatById(updateChat);
+                this.ngbModalRef?.close("edited");
+                this.uuid = undefined;
+            }
+        }
+    };
+
+    saveChat() {
+        if (this.topicFormControl.valid) {
+            if (this.uuid) {
+                this.editChat();
+            } else {
+                this.addChat();
+            }
+        }
+    }
+
+    closeModal = () => {
+        this.ngbModalRef?.close("cancelled");
+        this.uuid = undefined;
     };
 
     deleteChat = () => {
-        // FIXME: implement chatService, implement Chat
-        // this.chatService.deleteChatById(
-        //     this.router.parseUrl(this.router.url).root.children["primary"]
-        //         .segments[2].path,
-        // );
-        // this.router.navigate(
-        //     [this.chatService.chats[0].personalityId],
-        //     {relativeTo: this.route},
-        // );
-        throw Error("not implemented");
+        const uuid =
+            this.router.url.split("/").length > 3
+                ? this.router.url.split("/").pop()
+                : undefined;
+        if (uuid) {
+            this.chatService.deleteChatById(uuid);
+            localStorage.removeItem("chat");
+        }
     };
 
     headerElements = [

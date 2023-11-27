@@ -10,7 +10,7 @@ import {RouterTestingModule} from "@angular/router/testing";
 import {BehaviorSubject} from "rxjs";
 import {SidebarElement} from "src/app/shared/interfaces/sidebar-element.interface";
 import {VoiceAssistant} from "src/app/shared/types/voice-assistant";
-import {ActivatedRoute, Router} from "@angular/router";
+import {ActivatedRoute} from "@angular/router";
 
 describe("SideBarRightComponent", () => {
     let component: SideBarRightComponent;
@@ -18,7 +18,6 @@ describe("SideBarRightComponent", () => {
     const testSubject = new BehaviorSubject<SidebarElement[]>([
         new VoiceAssistant("123", "Test", "Male", 0.8, ""),
     ]);
-    let router: Router;
     beforeEach(async () => {
         await TestBed.configureTestingModule({
             declarations: [SideBarRightComponent],
@@ -32,7 +31,6 @@ describe("SideBarRightComponent", () => {
         }).compileComponents();
 
         fixture = TestBed.createComponent(SideBarRightComponent);
-        router = TestBed.inject(Router);
         component = fixture.componentInstance;
         component.subject = testSubject;
         component.lStorage = "temp";

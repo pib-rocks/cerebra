@@ -32,7 +32,7 @@ describe("VoiceAssistantPersonalityComponent", () => {
                 {
                     provide: Router,
                     useValue: {
-                        url: "voice-assistant/personality/1234",
+                        url: "localhost/voice-assistant/personality/1234",
                     },
                 },
             ],
@@ -70,25 +70,30 @@ describe("VoiceAssistantPersonalityComponent", () => {
     });
 
     it("should validate the modal form when calling formControlsValid", () => {
-        component.nameFormControl.setValue("test");
-        component.genderFormControl.setValue("Male");
-        component.pauseThresholdFormControl.setValue(0.5);
-        let checkValid = component.formControlsValid();
-        expect(checkValid).toBe(true);
-        component.nameFormControl.setValue("t");
-        checkValid = component.formControlsValid();
-        expect(checkValid).toBe(false);
-        component.nameFormControl.setValue("test");
-        component.genderFormControl.setValue(null);
-        checkValid = component.formControlsValid();
-        expect(checkValid).toBe(false);
-        component.genderFormControl.setValue("Male");
-        component.pauseThresholdFormControl.setValue(-3);
-        checkValid = component.formControlsValid();
-        expect(checkValid).toBe(false);
-        component.pauseThresholdFormControl.setValue(0.8);
-        checkValid = component.formControlsValid();
-        expect(checkValid).toBe(true);
+        component.personalityForm.patchValue({
+            "name-input": "test",
+            gender: "Male",
+            pausethreshold: 0.5,
+        });
+        expect(component.personalityForm.valid).toBe(true);
+        component.personalityForm.patchValue({
+            "name-input": "1",
+        });
+        expect(component.personalityForm.valid).toBe(false);
+        component.personalityForm.patchValue({
+            "name-input": "test",
+            gender: null,
+        });
+        expect(component.personalityForm.valid).toBe(false);
+        component.personalityForm.patchValue({
+            gender: "Male",
+            pausethreshold: -3,
+        });
+        expect(component.personalityForm.valid).toBe(false);
+        component.personalityForm.patchValue({
+            pausethreshold: 0.8,
+        });
+        expect(component.personalityForm.valid).toBe(true);
     });
 
     it("should adjust the displayed thresholdString when calling adjustThreshold", () => {
@@ -96,7 +101,7 @@ describe("VoiceAssistantPersonalityComponent", () => {
             component,
             "adjustThreshold",
         ).and.callThrough();
-        component.pauseThresholdFormControl.setValue(0.5);
+        component.personalityForm.patchValue({pausethreshold: 0.5});
         component.adjustThreshold("0.1");
         expect(spyOnAdjustThreshold).toHaveBeenCalled();
         expect(component.thresholdString).toBe("0.6s");
@@ -119,9 +124,13 @@ describe("VoiceAssistantPersonalityComponent", () => {
             mockModalRef as any,
         );
         component.openAddModal();
-        expect(component.nameFormControl.value).toBe("");
-        expect(component.genderFormControl.value).toBe("Female");
-        expect(component.pauseThresholdFormControl.value).toBe(0.8);
+        expect(component.personalityForm.controls["name-input"].value).toBe("");
+        expect(component.personalityForm.controls["gender"].value).toBe(
+            "Female",
+        );
+        expect(component.personalityForm.controls["pausethreshold"].value).toBe(
+            0.8,
+        );
         expect(spyOnOpenAddModal).toHaveBeenCalled();
         expect(spyOnShowModal).toHaveBeenCalled();
     });
@@ -134,10 +143,19 @@ describe("VoiceAssistantPersonalityComponent", () => {
         const spyOnShowModal = spyOn(modalService, "open").and.returnValue(
             mockModalRef as any,
         );
+        const spyOnGetPersonality = spyOn(
+            voiceAssistantService,
+            "getPersonality",
+        ).and.returnValue(voiceAssistantService.personalities[0]);
         component.openEditModal();
-        expect(component.nameFormControl.value).toBe("Testuser");
-        expect(component.genderFormControl.value).toBe("Male");
-        expect(component.pauseThresholdFormControl.value).toBe(0.8);
+        expect(spyOnGetPersonality).toHaveBeenCalled();
+        expect(component.personalityForm.controls["name-input"].value).toBe(
+            "Testuser",
+        );
+        expect(component.personalityForm.controls["gender"].value).toBe("Male");
+        expect(component.personalityForm.controls["pausethreshold"].value).toBe(
+            0.8,
+        );
         expect(spyOnOpenEditModal).toHaveBeenCalled();
         expect(spyOnShowModal).toHaveBeenCalled();
     });

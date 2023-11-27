@@ -1,6 +1,6 @@
-import {Component, Input, OnInit} from "@angular/core";
+import {Component, Input, OnDestroy, OnInit} from "@angular/core";
 import {ActivatedRoute, Router} from "@angular/router";
-import {Observable} from "rxjs";
+import {Observable, Subscription} from "rxjs";
 import {SidebarElement} from "src/app/shared/interfaces/sidebar-element.interface";
 
 @Component({
@@ -8,7 +8,7 @@ import {SidebarElement} from "src/app/shared/interfaces/sidebar-element.interfac
     templateUrl: "./sidebar-right.component.html",
     styleUrls: ["./sidebar-right.component.css"],
 })
-export class SideBarRightComponent implements OnInit {
+export class SideBarRightComponent implements OnInit, OnDestroy {
     @Input() headerElements: {
         icon: string;
         label: string;
@@ -19,31 +19,41 @@ export class SideBarRightComponent implements OnInit {
     @Input() lStorage!: string;
     @Input() selectedObservable?: Observable<string | undefined>;
     sidebarElements!: SidebarElement[];
+    subscription!: Subscription;
 
     constructor(
         private router: Router,
         private route: ActivatedRoute,
     ) {}
+    ngOnDestroy(): void {
+        this.subscription.unsubscribe();
+    }
 
     ngOnInit() {
-        this.subject.subscribe((serviceElements: SidebarElement[]) => {
-            this.sidebarElements = serviceElements;
-            if (this.sidebarElements.length == 0) {
-                this.router.navigate(["."], {relativeTo: this.route});
-            } else if (localStorage.getItem(this.lStorage)) {
-                this.router.navigate([localStorage.getItem(this.lStorage)], {
-                    relativeTo: this.route,
-                });
-            } else if (this.sidebarElements.length > 0) {
-                this.router.navigate([this.sidebarElements[0].getUUID()], {
-                    relativeTo: this.route,
-                });
-            } else {
-                this.router.navigate([], {relativeTo: this.route});
-            }
-        });
-        this.selectedObservable?.subscribe((uuid?: string) => {
-            if (uuid) this.router.navigate([uuid], {relativeTo: this.route});
-        });
+        this.subscription = this.subject.subscribe(
+            (serviceElements: SidebarElement[]) => {
+                this.sidebarElements = serviceElements;
+                if (
+                    this.sidebarElements.find(
+                        (sidebarelem) =>
+                            sidebarelem.getUUID() ===
+                            localStorage.getItem(this.lStorage),
+                    )
+                ) {
+                    this.router.navigate(
+                        [localStorage.getItem(this.lStorage)],
+                        {
+                            relativeTo: this.route,
+                        },
+                    );
+                } else if (this.sidebarElements.length > 0) {
+                    this.router.navigate([this.sidebarElements[0].getUUID()], {
+                        relativeTo: this.route,
+                    });
+                } else {
+                    this.router.navigate(["."], {relativeTo: this.route});
+                }
+            },
+        );
     }
 }
