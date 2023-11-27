@@ -1,5 +1,6 @@
 <div
     class="slider"
+    [ngClass]="thumbSelected ? 'no-highlight' : ''"
     (mouseup)="onMouseUp($event)"
     (mouseenter)="onMouseEnter($event)"
     (mouseleave)="onMouseLeave($event)"
@@ -62,9 +63,9 @@
                 fill="#344a69" />
             <!-- slider track foreground -->
             <rect
-                [attr.x]="trackForegroundLeft"
+                [attr.x]="numberOfThumbs > 1 ? trackForegroundLeft : 0"
                 [attr.y]="thumbRadius - (trackWidth / 2)"
-                [attr.width]="trackForegroundRight - trackForegroundLeft"
+                [attr.width]="trackForegroundRight - (numberOfThumbs > 1 ? trackForegroundLeft : 0)"
                 [attr.height]="trackWidth"
                 rx="4"
                 fill="#e10072" />

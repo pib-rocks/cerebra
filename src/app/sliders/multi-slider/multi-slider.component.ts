@@ -227,7 +227,6 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
         if (this.primaryButtonPressed(event.buttons)) {
             this.moveSelectedSlider(event.x);
         }
-        this.unselectSlider();
     }
 
     onMouseMove(event: MouseEvent) {
@@ -242,7 +241,6 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
 
     onMouseEnter(event: MouseEvent) {
         if (this.primaryButtonPressed(event.buttons)) {
-            this.selectClosestSlider(event.x);
             this.moveSelectedSlider(event.x);
         } else {
             this.unselectSlider();

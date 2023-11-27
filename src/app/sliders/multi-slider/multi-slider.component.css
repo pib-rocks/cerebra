@@ -2,6 +2,10 @@
     width: 100%;
 }
 
+.no-highlight {
+    user-select: none;
+}
+
 .bubble-row {
     height: 35px;
     position: relative;
