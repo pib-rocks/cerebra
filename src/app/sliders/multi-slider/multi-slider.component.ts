@@ -62,6 +62,7 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
         this.trackOffsetLeft = this.thumbRadius;
         this.minBubblePosition = this.pixelsFromEdge;
         this.maxBubblePosition = this.sliderWidth - this.pixelsFromEdge;
+        this.thumbs.forEach((thumb) => this.setThumbPosition(thumb));
     }
 
     ngOnInit(): void {
@@ -107,19 +108,19 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
     setThumbValue(thumb: SliderThumb, value: number) {
         thumb.value = value;
         thumb.bubbleFormControl.setValue(value);
+        this.setThumbPosition(thumb);
+    }
 
+    setThumbPosition(thumb: SliderThumb) {
         const {left, right} =
             this.rangeDiv.nativeElement.getBoundingClientRect();
-
-        const position = this.linearTransform(
-            value,
+        thumb.position = this.linearTransform(
+            thumb.value,
             this.minValue,
             this.maxValue,
-            this.thumbRadius,
-            right - left - this.thumbRadius,
+            this.thumbRadius + this.trackWidth / 2,
+            right - left - this.thumbRadius - this.trackWidth / 2,
         );
-        thumb.position = position;
-
         const positions = this.thumbs.map((thumb) => thumb.position);
         this.trackForegroundLeft = Math.min(...positions);
         this.trackForegroundRight = Math.max(...positions);

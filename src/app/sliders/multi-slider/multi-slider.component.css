@@ -58,17 +58,12 @@ p span {
     min-width: 40px;
 }
 
-.bubble-input {
+.bubble-input,
+.bubble-span {
+    top: 1px;
     width: 40px;
     background: #e10072;
     transform: translate(-50%, 0);
-}
-
-.bubble-span {
-    top: 1px;
-    width: fit-content;
-    background: #e10072;
-    transform: translate(-50%, 0px);
 }
 
 .bubble-span-min {
@@ -79,7 +74,6 @@ p span {
 
 .bubble-span-max {
     width: fit-content;
-    text-align: center;
     background: #344a69;
     right: 0px;
 }
