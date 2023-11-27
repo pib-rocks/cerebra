@@ -17,17 +17,17 @@
         </p>
     </div>
     <div class="row bubble-row">
-        <!-- min bubble span -->
+        <!-- left bubble span -->
         <span
             *ngIf="minBubblePosition <= trackForegroundLeft"
-            class="bubble-span-min"
-            >{{ minValue }}{{ unitShort }}</span
+            class="bubble-span-left"
+            >{{ leftValue }}{{ unitShort }}</span
         >
-        <!-- max bubble span -->
+        <!-- right bubble span -->
         <span
             *ngIf="trackForegroundRight <= maxBubblePosition"
-            class="bubble-span-max"
-            >{{ maxValue }}{{ unitShort }}</span
+            class="bubble-span-right"
+            >{{ rightValue }}{{ unitShort }}</span
         >
         <!-- bubble input -->
         <input

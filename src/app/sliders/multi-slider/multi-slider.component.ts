@@ -22,8 +22,8 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
     @ViewChildren("bubble") bubbelElements!: QueryList<ElementRef>;
     @ViewChild("slider") rangeDiv!: ElementRef;
 
-    @Input() minValue!: number;
-    @Input() maxValue!: number;
+    @Input() leftValue!: number;
+    @Input() rightValue!: number;
     @Input() defaultValues!: number[];
     @Input() step: number = 1;
     @Input() unitShort!: string;
@@ -116,8 +116,8 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
             this.rangeDiv.nativeElement.getBoundingClientRect();
         thumb.position = this.linearTransform(
             thumb.value,
-            this.minValue,
-            this.maxValue,
+            this.leftValue,
+            this.rightValue,
             this.thumbRadius + this.trackWidth / 2,
             right - left - this.thumbRadius - this.trackWidth / 2,
         );
@@ -151,7 +151,9 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
     sanitizedSliderValue(value: any): number {
         value = Number(value);
         if (isNaN(value)) return value;
-        value = Math.min(Math.max(this.minValue, value), this.maxValue);
+        let [min, max] = [this.leftValue, this.rightValue];
+        if (min > max) [min, max] = [max, min];
+        value = Math.min(Math.max(min, value), max);
         value *= 1000;
         value -= value % Math.floor(this.step * 1000);
         value /= 1000;
@@ -180,8 +182,8 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
                 mouseX,
                 left + this.thumbRadius,
                 right - this.thumbRadius,
-                this.minValue,
-                this.maxValue,
+                this.leftValue,
+                this.rightValue,
             ),
         );
         this.thumbSelected = this.thumbs
@@ -201,8 +203,8 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
                 mouseX,
                 left + this.thumbRadius,
                 right - this.thumbRadius,
-                this.minValue,
-                this.maxValue,
+                this.leftValue,
+                this.rightValue,
             ),
         );
         this.setThumbValue(this.thumbSelected, nextValue);

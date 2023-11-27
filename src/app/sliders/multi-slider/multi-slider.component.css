@@ -43,8 +43,8 @@ p span {
 
 .bubble-input,
 .bubble-span,
-.bubble-span-min,
-.bubble-span-max {
+.bubble-span-left,
+.bubble-span-right {
     line-height: 24px;
     text-align: center;
     position: absolute;
@@ -66,13 +66,13 @@ p span {
     transform: translate(-50%, 0);
 }
 
-.bubble-span-min {
+.bubble-span-left {
     width: fit-content;
     background: #344a69;
     left: 0px;
 }
 
-.bubble-span-max {
+.bubble-span-right {
     width: fit-content;
     background: #344a69;
     right: 0px;
