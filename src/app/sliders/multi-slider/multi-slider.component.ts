@@ -32,12 +32,12 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
     @Input() name: string = "";
     @Input() numberOfThumbs: number = 2;
 
-    trackForegroundLeft: number = NaN;
-    trackForegroundRight: number = NaN;
+    currentMinBubblePosition: number = 0;
+    currentMaxBubblePosition: number = 0;
 
     @Input() thumbRadius: number = 12;
     @Input() trackHeight: number = 12;
-    sliderWidth: number = 1;
+    sliderWidth: number = 1000;
     trackLength: number = 1;
     trackOffsetLeft: number = 1;
 
@@ -69,8 +69,8 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
         this.thumbs = [];
         for (let i = 0; i < this.numberOfThumbs; i++) {
             this.thumbs.push({
-                value: NaN,
-                position: NaN,
+                value: 0,
+                position: 0,
                 bubbleFormControl: new FormControl(),
                 inputVisible: false,
             });
@@ -121,8 +121,8 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
             right - left - this.thumbRadius - this.trackHeight / 2,
         );
         const positions = this.thumbs.map((thumb) => thumb.position);
-        this.trackForegroundLeft = Math.min(...positions);
-        this.trackForegroundRight = Math.max(...positions);
+        this.currentMinBubblePosition = Math.min(...positions);
+        this.currentMaxBubblePosition = Math.max(...positions);
     }
 
     setAllThumbValues(values: number[]) {
@@ -178,8 +178,8 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
         let targetValue = this.sanitizedSliderValue(
             this.linearTransform(
                 mouseX,
-                left + this.thumbRadius,
-                right - this.thumbRadius,
+                left + this.thumbRadius + this.trackHeight / 2,
+                right - this.thumbRadius - this.trackHeight / 2,
                 this.leftValue,
                 this.rightValue,
             ),
@@ -198,8 +198,8 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
         let nextValue = this.sanitizedSliderValue(
             this.linearTransform(
                 mouseX,
-                left + this.thumbRadius,
-                right - this.thumbRadius,
+                left + this.thumbRadius + this.trackHeight / 2,
+                right - this.thumbRadius - this.trackHeight / 2,
                 this.leftValue,
                 this.rightValue,
             ),

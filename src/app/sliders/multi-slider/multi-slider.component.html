@@ -19,13 +19,13 @@
     <div class="row bubble-row">
         <!-- left bubble span -->
         <span
-            *ngIf="minBubblePosition <= trackForegroundLeft"
+            *ngIf="minBubblePosition <= currentMinBubblePosition"
             class="bubble-span-left"
             >{{ leftValue }}{{ unitShort }}</span
         >
         <!-- right bubble span -->
         <span
-            *ngIf="trackForegroundRight <= maxBubblePosition"
+            *ngIf="currentMaxBubblePosition <= maxBubblePosition"
             class="bubble-span-right"
             >{{ rightValue }}{{ unitShort }}</span
         >
@@ -63,9 +63,9 @@
                 fill="#344a69" />
             <!-- slider track foreground -->
             <rect
-                [attr.x]="numberOfThumbs > 1 ? trackForegroundLeft : 0"
+                [attr.x]="numberOfThumbs > 1 ? currentMinBubblePosition : 0"
                 [attr.y]="thumbRadius - (trackHeight / 2)"
-                [attr.width]="trackForegroundRight - (numberOfThumbs > 1 ? trackForegroundLeft : 0)"
+                [attr.width]="currentMaxBubblePosition - (numberOfThumbs > 1 ? currentMinBubblePosition : 0)"
                 [attr.height]="trackHeight"
                 rx="4"
                 fill="#e10072" />
