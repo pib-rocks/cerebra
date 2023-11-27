@@ -20,7 +20,7 @@ import {SliderThumb} from "./slider-thumb";
 })
 export class MultiSliderComponent implements OnInit, AfterViewInit {
     @ViewChildren("bubble") bubbelElements!: QueryList<ElementRef>;
-    @ViewChild("rangeDiv") rangeDiv!: ElementRef;
+    @ViewChild("slider") rangeDiv!: ElementRef;
 
     @Input() minValue!: number;
     @Input() maxValue!: number;
@@ -38,6 +38,8 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
     @Input() thumbRadius: number = 12;
     @Input() trackWidth: number = 12;
     sliderWidth: number = 1;
+    trackLength: number = 1;
+    trackOffsetLeft: number = 1;
 
     thumbs!: SliderThumb[];
     thumbSelected: SliderThumb | null = null;
@@ -50,12 +52,14 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
 
     @Output() multiSliderEvent = new EventEmitter<number[]>();
 
-    sliderResizeObserver: ResizeObserver = new ResizeObserver(() =>
-        this.calculateOffsets(),
-    );
+    sliderResizeObserver: ResizeObserver = new ResizeObserver(() => {
+        this.calculateOffsets();
+    });
 
     calculateOffsets() {
         this.sliderWidth = this.rangeDiv.nativeElement.clientWidth;
+        this.trackLength = this.sliderWidth - 2 * this.thumbRadius;
+        this.trackOffsetLeft = this.thumbRadius;
         this.minBubblePosition = this.pixelsFromEdge;
         this.maxBubblePosition = this.sliderWidth - this.pixelsFromEdge;
     }
@@ -119,10 +123,6 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
         const positions = this.thumbs.map((thumb) => thumb.position);
         this.trackForegroundLeft = Math.min(...positions);
         this.trackForegroundRight = Math.max(...positions);
-
-        if (thumb.bubbleElement?.nativeElement) {
-            thumb.bubbleElement.nativeElement.style.left = position + "px";
-        }
     }
 
     setAllThumbValues(values: number[]) {

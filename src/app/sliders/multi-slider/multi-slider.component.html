@@ -1,53 +1,62 @@
-<p
-    class="mb-5"
-    *ngIf="name">
-    {{ name + ' ' }}<span *ngIf="unitLong || unitShort"
-        >({{ unitLong ? unitLong : unitShort}})</span
-    >
-</p>
 <div
-    class="range-wrap"
-    #rangeDiv>
-    <span
-        *ngIf="minBubblePosition <= trackForegroundLeft"
-        class="bubble-span-min"
-        >{{ minValue }}{{ unitShort }}</span
-    >
-    <span
-        *ngIf="trackForegroundRight <= maxBubblePosition"
-        class="bubble-span-max"
-        >{{ maxValue }}{{ unitShort }}</span
-    >
-    <div
-        *ngFor="let thumb of thumbs"
-        class="range-value"
-        #bubble>
+    class="slider"
+    (mouseup)="onMouseUp($event)"
+    (mouseenter)="onMouseEnter($event)"
+    (mouseleave)="onMouseLeave($event)"
+    (mousemove)="onMouseMove($event)"
+    #slider>
+    <div class="row">
+        <!-- title -->
+        <p
+            class="pb-5"
+            *ngIf="name">
+            {{ name + ' ' }}<span *ngIf="unitLong || unitShort"
+                >({{ unitLong ? unitLong : unitShort}})</span
+            >
+        </p>
+    </div>
+    <div class="row bubble-row">
+        <!-- min bubble span -->
+        <span
+            *ngIf="minBubblePosition <= trackForegroundLeft"
+            class="bubble-span-min"
+            >{{ minValue }}{{ unitShort }}</span
+        >
+        <!-- max bubble span -->
+        <span
+            *ngIf="trackForegroundRight <= maxBubblePosition"
+            class="bubble-span-max"
+            >{{ maxValue }}{{ unitShort }}</span
+        >
+        <!-- bubble input -->
         <input
+            *ngFor="let thumb of thumbs"
             class="bubble-input overlay"
             [ngClass]="thumb.inputVisible ? '' : 'invisible'"
+            [attr.style]="'left: ' + thumb.position + 'px;'"
             [formControl]="thumb.bubbleFormControl"
             (blur)="toggleInputInvisible(thumb)"
             (keydown.enter)="toggleInputInvisible(thumb)" />
+        <!-- bubble overlay -->
         <div
+            *ngFor="let thumb of thumbs"
+            #bubble
             class="bubble-span overlay"
             [ngClass]="thumb.inputVisible ? 'invisible' : ''"
+            [attr.style]="'left: ' + thumb.position + 'px;'"
             (dblclick)="toggleInputVisible(thumb)">
             {{ thumb.value }}{{ unitShort }}
         </div>
     </div>
-    <div
-        id="svg-div"
-        (mousedown)="onMouseDown($event)"
-        (mouseup)="onMouseUp($event)"
-        (mouseenter)="onMouseEnter($event)"
-        (mouseleave)="onMouseLeave($event)"
-        (mousemove)="onMouseMove($event)">
-        <svg>
+    <div class="row pb-5">
+        <svg
+            (mousedown)="onMouseDown($event)"
+            [attr.style]="'height: ' + 2*thumbRadius + 'px;'">
             <!-- slider track background -->
             <rect
                 [attr.x]="thumbRadius"
                 [attr.y]="thumbRadius - (trackWidth / 2)"
-                [attr.width]="sliderWidth - 2*thumbRadius"
+                [attr.width]="sliderWidth - (2*thumbRadius)"
                 [attr.height]="trackWidth"
                 rx="4"
                 fill="#344a69" />
