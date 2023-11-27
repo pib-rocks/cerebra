@@ -18,7 +18,6 @@ export class ProgramComponent implements OnInit {
     closeResult!: string;
     ngbModalRef?: NgbModalRef;
     subject!: Observable<SidebarElement[]>;
-    programIcon: string = "";
     nameFormControl: FormControl = new FormControl("");
 
     route!: ActivatedRoute;
