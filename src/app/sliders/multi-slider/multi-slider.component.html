@@ -56,17 +56,17 @@
             <!-- slider track background -->
             <rect
                 [attr.x]="thumbRadius"
-                [attr.y]="thumbRadius - (trackWidth / 2)"
+                [attr.y]="thumbRadius - (trackHeight / 2)"
                 [attr.width]="sliderWidth - (2*thumbRadius)"
-                [attr.height]="trackWidth"
+                [attr.height]="trackHeight"
                 rx="4"
                 fill="#344a69" />
             <!-- slider track foreground -->
             <rect
                 [attr.x]="numberOfThumbs > 1 ? trackForegroundLeft : 0"
-                [attr.y]="thumbRadius - (trackWidth / 2)"
+                [attr.y]="thumbRadius - (trackHeight / 2)"
                 [attr.width]="trackForegroundRight - (numberOfThumbs > 1 ? trackForegroundLeft : 0)"
-                [attr.height]="trackWidth"
+                [attr.height]="trackHeight"
                 rx="4"
                 fill="#e10072" />
             <!-- slider thumbs -->

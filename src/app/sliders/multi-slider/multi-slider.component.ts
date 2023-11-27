@@ -36,7 +36,7 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
     trackForegroundRight: number = NaN;
 
     @Input() thumbRadius: number = 12;
-    @Input() trackWidth: number = 12;
+    @Input() trackHeight: number = 12;
     sliderWidth: number = 1;
     trackLength: number = 1;
     trackOffsetLeft: number = 1;
@@ -118,8 +118,8 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
             thumb.value,
             this.leftValue,
             this.rightValue,
-            this.thumbRadius + this.trackWidth / 2,
-            right - left - this.thumbRadius - this.trackWidth / 2,
+            this.thumbRadius + this.trackHeight / 2,
+            right - left - this.thumbRadius - this.trackHeight / 2,
         );
         const positions = this.thumbs.map((thumb) => thumb.position);
         this.trackForegroundLeft = Math.min(...positions);
