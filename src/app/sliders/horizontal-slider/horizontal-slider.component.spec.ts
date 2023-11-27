@@ -5,7 +5,7 @@ import {
     tick,
 } from "@angular/core/testing";
 
-import {MultiSliderComponent} from "./multi-slider.component";
+import {HorizontalSliderComponent} from "./horizontal-slider.component";
 import {RosService} from "../../shared/services/ros-service/ros.service";
 import {FormControl, ReactiveFormsModule} from "@angular/forms";
 import {Subject} from "rxjs";
@@ -13,16 +13,16 @@ import {EventEmitter} from "@angular/core";
 import {By} from "@angular/platform-browser";
 
 describe("MultiSliderComponent", () => {
-    let component: MultiSliderComponent;
-    let fixture: ComponentFixture<MultiSliderComponent>;
+    let component: HorizontalSliderComponent;
+    let fixture: ComponentFixture<HorizontalSliderComponent>;
     const testSubject: Subject<number[]> = new Subject<number[]>();
     beforeEach(async () => {
         await TestBed.configureTestingModule({
-            declarations: [MultiSliderComponent],
+            declarations: [HorizontalSliderComponent],
             imports: [ReactiveFormsModule],
             providers: [RosService],
         }).compileComponents();
-        fixture = TestBed.createComponent(MultiSliderComponent);
+        fixture = TestBed.createComponent(HorizontalSliderComponent);
         component = fixture.componentInstance;
         component.messageReceiver$ = testSubject;
         component.minValue = -200;

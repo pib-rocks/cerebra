@@ -8,7 +8,6 @@ import {HandComponent} from "./hand.component";
 import {RosService} from "../../shared/services/ros-service/ros.service";
 import {NavBarComponent} from "../../nav-bar/nav-bar.component";
 import {CircularSliderComponent} from "../circular-slider/circular-slider.component";
-import {SliderComponent} from "../../sliders/slider/slider.component";
 import {MotorService} from "../../shared/services/motor-service/motor.service";
 import {ActivatedRoute} from "@angular/router";
 import {BehaviorSubject} from "rxjs";
@@ -16,6 +15,7 @@ import {JointTrajectoryMessage} from "../../shared/ros-message-types/jointTrajec
 import {MotorSettingsMessage} from "../../shared/ros-message-types/motorSettingsMessage";
 import {Group} from "../../shared/types/motor.enum";
 import {HttpClientTestingModule} from "@angular/common/http/testing";
+import {HorizontalSliderComponent} from "src/app/sliders/horizontal-slider/horizontal-slider.component";
 
 describe("HandComponent", () => {
     let component: HandComponent;
@@ -41,7 +41,7 @@ describe("HandComponent", () => {
                 MotorControlComponent,
                 NavBarComponent,
                 CircularSliderComponent,
-                SliderComponent,
+                HorizontalSliderComponent,
             ],
             imports: [
                 RouterTestingModule,

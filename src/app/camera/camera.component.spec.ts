@@ -8,11 +8,11 @@ import {ReactiveFormsModule} from "@angular/forms";
 import {CameraComponent} from "./camera.component";
 import {RosService} from "../shared/services/ros-service/ros.service";
 import {By} from "@angular/platform-browser";
-import {SliderComponent} from "../sliders/slider/slider.component";
 import {NgbPopover} from "@ng-bootstrap/ng-bootstrap";
 import {CameraService} from "../shared/services/camera.service";
 import {ApiService} from "../shared/services/api.service";
 import {HttpClientTestingModule} from "@angular/common/http/testing";
+import {HorizontalSliderComponent} from "../sliders/horizontal-slider/horizontal-slider.component";
 
 describe("CameraComponent", () => {
     let component: CameraComponent;
@@ -24,7 +24,7 @@ describe("CameraComponent", () => {
 
     beforeEach(async () => {
         TestBed.configureTestingModule({
-            declarations: [CameraComponent, SliderComponent],
+            declarations: [CameraComponent, HorizontalSliderComponent],
             imports: [ReactiveFormsModule, NgbPopover, HttpClientTestingModule],
             providers: [RosService, CameraService, ApiService],
         }).compileComponents();

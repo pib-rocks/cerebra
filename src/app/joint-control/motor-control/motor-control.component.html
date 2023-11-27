@@ -30,16 +30,17 @@
     </div>
 </div>
 
-<app-slider
-    [name]="motor.name"
-    unitOfMeasurement="°"
+<app-horizontal-slider
+    [unitShort]="'°'"
+    [unitLong]="'°'"
+    [numberOfThumbs]="1"
     [messageReceiver$]="positionSubject$"
-    (sliderEvent)="setMotorPositionValue($event)"
-    [minValue]="-9000"
-    [maxValue]="9000"
+    (sliderEvent)="setMotorPositionValue($event[0])"
+    [leftValue]="-9000"
+    [rightValue]="9000"
     [step]="1"
-    [defaultValue]="motor.position">
-</app-slider>
+    [defaultValues]="[motor.position]">
+</app-horizontal-slider>
 
 <ng-template
     #content
@@ -94,50 +95,49 @@
         *ngIf="imgSrc === '../../assets/toggle-switch-right.png'"
         class="row justify-content-center">
         <div class="col-9">
-            <app-multi-slider
+            <app-horizontal-slider
                 [leftValue]="0"
                 [rightValue]="65535"
+                [numberOfThumbs]="2"
                 [step]="1"
                 [unitLong]="'μs'"
                 name="Pulse width"
                 [defaultValues]="[motor.settings.pulseWidthMin, motor.settings.pulseWidthMax]"
                 [messageReceiver$]="pulseWidthSubject$"
-                (multiSliderEvent)="setPulseRanges($event)"></app-multi-slider>
+                (sliderEvent)="setPulseRanges($event)"></app-horizontal-slider>
         </div>
     </div>
     <div
         *ngIf="imgSrc === '../../assets/toggle-switch-right.png'"
         class="row display-flex justify-content-center">
         <div class="col-9">
-            <app-multi-slider
+            <app-horizontal-slider
                 [leftValue]="-9000"
                 [rightValue]="9000"
+                [numberOfThumbs]="2"
                 [step]="1"
                 [unitShort]="'°'"
                 [unitLong]="'°/100'"
                 name="Degree"
                 [defaultValues]="[motor.settings.rotationRangeMin, motor.settings.rotationRangeMax]"
                 [messageReceiver$]="degreeSubject$"
-                (multiSliderEvent)="setDegree($event)"></app-multi-slider>
+                (sliderEvent)="setDegree($event)"></app-horizontal-slider>
         </div>
     </div>
     <div
         *ngIf="imgSrc === '../../assets/toggle-switch-right.png'"
         class="row display-flex justify-content-center">
         <div class="col-9">
-            <p
-                class="mb-5"
-                style="font-weight: bold">
-                Period <span style="font-weight:normal">(μs)</span>
-            </p>
-            <app-slider
+            <app-horizontal-slider
                 [name]="'Period'"
-                [minValue]="0"
-                [maxValue]="100000"
-                [defaultValue]="motor.settings.period"
+                [leftValue]="0"
+                [rightValue]="100000"
+                [numberOfThumbs]="1"
+                [unitLong]="'μs'"
+                [defaultValues]="[motor.settings.period]"
                 [step]="1"
                 [messageReceiver$]="periodSubject$"
-                (sliderEvent)="setPeriod($event)"></app-slider>
+                (sliderEvent)="setPeriod($event[0])"></app-horizontal-slider>
         </div>
     </div>
     <div

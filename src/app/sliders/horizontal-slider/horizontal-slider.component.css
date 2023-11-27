@@ -11,18 +11,6 @@
     position: relative;
 }
 
-.range-wrap {
-    width: 100%;
-    margin-top: 20px;
-    position: relative;
-}
-
-.range-value {
-    position: absolute;
-    top: -30%;
-    left: 1%;
-}
-
 svg {
     width: 100%;
     padding: 0px;
@@ -56,24 +44,22 @@ p span {
     color: #fff;
     font-size: 13px;
     min-width: 40px;
+    width: fit-content;
 }
 
 .bubble-input,
 .bubble-span {
     top: 1px;
-    width: 40px;
     background: #e10072;
     transform: translate(-50%, 0);
 }
 
 .bubble-span-left {
-    width: fit-content;
     background: #344a69;
     left: 0px;
 }
 
 .bubble-span-right {
-    width: fit-content;
     background: #344a69;
     right: 0px;
 }

@@ -3,7 +3,6 @@ import {FormControl} from "@angular/forms";
 import {Subject} from "rxjs";
 import {MotorService} from "../../shared/services/motor-service/motor.service";
 import {ModalDismissReasons, NgbModal} from "@ng-bootstrap/ng-bootstrap";
-import {SliderComponent} from "../../sliders/slider/slider.component";
 import {Motor} from "../../shared/types/motor.class";
 @Component({
     selector: "app-motor-control",
@@ -15,17 +14,15 @@ export class MotorControlComponent implements OnInit {
     @Input() showMotorSettingsButton = true;
     @Input() motor!: Motor;
 
-    @ViewChild(SliderComponent) sliderComponent!: SliderComponent;
-
     closeResult!: string;
 
     pulseWidthSubject$ = new Subject<number[]>();
     degreeSubject$ = new Subject<number[]>();
-    periodSubject$ = new Subject<number>();
+    periodSubject$ = new Subject<number[]>();
     accelerationSubject$ = new Subject<number>();
     decelerationSubject$ = new Subject<number>();
     velocitySubject$ = new Subject<number>();
-    positionSubject$ = new Subject<number>();
+    positionSubject$ = new Subject<number[]>();
 
     motorFormControl: FormControl = new FormControl(true);
 
@@ -50,9 +47,9 @@ export class MotorControlComponent implements OnInit {
             this.accelerationSubject$.next(this.motor.settings.acceleration);
             this.decelerationSubject$.next(this.motor.settings.deceleration);
             this.velocitySubject$.next(this.motor.settings.velocity);
-            this.positionSubject$.next(this.motor.position);
+            this.positionSubject$.next([this.motor.position]);
             this.motorFormControl.setValue(this.motor.settings.turnedOn);
-            this.periodSubject$.next(this.motor.settings.period);
+            this.periodSubject$.next([this.motor.settings.period]);
         });
 
         this.motorFormControl.valueChanges.subscribe(() => {

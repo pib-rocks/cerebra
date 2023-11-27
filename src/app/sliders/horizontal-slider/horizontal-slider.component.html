@@ -63,9 +63,9 @@
                 fill="#344a69" />
             <!-- slider track foreground -->
             <rect
-                [attr.x]="numberOfThumbs > 1 ? currentMinBubblePosition : 0"
+                [attr.x]="numberOfThumbs > 1 ? currentMinBubblePosition : thumbRadius"
                 [attr.y]="thumbRadius - (trackHeight / 2)"
-                [attr.width]="currentMaxBubblePosition - (numberOfThumbs > 1 ? currentMinBubblePosition : 0)"
+                [attr.width]="currentMaxBubblePosition - (numberOfThumbs > 1 ? currentMinBubblePosition : thumbRadius)"
                 [attr.height]="trackHeight"
                 rx="4"
                 fill="#e10072" />

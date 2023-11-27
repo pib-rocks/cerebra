@@ -8,7 +8,6 @@ import {ReactiveFormsModule} from "@angular/forms";
 import {By} from "@angular/platform-browser";
 import {ModalDismissReasons, NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {MotorService} from "../../shared/services/motor-service/motor.service";
-import {SliderComponent} from "../../sliders/slider/slider.component";
 import {MotorControlComponent} from "./motor-control.component";
 import {Motor} from "../../shared/types/motor.class";
 import {MotorSettings} from "../../shared/types/motor-settings.class";
@@ -17,6 +16,7 @@ import {BehaviorSubject} from "rxjs";
 import {RosService} from "../../shared/services/ros-service/ros.service";
 import {VerticalSliderComponent} from "../../sliders/vertical-slider/vertical-slider.component";
 import {HttpClientTestingModule} from "@angular/common/http/testing";
+import {HorizontalSliderComponent} from "src/app/sliders/horizontal-slider/horizontal-slider.component";
 
 describe("MotorControlComponent", () => {
     let component: MotorControlComponent;
@@ -30,7 +30,7 @@ describe("MotorControlComponent", () => {
         await TestBed.configureTestingModule({
             declarations: [
                 MotorControlComponent,
-                SliderComponent,
+                HorizontalSliderComponent,
                 VerticalSliderComponent,
             ],
             imports: [ReactiveFormsModule, HttpClientTestingModule],
@@ -134,7 +134,9 @@ describe("MotorControlComponent", () => {
             "setMotorPositionValue",
         ).and.callThrough();
         expect(component.motor.position).toBe(500);
-        const slider = fixture.debugElement.query(By.css("app-slider"));
+        const slider = fixture.debugElement.query(
+            By.css("app-horizontal-slider"),
+        );
         slider.triggerEventHandler("sliderEvent", 300);
         expect(spyOnSetMotorPositionValue).toHaveBeenCalled();
         expect(component.motor.position).toBe(300);

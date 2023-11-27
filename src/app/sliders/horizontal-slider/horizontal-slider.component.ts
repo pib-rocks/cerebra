@@ -14,11 +14,11 @@ import {FormControl} from "@angular/forms";
 import {Observable, asyncScheduler} from "rxjs";
 import {SliderThumb} from "./slider-thumb";
 @Component({
-    selector: "app-multi-slider",
-    templateUrl: "./multi-slider.component.html",
-    styleUrls: ["./multi-slider.component.css"],
+    selector: "app-horizontal-slider",
+    templateUrl: "./horizontal-slider.component.html",
+    styleUrls: ["./horizontal-slider.component.css"],
 })
-export class MultiSliderComponent implements OnInit, AfterViewInit {
+export class HorizontalSliderComponent implements OnInit, AfterViewInit {
     @ViewChildren("bubble") bubbelElements!: QueryList<ElementRef>;
     @ViewChild("slider") slider!: ElementRef;
 
@@ -26,17 +26,17 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
     @Input() rightValue!: number;
     @Input() defaultValues!: number[];
     @Input() step: number = 1;
-    @Input() unitShort!: string;
-    @Input() unitLong!: string;
+    @Input() unitShort: string = "";
+    @Input() unitLong: string = "";
     @Input() messageReceiver$!: Observable<number[]>;
     @Input() name: string = "";
-    @Input() numberOfThumbs: number = 2;
+    @Input() numberOfThumbs: number = 1;
+    @Input() thumbRadius: number = 12;
+    @Input() trackHeight: number = 12;
 
     currentMinBubblePosition: number = 0;
     currentMaxBubblePosition: number = 0;
 
-    @Input() thumbRadius: number = 12;
-    @Input() trackHeight: number = 12;
     sliderWidth: number = 1000;
     trackLength: number = 1;
     trackOffsetLeft: number = 1;
@@ -50,7 +50,7 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
     minBubblePosition = 0;
     pixelsFromEdge = 60;
 
-    @Output() multiSliderEvent = new EventEmitter<number[]>();
+    @Output() sliderEvent = new EventEmitter<number[]>();
 
     sliderResizeObserver: ResizeObserver = new ResizeObserver(() => {
         this.calculateOffsets();
@@ -142,7 +142,7 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
             .sort((l, r) => l - r);
         clearTimeout(this.timer);
         this.timer = asyncScheduler.schedule(
-            () => this.multiSliderEvent.emit(sortedValues),
+            () => this.sliderEvent.emit(sortedValues),
             100,
         );
     }
