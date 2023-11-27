@@ -20,7 +20,7 @@ import {SliderThumb} from "./slider-thumb";
 })
 export class MultiSliderComponent implements OnInit, AfterViewInit {
     @ViewChildren("bubble") bubbelElements!: QueryList<ElementRef>;
-    @ViewChild("slider") rangeDiv!: ElementRef;
+    @ViewChild("slider") slider!: ElementRef;
 
     @Input() leftValue!: number;
     @Input() rightValue!: number;
@@ -57,7 +57,7 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
     });
 
     calculateOffsets() {
-        this.sliderWidth = this.rangeDiv.nativeElement.clientWidth;
+        this.sliderWidth = this.slider.nativeElement.clientWidth;
         this.trackLength = this.sliderWidth - 2 * this.thumbRadius;
         this.trackOffsetLeft = this.thumbRadius;
         this.minBubblePosition = this.pixelsFromEdge;
@@ -87,7 +87,7 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
         asyncScheduler.schedule(() =>
             this.setAllThumbValues(this.defaultValues),
         );
-        this.sliderResizeObserver.observe(this.rangeDiv.nativeElement);
+        this.sliderResizeObserver.observe(this.slider.nativeElement);
         this.calculateOffsets();
     }
 
@@ -112,8 +112,7 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
     }
 
     setThumbPosition(thumb: SliderThumb) {
-        const {left, right} =
-            this.rangeDiv.nativeElement.getBoundingClientRect();
+        const {left, right} = this.slider.nativeElement.getBoundingClientRect();
         thumb.position = this.linearTransform(
             thumb.value,
             this.leftValue,
@@ -175,8 +174,7 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
     }
 
     selectClosestSlider(mouseX: number) {
-        const {left, right} =
-            this.rangeDiv.nativeElement.getBoundingClientRect();
+        const {left, right} = this.slider.nativeElement.getBoundingClientRect();
         let targetValue = this.sanitizedSliderValue(
             this.linearTransform(
                 mouseX,
@@ -196,8 +194,7 @@ export class MultiSliderComponent implements OnInit, AfterViewInit {
 
     moveSelectedSlider(mouseX: number) {
         if (!this.thumbSelected) return;
-        const {left, right} =
-            this.rangeDiv.nativeElement.getBoundingClientRect();
+        const {left, right} = this.slider.nativeElement.getBoundingClientRect();
         let nextValue = this.sanitizedSliderValue(
             this.linearTransform(
                 mouseX,
