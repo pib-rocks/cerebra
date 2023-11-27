@@ -41,37 +41,47 @@ p span {
     display: none;
 }
 
-.bubble-input {
-    padding: 0px;
-    width: 40px;
-    height: 24px;
+.bubble-input,
+.bubble-span,
+.bubble-span-min,
+.bubble-span-max {
     line-height: 24px;
     text-align: center;
-    background: #e10072;
-    color: #fff;
-    font-size: 12px;
-    display: block;
     position: absolute;
-    transform: translate(-50%, 0);
     border-radius: 6px;
+    padding: 0px;
+    height: 24px;
+    display: block;
+    font-weight: normal;
+    color: #fff;
+    font-size: 13px;
+    min-width: 40px;
+}
+
+.bubble-input {
+    width: 40px;
+    background: #e10072;
+    transform: translate(-50%, 0);
 }
 
 .bubble-span {
     top: 1px;
-    padding: 0px;
     width: fit-content;
-    min-width: 40px;
-    height: 24px;
-    line-height: 24px;
-    text-align: center;
     background: #e10072;
-    color: #fff;
-    font-size: 13px;
-    font-weight: normal;
-    display: block;
-    position: absolute;
-    border-radius: 6px;
     transform: translate(-50%, 0px);
+}
+
+.bubble-span-min {
+    width: fit-content;
+    background: #344a69;
+    left: 0px;
+}
+
+.bubble-span-max {
+    width: fit-content;
+    text-align: center;
+    background: #344a69;
+    right: 0px;
 }
 
 .bubble-span:before {
@@ -86,38 +96,4 @@ p span {
     top: 100%;
     left: 50%;
     transform: translate(-50%, 0px);
-}
-
-.bubble-span-min {
-    padding: 0px;
-    width: fit-content;
-    min-width: 40px;
-    height: 24px;
-    line-height: 24px;
-    text-align: center;
-    background: #344a69;
-    color: #fff;
-    font-size: 13px;
-    font-weight: normal;
-    display: block;
-    position: absolute;
-    left: 0px;
-    border-radius: 6px;
-}
-
-.bubble-span-max {
-    padding: 0px;
-    width: fit-content;
-    min-width: 40px;
-    height: 24px;
-    line-height: 24px;
-    text-align: center;
-    background: #344a69;
-    color: #fff;
-    font-size: 13px;
-    font-weight: normal;
-    display: inline-block;
-    position: absolute;
-    right: 0px;
-    border-radius: 6px;
 }
