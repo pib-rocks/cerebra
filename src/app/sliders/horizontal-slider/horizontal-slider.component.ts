@@ -19,7 +19,7 @@ import {SliderThumb} from "./slider-thumb";
     styleUrls: ["./horizontal-slider.component.css"],
 })
 export class HorizontalSliderComponent implements OnInit, AfterViewInit {
-    @ViewChildren("bubble") bubbelElements!: QueryList<ElementRef>;
+    @ViewChildren("bubbleInput") bubbleInputElems!: QueryList<ElementRef>;
     @ViewChild("slider") slider!: ElementRef;
 
     @Input() leftValue!: number;
@@ -39,7 +39,7 @@ export class HorizontalSliderComponent implements OnInit, AfterViewInit {
 
     sliderWidth: number = 1000;
     trackLength: number = 1;
-    trackOffsetLeft: number = 1;
+    trackOuterOffset: number = 1;
 
     thumbs!: SliderThumb[];
     thumbSelected: SliderThumb | null = null;
@@ -58,8 +58,8 @@ export class HorizontalSliderComponent implements OnInit, AfterViewInit {
 
     calculateOffsets() {
         this.sliderWidth = this.slider.nativeElement.clientWidth;
-        this.trackLength = this.sliderWidth - 2 * this.thumbRadius;
-        this.trackOffsetLeft = this.thumbRadius;
+        this.trackOuterOffset = this.thumbRadius - this.trackHeight / 2;
+        this.trackLength = this.sliderWidth - 2 * this.trackOuterOffset;
         this.minBubblePosition = this.pixelsFromEdge;
         this.maxBubblePosition = this.sliderWidth - this.pixelsFromEdge;
         this.thumbs.forEach((thumb) => this.setThumbPosition(thumb));
@@ -82,8 +82,8 @@ export class HorizontalSliderComponent implements OnInit, AfterViewInit {
     }
 
     ngAfterViewInit() {
-        this.bubbelElements.forEach(
-            (elem, idx) => (this.thumbs[idx].bubbleElement = elem),
+        this.bubbleInputElems.forEach(
+            (elem, idx) => (this.thumbs[idx].bubbleInputElem = elem),
         );
         asyncScheduler.schedule(() =>
             this.setAllThumbValues(this.defaultValues),
@@ -118,8 +118,8 @@ export class HorizontalSliderComponent implements OnInit, AfterViewInit {
             thumb.value,
             this.leftValue,
             this.rightValue,
-            this.thumbRadius + this.trackHeight / 2,
-            right - left - this.thumbRadius - this.trackHeight / 2,
+            this.thumbRadius,
+            right - left - this.thumbRadius,
         );
         const positions = this.thumbs.map((thumb) => thumb.position);
         this.currentMinBubblePosition = Math.min(...positions);
@@ -163,8 +163,8 @@ export class HorizontalSliderComponent implements OnInit, AfterViewInit {
     toggleInputVisible(thumb: SliderThumb) {
         thumb.inputVisible = true;
         asyncScheduler.schedule(() => {
-            thumb.bubbleElement?.nativeElement.focus();
-            thumb.bubbleElement?.nativeElement.select();
+            thumb.bubbleInputElem?.nativeElement.focus();
+            thumb.bubbleInputElem?.nativeElement.select();
         });
     }
 
@@ -179,8 +179,8 @@ export class HorizontalSliderComponent implements OnInit, AfterViewInit {
         let targetValue = this.sanitizedSliderValue(
             this.linearTransform(
                 mouseX,
-                left + this.thumbRadius + this.trackHeight / 2,
-                right - this.thumbRadius - this.trackHeight / 2,
+                left + this.thumbRadius,
+                right - this.thumbRadius,
                 this.leftValue,
                 this.rightValue,
             ),
@@ -194,13 +194,14 @@ export class HorizontalSliderComponent implements OnInit, AfterViewInit {
     }
 
     moveSelectedSlider(mouseX: number) {
+        console.info("nousex: " + mouseX);
         if (!this.thumbSelected) return;
         const {left, right} = this.slider.nativeElement.getBoundingClientRect();
         let nextValue = this.sanitizedSliderValue(
             this.linearTransform(
                 mouseX,
-                left + this.thumbRadius + this.trackHeight / 2,
-                right - this.thumbRadius - this.trackHeight / 2,
+                left + this.thumbRadius,
+                right - this.thumbRadius,
                 this.leftValue,
                 this.rightValue,
             ),

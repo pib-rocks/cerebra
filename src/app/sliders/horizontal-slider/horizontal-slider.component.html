@@ -6,13 +6,11 @@
     (mousemove)="onMouseMove($event)"
     #slider>
     <div class="row">
-        <!-- title -->
+        <!-- name -->
         <p
             class="pb-4"
             *ngIf="name">
-            {{ name + ' ' }}<span *ngIf="unitLong || unitShort"
-                >({{ unitLong ? unitLong : unitShort}})</span
-            >
+            {{ name + ' ' }}<span>({{ unitLong }})</span>
         </p>
     </div>
     <div class="row bubble-row">
@@ -31,6 +29,7 @@
         <!-- bubble input -->
         <input
             *ngFor="let thumb of thumbs"
+            #bubbleInput
             class="bubble-input overlay"
             [ngClass]="thumb.inputVisible ? '' : 'invisible'"
             [attr.style]="'left: ' + thumb.position + 'px;'"
@@ -40,7 +39,6 @@
         <!-- bubble overlay -->
         <div
             *ngFor="let thumb of thumbs"
-            #bubble
             class="bubble-span overlay"
             [ngClass]="thumb.inputVisible ? 'invisible' : ''"
             [attr.style]="'left: ' + thumb.position + 'px;'"
@@ -54,19 +52,19 @@
             [attr.style]="'height: ' + 2*thumbRadius + 'px;'">
             <!-- slider track background -->
             <rect
-                [attr.x]="thumbRadius"
-                [attr.y]="thumbRadius - (trackHeight / 2)"
-                [attr.width]="sliderWidth - (2*thumbRadius)"
+                [attr.x]="trackOuterOffset"
+                [attr.y]="trackOuterOffset"
+                [attr.width]="trackLength"
                 [attr.height]="trackHeight"
                 rx="4"
                 fill="#344a69" />
             <!-- slider track foreground -->
             <rect
-                [attr.x]="numberOfThumbs > 1 ? currentMinBubblePosition : thumbRadius"
-                [attr.y]="thumbRadius - (trackHeight / 2)"
-                [attr.width]="currentMaxBubblePosition - (numberOfThumbs > 1 ? currentMinBubblePosition : thumbRadius)"
+                [attr.x]="numberOfThumbs > 1 ? currentMinBubblePosition : trackOuterOffset"
+                [attr.y]="trackOuterOffset"
+                [attr.width]="currentMaxBubblePosition - (numberOfThumbs > 1 ? currentMinBubblePosition : trackOuterOffset)"
                 [attr.height]="trackHeight"
-                rx="4"
+                rx="5"
                 fill="#e10072" />
             <!-- slider thumbs -->
             <circle

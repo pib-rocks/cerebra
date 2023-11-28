@@ -6,5 +6,5 @@ export interface SliderThumb {
     position: number;
     bubbleFormControl: FormControl<number>;
     inputVisible: boolean;
-    bubbleElement?: ElementRef;
+    bubbleInputElem?: ElementRef;
 }
