@@ -53,10 +53,10 @@ export class HorizontalSliderComponent implements OnInit, AfterViewInit {
     @Output() sliderEvent = new EventEmitter<number[]>();
 
     sliderResizeObserver: ResizeObserver = new ResizeObserver(() => {
-        this.calculateOffsets();
+        this.calculateStaticPositionalProperties();
     });
 
-    calculateOffsets() {
+    calculateStaticPositionalProperties() {
         this.sliderWidth = this.slider.nativeElement.clientWidth;
         this.trackOuterOffset = this.thumbRadius - this.trackHeight / 2;
         this.trackLength = this.sliderWidth - 2 * this.trackOuterOffset;
@@ -89,7 +89,7 @@ export class HorizontalSliderComponent implements OnInit, AfterViewInit {
             this.setAllThumbValues(this.defaultValues),
         );
         this.sliderResizeObserver.observe(this.slider.nativeElement);
-        this.calculateOffsets();
+        this.calculateStaticPositionalProperties();
     }
 
     linearTransform(
@@ -194,7 +194,6 @@ export class HorizontalSliderComponent implements OnInit, AfterViewInit {
     }
 
     moveSelectedSlider(mouseX: number) {
-        console.info("nousex: " + mouseX);
         if (!this.thumbSelected) return;
         const {left, right} = this.slider.nativeElement.getBoundingClientRect();
         let nextValue = this.sanitizedSliderValue(

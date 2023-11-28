@@ -1,4 +1,5 @@
 <div
+    class="slider"
     [ngClass]="thumbSelected ? 'no-highlight' : ''"
     (mouseup)="onMouseUp($event)"
     (mouseenter)="onMouseEnter($event)"
@@ -13,7 +14,7 @@
             {{ name + ' ' }}<span>({{ unitLong }})</span>
         </p>
     </div>
-    <div class="row bubble-row">
+    <div class="row m-0 p-0 bubble-row">
         <!-- left bubble span -->
         <span
             *ngIf="minBubblePosition <= currentMinBubblePosition"
@@ -46,7 +47,7 @@
             {{ thumb.value }}{{ unitShort }}
         </div>
     </div>
-    <div class="row pb-5">
+    <div class="row pb-5 px-0 pt-0 m-0">
         <svg
             (mousedown)="onMouseDown($event)"
             [attr.style]="'height: ' + 2*thumbRadius + 'px;'">
