@@ -17,6 +17,7 @@ export class SideBarRightComponent implements OnInit, OnDestroy {
     @Input() elementIcon: string = "";
     @Input() subject!: Observable<SidebarElement[]>;
     @Input() lStorage!: string;
+    @Input() selectedObservable?: Observable<string | undefined>;
     sidebarElements!: SidebarElement[];
     subscription!: Subscription;
 

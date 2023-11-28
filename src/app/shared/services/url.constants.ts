@@ -3,4 +3,5 @@ export enum UrlConstants {
     CHAT = "/voice-assistant/chat",
     MOTORSETTINGS = "/motor-settings",
     CAMERA = "/camera-settings",
+    PROGRAM = "/program",
 }

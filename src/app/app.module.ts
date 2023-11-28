@@ -15,7 +15,6 @@ import {MatSliderModule} from "@angular/material/slider";
 import {HeadComponent} from "./head/head.component";
 import {ProgramComponent} from "./program/program.component";
 import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
-import {DialogContentComponent} from "./program/dialog-content/dialog-content.component";
 import {NavBarComponent} from "./nav-bar/nav-bar.component";
 import {SliderComponent} from "./slider/slider.component";
 import {CircularSliderComponent} from "./slider/circular-slider/circular-slider.component";
@@ -33,6 +32,7 @@ import {BoolToOnOffPipe} from "./shared/pipes/bool-to-on-off-pipe.pipe";
 import {VoiceAssistantComponent} from "./voice-assistant/voice-assistant.component";
 import {PersonalityDescriptionComponent} from "./voice-assistant/voice-assistant-personality/personality-description/personality-description.component";
 import {ChatWindowComponent} from "./voice-assistant/voice-assistant-chat/chat-window/chat-window.component";
+import {ProgramWorkspaceComponent} from "./program/program-workspace/program-workspace.component";
 
 @NgModule({
     declarations: [
@@ -43,7 +43,6 @@ import {ChatWindowComponent} from "./voice-assistant/voice-assistant-chat/chat-w
         ArmComponent,
         HeadComponent,
         ProgramComponent,
-        DialogContentComponent,
         NavBarComponent,
         SliderComponent,
         CircularSliderComponent,
@@ -57,6 +56,7 @@ import {ChatWindowComponent} from "./voice-assistant/voice-assistant-chat/chat-w
         VoiceAssistantComponent,
         PersonalityDescriptionComponent,
         ChatWindowComponent,
+        ProgramWorkspaceComponent,
     ],
     imports: [
         BrowserModule,

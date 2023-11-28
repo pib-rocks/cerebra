@@ -78,6 +78,7 @@
 
 .sidebar-element:hover a,
 .sidebar-element-active a {
-    border-bottom: 4px solid var(--cerebra-pink);
     color: white;
+    border-bottom: #e10072 solid 4px;
+    padding-bottom: 4px;
 }
