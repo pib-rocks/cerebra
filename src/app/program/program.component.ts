@@ -58,35 +58,31 @@ export class ProgramComponent implements OnInit {
 
     addProgram = () => {
         this.nameFormControl.setValue("");
-        this.showModal()
-            .then(() => {
-                if (this.nameFormControl.valid) {
-                    this.programService
-                        .createProgram(new Program(this.nameFormControl.value))
-                        .subscribe((program) =>
-                            this.selected.next(program.programNumber),
-                        );
-                }
-            })
-            .catch(() => undefined);
+        this.showModal().then(() => {
+            if (this.nameFormControl.valid) {
+                this.programService
+                    .createProgram(new Program(this.nameFormControl.value))
+                    .subscribe((program) =>
+                        this.selected.next(program.programNumber),
+                    );
+            }
+        });
     };
 
     editProgram = () => {
         const program = this.getProgramFromRoute()?.clone();
         if (!program) return;
         this.nameFormControl.setValue(program.name);
-        this.showModal()
-            .then(() => {
-                if (this.nameFormControl.valid) {
-                    program.name = this.nameFormControl.value;
-                    this.programService
-                        .updateProgramByProgramNumber(program)
-                        .subscribe((program) =>
-                            this.selected.next(program.programNumber),
-                        );
-                }
-            })
-            .catch(() => undefined);
+        this.showModal().then(() => {
+            if (this.nameFormControl.valid) {
+                program.name = this.nameFormControl.value;
+                this.programService
+                    .updateProgramByProgramNumber(program)
+                    .subscribe((program) =>
+                        this.selected.next(program.programNumber),
+                    );
+            }
+        });
     };
 
     deleteProgram = () => {

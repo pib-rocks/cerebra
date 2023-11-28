@@ -96,7 +96,6 @@ describe("ProgramComponent", () => {
         );
 
         fixture.componentInstance.addProgram();
-
         expect(showModalSpy).toHaveBeenCalled();
         expect(programService.createProgram).toHaveBeenCalledOnceWith(
             jasmine.objectContaining({
