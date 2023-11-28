@@ -29,11 +29,14 @@ p span {
 .bubble-span,
 .bubble-span-left,
 .bubble-span-right {
+    padding-left: 1px;
+    padding-right: 1px;
+    padding-top: 0px;
+    padding-bottom: 0px;
     line-height: 24px;
     text-align: center;
     position: absolute;
     border-radius: 6px;
-    padding: 0px;
     height: 24px;
     display: block;
     font-weight: normal;
@@ -43,7 +46,13 @@ p span {
     width: fit-content;
 }
 
-.bubble-input,
+.bubble-input {
+    top: 1px;
+    width: 40px;
+    background: #e10072;
+    transform: translate(-50%, 0);
+}
+
 .bubble-span {
     top: 1px;
     background: #e10072;
