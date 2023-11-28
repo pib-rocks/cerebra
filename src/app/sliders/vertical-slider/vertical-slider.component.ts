@@ -8,8 +8,7 @@ import {
     EventEmitter,
     Output,
 } from "@angular/core";
-import {FormControl, Validators} from "@angular/forms";
-import {notNullValidator, steppingValidator} from "../../shared/validators";
+import {FormControl} from "@angular/forms";
 import {Observable, asyncScheduler} from "rxjs";
 
 @Component({
@@ -18,21 +17,19 @@ import {Observable, asyncScheduler} from "rxjs";
     styleUrls: ["./vertical-slider.component.css"],
 })
 export class VerticalSliderComponent implements OnInit, AfterViewInit {
-    //Shared
+    @ViewChild("slider") slider?: ElementRef;
+    @Input() step: number = 1;
+
     @Input() defaultValue: number = 0;
     @Input() maxValue: number = 100;
     @Input() minValue: number = 0;
     @Input() name?: string;
     @Input() showPrompt: boolean = true;
     @Input() showTextInput: boolean = true;
-    @Input() parentFunction!: () => void;
     @Input() unitShort?: string;
     @Input() unitLong?: string;
     @Input() id = "";
     @Input() messageReceiver$!: Observable<any>;
-    //Slider
-    @ViewChild("slider") slider?: ElementRef;
-    @Input() step: number = 1;
 
     @Output() sliderEvent = new EventEmitter<number>();
 
@@ -41,21 +38,18 @@ export class VerticalSliderComponent implements OnInit, AfterViewInit {
 
     ngOnInit(): void {
         this.rangeFormControl.setValue(this.defaultValue);
-        this.rangeFormControl.setValidators([
-            Validators.min(this.minValue),
-            Validators.max(this.maxValue),
-            Validators.pattern("^[0-9]{1,}"),
-            Validators.required,
-            notNullValidator,
-            steppingValidator(this.step),
-        ]);
         this.messageReceiver$.subscribe((value: number) => {
             this.rangeFormControl.setValue(value);
         });
     }
+
     ngAfterViewInit(): void {
         this.rangeFormControl.valueChanges.subscribe(() => {
-            if (this.sanitizeValue()) {
+            const sanitizedValue = this.sanitizedSliderValue(
+                this.rangeFormControl.value,
+            );
+            if (!isNaN(sanitizedValue)) {
+                this.rangeFormControl.setValue(sanitizedValue);
                 const slider: ElementRef["nativeElement"] =
                     this.slider?.nativeElement;
                 const sliderPercentage: number =
@@ -69,35 +63,20 @@ export class VerticalSliderComponent implements OnInit, AfterViewInit {
         this.rangeFormControl.setValue(this.rangeFormControl.value);
     }
 
-    sanitizeValue() {
-        if (
-            this.rangeFormControl.hasError("required") ||
-            this.rangeFormControl.hasError("pattern")
-        ) {
-            this.rangeFormControl.setValue(this.defaultValue);
-        } else if (this.rangeFormControl.hasError("min")) {
-            this.rangeFormControl.setValue(this.minValue);
-        } else if (this.rangeFormControl.hasError("max")) {
-            this.rangeFormControl.setValue(this.maxValue);
-        } else if (this.rangeFormControl.hasError("steppingError")) {
-            let intFormControl = Math.floor(this.rangeFormControl.value * 1000);
-            const moduloValue = intFormControl % Math.floor(this.step * 1000);
-            intFormControl -= moduloValue;
-            intFormControl /= 1000;
-            this.rangeFormControl.setValue(intFormControl);
-        } else {
-            return true;
-        }
-        return false;
+    sanitizedSliderValue(value: any): number {
+        value = Number(value);
+        if (isNaN(value)) return value;
+        value = Math.min(Math.max(this.minValue, value), this.maxValue);
+        value *= 1000;
+        value -= value % Math.floor(this.step * 1000);
+        value /= 1000;
+        return value;
     }
 
-    inputSendMsg = () => {
+    sendEvent = () => {
         clearTimeout(this.timer);
         this.timer = asyncScheduler.schedule(() => {
             this.sliderEvent.emit(this.rangeFormControl.value);
-            if (this.parentFunction) {
-                this.parentFunction();
-            }
         }, 100);
     };
 }

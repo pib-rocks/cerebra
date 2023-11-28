@@ -66,6 +66,7 @@ export class HorizontalSliderComponent implements OnInit, AfterViewInit {
     }
 
     ngOnInit(): void {
+        this.unitLong = this.unitLong || this.unitShort;
         this.thumbs = [];
         for (let i = 0; i < this.numberOfThumbs; i++) {
             this.thumbs.push({

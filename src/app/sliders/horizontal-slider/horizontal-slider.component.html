@@ -1,5 +1,4 @@
 <div
-    class="slider"
     [ngClass]="thumbSelected ? 'no-highlight' : ''"
     (mouseup)="onMouseUp($event)"
     (mouseenter)="onMouseEnter($event)"
@@ -9,7 +8,7 @@
     <div class="row">
         <!-- title -->
         <p
-            class="pb-5"
+            class="pb-4"
             *ngIf="name">
             {{ name + ' ' }}<span *ngIf="unitLong || unitShort"
                 >({{ unitLong ? unitLong : unitShort}})</span
