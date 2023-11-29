@@ -9,6 +9,7 @@ import {
     AfterViewInit,
     ViewChildren,
     QueryList,
+    ChangeDetectorRef,
 } from "@angular/core";
 import {FormControl} from "@angular/forms";
 import {Observable, asyncScheduler} from "rxjs";
@@ -54,7 +55,10 @@ export class HorizontalSliderComponent implements OnInit, AfterViewInit {
 
     sliderResizeObserver: ResizeObserver = new ResizeObserver(() => {
         this.calculateStaticPositionalProperties();
+        this.ref.detectChanges();
     });
+
+    constructor(private ref: ChangeDetectorRef) {}
 
     calculateStaticPositionalProperties() {
         this.sliderWidth = this.slider.nativeElement.clientWidth;
@@ -79,6 +83,7 @@ export class HorizontalSliderComponent implements OnInit, AfterViewInit {
         this.messageReceiver$?.subscribe((values: number[]) =>
             this.setAllThumbValues(values),
         );
+        this.ref.detectChanges();
     }
 
     ngAfterViewInit() {
