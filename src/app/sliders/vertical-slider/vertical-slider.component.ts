@@ -36,8 +36,6 @@ export class VerticalSliderComponent implements OnInit, AfterViewInit {
     timer: any;
     rangeFormControl: FormControl = new FormControl();
 
-    valueSanitized: boolean = false;
-
     ngOnInit(): void {
         this.rangeFormControl.setValue(this.defaultValue);
         this.messageReceiver$.subscribe((value: number) => {
@@ -47,16 +45,11 @@ export class VerticalSliderComponent implements OnInit, AfterViewInit {
 
     ngAfterViewInit(): void {
         this.rangeFormControl.valueChanges.subscribe(() => {
-            if (!this.valueSanitized) {
-                const sanitizedValue = this.sanitizedSliderValue(
-                    this.rangeFormControl.value,
-                );
-                if (!isNaN(sanitizedValue)) {
-                    this.valueSanitized = true;
-                    this.rangeFormControl.setValue(sanitizedValue);
-                }
-            } else {
-                this.valueSanitized = false;
+            const sanitizedValue = this.sanitizedSliderValue(
+                this.rangeFormControl.value,
+            );
+            if (!isNaN(sanitizedValue)) {
+                this.rangeFormControl.setValue(sanitizedValue);
                 const slider: ElementRef["nativeElement"] =
                     this.slider?.nativeElement;
                 const sliderPercentage: number =
