@@ -133,7 +133,7 @@ export class HorizontalSliderComponent implements OnInit, AfterViewInit {
     setAllThumbValues(values: number[]) {
         if (values.length != this.numberOfThumbs) {
             throw new Error(
-                `expected ${this.numberOfThumbs} values, but received: ${values}`,
+                `expected ${this.numberOfThumbs} values, but received only ${values.length}`,
             );
         }
         values.forEach((value, idx) =>
@@ -146,19 +146,16 @@ export class HorizontalSliderComponent implements OnInit, AfterViewInit {
             .map((thumb) => thumb.value)
             .sort((l, r) => l - r);
         clearTimeout(this.timer);
-        this.timer = asyncScheduler.schedule(
-            () => this.sliderEvent.emit(sortedValues),
-            100,
-        );
+        this.timer = setTimeout(() => this.sliderEvent.emit(sortedValues), 100);
     }
 
     sanitizedSliderValue(value: any): number {
         value = Number(value);
         if (isNaN(value)) return value;
+        value += this.step / 2;
         let [min, max] = [this.leftValue, this.rightValue];
         if (min > max) [min, max] = [max, min];
         value = Math.min(Math.max(min, value), max);
-        value += this.step / 2;
         value *= 1000;
         value -= value % Math.floor(this.step * 1000);
         value /= 1000;

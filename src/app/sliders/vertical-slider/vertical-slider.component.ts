@@ -9,7 +9,7 @@ import {
     Output,
 } from "@angular/core";
 import {FormControl} from "@angular/forms";
-import {Observable, asyncScheduler} from "rxjs";
+import {Observable} from "rxjs";
 
 @Component({
     selector: "app-vertical-slider",
@@ -35,6 +35,7 @@ export class VerticalSliderComponent implements OnInit, AfterViewInit {
 
     timer: any;
     rangeFormControl: FormControl = new FormControl();
+    valueSanitized: boolean = false;
 
     ngOnInit(): void {
         this.rangeFormControl.setValue(this.defaultValue);
@@ -45,11 +46,8 @@ export class VerticalSliderComponent implements OnInit, AfterViewInit {
 
     ngAfterViewInit(): void {
         this.rangeFormControl.valueChanges.subscribe(() => {
-            const sanitizedValue = this.sanitizedSliderValue(
-                this.rangeFormControl.value,
-            );
-            if (!isNaN(sanitizedValue)) {
-                this.rangeFormControl.setValue(sanitizedValue);
+            if (this.valueSanitized) {
+                this.valueSanitized = false;
                 const slider: ElementRef["nativeElement"] =
                     this.slider?.nativeElement;
                 const sliderPercentage: number =
@@ -59,6 +57,14 @@ export class VerticalSliderComponent implements OnInit, AfterViewInit {
                     "--pos-relative",
                     sliderPercentage.toString() + "%",
                 );
+            } else {
+                const sanitizedValue = this.sanitizedSliderValue(
+                    this.rangeFormControl.value,
+                );
+                if (!isNaN(sanitizedValue)) {
+                    this.valueSanitized = true;
+                    this.rangeFormControl.setValue(sanitizedValue);
+                }
             }
         });
         this.rangeFormControl.setValue(this.rangeFormControl.value);
@@ -76,7 +82,7 @@ export class VerticalSliderComponent implements OnInit, AfterViewInit {
 
     sendEvent = () => {
         clearTimeout(this.timer);
-        this.timer = asyncScheduler.schedule(() => {
+        this.timer = setTimeout(() => {
             this.sliderEvent.emit(this.rangeFormControl.value);
         }, 100);
     };
