@@ -1,0 +1,45 @@
+<div class="row mt-3">
+    <div class="col-10">
+        <h5 id="chat-window-header">
+            Active personality: <span>{{personalityName}}</span>
+        </h5>
+    </div>
+    <div class="col-2 d-flex justify-content-end">
+        <button
+            id="exportButton"
+            class="btn btn-regular">
+            Export chat
+        </button>
+    </div>
+</div>
+<div class="row mt-3 content-window">
+    <div class="col-12">
+        <div class="chat-container">
+            <div class="messages">
+                <!-- <div *ngFor="let message of messages">
+                    <p
+                        class="message"
+                        id="user-message">
+                        {{message}}
+                    </p>
+                </div> -->
+            </div>
+            <div class="chat-input">
+                <input
+                    type="text"
+                    id="message-input"
+                    placeholder="Send a message" />
+                <button id="chat-send-button">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        height="24px"
+                        viewBox="0 -960 960 960"
+                        width="24px"
+                        (click)="{}">
+                        <path [attr.d]="sendButton" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

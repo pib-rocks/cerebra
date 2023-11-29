@@ -40,7 +40,7 @@ describe("MotorControlComponent", () => {
         fixture = TestBed.createComponent(MotorControlComponent);
         component = fixture.componentInstance;
         rosService = TestBed.inject(RosService);
-        rosService.initTopics();
+        rosService.initTopicsAndServices();
         rosService.initSubscribers();
         modalService = TestBed.inject(NgbModal);
         motorService = TestBed.inject(MotorService);

@@ -1,63 +1,111 @@
-import {
-    AfterViewInit,
-    OnInit,
-    Component,
-    ElementRef,
-    OnDestroy,
-    ViewChild,
-} from "@angular/core";
-import * as Blockly from "blockly";
-import {MatDialog} from "@angular/material/dialog";
-import {DialogContentComponent} from "./dialog-content/dialog-content.component";
-import {toolbox} from "./blockly";
+import {OnInit, Component, ViewChild, TemplateRef} from "@angular/core";
+
+import {Observable, Subject} from "rxjs";
+import {NgbModal, NgbModalRef} from "@ng-bootstrap/ng-bootstrap";
+import {FormControl, Validators} from "@angular/forms";
+import {ActivatedRoute, Router} from "@angular/router";
+import {Program} from "../shared/types/program";
+import {SidebarElement} from "../shared/interfaces/sidebar-element.interface";
+import {ProgramService} from "../shared/services/program.service";
 
 @Component({
     selector: "app-program",
     templateUrl: "./program.component.html",
     styleUrls: ["./program.component.css"],
 })
-export class ProgramComponent implements OnInit, OnDestroy, AfterViewInit {
+export class ProgramComponent implements OnInit {
+    @ViewChild("modalContent") modalContent: TemplateRef<any> | undefined;
     closeResult!: string;
-    workspace: any;
-    json: any;
+    ngbModalRef?: NgbModalRef;
+    subject!: Observable<SidebarElement[]>;
+    nameFormControl: FormControl = new FormControl("");
 
-    observer!: ResizeObserver;
-    @ViewChild("blocklyDiv") blocklyDiv!: ElementRef<HTMLDivElement>;
+    route!: ActivatedRoute;
 
-    constructor(public dialog: MatDialog) {}
+    selected: Subject<string> = new Subject();
 
-    openDialog() {
-        this.json = Blockly.serialization.workspaces.save(this.workspace);
-        const dialogRef = this.dialog.open(DialogContentComponent, {
-            data: {
-                name: this.json,
-            },
-        });
-        dialogRef.afterClosed().subscribe(() => {
-            console.log("");
-        });
-    }
-
-    toolbox: string = toolbox;
+    constructor(
+        private modalService: NgbModal,
+        private router: Router,
+        private programService: ProgramService,
+    ) {}
 
     ngOnInit(): void {
-        this.workspace = Blockly.inject("blocklyDiv", {
-            toolbox: this.toolbox,
+        this.subject = this.programService.programsSubject;
+        this.nameFormControl.setValidators([
+            Validators.required,
+            Validators.minLength(2),
+            Validators.maxLength(255),
+        ]);
+    }
+
+    getProgramFromRoute(): Program | undefined {
+        const programNumber: string | undefined = this.router.url
+            .split("/")
+            .pop();
+        if (!programNumber) return;
+        return this.programService.getProgramFromCache(programNumber);
+    }
+
+    showModal(): Promise<string> {
+        return this.modalService.open(this.modalContent, {
+            ariaLabelledBy: "modal-basic-title",
+            size: "sm",
+            windowClass: "myCustomModalClass",
+            backdropClass: "myCustomBackdropClass",
+        }).result;
+    }
+
+    addProgram = () => {
+        this.nameFormControl.setValue("");
+        this.showModal().then(() => {
+            if (this.nameFormControl.valid) {
+                this.programService
+                    .createProgram(new Program(this.nameFormControl.value))
+                    .subscribe((program) =>
+                        this.selected.next(program.programNumber),
+                    );
+            }
         });
-        this.observer = new ResizeObserver(() => {
-            this.resizeBlockly();
+    };
+
+    editProgram = () => {
+        const program = this.getProgramFromRoute()?.clone();
+        if (!program) return;
+        this.nameFormControl.setValue(program.name);
+        this.showModal().then(() => {
+            if (this.nameFormControl.valid) {
+                program.name = this.nameFormControl.value;
+                this.programService
+                    .updateProgramByProgramNumber(program)
+                    .subscribe((program) =>
+                        this.selected.next(program.programNumber),
+                    );
+            }
         });
-    }
+    };
 
-    ngAfterViewInit() {
-        this.observer.observe(this.blocklyDiv.nativeElement);
-    }
+    deleteProgram = () => {
+        const program = this.getProgramFromRoute();
+        if (!program) return;
+        this.programService.deleteProgramByProgramNumber(program.programNumber);
+    };
 
-    resizeBlockly() {
-        Blockly.svgResize(this.workspace);
-    }
-
-    ngOnDestroy(): void {
-        this.observer.unobserve(this.blocklyDiv.nativeElement);
-    }
+    headerElements = [
+        {
+            icon: "../../assets/program/program-add.svg",
+            label: "ADD",
+            clickCallback: this.addProgram,
+        },
+        {
+            icon: "../../assets/program/program-delete.svg",
+            label: "DELETE",
+            clickCallback: this.deleteProgram,
+        },
+        {
+            icon: "../../assets/program/program-edit.svg",
+            label: "EDIT",
+            clickCallback: this.editProgram,
+        },
+    ];
 }

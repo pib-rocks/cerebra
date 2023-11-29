@@ -15,7 +15,6 @@ import {MatSliderModule} from "@angular/material/slider";
 import {HeadComponent} from "./joint-control/head/head.component";
 import {ProgramComponent} from "./program/program.component";
 import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
-import {DialogContentComponent} from "./program/dialog-content/dialog-content.component";
 import {NavBarComponent} from "./nav-bar/nav-bar.component";
 import {CircularSliderComponent} from "./joint-control/circular-slider/circular-slider.component";
 import {MotorCurrentService} from "./shared/services/motor-service/motor-current.service";
@@ -23,11 +22,15 @@ import {MotorCurrentService} from "./shared/services/motor-service/motor-current
 import {VoiceAssistantNavComponent} from "./voice-assistant/voice-assistant-nav/voice-assistant-nav.component";
 import {VoiceAssistantChatComponent} from "./voice-assistant/voice-assistant-chat/voice-assistant-chat.component";
 import {VoiceAssistantPersonalityComponent} from "./voice-assistant/voice-assistant-personality/voice-assistant-personality.component";
-import {VoiceAssistantSidebarRightComponent} from "./voice-assistant/voice-assistant-sidebar-right/voice-assistant-sidebar-right.component";
+import {SideBarRightComponent} from "./ui-components/sidebar-right/sidebar-right.component";
 
 import {VerticalSliderComponent} from "./sliders/vertical-slider/vertical-slider.component";
 import {BoolToOnOffPipe} from "./shared/pipes/bool-to-on-off-pipe.pipe";
 import {HorizontalSliderComponent} from "./sliders/horizontal-slider/horizontal-slider.component";
+import {VoiceAssistantComponent} from "./voice-assistant/voice-assistant.component";
+import {PersonalityDescriptionComponent} from "./voice-assistant/voice-assistant-personality/personality-description/personality-description.component";
+import {ChatWindowComponent} from "./voice-assistant/voice-assistant-chat/chat-window/chat-window.component";
+import {ProgramWorkspaceComponent} from "./program/program-workspace/program-workspace.component";
 
 @NgModule({
     declarations: [
@@ -38,16 +41,19 @@ import {HorizontalSliderComponent} from "./sliders/horizontal-slider/horizontal-
         ArmComponent,
         HeadComponent,
         ProgramComponent,
-        DialogContentComponent,
         NavBarComponent,
         CircularSliderComponent,
         VoiceAssistantNavComponent,
         VoiceAssistantChatComponent,
         VoiceAssistantPersonalityComponent,
-        VoiceAssistantSidebarRightComponent,
+        SideBarRightComponent,
         VerticalSliderComponent,
         BoolToOnOffPipe,
         HorizontalSliderComponent,
+        VoiceAssistantComponent,
+        PersonalityDescriptionComponent,
+        ChatWindowComponent,
+        ProgramWorkspaceComponent,
     ],
     imports: [
         BrowserModule,

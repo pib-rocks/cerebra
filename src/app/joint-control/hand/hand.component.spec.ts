@@ -10,7 +10,7 @@ import {NavBarComponent} from "../../nav-bar/nav-bar.component";
 import {CircularSliderComponent} from "../circular-slider/circular-slider.component";
 import {MotorService} from "../../shared/services/motor-service/motor.service";
 import {ActivatedRoute} from "@angular/router";
-import {BehaviorSubject} from "rxjs";
+import {BehaviorSubject, Observable} from "rxjs";
 import {JointTrajectoryMessage} from "../../shared/ros-message-types/jointTrajectoryMessage";
 import {MotorSettingsMessage} from "../../shared/ros-message-types/motorSettingsMessage";
 import {Group} from "../../shared/types/motor.enum";
@@ -27,7 +27,9 @@ describe("HandComponent", () => {
         (jointTrajectoryMessage: JointTrajectoryMessage) => void
     >;
     let rosSendMotorSettingsSpy: jasmine.Spy<
-        (jointTrajectoryMessage: MotorSettingsMessage) => void
+        (
+            jointTrajectoryMessage: MotorSettingsMessage,
+        ) => Observable<MotorSettingsMessage>
     >;
 
     const paramsSubject = new BehaviorSubject({
@@ -72,7 +74,10 @@ describe("HandComponent", () => {
         rosSendMotorSettingsSpy = spyOn(
             rosService,
             "sendMotorSettingsMessage",
-        ).and.callFake((msg) => rosService.motorSettingsReceiver$.next(msg));
+        ).and.callFake((msg: MotorSettingsMessage) => {
+            rosService.motorSettingsReceiver$.next(msg);
+            return new Observable();
+        });
     });
 
     afterEach(() => {
