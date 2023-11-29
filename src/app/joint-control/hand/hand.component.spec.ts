@@ -167,7 +167,7 @@ describe("HandComponent", () => {
             .queryAll(By.css("app-motor-control"))
             .map((slider) => slider.componentInstance);
         sliders.forEach((slider) =>
-            slider.sliderComponent.sliderFormControl.setValue(10),
+            slider.sliderComponent.setAllThumbValues([10]),
         );
 
         const resetSpy = spyOn(component, "reset").and.callThrough();
@@ -184,7 +184,7 @@ describe("HandComponent", () => {
         expect(motorResetGroupSpy).toHaveBeenCalledWith(Group.right_hand);
         expect(rosSendJointTrajectorySpy).toHaveBeenCalled();
         sliders.forEach((slider) =>
-            expect(slider.sliderComponent.sliderFormControl.value).toBe(0),
+            expect(slider.sliderComponent.thumbs[0].value).toBe(0),
         );
     });
 
@@ -242,10 +242,8 @@ describe("HandComponent", () => {
         const oppositionControl = motorControls.find(
             (mc) => mc.motor.name == "thumb_right_opposition",
         );
-        expect(allControl?.sliderComponent.sliderFormControl.value).toBe(
-            indexPos,
-        );
-        expect(oppositionControl?.sliderComponent.sliderFormControl.value).toBe(
+        expect(allControl?.sliderComponent.thumbs[0].value).toBe(indexPos);
+        expect(oppositionControl?.sliderComponent.thumbs[0].value).toBe(
             otherPos,
         );
 
@@ -303,9 +301,7 @@ describe("HandComponent", () => {
         motorControls
             .filter((mc) => !mc.motor.name.includes("opposition"))
             .forEach((mc) =>
-                expect(mc.sliderComponent.sliderFormControl.value).toBe(
-                    allPosition,
-                ),
+                expect(mc.sliderComponent.thumbs[0].value).toBe(allPosition),
             );
     });
 });

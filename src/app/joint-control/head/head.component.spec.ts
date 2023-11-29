@@ -5,12 +5,12 @@ import {MotorControlComponent} from "../motor-control/motor-control.component";
 import {ReactiveFormsModule} from "@angular/forms";
 import {NavBarComponent} from "../../nav-bar/nav-bar.component";
 import {RouterTestingModule} from "@angular/router/testing";
-import {SliderComponent} from "../../sliders/slider/slider.component";
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {JointTrajectoryMessage} from "../../shared/ros-message-types/jointTrajectoryMessage";
 import {Group} from "../../shared/types/motor.enum";
 import {MotorService} from "../../shared/services/motor-service/motor.service";
 import {HttpClientTestingModule} from "@angular/common/http/testing";
+import {HorizontalSliderComponent} from "src/app/sliders/horizontal-slider/horizontal-slider.component";
 
 describe("HeadComponent", () => {
     let component: HeadComponent;
@@ -28,7 +28,7 @@ describe("HeadComponent", () => {
                 HeadComponent,
                 MotorControlComponent,
                 NavBarComponent,
-                SliderComponent,
+                HorizontalSliderComponent,
             ],
             imports: [
                 ReactiveFormsModule,
@@ -68,13 +68,13 @@ describe("HeadComponent", () => {
             fixture.nativeElement.querySelector("#home-position-btn");
 
         sliders.forEach((slider) =>
-            slider.sliderComponent.sliderFormControl.setValue(10),
+            slider.sliderComponent.setAllThumbValues([0]),
         );
 
         homeButton.click();
 
         sliders.forEach((slider) =>
-            expect(slider.sliderComponent.sliderFormControl.value).toBe(0),
+            expect(slider.sliderComponent.thumbs[0].value).toBe(10),
         );
 
         expect(resetSpy).toHaveBeenCalled();

@@ -52,7 +52,6 @@ export class HorizontalSliderComponent implements OnInit, AfterViewInit {
     pixelsFromEdge = 60;
 
     @Output() sliderEvent = new EventEmitter<number[]>();
-
     sliderResizeObserver: ResizeObserver = new ResizeObserver(() => {
         this.calculateStaticPositionalProperties();
         this.ref.detectChanges();
@@ -95,6 +94,7 @@ export class HorizontalSliderComponent implements OnInit, AfterViewInit {
         );
         this.sliderResizeObserver.observe(this.slider.nativeElement);
         this.calculateStaticPositionalProperties();
+        this.ref.detectChanges();
     }
 
     linearTransform(
@@ -118,13 +118,12 @@ export class HorizontalSliderComponent implements OnInit, AfterViewInit {
     }
 
     setThumbPosition(thumb: SliderThumb) {
-        const {left, right} = this.slider.nativeElement.getBoundingClientRect();
         thumb.position = this.linearTransform(
             thumb.value,
             this.leftValue,
             this.rightValue,
             this.thumbRadius,
-            right - left - this.thumbRadius,
+            this.sliderWidth - this.thumbRadius,
         );
         const positions = this.thumbs.map((thumb) => thumb.position);
         this.currentMinBubblePosition = Math.min(...positions);
@@ -159,6 +158,7 @@ export class HorizontalSliderComponent implements OnInit, AfterViewInit {
         let [min, max] = [this.leftValue, this.rightValue];
         if (min > max) [min, max] = [max, min];
         value = Math.min(Math.max(min, value), max);
+        value += this.step / 2;
         value *= 1000;
         value -= value % Math.floor(this.step * 1000);
         value /= 1000;

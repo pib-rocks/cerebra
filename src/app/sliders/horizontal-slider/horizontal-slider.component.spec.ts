@@ -10,7 +10,6 @@ import {RosService} from "../../shared/services/ros-service/ros.service";
 import {FormControl, ReactiveFormsModule} from "@angular/forms";
 import {Subject} from "rxjs";
 import {EventEmitter} from "@angular/core";
-import {By} from "@angular/platform-browser";
 
 describe("MultiSliderComponent", () => {
     let component: HorizontalSliderComponent;
@@ -25,14 +24,16 @@ describe("MultiSliderComponent", () => {
         fixture = TestBed.createComponent(HorizontalSliderComponent);
         component = fixture.componentInstance;
         component.messageReceiver$ = testSubject;
-        component.minValue = -200;
-        component.maxValue = 200;
-        component.minInit = 20;
-        component.maxInit = 80;
-        component.step = 1;
+        component.leftValue = -200;
+        component.rightValue = 200;
+        component.minBubblePosition = 20;
+        component.maxBubblePosition = 80;
+        component.step = 10;
         component.name = "test";
-        component.thumbWidth = 24;
-        component.multiSliderEvent = new EventEmitter<number[]>();
+        component.thumbRadius = 12;
+        component.numberOfThumbs = 2;
+        component.sliderWidth = 1000;
+        component.sliderEvent = new EventEmitter<number[]>();
         component.ngOnInit();
         fixture.detectChanges();
     });
@@ -41,146 +42,179 @@ describe("MultiSliderComponent", () => {
         expect(component).toBeTruthy();
     });
 
-    it("should change values appropriately for each sliderformcontrol after receiving a message from parent component", () => {
-        (component.messageReceiver$ as Subject<number[]>).next([0, 100]);
-        const sfc: FormControl = component.sliderFormControlLower;
-        const sfcUpper: FormControl = component.sliderFormControlUpper;
-        fixture.detectChanges();
-        expect(sfc.value).toBe(0);
-        expect(sfcUpper.value).toBe(100);
-        sfc.setValue(110);
-        sfcUpper.setValue(30);
-        testSubject.next([0, 100]);
-        fixture.detectChanges();
-        expect(sfc.value).toBe(100);
-        expect(sfcUpper.value).toBe(0);
+    it("should sanitize values correctly if leftValue is smaller than rightValue", () => {
+        expect(component.sanitizedSliderValue("not a number")).toBeNaN();
+        expect(component.sanitizedSliderValue(2000)).toEqual(200);
+        expect(component.sanitizedSliderValue(-2000)).toEqual(-200);
+        expect(component.sanitizedSliderValue(0)).toEqual(0);
+        expect(component.sanitizedSliderValue(11)).toEqual(10);
     });
 
-    it("should set the value and thumb for the respective form control and send the event when calling setSliderValue", () => {
-        const spySendEvent = spyOn(component, "sendEvent");
-        const spySetThumbPosition = spyOn(component, "setThumbPosition");
-        component.setSliderValue(component.sliderFormControlLower, 55);
-        expect(component.sliderFormControlLower.value).toBe(55);
-        expect(spySendEvent).toHaveBeenCalled();
-        expect(spySetThumbPosition).toHaveBeenCalled();
-        component.setSliderValue(component.sliderFormControlUpper, 133);
-        expect(component.sliderFormControlUpper.value).toBe(133);
-        expect(spySendEvent).toHaveBeenCalled();
-        expect(spySetThumbPosition).toHaveBeenCalled();
+    it("should sanitize values correctly if leftValue is greater than rightValue", () => {
+        component.leftValue = 200;
+        component.rightValue = -200;
+        expect(component.sanitizedSliderValue(2000)).toEqual(200);
+        expect(component.sanitizedSliderValue(-2000)).toEqual(-200);
+        expect(component.sanitizedSliderValue(0)).toEqual(0);
     });
 
-    it("should set bubblePositions appropriately when calling setThumbPosition", fakeAsync(() => {
-        component.sliderFormControlLower.setValue(0);
-        component.sliderFormControlUpper.setValue(200);
-        const sliderWidth = component.sliderElem.nativeElement.clientWidth;
-        const thumbWidth = component.thumbWidth;
-        const spySetGradient = spyOn(component, "setGradient");
-        component.setThumbPosition();
-        tick(300);
-        fixture.detectChanges();
-        expect(component.bubblePosition).toBe(sliderWidth / 2);
-        expect(component.bubblePositionUpper).toBe(
-            sliderWidth - thumbWidth / 2,
+    it("should transform values correctly", () => {
+        expect(component.linearTransform(20, 10, 110, 10, 20)).toBeCloseTo(
+            12,
+            5,
         );
-        expect(spySetGradient).toHaveBeenCalled();
-    }));
+        expect(component.linearTransform(20, 110, 10, 10, 20)).toBeCloseTo(
+            18,
+            5,
+        );
+        expect(component.linearTransform(20, 10, 110, 20, 10)).toBeCloseTo(
+            18,
+            5,
+        );
+    });
 
-    it("should emit an event when sendEvent has been called", fakeAsync(() => {
-        const spyEventEmitter = spyOn(component.multiSliderEvent, "emit");
-        component.sliderFormControlLower.setValue(100);
-        component.sliderFormControlUpper.setValue(150);
+    it("should set thumb positions correctly", () => {
+        component.thumbs = [
+            {
+                value: 0,
+                position: NaN,
+                bubbleFormControl: new FormControl(),
+                inputVisible: false,
+            },
+            {
+                value: 0,
+                position: 200,
+                bubbleFormControl: new FormControl(),
+                inputVisible: false,
+            },
+        ];
+        const linearTransformSpy = spyOn(
+            component,
+            "linearTransform",
+        ).and.returnValues(100, 300);
+        component.setThumbPosition(component.thumbs[0]);
+        expect(component.thumbs[0].position).toEqual(100);
+        expect(component.currentMinBubblePosition).toEqual(100);
+        expect(component.currentMaxBubblePosition).toEqual(200);
+        expect(linearTransformSpy).toHaveBeenCalledOnceWith(
+            0,
+            -200,
+            200,
+            12,
+            988,
+        );
+        component.setThumbPosition(component.thumbs[0]);
+        expect(component.thumbs[0].position).toEqual(300);
+        expect(component.currentMinBubblePosition).toEqual(200);
+        expect(component.currentMaxBubblePosition).toEqual(300);
+    });
+
+    it("should calculate static positional properties correctly", () => {
+        component.slider = {nativeElement: {clientWidth: 1000}};
+        component.thumbRadius = 30;
+        component.trackHeight = 10;
+        component.pixelsFromEdge = 2;
+        const setPositionSpy = spyOn(component, "setThumbPosition");
+        component.calculateStaticPositionalProperties();
+        expect(component.sliderWidth).toEqual(1000);
+        expect(component.trackOuterOffset).toEqual(25);
+        expect(component.trackLength).toEqual(950);
+        expect(component.minBubblePosition).toEqual(2);
+        expect(component.maxBubblePosition).toEqual(998);
+        for (let thumb of component.thumbs) {
+            expect(setPositionSpy).toHaveBeenCalledWith(thumb);
+        }
+    });
+
+    it("should throw an error, if all thumb values are tried to set with inadequate number of values", () => {
+        expect(() => component.setAllThumbValues([0])).toThrow(
+            new Error("expected 2 values, but received: [0]"),
+        );
+    });
+
+    it("should set all thumb values", () => {
+        const setThumbValueSpy = spyOn(component, "setThumbValue");
+        component.setAllThumbValues([1, 2]);
+        expect(setThumbValueSpy).toHaveBeenCalledWith(component.thumbs[0], 1);
+        expect(setThumbValueSpy).toHaveBeenCalledWith(component.thumbs[0], 1);
+        expect(setThumbValueSpy).toHaveBeenCalledTimes(2);
+    });
+
+    it("should send event", fakeAsync(() => {
+        const eventSpy = spyOn(component.sliderEvent, "emit");
+        component.thumbs[0].value = 20;
+        component.thumbs[1].value = 10;
         component.sendEvent();
-        tick(200);
-        expect(spyEventEmitter).toHaveBeenCalledWith([100, 150]);
+        tick(50);
+        expect(eventSpy).not.toHaveBeenCalled();
+        tick(50);
+        expect(eventSpy).toHaveBeenCalledOnceWith([10, 20]);
     }));
 
-    it("should call respective functions and set values when setting inputs whith slider bubbles", () => {
-        const spySetSliderValue = spyOn(component, "setSliderValue");
-        const sFC = component.sliderFormControlLower;
-        const bFC = component.bubbleFormControlLower;
-        bFC.setValue(150);
-        sFC.setValue(50);
-        component.sliderInputFromBubble(bFC, sFC);
-        expect(spySetSliderValue).toHaveBeenCalled();
-        bFC.setValue("sdf");
-        component.sliderInputFromBubble(bFC, sFC);
-        expect(bFC.value).not.toBe("sdf");
-        bFC.setValue(null);
-        component.sliderInputFromBubble(bFC, sFC);
-        expect(bFC.value).not.toBe(null);
+    it("should send only one event if events occur in too high frequency", fakeAsync(() => {
+        const eventSpy = spyOn(component.sliderEvent, "emit");
+        component.thumbs[0].value = 20;
+        component.thumbs[1].value = 10;
+        component.sendEvent();
+        tick(50);
+        expect(eventSpy).not.toHaveBeenCalled();
+        component.thumbs[1].value = 30;
+        component.sendEvent();
+        tick(50);
+        expect(eventSpy).not.toHaveBeenCalled();
+        tick(50);
+        expect(eventSpy).toHaveBeenCalledOnceWith([20, 30]);
+    }));
+
+    it("should select the closest slider", () => {
+        component.thumbs[0].value = 0;
+        component.thumbs[1].value = 100;
+        spyOn(component, "sanitizedSliderValue").and.returnValues(10, 90);
+        component.selectClosestSlider(NaN);
+        expect(component.thumbSelected).toBe(component.thumbs[0]);
+        component.selectClosestSlider(NaN);
+        expect(component.thumbSelected).toBe(component.thumbs[1]);
     });
 
-    it("should change the color gradient when calling setGradient", () => {
-        component.ngAfterViewInit();
-        component.sliderFormControlLower.setValue(0);
-        component.sliderFormControlUpper.setValue(200);
-
-        const debugElement = fixture.debugElement.query(
-            By.css("input.bottom-layer"),
-        );
-        const htmlElement: HTMLInputElement = debugElement.nativeElement;
-        expect(htmlElement).toBeTruthy();
-        expect(htmlElement).toBeDefined();
-        component.setGradient();
-        fixture.detectChanges();
-        const poslower = htmlElement.style.getPropertyValue("--pos-lower");
-        const posupper = htmlElement.style.getPropertyValue("--pos-upper");
-        const posLowerNum = Number(poslower.substring(0, poslower.length - 1));
-        const posUpperNum = Number(posupper.substring(0, posupper.length - 1));
-
-        const posBubbleLower = component.bubbleElement.nativeElement.offsetLeft;
-        const posBubbleUpper =
-            component.bubbleElementUpper.nativeElement.offsetLeft;
-        const sliderWidth = component.sliderElem.nativeElement.clientWidth;
-        const expectedLower = (posBubbleLower / sliderWidth) * 100;
-        const expectedUpper = (posBubbleUpper / sliderWidth) * 100;
-
-        expect(posLowerNum).toBeCloseTo(expectedLower, 5);
-        expect(posUpperNum).toBeCloseTo(expectedUpper, 5);
+    it("should do nothing if no thumb was selected", () => {
+        const setThumbValueSpy = spyOn(component, "setThumbValue");
+        const sendEventSpy = spyOn(component, "sendEvent");
+        component.moveSelectedSlider(NaN);
+        expect(setThumbValueSpy).not.toHaveBeenCalled();
+        expect(sendEventSpy).not.toHaveBeenCalled();
     });
 
-    it("should compute the correct reltive slider value", () => {
-        expect(component.getRelativeSliderValue(-160)).toBeCloseTo(0.1, 3);
-    });
-
-    it("should compute the correct absolute slider value", () => {
-        expect(component.getAbsoluteSliderValue(0.1)).toBeCloseTo(-160, 3);
-    });
-
-    it("should compute the correct relative mouse position", () => {
+    it("should move the selected slider", () => {
+        const setThumbValueSpy = spyOn(component, "setThumbValue");
+        const sendEventSpy = spyOn(component, "sendEvent");
+        const linearTransformSpy = spyOn(
+            component,
+            "linearTransform",
+        ).and.returnValues(100);
+        const sanitizedValueSpy = spyOn(
+            component,
+            "sanitizedSliderValue",
+        ).and.returnValues(7);
+        component.moveSelectedSlider(50);
         spyOn(
             component.slider.nativeElement,
             "getBoundingClientRect",
         ).and.returnValue({
-            left: 100,
-            right: 200,
+            left: -20,
+            right: 20,
         });
-        expect(component.getRelativeMousePosition(120)).toBeCloseTo(0.2, 3);
-    });
-
-    it("should select the correct values, if lower is closer", () => {
-        component.sliderFormControlLower.setValue(100);
-        component.sliderFormControlUpper.setValue(200);
-        spyOn(component, "getAbsoluteSliderValue").and.returnValue(120);
-        component.selectClosestSlider(0);
-        expect(component.bubbleFormControlSelected).toBe(
-            component.bubbleFormControlLower,
+        expect(linearTransformSpy).toHaveBeenCalledOnceWith(
+            50,
+            -20,
+            20,
+            -200,
+            200,
         );
-        expect(component.sliderFormControlSelected).toBe(
-            component.sliderFormControlLower,
+        expect(sanitizedValueSpy).toHaveBeenCalledOnceWith(100);
+        expect(setThumbValueSpy).toHaveBeenCalledOnceWith(
+            component.thumbs[0],
+            7,
         );
-    });
-
-    it("should select the correct values, if upper is closer", () => {
-        component.sliderFormControlLower.setValue(100);
-        component.sliderFormControlUpper.setValue(200);
-        spyOn(component, "getAbsoluteSliderValue").and.returnValue(180);
-        component.selectClosestSlider(0);
-        expect(component.bubbleFormControlSelected).toBe(
-            component.bubbleFormControlUpper,
-        );
-        expect(component.sliderFormControlSelected).toBe(
-            component.sliderFormControlUpper,
-        );
+        expect(sendEventSpy).toHaveBeenCalled();
     });
 });

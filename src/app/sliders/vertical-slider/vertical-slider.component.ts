@@ -53,7 +53,8 @@ export class VerticalSliderComponent implements OnInit, AfterViewInit {
                 const slider: ElementRef["nativeElement"] =
                     this.slider?.nativeElement;
                 const sliderPercentage: number =
-                    (this.rangeFormControl.value / this.maxValue) * 100;
+                    (100 * (this.rangeFormControl.value - this.minValue)) /
+                    (this.maxValue - this.minValue);
                 slider.style.setProperty(
                     "--pos-relative",
                     sliderPercentage.toString() + "%",

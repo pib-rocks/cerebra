@@ -4,6 +4,7 @@ import {Subject} from "rxjs";
 import {MotorService} from "../../shared/services/motor-service/motor.service";
 import {ModalDismissReasons, NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {Motor} from "../../shared/types/motor.class";
+import {HorizontalSliderComponent} from "src/app/sliders/horizontal-slider/horizontal-slider.component";
 @Component({
     selector: "app-motor-control",
     templateUrl: "./motor-control.component.html",
@@ -13,6 +14,9 @@ export class MotorControlComponent implements OnInit {
     @Input() showCheckBox = true;
     @Input() showMotorSettingsButton = true;
     @Input() motor!: Motor;
+
+    @ViewChild(HorizontalSliderComponent)
+    sliderComponent!: HorizontalSliderComponent;
 
     closeResult!: string;
 

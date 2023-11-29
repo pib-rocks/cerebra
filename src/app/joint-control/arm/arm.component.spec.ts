@@ -8,12 +8,12 @@ import {ArmComponent} from "./arm.component";
 import {RosService} from "../../shared/services/ros-service/ros.service";
 import {NavBarComponent} from "../../nav-bar/nav-bar.component";
 import {RouterTestingModule} from "@angular/router/testing";
-import {SliderComponent} from "../../sliders/slider/slider.component";
 import {MotorService} from "../../shared/services/motor-service/motor.service";
 import {Group} from "../../shared/types/motor.enum";
 import {ActivatedRoute} from "@angular/router";
 import {BehaviorSubject} from "rxjs";
 import {HttpClientTestingModule} from "@angular/common/http/testing";
+import {HorizontalSliderComponent} from "src/app/sliders/horizontal-slider/horizontal-slider.component";
 
 describe("ArmComponent", () => {
     let component: ArmComponent;
@@ -30,7 +30,7 @@ describe("ArmComponent", () => {
                 ArmComponent,
                 MotorControlComponent,
                 NavBarComponent,
-                SliderComponent,
+                HorizontalSliderComponent,
             ],
             imports: [
                 AppRoutingModule,
