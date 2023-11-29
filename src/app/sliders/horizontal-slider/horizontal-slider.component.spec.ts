@@ -11,7 +11,7 @@ import {FormControl, ReactiveFormsModule} from "@angular/forms";
 import {Subject} from "rxjs";
 import {EventEmitter} from "@angular/core";
 
-describe("MultiSliderComponent", () => {
+describe("HorizontalSliderComponent", () => {
     let component: HorizontalSliderComponent;
     let fixture: ComponentFixture<HorizontalSliderComponent>;
     const testSubject: Subject<number[]> = new Subject<number[]>();
@@ -48,6 +48,7 @@ describe("MultiSliderComponent", () => {
         expect(component.sanitizedSliderValue(-2000)).toEqual(-200);
         expect(component.sanitizedSliderValue(0)).toEqual(0);
         expect(component.sanitizedSliderValue(11)).toEqual(10);
+        expect(component.sanitizedSliderValue(16)).toEqual(20);
     });
 
     it("should sanitize values correctly if leftValue is greater than rightValue", () => {
@@ -59,15 +60,15 @@ describe("MultiSliderComponent", () => {
     });
 
     it("should transform values correctly", () => {
-        expect(component.linearTransform(20, 10, 110, 10, 20)).toBeCloseTo(
+        expect(component.linearTransform(30, 10, 110, 10, 20)).toBeCloseTo(
             12,
             5,
         );
-        expect(component.linearTransform(20, 110, 10, 10, 20)).toBeCloseTo(
+        expect(component.linearTransform(30, 110, 10, 10, 20)).toBeCloseTo(
             18,
             5,
         );
-        expect(component.linearTransform(20, 10, 110, 20, 10)).toBeCloseTo(
+        expect(component.linearTransform(30, 10, 110, 20, 10)).toBeCloseTo(
             18,
             5,
         );
@@ -88,6 +89,7 @@ describe("MultiSliderComponent", () => {
                 inputVisible: false,
             },
         ];
+        component.sliderWidth = 1000;
         const linearTransformSpy = spyOn(
             component,
             "linearTransform",
@@ -128,7 +130,7 @@ describe("MultiSliderComponent", () => {
 
     it("should throw an error, if all thumb values are tried to set with inadequate number of values", () => {
         expect(() => component.setAllThumbValues([0])).toThrow(
-            new Error("expected 2 values, but received: [0]"),
+            new Error("expected 2 values, but received only 1"),
         );
     });
 
@@ -190,12 +192,12 @@ describe("MultiSliderComponent", () => {
         const linearTransformSpy = spyOn(
             component,
             "linearTransform",
-        ).and.returnValues(100);
+        ).and.returnValue(100);
         const sanitizedValueSpy = spyOn(
             component,
             "sanitizedSliderValue",
-        ).and.returnValues(7);
-        component.moveSelectedSlider(50);
+        ).and.callThrough();
+        component.thumbSelected = component.thumbs[0];
         spyOn(
             component.slider.nativeElement,
             "getBoundingClientRect",
@@ -203,17 +205,18 @@ describe("MultiSliderComponent", () => {
             left: -20,
             right: 20,
         });
+        component.moveSelectedSlider(50);
         expect(linearTransformSpy).toHaveBeenCalledOnceWith(
             50,
-            -20,
-            20,
+            -8,
+            8,
             -200,
             200,
         );
         expect(sanitizedValueSpy).toHaveBeenCalledOnceWith(100);
         expect(setThumbValueSpy).toHaveBeenCalledOnceWith(
             component.thumbs[0],
-            7,
+            100,
         );
         expect(sendEventSpy).toHaveBeenCalled();
     });

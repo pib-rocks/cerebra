@@ -134,16 +134,14 @@ describe("ArmComponent", () => {
         );
 
         for (const c of childMotorControls) {
-            c.componentInstance.sliderComponent.sliderFormControl.setValue(10);
+            c.componentInstance.sliderComponent.thumbs[0].value = 10;
         }
         resetButton.nativeElement.click();
         expect(clickSpy).toHaveBeenCalled();
         expect(motorServiceResetGroupSpy).toHaveBeenCalledWith(Group.right_arm);
 
         for (const c of childMotorControls) {
-            expect(
-                c.componentInstance.sliderComponent.sliderFormControl.value,
-            ).toBe(0);
+            expect(c.componentInstance.sliderComponent.thumbs[0].value).toBe(0);
         }
     });
 });
