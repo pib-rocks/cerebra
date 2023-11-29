@@ -28,7 +28,7 @@ describe("MotorService", () => {
         service = TestBed.inject(MotorService);
         rosService = TestBed.inject(RosService);
         apiService = TestBed.inject(ApiService);
-        rosService.initTopics();
+        rosService.initTopicsAndServices();
         rosService.initSubscribers();
         spyOnMotors = spyOn(service, "createMotors").and.callThrough();
     });
