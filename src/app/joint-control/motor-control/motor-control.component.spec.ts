@@ -137,7 +137,7 @@ describe("MotorControlComponent", () => {
         const slider = fixture.debugElement.query(
             By.css("app-horizontal-slider"),
         );
-        slider.triggerEventHandler("sliderEvent", 300);
+        slider.triggerEventHandler("sliderEvent", [300]);
         expect(spyOnSetMotorPositionValue).toHaveBeenCalled();
         expect(component.motor.position).toBe(300);
     });

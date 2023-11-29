@@ -17,6 +17,8 @@ import {CameraService} from "../shared/services/camera.service";
 })
 export class CameraComponent implements OnInit, OnDestroy {
     @ViewChild("videobox") videoBox?: ElementRef;
+    @ViewChild("refreshRate") refreshRateSlider!: ElementRef;
+    @ViewChild("qualityFactor") qualityFactorSlider!: ElementRef;
     qualityReceiver$!: Observable<number[]>;
     refreshRateReceiver$!: Observable<number[]>;
     isLoading = false;
