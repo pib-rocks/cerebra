@@ -128,6 +128,7 @@ export class HorizontalSliderComponent implements OnInit, AfterViewInit {
         const positions = this.thumbs.map((thumb) => thumb.position);
         this.currentMinBubblePosition = Math.min(...positions);
         this.currentMaxBubblePosition = Math.max(...positions);
+        this.ref.detectChanges();
     }
 
     setAllThumbValues(values: number[]) {

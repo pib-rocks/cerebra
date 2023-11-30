@@ -41,4 +41,65 @@ describe("CameraComponent", () => {
     it("should create", () => {
         expect(component).toBeTruthy();
     });
+
+    it("should subscribe to the message receiver when the component is instantiated", () => {
+        const spy = spyOn(cameraService, "subscribeCameraReseiver");
+        component.ngOnInit();
+        expect(spy).toHaveBeenCalled();
+    });
+
+    it("setSize should send the size message via setPreviewSize method in rosService", fakeAsync(() => {
+        spyOn(component, "setSize").and.callThrough();
+        spyOn(rosService, "setPreviewSize");
+        const width = 1920;
+        const height = 1080;
+        const resolution = "FHD";
+        component.setSize(width, height, resolution);
+        expect(component.selectedSize).toBe(height + "px(" + resolution + ")");
+        expect(component.isLoading).toBeTrue();
+        tick(1500);
+        expect(component.isLoading).toBeFalse();
+    }));
+
+    it("should toggle the camera when i click on the camera icon", () => {
+        const spyStartCamera = spyOn(component, "startCamera");
+        const spyStopCamera = spyOn(component, "stopCamera");
+
+        const toggleBtn = fixture.debugElement.query(By.css("#toggleCamera"));
+        toggleBtn.nativeElement.click();
+        expect(spyStartCamera).toHaveBeenCalled();
+        toggleBtn.nativeElement.click();
+        expect(spyStopCamera).toHaveBeenCalled();
+    });
+
+    it("should display an error image when receiving error messages from the backend", fakeAsync(() => {
+        rosService.cameraReceiver$.next("Camera not available");
+        tick(1000);
+        expect(component.imageSrc).toMatch("../../assets/camera-error-image");
+    }));
+
+    it("should change the running state of the camera when clicking camera icon", () => {
+        const spyOnToggleCamera = spyOn(component, "toggleCameraState");
+        const toggleBtn = fixture.debugElement.query(By.css("#toggleCamera"));
+        const cameraActiveState = component.cameraSettings?.isActive;
+        toggleBtn.nativeElement.click();
+        expect(spyOnToggleCamera).toHaveBeenCalled();
+        fixture.detectChanges();
+        expect(cameraActiveState).toBeTrue;
+        toggleBtn.nativeElement.click();
+        expect(spyOnToggleCamera).toHaveBeenCalled();
+        fixture.detectChanges();
+        expect(cameraActiveState).toBeFalse;
+    });
+
+    it("startCamera should subscribe to the camera topic", () => {
+        const spySubscribe = spyOn(rosService, "subscribeCameraTopic");
+        component.startCamera();
+        expect(spySubscribe).toHaveBeenCalled();
+    });
+
+    it("stopCamera should get called when OnDestroy is called", () => {
+        component.ngOnDestroy();
+        expect(spyUnsubscribeCamera).toHaveBeenCalled();
+    });
 });

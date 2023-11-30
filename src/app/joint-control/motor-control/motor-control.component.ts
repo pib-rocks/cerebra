@@ -1,6 +1,6 @@
 import {Component, Input, OnInit, TemplateRef, ViewChild} from "@angular/core";
 import {FormControl} from "@angular/forms";
-import {Subject} from "rxjs";
+import {BehaviorSubject, Subject} from "rxjs";
 import {MotorService} from "../../shared/services/motor-service/motor.service";
 import {ModalDismissReasons, NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {Motor} from "../../shared/types/motor.class";
@@ -20,13 +20,13 @@ export class MotorControlComponent implements OnInit {
 
     closeResult!: string;
 
-    pulseWidthSubject$ = new Subject<number[]>();
-    degreeSubject$ = new Subject<number[]>();
-    periodSubject$ = new Subject<number[]>();
-    accelerationSubject$ = new Subject<number>();
-    decelerationSubject$ = new Subject<number>();
-    velocitySubject$ = new Subject<number>();
-    positionSubject$ = new Subject<number[]>();
+    pulseWidthSubject$!: BehaviorSubject<number[]>;
+    degreeSubject$!: BehaviorSubject<number[]>;
+    periodSubject$!: BehaviorSubject<number[]>;
+    accelerationSubject$!: BehaviorSubject<number>;
+    decelerationSubject$!: BehaviorSubject<number>;
+    velocitySubject$!: BehaviorSubject<number>;
+    positionSubject$!: BehaviorSubject<number[]>;
 
     motorFormControl: FormControl = new FormControl(true);
 
@@ -38,6 +38,25 @@ export class MotorControlComponent implements OnInit {
     ) {}
 
     ngOnInit(): void {
+        this.pulseWidthSubject$ = new BehaviorSubject([
+            this.motor.settings.pulseWidthMin,
+            this.motor.settings.pulseWidthMax,
+        ]);
+        this.degreeSubject$ = new BehaviorSubject([
+            this.motor.settings.rotationRangeMin,
+            this.motor.settings.rotationRangeMax,
+        ]);
+        this.periodSubject$ = new BehaviorSubject([this.motor.settings.period]);
+        this.accelerationSubject$ = new BehaviorSubject(
+            this.motor.settings.acceleration,
+        );
+        this.decelerationSubject$ = new BehaviorSubject(
+            this.motor.settings.deceleration,
+        );
+        this.velocitySubject$ = new BehaviorSubject(
+            this.motor.settings.velocity,
+        );
+        this.positionSubject$ = new BehaviorSubject([this.motor.position]);
         this.motor.motorSubject.subscribe((motor) => {
             this.motor = motor;
             this.pulseWidthSubject$.next([
@@ -61,6 +80,7 @@ export class MotorControlComponent implements OnInit {
             this.motorService.updateMotorFromComponent(this.motor);
         });
     }
+
     changeIcon() {
         if (this.imgSrc === "../../assets/toggle-switch-left.png") {
             this.imgSrc = "../../assets/toggle-switch-right.png";

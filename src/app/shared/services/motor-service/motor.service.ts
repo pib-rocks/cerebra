@@ -203,6 +203,7 @@ export class MotorService {
             });
         }
     }
+
     updateMotorSettingsFromMotorSettingsMessage(message: MotorSettingsMessage) {
         const motor = this.getMotorByName(message.motor_name);
         motor.settings.updateChangedAttribute(message);
