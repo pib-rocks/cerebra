@@ -135,7 +135,7 @@ describe("MotorControlComponent", () => {
         ).and.callThrough();
         expect(component.motor.position).toBe(500);
         const slider = fixture.debugElement.query(By.css("app-slider"));
-        slider.triggerEventHandler("sliderEvent", 300);
+        slider.triggerEventHandler("sliderEvent", 3);
         expect(spyOnSetMotorPositionValue).toHaveBeenCalled();
         expect(component.motor.position).toBe(300);
     });
@@ -181,7 +181,7 @@ describe("MotorControlComponent", () => {
         motorSubject?.next(updateMotor);
         fixture.detectChanges();
         const spyOnSetDegree = spyOn(component, "setDegree").and.callThrough();
-        component.setDegree([300, 300]);
+        component.setDegree([3, 3]);
         expect(spyOnSetDegree).toHaveBeenCalled();
         expect(component.motor.settings.rotationRangeMax).toBe(300);
         expect(component.motor.settings.rotationRangeMin).toBe(300);

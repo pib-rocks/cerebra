@@ -3,7 +3,7 @@
         for="{{ motor.name }}"
         id="label_{{motor.name}}"
         class="form-label"
-        >{{ motor.label }}: {{ motor.position }}
+        >{{ motor.label }}: {{ motor.position/100 }}
     </label>
     <div class="d-flex align-items-center">
         <div
@@ -35,8 +35,8 @@
     unitOfMeasurement="°"
     [messageReceiver$]="positionSubject$"
     (sliderEvent)="setMotorPositionValue($event)"
-    [minValue]="-9000"
-    [maxValue]="9000"
+    [minValue]="rotationRangeMin"
+    [maxValue]="rotationRangeMax"
     [step]="1"
     [defaultValue]="motor.position">
 </app-slider>
@@ -111,14 +111,14 @@
         class="row display-flex justify-content-center">
         <div class="col-9">
             <app-multi-slider
-                [minValue]="-9000"
-                [maxValue]="9000"
+                [minValue]="-90"
+                [maxValue]="90"
                 [step]="1"
                 [unitShort]="'°'"
                 [unitLong]="'°/100'"
                 name="Degree"
-                [minInit]="motor.settings.rotationRangeMin"
-                [maxInit]="motor.settings.rotationRangeMax"
+                [minInit]="rotationRangeMin"
+                [maxInit]="rotationRangeMax"
                 [messageReceiver$]="degreeSubject$"
                 (multiSliderEvent)="setDegree($event)"></app-multi-slider>
         </div>
