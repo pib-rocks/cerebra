@@ -13,7 +13,11 @@ export class HeadComponent implements OnInit {
     constructor(private motorService: MotorService) {}
 
     ngOnInit(): void {
-        this.motors = this.motorService.getMotorsByGroup(Group.head);
+        this.motorService
+            .getActiveMotorsByGroup(Group.head)
+            .subscribe((motors) => {
+                this.motors = motors;
+            });
     }
     reset() {
         this.motorService.resetMotorGroupPosition(Group.head);

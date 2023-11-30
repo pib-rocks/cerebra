@@ -9,7 +9,6 @@ import {rosDataTypes} from "./rosMessageTypes/rosDataTypePaths.enum";
 import {rosTopics} from "./rosTopics.enum";
 import {rosServices} from "./rosServices.enum";
 import {MotorSettingsError} from "./error/motor-settings-error";
-import {MotorSettingsSrvResponse} from "./rosMessageTypes/motorSettingsSrvResponse";
 
 @Injectable({
     providedIn: "root",
@@ -38,6 +37,7 @@ export class RosService {
     private cameraPreviewSizeTopic!: ROSLIB.Topic;
     private cameraQualityFactorTopic!: ROSLIB.Topic;
     private jointTrajectoryTopic!: ROSLIB.Topic;
+    private motorSettingsTopic!: ROSLIB.Topic;
     private motorSettingsService!: ROSLIB.Service;
 
     constructor() {
@@ -105,6 +105,10 @@ export class RosService {
             rosServices.motorSettingsServiceName,
             rosDataTypes.motorSettingsSrv,
         );
+        this.motorSettingsTopic = this.createRosTopic(
+            rosTopics.motorSettingsName,
+            rosDataTypes.motorSettings,
+        );
     }
 
     createRosService(serviceName: string, serviceType: string): ROSLIB.Service {
@@ -142,6 +146,7 @@ export class RosService {
         );
         this.subscribeMotorCurrentTopic();
         this.subscribeJointTrajectoryTopic();
+        this.subscribeMotorSettingsTopic();
     }
 
     subscribeDefaultRosMessageTopic(
@@ -169,6 +174,12 @@ export class RosService {
         });
     }
 
+    subscribeMotorSettingsTopic() {
+        this.motorSettingsTopic.subscribe((message) =>
+            this.motorSettingsReceiver$.next(message as MotorSettingsMessage),
+        );
+    }
+
     subscribeMotorCurrentTopic() {
         this.motorCurrentTopic.subscribe((message) => {
             this.currentReceiver$.next(message as DiagnosticStatus);
@@ -187,7 +198,6 @@ export class RosService {
             motorSettingsMessage,
             (response) => {
                 if (response["settings_applied"]) {
-                    this.motorSettingsReceiver$.next(motorSettingsMessage);
                     if (response["settings_persisted"]) {
                         subject.next(motorSettingsMessage);
                     } else {

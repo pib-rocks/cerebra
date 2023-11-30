@@ -9,5 +9,6 @@ export interface MotorSettingsMessage {
     acceleration: number;
     deceleration: number;
     period: number;
+    active: boolean;
     effort?: number;
 }

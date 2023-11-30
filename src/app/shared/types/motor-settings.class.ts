@@ -22,6 +22,7 @@ export class MotorSettings {
         rotationRangeMin: number = -9000,
         rotationRangeMax: number = 9000,
         turnedOn: boolean = true,
+        public active: boolean = true,
     ) {
         this.velocity = velocity;
         this.acceleration = acceleration;
@@ -53,7 +54,9 @@ export class MotorSettings {
             "\nRotation Range max: " +
             this.rotationRangeMax +
             "\nturnedOn: " +
-            this.turnedOn
+            this.turnedOn +
+            "\nactive: " +
+            this.active
         );
     }
 
@@ -71,7 +74,8 @@ export class MotorSettings {
             this.velocity !== settings.velocity ||
             this.acceleration !== settings.acceleration ||
             this.deceleration !== settings.deceleration ||
-            this.period !== settings.period
+            this.period !== settings.period ||
+            this.active !== settings.active
         ) {
             return false;
         }
@@ -85,7 +89,8 @@ export class MotorSettings {
             settingsCopy.acceleration == this.acceleration &&
             settingsCopy.deceleration == this.deceleration &&
             settingsCopy.period == this.period &&
-            settingsCopy.effort == this.effort
+            settingsCopy.effort == this.effort &&
+            settingsCopy.active == this.active
         ) {
             if (settingsCopy instanceof MotorSettings) {
                 if (
@@ -119,6 +124,7 @@ export class MotorSettings {
             this.deceleration = settingsCopy.deceleration;
             this.period = settingsCopy.period;
             this.effort = settingsCopy.effort;
+            this.active = settingsCopy.active;
             if (settingsCopy instanceof MotorSettings) {
                 this.pulseWidthMin = settingsCopy.pulseWidthMin;
                 this.pulseWidthMax = settingsCopy.pulseWidthMax;
@@ -148,6 +154,7 @@ export class MotorSettings {
             this.rotationRangeMin,
             this.rotationRangeMax,
             this.turnedOn,
+            this.active,
         );
     }
 }

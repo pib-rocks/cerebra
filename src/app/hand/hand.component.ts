@@ -3,6 +3,7 @@ import {ActivatedRoute, Params} from "@angular/router";
 import {MotorService} from "../shared/services/motor.service";
 import {Motor} from "../shared/types/motor.class";
 import {Group} from "../shared/types/motor.enum";
+import {Observable, Subscription} from "rxjs";
 
 @Component({
     selector: "app-hand",
@@ -12,6 +13,8 @@ import {Group} from "../shared/types/motor.enum";
 export class HandComponent implements OnInit {
     side!: string;
     motors!: Motor[];
+    sub?: Subscription;
+    subject?: Observable<Motor[]>;
     displayMotors!: Motor[];
     displayCurrentMotors!: string[];
     displayAllFingers!: boolean;
@@ -33,33 +36,40 @@ export class HandComponent implements OnInit {
     ngOnInit(): void {
         this.route.params.subscribe((params: Params) => {
             this.side = params["side"];
-            this.motors =
-                this.side === "left"
-                    ? this.motorService.getMotorsByGroup(Group.left_hand)
-                    : this.motorService.getMotorsByGroup(Group.right_hand);
             this.displayAllFingers = JSON.parse(
                 localStorage.getItem(`cerebra-hand-${this.side}`) ?? "false",
             );
-            this.displayMotors = this.displayAllFingers
-                ? this.motors.filter((m) => !m.name.includes("all"))
-                : this.motors.filter(
-                      (m) =>
-                          m.name.includes("all") ||
-                          m.name.includes("opposition"),
-                  );
-            this.displayCurrentMotors = this.motors
-                .filter((m) => !m.name.includes("all"))
-                .map((m) => m.name);
-            this.displayCurrentMotors.sort((m, n) => {
-                let mIndex = this.sortOrderDisplayCurrentMotors.length;
-                let nIndex = this.sortOrderDisplayCurrentMotors.length;
-                this.sortOrderDisplayCurrentMotors.forEach(
-                    (x: string, index: number) => {
-                        mIndex = m.includes(x) ? index : mIndex;
-                        nIndex = n.includes(x) ? index : nIndex;
-                    },
-                );
-                return this.side === "left" ? mIndex - nIndex : nIndex - mIndex;
+            this.subject =
+                this.side === "left"
+                    ? this.motorService.getActiveMotorsByGroup(Group.left_hand)
+                    : this.motorService.getActiveMotorsByGroup(
+                          Group.right_hand,
+                      );
+            this.sub = this.subject.subscribe((motors) => {
+                this.motors = motors;
+                this.displayMotors = this.displayAllFingers
+                    ? this.motors.filter((m) => !m.name.includes("all"))
+                    : this.motors.filter(
+                          (m) =>
+                              m.name.includes("all") ||
+                              m.name.includes("opposition"),
+                      );
+                this.displayCurrentMotors = this.motors
+                    .filter((m) => !m.name.includes("all"))
+                    .map((m) => m.name);
+                this.displayCurrentMotors.sort((m, n) => {
+                    let mIndex = this.sortOrderDisplayCurrentMotors.length;
+                    let nIndex = this.sortOrderDisplayCurrentMotors.length;
+                    this.sortOrderDisplayCurrentMotors.forEach(
+                        (x: string, index: number) => {
+                            mIndex = m.includes(x) ? index : mIndex;
+                            nIndex = n.includes(x) ? index : nIndex;
+                        },
+                    );
+                    return this.side === "left"
+                        ? mIndex - nIndex
+                        : nIndex - mIndex;
+                });
             });
         });
     }

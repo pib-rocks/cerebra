@@ -3,6 +3,7 @@ import {ActivatedRoute, Params} from "@angular/router";
 import {MotorService} from "../shared/services/motor.service";
 import {Motor} from "../shared/types/motor.class";
 import {Group} from "../shared/types/motor.enum";
+import {Observable, Subscription} from "rxjs";
 
 @Component({
     selector: "app-right-arm",
@@ -12,7 +13,8 @@ import {Group} from "../shared/types/motor.enum";
 export class ArmComponent implements OnInit {
     side!: string;
     motors!: Motor[];
-
+    sub?: Subscription;
+    subject?: Observable<Motor[]>;
     constructor(
         private route: ActivatedRoute,
         private motorService: MotorService,
@@ -20,11 +22,17 @@ export class ArmComponent implements OnInit {
 
     ngOnInit(): void {
         this.route.params.subscribe((params: Params) => {
+            if (this.sub) {
+                this.sub.unsubscribe();
+            }
             this.side = params["side"];
-            this.motors =
+            this.subject =
                 this.side === "left"
-                    ? this.motorService.getMotorsByGroup(Group.left_arm)
-                    : this.motorService.getMotorsByGroup(Group.right_arm);
+                    ? this.motorService.getActiveMotorsByGroup(Group.left_arm)
+                    : this.motorService.getActiveMotorsByGroup(Group.right_arm);
+            this.sub = this.subject.subscribe(
+                (motors) => (this.motors = motors),
+            );
         });
     }
     reset() {
