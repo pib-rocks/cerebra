@@ -42,7 +42,14 @@ describe("ProgramWorkspaceComponent", () => {
                 },
                 {
                     provide: ActivatedRoute,
-                    useValue: {params},
+                    useValue: {
+                        params,
+                        snapshot: {
+                            params: {
+                                uuid: "id-1",
+                            },
+                        },
+                    },
                 },
             ],
         }).compileComponents();
@@ -73,5 +80,21 @@ describe("ProgramWorkspaceComponent", () => {
         expect(spyOnWorkspace).toHaveBeenCalledOnceWith(
             selectedProgram.program,
         );
+    });
+
+    it("should save the program", () => {
+        const selectedProgram = new Program("name-1", {testfield: "2"}, "id-1");
+        const expectedProgram = new Program("name-1", {testfield: "1"}, "id-1");
+        programService.getProgramFromCache.and.returnValue(selectedProgram);
+        const spyOnWorkspace = spyOnProperty(
+            fixture.componentRef.instance,
+            "workspaceContent",
+            "get",
+        ).and.returnValue({testfield: "1"});
+        component.saveProgram();
+        expect(programService.getProgramFromCache).toHaveBeenCalledWith("id-1");
+        expect(
+            programService.updateProgramByProgramNumber,
+        ).toHaveBeenCalledOnceWith(expectedProgram);
     });
 });
