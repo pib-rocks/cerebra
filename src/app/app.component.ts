@@ -1,5 +1,8 @@
 import {Component, OnInit} from "@angular/core";
 import {NavigationEnd, Router} from "@angular/router";
+import {MotorService} from "./shared/services/motor.service";
+import {VoiceAssistantService} from "./shared/services/voice-assistant.service";
+import {ChatService} from "./shared/services/chat.service";
 
 @Component({
     selector: "app-root",
@@ -10,7 +13,6 @@ export class AppComponent implements OnInit {
     currentRoute: string = "";
     title = "cerebra";
     isActiveRoute = false;
-    isActiveVoiceRoute = false;
     jointControlNavItemGroup = [
         "/",
         "/head",
@@ -20,17 +22,17 @@ export class AppComponent implements OnInit {
         "/arm/right",
     ];
 
-    voiceNavItemGroup = ["/personality", "/chat"];
-
-    constructor(private router: Router) {}
+    constructor(
+        private router: Router,
+        private motorService: MotorService,
+        private voiceAssistantService: VoiceAssistantService,
+        private chatService: ChatService,
+    ) {}
 
     ngOnInit(): void {
         this.router.events.subscribe((event) => {
             if (event instanceof NavigationEnd) {
                 this.isActiveRoute = this.jointControlNavItemGroup.includes(
-                    event.urlAfterRedirects,
-                );
-                this.isActiveVoiceRoute = this.voiceNavItemGroup.includes(
                     event.urlAfterRedirects,
                 );
             }

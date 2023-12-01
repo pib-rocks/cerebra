@@ -1,12 +1,16 @@
 import {Injectable, isDevMode} from "@angular/core";
 import * as ROSLIB from "roslib";
-import {BehaviorSubject, Subject} from "rxjs";
+import {BehaviorSubject, ReplaySubject, Observable, Subject} from "rxjs";
 import {MotorSettingsMessage} from "./rosMessageTypes/motorSettingsMessage";
-import {VoiceAssistant} from "./voice-assistant";
+import {VoiceAssistantMsg} from "./voice-assistant";
 import {DiagnosticStatus} from "./rosMessageTypes/DiagnosticStatus.message";
 import {JointTrajectoryMessage} from "../shared/rosMessageTypes/jointTrajectoryMessage";
 import {rosDataTypes} from "./rosMessageTypes/rosDataTypePaths.enum";
 import {rosTopics} from "./rosTopics.enum";
+import {rosServices} from "./rosServices.enum";
+import {MotorSettingsError} from "./error/motor-settings-error";
+import {MotorSettingsSrvResponse} from "./rosMessageTypes/motorSettingsSrvResponse";
+
 @Injectable({
     providedIn: "root",
 })
@@ -18,7 +22,7 @@ export class RosService {
     cameraReceiver$: Subject<string> = new Subject<string>();
     cameraPreviewSizeReceiver$: BehaviorSubject<number[]> = new BehaviorSubject<
         number[]
-    >([640, 480]);
+    >([0, 0]);
     cameraQualityFactorReceiver$: BehaviorSubject<number> =
         new BehaviorSubject<number>(80);
     voiceAssistantReceiver$: Subject<any> = new Subject<any>();
@@ -27,7 +31,6 @@ export class RosService {
     motorSettingsReceiver$: Subject<MotorSettingsMessage> =
         new Subject<MotorSettingsMessage>();
     private ros!: ROSLIB.Ros;
-    private motorSettingsTopic!: ROSLIB.Topic;
     private voiceAssistantTopic!: ROSLIB.Topic;
     private motorCurrentTopic!: ROSLIB.Topic;
     private cameraTopic!: ROSLIB.Topic;
@@ -35,12 +38,13 @@ export class RosService {
     private cameraPreviewSizeTopic!: ROSLIB.Topic;
     private cameraQualityFactorTopic!: ROSLIB.Topic;
     private jointTrajectoryTopic!: ROSLIB.Topic;
+    private motorSettingsService!: ROSLIB.Service;
 
     constructor() {
         this.ros = this.setUpRos();
         this.ros.on("connection", () => {
             console.log("Connected to ROS");
-            this.initTopics();
+            this.initTopicsAndServices();
             this.initSubscribers();
         });
         this.ros.on("error", (error: string) => {
@@ -55,7 +59,7 @@ export class RosService {
     setUpRos() {
         let rosUrl: string;
         if (isDevMode()) {
-            rosUrl = "192.168.1.112";
+            rosUrl = "127.0.0.1";
         } else {
             rosUrl = window.location.hostname;
         }
@@ -68,7 +72,7 @@ export class RosService {
         return this.ros;
     }
 
-    initTopics() {
+    initTopicsAndServices() {
         this.cameraTopic = this.createRosTopic(
             rosTopics.cameraTopicName,
             rosDataTypes.string,
@@ -85,10 +89,6 @@ export class RosService {
             rosTopics.cameraTimerPeriodTopicName,
             rosDataTypes.float64,
         );
-        this.motorSettingsTopic = this.createRosTopic(
-            rosTopics.motorSettingsTopicName,
-            rosDataTypes.motorSettings,
-        );
         this.motorCurrentTopic = this.createRosTopic(
             rosTopics.motorCurrentTopicName,
             rosDataTypes.diagnosticStatus,
@@ -101,6 +101,18 @@ export class RosService {
             rosTopics.voiceTopicName,
             rosDataTypes.string,
         );
+        this.motorSettingsService = this.createRosService(
+            rosServices.motorSettingsServiceName,
+            rosDataTypes.motorSettingsSrv,
+        );
+    }
+
+    createRosService(serviceName: string, serviceType: string): ROSLIB.Service {
+        return new ROSLIB.Service({
+            ros: this.ros,
+            name: serviceName,
+            serviceType: serviceType,
+        });
     }
 
     createRosTopic(topicName: string, topicMessageType: string): ROSLIB.Topic {
@@ -128,7 +140,6 @@ export class RosService {
             this.cameraQualityFactorTopic,
             this.cameraQualityFactorReceiver$,
         );
-        this.subscribeMotorSettingsTopic();
         this.subscribeMotorCurrentTopic();
         this.subscribeJointTrajectoryTopic();
     }
@@ -150,12 +161,6 @@ export class RosService {
         );
     }
 
-    subscribeMotorSettingsTopic() {
-        this.motorSettingsTopic.subscribe((message) => {
-            this.motorSettingsReceiver$.next(message as MotorSettingsMessage);
-        });
-    }
-
     subscribeJointTrajectoryTopic() {
         this.jointTrajectoryTopic.subscribe((jointTrajectoryMessage) => {
             this.jointTrajectoryReceiver$.next(
@@ -174,8 +179,33 @@ export class RosService {
         this.cameraTopic.unsubscribe();
     }
 
-    sendMotorSettingsMessage(motorSettingsMessage: MotorSettingsMessage) {
-        this.motorSettingsTopic.publish(motorSettingsMessage);
+    sendMotorSettingsMessage(
+        motorSettingsMessage: MotorSettingsMessage,
+    ): Observable<MotorSettingsMessage> {
+        const subject: Subject<MotorSettingsMessage> = new ReplaySubject();
+        this.motorSettingsService.callService(
+            motorSettingsMessage,
+            (response) => {
+                if (response["settings_applied"]) {
+                    this.motorSettingsReceiver$.next(motorSettingsMessage);
+                    if (response["settings_persisted"]) {
+                        subject.next(motorSettingsMessage);
+                    } else {
+                        subject.error(
+                            new MotorSettingsError(motorSettingsMessage, true),
+                        );
+                    }
+                } else {
+                    subject.error(
+                        new MotorSettingsError(motorSettingsMessage, false),
+                    );
+                }
+            },
+            (errorMsg) => {
+                subject.error(new Error(errorMsg));
+            },
+        );
+        return subject;
     }
 
     sendJointTrajectoryMessage(jointTrajectoryMessage: JointTrajectoryMessage) {
@@ -244,7 +274,7 @@ export class RosService {
         console.log(consoleString);
     }
 
-    sendVoiceActivationMessage(msg: VoiceAssistant) {
+    sendVoiceActivationMessage(msg: VoiceAssistantMsg) {
         const message = new ROSLIB.Message({data: JSON.stringify(msg)});
         this.voiceAssistantTopic.publish(message);
     }

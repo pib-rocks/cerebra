@@ -1,0 +1,164 @@
+<div class="row mt-4 ">
+    <div class="col-10 pink-corner-frame">
+        <router-outlet></router-outlet>
+    </div>
+    <div class="col-2">
+        <app-sidebar-right
+            [headerElements]="headerElements"
+            [subject]="subject"
+            [lStorage]="'personality'"
+            [elementIcon]="personalityIcon">
+        </app-sidebar-right>
+    </div>
+</div>
+
+<ng-template
+    #modalContent
+    let-modal
+    id="template">
+    <div
+        class="row display-flex modal-header"
+        id="modal-header">
+        <div
+            class="col-10"
+            id="header-title">
+            <span id="header-title-text"
+                >{{ uuid?"EDIT ":"ADD "}}PERSONALITY</span
+            >
+        </div>
+        <div
+            class="col-2 text-right"
+            id="close-button">
+            <button
+                id="modal-close-button"
+                type="button"
+                (click)="modal.dismiss('Cross click')"
+                class="btn">
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="10"
+                    height="16">
+                    <text
+                        font-family="Titillium"
+                        fill="#FFF"
+                        font-weight="bold"
+                        font-size="16"
+                        y="11.062">
+                        X
+                    </text>
+                </svg>
+            </button>
+        </div>
+    </div>
+    <form
+        [formGroup]="personalityForm"
+        (keydown)="($event).key ==='Enter' ? this.savePersonality(): ''">
+        <div
+            class="row m-2 mt-4 pr-2"
+            id="row-name">
+            <label
+                for="name-input"
+                class="col-3 mt-2 justify-content-end"
+                id="label-name"
+                >Name</label
+            >
+            <input
+                [ngClass]="(!this.personalityForm.controls['name-input'].valid && !this.personalityForm.controls['name-input'].pristine) ? 'invalid-form' : '' "
+                class="col-9"
+                type="text"
+                formControlName="name-input"
+                id="name-input" />
+        </div>
+        <div class="row m-2 ml-3">
+            <div
+                class="col-4"
+                id="radio-button-female">
+                <input
+                    value="Female"
+                    formControlName="gender"
+                    type="radio"
+                    id="radio-female" />
+                <label
+                    for="radio-female"
+                    id="label-radio-female"
+                    >Female</label
+                >
+            </div>
+            <div
+                class="col-4"
+                id="radio-button-male">
+                <input
+                    value="Male"
+                    formControlName="gender"
+                    type="radio"
+                    id="radio-male" />
+                <label
+                    for="radio-male"
+                    id="label-radio-male"
+                    >Male</label
+                >
+            </div>
+        </div>
+        <div
+            class="row m-2"
+            id="row-pause-threshold"
+            lang="en-US">
+            <label
+                for="name-input"
+                class="col-6 mt-1"
+                id="label-pause-threshold"
+                >Pause threshold</label
+            >
+            <div class="col-3">
+                <div class="row">
+                    <div class="col-10 p-0">
+                        <input
+                            type="text"
+                            id="pause-threshold-input"
+                            [(ngModel)]="thresholdString"
+                            [ngModelOptions]="{standalone: true}"
+                            readonly />
+                    </div>
+                    <div class="col-2 p-0">
+                        <div class="row mt-1 p-0">
+                            <button
+                                id="up"
+                                type="button"
+                                (click)="adjustThreshold('0.1')">
+                                &#9650;
+                            </button>
+                        </div>
+                        <div class="row p-0">
+                            <button
+                                id="down"
+                                type="button"
+                                (click)="adjustThreshold('-0.1')">
+                                &#9660;
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row justify-content-center mt-2 mb-3">
+            <div class="col-3 align-self-center">
+                <button
+                    type="button"
+                    class="btn btn-regular"
+                    id="modal-save-button"
+                    (click)="this.savePersonality()">
+                    Save
+                </button>
+            </div>
+            <div class="col-3 align-self-center">
+                <button
+                    type="button"
+                    class="btn btn-regular"
+                    id="modal-cancel-button"
+                    (click)="this.closeModal()">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </form>
+</ng-template>
