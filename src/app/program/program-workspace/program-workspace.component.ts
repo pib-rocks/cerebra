@@ -1,8 +1,15 @@
-import {Component, ElementRef, ViewChild} from "@angular/core";
+import {
+    Component,
+    ElementRef,
+    Output,
+    ViewChild,
+    EventEmitter,
+} from "@angular/core";
 import * as Blockly from "blockly";
 import {toolbox} from "../blockly";
 import {ActivatedRoute} from "@angular/router";
 import {ProgramService} from "src/app/shared/services/program.service";
+import {OutputConnection} from "blockly/core/renderers/measurables/output_connection";
 
 @Component({
     selector: "app-program-workspace",
@@ -58,5 +65,14 @@ export class ProgramWorkspaceComponent {
 
     resizeBlockly() {
         Blockly.svgResize(this.workspace);
+    }
+
+    saveProgram() {
+        const toBeUpdated = this.programService.getProgramFromCache(
+            this.route.snapshot.params["uuid"],
+        );
+        if (!toBeUpdated) return;
+        toBeUpdated.program = this.workspaceContent;
+        this.programService.updateProgramByProgramNumber(toBeUpdated);
     }
 }
