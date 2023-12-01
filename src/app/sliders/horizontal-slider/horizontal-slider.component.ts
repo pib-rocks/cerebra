@@ -31,6 +31,7 @@ export class HorizontalSliderComponent implements OnInit, AfterViewInit {
     @Input() unitLong: string = "";
     @Input() messageReceiver$!: Observable<number[]>;
     @Input() name: string = "";
+    @Input() displayName: boolean = false;
     @Input() numberOfThumbs: number = 1;
     @Input() thumbRadius: number = 12;
     @Input() trackHeight: number = 12;
@@ -77,6 +78,7 @@ export class HorizontalSliderComponent implements OnInit, AfterViewInit {
                 position: 0,
                 bubbleFormControl: new FormControl(),
                 inputVisible: false,
+                id: i,
             });
         }
         this.messageReceiver$?.subscribe((values: number[]) =>

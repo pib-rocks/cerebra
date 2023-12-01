@@ -32,6 +32,7 @@
 
 <app-horizontal-slider
     [unitLong]="'°'"
+    [name]="motor.name"
     [numberOfThumbs]="1"
     [messageReceiver$]="positionSubject$"
     (sliderEvent)="setMotorPositionValue($event[0])"
@@ -100,7 +101,8 @@
                 [numberOfThumbs]="2"
                 [step]="1"
                 [unitLong]="'μs'"
-                name="Pulse width"
+                [name]="'Pulse width'"
+                [displayName]="true"
                 [defaultValues]="[motor.settings.pulseWidthMin, motor.settings.pulseWidthMax]"
                 [messageReceiver$]="pulseWidthSubject$"
                 (sliderEvent)="setPulseRanges($event)"></app-horizontal-slider>
@@ -117,7 +119,8 @@
                 [step]="1"
                 [unitShort]="'°'"
                 [unitLong]="'°/100'"
-                name="Degree"
+                [name]="'Degree'"
+                [displayName]="true"
                 [defaultValues]="[motor.settings.rotationRangeMin, motor.settings.rotationRangeMax]"
                 [messageReceiver$]="degreeSubject$"
                 (sliderEvent)="setDegree($event)"></app-horizontal-slider>
@@ -129,6 +132,7 @@
         <div class="col-9">
             <app-horizontal-slider
                 [name]="'Period'"
+                [displayName]="true"
                 [leftValue]="0"
                 [rightValue]="100000"
                 [numberOfThumbs]="1"
