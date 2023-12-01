@@ -81,9 +81,11 @@ export class HorizontalSliderComponent implements OnInit, AfterViewInit {
                 id: i,
             });
         }
-        this.messageReceiver$?.subscribe((values: number[]) =>
-            this.setAllThumbValues(values),
-        );
+        this.messageReceiver$?.subscribe((values: number[]) => {
+            if (!this.thumbSelected) {
+                this.setAllThumbValues(values);
+            }
+        });
         this.ref.detectChanges();
     }
 
