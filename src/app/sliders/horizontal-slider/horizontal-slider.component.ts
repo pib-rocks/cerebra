@@ -125,7 +125,7 @@ export class HorizontalSliderComponent implements OnInit, AfterViewInit {
             this.leftValue,
             this.rightValue,
             this.thumbRadius,
-            this.sliderWidth - this.thumbRadius,
+            this.sliderWidth - this.thumbRadius - 1,
         );
         const positions = this.thumbs.map((thumb) => thumb.position);
         this.currentMinBubblePosition = Math.min(...positions);
@@ -205,7 +205,7 @@ export class HorizontalSliderComponent implements OnInit, AfterViewInit {
             this.linearTransform(
                 mouseX,
                 left + this.thumbRadius,
-                right - this.thumbRadius,
+                right - this.thumbRadius - 1,
                 this.leftValue,
                 this.rightValue,
             ),
