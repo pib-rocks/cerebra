@@ -47,12 +47,14 @@ span {
 }
 
 .bubble-input {
+    z-index: 2;
     width: 40px;
     background: #e10072;
     transform: translate(-50%, 0);
 }
 
 .bubble-span {
+    z-index: 1;
     background: #e10072;
     transform: translate(-50%, 0);
 }
