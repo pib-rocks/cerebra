@@ -47,6 +47,7 @@ span {
 }
 
 .bubble-input {
+    border: 1px solid white;
     z-index: 2;
     width: 40px;
     background: #e10072;

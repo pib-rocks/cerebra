@@ -36,6 +36,9 @@ export class HorizontalSliderComponent implements OnInit, AfterViewInit {
     @Input() thumbRadius: number = 12;
     @Input() trackHeight: number = 12;
 
+    minValue!: number;
+    maxValue!: number;
+
     currentMinBubblePosition: number = 0;
     currentMaxBubblePosition: number = 0;
 
@@ -70,6 +73,10 @@ export class HorizontalSliderComponent implements OnInit, AfterViewInit {
     }
 
     ngOnInit(): void {
+        [this.minValue, this.maxValue] =
+            this.leftValue < this.rightValue
+                ? [this.leftValue, this.rightValue]
+                : [this.rightValue, this.leftValue];
         this.unitLong = this.unitLong || this.unitShort;
         this.thumbs = [];
         for (let i = 0; i < this.numberOfThumbs; i++) {
@@ -158,11 +165,11 @@ export class HorizontalSliderComponent implements OnInit, AfterViewInit {
         value = Number(value);
         if (isNaN(value)) return value;
         value += this.step / 2;
-        let [min, max] = [this.leftValue, this.rightValue];
-        if (min > max) [min, max] = [max, min];
-        value = Math.min(Math.max(min, value), max);
+        value = Math.min(Math.max(this.minValue, value), this.maxValue);
         value *= 1000;
-        value -= value % Math.floor(this.step * 1000);
+        if (value < 0)
+            value -= this.step * 1000 + (value % Math.floor(this.step * 1000));
+        else value -= value % Math.floor(this.step * 1000);
         value /= 1000;
         return value;
     }
