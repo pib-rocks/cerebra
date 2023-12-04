@@ -78,7 +78,9 @@ export class HorizontalSliderComponent
     }
 
     ngOnInit(): void {
-        this.baseId = this.name.replace(" ", "_").toLowerCase();
+        this.baseId = this.name
+            ? this.name.replace(" ", "_").toLowerCase()
+            : "_";
         [this.minValue, this.maxValue] =
             this.leftValue < this.rightValue
                 ? [this.leftValue, this.rightValue]
