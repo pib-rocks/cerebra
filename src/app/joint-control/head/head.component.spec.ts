@@ -68,13 +68,13 @@ describe("HeadComponent", () => {
             fixture.nativeElement.querySelector("#home-position-btn");
 
         sliders.forEach((slider) =>
-            slider.sliderComponent.setAllThumbValues([0]),
+            slider.sliderComponent.setAllThumbValues([10]),
         );
 
         homeButton.click();
 
         sliders.forEach((slider) =>
-            expect(slider.sliderComponent.thumbs[0].value).toBe(10),
+            expect(slider.sliderComponent.thumbs[0].value).toBe(0),
         );
 
         expect(resetSpy).toHaveBeenCalled();
