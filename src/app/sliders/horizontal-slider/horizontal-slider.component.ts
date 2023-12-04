@@ -174,9 +174,9 @@ export class HorizontalSliderComponent
         value += this.step / 2;
         value = Math.min(Math.max(this.minValue, value), this.maxValue);
         value *= 1000;
-        if (value < 0)
-            value -= this.step * 1000 + (value % Math.floor(this.step * 1000));
-        else value -= value % Math.floor(this.step * 1000);
+        let rest = value % Math.floor(this.step * 1000);
+        if (rest < 0) rest += this.step * 1000;
+        value -= rest;
         value /= 1000;
         return value;
     }
@@ -197,7 +197,7 @@ export class HorizontalSliderComponent
 
     selectClosestSlider(mouseX: number) {
         const {left, right} = this.slider.nativeElement.getBoundingClientRect();
-        let targetValue = this.sanitizedSliderValue(
+        const targetValue = this.sanitizedSliderValue(
             this.linearTransform(
                 mouseX,
                 left + this.thumbRadius,
@@ -217,7 +217,7 @@ export class HorizontalSliderComponent
     moveSelectedSlider(mouseX: number) {
         if (!this.thumbSelected) return;
         const {left, right} = this.slider.nativeElement.getBoundingClientRect();
-        let nextValue = this.sanitizedSliderValue(
+        const nextValue = this.sanitizedSliderValue(
             this.linearTransform(
                 mouseX,
                 left + this.thumbRadius,
