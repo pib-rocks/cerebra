@@ -7,6 +7,8 @@ import {
     EventEmitter,
     OnInit,
     AfterViewInit,
+    OnChanges,
+    SimpleChanges,
 } from "@angular/core";
 import {FormControl, Validators} from "@angular/forms";
 import {RosService} from "../shared/ros.service";
@@ -17,7 +19,7 @@ import {notNullValidator, steppingValidator} from "../shared/validators";
     templateUrl: "./slider.component.html",
     styleUrls: ["./slider.component.css"],
 })
-export class SliderComponent implements OnInit, AfterViewInit {
+export class SliderComponent implements OnInit, AfterViewInit, OnChanges {
     @ViewChild("bubble") bubbleElement!: ElementRef;
     @ViewChild("bubbleInput") bubbleInput!: ElementRef;
     @ViewChild("range") sliderElem!: ElementRef;
@@ -51,6 +53,25 @@ export class SliderComponent implements OnInit, AfterViewInit {
     @Output() sliderEvent = new EventEmitter<number>();
 
     constructor(private rosService: RosService) {}
+
+    ngOnChanges(changes: SimpleChanges): void {
+        if ("maxValue" in changes) {
+            this.bubbleFormControl.removeValidators([
+                Validators.max(changes["maxValue"].previousValue),
+            ]);
+            this.bubbleFormControl.addValidators([
+                Validators.max(changes["maxValue"].currentValue),
+            ]);
+        }
+        if ("minValue" in changes) {
+            this.bubbleFormControl.removeValidators([
+                Validators.min(changes["minValue"].previousValue),
+            ]);
+            this.bubbleFormControl.addValidators([
+                Validators.min(changes["minValue"].currentValue),
+            ]);
+        }
+    }
 
     ngOnInit(): void {
         this.bubbleFormControl.setValidators([
