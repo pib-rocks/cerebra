@@ -31,7 +31,7 @@
         <input
             *ngFor="let thumb of thumbs"
             #bubbleInput
-            id="slider-{{name}}-bubble-input-{{thumb.id}}"
+            id="slider_bubbleinput_{{baseId}}_{{thumb.id}}"
             class="bubble-input overlay"
             [ngClass]="thumb.inputVisible ? '' : 'invisible'"
             [attr.style]="'left: ' + thumb.position + 'px;'"
@@ -51,10 +51,11 @@
     <div class="row pb-4 px-0 pt-0 m-0">
         <svg
             (mousedown)="onMouseDown($event)"
+            id="slider_{{baseId}}"
             [attr.style]="'height: ' + 2*thumbRadius + 'px;'">
             <!-- slider track background -->
             <rect
-                id="slider-{{name}}-track-bg"
+                id="slider_{{baseId}}_track_bg"
                 [attr.x]="trackOuterOffset"
                 [attr.y]="trackOuterOffset"
                 [attr.width]="trackLength"
@@ -63,7 +64,7 @@
                 fill="#344a69" />
             <!-- slider track foreground -->
             <rect
-                id="slider-{{name}}-track-fg"
+                id="slider_{{baseId}}_track_fg"
                 [attr.x]="numberOfThumbs > 1 ? currentMinBubblePosition : trackOuterOffset"
                 [attr.y]="trackOuterOffset"
                 [attr.width]="currentMaxBubblePosition - (numberOfThumbs > 1 ? currentMinBubblePosition : trackOuterOffset)"
@@ -73,7 +74,7 @@
             <!-- slider thumbs -->
             <circle
                 *ngFor="let thumb of thumbs"
-                id="slider-{{name}}-thumb-{{thumb.id}}"
+                id="slider_{{baseId}}_thumb_{{thumb.id}}"
                 [attr.cx]="thumb.position"
                 [attr.cy]="thumbRadius"
                 [attr.r]="thumbRadius"

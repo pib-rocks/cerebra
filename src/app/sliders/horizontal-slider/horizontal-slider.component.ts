@@ -54,6 +54,8 @@ export class HorizontalSliderComponent
 
     timer: any = null;
 
+    baseId!: string;
+
     maxBubblePosition = 100;
     minBubblePosition = 0;
     pixelsFromEdge = 60;
@@ -76,6 +78,7 @@ export class HorizontalSliderComponent
     }
 
     ngOnInit(): void {
+        this.baseId = this.name.replace(" ", "_").toLowerCase();
         [this.minValue, this.maxValue] =
             this.leftValue < this.rightValue
                 ? [this.leftValue, this.rightValue]

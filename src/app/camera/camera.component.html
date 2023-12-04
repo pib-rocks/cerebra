@@ -104,6 +104,7 @@
                 <app-horizontal-slider
                     #refreshRate
                     [numberOfThumbs]="1"
+                    [name]="'refreshRate'"
                     [unitLong]="'s'"
                     [messageReceiver$]="refreshRateReceiver$"
                     [leftValue]="0.1"
@@ -119,6 +120,8 @@
                 </label>
                 <app-horizontal-slider
                     #qualityFactor
+                    [numberOfThumbs]="1"
+                    [name]="'qualityFactor'"
                     [messageReceiver$]="qualityReceiver$"
                     [leftValue]="90"
                     [rightValue]="10"
