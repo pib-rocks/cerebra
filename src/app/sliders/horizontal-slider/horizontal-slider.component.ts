@@ -10,6 +10,7 @@ import {
     ViewChildren,
     QueryList,
     ChangeDetectorRef,
+    OnDestroy,
 } from "@angular/core";
 import {FormControl} from "@angular/forms";
 import {Observable, asyncScheduler} from "rxjs";
@@ -19,7 +20,9 @@ import {SliderThumb} from "./slider-thumb";
     templateUrl: "./horizontal-slider.component.html",
     styleUrls: ["./horizontal-slider.component.css"],
 })
-export class HorizontalSliderComponent implements OnInit, AfterViewInit {
+export class HorizontalSliderComponent
+    implements OnInit, AfterViewInit, OnDestroy
+{
     @ViewChildren("bubbleInput") bubbleInputElems!: QueryList<ElementRef>;
     @ViewChild("slider") slider!: ElementRef;
 
@@ -106,6 +109,10 @@ export class HorizontalSliderComponent implements OnInit, AfterViewInit {
         this.sliderResizeObserver.observe(this.slider.nativeElement);
         this.calculateStaticPositionalProperties();
         this.ref.detectChanges();
+    }
+
+    ngOnDestroy() {
+        this.sliderResizeObserver.disconnect();
     }
 
     linearTransform(
