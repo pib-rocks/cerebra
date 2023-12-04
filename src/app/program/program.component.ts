@@ -1,4 +1,10 @@
-import {OnInit, Component, ViewChild, TemplateRef} from "@angular/core";
+import {
+    OnInit,
+    Component,
+    ViewChild,
+    TemplateRef,
+    AfterViewInit,
+} from "@angular/core";
 
 import {Observable, Subject} from "rxjs";
 import {NgbModal, NgbModalRef} from "@ng-bootstrap/ng-bootstrap";
@@ -13,7 +19,7 @@ import {ProgramService} from "../shared/services/program.service";
     templateUrl: "./program.component.html",
     styleUrls: ["./program.component.css"],
 })
-export class ProgramComponent implements OnInit {
+export class ProgramComponent implements OnInit, AfterViewInit {
     @ViewChild("modalContent") modalContent: TemplateRef<any> | undefined;
     closeResult!: string;
     ngbModalRef?: NgbModalRef;
@@ -37,6 +43,12 @@ export class ProgramComponent implements OnInit {
             Validators.minLength(2),
             Validators.maxLength(255),
         ]);
+    }
+
+    ngAfterViewInit() {
+        this.programService.getAllPrograms().subscribe((programs) => {
+            this.selected.next(programs[0]?.getUUID());
+        });
     }
 
     getProgramFromRoute(): Program | undefined {
@@ -88,7 +100,11 @@ export class ProgramComponent implements OnInit {
     deleteProgram = () => {
         const program = this.getProgramFromRoute();
         if (!program) return;
-        this.programService.deleteProgramByProgramNumber(program.programNumber);
+        this.programService
+            .deleteProgramByProgramNumber(program.programNumber)
+            .subscribe(() => {
+                this.selected.next(this.programService.programs[0]?.getUUID());
+            });
     };
 
     headerElements = [

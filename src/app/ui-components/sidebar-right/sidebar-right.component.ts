@@ -15,6 +15,7 @@ export class SideBarRightComponent implements OnInit, OnDestroy {
         clickCallback: () => void;
     }[] = [];
     @Input() elementIcon: string = "";
+    @Input() rerouteOnRefresh: boolean = true;
     @Input() subject!: Observable<SidebarElement[]>;
     @Input() lStorage!: string;
     @Input() selectedObservable?: Observable<string | undefined>;
@@ -33,6 +34,7 @@ export class SideBarRightComponent implements OnInit, OnDestroy {
         this.subscription = this.subject.subscribe(
             (serviceElements: SidebarElement[]) => {
                 this.sidebarElements = serviceElements;
+                if (!this.rerouteOnRefresh) return;
                 if (
                     this.sidebarElements.find(
                         (sidebarelem) =>
@@ -55,5 +57,8 @@ export class SideBarRightComponent implements OnInit, OnDestroy {
                 }
             },
         );
+        this.selectedObservable?.subscribe((uuid?: string) => {
+            this.router.navigate([uuid ?? "."], {relativeTo: this.route});
+        });
     }
 }

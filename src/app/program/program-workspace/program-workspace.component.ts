@@ -1,10 +1,4 @@
-import {
-    Component,
-    ElementRef,
-    Output,
-    ViewChild,
-    EventEmitter,
-} from "@angular/core";
+import {Component, ElementRef, ViewChild} from "@angular/core";
 import * as Blockly from "blockly";
 import {toolbox} from "../blockly";
 import {ActivatedRoute} from "@angular/router";
