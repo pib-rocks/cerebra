@@ -2,9 +2,10 @@
     <div
         class="d-flex flex-row-reverse hstack gap-3 position-absolute z-2 top-0 end-0 p-4 click">
         <button
-            id="home-position-btn"
+            id="run-btn"
             type="button"
             (click)="saveProgram()"
+            [style]="'transform: translate(' + -flyoutWidth + 'px, 0);'"
             class="btn buttonColor text-start">
             <img
                 src="../../assets/icon-home-position.png"

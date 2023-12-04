@@ -9,7 +9,7 @@ import * as Blockly from "blockly";
 import {toolbox} from "../blockly";
 import {ActivatedRoute} from "@angular/router";
 import {ProgramService} from "src/app/shared/services/program.service";
-import {OutputConnection} from "blockly/core/renderers/measurables/output_connection";
+import {asyncScheduler} from "rxjs";
 
 @Component({
     selector: "app-program-workspace",
@@ -24,6 +24,8 @@ export class ProgramWorkspaceComponent {
     toolbox: string = toolbox;
 
     currentProgramNumber?: string;
+
+    flyoutWidth: number = 0;
 
     get workspaceContent(): object {
         return Blockly.serialization.workspaces.save(this.workspace);
@@ -51,6 +53,13 @@ export class ProgramWorkspaceComponent {
                 const program =
                     this.programService.getProgramFromCache(programNumber);
                 this.workspaceContent = program?.program;
+            });
+        });
+        this.workspace.addChangeListener(() => {
+            asyncScheduler.schedule(() => {
+                this.flyoutWidth = this.workspace.trashcan?.isLidOpen
+                    ? this.workspace.trashcan?.flyout?.getWidth() ?? 0
+                    : 0;
             });
         });
     }
