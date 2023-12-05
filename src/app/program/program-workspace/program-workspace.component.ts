@@ -1,10 +1,4 @@
-import {
-    Component,
-    ElementRef,
-    Output,
-    ViewChild,
-    EventEmitter,
-} from "@angular/core";
+import {Component, ElementRef, ViewChild} from "@angular/core";
 import * as Blockly from "blockly";
 import {toolbox} from "../blockly";
 import {ActivatedRoute} from "@angular/router";
@@ -55,13 +49,10 @@ export class ProgramWorkspaceComponent {
                 this.workspaceContent = program?.program;
             });
         });
-        this.workspace.addChangeListener(() => {
-            asyncScheduler.schedule(() => {
-                this.flyoutWidth = this.workspace.trashcan?.isLidOpen
-                    ? this.workspace.trashcan?.flyout?.getWidth() ?? 0
-                    : 0;
-            });
-        });
+        this.workspace.trashcan?.flyout
+            ?.getWorkspace()
+            .addChangeListener(this.flyoutChangeCallback);
+        this.workspace.addChangeListener(this.flyoutChangeCallback);
     }
 
     ngAfterViewInit() {
@@ -84,4 +75,17 @@ export class ProgramWorkspaceComponent {
         toBeUpdated.program = this.workspaceContent;
         this.programService.updateProgramByProgramNumber(toBeUpdated);
     }
+
+    runProgram() {
+        console.log("run clicked!");
+    }
+
+    flyoutChangeCallback = () => {
+        asyncScheduler.schedule(() => {
+            let contentOpen = this.workspace.trashcan?.contentsIsOpen();
+            this.flyoutWidth = contentOpen
+                ? this.workspace.trashcan?.flyout?.getWidth() ?? 0
+                : 0;
+        });
+    };
 }

@@ -1,13 +1,8 @@
-.buttonColor {
-    background-color: #0094df;
+.workspaceButton {
+    background: transparent;
+    border: none;
     pointer-events: auto;
 }
-
-.buttonColor:hover {
-    background: #e10072;
-    pointer-events: auto;
-}
-
 .click {
     pointer-events: none;
 }
