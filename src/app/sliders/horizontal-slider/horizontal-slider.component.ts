@@ -197,6 +197,7 @@ export class HorizontalSliderComponent
     toggleInputInvisible(thumb: SliderThumb) {
         const value = this.sanitizedSliderValue(thumb.bubbleFormControl.value);
         this.setThumbValue(thumb, isNaN(value) ? thumb.value : value);
+        this.sendEvent();
         thumb.inputVisible = false;
     }
 
