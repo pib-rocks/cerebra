@@ -248,7 +248,7 @@ describe("HandComponent", () => {
             (mc) => mc.motor.name == "thumb_right_opposition",
         );
         expect(allControl?.sliderComponent.sliderFormControl.value).toBe(
-            indexPos,
+            indexPos / 100,
         );
         expect(oppositionControl?.sliderComponent.sliderFormControl.value).toBe(
             otherPos,
@@ -309,7 +309,7 @@ describe("HandComponent", () => {
             .filter((mc) => !mc.motor.name.includes("opposition"))
             .forEach((mc) =>
                 expect(mc.sliderComponent.sliderFormControl.value).toBe(
-                    allPosition,
+                    allPosition / 100,
                 ),
             );
     });
