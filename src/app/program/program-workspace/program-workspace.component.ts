@@ -20,6 +20,8 @@ export class ProgramWorkspaceComponent {
     currentProgramNumber?: string;
 
     flyoutWidth: number = 0;
+    runButtonPath: string = "../../assets/program/run.svg";
+    saveButtonPath: string = "../../assets/program/save.svg";
 
     get workspaceContent(): object {
         return Blockly.serialization.workspaces.save(this.workspace);
@@ -82,7 +84,7 @@ export class ProgramWorkspaceComponent {
 
     flyoutChangeCallback = () => {
         asyncScheduler.schedule(() => {
-            let contentOpen = this.workspace.trashcan?.contentsIsOpen();
+            const contentOpen = this.workspace.trashcan?.contentsIsOpen();
             this.flyoutWidth = contentOpen
                 ? this.workspace.trashcan?.flyout?.getWidth() ?? 0
                 : 0;
