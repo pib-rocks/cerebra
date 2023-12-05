@@ -88,11 +88,7 @@ export class ProgramComponent implements OnInit, AfterViewInit {
         this.showModal().then(() => {
             if (this.nameFormControl.valid) {
                 program.name = this.nameFormControl.value;
-                this.programService
-                    .updateProgramByProgramNumber(program)
-                    .subscribe((program) =>
-                        this.selected.next(program.programNumber),
-                    );
+                this.programService.updateProgramByProgramNumber(program);
             }
         });
     };
