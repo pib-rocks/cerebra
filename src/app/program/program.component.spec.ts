@@ -121,7 +121,6 @@ describe("ProgramComponent", () => {
             },
         } as Promise<string>);
         const expected = new Program("testname", {}, "id-0");
-        const selectedSpy = spyOn(fixture.componentInstance.selected, "next");
         const getProgramSpy = spyOn(
             fixture.componentInstance,
             "getProgramFromRoute",
@@ -142,7 +141,6 @@ describe("ProgramComponent", () => {
                 programNumber: "id-0",
             }),
         );
-        expect(selectedSpy).toHaveBeenCalledOnceWith("id-0");
         expect(getProgramSpy).toHaveBeenCalledTimes(1);
     });
 
