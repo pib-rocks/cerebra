@@ -30,6 +30,9 @@ describe("ProgramComponent", () => {
                 "updateProgramByProgramNumber",
                 "deleteProgramByProgramNumber",
             ]);
+        programServiceSpy.getAllPrograms.and.returnValue(
+            new BehaviorSubject([]),
+        );
 
         router = {url: "change this"};
 
@@ -118,7 +121,6 @@ describe("ProgramComponent", () => {
             },
         } as Promise<string>);
         const expected = new Program("testname", {}, "id-0");
-        const selectedSpy = spyOn(fixture.componentInstance.selected, "next");
         const getProgramSpy = spyOn(
             fixture.componentInstance,
             "getProgramFromRoute",
@@ -139,11 +141,15 @@ describe("ProgramComponent", () => {
                 programNumber: "id-0",
             }),
         );
-        expect(selectedSpy).toHaveBeenCalledOnceWith("id-0");
         expect(getProgramSpy).toHaveBeenCalledTimes(1);
     });
 
     it("should delete a program", () => {
+        const selectedSpy = spyOn(fixture.componentInstance.selected, "next");
+        programService.deleteProgramByProgramNumber.and.returnValue(
+            new BehaviorSubject(undefined),
+        );
+        programService.programs = [new Program("testname", {}, "id-1")];
         const expected = new Program("testname", {}, "id-0");
         const getProgramSpy = spyOn(
             fixture.componentInstance,
@@ -154,5 +160,6 @@ describe("ProgramComponent", () => {
             programService.deleteProgramByProgramNumber,
         ).toHaveBeenCalledOnceWith("id-0");
         expect(getProgramSpy).toHaveBeenCalledTimes(1);
+        expect(selectedSpy).toHaveBeenCalledOnceWith("id-1");
     });
 });
