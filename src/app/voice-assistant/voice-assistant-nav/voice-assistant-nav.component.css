@@ -1,4 +1,4 @@
-a {
+.nav-content {
     font-weight: bold;
     text-align: center;
     text-transform: uppercase;
@@ -8,6 +8,14 @@ a {
     border: none;
     color: #0094df;
     padding-top: 14px;
+}
+
+#add-personality-button {
+    font-size: 1.5rem;
+    padding-top: 6px;
+}
+#add-personality-button:hover {
+    padding-top: 0px;
 }
 
 .nav {
@@ -22,7 +30,7 @@ a {
     top: 1px;
 }
 
-.nav-tab:hover a,
+.nav-tab:hover .nav-content,
 .navbar-ref-active {
     color: white;
     padding-top: 9px;

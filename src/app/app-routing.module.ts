@@ -15,6 +15,7 @@ import {ChatWindowComponent} from "./voice-assistant/voice-assistant-chat/chat-w
 import {ProgramWorkspaceComponent} from "./program/program-workspace/program-workspace.component";
 import {chatResolver} from "./voice-assistant/voice-assistant-resolver/chat.resolver";
 import {personalityGuard} from "./security/personality-guard";
+import {voiceAssistantsResolver} from "./voice-assistant/voice-assistant-resolver/voice-assistants.resolver";
 
 const routes: Routes = [
     {path: "", redirectTo: "head", pathMatch: "full"},
@@ -43,6 +44,8 @@ const routes: Routes = [
     {
         path: "voice-assistant",
         component: VoiceAssistantComponent,
+        resolve: {voiceAssistants: voiceAssistantsResolver},
+
         children: [
             {
                 path: "personality",

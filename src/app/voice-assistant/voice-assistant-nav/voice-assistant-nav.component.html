@@ -2,40 +2,27 @@
     <div class="row nav">
         <div
             class="col-1 nav-tab p-0"
-            routerLinkActive="navbar-tab-active">
+            routerLinkActive="navbar-tab-active"
+            *ngFor="let sidebarElement of sidebarElements ">
             <a
-                class="nav-link sidebar-btn"
-                [routerLink]="['personality']"
+                class="nav-link nav-content"
+                id="personality-{{sidebarElement.getUUID()}}"
+                [routerLink]="[sidebarElement.getUUID()]"
                 routerLinkActive="navbar-ref-active"
-                >Personality</a
+                >{{sidebarElement.getName()}}</a
             >
         </div>
-        <!-- <div class="col nav nav-tabs">    
+        <div
+            class="col-auto nav-tab p-0"
+            routerLinkActive="navbar-tab-active"
+            *ngIf="button?.enabled ?? false">
             <button
-                class="nav-item voice-tabs"
-                id="chatTab"
-                routerLinkActive="navbar-btn-active"
-                [routerLink]="['chat']">
-                <a class="nav-link sidebar-btn"> Chat </a>
+                id="add-personality-button"
+                type="button"
+                class="nav-link nav-content"
+                (click)="button?.func()">
+                +
             </button>
         </div>
-        <div class="col nav-tabs justify-content-end pr-5">
-            <div
-                class="custom-switch custom-switch-pib mt-3"
-                id="toggleVoiceAssistantActivation">
-                <input
-                    id="voiceAssistantActivationToggle"
-                    class="custom-control-input"
-                    type="checkbox"
-                    [formControl]="voiceAssistantActivationToggle"
-                    (input)="toggleVoiceAssistantActivation()" />
-                <label
-                    class="custom-control-label"
-                    for="voiceAssistantActivationToggle">
-                    Assistant {{voiceAssistantActiveStatus | boolToOnOffPipe
-                    }}</label
-                >
-            </div>
-        </div> -->
     </div>
 </div>
