@@ -41,9 +41,8 @@ export class ProgramWorkspaceComponent {
         this.programService.getAllPrograms().subscribe((_) => {
             this.route.params.subscribe((params) => {
                 const programNumber = params["uuid"];
-                const program =
-                    this.programService.getProgramFromCache(programNumber);
-                this.workspaceContent = program?.program;
+                this.workspaceContent =
+                    this.programService.getCodeByProgramNumber(programNumber);
             });
         });
     }

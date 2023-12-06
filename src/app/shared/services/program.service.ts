@@ -1,10 +1,9 @@
 import {Injectable} from "@angular/core";
 import {ApiService} from "./api.service";
-import {Program, ProgramDTO} from "../types/program";
+import {Program} from "../types/program";
 import {BehaviorSubject, Observable, ReplaySubject} from "rxjs";
 import {UrlConstants} from "./url.constants";
 import {ProgramCode} from "../types/progran-code";
-import {ProgramComponent} from "src/app/program/program.component";
 
 @Injectable({
     providedIn: "root",
@@ -91,9 +90,7 @@ export class ProgramService {
         return this.createResultObservable(
             this.apiService.get(UrlConstants.PROGRAM),
             (response) => {
-                const programs = (response["programs"] as ProgramDTO[]).map(
-                    (dto) => Program.fromDTO(dto),
-                );
+                const programs = response["programs"] as Program[];
                 this.setPrograms(programs);
                 return programs;
             },
@@ -103,17 +100,16 @@ export class ProgramService {
     getProgramByProgramNumber(programNumber: string): Observable<Program> {
         return this.createResultObservable(
             this.apiService.get(UrlConstants.PROGRAM + `/${programNumber}`),
-            (response) => Program.fromDTO(response as ProgramDTO),
+            (responseProgram) => responseProgram,
         );
     }
 
     createProgram(program: Program): Observable<Program> {
         return this.createResultObservable(
-            this.apiService.post(UrlConstants.PROGRAM, program.toDTO(false)),
-            (response) => {
-                const program = Program.fromDTO(response);
-                this.addProgram(program);
-                return program;
+            this.apiService.post(UrlConstants.PROGRAM, program),
+            (responseProgram) => {
+                this.addProgram(responseProgram);
+                return responseProgram;
             },
         );
     }
@@ -122,12 +118,11 @@ export class ProgramService {
         return this.createResultObservable(
             this.apiService.put(
                 UrlConstants.PROGRAM + `/${program.programNumber}`,
-                program.toDTO(false),
+                program,
             ),
-            (response) => {
-                const program = Program.fromDTO(response);
-                this.updateProgram(program);
-                return program;
+            (responseProgram) => {
+                this.updateProgram(responseProgram);
+                return responseProgram;
             },
         );
     }
