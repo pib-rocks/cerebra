@@ -9,6 +9,7 @@ import {UrlConstants} from "./url.constants";
 })
 export class ProgramService {
     programs: Program[] = [];
+    codes: ProgramCode[] = [];
     programsSubject: BehaviorSubject<Program[]> = new BehaviorSubject<
         Program[]
     >([]);
