@@ -3,6 +3,8 @@ import {ApiService} from "./api.service";
 import {Program, ProgramDTO} from "../types/program";
 import {BehaviorSubject, Observable, ReplaySubject} from "rxjs";
 import {UrlConstants} from "./url.constants";
+import {ProgramCode} from "../types/progran-code";
+import {ProgramComponent} from "src/app/program/program.component";
 
 @Injectable({
     providedIn: "root",
@@ -42,6 +44,18 @@ export class ProgramService {
             1,
         );
         this.programsSubject.next(this.programs.slice());
+    }
+
+    private setCode(code: ProgramCode) {
+        const index = this.codes.findIndex(
+            (p) => p.programNumber === code.programNumber,
+        );
+        if (index === -1) this.codes.push(code);
+        else this.codes[index] = code;
+    }
+
+    private getCodeFromCache(programNumber: string): ProgramCode | undefined {
+        return this.codes.find((code) => (code.programNumber = programNumber));
     }
 
     private createResultObservable<Type>(
@@ -122,6 +136,34 @@ export class ProgramService {
         return this.createResultObservable(
             this.apiService.delete(UrlConstants.PROGRAM + `/${programNumber}`),
             (_) => this.deleteProgram(programNumber),
+        );
+    }
+
+    getCodeByProgramNumber(programNumber: string): Observable<ProgramCode> {
+        const code = this.getCodeFromCache(programNumber);
+        return code
+            ? new BehaviorSubject(code)
+            : this.createResultObservable(
+                  this.apiService.get(
+                      `${UrlConstants.PROGRAM}/${programNumber}/${UrlConstants.CODE}`,
+                  ),
+                  (code) => {
+                      this.setCode(code);
+                      return code;
+                  },
+              );
+    }
+
+    updateCodeByProgramNumber(code: ProgramCode): Observable<ProgramCode> {
+        return this.createResultObservable(
+            this.apiService.put(
+                `${UrlConstants.PROGRAM}/${code.programNumber}/${UrlConstants.CODE}`,
+                code,
+            ),
+            (code) => {
+                this.setCode(code);
+                return code;
+            },
         );
     }
 }
