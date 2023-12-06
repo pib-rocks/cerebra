@@ -1,29 +1,30 @@
 <div class="row h-100">
-    <!-- <div
+    <div
         class="d-flex flex-row-reverse hstack gap-3 position-absolute z-2 top-0 end-0 p-4 click">
         <button
-            id="home-position-btn"
+            id="save-btn"
             type="button"
-            class="btn buttonColor text-start">
+            (click)="saveProgram()"
+            [style]="'transform: translate(' + -flyoutWidth + 'px, 0);'"
+            class="workspaceButton">
             <img
-                src="../../assets/icon-home-position.png"
-                alt=""
-                width="19px"
-                height="24px" />
-            Delete
+                [src]="saveButtonPath"
+                width="75px"
+                alt="Program save button" />
         </button>
         <button
-            id="home-position-btn"
+            id="run-btn"
             type="button"
-            class="btn buttonColor text-start">
+            (click)="runProgram()"
+            [style]="'transform: translate(' + -flyoutWidth + 'px, 0);'"
+            class="workspaceButton">
             <img
-                src="../../assets/icon-home-position.png"
-                alt=""
-                width="19px"
-                height="24px" />
-            Save
+                [src]="runButtonPath"
+                width="75px"
+                alt="Program save button" />
         </button>
-        <button
+
+        <!-- <button
             id="home-position-btn"
             type="button"
             class="btn buttonColor text-start">
@@ -33,8 +34,8 @@
                 width="19px"
                 height="24px" />
             Run
-        </button>
-    </div> -->
+        </button> -->
+    </div>
     <div
         class="h-100 w-100 position-relative p-3 z-1"
         id="blocklyDiv"

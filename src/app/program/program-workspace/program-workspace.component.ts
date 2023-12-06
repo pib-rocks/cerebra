@@ -3,6 +3,7 @@ import * as Blockly from "blockly";
 import {toolbox} from "../blockly";
 import {ActivatedRoute} from "@angular/router";
 import {ProgramService} from "src/app/shared/services/program.service";
+import {asyncScheduler} from "rxjs";
 
 @Component({
     selector: "app-program-workspace",
@@ -17,6 +18,10 @@ export class ProgramWorkspaceComponent {
     toolbox: string = toolbox;
 
     currentProgramNumber?: string;
+
+    flyoutWidth: number = 0;
+    runButtonPath: string = "../../assets/program/run.svg";
+    saveButtonPath: string = "../../assets/program/save.svg";
 
     get workspaceContent(): object {
         return Blockly.serialization.workspaces.save(this.workspace);
@@ -45,6 +50,10 @@ export class ProgramWorkspaceComponent {
                     this.programService.getCodeByProgramNumber(programNumber);
             });
         });
+        this.workspace.trashcan?.flyout
+            ?.getWorkspace()
+            .addChangeListener(this.flyoutChangeCallback);
+        this.workspace.addChangeListener(this.flyoutChangeCallback);
     }
 
     ngAfterViewInit() {
@@ -58,4 +67,26 @@ export class ProgramWorkspaceComponent {
     resizeBlockly() {
         Blockly.svgResize(this.workspace);
     }
+
+    saveProgram() {
+        const toBeUpdated = this.programService.getProgramFromCache(
+            this.route.snapshot.params["uuid"],
+        );
+        if (!toBeUpdated) return;
+        toBeUpdated.program = this.workspaceContent;
+        this.programService.updateProgramByProgramNumber(toBeUpdated);
+    }
+
+    runProgram() {
+        console.log("run clicked!");
+    }
+
+    flyoutChangeCallback = () => {
+        asyncScheduler.schedule(() => {
+            const contentOpen = this.workspace.trashcan?.contentsIsOpen();
+            this.flyoutWidth = contentOpen
+                ? this.workspace.trashcan?.flyout?.getWidth() ?? 0
+                : 0;
+        });
+    };
 }

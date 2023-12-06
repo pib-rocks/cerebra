@@ -1,0 +1,8 @@
+.workspaceButton {
+    background: transparent;
+    border: none;
+    pointer-events: auto;
+}
+.click {
+    pointer-events: none;
+}
