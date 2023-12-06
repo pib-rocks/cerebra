@@ -90,7 +90,9 @@ export class ProgramService {
         return this.createResultObservable(
             this.apiService.get(UrlConstants.PROGRAM),
             (response) => {
-                const programs = response["programs"] as Program[];
+                const programs = (response["programs"] as Program[]).map(
+                    (dto) => Program.fromDTO(dto),
+                );
                 this.setPrograms(programs);
                 return programs;
             },
@@ -100,16 +102,17 @@ export class ProgramService {
     getProgramByProgramNumber(programNumber: string): Observable<Program> {
         return this.createResultObservable(
             this.apiService.get(UrlConstants.PROGRAM + `/${programNumber}`),
-            (responseProgram) => responseProgram,
+            (dto) => Program.fromDTO(dto),
         );
     }
 
     createProgram(program: Program): Observable<Program> {
         return this.createResultObservable(
             this.apiService.post(UrlConstants.PROGRAM, program),
-            (responseProgram) => {
-                this.addProgram(responseProgram);
-                return responseProgram;
+            (dto) => {
+                const program = Program.fromDTO(dto);
+                this.addProgram(program);
+                return program;
             },
         );
     }
@@ -120,9 +123,10 @@ export class ProgramService {
                 UrlConstants.PROGRAM + `/${program.programNumber}`,
                 program,
             ),
-            (responseProgram) => {
-                this.updateProgram(responseProgram);
-                return responseProgram;
+            (dto) => {
+                const program = Program.fromDTO(dto);
+                this.updateProgram(program);
+                return program;
             },
         );
     }
