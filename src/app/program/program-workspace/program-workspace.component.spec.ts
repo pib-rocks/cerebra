@@ -86,7 +86,7 @@ describe("ProgramWorkspaceComponent", () => {
         const selectedProgram = new Program("name-1", {testfield: "2"}, "id-1");
         const expectedProgram = new Program("name-1", {testfield: "1"}, "id-1");
         programService.getProgramFromCache.and.returnValue(selectedProgram);
-        const spyOnWorkspace = spyOnProperty(
+        spyOnProperty(
             fixture.componentRef.instance,
             "workspaceContent",
             "get",
