@@ -16,6 +16,7 @@ export class VoiceAssistantComponent implements OnInit {
         private voiceAssistantService: VoiceAssistantService,
     ) {}
 
+    imgSrc: string = "../../assets/toggle-switch-left.png";
     subject!: Observable<SidebarElement[]>;
 
     addNewPersonality = () => {
@@ -33,5 +34,9 @@ export class VoiceAssistantComponent implements OnInit {
             {relativeTo: this.route},
         );
         this.subject = this.voiceAssistantService.getSubject();
+    }
+
+    toggleVoiceAssistant() {
+        throw Error("not implemented");
     }
 }
