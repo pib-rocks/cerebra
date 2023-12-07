@@ -73,7 +73,7 @@ export class ProgramWorkspaceComponent {
         Blockly.svgResize(this.workspace);
     }
 
-    saveProgram() {
+    saveCode() {
         const programNumber = this.route.snapshot.params["uuid"];
         this.programService.updateCodeByProgramNumber(
             new ProgramCode(programNumber, {

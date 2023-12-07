@@ -3,52 +3,50 @@ import {TestBed} from "@angular/core/testing";
 import {ProgramService} from "./program.service";
 import {ApiService} from "./api.service";
 import {BehaviorSubject, Observable} from "rxjs";
-import {Program, ProgramDTO} from "../types/program";
+import {Program} from "../types/program";
 
 describe("ProgramService", () => {
     let programService: ProgramService;
     let apiService: jasmine.SpyObj<ApiService>;
 
-    let proDto: ProgramDTO[];
-    let newProDto: ProgramDTO;
+    let proDto: {name: string; programNumber: string}[];
+    let newProDto: {name: string; programNumber: string};
 
     let pro: Program[];
     let newPro: Program;
 
-    let obs: BehaviorSubject<ProgramDTO>[];
-    let newObs: BehaviorSubject<ProgramDTO>;
-    let obsAll: BehaviorSubject<{programs: ProgramDTO[]}>;
+    let obs: BehaviorSubject<{name: string; programNumber: string}>[];
+    let newObs: BehaviorSubject<{name: string; programNumber: string}>;
+    let obsAll: BehaviorSubject<{
+        programs: {name: string; programNumber: string}[];
+    }>;
 
     beforeEach(() => {
         proDto = [
             {
                 name: "name-0",
-                program: '{"testfield": "0"}',
                 programNumber: "id-0",
             },
             {
                 name: "name-1",
-                program: '{"testfield": "1"}',
                 programNumber: "id-1",
             },
             {
                 name: "name-2",
-                program: '{"testfield": "2"}',
                 programNumber: "id-2",
             },
         ];
         newProDto = {
             name: "name-new",
-            program: '{"testfield": "new"}',
             programNumber: "id-new",
         };
 
         pro = [
-            new Program("name-0", {testfield: "0"}, "id-0"),
-            new Program("name-1", {testfield: "1"}, "id-1"),
-            new Program("name-2", {testfield: "2"}, "id-2"),
+            new Program("name-0", "id-0"),
+            new Program("name-1", "id-1"),
+            new Program("name-2", "id-2"),
         ];
-        newPro = new Program("name-new", {testfield: "new"}, "id-new");
+        newPro = new Program("name-new", "id-new");
 
         obs = proDto.map((p) => new BehaviorSubject(p));
         newObs = new BehaviorSubject(newProDto);
@@ -214,7 +212,6 @@ describe("ProgramService", () => {
             "/program",
             jasmine.objectContaining({
                 name: "name-new",
-                program: JSON.stringify({testfield: "new"}),
             }),
         );
         expect(addProgramSpy).toHaveBeenCalledOnceWith(
@@ -235,7 +232,6 @@ describe("ProgramService", () => {
             "/program/id-1",
             jasmine.objectContaining({
                 name: "name-1",
-                program: JSON.stringify({testfield: "1"}),
             }),
         );
         expect(updateProgramSpy).toHaveBeenCalledOnceWith(
