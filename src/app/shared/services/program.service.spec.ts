@@ -4,6 +4,7 @@ import {ProgramService} from "./program.service";
 import {ApiService} from "./api.service";
 import {BehaviorSubject, Observable} from "rxjs";
 import {Program} from "../types/program";
+import {ProgramCode} from "../types/progran-code";
 
 describe("ProgramService", () => {
     let programService: ProgramService;
@@ -129,6 +130,49 @@ describe("ProgramService", () => {
         );
     });
 
+    it("should get one code", () => {
+        programService.codes = [
+            new ProgramCode("id-1", {visual: "1"}),
+            new ProgramCode("id-2", {visual: "2"}),
+        ];
+        expect(programService["getCodeFromCache"]("id-1")).toEqual(
+            new ProgramCode("id-1", {visual: "1"}),
+        );
+    });
+
+    it("should not get one code", () => {
+        programService.codes = [
+            new ProgramCode("id-1", {visual: "1"}),
+            new ProgramCode("id-2", {visual: "2"}),
+        ];
+        expect(programService["getCodeFromCache"]("id-3")).toBeUndefined();
+    });
+
+    it("should update one code", () => {
+        programService.codes = [
+            new ProgramCode("id-1", {visual: "1"}),
+            new ProgramCode("id-2", {visual: "2"}),
+        ];
+        programService["setCode"](new ProgramCode("id-1", {visual: "3"}));
+        expect(programService.codes).toEqual([
+            new ProgramCode("id-1", {visual: "3"}),
+            new ProgramCode("id-2", {visual: "2"}),
+        ]);
+    });
+
+    it("should add one code if it is not already in cache", () => {
+        programService.codes = [
+            new ProgramCode("id-1", {visual: "1"}),
+            new ProgramCode("id-2", {visual: "2"}),
+        ];
+        programService["setCode"](new ProgramCode("id-3", {visual: "3"}));
+        expect(programService.codes).toEqual([
+            new ProgramCode("id-1", {visual: "1"}),
+            new ProgramCode("id-2", {visual: "2"}),
+            new ProgramCode("id-3", {visual: "3"}),
+        ]);
+    });
+
     it("should create a correct result observable with successful base observable", async () => {
         const baseObservable = new Observable((subscriber) =>
             subscriber.next(1),
@@ -250,5 +294,65 @@ describe("ProgramService", () => {
         });
         expect(apiService.delete).toHaveBeenCalledOnceWith("/program/id-2");
         expect(deleteProgramSpy).toHaveBeenCalledOnceWith("id-2");
+    });
+
+    it("get the code from db if not present in cache", async () => {
+        const code = new ProgramCode("id-1", {
+            visual: "new-visual",
+        });
+        const getCodeFromCacheSpy = spyOn<any>(
+            programService,
+            "getCodeFromCache",
+        ).and.returnValue(undefined);
+        apiService.get.and.returnValue(new BehaviorSubject(code));
+        const resultCode = await new Promise((resolve, _) => {
+            programService
+                .getCodeByProgramNumber("id-1")
+                .subscribe((val) => resolve(val));
+        });
+        expect(apiService.get).toHaveBeenCalledOnceWith("/program/id-1/code");
+        expect(getCodeFromCacheSpy).toHaveBeenCalledOnceWith("id-1");
+        expect(resultCode).toEqual(code);
+    });
+
+    it("get the code from cache if present", async () => {
+        const code = new ProgramCode("id-1", {
+            visual: "new-visual",
+        });
+        const getCodeFromCacheSpy = spyOn<any>(
+            programService,
+            "getCodeFromCache",
+        ).and.returnValue(code);
+        const resultCode = await new Promise((resolve, _) => {
+            programService
+                .getCodeByProgramNumber("id-1")
+                .subscribe((val) => resolve(val));
+        });
+        expect(apiService.get).not.toHaveBeenCalled();
+        expect(getCodeFromCacheSpy).toHaveBeenCalledOnceWith("id-1");
+        expect(resultCode).toEqual(code);
+    });
+
+    it("should update the code on db", async () => {
+        const code = new ProgramCode("id-1", {
+            visual: "new-visual",
+            python: "new-python",
+        });
+        const codeVisualOnly = new ProgramCode("id-1", {
+            visual: "new-visual",
+        });
+        const setCodeSpy = spyOn<any>(programService, "setCode");
+        apiService.put.and.returnValue(new BehaviorSubject(codeVisualOnly));
+        const resultCode = await new Promise((resolve, _) => {
+            programService
+                .updateCodeByProgramNumber(code)
+                .subscribe((val) => resolve(val));
+        });
+        expect(apiService.put).toHaveBeenCalledOnceWith(
+            "/program/id-1/code",
+            code,
+        );
+        expect(setCodeSpy).toHaveBeenCalledOnceWith(codeVisualOnly);
+        expect(resultCode).toEqual(codeVisualOnly);
     });
 });
