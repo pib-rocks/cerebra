@@ -77,7 +77,7 @@ export class ProgramWorkspaceComponent {
         const programNumber = this.route.snapshot.params["uuid"];
         this.programService.updateCodeByProgramNumber(
             new ProgramCode(programNumber, {
-                visual: this.route.snapshot.params["uuid"],
+                visual: JSON.stringify(this.workspaceContent),
                 python: pythonGenerator.workspaceToCode(this.workspace),
             }),
         );
