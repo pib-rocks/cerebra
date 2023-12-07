@@ -121,7 +121,7 @@ export class ProgramService {
         return this.createResultObservable(
             this.apiService.put(
                 UrlConstants.PROGRAM + `/${program.programNumber}`,
-                program.toDTO(),
+                new Program(program.name).toDTO(),
             ),
             (dto) => {
                 const program = Program.fromDTO(dto);
