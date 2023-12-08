@@ -27,10 +27,6 @@ export class VoiceAssistantComponent implements OnInit {
     imgSrc: string = "../../assets/toggle-switch-left.png";
     subject!: Observable<SidebarElement[]>;
 
-    addNewPersonality = () => {
-        throw Error("not implemented");
-    };
-
     button: {enabled: boolean; func: () => void} = {
         enabled: true,
         func: () => {
@@ -39,10 +35,6 @@ export class VoiceAssistantComponent implements OnInit {
     };
 
     ngOnInit(): void {
-        this.router.navigate(
-            [localStorage.getItem("voice-assistant-tab") ?? "personality"],
-            {relativeTo: this.route},
-        );
         this.button.enabled = true;
         this.button.func = this.openAddModal;
         this.subject = this.voiceAssistantService.getSubject();
@@ -71,7 +63,7 @@ export class VoiceAssistantComponent implements OnInit {
     }
 
     toggleVoiceAssistant() {
-        throw Error("not implemented");
+        this.voiceAssistantService.toggleVoiceAssistantActivation();
     }
 
     showModal = () => {

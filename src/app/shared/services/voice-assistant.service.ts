@@ -144,4 +144,11 @@ export class VoiceAssistantService implements SidebarService {
     getSubject(): Observable<SidebarElement[]> {
         return this.personalitiesSubject;
     }
+
+    toggleVoiceAssistantActivation() {
+        console.log("ich bin eine scheißfunktion");
+        // this.rosService.sendVoiceActivationMessage({
+        //     activationFlag: this.voiceAssistantActiveStatus,
+        // } as VoiceAssistantMsg);
+    }
 }

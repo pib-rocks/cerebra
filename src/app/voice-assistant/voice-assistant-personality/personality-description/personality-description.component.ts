@@ -25,7 +25,7 @@ export class PersonalityDescriptionComponent implements OnInit {
         );
         this.route.params.subscribe((params: Params) => {
             this.personality = this.voiceAssistantService.getPersonality(
-                params["uuid"],
+                params["personalityUuid"],
             );
             this.textAreaContent = this.personality?.description ?? "";
             localStorage.setItem(

@@ -12,7 +12,8 @@ export const voiceAssistantResolver: ResolveFn<Observable<any> | void> = (
     if (inject(VoiceAssistantService).personalities.length == 0) {
         if (route.url.length > 0) {
             return inject(ApiService).get(
-                UrlConstants.PERSONALITY + `/${route.url.pop()?.toString()}`,
+                UrlConstants.PERSONALITY +
+                    `/${route.url[route.url.length - 2]?.toString()}`,
             );
         }
     }
