@@ -24,12 +24,4 @@ export class VoiceAssistantPersonalityComponent implements OnInit {
 
         this.subject = this.voiceAssistantService.getSubject();
     }
-
-    deletePersonality = () => {
-        const uuid = this.router.url.split("/").pop();
-        if (uuid && this.voiceAssistantService.personalities.length > 0) {
-            this.voiceAssistantService.deletePersonalityById(uuid);
-            localStorage.setItem("personality", "");
-        }
-    };
 }

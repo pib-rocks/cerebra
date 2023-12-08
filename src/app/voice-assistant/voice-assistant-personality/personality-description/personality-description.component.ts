@@ -1,5 +1,5 @@
 import {Component, OnInit} from "@angular/core";
-import {ActivatedRoute, Params} from "@angular/router";
+import {ActivatedRoute, Params, Router} from "@angular/router";
 import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
 import {VoiceAssistant} from "src/app/shared/types/voice-assistant";
 
@@ -15,6 +15,7 @@ export class PersonalityDescriptionComponent implements OnInit {
     constructor(
         private voiceAssistantService: VoiceAssistantService,
         private route: ActivatedRoute,
+        private router: Router,
     ) {}
 
     ngOnInit(): void {
@@ -45,4 +46,14 @@ export class PersonalityDescriptionComponent implements OnInit {
     exportDescriptionAs() {
         throw Error("not implemented");
     }
+
+    deletePersonality = () => {
+        const uuid =
+            this.router.url.split("/")[this.router.url.split("/").length - 2] ??
+            undefined;
+        if (uuid && this.voiceAssistantService.personalities.length > 0) {
+            this.voiceAssistantService.deletePersonalityById(uuid);
+            localStorage.setItem("personality", "");
+        }
+    };
 }
