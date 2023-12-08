@@ -159,3 +159,8 @@ input:focus {
     outline: none;
     color: #fff;
 }
+
+.transparent-button {
+    background: transparent;
+    border: none;
+}
