@@ -61,7 +61,7 @@
                 [attr.y]="trackOuterOffset"
                 [attr.width]="trackLength"
                 [attr.height]="trackHeight"
-                rx="4"
+                [attr.rx]="trackHeight / 2"
                 fill="#344a69" />
             <!-- slider track foreground -->
             <rect
@@ -70,7 +70,7 @@
                 [attr.y]="trackOuterOffset"
                 [attr.width]="currentMaxBubblePosition - (numberOfThumbs > 1 ? currentMinBubblePosition : trackOuterOffset)"
                 [attr.height]="trackHeight"
-                rx="5"
+                [attr.rx]="trackHeight / 2"
                 fill="#e10072" />
             <!-- slider thumbs -->
             <circle
