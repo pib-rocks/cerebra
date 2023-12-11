@@ -74,11 +74,9 @@ describe("ProgramWorkspaceComponent", () => {
     it("should update the workspace content when route params are changed", () => {
         const selectedProgram = new Program("name-1", "id-1");
         programService.getCodeByProgramNumber.and.returnValue(
-            new BehaviorSubject(
-                new ProgramCode("id-1", {
-                    visual: '{"testfield": 1}',
-                }),
-            ),
+            new BehaviorSubject({
+                visual: '{"testfield": 1}',
+            }),
         );
         const spyOnWorkspace = spyOnProperty(
             fixture.componentRef.instance,
@@ -101,13 +99,13 @@ describe("ProgramWorkspaceComponent", () => {
         spyOn(pythonGenerator, "workspaceToCode").and.returnValue(
             'print("test")',
         );
-        const expectedCode = new ProgramCode("id-1", {
+        const expectedCode = {
             visual: '{"testfield":"1"}',
             python: 'print("test")',
-        });
+        };
         component.saveCode();
         expect(
             programService.updateCodeByProgramNumber,
-        ).toHaveBeenCalledOnceWith(expectedCode);
+        ).toHaveBeenCalledOnceWith("id-1", expectedCode);
     });
 });
