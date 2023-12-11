@@ -1,4 +1,4 @@
-import {MotorSettingsMessage} from "../rosMessageTypes/motorSettingsMessage";
+import {MotorSettingsMessage} from "../ros-message-types/motorSettingsMessage";
 
 export class MotorSettingsError extends Error {
     failedMsg!: MotorSettingsMessage;
