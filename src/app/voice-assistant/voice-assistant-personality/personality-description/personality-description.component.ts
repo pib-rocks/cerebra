@@ -42,7 +42,7 @@ export class PersonalityDescriptionComponent implements OnInit {
         }
     }
 
-    exportDescriptionAs() {
+    cloneDescription() {
         throw Error("not implemented");
     }
 }
