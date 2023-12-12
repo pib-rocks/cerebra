@@ -121,7 +121,7 @@
                 [unitLong]="'°/100'"
                 [name]="'Degree'"
                 [displayName]="true"
-                [defaultValues]="[motor.settings.rotationRangeMin, motor.settings.rotationRangeMax]"
+                [defaultValues]="[motor.settings.rotationRangeMin/100, motor.settings.rotationRangeMax/100]"
                 [messageReceiver$]="degreeSubject$"
                 (sliderEvent)="setDegree($event)"></app-horizontal-slider>
         </div>

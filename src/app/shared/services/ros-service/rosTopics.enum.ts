@@ -6,5 +6,5 @@ export enum rosTopics {
     cameraTimerPeriodTopicName = "/timer_period_topic",
     cameraTopicName = "/camera_topic",
     cameraQualityTopic = "/quality_factor_topic",
-    motorSettingsName = "/motor_settings",
+    motorSettingsTopicName = "/motor_settings",
 }
