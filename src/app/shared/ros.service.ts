@@ -64,7 +64,7 @@ export class RosService {
             rosUrl = window.location.hostname;
         }
         return new ROSLIB.Ros({
-            url: `ws://${"192.168.220.68"}:9090`,
+            url: `ws://${rosUrl}:9090`,
         });
     }
 
