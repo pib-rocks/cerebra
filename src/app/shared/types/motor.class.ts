@@ -3,13 +3,13 @@
 import {BehaviorSubject} from "rxjs";
 import {MotorSettings} from "./motor-settings.class";
 import {Group} from "./motor.enum";
-import {MotorSettingsMessage} from "../rosMessageTypes/motorSettingsMessage";
-import {JointTrajectoryMessage} from "../rosMessageTypes/jointTrajectoryMessage";
-import {createDefaultStdMessageHeader} from "../rosMessageTypes/stdMessageHeader";
+import {MotorSettingsMessage} from "../ros-message-types/motorSettingsMessage";
+import {JointTrajectoryMessage} from "../ros-message-types/jointTrajectoryMessage";
+import {createDefaultStdMessageHeader} from "../ros-message-types/stdMessageHeader";
 import {
     JointTrajectoryPoint,
     createDefaultRosTime,
-} from "../rosMessageTypes/jointTrajectoryPoint";
+} from "../ros-message-types/jointTrajectoryPoint";
 export class Motor {
     name: string;
     position: number;

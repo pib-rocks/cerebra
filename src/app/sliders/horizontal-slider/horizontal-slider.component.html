@@ -1,0 +1,85 @@
+<div
+    class="slider"
+    [ngClass]="thumbSelected ? 'no-highlight' : ''"
+    (mouseup)="onMouseUp($event)"
+    (mouseenter)="onMouseEnter($event)"
+    (mouseleave)="onMouseLeave($event)"
+    (mousemove)="onMouseMove($event)"
+    #slider>
+    <div class="row pb-3 mx-0 px-0">
+        <!-- name -->
+        <p
+            class="px-0"
+            *ngIf="name && displayName">
+            {{ name + ' ' }}<span>({{ unitLong }})</span>
+        </p>
+    </div>
+    <div class="row m-0 p-0 bubble-row">
+        <!-- left bubble span -->
+        <span
+            *ngIf="minBubblePosition <= currentMinBubblePosition"
+            class="bubble-span-left"
+            >{{ leftValue }}{{ unitShort }}</span
+        >
+        <!-- right bubble span -->
+        <span
+            *ngIf="currentMaxBubblePosition <= maxBubblePosition"
+            class="bubble-span-right"
+            >{{ rightValue }}{{ unitShort }}</span
+        >
+        <!-- bubble input -->
+        <input
+            *ngFor="let thumb of thumbs"
+            #bubbleInput
+            id="slider_bubbleinput_{{baseId}}_{{thumb.id}}"
+            class="bubble-input overlay"
+            [ngClass]="thumb.inputVisible ? '' : 'invisible'"
+            [attr.style]="'left: ' + thumb.position + 'px;'"
+            [formControl]="thumb.bubbleFormControl"
+            (blur)="toggleInputInvisible(thumb)"
+            (keydown.enter)="toggleInputInvisible(thumb)" />
+        <!-- bubble overlay -->
+        <div
+            *ngFor="let thumb of thumbs"
+            id="bubbe_span_{{baseId}}_{{thumb.id}}"
+            class="bubble-span overlay"
+            [ngClass]="thumb.inputVisible ? 'invisible' : ''"
+            [attr.style]="'left: ' + thumb.position + 'px;'"
+            (dblclick)="toggleInputVisible(thumb)">
+            {{ thumb.value }}{{ unitShort }}
+        </div>
+    </div>
+    <div class="row pb-4 px-0 pt-0 m-0">
+        <svg
+            (mousedown)="onMouseDown($event)"
+            id="slider_{{baseId}}"
+            [attr.style]="'height: ' + 2*thumbRadius + 'px;'">
+            <!-- slider track background -->
+            <rect
+                id="slider_{{baseId}}_track_bg"
+                [attr.x]="trackOuterOffset"
+                [attr.y]="trackOuterOffset"
+                [attr.width]="trackLength"
+                [attr.height]="trackHeight"
+                [attr.rx]="trackHeight / 2"
+                fill="#344a69" />
+            <!-- slider track foreground -->
+            <rect
+                id="slider_{{baseId}}_track_fg"
+                [attr.x]="numberOfThumbs > 1 ? currentMinBubblePosition : trackOuterOffset"
+                [attr.y]="trackOuterOffset"
+                [attr.width]="currentMaxBubblePosition - (numberOfThumbs > 1 ? currentMinBubblePosition : trackOuterOffset)"
+                [attr.height]="trackHeight"
+                [attr.rx]="trackHeight / 2"
+                fill="#e10072" />
+            <!-- slider thumbs -->
+            <circle
+                *ngFor="let thumb of thumbs"
+                id="slider_{{baseId}}_thumb_{{thumb.id}}"
+                [attr.cx]="thumb.position"
+                [attr.cy]="thumbRadius"
+                [attr.r]="thumbRadius"
+                fill="#e10072" />
+        </svg>
+    </div>
+</div>
