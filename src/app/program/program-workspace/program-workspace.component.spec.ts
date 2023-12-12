@@ -86,12 +86,13 @@ describe("ProgramWorkspaceComponent", () => {
         const selectedProgram = new Program("name-1", {testfield: "2"}, "id-1");
         const expectedProgram = new Program("name-1", {testfield: "1"}, "id-1");
         programService.getProgramFromCache.and.returnValue(selectedProgram);
-        spyOnProperty(
+        const spyOnWorkspace = spyOnProperty(
             fixture.componentRef.instance,
             "workspaceContent",
             "get",
         ).and.returnValue({testfield: "1"});
         component.saveProgram();
+        expect(spyOnWorkspace).toHaveBeenCalled();
         expect(programService.getProgramFromCache).toHaveBeenCalledWith("id-1");
         expect(
             programService.updateProgramByProgramNumber,
