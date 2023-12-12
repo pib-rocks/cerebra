@@ -1,12 +1,14 @@
 import {Component, OnInit, TemplateRef, ViewChild} from "@angular/core";
 import {FormControl, Validators} from "@angular/forms";
-import {Router} from "@angular/router";
+import {ActivatedRoute, Router} from "@angular/router";
 import {NgbModal, NgbModalRef} from "@ng-bootstrap/ng-bootstrap";
 import {Observable} from "rxjs";
 import {SidebarElement} from "src/app/shared/interfaces/sidebar-element.interface";
 import {ChatService} from "src/app/shared/services/chat.service";
 import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
+import {CerebraRegex} from "src/app/shared/types/cerebra-regex";
 import {ChatDto} from "src/app/shared/types/chat.class";
+import {VoiceAssistant} from "src/app/shared/types/voice-assistant";
 
 @Component({
     selector: "app-voice-assistant-chat",
@@ -19,6 +21,7 @@ export class VoiceAssistantChatComponent implements OnInit {
     personalityIcon: string = "../../assets/voice-assistant-svgs/chat/chat.svg";
     topicFormControl: FormControl = new FormControl("");
     subject!: Observable<SidebarElement[]>;
+    personality?: VoiceAssistant;
     personalityId?: string | null;
     uuid: string | undefined;
 
@@ -27,15 +30,23 @@ export class VoiceAssistantChatComponent implements OnInit {
         private router: Router,
         private chatService: ChatService,
         private voiceAssistantService: VoiceAssistantService,
+        private route: ActivatedRoute,
     ) {}
 
     ngOnInit() {
-        this.personalityId = localStorage.getItem("personality");
-        if (
-            this.personalityId &&
-            this.voiceAssistantService.getPersonality(this.personalityId)
-        ) {
-            this.subject = this.chatService.getSubject(this.personalityId);
+        this.personalityId = this.router.url
+            .split("/")
+            .find((segment) => RegExp(CerebraRegex.UUID).test(segment));
+        this.personality = this.personalityId
+            ? this.voiceAssistantService.getPersonality(this.personalityId) ??
+              this.route.snapshot.params["personality"]
+            : this.route.snapshot.params["personality"];
+        if (this.personality) {
+            this.subject = this.chatService.getSubject(
+                this.personality.personalityId,
+            );
+        } else {
+            throw Error("undefined personality and subject");
         }
         localStorage.setItem("voice-assistant-tab", "chat");
         this.topicFormControl.setValidators([

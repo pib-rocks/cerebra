@@ -44,7 +44,7 @@ const routes: Routes = [
     {
         path: "voice-assistant",
         component: VoiceAssistantComponent,
-        resolve: {voiceAssistants: voiceAssistantsResolver},
+        resolve: {voiceAssistantsResolver},
         children: [
             {
                 path: ":personalityUuid",
@@ -60,6 +60,7 @@ const routes: Routes = [
                     {
                         path: "chat",
                         component: VoiceAssistantChatComponent,
+                        resolve: {personality: voiceAssistantResolver},
                         children: [
                             {
                                 path: ":chatUuid",
