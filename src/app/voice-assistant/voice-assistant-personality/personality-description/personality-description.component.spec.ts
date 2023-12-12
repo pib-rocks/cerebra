@@ -75,10 +75,10 @@ describe("PersonalityDescriptionComponent", () => {
         expect(component.personality.description).toBe("Testdesc2");
     });
 
-    it("should call exportDescriptionAs when clicking on the save-as-button", () => {
+    it("should call cloneDescription when clicking on the clone-button", () => {
         const button: HTMLElement | null =
-            document.getElementById("save-as-button");
-        const spyUpdateDescription = spyOn(component, "exportDescriptionAs");
+            document.getElementById("clone-button");
+        const spyUpdateDescription = spyOn(component, "cloneDescription");
         button?.click();
         expect(spyUpdateDescription).toHaveBeenCalled();
     });

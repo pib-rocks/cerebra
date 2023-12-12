@@ -1,0 +1,178 @@
+<div class="d-flex justify-content-between">
+    <label
+        for="{{ motor.name }}"
+        id="label_{{motor.name}}"
+        class="form-label"
+        >{{ motor.label }}: {{ motor.position }}
+    </label>
+    <div class="d-flex align-items-center">
+        <div
+            class="form-check d-inline"
+            *ngIf="showCheckBox === true">
+            <input
+                class="form-check-input"
+                id="checkbox_{{ motor.name }}"
+                type="checkbox"
+                [formControl]="motorFormControl"
+                (click)="changeTurnedOn()" />
+            <label
+                class="form-check-label"
+                for="checkbox_{{ motor.name }}">
+                Active
+            </label>
+        </div>
+        <button
+            *ngIf="showMotorSettingsButton === true"
+            id="dialogBtn_{{ motor.name }}"
+            class="bi bi-gear btn btn-outline-primary"
+            style="margin-left: 10px; border: 0"
+            (click)="openPopup(content)"></button>
+    </div>
+</div>
+
+<app-horizontal-slider
+    [unitLong]="'°'"
+    [name]="motor.name"
+    [numberOfThumbs]="1"
+    [messageReceiver$]="positionSubject$"
+    (sliderEvent)="setMotorPositionValue($event[0])"
+    [leftValue]="-9000"
+    [rightValue]="9000"
+    [step]="1"
+    [defaultValues]="[motor.position]">
+</app-horizontal-slider>
+
+<ng-template
+    #content
+    let-modal
+    id="ng-template">
+    <div class="row display-flex modal-header">
+        <div class="col">
+            <span>MOTOR SETTINGS</span>
+        </div>
+        <div class="col text-right">
+            <button
+                id="modal-close-button"
+                type="button"
+                (click)="modal.dismiss('Cross click')"
+                class="btn">
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="10"
+                    height="16">
+                    <text
+                        fill="#FFF"
+                        font-weight="bold"
+                        font-size="16"
+                        y="11.062">
+                        X
+                    </text>
+                </svg>
+            </button>
+        </div>
+    </div>
+    <div class="row display-flex mt-5 mb-3">
+        <div class="row">
+            <div class="col text-right">
+                <span class="align-middle"> SPEED SETTINGS </span>
+            </div>
+            <div class="col col-md-auto d-flex justify-content-center">
+                <button
+                    class="btn pr-0 pl-0"
+                    (click)="changeIcon()"
+                    id="toggle-settings">
+                    <img
+                        [src]="imgSrc"
+                        alt="Toggle for switching between speed settings and extended values" />
+                </button>
+            </div>
+            <div class="col text-left">
+                <span class="align-middle"> EXTENDED VALUES </span>
+            </div>
+        </div>
+    </div>
+    <div
+        *ngIf="imgSrc === '../../assets/toggle-switch-right.png'"
+        class="row justify-content-center">
+        <div class="col-9">
+            <app-horizontal-slider
+                [leftValue]="0"
+                [rightValue]="65535"
+                [numberOfThumbs]="2"
+                [step]="1"
+                [unitLong]="'μs'"
+                [name]="'Pulse width'"
+                [displayName]="true"
+                [defaultValues]="[motor.settings.pulseWidthMin, motor.settings.pulseWidthMax]"
+                [messageReceiver$]="pulseWidthSubject$"
+                (sliderEvent)="setPulseRanges($event)"></app-horizontal-slider>
+        </div>
+    </div>
+    <div
+        *ngIf="imgSrc === '../../assets/toggle-switch-right.png'"
+        class="row display-flex justify-content-center">
+        <div class="col-9">
+            <app-horizontal-slider
+                [leftValue]="-9000"
+                [rightValue]="9000"
+                [numberOfThumbs]="2"
+                [step]="1"
+                [unitShort]="'°'"
+                [unitLong]="'°/100'"
+                [name]="'Degree'"
+                [displayName]="true"
+                [defaultValues]="[motor.settings.rotationRangeMin, motor.settings.rotationRangeMax]"
+                [messageReceiver$]="degreeSubject$"
+                (sliderEvent)="setDegree($event)"></app-horizontal-slider>
+        </div>
+    </div>
+    <div
+        *ngIf="imgSrc === '../../assets/toggle-switch-right.png'"
+        class="row display-flex justify-content-center">
+        <div class="col-9">
+            <app-horizontal-slider
+                [name]="'Period'"
+                [displayName]="true"
+                [leftValue]="0"
+                [rightValue]="100000"
+                [numberOfThumbs]="1"
+                [unitLong]="'μs'"
+                [defaultValues]="[motor.settings.period]"
+                [step]="1"
+                [messageReceiver$]="periodSubject$"
+                (sliderEvent)="setPeriod($event[0])"></app-horizontal-slider>
+        </div>
+    </div>
+    <div
+        *ngIf="imgSrc === '../../assets/toggle-switch-left.png'"
+        class="row modal-body h-100 d-flex align-items-start justify-content-center">
+        <div class="col-3 ml-2 mr-2 ">
+            <app-vertical-slider
+                name="Velocity"
+                [messageReceiver$]="velocitySubject$"
+                (sliderEvent)="setVelocity($event)"
+                [unitLong]="'(°/100s)'"
+                [minValue]="0"
+                [maxValue]="500000"
+                [defaultValue]="motor.settings.velocity"></app-vertical-slider>
+        </div>
+        <div class="col-3 ml-2 mr-2">
+            <app-vertical-slider
+                name="Acceleration"
+                [messageReceiver$]="accelerationSubject$"
+                (sliderEvent)="setAcceleration($event)"
+                [minValue]="0"
+                [maxValue]="500000"
+                [defaultValue]="motor.settings.acceleration"></app-vertical-slider>
+        </div>
+        <div class="col-3 ml-2 mr-2">
+            <app-vertical-slider
+                name="Deceleration"
+                [messageReceiver$]="decelerationSubject$"
+                (sliderEvent)="setDeceleration($event)"
+                [minValue]="0"
+                [maxValue]="500000"
+                [defaultValue]="motor.settings.deceleration"></app-vertical-slider>
+        </div>
+    </div>
+</ng-template>

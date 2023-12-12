@@ -1,13 +1,13 @@
 import {Injectable} from "@angular/core";
-import {RosService} from "./ros-service/ros.service";
+import {RosService} from "../ros-service/ros.service";
 import {BehaviorSubject, catchError, throwError} from "rxjs";
-import {Motor} from "../types/motor.class";
-import {Group} from "../types/motor.enum";
-import {MotorSettingsMessage} from "../ros-message-types/motorSettingsMessage";
-import {JointTrajectoryMessage} from "../ros-message-types/jointTrajectoryMessage";
-import {MotorSettings} from "../types/motor-settings.class";
-import {UrlConstants} from "./url.constants";
-import {ApiService} from "./api.service";
+import {Motor} from "../../types/motor.class";
+import {Group} from "../../types/motor.enum";
+import {MotorSettingsMessage} from "../../ros-message-types/motorSettingsMessage";
+import {JointTrajectoryMessage} from "../../ros-message-types/jointTrajectoryMessage";
+import {MotorSettings} from "../../types/motor-settings.class";
+import {ApiService} from "../api.service";
+import {UrlConstants} from "../url.constants";
 
 @Injectable({
     providedIn: "root",
@@ -202,21 +202,8 @@ export class MotorService {
                 this.updateMotorFromJointTrajectoryMessage(message);
             });
         }
-        if (message.joint_names[0].includes("all")) {
-            const motor = this.getMotorByName(message.joint_names[0]);
-            const groupMotors = this.motors
-                .filter((m) => m.group == motor.group)
-                .filter(
-                    (m) =>
-                        !m.name.includes("opposition") &&
-                        !m.name.includes("all"),
-                );
-            groupMotors.forEach((m) => {
-                message.joint_names[0] = m.name;
-                this.updateMotorFromJointTrajectoryMessage(message);
-            });
-        }
     }
+
     updateMotorSettingsFromMotorSettingsMessage(message: MotorSettingsMessage) {
         const motor = this.getMotorByName(message.motor_name);
         motor.settings.updateChangedAttribute(message);
@@ -273,7 +260,7 @@ export class MotorService {
                     });
                 }),
             )
-            .subscribe((response: any) => {
+            .subscribe((response) => {
                 console.log(response);
             });
     }
@@ -289,7 +276,7 @@ export class MotorService {
                     });
                 }),
             )
-            .subscribe((response: any) => {
+            .subscribe((response) => {
                 motor.settings.acceleration = response["acceleration"];
                 motor.settings.deceleration = response["deceleration"];
                 motor.settings.pulseWidthMin = response["pulseWidthMin"];
@@ -313,7 +300,7 @@ export class MotorService {
                     });
                 }),
             )
-            .subscribe((response: any) => {
+            .subscribe((response) => {
                 const motors: any[] = response["motorSettings"];
                 motors.forEach((response) => {
                     const motor = this.getMotorByName(response["name"]);

@@ -6,9 +6,9 @@ import {
     ViewChild,
 } from "@angular/core";
 import {FormControl} from "@angular/forms";
-import {Subject} from "rxjs";
-import {CameraService} from "../shared/services/camera.service";
+import {Observable, Subject, map} from "rxjs";
 import {CameraSetting} from "../shared/types/camera-settings";
+import {CameraService} from "../shared/services/camera.service";
 
 @Component({
     selector: "app-camera",
@@ -17,8 +17,10 @@ import {CameraSetting} from "../shared/types/camera-settings";
 })
 export class CameraComponent implements OnInit, OnDestroy {
     @ViewChild("videobox") videoBox?: ElementRef;
-    qualityReceiver$!: Subject<number>;
-    refreshRateReceiver$!: Subject<number>;
+    @ViewChild("refreshRate") refreshRateSlider!: ElementRef;
+    @ViewChild("qualityFactor") qualityFactorSlider!: ElementRef;
+    qualityReceiver$!: Observable<number[]>;
+    refreshRateReceiver$!: Observable<number[]>;
     isLoading = false;
     toggleCamera = new FormControl(false);
     imageSrc!: string;
@@ -42,9 +44,13 @@ export class CameraComponent implements OnInit, OnDestroy {
             }
         });
         this.qualityReceiver$ =
-            this.cameraService.rosCameraQualityFactorReceiver;
+            this.cameraService.rosCameraQualityFactorReceiver.pipe(
+                map((n) => [n]),
+            );
         this.refreshRateReceiver$ =
-            this.cameraService.rosCameraTimerPeriodReceiver;
+            this.cameraService.rosCameraTimerPeriodReceiver.pipe(
+                map((n) => [n]),
+            );
     }
 
     ngOnDestroy(): void {
@@ -126,6 +132,7 @@ export class CameraComponent implements OnInit, OnDestroy {
         const videoSettingsButton = document.getElementById("videosettings");
         videoSettingsButton?.classList.remove("showPopover");
     }
+
     addCssClass() {
         const videoSettingsButton = document.getElementById("videosettings");
         videoSettingsButton?.classList.add("showPopover");
