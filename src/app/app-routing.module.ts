@@ -14,6 +14,8 @@ import {ChatWindowComponent} from "./voice-assistant/voice-assistant-chat/chat-w
 import {ProgramWorkspaceComponent} from "./program/program-workspace/program-workspace.component";
 import {chatResolver} from "./voice-assistant/voice-assistant-resolver/chat.resolver";
 import {voiceAssistantsResolver} from "./voice-assistant/voice-assistant-resolver/voice-assistants.resolver";
+import {PersonalityWrapperComponent} from "./voice-assistant/personality-wrapper/personality-wrapper.component";
+import {voiceAssistantRoutingGuard} from "./voice-assistant/personality-wrapper/voice-assistant-routing.guard";
 
 const routes: Routes = [
     {path: "", redirectTo: "head", pathMatch: "full"},
@@ -45,19 +47,26 @@ const routes: Routes = [
         resolve: {voiceAssistants: voiceAssistantsResolver},
         children: [
             {
-                path: ":personalityUuid/personality",
-                pathMatch: "full",
-                component: PersonalityDescriptionComponent,
-                resolve: {personality: voiceAssistantResolver},
-            },
-            {
-                path: ":personalityUuid/chat",
-                component: VoiceAssistantChatComponent,
+                path: ":personalityUuid",
+                component: PersonalityWrapperComponent,
+                canActivate: [voiceAssistantRoutingGuard],
                 children: [
                     {
-                        path: ":chatUuid",
-                        component: ChatWindowComponent,
-                        resolve: {chat: chatResolver},
+                        path: "personality",
+                        pathMatch: "full",
+                        component: PersonalityDescriptionComponent,
+                        resolve: {personality: voiceAssistantResolver},
+                    },
+                    {
+                        path: "chat",
+                        component: VoiceAssistantChatComponent,
+                        children: [
+                            {
+                                path: ":chatUuid",
+                                component: ChatWindowComponent,
+                                resolve: {chat: chatResolver},
+                            },
+                        ],
                     },
                 ],
             },

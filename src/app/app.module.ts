@@ -33,6 +33,7 @@ import {VoiceAssistantComponent} from "./voice-assistant/voice-assistant.compone
 import {PersonalityDescriptionComponent} from "./voice-assistant/voice-assistant-personality/personality-description/personality-description.component";
 import {ChatWindowComponent} from "./voice-assistant/voice-assistant-chat/chat-window/chat-window.component";
 import {ProgramWorkspaceComponent} from "./program/program-workspace/program-workspace.component";
+import {PersonalityWrapperComponent} from "./voice-assistant/personality-wrapper/personality-wrapper.component";
 
 @NgModule({
     declarations: [
@@ -57,6 +58,7 @@ import {ProgramWorkspaceComponent} from "./program/program-workspace/program-wor
         PersonalityDescriptionComponent,
         ChatWindowComponent,
         ProgramWorkspaceComponent,
+        PersonalityWrapperComponent,
     ],
     imports: [
         BrowserModule,
