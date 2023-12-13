@@ -4,6 +4,9 @@ import {toolbox} from "../blockly";
 import {ActivatedRoute} from "@angular/router";
 import {ProgramService} from "src/app/shared/services/program.service";
 
+import {customBlockDefinition} from "../program-blocks/custom-blocks";
+import {pythonGenerator} from "../program-generators/generators";
+
 @Component({
     selector: "app-program-workspace",
     templateUrl: "./program-workspace.component.html",
@@ -35,6 +38,9 @@ export class ProgramWorkspaceComponent {
         this.workspace = Blockly.inject("blocklyDiv", {
             toolbox: this.toolbox,
         });
+
+        customBlockDefinition();
+
         this.observer = new ResizeObserver(() => {
             this.resizeBlockly();
         });
