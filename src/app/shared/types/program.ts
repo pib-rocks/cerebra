@@ -24,4 +24,11 @@ export class Program implements SidebarElement {
     static fromDTO(dto: {name: string; programNumber: string}): Program {
         return new Program(dto.name, dto.programNumber);
     }
+
+    toDTO(): {name: string; programNumber?: string} {
+        return {
+            name: this.name,
+            programNumber: this.programNumber || undefined,
+        };
+    }
 }

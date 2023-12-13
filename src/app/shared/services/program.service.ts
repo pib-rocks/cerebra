@@ -47,14 +47,14 @@ export class ProgramService {
 
     private setCode(code: ProgramCode) {
         const index = this.codes.findIndex(
-            (p) => p.programNumber === code.programNumber,
+            (c) => c.programNumber === code.programNumber,
         );
         if (index === -1) this.codes.push(code);
         else this.codes[index] = code;
     }
 
     private getCodeFromCache(programNumber: string): ProgramCode | undefined {
-        return this.codes.find((code) => (code.programNumber = programNumber));
+        return this.codes.find((code) => code.programNumber === programNumber);
     }
 
     private createResultObservable<Type>(
@@ -108,7 +108,7 @@ export class ProgramService {
 
     createProgram(program: Program): Observable<Program> {
         return this.createResultObservable(
-            this.apiService.post(UrlConstants.PROGRAM, program),
+            this.apiService.post(UrlConstants.PROGRAM, program.toDTO()),
             (dto) => {
                 const program = Program.fromDTO(dto);
                 this.addProgram(program);
@@ -121,7 +121,7 @@ export class ProgramService {
         return this.createResultObservable(
             this.apiService.put(
                 UrlConstants.PROGRAM + `/${program.programNumber}`,
-                program,
+                new Program(program.name).toDTO(),
             ),
             (dto) => {
                 const program = Program.fromDTO(dto);

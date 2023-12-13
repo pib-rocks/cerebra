@@ -3,52 +3,51 @@ import {TestBed} from "@angular/core/testing";
 import {ProgramService} from "./program.service";
 import {ApiService} from "./api.service";
 import {BehaviorSubject, Observable} from "rxjs";
-import {Program, ProgramDTO} from "../types/program";
+import {Program} from "../types/program";
+import {ProgramCode} from "../types/progran-code";
 
 describe("ProgramService", () => {
     let programService: ProgramService;
     let apiService: jasmine.SpyObj<ApiService>;
 
-    let proDto: ProgramDTO[];
-    let newProDto: ProgramDTO;
+    let proDto: {name: string; programNumber: string}[];
+    let newProDto: {name: string; programNumber: string};
 
     let pro: Program[];
     let newPro: Program;
 
-    let obs: BehaviorSubject<ProgramDTO>[];
-    let newObs: BehaviorSubject<ProgramDTO>;
-    let obsAll: BehaviorSubject<{programs: ProgramDTO[]}>;
+    let obs: BehaviorSubject<{name: string; programNumber: string}>[];
+    let newObs: BehaviorSubject<{name: string; programNumber: string}>;
+    let obsAll: BehaviorSubject<{
+        programs: {name: string; programNumber: string}[];
+    }>;
 
     beforeEach(() => {
         proDto = [
             {
                 name: "name-0",
-                program: '{"testfield": "0"}',
                 programNumber: "id-0",
             },
             {
                 name: "name-1",
-                program: '{"testfield": "1"}',
                 programNumber: "id-1",
             },
             {
                 name: "name-2",
-                program: '{"testfield": "2"}',
                 programNumber: "id-2",
             },
         ];
         newProDto = {
             name: "name-new",
-            program: '{"testfield": "new"}',
             programNumber: "id-new",
         };
 
         pro = [
-            new Program("name-0", {testfield: "0"}, "id-0"),
-            new Program("name-1", {testfield: "1"}, "id-1"),
-            new Program("name-2", {testfield: "2"}, "id-2"),
+            new Program("name-0", "id-0"),
+            new Program("name-1", "id-1"),
+            new Program("name-2", "id-2"),
         ];
-        newPro = new Program("name-new", {testfield: "new"}, "id-new");
+        newPro = new Program("name-new", "id-new");
 
         obs = proDto.map((p) => new BehaviorSubject(p));
         newObs = new BehaviorSubject(newProDto);
@@ -129,6 +128,49 @@ describe("ProgramService", () => {
         expect(programService.programsSubject.next).toHaveBeenCalledOnceWith(
             expectedPrograms,
         );
+    });
+
+    it("should get one code", () => {
+        programService.codes = [
+            new ProgramCode("id-1", {visual: "1"}),
+            new ProgramCode("id-2", {visual: "2"}),
+        ];
+        expect(programService["getCodeFromCache"]("id-1")).toEqual(
+            new ProgramCode("id-1", {visual: "1"}),
+        );
+    });
+
+    it("should not get one code", () => {
+        programService.codes = [
+            new ProgramCode("id-1", {visual: "1"}),
+            new ProgramCode("id-2", {visual: "2"}),
+        ];
+        expect(programService["getCodeFromCache"]("id-3")).toBeUndefined();
+    });
+
+    it("should update one code", () => {
+        programService.codes = [
+            new ProgramCode("id-1", {visual: "1"}),
+            new ProgramCode("id-2", {visual: "2"}),
+        ];
+        programService["setCode"](new ProgramCode("id-1", {visual: "3"}));
+        expect(programService.codes).toEqual([
+            new ProgramCode("id-1", {visual: "3"}),
+            new ProgramCode("id-2", {visual: "2"}),
+        ]);
+    });
+
+    it("should add one code if it is not already in cache", () => {
+        programService.codes = [
+            new ProgramCode("id-1", {visual: "1"}),
+            new ProgramCode("id-2", {visual: "2"}),
+        ];
+        programService["setCode"](new ProgramCode("id-3", {visual: "3"}));
+        expect(programService.codes).toEqual([
+            new ProgramCode("id-1", {visual: "1"}),
+            new ProgramCode("id-2", {visual: "2"}),
+            new ProgramCode("id-3", {visual: "3"}),
+        ]);
     });
 
     it("should create a correct result observable with successful base observable", async () => {
@@ -214,7 +256,6 @@ describe("ProgramService", () => {
             "/program",
             jasmine.objectContaining({
                 name: "name-new",
-                program: JSON.stringify({testfield: "new"}),
             }),
         );
         expect(addProgramSpy).toHaveBeenCalledOnceWith(
@@ -235,7 +276,6 @@ describe("ProgramService", () => {
             "/program/id-1",
             jasmine.objectContaining({
                 name: "name-1",
-                program: JSON.stringify({testfield: "1"}),
             }),
         );
         expect(updateProgramSpy).toHaveBeenCalledOnceWith(
@@ -254,5 +294,65 @@ describe("ProgramService", () => {
         });
         expect(apiService.delete).toHaveBeenCalledOnceWith("/program/id-2");
         expect(deleteProgramSpy).toHaveBeenCalledOnceWith("id-2");
+    });
+
+    it("get the code from db if not present in cache", async () => {
+        const code = new ProgramCode("id-1", {
+            visual: "new-visual",
+        });
+        const getCodeFromCacheSpy = spyOn<any>(
+            programService,
+            "getCodeFromCache",
+        ).and.returnValue(undefined);
+        apiService.get.and.returnValue(new BehaviorSubject(code));
+        const resultCode = await new Promise((resolve, _) => {
+            programService
+                .getCodeByProgramNumber("id-1")
+                .subscribe((val) => resolve(val));
+        });
+        expect(apiService.get).toHaveBeenCalledOnceWith("/program/id-1/code");
+        expect(getCodeFromCacheSpy).toHaveBeenCalledOnceWith("id-1");
+        expect(resultCode).toEqual(code);
+    });
+
+    it("get the code from cache if present", async () => {
+        const code = new ProgramCode("id-1", {
+            visual: "new-visual",
+        });
+        const getCodeFromCacheSpy = spyOn<any>(
+            programService,
+            "getCodeFromCache",
+        ).and.returnValue(code);
+        const resultCode = await new Promise((resolve, _) => {
+            programService
+                .getCodeByProgramNumber("id-1")
+                .subscribe((val) => resolve(val));
+        });
+        expect(apiService.get).not.toHaveBeenCalled();
+        expect(getCodeFromCacheSpy).toHaveBeenCalledOnceWith("id-1");
+        expect(resultCode).toEqual(code);
+    });
+
+    it("should update the code on db", async () => {
+        const code = new ProgramCode("id-1", {
+            visual: "new-visual",
+            python: "new-python",
+        });
+        const codeVisualOnly = new ProgramCode("id-1", {
+            visual: "new-visual",
+        });
+        const setCodeSpy = spyOn<any>(programService, "setCode");
+        apiService.put.and.returnValue(new BehaviorSubject(codeVisualOnly));
+        const resultCode = await new Promise((resolve, _) => {
+            programService
+                .updateCodeByProgramNumber(code)
+                .subscribe((val) => resolve(val));
+        });
+        expect(apiService.put).toHaveBeenCalledOnceWith(
+            "/program/id-1/code",
+            code,
+        );
+        expect(setCodeSpy).toHaveBeenCalledOnceWith(codeVisualOnly);
+        expect(resultCode).toEqual(codeVisualOnly);
     });
 });

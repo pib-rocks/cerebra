@@ -3,6 +3,9 @@ import * as Blockly from "blockly";
 import {toolbox} from "../blockly";
 import {ActivatedRoute} from "@angular/router";
 import {ProgramService} from "src/app/shared/services/program.service";
+import {asyncScheduler} from "rxjs";
+import {ProgramCode} from "src/app/shared/types/progran-code";
+import {pythonGenerator} from "blockly/python";
 
 import {customBlockDefinition} from "../program-blocks/custom-blocks";
 import {pythonGenerator} from "../program-generators/detectors-generators";
@@ -20,6 +23,10 @@ export class ProgramWorkspaceComponent {
     toolbox: string = toolbox;
 
     currentProgramNumber?: string;
+
+    flyoutWidth: number = 0;
+    runButtonPath: string = "../../assets/program/run.svg";
+    saveButtonPath: string = "../../assets/program/save.svg";
 
     get workspaceContent(): object {
         return Blockly.serialization.workspaces.save(this.workspace);
@@ -47,10 +54,17 @@ export class ProgramWorkspaceComponent {
         this.programService.getAllPrograms().subscribe((_) => {
             this.route.params.subscribe((params) => {
                 const programNumber = params["uuid"];
-                this.workspaceContent =
-                    this.programService.getCodeByProgramNumber(programNumber);
+                this.programService
+                    .getCodeByProgramNumber(programNumber)
+                    .subscribe((code) => {
+                        this.workspaceContent = JSON.parse(code.code.visual);
+                    });
             });
         });
+        this.workspace.trashcan?.flyout
+            ?.getWorkspace()
+            .addChangeListener(this.flyoutChangeCallback);
+        this.workspace.addChangeListener(this.flyoutChangeCallback);
     }
 
     ngAfterViewInit() {
@@ -64,4 +78,27 @@ export class ProgramWorkspaceComponent {
     resizeBlockly() {
         Blockly.svgResize(this.workspace);
     }
+
+    saveCode() {
+        const programNumber = this.route.snapshot.params["uuid"];
+        this.programService.updateCodeByProgramNumber(
+            new ProgramCode(programNumber, {
+                visual: JSON.stringify(this.workspaceContent),
+                python: pythonGenerator.workspaceToCode(this.workspace),
+            }),
+        );
+    }
+
+    runProgram() {
+        console.log("run clicked!");
+    }
+
+    flyoutChangeCallback = () => {
+        asyncScheduler.schedule(() => {
+            const contentOpen = this.workspace.trashcan?.contentsIsOpen();
+            this.flyoutWidth = contentOpen
+                ? this.workspace.trashcan?.flyout?.getWidth() ?? 0
+                : 0;
+        });
+    };
 }
