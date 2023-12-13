@@ -4,7 +4,6 @@ import {toolbox} from "../blockly";
 import {ActivatedRoute} from "@angular/router";
 import {ProgramService} from "src/app/shared/services/program.service";
 import {asyncScheduler} from "rxjs";
-import {FinishedLoading} from "blockly/core/events/workspace_events";
 import {ITheme} from "blockly/core/theme";
 
 @Component({
