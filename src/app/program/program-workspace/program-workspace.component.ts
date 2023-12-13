@@ -5,7 +5,6 @@ import {ActivatedRoute} from "@angular/router";
 import {ProgramService} from "src/app/shared/services/program.service";
 import {asyncScheduler} from "rxjs";
 import {ProgramCode} from "src/app/shared/types/progran-code";
-import {pythonGenerator} from "blockly/python";
 
 import {customBlockDefinition} from "../program-blocks/custom-blocks";
 import {pythonGenerator} from "../program-generators/detectors-generators";
