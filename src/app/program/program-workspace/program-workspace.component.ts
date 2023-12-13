@@ -5,7 +5,7 @@ import {ActivatedRoute} from "@angular/router";
 import {ProgramService} from "src/app/shared/services/program.service";
 
 import {customBlockDefinition} from "../program-blocks/custom-blocks";
-import {pythonGenerator} from "../program-generators/generators";
+import {pythonGenerator} from "../program-generators/detectors-generators";
 
 @Component({
     selector: "app-program-workspace",
