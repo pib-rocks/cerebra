@@ -11,7 +11,6 @@ import {ChatService} from "./shared/services/chat.service";
 })
 export class AppComponent implements OnInit {
     currentRoute: string = "";
-    title = "cerebra";
     isActiveRoute = false;
     jointControlNavItemGroup = [
         "/",
