@@ -92,6 +92,7 @@ describe("ProgramWorkspaceComponent", () => {
             "get",
         ).and.returnValue({testfield: "1"});
         component.saveProgram();
+        expect(spyOnWorkspace).toHaveBeenCalled();
         expect(programService.getProgramFromCache).toHaveBeenCalledWith("id-1");
         expect(
             programService.updateProgramByProgramNumber,
