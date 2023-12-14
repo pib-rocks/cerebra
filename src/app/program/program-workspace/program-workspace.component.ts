@@ -3,6 +3,8 @@ import * as Blockly from "blockly";
 import {toolbox} from "../blockly";
 import {ActivatedRoute} from "@angular/router";
 import {ProgramService} from "src/app/shared/services/program.service";
+import {asyncScheduler} from "rxjs";
+import {ITheme} from "blockly/core/theme";
 
 @Component({
     selector: "app-program-workspace",
@@ -17,6 +19,20 @@ export class ProgramWorkspaceComponent {
     toolbox: string = toolbox;
 
     currentProgramNumber?: string;
+
+    flyoutWidth: number = 0;
+    runButtonPath: string = "../../assets/program/run.svg";
+    saveButtonPath: string = "../../assets/program/save.svg";
+
+    readonly customTheme: ITheme = Blockly.Theme.defineTheme("customTheme", {
+        base: Blockly.Themes.Classic,
+        name: "transparentBackground",
+        componentStyles: {
+            workspaceBackgroundColour: "transparent",
+            toolboxBackgroundColour: "transparent",
+            flyoutBackgroundColour: "#314969",
+        },
+    });
 
     get workspaceContent(): object {
         return Blockly.serialization.workspaces.save(this.workspace);
@@ -34,6 +50,7 @@ export class ProgramWorkspaceComponent {
     ngOnInit() {
         this.workspace = Blockly.inject("blocklyDiv", {
             toolbox: this.toolbox,
+            theme: this.customTheme,
         });
         this.observer = new ResizeObserver(() => {
             this.resizeBlockly();
@@ -46,6 +63,15 @@ export class ProgramWorkspaceComponent {
                 this.workspaceContent = program?.program;
             });
         });
+        this.workspace.trashcan?.flyout
+            ?.getWorkspace()
+            .addChangeListener(this.flyoutChangeCallback);
+        this.workspace.addChangeListener(this.flyoutChangeCallback);
+        const blocklyMainBackground: SVGRectElement | null =
+            document.querySelector(".blocklyMainBackground");
+        if (blocklyMainBackground) {
+            blocklyMainBackground.style.stroke = "none";
+        }
     }
 
     ngAfterViewInit() {
@@ -59,4 +85,26 @@ export class ProgramWorkspaceComponent {
     resizeBlockly() {
         Blockly.svgResize(this.workspace);
     }
+
+    saveProgram() {
+        const toBeUpdated = this.programService.getProgramFromCache(
+            this.route.snapshot.params["uuid"],
+        );
+        if (!toBeUpdated) return;
+        toBeUpdated.program = this.workspaceContent;
+        this.programService.updateProgramByProgramNumber(toBeUpdated);
+    }
+
+    runProgram() {
+        console.log("run clicked!");
+    }
+
+    flyoutChangeCallback = () => {
+        asyncScheduler.schedule(() => {
+            const contentOpen = this.workspace.trashcan?.contentsIsOpen();
+            this.flyoutWidth = contentOpen
+                ? this.workspace.trashcan?.flyout?.getWidth() ?? 0
+                : 0;
+        });
+    };
 }
