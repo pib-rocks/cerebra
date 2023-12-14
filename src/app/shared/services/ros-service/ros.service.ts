@@ -60,7 +60,7 @@ export class RosService {
     setUpRos() {
         let rosUrl: string;
         if (isDevMode()) {
-            rosUrl = "192.168.1.237";
+            rosUrl = "127.0.0.1";
         } else {
             rosUrl = window.location.hostname;
         }
@@ -176,7 +176,6 @@ export class RosService {
     }
     subscribeMotorSettingsTopic() {
         this.motorSettingsTopic.subscribe((message) => {
-            console.log(message);
             this.motorSettingsReceiver$.next(message as MotorSettingsMessage);
         });
     }

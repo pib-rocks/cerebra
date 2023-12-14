@@ -70,7 +70,6 @@ export class HorizontalSliderComponent
 
     constructor(private ref: ChangeDetectorRef) {}
     ngOnChanges(changes: SimpleChanges): void {
-        console.log(changes);
         if ("leftValue" in changes) {
             this.leftValue = changes["leftValue"].currentValue;
             this.minValue = changes["leftValue"].currentValue;
