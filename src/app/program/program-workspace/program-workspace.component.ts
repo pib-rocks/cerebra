@@ -4,6 +4,7 @@ import {toolbox} from "../blockly";
 import {ActivatedRoute} from "@angular/router";
 import {ProgramService} from "src/app/shared/services/program.service";
 import {asyncScheduler} from "rxjs";
+import {ITheme} from "blockly/core/theme";
 
 @Component({
     selector: "app-program-workspace",
@@ -23,6 +24,16 @@ export class ProgramWorkspaceComponent {
     runButtonPath: string = "../../assets/program/run.svg";
     saveButtonPath: string = "../../assets/program/save.svg";
 
+    readonly customTheme: ITheme = Blockly.Theme.defineTheme("customTheme", {
+        base: Blockly.Themes.Classic,
+        name: "transparentBackground",
+        componentStyles: {
+            workspaceBackgroundColour: "transparent",
+            toolboxBackgroundColour: "transparent",
+            flyoutBackgroundColour: "#314969",
+        },
+    });
+
     get workspaceContent(): object {
         return Blockly.serialization.workspaces.save(this.workspace);
     }
@@ -39,6 +50,7 @@ export class ProgramWorkspaceComponent {
     ngOnInit() {
         this.workspace = Blockly.inject("blocklyDiv", {
             toolbox: this.toolbox,
+            theme: this.customTheme,
         });
         this.observer = new ResizeObserver(() => {
             this.resizeBlockly();
@@ -55,6 +67,11 @@ export class ProgramWorkspaceComponent {
             ?.getWorkspace()
             .addChangeListener(this.flyoutChangeCallback);
         this.workspace.addChangeListener(this.flyoutChangeCallback);
+        const blocklyMainBackground: SVGRectElement | null =
+            document.querySelector(".blocklyMainBackground");
+        if (blocklyMainBackground) {
+            blocklyMainBackground.style.stroke = "none";
+        }
     }
 
     ngAfterViewInit() {

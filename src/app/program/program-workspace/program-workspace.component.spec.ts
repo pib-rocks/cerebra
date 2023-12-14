@@ -1,10 +1,10 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-
 import {ProgramWorkspaceComponent} from "./program-workspace.component";
 import {ProgramService} from "src/app/shared/services/program.service";
 import {ActivatedRoute, Params} from "@angular/router";
 import {BehaviorSubject} from "rxjs";
 import {Program} from "src/app/shared/types/program";
+import * as Blockly from "blockly";
 
 describe("ProgramWorkspaceComponent", () => {
     let component: ProgramWorkspaceComponent;
@@ -57,9 +57,9 @@ describe("ProgramWorkspaceComponent", () => {
         programService = TestBed.inject(
             ProgramService,
         ) as jasmine.SpyObj<ProgramService>;
-
         fixture = TestBed.createComponent(ProgramWorkspaceComponent);
         component = fixture.componentInstance;
+        Blockly.registry.unregister("theme", "customtheme");
         fixture.detectChanges();
     });
 
