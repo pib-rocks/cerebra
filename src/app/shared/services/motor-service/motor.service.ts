@@ -1,6 +1,13 @@
 import {Injectable} from "@angular/core";
 import {RosService} from "../ros-service/ros.service";
-import {BehaviorSubject, catchError, throwError} from "rxjs";
+import {
+    BehaviorSubject,
+    Observable,
+    catchError,
+    from,
+    map,
+    throwError,
+} from "rxjs";
 import {Motor} from "../../types/motor.class";
 import {Group} from "../../types/motor.enum";
 import {MotorSettingsMessage} from "../../ros-message-types/motorSettingsMessage";
@@ -54,12 +61,14 @@ export class MotorService {
     ];
 
     motors: Motor[] = [];
+    motorsSubject: BehaviorSubject<Motor[]> = new BehaviorSubject<Motor[]>([]);
 
     constructor(
         private rosService: RosService,
         private apiService: ApiService,
     ) {
         this.createMotors();
+        this.motorsSubject.next(this.motors);
         this.subscribeJointTrajectorySubject();
         this.subscribeMotorSettingsSubject();
         this.getAllMotorSettingsFromDb();
@@ -119,6 +128,15 @@ export class MotorService {
 
     public getMotorsByGroup(group: Group): Motor[] {
         return this.motors.filter((m) => m.group === group);
+    }
+    public getActiveMotorsByGroup(group: Group): Observable<Motor[]> {
+        return from(this.motorsSubject).pipe(
+            map((m) =>
+                m.filter(
+                    (n) => n.group === group && n.settings.active === true,
+                ),
+            ),
+        );
     }
     public getMotorsByGroupNoOpposition(group: Group): Motor[] {
         return this.getMotorsByGroup(group).filter(
@@ -202,12 +220,27 @@ export class MotorService {
                 this.updateMotorFromJointTrajectoryMessage(message);
             });
         }
+        if (message.joint_names[0].includes("all")) {
+            const motor = this.getMotorByName(message.joint_names[0]);
+            const groupMotors = this.motors
+                .filter((m) => m.group == motor.group)
+                .filter(
+                    (m) =>
+                        !m.name.includes("opposition") &&
+                        !m.name.includes("all"),
+                );
+            groupMotors.forEach((m) => {
+                message.joint_names[0] = m.name;
+                this.updateMotorFromJointTrajectoryMessage(message);
+            });
+        }
     }
-
     updateMotorSettingsFromMotorSettingsMessage(message: MotorSettingsMessage) {
+        console.log("hamlo");
         const motor = this.getMotorByName(message.motor_name);
         motor.settings.updateChangedAttribute(message);
         const copy = motor?.clone();
+        console.log(copy);
         motor.motorSubject.next(copy);
         if (message.motor_name.includes("all")) {
             const motor = this.getMotorByName(message.motor_name);
@@ -260,7 +293,7 @@ export class MotorService {
                     });
                 }),
             )
-            .subscribe((response) => {
+            .subscribe((response: any) => {
                 console.log(response);
             });
     }
@@ -276,7 +309,7 @@ export class MotorService {
                     });
                 }),
             )
-            .subscribe((response) => {
+            .subscribe((response: any) => {
                 motor.settings.acceleration = response["acceleration"];
                 motor.settings.deceleration = response["deceleration"];
                 motor.settings.pulseWidthMin = response["pulseWidthMin"];
@@ -286,6 +319,7 @@ export class MotorService {
                 motor.settings.velocity = response["velocity"];
                 motor.settings.period = response["period"];
                 motor.settings.turnedOn = response["turnedOn"];
+                motor.settings.active = response["active"];
                 motor.motorSubject.next(motor.clone());
             });
     }
@@ -299,24 +333,29 @@ export class MotorService {
                         console.log(err);
                     });
                 }),
+                map((response) => response as {motorSettings: any[]}),
+                map((response) => response.motorSettings),
             )
             .subscribe((response) => {
-                const motors: any[] = response["motorSettings"];
-                motors.forEach((response) => {
-                    const motor = this.getMotorByName(response["name"]);
-                    motor.settings.acceleration = response["acceleration"];
-                    motor.settings.deceleration = response["deceleration"];
-                    motor.settings.pulseWidthMin = response["pulseWidthMin"];
-                    motor.settings.pulseWidthMax = response["pulseWidthMax"];
-                    motor.settings.rotationRangeMin =
-                        response["rotationRangeMin"];
-                    motor.settings.rotationRangeMax =
-                        response["rotationRangeMax"];
-                    motor.settings.velocity = response["velocity"];
-                    motor.settings.period = response["period"];
-                    motor.settings.turnedOn = response["turnedOn"];
+                response.forEach((o) => {
+                    const motor = this.getMotorByName(o["name"]);
+                    motor.settings.acceleration = o["acceleration"];
+                    motor.settings.deceleration = o["deceleration"];
+                    motor.settings.pulseWidthMin = o["pulseWidthMin"];
+                    motor.settings.pulseWidthMax = o["pulseWidthMax"];
+                    motor.settings.rotationRangeMin = o["rotationRangeMin"];
+                    motor.settings.rotationRangeMax = o["rotationRangeMax"];
+                    motor.settings.velocity = o["velocity"];
+                    motor.settings.period = o["period"];
+                    motor.settings.turnedOn = o["turnedOn"];
+                    motor.settings.active = o["active"];
+
                     motor.motorSubject.next(motor.clone());
+                    if (!motor.settings.active) {
+                        console.log(o["name"]);
+                    }
                 });
+                this.motorsSubject.next(this.motors);
             });
     }
 }

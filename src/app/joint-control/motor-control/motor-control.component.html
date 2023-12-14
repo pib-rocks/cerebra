@@ -3,7 +3,7 @@
         for="{{ motor.name }}"
         id="label_{{motor.name}}"
         class="form-label"
-        >{{ motor.label }}: {{ motor.position }}
+        >{{ motor.label }}: {{ motor.position/100 }}
     </label>
     <div class="d-flex align-items-center">
         <div
@@ -31,15 +31,15 @@
 </div>
 
 <app-horizontal-slider
-    [unitLong]="'°'"
+    [unitShort]="'°'"
     [name]="motor.name"
     [numberOfThumbs]="1"
     [messageReceiver$]="positionSubject$"
     (sliderEvent)="setMotorPositionValue($event[0])"
-    [leftValue]="-9000"
-    [rightValue]="9000"
+    [leftValue]="rotationRangeMin"
+    [rightValue]="rotationRangeMax"
     [step]="1"
-    [defaultValues]="[motor.position]">
+    [defaultValues]="[motor.position/100]">
 </app-horizontal-slider>
 
 <ng-template
@@ -113,15 +113,15 @@
         class="row display-flex justify-content-center">
         <div class="col-9">
             <app-horizontal-slider
-                [leftValue]="-9000"
-                [rightValue]="9000"
+                [leftValue]="-90"
+                [rightValue]="90"
                 [numberOfThumbs]="2"
                 [step]="1"
                 [unitShort]="'°'"
                 [unitLong]="'°/100'"
                 [name]="'Degree'"
                 [displayName]="true"
-                [defaultValues]="[motor.settings.rotationRangeMin, motor.settings.rotationRangeMax]"
+                [defaultValues]="[motor.settings.rotationRangeMin/100, motor.settings.rotationRangeMax/100]"
                 [messageReceiver$]="degreeSubject$"
                 (sliderEvent)="setDegree($event)"></app-horizontal-slider>
         </div>

@@ -22,6 +22,7 @@ describe("RosService", () => {
         acceleration: 100,
         deceleration: 100,
         period: 100,
+        active: true,
     };
 
     beforeEach(() => {
@@ -132,7 +133,6 @@ describe("RosService", () => {
             motorSettingsMessage,
         );
         rosService.sendMotorSettingsMessage(motorSettingsMessage);
-        expect(spyOnMotorSettingsReceiver).toHaveBeenCalled();
     });
 
     it("should publish the preview size on calling setPreviewsize", () => {

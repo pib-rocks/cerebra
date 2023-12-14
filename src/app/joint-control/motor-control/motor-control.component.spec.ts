@@ -137,9 +137,9 @@ describe("MotorControlComponent", () => {
         const slider = fixture.debugElement.query(
             By.css("app-horizontal-slider"),
         );
-        slider.triggerEventHandler("sliderEvent", [300]);
+        slider.triggerEventHandler("sliderEvent", [30]);
         expect(spyOnSetMotorPositionValue).toHaveBeenCalled();
-        expect(component.motor.position).toBe(300);
+        expect(component.motor.position).toBe(3000);
     });
 
     it("should change the motor settings on getting events from vertical sliders", () => {
@@ -183,18 +183,18 @@ describe("MotorControlComponent", () => {
         motorSubject?.next(updateMotor);
         fixture.detectChanges();
         const spyOnSetDegree = spyOn(component, "setDegree").and.callThrough();
-        component.setDegree([300, 300]);
+        component.setDegree([-45, 45]);
         expect(spyOnSetDegree).toHaveBeenCalled();
-        expect(component.motor.settings.rotationRangeMax).toBe(300);
-        expect(component.motor.settings.rotationRangeMin).toBe(300);
+        expect(component.motor.settings.rotationRangeMax).toBe(4500);
+        expect(component.motor.settings.rotationRangeMin).toBe(-4500);
         expect(
             motorService.getMotorByName(component.motor.name).settings
                 .rotationRangeMax,
-        ).toBe(300);
+        ).toBe(4500);
         expect(
             motorService.getMotorByName(component.motor.name).settings
                 .rotationRangeMin,
-        ).toBe(300);
+        ).toBe(-4500);
     });
 
     it("should set the pulse ranges on calling setPulseRanges", () => {
