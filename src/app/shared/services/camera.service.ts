@@ -41,7 +41,7 @@ export class CameraService {
                     });
                 }),
             )
-            .subscribe((response) => {
+            .subscribe(() => {
                 return;
             });
     }

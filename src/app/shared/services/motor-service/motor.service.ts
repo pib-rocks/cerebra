@@ -236,11 +236,9 @@ export class MotorService {
         }
     }
     updateMotorSettingsFromMotorSettingsMessage(message: MotorSettingsMessage) {
-        console.log("hamlo");
         const motor = this.getMotorByName(message.motor_name);
         motor.settings.updateChangedAttribute(message);
         const copy = motor?.clone();
-        console.log(copy);
         motor.motorSubject.next(copy);
         if (message.motor_name.includes("all")) {
             const motor = this.getMotorByName(message.motor_name);

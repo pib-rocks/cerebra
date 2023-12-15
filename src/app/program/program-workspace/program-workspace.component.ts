@@ -80,6 +80,7 @@ export class ProgramWorkspaceComponent {
 
     ngOnDestroy(): void {
         this.observer.unobserve(this.blocklyDiv.nativeElement);
+        Blockly.registry.unregister("theme", "customtheme");
     }
 
     resizeBlockly() {
