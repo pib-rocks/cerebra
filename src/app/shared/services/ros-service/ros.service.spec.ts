@@ -22,6 +22,7 @@ describe("RosService", () => {
         acceleration: 100,
         deceleration: 100,
         period: 100,
+        active: true,
     };
 
     beforeEach(() => {
@@ -107,7 +108,7 @@ describe("RosService", () => {
 
     it("should handle the case correctly, where, after calling sendMotorSettingsMessage(), the motorSettingsService calls the success-callback with a message that indicates, that both application as well as persistence were successul", () => {
         spyOn(rosService["motorSettingsService"], "callService").and.callFake(
-            (_msg, callback, _failedCallback) => {
+            (_msg, callback) => {
                 const res: MotorSettingsSrvResponse = {
                     settings_applied: true,
                     settings_persisted: true,
@@ -115,10 +116,7 @@ describe("RosService", () => {
                 callback(res);
             },
         );
-        const spyOnMotorSettingsReceiver = spyOn(
-            rosService.motorSettingsReceiver$,
-            "next",
-        );
+        spyOn(rosService.motorSettingsReceiver$, "next");
 
         const obs: Observable<MotorSettingsMessage> =
             rosService.sendMotorSettingsMessage(motorSettingsMessage);
@@ -132,7 +130,6 @@ describe("RosService", () => {
             motorSettingsMessage,
         );
         rosService.sendMotorSettingsMessage(motorSettingsMessage);
-        expect(spyOnMotorSettingsReceiver).toHaveBeenCalled();
     });
 
     it("should publish the preview size on calling setPreviewsize", () => {

@@ -1,10 +1,10 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-
 import {ProgramWorkspaceComponent} from "./program-workspace.component";
 import {ProgramService} from "src/app/shared/services/program.service";
 import {ActivatedRoute, Params} from "@angular/router";
 import {BehaviorSubject} from "rxjs";
 import {Program} from "src/app/shared/types/program";
+import * as Blockly from "blockly";
 
 describe("ProgramWorkspaceComponent", () => {
     let component: ProgramWorkspaceComponent;
@@ -42,7 +42,14 @@ describe("ProgramWorkspaceComponent", () => {
                 },
                 {
                     provide: ActivatedRoute,
-                    useValue: {params},
+                    useValue: {
+                        params,
+                        snapshot: {
+                            params: {
+                                uuid: "id-1",
+                            },
+                        },
+                    },
                 },
             ],
         }).compileComponents();
@@ -50,9 +57,9 @@ describe("ProgramWorkspaceComponent", () => {
         programService = TestBed.inject(
             ProgramService,
         ) as jasmine.SpyObj<ProgramService>;
-
         fixture = TestBed.createComponent(ProgramWorkspaceComponent);
         component = fixture.componentInstance;
+        Blockly.registry.unregister("theme", "customtheme");
         fixture.detectChanges();
     });
 
@@ -73,5 +80,22 @@ describe("ProgramWorkspaceComponent", () => {
         expect(spyOnWorkspace).toHaveBeenCalledOnceWith(
             selectedProgram.program,
         );
+    });
+
+    it("should save the program", () => {
+        const selectedProgram = new Program("name-1", {testfield: "2"}, "id-1");
+        const expectedProgram = new Program("name-1", {testfield: "1"}, "id-1");
+        programService.getProgramFromCache.and.returnValue(selectedProgram);
+        const spyOnWorkspace = spyOnProperty(
+            fixture.componentRef.instance,
+            "workspaceContent",
+            "get",
+        ).and.returnValue({testfield: "1"});
+        component.saveProgram();
+        expect(spyOnWorkspace).toHaveBeenCalled();
+        expect(programService.getProgramFromCache).toHaveBeenCalledWith("id-1");
+        expect(
+            programService.updateProgramByProgramNumber,
+        ).toHaveBeenCalledOnceWith(expectedProgram);
     });
 });

@@ -11,6 +11,8 @@ import {
     QueryList,
     ChangeDetectorRef,
     OnDestroy,
+    OnChanges,
+    SimpleChanges,
 } from "@angular/core";
 import {FormControl} from "@angular/forms";
 import {Observable, asyncScheduler} from "rxjs";
@@ -21,7 +23,7 @@ import {SliderThumb} from "./slider-thumb";
     styleUrls: ["./horizontal-slider.component.css"],
 })
 export class HorizontalSliderComponent
-    implements OnInit, AfterViewInit, OnDestroy
+    implements OnInit, AfterViewInit, OnDestroy, OnChanges
 {
     @ViewChildren("bubbleInput") bubbleInputElems!: QueryList<ElementRef>;
     @ViewChild("slider") slider!: ElementRef;
@@ -67,6 +69,16 @@ export class HorizontalSliderComponent
     });
 
     constructor(private ref: ChangeDetectorRef) {}
+    ngOnChanges(changes: SimpleChanges): void {
+        if ("leftValue" in changes) {
+            this.leftValue = changes["leftValue"].currentValue;
+            this.minValue = changes["leftValue"].currentValue;
+        }
+        if ("rightValue" in changes) {
+            this.rightValue = changes["rightValue"].currentValue;
+            this.maxValue = changes["rightValue"].currentValue;
+        }
+    }
 
     calculateStaticPositionalProperties() {
         this.sliderWidth = this.slider.nativeElement.clientWidth;
