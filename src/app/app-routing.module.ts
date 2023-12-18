@@ -44,16 +44,14 @@ const routes: Routes = [
     {
         path: "voice-assistant",
         component: VoiceAssistantComponent,
-        resolve: {voiceAssistantsResolver},
+        // resolve: {voiceAssistantsResolver},
         children: [
             {
                 path: ":personalityUuid",
                 component: PersonalityWrapperComponent,
-                canActivate: [voiceAssistantRoutingGuard],
                 children: [
                     {
-                        path: "personality",
-                        pathMatch: "full",
+                        path: "",
                         component: PersonalityDescriptionComponent,
                         resolve: {personality: voiceAssistantResolver},
                     },
