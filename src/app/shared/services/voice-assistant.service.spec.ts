@@ -1,10 +1,10 @@
 import {TestBed} from "@angular/core/testing";
 import {VoiceAssistantService} from "./voice-assistant.service";
-import {RosService} from "../ros.service";
 import {HttpClientTestingModule} from "@angular/common/http/testing";
 import {VoiceAssistant} from "../types/voice-assistant";
 import {ApiService} from "./api.service";
 import {BehaviorSubject} from "rxjs";
+import {RosService} from "./ros-service/ros.service";
 
 describe("VoiceAssistantService", () => {
     let service: VoiceAssistantService;

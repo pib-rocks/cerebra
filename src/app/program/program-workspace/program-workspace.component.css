@@ -6,3 +6,6 @@
 .click {
     pointer-events: none;
 }
+#blocklyDiv {
+    color: white;
+}

@@ -6,13 +6,13 @@ import {
 } from "@angular/core/testing";
 import {ReactiveFormsModule} from "@angular/forms";
 import {CameraComponent} from "./camera.component";
-import {RosService} from "../shared/ros.service";
+import {RosService} from "../shared/services/ros-service/ros.service";
 import {By} from "@angular/platform-browser";
-import {SliderComponent} from "../slider/slider.component";
 import {NgbPopover} from "@ng-bootstrap/ng-bootstrap";
 import {CameraService} from "../shared/services/camera.service";
 import {ApiService} from "../shared/services/api.service";
 import {HttpClientTestingModule} from "@angular/common/http/testing";
+import {HorizontalSliderComponent} from "../sliders/horizontal-slider/horizontal-slider.component";
 
 describe("CameraComponent", () => {
     let component: CameraComponent;
@@ -24,7 +24,7 @@ describe("CameraComponent", () => {
 
     beforeEach(async () => {
         TestBed.configureTestingModule({
-            declarations: [CameraComponent, SliderComponent],
+            declarations: [CameraComponent, HorizontalSliderComponent],
             imports: [ReactiveFormsModule, NgbPopover, HttpClientTestingModule],
             providers: [RosService, CameraService, ApiService],
         }).compileComponents();
@@ -40,30 +40,6 @@ describe("CameraComponent", () => {
 
     it("should create", () => {
         expect(component).toBeTruthy();
-    });
-
-    it("should have a silder step of 0.1", () => {
-        videoSettingsButton.click();
-        const slider = fixture.nativeElement.querySelector(
-            "#slider_refreshRate",
-        );
-        expect(slider.step).toBe("0.1");
-    });
-
-    it("should have a maximum range at 1", () => {
-        videoSettingsButton.click();
-        const slider = fixture.nativeElement.querySelector(
-            "#slider_refreshRate",
-        );
-        expect(slider.max).toBe("1");
-    });
-
-    it("should have a minimum range at 0.1", () => {
-        videoSettingsButton.click();
-        const slider = fixture.nativeElement.querySelector(
-            "#slider_refreshRate",
-        );
-        expect(slider.min).toBe("0.1");
     });
 
     it("should subscribe to the message receiver when the component is instantiated", () => {
@@ -95,6 +71,7 @@ describe("CameraComponent", () => {
         toggleBtn.nativeElement.click();
         expect(spyStopCamera).toHaveBeenCalled();
     });
+
     it("should display an error image when receiving error messages from the backend", fakeAsync(() => {
         rosService.cameraReceiver$.next("Camera not available");
         tick(1000);

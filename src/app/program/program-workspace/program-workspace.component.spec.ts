@@ -1,12 +1,11 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-
 import {ProgramWorkspaceComponent} from "./program-workspace.component";
 import {ProgramService} from "src/app/shared/services/program.service";
 import {ActivatedRoute, Params} from "@angular/router";
 import {BehaviorSubject} from "rxjs";
 import {Program} from "src/app/shared/types/program";
-import {ProgramCode} from "src/app/shared/types/progran-code";
 import {pythonGenerator} from "blockly/python";
+import * as Blockly from "blockly";
 
 describe("ProgramWorkspaceComponent", () => {
     let component: ProgramWorkspaceComponent;
@@ -61,9 +60,9 @@ describe("ProgramWorkspaceComponent", () => {
         programService = TestBed.inject(
             ProgramService,
         ) as jasmine.SpyObj<ProgramService>;
-
         fixture = TestBed.createComponent(ProgramWorkspaceComponent);
         component = fixture.componentInstance;
+        Blockly.registry.unregister("theme", "customtheme");
         fixture.detectChanges();
     });
 
@@ -72,7 +71,6 @@ describe("ProgramWorkspaceComponent", () => {
     });
 
     it("should update the workspace content when route params are changed", () => {
-        const selectedProgram = new Program("name-1", "id-1");
         programService.getCodeByProgramNumber.and.returnValue(
             new BehaviorSubject({
                 visual: '{"testfield": 1}',
@@ -91,7 +89,7 @@ describe("ProgramWorkspaceComponent", () => {
     });
 
     it("should save the code", () => {
-        const spyOnWorkspace = spyOnProperty(
+        spyOnProperty(
             fixture.componentRef.instance,
             "workspaceContent",
             "get",
