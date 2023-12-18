@@ -5,7 +5,13 @@ import {
     parseDtoToVoiceAssistant,
     parseVoiceAssistantToDto,
 } from "../types/voice-assistant";
-import {BehaviorSubject, Observable, catchError, throwError} from "rxjs";
+import {
+    BehaviorSubject,
+    Observable,
+    Subject,
+    catchError,
+    throwError,
+} from "rxjs";
 import {UrlConstants} from "./url.constants";
 import {SidebarService} from "../interfaces/sidebar-service.interface";
 import {SidebarElement} from "../interfaces/sidebar-element.interface";
@@ -17,7 +23,7 @@ export class VoiceAssistantService implements SidebarService {
     personalities: VoiceAssistant[] = [];
     personalitiesSubject: BehaviorSubject<VoiceAssistant[]> =
         new BehaviorSubject<VoiceAssistant[]>([]);
-
+    uuidSubject: Subject<string> = new Subject<string>();
     constructor(private apiService: ApiService) {
         this.getAllPersonalities();
     }

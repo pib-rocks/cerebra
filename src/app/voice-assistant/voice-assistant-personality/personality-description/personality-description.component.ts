@@ -43,6 +43,14 @@ export class PersonalityDescriptionComponent implements OnInit {
         }
     }
 
+    updatePersonality() {
+        if (this.personality) {
+            this.voiceAssistantService.uuidSubject.next(
+                this.personality?.getUUID(),
+            );
+        }
+    }
+
     exportDescriptionAs() {
         throw Error("not implemented");
     }

@@ -60,6 +60,9 @@ export class VoiceAssistantComponent implements OnInit {
                 ],
             }),
         });
+        this.voiceAssistantService.uuidSubject.subscribe((uuid: string) => {
+            this.openEditModal(uuid);
+        });
     }
 
     toggleVoiceAssistant() {
@@ -120,11 +123,8 @@ export class VoiceAssistantComponent implements OnInit {
         this.showModal();
     };
 
-    openEditModal = () => {
-        this.uuid =
-            this.router.url.split("/").length > 3
-                ? this.router.url.split("/").pop()
-                : undefined;
+    openEditModal = (uuid: string) => {
+        this.uuid = uuid;
         if (this.uuid && this.voiceAssistantService.personalities.length > 0) {
             const updatePersonality = this.voiceAssistantService.getPersonality(
                 this.uuid,
