@@ -3,7 +3,7 @@ import {ApiService} from "./api.service";
 import {Program} from "../types/program";
 import {BehaviorSubject, Observable, ReplaySubject} from "rxjs";
 import {UrlConstants} from "./url.constants";
-import {ProgramCode} from "../types/progran-code";
+import {ProgramCode} from "../types/program-code";
 
 @Injectable({
     providedIn: "root",

@@ -4,7 +4,6 @@ import {ProgramService} from "./program.service";
 import {ApiService} from "./api.service";
 import {BehaviorSubject, Observable} from "rxjs";
 import {Program} from "../types/program";
-import {ProgramCode} from "../types/progran-code";
 
 describe("ProgramService", () => {
     let programService: ProgramService;
