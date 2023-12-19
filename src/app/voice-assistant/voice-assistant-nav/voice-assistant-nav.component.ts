@@ -22,8 +22,25 @@ export class VoiceAssistantNavComponent implements OnInit {
 
     ngOnInit(): void {
         this.subject?.subscribe((elements) => {
+            const diff = elements.length - (this.sidebarElements?.length ?? 0);
+            const len = this.sidebarElements?.length ?? 0;
+            console.log(diff + ".." + len);
             this.sidebarElements = elements;
-            if (this.getRedirectRoute()) {
+            if (len == 0 && elements.length > 0) {
+                console.log(this.sidebarElements[0].getUUID());
+                this.router.navigate([this.sidebarElements[0].getUUID()], {
+                    relativeTo: this.route,
+                });
+            } else if (diff > 0 && len != 0) {
+                this.router.navigate(
+                    [
+                        this.sidebarElements[
+                            this.sidebarElements.length - 1
+                        ].getUUID(),
+                    ],
+                    {relativeTo: this.route},
+                );
+            } else if (this.getRedirectRoute()) {
                 this.router.navigate([this.getRedirectRoute()], {
                     relativeTo: this.route,
                 });
@@ -43,8 +60,6 @@ export class VoiceAssistantNavComponent implements OnInit {
             );
             if (!elem && this.sidebarElements.length > 0) {
                 return this.sidebarElements[0].getUUID();
-            } else if (this.sidebarElements.length == 0) {
-                return undefined;
             } else if (elem) {
                 return elem.getUUID();
             }
