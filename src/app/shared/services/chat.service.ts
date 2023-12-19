@@ -5,6 +5,7 @@ import {ApiService} from "./api.service";
 import {UrlConstants} from "./url.constants";
 import {SidebarService} from "../interfaces/sidebar-service.interface";
 import {SidebarElement} from "../interfaces/sidebar-element.interface";
+import {ChatMessage} from "../types/chat-message";
 
 @Injectable({
     providedIn: "root",
@@ -163,5 +164,21 @@ export class ChatService implements SidebarService {
                     ),
                 );
             });
+    }
+
+    getMessagesByChatId(chatId: string): Observable<ChatMessage[]> {
+        return this.apiService
+            .get(`${UrlConstants.CHAT}/${chatId}/messages`)
+            .pipe(map((response) => response["messages"]));
+    }
+
+    createChatMessage(
+        chatId: string,
+        content: string,
+    ): Observable<ChatMessage> {
+        return this.apiService.post(`${UrlConstants.CHAT}/${chatId}/messages`, {
+            content,
+            isUser: true,
+        });
     }
 }
