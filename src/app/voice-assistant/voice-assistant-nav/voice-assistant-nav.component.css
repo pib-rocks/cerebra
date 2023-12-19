@@ -24,6 +24,12 @@
 
 .nav-tab {
     margin-top: 1.25rem;
+    min-width: 5rem;
+}
+
+.nav-tab a {
+    text-overflow: ellipsis;
+    overflow: hidden;
 }
 
 .navbar-tab-active {
