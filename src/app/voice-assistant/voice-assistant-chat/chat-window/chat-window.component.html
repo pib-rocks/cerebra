@@ -8,7 +8,7 @@
                 <a
                     class="toggle-button"
                     id="toggle-voice-assistant"
-                    [routerLink]="['../../']">
+                    [routerLink]="this.chat ? ['../../'] : ['../']">
                     <img
                         [src]="'../../assets/toggle-switch-right.png'"
                         alt="Toggle for turning the Voice Assistant on and off" />
@@ -22,7 +22,9 @@
     <div class="col-8 d-flex justify-content-end">
         <button
             id="exportButton"
-            class="btn btn-regular">
+            class="btn btn-regular"
+            [ngClass]="{'disabled-button': !this.chat}"
+            [disabled]="!this.chat">
             Export chat
         </button>
     </div>

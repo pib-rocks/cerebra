@@ -25,7 +25,7 @@ export class ChatWindowComponent implements OnInit {
         this.chat = this.route.snapshot.data["chat"];
         localStorage.setItem("chat", this.chat?.chatId ?? "");
         this.route.params.subscribe((params: Params) => {
-            this.chat = this.chatService.getChat(params["uuid"]);
+            this.chat = this.chatService.getChat(params["chatUuid"]);
             localStorage.setItem("chat", this.chat?.chatId ?? "");
             if (this.chat) {
                 this.personalityName =

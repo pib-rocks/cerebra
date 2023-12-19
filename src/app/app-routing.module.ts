@@ -62,6 +62,10 @@ const routes: Routes = [
                                 component: ChatWindowComponent,
                                 resolve: {chat: chatResolver},
                             },
+                            {
+                                path: "",
+                                component: ChatWindowComponent,
+                            },
                         ],
                     },
                 ],

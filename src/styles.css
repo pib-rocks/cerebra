@@ -17,6 +17,7 @@
 :root {
     --cerebra-pink: #e10072;
     --cerebra-button-color: #0094df;
+    --cerebra-button-color-disabled: #5f5f5f;
     --cerebra-text-color-default: #fff: ;
 }
 
@@ -106,6 +107,12 @@ span {
     border: none;
     border-radius: 0.25em;
     padding: 0;
+}
+
+button:disabled {
+    background-color: var(--cerebra-button-color-disabled) !important;
+    color: #fff !important;
+    border-color: #fff !important;
 }
 
 .myCustomModalClass .modal-header {
