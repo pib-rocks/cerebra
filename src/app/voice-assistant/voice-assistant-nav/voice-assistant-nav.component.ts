@@ -24,10 +24,8 @@ export class VoiceAssistantNavComponent implements OnInit {
         this.subject?.subscribe((elements) => {
             const diff = elements.length - (this.sidebarElements?.length ?? 0);
             const len = this.sidebarElements?.length ?? 0;
-            console.log(diff + ".." + len);
             this.sidebarElements = elements;
             if (len == 0 && elements.length > 0) {
-                console.log(this.sidebarElements[0].getUUID());
                 this.router.navigate([this.sidebarElements[0].getUUID()], {
                     relativeTo: this.route,
                 });

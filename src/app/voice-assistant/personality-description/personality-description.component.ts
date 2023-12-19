@@ -21,19 +21,11 @@ export class PersonalityDescriptionComponent implements OnInit {
 
     ngOnInit(): void {
         this.personality = this.route.snapshot.data["personality"];
-        localStorage.setItem(
-            "personality",
-            this.personality?.personalityId ?? "",
-        );
         this.route.params.subscribe((params: Params) => {
             this.personality = this.voiceAssistantService.getPersonality(
                 params["personalityUuid"],
             );
             this.textAreaContent = this.personality?.description ?? "";
-            localStorage.setItem(
-                "personality",
-                this.personality?.personalityId ?? "",
-            );
         });
         this.voiceAssistantService.personalitiesSubject.subscribe(() => {
             if (this.personality) {
@@ -69,7 +61,6 @@ export class PersonalityDescriptionComponent implements OnInit {
             .find((segment) => RegExp(CerebraRegex.UUID).test(segment));
         if (uuid && this.voiceAssistantService.personalities.length > 0) {
             this.voiceAssistantService.deletePersonalityById(uuid);
-            localStorage.setItem("personality", "");
         }
     };
 }
