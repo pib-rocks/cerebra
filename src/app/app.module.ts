@@ -22,7 +22,6 @@ import {MotorCurrentService} from "./shared/motor-current.service";
 
 import {VoiceAssistantNavComponent} from "./voice-assistant/voice-assistant-nav/voice-assistant-nav.component";
 import {VoiceAssistantChatComponent} from "./voice-assistant/voice-assistant-chat/voice-assistant-chat.component";
-import {VoiceAssistantPersonalityComponent} from "./voice-assistant/voice-assistant-personality/voice-assistant-personality.component";
 import {FormsModule} from "@angular/forms";
 import {SideBarRightComponent} from "./ui-components/sidebar-right/sidebar-right.component";
 
@@ -30,7 +29,7 @@ import {VerticalSliderComponent} from "./vertical-slider/vertical-slider.compone
 import {MultiSliderComponent} from "./multi-slider/multi-slider.component";
 import {BoolToOnOffPipe} from "./shared/pipes/bool-to-on-off-pipe.pipe";
 import {VoiceAssistantComponent} from "./voice-assistant/voice-assistant.component";
-import {PersonalityDescriptionComponent} from "./voice-assistant/voice-assistant-personality/personality-description/personality-description.component";
+import {PersonalityDescriptionComponent} from "./voice-assistant/personality-description/personality-description.component";
 import {ChatWindowComponent} from "./voice-assistant/voice-assistant-chat/chat-window/chat-window.component";
 import {ProgramWorkspaceComponent} from "./program/program-workspace/program-workspace.component";
 import {PersonalityWrapperComponent} from "./voice-assistant/personality-wrapper/personality-wrapper.component";
@@ -49,7 +48,6 @@ import {PersonalityWrapperComponent} from "./voice-assistant/personality-wrapper
         CircularSliderComponent,
         VoiceAssistantNavComponent,
         VoiceAssistantChatComponent,
-        VoiceAssistantPersonalityComponent,
         SideBarRightComponent,
         VerticalSliderComponent,
         MultiSliderComponent,
