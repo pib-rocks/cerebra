@@ -35,6 +35,13 @@ export class PersonalityDescriptionComponent implements OnInit {
                 this.personality?.personalityId ?? "",
             );
         });
+        this.voiceAssistantService.personalitiesSubject.subscribe(() => {
+            if (this.personality) {
+                this.personality = this.voiceAssistantService.getPersonality(
+                    this.personality?.getUUID(),
+                );
+            }
+        });
     }
 
     updateDescription() {
