@@ -1,6 +1,7 @@
 import {Component, OnInit} from "@angular/core";
 import {ActivatedRoute, Params, Router} from "@angular/router";
 import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
+import {CerebraRegex} from "src/app/shared/types/cerebra-regex";
 import {VoiceAssistant} from "src/app/shared/types/voice-assistant";
 
 @Component({
@@ -56,9 +57,9 @@ export class PersonalityDescriptionComponent implements OnInit {
     }
 
     deletePersonality = () => {
-        const uuid =
-            this.router.url.split("/")[this.router.url.split("/").length - 2] ??
-            undefined;
+        const uuid = this.router.url
+            .split("/")
+            .find((segment) => RegExp(CerebraRegex.UUID).test(segment));
         if (uuid && this.voiceAssistantService.personalities.length > 0) {
             this.voiceAssistantService.deletePersonalityById(uuid);
             localStorage.setItem("personality", "");
