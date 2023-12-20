@@ -1,5 +1,5 @@
 import {Component, Input, OnInit} from "@angular/core";
-import {ActivatedRoute, Router, UrlTree} from "@angular/router";
+import {ActivatedRoute, NavigationStart, Router} from "@angular/router";
 import {Observable} from "rxjs";
 import {SidebarElement} from "src/app/shared/interfaces/sidebar-element.interface";
 import {CerebraRegex} from "src/app/shared/types/cerebra-regex";
@@ -21,6 +21,27 @@ export class VoiceAssistantNavComponent implements OnInit {
     ) {}
 
     ngOnInit(): void {
+        this.router.events.subscribe((event) => {
+            if (event instanceof NavigationStart) {
+                if (
+                    RegExp("/voice-assistant/" + CerebraRegex.UUID).test(
+                        this.router.url,
+                    ) &&
+                    event.url === "/voice-assistant"
+                ) {
+                    if (
+                        this.sidebarElements &&
+                        this.sidebarElements.length > 0
+                    ) {
+                        this.router.navigate(
+                            [this.sidebarElements[0].getUUID()],
+                            {relativeTo: this.route},
+                        );
+                    }
+                }
+            }
+        });
+
         this.subject?.subscribe((elements) => {
             const diff = elements.length - (this.sidebarElements?.length ?? 0);
             const len = this.sidebarElements?.length ?? 0;
@@ -63,5 +84,12 @@ export class VoiceAssistantNavComponent implements OnInit {
             }
         }
         return undefined;
+    }
+
+    reloadCurrentRoute() {
+        const currentUrl = this.router.url;
+        this.router.navigateByUrl("/", {skipLocationChange: true}).then(() => {
+            this.router.navigate([currentUrl]);
+        });
     }
 }

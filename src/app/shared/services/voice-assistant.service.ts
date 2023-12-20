@@ -66,7 +66,6 @@ export class VoiceAssistantService implements SidebarService {
             1,
         );
         this.personalitiesSubject.next(this.personalities.slice());
-        console.log(this.personalities);
     }
 
     getPersonality(uuid: string) {
@@ -152,7 +151,9 @@ export class VoiceAssistantService implements SidebarService {
     }
 
     toggleVoiceAssistantActivation() {
-        console.log("ich bin eine scheißfunktion");
+        //FIXME Implement
+        throw Error("FIXME: IMPLEMENT ME");
+
         // this.rosService.sendVoiceActivationMessage({
         //     activationFlag: this.voiceAssistantActiveStatus,
         // } as VoiceAssistantMsg);
