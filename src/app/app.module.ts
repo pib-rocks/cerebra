@@ -1,4 +1,4 @@
-import {NgModule} from "@angular/core";
+import {ErrorHandler, NgModule} from "@angular/core";
 import {ReactiveFormsModule} from "@angular/forms";
 import {BrowserModule} from "@angular/platform-browser";
 import {HttpClientModule} from "@angular/common/http";
@@ -33,6 +33,7 @@ import {VoiceAssistantComponent} from "./voice-assistant/voice-assistant.compone
 import {PersonalityDescriptionComponent} from "./voice-assistant/voice-assistant-personality/personality-description/personality-description.component";
 import {ChatWindowComponent} from "./voice-assistant/voice-assistant-chat/chat-window/chat-window.component";
 import {ProgramWorkspaceComponent} from "./program/program-workspace/program-workspace.component";
+import {GlobalErrorHandlerComponent} from "./global-error-handler/global-error-handler.component";
 
 @NgModule({
     declarations: [
@@ -70,7 +71,13 @@ import {ProgramWorkspaceComponent} from "./program/program-workspace/program-wor
         NgbDropdownModule,
         FormsModule,
     ],
-    providers: [MotorCurrentService],
+    providers: [
+        MotorCurrentService,
+        {
+            provide: ErrorHandler,
+            useClass: GlobalErrorHandlerComponent,
+        },
+    ],
     bootstrap: [AppComponent],
     entryComponents: [MatDialogModule],
 })
