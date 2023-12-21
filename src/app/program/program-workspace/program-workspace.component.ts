@@ -5,7 +5,6 @@ import {ActivatedRoute} from "@angular/router";
 import {ProgramService} from "src/app/shared/services/program.service";
 import {asyncScheduler} from "rxjs";
 import {ITheme} from "blockly/core/theme";
-import {ProgramCode} from "src/app/shared/types/progran-code";
 
 import {customBlockDefinition} from "../program-blocks/custom-blocks";
 import {pythonGenerator} from "../program-generators/detectors-generators";
@@ -68,7 +67,7 @@ export class ProgramWorkspaceComponent {
                 this.programService
                     .getCodeByProgramNumber(programNumber)
                     .subscribe((code) => {
-                        this.workspaceContent = JSON.parse(code.code.visual);
+                        this.workspaceContent = JSON.parse(code.visual);
                     });
             });
         });
@@ -98,12 +97,11 @@ export class ProgramWorkspaceComponent {
 
     saveCode() {
         const programNumber = this.route.snapshot.params["uuid"];
-        this.programService.updateCodeByProgramNumber(
-            new ProgramCode(programNumber, {
-                visual: JSON.stringify(this.workspaceContent),
-                python: pythonGenerator.workspaceToCode(this.workspace),
-            }),
-        );
+        const code = {
+            visual: JSON.stringify(this.workspaceContent),
+            python: pythonGenerator.workspaceToCode(this.workspace),
+        };
+        this.programService.updateCodeByProgramNumber(programNumber, code);
     }
 
     runProgram() {

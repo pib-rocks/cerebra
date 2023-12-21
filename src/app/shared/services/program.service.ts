@@ -3,14 +3,14 @@ import {ApiService} from "./api.service";
 import {Program} from "../types/program";
 import {BehaviorSubject, Observable, ReplaySubject} from "rxjs";
 import {UrlConstants} from "./url.constants";
-import {ProgramCode} from "../types/progran-code";
+import {ProgramCode} from "../types/program-code";
 
 @Injectable({
     providedIn: "root",
 })
 export class ProgramService {
     programs: Program[] = [];
-    codes: ProgramCode[] = [];
+    programNumberToCode: Map<string, ProgramCode> = new Map();
     programsSubject: BehaviorSubject<Program[]> = new BehaviorSubject<
         Program[]
     >([]);
@@ -45,16 +45,12 @@ export class ProgramService {
         this.programsSubject.next(this.programs.slice());
     }
 
-    private setCode(code: ProgramCode) {
-        const index = this.codes.findIndex(
-            (c) => c.programNumber === code.programNumber,
-        );
-        if (index === -1) this.codes.push(code);
-        else this.codes[index] = code;
+    private setCode(programNumber: string, code: ProgramCode) {
+        this.programNumberToCode.set(programNumber, code);
     }
 
     private getCodeFromCache(programNumber: string): ProgramCode | undefined {
-        return this.codes.find((code) => code.programNumber === programNumber);
+        return this.programNumberToCode.get(programNumber);
     }
 
     private createResultObservable<Type>(
@@ -147,20 +143,23 @@ export class ProgramService {
                       `${UrlConstants.PROGRAM}/${programNumber}/${UrlConstants.CODE}`,
                   ),
                   (code) => {
-                      this.setCode(code);
+                      this.setCode(programNumber, code);
                       return code;
                   },
               );
     }
 
-    updateCodeByProgramNumber(code: ProgramCode): Observable<ProgramCode> {
+    updateCodeByProgramNumber(
+        programNumber: string,
+        code: ProgramCode,
+    ): Observable<ProgramCode> {
         return this.createResultObservable(
             this.apiService.put(
-                `${UrlConstants.PROGRAM}/${code.programNumber}/${UrlConstants.CODE}`,
+                `${UrlConstants.PROGRAM}/${programNumber}/${UrlConstants.CODE}`,
                 code,
             ),
             (code) => {
-                this.setCode(code);
+                this.setCode(programNumber, code);
                 return code;
             },
         );
