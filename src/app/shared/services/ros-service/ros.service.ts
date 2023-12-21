@@ -38,6 +38,7 @@ export class RosService {
     private cameraPreviewSizeTopic!: ROSLIB.Topic;
     private cameraQualityFactorTopic!: ROSLIB.Topic;
     private jointTrajectoryTopic!: ROSLIB.Topic;
+    private motorSettingsTopic!: ROSLIB.Topic;
     private motorSettingsService!: ROSLIB.Service;
 
     constructor() {
@@ -101,6 +102,10 @@ export class RosService {
             rosTopics.voiceTopicName,
             rosDataTypes.string,
         );
+        this.motorSettingsTopic = this.createRosTopic(
+            rosTopics.motorSettingsTopicName,
+            rosDataTypes.motorSettings,
+        );
         this.motorSettingsService = this.createRosService(
             rosServices.motorSettingsServiceName,
             rosDataTypes.motorSettingsSrv,
@@ -140,6 +145,7 @@ export class RosService {
             this.cameraQualityFactorTopic,
             this.cameraQualityFactorReceiver$,
         );
+        this.subscribeMotorSettingsTopic();
         this.subscribeMotorCurrentTopic();
         this.subscribeJointTrajectoryTopic();
     }
@@ -168,6 +174,11 @@ export class RosService {
             );
         });
     }
+    subscribeMotorSettingsTopic() {
+        this.motorSettingsTopic.subscribe((message) => {
+            this.motorSettingsReceiver$.next(message as MotorSettingsMessage);
+        });
+    }
 
     subscribeMotorCurrentTopic() {
         this.motorCurrentTopic.subscribe((message) => {
@@ -187,7 +198,6 @@ export class RosService {
             motorSettingsMessage,
             (response) => {
                 if (response["settings_applied"]) {
-                    this.motorSettingsReceiver$.next(motorSettingsMessage);
                     if (response["settings_persisted"]) {
                         subject.next(motorSettingsMessage);
                     } else {

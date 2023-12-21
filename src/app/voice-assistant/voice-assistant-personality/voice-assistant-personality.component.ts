@@ -5,7 +5,7 @@ import {VoiceAssistantService} from "../../shared/services/voice-assistant.servi
 import {VoiceAssistant} from "../../shared/types/voice-assistant";
 import {SidebarElement} from "src/app/shared/interfaces/sidebar-element.interface";
 import {Observable} from "rxjs";
-import {ActivatedRoute, Router} from "@angular/router";
+import {Router} from "@angular/router";
 
 @Component({
     selector: "app-voice-assistant-personality",
