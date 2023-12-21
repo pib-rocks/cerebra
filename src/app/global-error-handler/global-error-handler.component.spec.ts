@@ -19,4 +19,16 @@ describe("GlobalErrorHandlerComponent", () => {
     it("should create", () => {
         expect(component).toBeTruthy();
     });
+
+    it("should handle errors appropriately", () => {
+        let error = null;
+        const consoleLogSpy = spyOn(console, "log").and.callThrough();
+        component.handleError(error);
+        expect(consoleLogSpy).toHaveBeenCalledWith(
+            "An unexpected error has occurred",
+        );
+        error = new Error("Test error");
+        component.handleError(error);
+        expect(consoleLogSpy).toHaveBeenCalledWith(error.message);
+    });
 });
