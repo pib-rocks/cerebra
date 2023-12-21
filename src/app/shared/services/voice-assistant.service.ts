@@ -15,6 +15,8 @@ import {
 import {UrlConstants} from "./url.constants";
 import {SidebarService} from "../interfaces/sidebar-service.interface";
 import {SidebarElement} from "../interfaces/sidebar-element.interface";
+import {VoiceAssistantMsg} from "../ros-message-types/voiceAssistant";
+import {RosService} from "./ros-service/ros.service";
 
 @Injectable({
     providedIn: "root",
@@ -24,8 +26,15 @@ export class VoiceAssistantService implements SidebarService {
     personalitiesSubject: BehaviorSubject<VoiceAssistant[]> =
         new BehaviorSubject<VoiceAssistant[]>([]);
     uuidSubject: Subject<string> = new Subject<string>();
-    constructor(private apiService: ApiService) {
+    voiceAssistantActiveStatus: boolean = false;
+    voiceAssistantActiveStatusSubject: Subject<boolean> =
+        new Subject<boolean>();
+    constructor(
+        private apiService: ApiService,
+        private rosService: RosService,
+    ) {
         this.getAllPersonalities();
+        this.subscribeVoiceAssistantTopic();
     }
 
     private updatePersonality(updatePersonality: VoiceAssistant) {
@@ -150,12 +159,18 @@ export class VoiceAssistantService implements SidebarService {
         return this.personalitiesSubject;
     }
 
+    subscribeVoiceAssistantTopic() {
+        this.rosService.voiceAssistantReceiver$.subscribe((message) => {
+            this.voiceAssistantActiveStatus =
+                JSON.parse(message).activationFlag ?? false;
+            this.voiceAssistantActiveStatusSubject.next(
+                this.voiceAssistantActiveStatus,
+            );
+        });
+    }
     toggleVoiceAssistantActivation() {
-        //FIXME Implement
-        throw Error("FIXME: IMPLEMENT ME");
-
-        // this.rosService.sendVoiceActivationMessage({
-        //     activationFlag: this.voiceAssistantActiveStatus,
-        // } as VoiceAssistantMsg);
+        this.rosService.sendVoiceActivationMessage({
+            activationFlag: !this.voiceAssistantActiveStatus,
+        } as VoiceAssistantMsg);
     }
 }

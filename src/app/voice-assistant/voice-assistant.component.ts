@@ -1,5 +1,4 @@
 import {Component, OnInit, TemplateRef, ViewChild} from "@angular/core";
-import {ActivatedRoute, Router} from "@angular/router";
 import {SidebarElement} from "../shared/interfaces/sidebar-element.interface";
 import {Observable} from "rxjs";
 import {VoiceAssistantService} from "../shared/services/voice-assistant.service";
@@ -14,8 +13,6 @@ import {VoiceAssistant} from "../shared/types/voice-assistant";
 })
 export class VoiceAssistantComponent implements OnInit {
     constructor(
-        private router: Router,
-        private route: ActivatedRoute,
         private voiceAssistantService: VoiceAssistantService,
         private modalService: NgbModal,
     ) {}
@@ -63,6 +60,13 @@ export class VoiceAssistantComponent implements OnInit {
         this.voiceAssistantService.uuidSubject.subscribe((uuid: string) => {
             this.openEditModal(uuid);
         });
+        this.voiceAssistantService.voiceAssistantActiveStatusSubject.subscribe(
+            (activationFlag: boolean) => {
+                this.imgSrc = activationFlag
+                    ? "../../assets/toggle-switch-right.png"
+                    : "../../assets/toggle-switch-left.png";
+            },
+        );
     }
 
     toggleVoiceAssistant() {
