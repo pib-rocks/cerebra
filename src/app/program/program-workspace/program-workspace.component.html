@@ -23,7 +23,36 @@
                 width="75px"
                 alt="Program save button" />
         </button>
-
+        <div class="toggle-btn-icon">
+            <svg
+                height="50"
+                viewBox="0 0 56 56"
+                width="50"
+                xmlns="http://www.w3.org/2000/svg">
+                <path
+                    d="m13.7851 49.5742h28.4531c4.8984 0 7.3361-2.4375 7.3361-7.2656v-28.6172c0-4.8281-2.4377-7.2656-7.3361-7.2656h-28.4531c-4.875 0-7.3594 2.414-7.3594 7.2656v28.6172c0 4.8516 2.4844 7.2656 7.3594 7.2656zm-3.5859-35.6953c0-2.4375 1.3125-3.6797 3.6562-3.6797h28.3125c2.3203 0 3.6328 1.2422 3.6328 3.6797v12.1172h-35.6015zm3.6562 31.9219c-2.3437 0-3.6562-1.2422-3.6562-3.6797v-12.1875h35.6015v12.1875c0 2.4375-1.3125 3.6797-3.6328 3.6797z"
+                    fill="#ffffff" />
+            </svg>
+        </div>
+        <button
+            id="toggle-btn"
+            class="workspaceButton"
+            (click)="changeViewMode()">
+            <img
+                [src]="imgSrc"
+                alt="Toggle for switching between normal and split screen view" />
+        </button>
+        <div class="toggle-btn-icon">
+            <svg
+                height="50"
+                viewBox="0 0 56 56"
+                width="50"
+                xmlns="http://www.w3.org/2000/svg">
+                <path
+                    d="m13.7851 49.5742h28.4531c4.8984 0 7.3361-2.4375 7.3361-7.2656v-28.6172c0-4.8281-2.4377-7.2656-7.3361-7.2656h-28.4531c-4.875 0-7.3594 2.414-7.3594 7.2656v28.6172c0 4.8516 2.4844 7.2656 7.3594 7.2656zm.0703-3.7734c-2.3437 0-3.6562-1.2422-3.6562-3.6797v-28.2422c0-2.4375 1.3125-3.6797 3.6562-3.6797h28.3125c2.3203 0 3.6328 1.2422 3.6328 3.6797v28.2422c0 2.4375-1.3125 3.6797-3.6328 3.6797z"
+                    fill="#ffffff" />
+            </svg>
+        </div>
         <!-- <button
             id="home-position-btn"
             type="button"
@@ -37,7 +66,7 @@
         </button> -->
     </div>
     <div
-        class="h-100 w-100 position-relative p-0"
+        class="h-100 w-100 position-relative p-2"
         id="blocklyDiv"
         #blocklyDiv></div>
 </div>

@@ -1,0 +1,14 @@
+<div style="width: 100%; height: 100%;">
+    <as-split direction="vertical">
+        <as-split-area [size]="50">
+            <router-outlet></router-outlet>
+        </as-split-area>
+        <as-split-area
+            class="p-2"
+            id="python-code-area"
+            *ngIf="splitscreenMode"
+            [size]="50">
+            <div>{{ pythonCode }}</div>
+        </as-split-area>
+    </as-split>
+</div>
