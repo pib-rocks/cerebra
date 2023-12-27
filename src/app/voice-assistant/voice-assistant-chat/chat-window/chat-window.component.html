@@ -16,13 +16,18 @@
     <div class="col-12">
         <div class="chat-container">
             <div class="messages">
-                <!-- <div *ngFor="let message of messages">
-                    <p
-                        class="message"
-                        id="user-message">
-                        {{message}}
+                <div
+                    *ngFor="let message of messages"
+                    class="d-flex m-2"
+                    [ngClass]="message.isUser ? ['user-message', 'flex-row-reverse'] : ['va-message', 'flex-row']">
+                    <div class="col-1 square ml-1 message-author">
+                        <!-- <img [src]="message.isUser ? USER_ICON : VA_ICON" /> -->
+                        <p>{{message.isUser ? 'X' : 'Y'}}</p>
+                    </div>
+                    <p class="col-8 ml-1 message-content">
+                        {{message.content}}
                     </p>
-                </div> -->
+                </div>
             </div>
             <div class="chat-input">
                 <input

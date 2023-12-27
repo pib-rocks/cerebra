@@ -23,6 +23,38 @@
     height: 83.33%;
 }
 
+.user-message .message-author {
+    color: #ffffff;
+    background-color: #001236;
+    border-radius: 6px;
+    border-width: 1px;
+    border-style: solid;
+}
+
+.va-message .message-author {
+    color: #001236;
+    background-color: #ffffff;
+    border-radius: 6px;
+}
+
+.user-message .message-content {
+    color: #ffffff;
+    background-color: #001236;
+    border-top-left-radius: 6px;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+    border-width: 1px;
+    border-style: solid;
+}
+
+.va-message .message-content {
+    color: #001236;
+    background-color: #ffffff;
+    border-top-right-radius: 6px;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+}
+
 .messages {
     flex-grow: 1;
     overflow-y: auto;
