@@ -1,15 +1,22 @@
 import {Injectable, isDevMode} from "@angular/core";
 import * as ROSLIB from "roslib";
-import {BehaviorSubject, Subject} from "rxjs";
+import {BehaviorSubject, Subject, ReplaySubject, Observable} from "rxjs";
 import {MotorSettingsMessage} from "../../ros-message-types/motorSettingsMessage";
 import {DiagnosticStatus} from "../../ros-message-types/DiagnosticStatus.message";
 import {JointTrajectoryMessage} from "../../ros-message-types/jointTrajectoryMessage";
 import {rosDataTypes} from "../../ros-message-types/rosDataTypePaths.enum";
 import {rosTopics} from "./rosTopics.enum";
+import {rosActions} from "./rosActions.enum";
 import {VoiceAssistantMsg} from "../../ros-message-types/voiceAssistant";
-import {ReplaySubject, Observable} from "rxjs";
 import {rosServices} from "./rosServices.enum";
 import {MotorSettingsError} from "../../error/motor-settings-error";
+import {VoiceAssistant} from "../../types/voice-assistant";
+import {
+    VoiceAssistantFeedback,
+    VoiceAssistantRequest,
+    VoiceAssistantResponse,
+} from "../../ros-datatyes/action/VoiceAssistantAction";
+import {GoalHandle} from "./GoalHandle";
 
 @Injectable({
     providedIn: "root",
@@ -30,7 +37,9 @@ export class RosService {
         new Subject<JointTrajectoryMessage>();
     motorSettingsReceiver$: Subject<MotorSettingsMessage> =
         new Subject<MotorSettingsMessage>();
+
     private ros!: ROSLIB.Ros;
+
     private voiceAssistantTopic!: ROSLIB.Topic;
     private motorCurrentTopic!: ROSLIB.Topic;
     private cameraTopic!: ROSLIB.Topic;
@@ -39,7 +48,10 @@ export class RosService {
     private cameraQualityFactorTopic!: ROSLIB.Topic;
     private jointTrajectoryTopic!: ROSLIB.Topic;
     private motorSettingsTopic!: ROSLIB.Topic;
+
     private motorSettingsService!: ROSLIB.Service;
+
+    private voiceAssistantAction!: ROSLIB.ActionClient;
 
     constructor() {
         this.ros = this.setUpRos();
@@ -60,7 +72,7 @@ export class RosService {
     setUpRos() {
         let rosUrl: string;
         if (isDevMode()) {
-            rosUrl = "192.168.220.76";
+            rosUrl = "192.168.178.69";
         } else {
             rosUrl = window.location.hostname;
         }
@@ -106,9 +118,15 @@ export class RosService {
             rosTopics.motorSettingsTopicName,
             rosDataTypes.motorSettings,
         );
+
         this.motorSettingsService = this.createRosService(
             rosServices.motorSettingsServiceName,
             rosDataTypes.motorSettingsSrv,
+        );
+
+        this.voiceAssistantAction = this.createRosAction(
+            "/voice_assistant",
+            "datatypes/action/VoiceAssistant",
         );
     }
 
@@ -125,6 +143,17 @@ export class RosService {
             ros: this.ros,
             name: topicName,
             messageType: topicMessageType,
+        });
+    }
+
+    createRosAction(
+        serverName: string,
+        actionName: string,
+    ): ROSLIB.ActionClient {
+        return new ROSLIB.ActionClient({
+            ros: this.ros,
+            serverName,
+            actionName,
         });
     }
 
@@ -216,6 +245,26 @@ export class RosService {
             },
         );
         return subject;
+    }
+
+    sendVoiceAssistantGoal(
+        request: VoiceAssistantRequest,
+    ): GoalHandle<VoiceAssistantResponse, VoiceAssistantFeedback> {
+        const goal = new ROSLIB.Goal({
+            actionClient: this.voiceAssistantAction,
+            goalMessage: request,
+        });
+
+        const response = new ReplaySubject<VoiceAssistantResponse>();
+        const feedback = new ReplaySubject<VoiceAssistantFeedback>();
+
+        goal.on("result", (event) => response.next(event));
+        goal.on("feedback", (event) => feedback.next(event));
+        goal.send();
+
+        console.info("goal was sent");
+
+        return {response, feedback, cancel: () => goal.cancel()};
     }
 
     sendJointTrajectoryMessage(jointTrajectoryMessage: JointTrajectoryMessage) {
