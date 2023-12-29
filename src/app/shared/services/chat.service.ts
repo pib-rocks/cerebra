@@ -6,6 +6,8 @@ import {UrlConstants} from "./url.constants";
 import {SidebarService} from "../interfaces/sidebar-service.interface";
 import {SidebarElement} from "../interfaces/sidebar-element.interface";
 import {ChatMessage} from "../types/chat-message";
+import {RosService} from "./ros-service/ros.service";
+import {ChatMessage as RosChatMessage} from "../ros-message-types/ChatMessage";
 
 @Injectable({
     providedIn: "root",
@@ -13,9 +15,41 @@ import {ChatMessage} from "../types/chat-message";
 export class ChatService implements SidebarService {
     chats: Chat[] = [];
     chatSubject: BehaviorSubject<Chat[]> = new BehaviorSubject<Chat[]>([]);
+    private chatIdToMessages: Map<string, BehaviorSubject<ChatMessage[]>> =
+        new Map();
 
-    constructor(private apiService: ApiService) {
+    constructor(
+        private apiService: ApiService,
+        private rosService: RosService,
+    ) {
         this.getAllChats();
+        this.rosService.chatMessageReceiver$.subscribe((rosChatMessage) => {
+            const subject = this.chatIdToMessages.get(rosChatMessage.chat_id);
+            if (subject) {
+                const messages = subject.getValue();
+                messages.push({
+                    messageId: rosChatMessage.message_id,
+                    timestamp: rosChatMessage.timestamp,
+                    isUser: rosChatMessage.is_user,
+                    content: rosChatMessage.content,
+                });
+                subject.next(messages);
+            }
+        });
+    }
+
+    getChatMessagesObservable(chatId: string): Observable<ChatMessage[]> {
+        const observable = this.chatIdToMessages.get(chatId);
+        if (observable) {
+            return observable;
+        } else {
+            const messageSubject = new BehaviorSubject<ChatMessage[]>([]);
+            this.getMessagesByChatId(chatId).subscribe((messages) =>
+                messageSubject.next(messages),
+            );
+            this.chatIdToMessages.set(chatId, messageSubject);
+            return messageSubject;
+        }
     }
 
     getSubject(uuid: string): Observable<SidebarElement[]> {

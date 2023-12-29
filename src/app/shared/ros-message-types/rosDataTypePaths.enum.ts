@@ -6,10 +6,10 @@ export enum rosDataTypes {
     string = "std_msgs/String",
     // msg
     motorSettings = "datatypes/msg/MotorSettings",
+    chatMessage = "datatypes/msg/ChatMessage",
     jointTrajectory = "trajectory_msgs/msg/JointTrajectory",
     diagnosticStatus = "diagnostic_msgs/msg/DiagnosticStatus",
     // srv
     motorSettingsSrv = "datatypes/srv/MotorSettingsSrv",
-    // action
-    voiceAssitant = "datatypes/action/VoiceAssistant",
+    voiceAssistantState = "datatypes/srv/VoiceAssistantState",
 }

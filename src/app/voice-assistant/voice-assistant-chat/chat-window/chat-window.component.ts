@@ -31,10 +31,11 @@ export class ChatWindowComponent implements OnInit {
         this.chat = this.route.snapshot.data["chat"];
         localStorage.setItem("chat", this.chat?.chatId ?? "");
         this.route.params.subscribe((params: Params) => {
+            const chatId = params["uuid"];
             this.chatService
-                .getMessagesByChatId(params["uuid"])
+                .getChatMessagesObservable(chatId)
                 .subscribe((messages) => (this.messages = messages));
-            this.chat = this.chatService.getChat(params["uuid"]);
+            this.chat = this.chatService.getChat(chatId);
             localStorage.setItem("chat", this.chat?.chatId ?? "");
             if (this.chat) {
                 this.personalityName =
