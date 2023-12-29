@@ -5,6 +5,7 @@ import {ActivatedRoute, Params} from "@angular/router";
 import {BehaviorSubject} from "rxjs";
 import {Program} from "src/app/shared/types/program";
 import * as Blockly from "blockly";
+import {pythonGenerator} from "blockly/python";
 
 describe("ProgramWorkspaceComponent", () => {
     let component: ProgramWorkspaceComponent;
@@ -21,13 +22,15 @@ describe("ProgramWorkspaceComponent", () => {
                 "createProgram",
                 "updateProgramByProgramNumber",
                 "deleteProgramByProgramNumber",
+                "getCodeByProgramNumber",
+                "updateCodeByProgramNumber",
             ]);
 
         programServiceSpy.getAllPrograms.and.returnValue(
             new BehaviorSubject([
-                new Program("name-0", {testfield: "0"}, "id-0"),
-                new Program("name-1", {testfield: "1"}, "id-1"),
-                new Program("name-2", {testfield: "2"}, "id-2"),
+                new Program("name-0", "id-0"),
+                new Program("name-1", "id-1"),
+                new Program("name-2", "id-2"),
             ]),
         );
 
@@ -68,34 +71,39 @@ describe("ProgramWorkspaceComponent", () => {
     });
 
     it("should update the workspace content when route params are changed", () => {
-        const selectedProgram = new Program("name-1", {testfield: "1"}, "id-1");
-        programService.getProgramFromCache.and.returnValue(selectedProgram);
+        programService.getCodeByProgramNumber.and.returnValue(
+            new BehaviorSubject({
+                visual: '{"testfield": 1}',
+            }),
+        );
         const spyOnWorkspace = spyOnProperty(
             fixture.componentRef.instance,
             "workspaceContent",
             "set",
         );
         params.next({uuid: "id-1"});
-        expect(programService.getProgramFromCache).toHaveBeenCalledWith("id-1");
-        expect(spyOnWorkspace).toHaveBeenCalledOnceWith(
-            selectedProgram.program,
+        expect(programService.getCodeByProgramNumber).toHaveBeenCalledWith(
+            "id-1",
         );
+        expect(spyOnWorkspace).toHaveBeenCalledOnceWith({testfield: 1});
     });
 
-    it("should save the program", () => {
-        const selectedProgram = new Program("name-1", {testfield: "2"}, "id-1");
-        const expectedProgram = new Program("name-1", {testfield: "1"}, "id-1");
-        programService.getProgramFromCache.and.returnValue(selectedProgram);
-        const spyOnWorkspace = spyOnProperty(
+    it("should save the code", () => {
+        spyOnProperty(
             fixture.componentRef.instance,
             "workspaceContent",
             "get",
         ).and.returnValue({testfield: "1"});
-        component.saveProgram();
-        expect(spyOnWorkspace).toHaveBeenCalled();
-        expect(programService.getProgramFromCache).toHaveBeenCalledWith("id-1");
+        spyOn(pythonGenerator, "workspaceToCode").and.returnValue(
+            'print("test")',
+        );
+        const expectedCode = {
+            visual: '{"testfield":"1"}',
+            python: 'print("test")',
+        };
+        component.saveCode();
         expect(
-            programService.updateProgramByProgramNumber,
-        ).toHaveBeenCalledOnceWith(expectedProgram);
+            programService.updateCodeByProgramNumber,
+        ).toHaveBeenCalledOnceWith("id-1", expectedCode);
     });
 });

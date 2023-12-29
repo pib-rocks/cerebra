@@ -357,6 +357,9 @@ export const toolbox: string = `<xml xmlns="http://www.w3.org/1999/xhtml" id="to
 <category name="Functions" colour="#9A5CA6" custom="PROCEDURE"></category>
 <sep></sep>
 <category name="Motoric skills" colour="#A62C81"></category>
-<category name="Visual skills" colour="#009FE3"></category>
 <category name="Language skills" colour="#4A1BA6"></category>
+<category name="Visual Skills" colour="#00AEFF">
+    <block type="face_detector_start_stop"></block>
+    <block type="face_detector_running"></block>
+</category>
 </xml>`;
