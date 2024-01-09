@@ -33,7 +33,7 @@ import {VoiceAssistantComponent} from "./voice-assistant/voice-assistant.compone
 import {PersonalityDescriptionComponent} from "./voice-assistant/voice-assistant-personality/personality-description/personality-description.component";
 import {ChatWindowComponent} from "./voice-assistant/voice-assistant-chat/chat-window/chat-window.component";
 import {ProgramWorkspaceComponent} from "./program/program-workspace/program-workspace.component";
-import {CerebraErrorHandler} from "./global-error-handler/cerebra-error-handler.service";
+import {CerebraErrorHandler} from "./global-error-handler/service/cerebra-error-handler.service";
 
 @NgModule({
     declarations: [
