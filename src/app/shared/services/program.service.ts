@@ -1,14 +1,16 @@
 import {Injectable} from "@angular/core";
 import {ApiService} from "./api.service";
-import {Program, ProgramDTO} from "../types/program";
+import {Program} from "../types/program";
 import {BehaviorSubject, Observable, ReplaySubject} from "rxjs";
 import {UrlConstants} from "./url.constants";
+import {ProgramCode} from "../types/program-code";
 
 @Injectable({
     providedIn: "root",
 })
 export class ProgramService {
     programs: Program[] = [];
+    programNumberToCode: Map<string, ProgramCode> = new Map();
     programsSubject: BehaviorSubject<Program[]> = new BehaviorSubject<
         Program[]
     >([]);
@@ -41,6 +43,14 @@ export class ProgramService {
             1,
         );
         this.programsSubject.next(this.programs.slice());
+    }
+
+    private setCode(programNumber: string, code: ProgramCode) {
+        this.programNumberToCode.set(programNumber, code);
+    }
+
+    private getCodeFromCache(programNumber: string): ProgramCode | undefined {
+        return this.programNumberToCode.get(programNumber);
     }
 
     private createResultObservable<Type>(
@@ -76,7 +86,7 @@ export class ProgramService {
         return this.createResultObservable(
             this.apiService.get(UrlConstants.PROGRAM),
             (response) => {
-                const programs = (response["programs"] as ProgramDTO[]).map(
+                const programs = (response["programs"] as Program[]).map(
                     (dto) => Program.fromDTO(dto),
                 );
                 this.setPrograms(programs);
@@ -88,15 +98,15 @@ export class ProgramService {
     getProgramByProgramNumber(programNumber: string): Observable<Program> {
         return this.createResultObservable(
             this.apiService.get(UrlConstants.PROGRAM + `/${programNumber}`),
-            (response) => Program.fromDTO(response as ProgramDTO),
+            (dto) => Program.fromDTO(dto),
         );
     }
 
     createProgram(program: Program): Observable<Program> {
         return this.createResultObservable(
-            this.apiService.post(UrlConstants.PROGRAM, program.toDTO(false)),
-            (response) => {
-                const program = Program.fromDTO(response);
+            this.apiService.post(UrlConstants.PROGRAM, program.toDTO()),
+            (dto) => {
+                const program = Program.fromDTO(dto);
                 this.addProgram(program);
                 return program;
             },
@@ -107,10 +117,10 @@ export class ProgramService {
         return this.createResultObservable(
             this.apiService.put(
                 UrlConstants.PROGRAM + `/${program.programNumber}`,
-                program.toDTO(false),
+                new Program(program.name).toDTO(),
             ),
-            (response) => {
-                const program = Program.fromDTO(response);
+            (dto) => {
+                const program = Program.fromDTO(dto);
                 this.updateProgram(program);
                 return program;
             },
@@ -121,6 +131,37 @@ export class ProgramService {
         return this.createResultObservable(
             this.apiService.delete(UrlConstants.PROGRAM + `/${programNumber}`),
             (_) => this.deleteProgram(programNumber),
+        );
+    }
+
+    getCodeByProgramNumber(programNumber: string): Observable<ProgramCode> {
+        const code = this.getCodeFromCache(programNumber);
+        return code
+            ? new BehaviorSubject(code)
+            : this.createResultObservable(
+                  this.apiService.get(
+                      `${UrlConstants.PROGRAM}/${programNumber}/${UrlConstants.CODE}`,
+                  ),
+                  (code) => {
+                      this.setCode(programNumber, code);
+                      return code;
+                  },
+              );
+    }
+
+    updateCodeByProgramNumber(
+        programNumber: string,
+        code: ProgramCode,
+    ): Observable<ProgramCode> {
+        return this.createResultObservable(
+            this.apiService.put(
+                `${UrlConstants.PROGRAM}/${programNumber}/${UrlConstants.CODE}`,
+                code,
+            ),
+            (code) => {
+                this.setCode(programNumber, code);
+                return code;
+            },
         );
     }
 }

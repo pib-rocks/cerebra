@@ -1,7 +1,7 @@
 import {Component} from "@angular/core";
 import {FormControl} from "@angular/forms";
-import {RosService} from "../../shared/ros.service";
-import {VoiceAssistantMsg} from "../../shared/voice-assistant";
+import {RosService} from "../../shared/services/ros-service/ros.service";
+import {VoiceAssistantMsg} from "../../shared/ros-message-types/voiceAssistant";
 
 @Component({
     selector: "app-voice-assistant-nav",

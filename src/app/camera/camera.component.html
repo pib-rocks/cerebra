@@ -101,34 +101,33 @@
                     class="form-label my-3 video-settings-label">
                     Refresh rate: {{ cameraSettings!.refreshRate }}s
                 </label>
-                <app-slider
+                <app-horizontal-slider
                     #refreshRate
-                    sliderName="refreshRate"
-                    unitOfMeasurement="s"
+                    [numberOfThumbs]="1"
+                    [name]="'refreshRate'"
+                    [unitLong]="'s'"
                     [messageReceiver$]="refreshRateReceiver$"
-                    [publishMessage]="refreshRatePublish "
-                    [minValue]="0.1"
-                    [maxValue]="1"
+                    [leftValue]="0.1"
+                    [rightValue]="1"
                     [step]="0.1"
-                    [defaultValue]="cameraSettings!.refreshRate"
-                    (sliderEvent)="updateRefreshRateLabel($event)"></app-slider>
+                    [defaultValues]="[cameraSettings?.refreshRate ?? 0.1]"
+                    (sliderEvent)="updateRefreshRateLabel($event[0]); refreshRatePublish($event[0])"></app-horizontal-slider>
                 <label
                     for="qualityFactor"
                     id="qualityFactor_label"
                     class="form-label my-3 video-settings-label">
                     Quality Factor: {{ cameraSettings!.qualityFactor }}
                 </label>
-                <app-slider
+                <app-horizontal-slider
                     #qualityFactor
-                    [flipped]="true"
-                    sliderName="qualityFactor"
+                    [numberOfThumbs]="1"
+                    [name]="'qualityFactor'"
                     [messageReceiver$]="qualityReceiver$"
-                    [publishMessage]="qualityControlPublish "
-                    [minValue]="10"
-                    [maxValue]="90"
+                    [leftValue]="90"
+                    [rightValue]="10"
                     [step]="10"
-                    [defaultValue]="cameraSettings!.qualityFactor"
-                    (sliderEvent)="updateQualityFactorLabel($event)"></app-slider>
+                    [defaultValues]="[cameraSettings?.qualityFactor ?? 90]"
+                    (sliderEvent)="updateQualityFactorLabel($event[0]); qualityControlPublish($event[0])"></app-horizontal-slider>
             </ng-template>
         </div>
     </div>

@@ -1,9 +1,9 @@
 import {CameraSetting} from "../types/camera-settings";
 import {ApiService} from "./api.service";
-import {RosService} from "../ros.service";
 import {UrlConstants} from "../../shared/services/url.constants";
 import {BehaviorSubject, Subject, catchError, throwError} from "rxjs";
 import {Injectable} from "@angular/core";
+import {RosService} from "./ros-service/ros.service";
 
 @Injectable({
     providedIn: "root",
@@ -41,7 +41,7 @@ export class CameraService {
                     });
                 }),
             )
-            .subscribe((response) => {
+            .subscribe(() => {
                 return;
             });
     }

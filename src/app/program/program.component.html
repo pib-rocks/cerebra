@@ -6,6 +6,7 @@
         <app-sidebar-right
             [headerElements]="headerElements"
             [subject]="subject"
+            [rerouteOnRefresh]="false"
             [selectedObservable]="selected"
             [lStorage]="'program'">
         </app-sidebar-right>
@@ -58,6 +59,7 @@
             >Name</label
         >
         <input
+            ngbAutofocus
             class="col-9"
             [formControl]="nameFormControl"
             type="text"
