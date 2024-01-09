@@ -185,12 +185,11 @@ export class RosService {
         this.motorSettingsService.callService(
             motorSettingsMessage,
             (response) => {
-                if (
-                    response["error"] != null ||
-                    response["error"] != undefined
-                ) {
-                    console.log(response.error);
-                    throw Error(response.error.message);
+                if (!response["settings_applied"]) {
+                    throw Error("Settings could not be applied");
+                }
+                if (!response["settings_persisted"]) {
+                    throw Error("Settings could not be persisted");
                 }
                 if (response["settings_applied"]) {
                     this.motorSettingsReceiver$.next(motorSettingsMessage);
