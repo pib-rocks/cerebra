@@ -63,6 +63,7 @@
             class="col-9"
             [formControl]="topicFormControl"
             type="text"
+            (keydown)="($event).key ==='Enter' ? this.saveChat(): ''"
             name="name-input"
             id="name-input" />
     </div>

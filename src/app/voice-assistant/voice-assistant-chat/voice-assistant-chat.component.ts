@@ -114,6 +114,7 @@ export class VoiceAssistantChatComponent implements OnInit {
                 this.addChat();
             }
         }
+        this.ngbModalRef?.close("saved");
     }
 
     closeModal = () => {
