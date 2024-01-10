@@ -8,7 +8,6 @@ import {ITheme} from "blockly/core/theme";
 import {pythonGenerator} from "blockly/python";
 
 import {customBlockDefinition} from "../program-blocks/custom-blocks";
-import {pythonGenerator} from "../program-generators/detectors-generators";
 
 @Component({
     selector: "app-program-workspace",
