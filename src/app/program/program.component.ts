@@ -26,13 +26,12 @@ export class ProgramComponent implements OnInit, AfterViewInit {
     subject!: Observable<SidebarElement[]>;
     nameFormControl: FormControl = new FormControl("");
 
-    route!: ActivatedRoute;
-
     selected: Subject<string> = new Subject();
 
     constructor(
         private modalService: NgbModal,
         private router: Router,
+        private route: ActivatedRoute,
         private programService: ProgramService,
     ) {}
 
@@ -46,8 +45,10 @@ export class ProgramComponent implements OnInit, AfterViewInit {
     }
 
     ngAfterViewInit() {
-        this.programService.getAllPrograms().subscribe((programs) => {
-            this.selected.next(programs[0]?.getUUID());
+        this.route.url.subscribe((segments) => {
+            this.programService.getAllPrograms().subscribe((programs) => {
+                this.selected.next(programs[0]?.getUUID());
+            });
         });
     }
 

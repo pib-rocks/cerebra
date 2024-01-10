@@ -7,6 +7,9 @@ import {asyncScheduler} from "rxjs";
 import {ITheme} from "blockly/core/theme";
 import {pythonGenerator} from "blockly/python";
 
+import {customBlockDefinition} from "../program-blocks/custom-blocks";
+import {pythonGenerator} from "../program-generators/detectors-generators";
+
 @Component({
     selector: "app-program-workspace",
     templateUrl: "./program-workspace.component.html",
@@ -83,15 +86,20 @@ export class ProgramWorkspaceComponent {
             toolbox: this.toolbox,
             theme: this.customTheme,
         });
+
+        customBlockDefinition();
+
         this.observer = new ResizeObserver(() => {
             this.resizeBlockly();
         });
         this.programService.getAllPrograms().subscribe((_) => {
             this.route.params.subscribe((params) => {
                 const programNumber = params["uuid"];
-                const program =
-                    this.programService.getProgramFromCache(programNumber);
-                this.workspaceContent = program?.program;
+                this.programService
+                    .getCodeByProgramNumber(programNumber)
+                    .subscribe((code) => {
+                        this.workspaceContent = JSON.parse(code.visual);
+                    });
             });
         });
         this.workspace.trashcan?.flyout
@@ -121,13 +129,13 @@ export class ProgramWorkspaceComponent {
         Blockly.svgResize(this.workspace);
     }
 
-    saveProgram() {
-        const toBeUpdated = this.programService.getProgramFromCache(
-            this.route.snapshot.params["uuid"],
-        );
-        if (!toBeUpdated) return;
-        toBeUpdated.program = this.workspaceContent;
-        this.programService.updateProgramByProgramNumber(toBeUpdated);
+    saveCode() {
+        const programNumber = this.route.snapshot.params["uuid"];
+        const code = {
+            visual: JSON.stringify(this.workspaceContent),
+            python: pythonGenerator.workspaceToCode(this.workspace),
+        };
+        this.programService.updateCodeByProgramNumber(programNumber, code);
     }
 
     runProgram() {

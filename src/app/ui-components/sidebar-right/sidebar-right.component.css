@@ -3,6 +3,10 @@
     min-height: 500px;
 }
 
+a {
+    width: 100%;
+}
+
 ::-webkit-scrollbar {
     background-color: #1b2b44;
     scrollbar-width: thin;
