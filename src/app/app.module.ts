@@ -33,6 +33,7 @@ import {ChatWindowComponent} from "./voice-assistant/voice-assistant-chat/chat-w
 import {ProgramWorkspaceComponent} from "./program/program-workspace/program-workspace.component";
 import {ProgramSplitscreenComponent} from "./program/program-splitscreen/program-splitscreen/program-splitscreen.component";
 import {AngularSplitModule} from "angular-split";
+import {HIGHLIGHT_OPTIONS, HighlightModule} from "ngx-highlightjs";
 
 @NgModule({
     declarations: [
@@ -70,8 +71,20 @@ import {AngularSplitModule} from "angular-split";
         NgbDropdownModule,
         FormsModule,
         AngularSplitModule,
+        HighlightModule,
     ],
-    providers: [MotorCurrentService],
+    providers: [
+        MotorCurrentService,
+        {
+            provide: HIGHLIGHT_OPTIONS,
+            useValue: {
+                coreLibraryLoader: () => import("highlight.js/lib/core"),
+                languages: {
+                    python: () => import("highlight.js/lib/languages/python"),
+                },
+            },
+        },
+    ],
     bootstrap: [AppComponent],
     entryComponents: [MatDialogModule],
 })

@@ -40,7 +40,6 @@ export class ProgramWorkspaceComponent {
         if (this.workspace.isDragging()) return;
         if (!this.supportedEvents.has(event.type)) return;
         this.pythonCode = pythonGenerator.workspaceToCode(this.workspace);
-        console.log("coding...");
         this.programService.pythonCodeSubject.next(this.pythonCode);
     }
 

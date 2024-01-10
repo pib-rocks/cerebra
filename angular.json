@@ -23,6 +23,7 @@
               "@angular/material/prebuilt-themes/indigo-pink.css",
               "node_modules/bootstrap/dist/css/bootstrap.min.css",
               "node_modules/admin-lte/dist/css/adminlte.min.css",
+              "node_modules/highlight.js/styles/atom-one-dark.css",
               "src/styles.css"
             ],
             "scripts": [
