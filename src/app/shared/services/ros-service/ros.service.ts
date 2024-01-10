@@ -12,8 +12,14 @@ import {MotorSettingsError} from "../../error/motor-settings-error";
 import {
     SetVoiceAssistantStateRequest,
     SetVoiceAssistantStateResponse,
-} from "../../ros-message-types/SetVoiceAssistantStateService";
+} from "../../ros-message-types/SetVoiceAssistantState";
 import {ChatMessage} from "../../ros-message-types/ChatMessage";
+import {VoiceAssistantService} from "../voice-assistant.service";
+import {VoiceAssistantState} from "../../ros-message-types/VoiceAssistantState";
+import {
+    GetVoiceAssistantStateRequest,
+    GetVoiceAssistantStateResponse,
+} from "../../ros-message-types/GetVoiceAssistantState";
 
 @Injectable({
     providedIn: "root",
@@ -35,10 +41,11 @@ export class RosService {
     motorSettingsReceiver$: Subject<MotorSettingsMessage> =
         new Subject<MotorSettingsMessage>();
     chatMessageReceiver$: Subject<ChatMessage> = new Subject<ChatMessage>();
+    voiceAssistantStateReceiver$: Subject<VoiceAssistantState> =
+        new Subject<VoiceAssistantState>();
 
     private ros!: ROSLIB.Ros;
 
-    private voiceAssistantTopic!: ROSLIB.Topic;
     private motorCurrentTopic!: ROSLIB.Topic;
     private cameraTopic!: ROSLIB.Topic;
     private cameraTimerPeriodTopic!: ROSLIB.Topic;
@@ -47,6 +54,7 @@ export class RosService {
     private jointTrajectoryTopic!: ROSLIB.Topic;
     private motorSettingsTopic!: ROSLIB.Topic;
     private chatMessageTopic!: ROSLIB.Topic<ChatMessage>;
+    private voiceAssistantStateTopic!: ROSLIB.Topic<VoiceAssistantState>;
 
     private motorSettingsService!: ROSLIB.Service;
     private setVoiceAssistantStateService!: ROSLIB.Service<
@@ -73,7 +81,7 @@ export class RosService {
     setUpRos() {
         let rosUrl: string;
         if (isDevMode()) {
-            rosUrl = "192.168.178.69";
+            rosUrl = "192.168.1.211";
         } else {
             rosUrl = window.location.hostname;
         }
@@ -111,13 +119,13 @@ export class RosService {
             rosTopics.jointTrajectoryTopicName,
             rosDataTypes.jointTrajectory,
         );
-        this.voiceAssistantTopic = this.createRosTopic(
-            rosTopics.voiceTopicName,
-            rosDataTypes.string,
-        );
         this.chatMessageTopic = this.createRosTopic(
             rosTopics.chatMessages,
             rosDataTypes.chatMessage,
+        );
+        this.voiceAssistantStateTopic = this.createRosTopic(
+            rosTopics.voiceAssistantState,
+            rosDataTypes.voiceAssistantState,
         );
 
         this.motorSettingsService = this.createRosService(
@@ -125,8 +133,8 @@ export class RosService {
             rosDataTypes.motorSettingsSrv,
         );
         this.setVoiceAssistantStateService = this.createRosService(
-            rosServices.voiceAssistantState,
-            rosDataTypes.voiceAssistantState,
+            rosServices.setVoiceAssistantState,
+            rosDataTypes.setVoiceAssistantState,
         );
     }
 
@@ -151,10 +159,6 @@ export class RosService {
 
     initSubscribers() {
         this.subscribeDefaultRosMessageTopic(
-            this.voiceAssistantTopic,
-            this.voiceAssistantReceiver$,
-        );
-        this.subscribeDefaultRosMessageTopic(
             this.cameraPreviewSizeTopic,
             this.cameraPreviewSizeReceiver$,
         );
@@ -166,9 +170,35 @@ export class RosService {
             this.cameraQualityFactorTopic,
             this.cameraQualityFactorReceiver$,
         );
+
+        this.chatMessageTopic.subscribe((message: any) => {
+            console.info("message: " + message);
+            this.chatMessageReceiver$.next(message);
+        });
+        this.voiceAssistantStateTopic.subscribe((message: any) => {
+            console.info("message: " + message);
+            this.voiceAssistantReceiver$.next(message);
+        });
+        this.getInitialVoiceAssistantState();
+
         this.subscribeMotorSettingsTopic();
         this.subscribeMotorCurrentTopic();
         this.subscribeJointTrajectoryTopic();
+    }
+
+    getInitialVoiceAssistantState() {
+        const getVoiceAssistantStateService: ROSLIB.Service<
+            GetVoiceAssistantStateRequest,
+            GetVoiceAssistantStateResponse
+        > = this.createRosService(
+            rosServices.getVoiceAssistantState,
+            rosDataTypes.getVoiceAssistantState,
+        );
+        getVoiceAssistantStateService.callService({}, (response) =>
+            this.voiceAssistantStateReceiver$.next(
+                response.voice_assistant_state,
+            ),
+        );
     }
 
     subscribeDefaultRosMessageTopic(
@@ -195,6 +225,7 @@ export class RosService {
             );
         });
     }
+
     subscribeMotorSettingsTopic() {
         this.motorSettingsTopic.subscribe((message) => {
             this.motorSettingsReceiver$.next(message as MotorSettingsMessage);
@@ -209,6 +240,7 @@ export class RosService {
 
     subscribeChatMessageTopic() {
         this.chatMessageTopic.subscribe((message) => {
+            console.info("received chat message: " + message);
             this.chatMessageReceiver$.next(message);
         });
     }
@@ -218,21 +250,26 @@ export class RosService {
     }
 
     setVoiceAssistantState(
-        voiceAssistantState: SetVoiceAssistantStateRequest,
+        voiceAssistantState: VoiceAssistantState,
     ): Observable<void> {
         const subject: Subject<void> = new ReplaySubject();
+        const request: SetVoiceAssistantStateRequest = {
+            voice_assistant_state: voiceAssistantState,
+        };
+        const successCallback = (response: SetVoiceAssistantStateResponse) => {
+            if (response.successful) {
+                subject.next();
+            } else {
+                subject.error(new Error("could not apply state..."));
+            }
+        };
+        const errorCallback = (error: any) => {
+            subject.error(new Error(error));
+        };
         this.setVoiceAssistantStateService.callService(
-            voiceAssistantState,
-            (response) => {
-                if (response.successful) {
-                    subject.next();
-                } else {
-                    subject.error(new Error("could not apply state..."));
-                }
-            },
-            (error) => {
-                subject.error(new Error(error));
-            },
+            request,
+            successCallback,
+            errorCallback,
         );
         return subject;
     }
@@ -329,11 +366,6 @@ export class RosService {
         }
 
         console.log(consoleString);
-    }
-
-    sendVoiceActivationMessage(msg: VoiceAssistantMsg) {
-        const message = new ROSLIB.Message({data: JSON.stringify(msg)});
-        this.voiceAssistantTopic.publish(message);
     }
 
     setTimerPeriod(period: number | null) {

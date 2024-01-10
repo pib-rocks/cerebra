@@ -1,16 +1,16 @@
-import {Component} from "@angular/core";
+import {Component, OnInit} from "@angular/core";
 import {FormControl} from "@angular/forms";
 import {RosService} from "../../shared/services/ros-service/ros.service";
-import {VoiceAssistantMsg} from "../../shared/ros-message-types/voiceAssistant";
 import {Router} from "@angular/router";
-import {SetVoiceAssistantStateRequest} from "src/app/shared/ros-message-types/SetVoiceAssistantStateService";
+import {SetVoiceAssistantStateRequest} from "src/app/shared/ros-message-types/SetVoiceAssistantState";
+import {VoiceAssistantState} from "src/app/shared/ros-message-types/VoiceAssistantState";
 
 @Component({
     selector: "app-voice-assistant-nav",
     templateUrl: "./voice-assistant-nav.component.html",
     styleUrls: ["./voice-assistant-nav.component.css"],
 })
-export class VoiceAssistantNavComponent {
+export class VoiceAssistantNavComponent implements OnInit {
     constructor(
         private rosService: RosService,
         private router: Router,
@@ -21,9 +21,18 @@ export class VoiceAssistantNavComponent {
     voiceAssistantActivationToggle = new FormControl(false);
     voiceAssistantActiveStatus = false;
 
+    ngOnInit() {
+        this.rosService.voiceAssistantReceiver$.subscribe(
+            (state: VoiceAssistantState) => {
+                console.info("received state: " + state);
+                this.voiceAssistantActivationToggle.setValue(state.turned_on);
+            },
+        );
+    }
+
     toggleVoiceAssistantActivation() {
-        let turnedOn = this.voiceAssistantActivationToggle.value ?? false;
-        let nextState: SetVoiceAssistantStateRequest = {
+        let turnedOn = !this.voiceAssistantActivationToggle.value;
+        let nextState: VoiceAssistantState = {
             turned_on: turnedOn,
             chat_id: "",
         };

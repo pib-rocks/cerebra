@@ -1,6 +1,7 @@
+import {VoiceAssistantState} from "./VoiceAssistantState";
+
 export interface SetVoiceAssistantStateRequest {
-    turned_on: boolean;
-    chat_id: string;
+    voice_assistant_state: VoiceAssistantState;
 }
 
 export interface SetVoiceAssistantStateResponse {

@@ -1,5 +1,4 @@
 export enum rosTopics {
-    voiceTopicName = "/cerebra_voice_settings",
     jointTrajectoryTopicName = "/joint_trajectory",
     motorCurrentTopicName = "/motor_current",
     cameraPreviewSizeTopicName = "/size_topic",
@@ -7,4 +6,5 @@ export enum rosTopics {
     cameraTopicName = "/camera_topic",
     cameraQualityTopic = "/quality_factor_topic",
     chatMessages = "/chat_messages",
+    voiceAssistantState = "/voice_assistant_state",
 }

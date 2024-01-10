@@ -7,9 +7,11 @@ export enum rosDataTypes {
     // msg
     motorSettings = "datatypes/msg/MotorSettings",
     chatMessage = "datatypes/msg/ChatMessage",
+    voiceAssistantState = "datatypes/msg/VoiceAssistantState",
     jointTrajectory = "trajectory_msgs/msg/JointTrajectory",
     diagnosticStatus = "diagnostic_msgs/msg/DiagnosticStatus",
     // srv
     motorSettingsSrv = "datatypes/srv/MotorSettingsSrv",
-    voiceAssistantState = "datatypes/srv/VoiceAssistantState",
+    setVoiceAssistantState = "datatypes/srv/SetVoiceAssistantState",
+    getVoiceAssistantState = "datatypes/srv/GetVoiceAssistantState",
 }
