@@ -1,13 +1,13 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {ProgramComponent} from "./program.component";
 import {ProgramService} from "../shared/services/program.service";
-import {Router} from "@angular/router";
+import {ActivatedRoute, Router, UrlSegment} from "@angular/router";
 import {ReactiveFormsModule} from "@angular/forms";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {RouterTestingModule} from "@angular/router/testing";
 import {HttpClientTestingModule} from "@angular/common/http/testing";
 import {Program} from "../shared/types/program";
-import {BehaviorSubject} from "rxjs";
+import {BehaviorSubject, Observable} from "rxjs";
 
 describe("ProgramComponent", () => {
     let component: ProgramComponent;
@@ -55,6 +55,10 @@ describe("ProgramComponent", () => {
                     provide: NgbModal,
                     useValue: modalServiceSoy,
                 },
+                {
+                    provide: ActivatedRoute,
+                    useValue: {url: new Observable<UrlSegment[]>()},
+                },
             ],
         }).compileComponents();
 
@@ -95,7 +99,7 @@ describe("ProgramComponent", () => {
         } as Promise<string>);
         const selectedSpy = spyOn(fixture.componentInstance.selected, "next");
         programService.createProgram.and.returnValue(
-            new BehaviorSubject(new Program("new-name", {}, "id-0")),
+            new BehaviorSubject(new Program("new-name", "id-0")),
         );
 
         fixture.componentInstance.addProgram();
@@ -103,7 +107,6 @@ describe("ProgramComponent", () => {
         expect(programService.createProgram).toHaveBeenCalledOnceWith(
             jasmine.objectContaining({
                 name: "new-name",
-                program: {},
                 programNumber: "",
             }),
         );
@@ -120,13 +123,13 @@ describe("ProgramComponent", () => {
                 callback?.("");
             },
         } as Promise<string>);
-        const expected = new Program("testname", {}, "id-0");
+        const expected = new Program("testname", "id-0");
         const getProgramSpy = spyOn(
             fixture.componentInstance,
             "getProgramFromRoute",
         ).and.returnValue(expected);
         programService.updateProgramByProgramNumber.and.returnValue(
-            new BehaviorSubject(new Program("new-name", {}, "id-0")),
+            new BehaviorSubject(new Program("new-name", "id-0")),
         );
 
         fixture.componentInstance.editProgram();
@@ -137,7 +140,6 @@ describe("ProgramComponent", () => {
         ).toHaveBeenCalledOnceWith(
             jasmine.objectContaining({
                 name: "new-name",
-                program: {},
                 programNumber: "id-0",
             }),
         );
@@ -149,8 +151,8 @@ describe("ProgramComponent", () => {
         programService.deleteProgramByProgramNumber.and.returnValue(
             new BehaviorSubject(undefined),
         );
-        programService.programs = [new Program("testname", {}, "id-1")];
-        const expected = new Program("testname", {}, "id-0");
+        programService.programs = [new Program("testname", "id-1")];
+        const expected = new Program("testname", "id-0");
         const getProgramSpy = spyOn(
             fixture.componentInstance,
             "getProgramFromRoute",
