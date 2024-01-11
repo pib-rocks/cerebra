@@ -22,7 +22,7 @@ export class VoiceAssistantNavComponent implements OnInit {
     voiceAssistantActiveStatus = false;
 
     ngOnInit() {
-        this.rosService.voiceAssistantReceiver$.subscribe(
+        this.rosService.voiceAssistantStateReceiver$.subscribe(
             (state: VoiceAssistantState) => {
                 console.info("received state: " + state);
                 this.voiceAssistantActivationToggle.setValue(state.turned_on);

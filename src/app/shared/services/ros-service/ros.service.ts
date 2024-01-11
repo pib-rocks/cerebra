@@ -35,14 +35,16 @@ export class RosService {
     >([0, 0]);
     cameraQualityFactorReceiver$: BehaviorSubject<number> =
         new BehaviorSubject<number>(80);
-    voiceAssistantReceiver$: Subject<any> = new Subject<any>();
     jointTrajectoryReceiver$: Subject<JointTrajectoryMessage> =
         new Subject<JointTrajectoryMessage>();
     motorSettingsReceiver$: Subject<MotorSettingsMessage> =
         new Subject<MotorSettingsMessage>();
     chatMessageReceiver$: Subject<ChatMessage> = new Subject<ChatMessage>();
-    voiceAssistantStateReceiver$: Subject<VoiceAssistantState> =
-        new Subject<VoiceAssistantState>();
+    voiceAssistantStateReceiver$: BehaviorSubject<VoiceAssistantState> =
+        new BehaviorSubject<VoiceAssistantState>({
+            turned_on: false,
+            chat_id: "",
+        });
 
     private ros!: ROSLIB.Ros;
 
@@ -177,7 +179,7 @@ export class RosService {
         });
         this.voiceAssistantStateTopic.subscribe((message: any) => {
             console.info("message: " + message);
-            this.voiceAssistantReceiver$.next(message);
+            this.voiceAssistantStateReceiver$.next(message);
         });
         this.getInitialVoiceAssistantState();
 
@@ -194,11 +196,13 @@ export class RosService {
             rosServices.getVoiceAssistantState,
             rosDataTypes.getVoiceAssistantState,
         );
-        getVoiceAssistantStateService.callService({}, (response) =>
+        getVoiceAssistantStateService.callService({}, (response) => {
+            console.info(JSON.stringify(response));
             this.voiceAssistantStateReceiver$.next(
                 response.voice_assistant_state,
             ),
-        );
+                (error: any) => console.info("error occured: " + error);
+        });
     }
 
     subscribeDefaultRosMessageTopic(
