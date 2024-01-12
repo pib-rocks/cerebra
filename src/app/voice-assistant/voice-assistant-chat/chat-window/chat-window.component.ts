@@ -18,8 +18,10 @@ export class ChatWindowComponent implements OnInit {
     personalityName: string | undefined;
     messages?: ChatMessage[];
 
-    // readonly USER_ICON = '../../../../assets/voice-assistant-svgs/personality/personality.svg';
-    // readonly VA_ICON = '../../../../assets/voice-assistant-svgs/personality/personality.svg';
+    readonly USER_ICON =
+        "../../../../assets/voice-assistant-svgs/personality/user.svg";
+    readonly VA_ICON =
+        "../../../../assets/voice-assistant-svgs/personality/personality.svg";
 
     constructor(
         private chatService: ChatService,

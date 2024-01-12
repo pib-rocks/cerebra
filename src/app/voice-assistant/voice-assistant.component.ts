@@ -5,6 +5,10 @@ import {VoiceAssistantService} from "../shared/services/voice-assistant.service"
 import {FormControl, FormGroup, Validators} from "@angular/forms";
 import {NgbModal, NgbModalRef} from "@ng-bootstrap/ng-bootstrap";
 import {VoiceAssistant} from "../shared/types/voice-assistant";
+import {RosService} from "../shared/services/ros-service/ros.service";
+import {Router} from "@angular/router";
+import {VoiceAssistantState} from "../shared/ros-message-types/VoiceAssistantState";
+import {CerebraRegex} from "../shared/types/cerebra-regex";
 
 @Component({
     selector: "app-voice-assistant",
@@ -12,10 +16,6 @@ import {VoiceAssistant} from "../shared/types/voice-assistant";
     styleUrls: ["./voice-assistant.component.css"],
 })
 export class VoiceAssistantComponent implements OnInit {
-    constructor(
-        private voiceAssistantService: VoiceAssistantService,
-        private modalService: NgbModal,
-    ) {}
     personalityForm!: FormGroup;
     uuid: string | undefined;
     thresholdString: string | undefined;
@@ -31,7 +31,28 @@ export class VoiceAssistantComponent implements OnInit {
         },
     };
 
-    ngOnInit(): void {
+    constructor(
+        private rosService: RosService,
+        private router: Router,
+        private voiceAssistantService: VoiceAssistantService,
+        private modalService: NgbModal,
+    ) {}
+
+    CHAT_ROUTE_PATTERN = /^\/voice-assistant\/chat\/([a-zA-Z0-9-]+$)/;
+
+    voiceAssistantActivationToggle = new FormControl(false);
+    voiceAssistantActiveStatus = false;
+
+    ngOnInit() {
+        this.rosService.voiceAssistantStateReceiver$.subscribe(
+            (state: VoiceAssistantState) => {
+                console.info("received state: " + state);
+                this.voiceAssistantActivationToggle.setValue(state.turned_on);
+                this.imgSrc = `../../assets/toggle-switch-${
+                    state.turned_on ? "right" : "left"
+                }.png`;
+            },
+        );
         this.button.enabled = true;
         this.button.func = this.openAddModal;
         this.subject = this.voiceAssistantService.getSubject();
@@ -60,17 +81,27 @@ export class VoiceAssistantComponent implements OnInit {
         this.voiceAssistantService.uuidSubject.subscribe((uuid: string) => {
             this.openEditModal(uuid);
         });
-        this.voiceAssistantService.voiceAssistantActiveStatusSubject.subscribe(
-            (activationFlag: boolean) => {
-                this.imgSrc = activationFlag
-                    ? "../../assets/toggle-switch-right.png"
-                    : "../../assets/toggle-switch-left.png";
-            },
-        );
     }
 
     toggleVoiceAssistant() {
-        this.voiceAssistantService.toggleVoiceAssistantActivation();
+        let turnedOn = !this.voiceAssistantActivationToggle.value;
+        let nextState: VoiceAssistantState = {
+            turned_on: turnedOn,
+            chat_id: "",
+        };
+
+        if (turnedOn) {
+            console.info(this.router.url);
+            const match = RegExp(
+                `/voice-assistant/${CerebraRegex.UUID}/chat/(${CerebraRegex.UUID})`,
+            ).exec(this.router.url);
+            if (match) nextState.chat_id = match[1];
+            else throw new Error("no chat selected");
+        }
+
+        this.rosService.setVoiceAssistantState(nextState).subscribe({
+            error: (error) => console.error(error),
+        });
     }
 
     showModal = () => {

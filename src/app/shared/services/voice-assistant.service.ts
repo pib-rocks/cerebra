@@ -15,7 +15,6 @@ import {
 import {UrlConstants} from "./url.constants";
 import {SidebarService} from "../interfaces/sidebar-service.interface";
 import {SidebarElement} from "../interfaces/sidebar-element.interface";
-import {VoiceAssistantMsg} from "../ros-message-types/voiceAssistant";
 import {RosService} from "./ros-service/ros.service";
 
 @Injectable({
@@ -34,7 +33,6 @@ export class VoiceAssistantService implements SidebarService {
         private rosService: RosService,
     ) {
         this.getAllPersonalities();
-        this.subscribeVoiceAssistantTopic();
     }
 
     private updatePersonality(updatePersonality: VoiceAssistant) {
@@ -157,20 +155,5 @@ export class VoiceAssistantService implements SidebarService {
 
     getSubject(): Observable<SidebarElement[]> {
         return this.personalitiesSubject;
-    }
-
-    subscribeVoiceAssistantTopic() {
-        this.rosService.voiceAssistantReceiver$.subscribe((message) => {
-            this.voiceAssistantActiveStatus =
-                JSON.parse(message).activationFlag ?? false;
-            this.voiceAssistantActiveStatusSubject.next(
-                this.voiceAssistantActiveStatus,
-            );
-        });
-    }
-    toggleVoiceAssistantActivation() {
-        this.rosService.sendVoiceActivationMessage({
-            activationFlag: !this.voiceAssistantActiveStatus,
-        } as VoiceAssistantMsg);
     }
 }
