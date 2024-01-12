@@ -30,21 +30,29 @@
         </button>
     </div>
 </div>
-<div class="row mt-2 content-window">
+<div class="row mt-2 content-window pb-2">
     <div class="col-12">
-        <div class="chat-container">
-            <div class="messages">
+        <div class="chat-container p-3">
+            <div class="messages mb-3">
                 <div
                     *ngFor="let message of messages"
-                    class="d-flex m-2"
-                    [ngClass]="message.isUser ? ['user-message', 'flex-row-reverse'] : ['va-message', 'flex-row']">
-                    <div class="col-1 square ml-1 message-author">
-                        <!-- <img [src]="message.isUser ? USER_ICON : VA_ICON" /> -->
-                        <p>{{message.isUser ? 'X' : 'Y'}}</p>
+                    class="d-flex mt-3 mb-3"
+                    [ngClass]="message.isUser ? 'flex-row-reverse' : 'flex-row'">
+                    <div
+                        class="col-9 p-0 d-flex"
+                        [ngClass]="message.isUser ? ['user-message', 'flex-row-reverse'] : ['va-message', 'flex-row']">
+                        <div
+                            class="square message-author"
+                            [ngClass]="message.isUser ? ['ml-2', 'mr-3'] : ['ml-3', 'mr-2']">
+                            <img
+                                class="author-icon"
+                                [src]="message.isUser ? USER_ICON : VA_ICON" />
+                        </div>
+                        <div
+                            class="pt-2 pb-2 pl-3 pr-3 flex-grow-1 message-content">
+                            {{message.content}}
+                        </div>
                     </div>
-                    <p class="col-8 ml-1 message-content">
-                        {{message.content}}
-                    </p>
                 </div>
             </div>
             <div class="chat-input">

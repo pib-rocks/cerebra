@@ -4,7 +4,6 @@
     height: 100%;
     width: 100%;
     border: 1px solid #ccc;
-    padding: 1%;
     overflow: hidden;
 }
 
@@ -45,6 +44,7 @@
     border-bottom-right-radius: 6px;
     border-width: 1px;
     border-style: solid;
+    height: 100%;
 }
 
 .user-message .message-content {
@@ -58,8 +58,9 @@
 .messages {
     flex-grow: 1;
     overflow-y: auto;
-    padding: 1%;
     color: #fff;
+    height: 400px;
+    scrollbar-width: 30px;
 }
 
 .message {
@@ -81,6 +82,21 @@
     font-weight: normal;
 }
 
+.square {
+    width: 40px;
+    min-width: 40px;
+    height: 40px;
+    min-height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.author-icon {
+    width: 20px;
+    height: 20px;
+}
+
 #message-input {
     flex: 1;
     width: 80%;
@@ -96,4 +112,19 @@
     outline: none;
     background-color: #1b2b44;
     fill: white;
+}
+
+::-webkit-scrollbar {
+    background-color: #1b2b44;
+    scrollbar-width: thin;
+    width: 5px;
+}
+
+::-webkit-scrollbar:hover {
+    width: 7px;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #cccccc;
+    padding: 10%;
 }
