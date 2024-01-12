@@ -173,36 +173,11 @@ export class RosService {
             this.cameraQualityFactorReceiver$,
         );
 
-        this.chatMessageTopic.subscribe((message: any) => {
-            console.info("message: " + message);
-            this.chatMessageReceiver$.next(message);
-        });
-        this.voiceAssistantStateTopic.subscribe((message: any) => {
-            console.info("message: " + message);
-            this.voiceAssistantStateReceiver$.next(message);
-        });
-        this.getInitialVoiceAssistantState();
-
+        this.subscribeVoiceAssistantStateTopic();
+        this.subscribeChatMessageTopic();
         this.subscribeMotorSettingsTopic();
         this.subscribeMotorCurrentTopic();
         this.subscribeJointTrajectoryTopic();
-    }
-
-    getInitialVoiceAssistantState() {
-        const getVoiceAssistantStateService: ROSLIB.Service<
-            GetVoiceAssistantStateRequest,
-            GetVoiceAssistantStateResponse
-        > = this.createRosService(
-            rosServices.getVoiceAssistantState,
-            rosDataTypes.getVoiceAssistantState,
-        );
-        getVoiceAssistantStateService.callService({}, (response) => {
-            console.info(JSON.stringify(response));
-            this.voiceAssistantStateReceiver$.next(
-                response.voice_assistant_state,
-            ),
-                (error: any) => console.info("error occured: " + error);
-        });
     }
 
     subscribeDefaultRosMessageTopic(
@@ -242,9 +217,30 @@ export class RosService {
         });
     }
 
+    subscribeVoiceAssistantStateTopic() {
+        this.voiceAssistantStateTopic.subscribe((message: any) => {
+            console.info("message: " + message);
+            this.voiceAssistantStateReceiver$.next(message);
+        });
+        const getVoiceAssistantStateService: ROSLIB.Service<
+            GetVoiceAssistantStateRequest,
+            GetVoiceAssistantStateResponse
+        > = this.createRosService(
+            rosServices.getVoiceAssistantState,
+            rosDataTypes.getVoiceAssistantState,
+        );
+        getVoiceAssistantStateService.callService({}, (response) => {
+            console.info(JSON.stringify(response));
+            this.voiceAssistantStateReceiver$.next(
+                response.voice_assistant_state,
+            ),
+                (error: any) => console.info("error occured: " + error);
+        });
+    }
+
     subscribeChatMessageTopic() {
-        this.chatMessageTopic.subscribe((message) => {
-            console.info("received chat message: " + message);
+        this.chatMessageTopic.subscribe((message: any) => {
+            console.info("message: " + message);
             this.chatMessageReceiver$.next(message);
         });
     }
