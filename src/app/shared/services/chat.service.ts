@@ -31,7 +31,7 @@ export class ChatService implements SidebarService {
             );
             if (subject) {
                 const messages = subject.getValue();
-                messages.push({
+                messages.unshift({
                     messageId: rosChatMessage.message_id,
                     timestamp: rosChatMessage.timestamp,
                     isUser: rosChatMessage.is_user,
