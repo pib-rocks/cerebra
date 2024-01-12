@@ -21,16 +21,16 @@ import {MotorCurrentService} from "./shared/services/motor-service/motor-current
 
 import {VoiceAssistantNavComponent} from "./voice-assistant/voice-assistant-nav/voice-assistant-nav.component";
 import {VoiceAssistantChatComponent} from "./voice-assistant/voice-assistant-chat/voice-assistant-chat.component";
-import {VoiceAssistantPersonalityComponent} from "./voice-assistant/voice-assistant-personality/voice-assistant-personality.component";
 import {SideBarRightComponent} from "./ui-components/sidebar-right/sidebar-right.component";
 
 import {VerticalSliderComponent} from "./sliders/vertical-slider/vertical-slider.component";
 import {BoolToOnOffPipe} from "./shared/pipes/bool-to-on-off-pipe.pipe";
 import {HorizontalSliderComponent} from "./sliders/horizontal-slider/horizontal-slider.component";
 import {VoiceAssistantComponent} from "./voice-assistant/voice-assistant.component";
-import {PersonalityDescriptionComponent} from "./voice-assistant/voice-assistant-personality/personality-description/personality-description.component";
+import {PersonalityDescriptionComponent} from "./voice-assistant/personality-description/personality-description.component";
 import {ChatWindowComponent} from "./voice-assistant/voice-assistant-chat/chat-window/chat-window.component";
 import {ProgramWorkspaceComponent} from "./program/program-workspace/program-workspace.component";
+import {PersonalityWrapperComponent} from "./voice-assistant/personality-wrapper/personality-wrapper.component";
 
 @NgModule({
     declarations: [
@@ -45,7 +45,6 @@ import {ProgramWorkspaceComponent} from "./program/program-workspace/program-wor
         CircularSliderComponent,
         VoiceAssistantNavComponent,
         VoiceAssistantChatComponent,
-        VoiceAssistantPersonalityComponent,
         SideBarRightComponent,
         VerticalSliderComponent,
         BoolToOnOffPipe,
@@ -54,6 +53,7 @@ import {ProgramWorkspaceComponent} from "./program/program-workspace/program-wor
         PersonalityDescriptionComponent,
         ChatWindowComponent,
         ProgramWorkspaceComponent,
+        PersonalityWrapperComponent,
     ],
     imports: [
         BrowserModule,

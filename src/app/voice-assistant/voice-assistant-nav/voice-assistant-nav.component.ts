@@ -1,9 +1,8 @@
-import {Component, OnInit} from "@angular/core";
-import {FormControl} from "@angular/forms";
-import {RosService} from "../../shared/services/ros-service/ros.service";
-import {Router} from "@angular/router";
-import {SetVoiceAssistantStateRequest} from "src/app/shared/ros-message-types/SetVoiceAssistantState";
-import {VoiceAssistantState} from "src/app/shared/ros-message-types/VoiceAssistantState";
+import {Component, Input, OnInit} from "@angular/core";
+import {ActivatedRoute, NavigationStart, Router} from "@angular/router";
+import {Observable} from "rxjs";
+import {SidebarElement} from "src/app/shared/interfaces/sidebar-element.interface";
+import {CerebraRegex} from "src/app/shared/types/cerebra-regex";
 
 @Component({
     selector: "app-voice-assistant-nav",
@@ -11,50 +10,79 @@ import {VoiceAssistantState} from "src/app/shared/ros-message-types/VoiceAssista
     styleUrls: ["./voice-assistant-nav.component.css"],
 })
 export class VoiceAssistantNavComponent implements OnInit {
+    sidebarElements?: SidebarElement[];
+    @Input() subject?: Observable<SidebarElement[]>;
+    @Input() button?: {enabled: boolean; func: () => void};
+    @Input() defaultRoute?: string;
+
     constructor(
-        private rosService: RosService,
         private router: Router,
+        private route: ActivatedRoute,
     ) {}
 
-    CHAT_ROUTE_PATTERN = /^\/voice-assistant\/chat\/([a-zA-Z0-9-]+$)/;
+    ngOnInit(): void {
+        this.router.events.subscribe((event) => {
+            if (event instanceof NavigationStart) {
+                if (
+                    RegExp("/voice-assistant/" + CerebraRegex.UUID).test(
+                        this.router.url,
+                    ) &&
+                    event.url === "/voice-assistant"
+                ) {
+                    if (
+                        this.sidebarElements &&
+                        this.sidebarElements.length > 0
+                    ) {
+                        this.router.navigate(
+                            [this.sidebarElements[0].getUUID()],
+                            {relativeTo: this.route},
+                        );
+                    }
+                }
+            }
+        });
 
-    voiceAssistantActivationToggle = new FormControl(false);
-    voiceAssistantActiveStatus = false;
-
-    ngOnInit() {
-        this.rosService.voiceAssistantStateReceiver$.subscribe(
-            (state: VoiceAssistantState) => {
-                console.info("received state: " + state);
-                this.voiceAssistantActivationToggle.setValue(state.turned_on);
-            },
-        );
+        this.subject?.subscribe((elements) => {
+            const diff = elements.length - (this.sidebarElements?.length ?? 0);
+            const len = this.sidebarElements?.length ?? 0;
+            this.sidebarElements = elements;
+            if (len == 0 && elements.length > 0) {
+                this.router.navigate([this.sidebarElements[0].getUUID()], {
+                    relativeTo: this.route,
+                });
+            } else if (diff > 0 && len != 0) {
+                this.router.navigate(
+                    [
+                        this.sidebarElements[
+                            this.sidebarElements.length - 1
+                        ].getUUID(),
+                    ],
+                    {relativeTo: this.route},
+                );
+            } else if (this.getRedirectRoute()) {
+                this.router.navigate([this.getRedirectRoute()], {
+                    relativeTo: this.route,
+                });
+            } else {
+                this.router.navigate([this.defaultRoute]);
+            }
+        });
     }
 
-    toggleVoiceAssistantActivation() {
-        let turnedOn = !this.voiceAssistantActivationToggle.value;
-        let nextState: VoiceAssistantState = {
-            turned_on: turnedOn,
-            chat_id: "",
-        };
-
-        if (turnedOn) {
-            const match = this.CHAT_ROUTE_PATTERN.exec(this.router.url);
-            if (match) {
-                nextState.chat_id = match[1];
-            } else {
-                this.voiceAssistantActivationToggle.setValue(false);
-                throw new Error("no chat selected");
+    getRedirectRoute(): string | undefined {
+        const routerUuid: string | undefined = this.router.url
+            .split("/")
+            .find((segment) => RegExp(CerebraRegex.UUID).test(segment));
+        if (routerUuid && this.sidebarElements) {
+            const elem = this.sidebarElements.find((sidebarElement) =>
+                RegExp(routerUuid).test(sidebarElement.getUUID()),
+            );
+            if (!elem && this.sidebarElements.length > 0) {
+                return this.sidebarElements[0].getUUID();
+            } else if (elem) {
+                return elem.getUUID();
             }
         }
-
-        this.rosService.setVoiceAssistantState(nextState).subscribe({
-            next: () => {
-                this.voiceAssistantActiveStatus = turnedOn;
-            },
-            error: (error) => {
-                this.voiceAssistantActivationToggle.setValue(!turnedOn);
-                throw error;
-            },
-        });
+        return undefined;
     }
 }

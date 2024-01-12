@@ -31,7 +31,7 @@ export class ChatWindowComponent implements OnInit {
         this.chat = this.route.snapshot.data["chat"];
         localStorage.setItem("chat", this.chat?.chatId ?? "");
         this.route.params.subscribe((params: Params) => {
-            const chatId = params["uuid"];
+            const chatId = params["chatUuid"];
             this.chatService
                 .getChatMessagesObservable(chatId)
                 .subscribe((messages) => (this.messages = messages));
@@ -47,6 +47,10 @@ export class ChatWindowComponent implements OnInit {
     }
 
     sendMessage() {
+        throw Error("not implemented");
+    }
+
+    exportChat() {
         throw Error("not implemented");
     }
 }

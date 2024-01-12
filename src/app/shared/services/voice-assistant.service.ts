@@ -5,10 +5,18 @@ import {
     parseDtoToVoiceAssistant,
     parseVoiceAssistantToDto,
 } from "../types/voice-assistant";
-import {BehaviorSubject, Observable, catchError, throwError} from "rxjs";
+import {
+    BehaviorSubject,
+    Observable,
+    Subject,
+    catchError,
+    throwError,
+} from "rxjs";
 import {UrlConstants} from "./url.constants";
 import {SidebarService} from "../interfaces/sidebar-service.interface";
 import {SidebarElement} from "../interfaces/sidebar-element.interface";
+import {VoiceAssistantMsg} from "../ros-message-types/voiceAssistant";
+import {RosService} from "./ros-service/ros.service";
 
 @Injectable({
     providedIn: "root",
@@ -17,9 +25,16 @@ export class VoiceAssistantService implements SidebarService {
     personalities: VoiceAssistant[] = [];
     personalitiesSubject: BehaviorSubject<VoiceAssistant[]> =
         new BehaviorSubject<VoiceAssistant[]>([]);
-
-    constructor(private apiService: ApiService) {
+    uuidSubject: Subject<string> = new Subject<string>();
+    voiceAssistantActiveStatus: boolean = false;
+    voiceAssistantActiveStatusSubject: Subject<boolean> =
+        new Subject<boolean>();
+    constructor(
+        private apiService: ApiService,
+        private rosService: RosService,
+    ) {
         this.getAllPersonalities();
+        this.subscribeVoiceAssistantTopic();
     }
 
     private updatePersonality(updatePersonality: VoiceAssistant) {
@@ -60,7 +75,6 @@ export class VoiceAssistantService implements SidebarService {
             1,
         );
         this.personalitiesSubject.next(this.personalities.slice());
-        console.log(this.personalities);
     }
 
     getPersonality(uuid: string) {
@@ -143,5 +157,20 @@ export class VoiceAssistantService implements SidebarService {
 
     getSubject(): Observable<SidebarElement[]> {
         return this.personalitiesSubject;
+    }
+
+    subscribeVoiceAssistantTopic() {
+        this.rosService.voiceAssistantReceiver$.subscribe((message) => {
+            this.voiceAssistantActiveStatus =
+                JSON.parse(message).activationFlag ?? false;
+            this.voiceAssistantActiveStatusSubject.next(
+                this.voiceAssistantActiveStatus,
+            );
+        });
+    }
+    toggleVoiceAssistantActivation() {
+        this.rosService.sendVoiceActivationMessage({
+            activationFlag: !this.voiceAssistantActiveStatus,
+        } as VoiceAssistantMsg);
     }
 }
