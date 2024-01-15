@@ -31,10 +31,7 @@ describe("ProgramSplitscreenComponent", () => {
     });
 
     it("should subscribe to view mode when the component is instantiated", () => {
-        const viewModeSpy = spyOn(
-            programService.viewModeSubject,
-            "subscribe",
-        ).and.callThrough();
+        const viewModeSpy = spyOn(programService.viewModeSubject, "subscribe");
         component.ngOnInit();
         expect(viewModeSpy).toHaveBeenCalled();
     });

@@ -114,7 +114,7 @@ describe("ProgramWorkspaceComponent", () => {
             "isDragging",
         ).and.returnValue(true);
         const supportedEventsSpy = spyOn(component.supportedEvents, "has");
-        const event = new CustomEvent("test");
+        const event = new Blockly.Events.BubbleOpen();
         component.generateCode(event);
         expect(isDraggingSpy).toHaveBeenCalled();
         expect(supportedEventsSpy).not.toHaveBeenCalled();
@@ -128,9 +128,9 @@ describe("ProgramWorkspaceComponent", () => {
         const supportedEventsSpy = spyOn(
             component.supportedEvents,
             "has",
-        ).and.returnValue(false);
+        ).and.callThrough();
         const codeGeneratorSpy = spyOn(pythonGenerator, "workspaceToCode");
-        const event = new CustomEvent("test");
+        const event = new Blockly.Events.BubbleOpen();
         component.generateCode(event);
         expect(isDraggingSpy).toHaveBeenCalled();
         expect(supportedEventsSpy).toHaveBeenCalled();
@@ -145,13 +145,13 @@ describe("ProgramWorkspaceComponent", () => {
         const supportedEventsSpy = spyOn(
             component.supportedEvents,
             "has",
-        ).and.returnValue(true);
+        ).and.callThrough();
         const codeGeneratorSpy = spyOn(pythonGenerator, "workspaceToCode");
         const pythonCodeSubjectSpy = spyOn(
             programService.pythonCodeSubject,
             "next",
         );
-        const event = new CustomEvent("test");
+        const event = new Blockly.Events.BlockChange();
         component.generateCode(event);
         expect(isDraggingSpy).toHaveBeenCalled();
         expect(supportedEventsSpy).toHaveBeenCalled();
