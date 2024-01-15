@@ -8,6 +8,7 @@ import {ITheme} from "blockly/core/theme";
 import {pythonGenerator} from "blockly/python";
 
 import {customBlockDefinition} from "../program-blocks/custom-blocks";
+import {Abstract} from "blockly/core/events/events_abstract";
 
 @Component({
     selector: "app-program-workspace",
@@ -38,7 +39,7 @@ export class ProgramWorkspaceComponent {
         Blockly.Events.BLOCK_MOVE,
     ]);
 
-    generateCode(event: Event) {
+    generateCode(event: Abstract) {
         if (this.workspace.isDragging()) return;
         if (!this.supportedEvents.has(event.type)) return;
         this.pythonCode = pythonGenerator.workspaceToCode(this.workspace);
@@ -110,7 +111,7 @@ export class ProgramWorkspaceComponent {
         if (blocklyMainBackground) {
             blocklyMainBackground.style.stroke = "none";
         }
-        this.workspace.addChangeListener((event: Event) => {
+        this.workspace.addChangeListener((event: Abstract) => {
             this.generateCode(event);
         });
     }
