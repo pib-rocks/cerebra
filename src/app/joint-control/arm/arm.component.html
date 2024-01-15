@@ -5,6 +5,7 @@
             <div>
                 <div class="row ">
                     <label>Select a touchpoint to adjust</label>
+                    <label>{{side}}</label>
                 </div>
                 <div class="row">
                     <div class="col-1">
@@ -23,39 +24,64 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-3">
-                        <ng-container *ngFor="let motor of motors">
-                            <app-motor-control [motor]="motor">
-                            </app-motor-control>
-                        </ng-container>
-                    </div>
-                    <div class="col-3">
-                        <ng-container
-                            *ngFor="let motorname of displayCurrentMotors">
-                            <div class="col-2 pr-0 pl-0">
-                                <app-circular-slider
-                                    name="{{motorname}}"></app-circular-slider>
-                            </div>
-                        </ng-container>
-                    </div>
-                    <div class="col-6">
-                        <img
-                            class="pr-0 pl-0"
-                            src="../../assets/arm_{{side}}.png"
-                            alt="" />
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-1">
-                        <label> Ein Icon von einem Arm </label>
-                    </div>
-                    <div class="col">
-                        <p class="text-center text-primary">
-                            ..................................................................................
-                        </p>
-                    </div>
-                    <div class="col-1">
-                        <label> Ein Icon von einem Arm </label>
+                    <ng-template [ngIf]="side == 'right'">
+                        <div class="col-3">
+                            <ng-container *ngFor="let motor of motors">
+                                <app-motor-control [motor]="motor">
+                                </app-motor-control>
+                            </ng-container>
+                        </div>
+                        <div class="col-3">
+                            <ng-container
+                                *ngFor="let motorname of displayCurrentMotors">
+                                <div class="col-2 pr-0 pl-0">
+                                    <app-circular-slider
+                                        name="{{motorname}}"></app-circular-slider>
+                                </div>
+                            </ng-container>
+                        </div>
+                        <div class="col-6">
+                            <img
+                                class="pr-0 pl-0"
+                                src="../../assets/arm_{{side}}.png"
+                                alt="" />
+                        </div>
+                    </ng-template>
+                    <ng-template [ngIf]="side != 'right'">
+                        <div class="col-3 order-10">
+                            <ng-container *ngFor="let motor of motors">
+                                <app-motor-control [motor]="motor">
+                                </app-motor-control>
+                            </ng-container>
+                        </div>
+                        <div class="col-3 order-7">
+                            <ng-container
+                                *ngFor="let motorname of displayCurrentMotors">
+                                <div class="col-2 pr-0 pl-0">
+                                    <app-circular-slider
+                                        name="{{motorname}}"></app-circular-slider>
+                                </div>
+                            </ng-container>
+                        </div>
+                        <div class="col-6 order-1">
+                            <img
+                                class="pr-0 pl-0"
+                                src="../../assets/arm_{{side}}.png"
+                                alt="" />
+                        </div>
+                    </ng-template>
+                    <div class="row">
+                        <div class="col-1">
+                            <label> Ein Icon von einem Arm </label>
+                        </div>
+                        <div class="col">
+                            <p class="text-center text-primary">
+                                ..................................................................................
+                            </p>
+                        </div>
+                        <div class="col-1">
+                            <label> Ein Icon von einem Arm </label>
+                        </div>
                     </div>
                 </div>
             </div>
