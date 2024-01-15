@@ -35,6 +35,20 @@
     );
 }
 
+.pink-corner-frame {
+    background:
+        url("../../../assets/ep-br.png") bottom right no-repeat,
+        url("../../../assets/ep-tr.png") top right no-repeat,
+        url("../../../assets/ep-tl.png") top left no-repeat,
+        url("../../../assets/ep-bl.png") bottom left no-repeat;
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.background-image {
+    background: url("../../../assets/bg-gesamt.png") left no-repeat;
+    background-size: cover;
+}
+
 .current {
     border-style: solid;
     padding: 5px;

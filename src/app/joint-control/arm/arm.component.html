@@ -1,48 +1,62 @@
 <app-nav-bar></app-nav-bar>
-<div class="container-fluid">
-    <div class="row">
-        <div class="col">
-            <div class="d-flex flex-row-reverse">
-                <button
-                    id="home-position-btn"
-                    type="button"
-                    class="mt-3 btn"
-                    (click)="reset()">
-                    <img
-                        src="../../assets/icon-home-position.png"
-                        alt=""
-                        width="19px"
-                        height="24px" />
-                    Home position
-                </button>
-            </div>
+<div class="container-fluid mt-3">
+    <div class="background-image">
+        <div class="pink-corner-frame pt-3 pl-3 pr-3 mb-2">
             <div>
-                <ng-container *ngFor="let motor of motors">
-                    <app-motor-control [motor]="motor"> </app-motor-control>
-                </ng-container>
-            </div>
-        </div>
-
-        <div class="col">
-            <div class="container">
-                <div class="container-div">
-                    <img
-                        class="container"
-                        style="width: auto; height: 40rem"
-                        src="../../assets/arm_{{side}}.png"
-                        alt="" />
-                    <ng-container *ngFor="let motor of motors">
-                        <div [class]="motor.name">
-                            <span class="current">1000 mA</span>
-                            <div
-                                [style.height]="1000 / 80 + 'px'"
-                                class="color-indicator"
-                                [class.color-indicator50-80]="
-1000 / 40 > 50 && 1000 / 40 < 80
-"
-                                [class.color-indicator80-100]="1000 / 40 >= 80"></div>
-                        </div>
-                    </ng-container>
+                <div class="row ">
+                    <label>Select a touchpoint to adjust</label>
+                </div>
+                <div class="row">
+                    <div class="col-1">
+                        <button
+                            id="home-position-btn"
+                            type="button"
+                            class="mt-3 btn"
+                            (click)="reset()">
+                            <img
+                                src="../../assets/icon-home-position.png"
+                                alt=""
+                                width="19px"
+                                height="24px" />
+                            Home position
+                        </button>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-3">
+                        <ng-container *ngFor="let motor of motors">
+                            <app-motor-control [motor]="motor">
+                            </app-motor-control>
+                        </ng-container>
+                    </div>
+                    <div class="col-3">
+                        <ng-container
+                            *ngFor="let motorname of displayCurrentMotors">
+                            <div class="col-2 pr-0 pl-0">
+                                <app-circular-slider
+                                    name="{{motorname}}"></app-circular-slider>
+                            </div>
+                        </ng-container>
+                    </div>
+                    <div class="col-6">
+                        <img
+                            class="pr-0 pl-0"
+                            src="../../assets/arm_{{side}}.png"
+                            alt="" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-1">
+                        <label> Ein Icon von einem Arm </label>
+                    </div>
+                    <div class="col">
+                        <p class="text-center text-primary">
+                            ..................................................................................
+                        </p>
+                    </div>
+                    <div class="col-1">
+                        <label> Ein Icon von einem Arm </label>
+                    </div>
                 </div>
             </div>
         </div>
