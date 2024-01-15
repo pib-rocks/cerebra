@@ -1,4 +1,4 @@
-import {Component} from "@angular/core";
+import {Component, OnInit} from "@angular/core";
 import {ProgramService} from "src/app/shared/services/program.service";
 
 @Component({
@@ -6,13 +6,16 @@ import {ProgramService} from "src/app/shared/services/program.service";
     templateUrl: "./program-splitscreen.component.html",
     styleUrls: ["./program-splitscreen.component.css"],
 })
-export class ProgramSplitscreenComponent {
-    constructor(private programService: ProgramService) {
+export class ProgramSplitscreenComponent implements OnInit {
+    constructor(private programService: ProgramService) {}
+
+    pythonCode: string = "";
+    splitscreenMode: boolean = false;
+
+    ngOnInit(): void {
         this.subscribeViewMode();
         this.subscribePythonCode();
     }
-    pythonCode: string = "";
-    splitscreenMode: boolean = false;
 
     subscribeViewMode() {
         this.programService.viewModeSubject.subscribe((mode) => {

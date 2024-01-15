@@ -31,7 +31,7 @@ import {VoiceAssistantComponent} from "./voice-assistant/voice-assistant.compone
 import {PersonalityDescriptionComponent} from "./voice-assistant/voice-assistant-personality/personality-description/personality-description.component";
 import {ChatWindowComponent} from "./voice-assistant/voice-assistant-chat/chat-window/chat-window.component";
 import {ProgramWorkspaceComponent} from "./program/program-workspace/program-workspace.component";
-import {ProgramSplitscreenComponent} from "./program/program-splitscreen/program-splitscreen/program-splitscreen.component";
+import {ProgramSplitscreenComponent} from "./program/program-splitscreen/program-splitscreen.component";
 import {AngularSplitModule} from "angular-split";
 import {HIGHLIGHT_OPTIONS, HighlightModule} from "ngx-highlightjs";
 
