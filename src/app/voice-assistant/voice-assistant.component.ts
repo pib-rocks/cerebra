@@ -7,7 +7,7 @@ import {NgbModal, NgbModalRef} from "@ng-bootstrap/ng-bootstrap";
 import {VoiceAssistant} from "../shared/types/voice-assistant";
 import {RosService} from "../shared/services/ros-service/ros.service";
 import {Router} from "@angular/router";
-import {VoiceAssistantState} from "../shared/ros-message-types/VoiceAssistantState";
+import {VoiceAssistantState} from "../shared/types/voice-assistant-state";
 import {CerebraRegex} from "../shared/types/cerebra-regex";
 
 @Component({
@@ -32,7 +32,6 @@ export class VoiceAssistantComponent implements OnInit {
     };
 
     constructor(
-        private rosService: RosService,
         private router: Router,
         private voiceAssistantService: VoiceAssistantService,
         private modalService: NgbModal,
@@ -44,12 +43,11 @@ export class VoiceAssistantComponent implements OnInit {
     voiceAssistantActiveStatus = false;
 
     ngOnInit() {
-        this.rosService.voiceAssistantStateReceiver$.subscribe(
+        this.voiceAssistantService.voiceAssistantStateObservable.subscribe(
             (state: VoiceAssistantState) => {
-                console.info("received state: " + state);
-                this.voiceAssistantActivationToggle.setValue(state.turned_on);
+                this.voiceAssistantActivationToggle.setValue(state.turnedOn);
                 this.imgSrc = `../../assets/toggle-switch-${
-                    state.turned_on ? "right" : "left"
+                    state.turnedOn ? "right" : "left"
                 }.png`;
             },
         );
@@ -85,21 +83,18 @@ export class VoiceAssistantComponent implements OnInit {
 
     toggleVoiceAssistant() {
         let turnedOn = !this.voiceAssistantActivationToggle.value;
-        let nextState: VoiceAssistantState = {
-            turned_on: turnedOn,
-            chat_id: "",
-        };
+        let nextState: VoiceAssistantState = {turnedOn, chatId: ""};
 
         if (turnedOn) {
             console.info(this.router.url);
             const match = RegExp(
                 `/voice-assistant/${CerebraRegex.UUID}/chat/(${CerebraRegex.UUID})`,
             ).exec(this.router.url);
-            if (match) nextState.chat_id = match[1];
+            if (match) nextState.chatId = match[1];
             else throw new Error("no chat selected");
         }
 
-        this.rosService.setVoiceAssistantState(nextState).subscribe({
+        this.voiceAssistantService.setVoiceAssistantState(nextState).subscribe({
             error: (error) => console.error(error),
         });
     }

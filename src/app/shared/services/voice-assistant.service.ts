@@ -10,17 +10,20 @@ import {
     Observable,
     Subject,
     catchError,
+    map,
     throwError,
 } from "rxjs";
 import {UrlConstants} from "./url.constants";
 import {SidebarService} from "../interfaces/sidebar-service.interface";
 import {SidebarElement} from "../interfaces/sidebar-element.interface";
 import {RosService} from "./ros-service/ros.service";
+import {VoiceAssistantState} from "../types/voice-assistant-state";
 
 @Injectable({
     providedIn: "root",
 })
 export class VoiceAssistantService implements SidebarService {
+    voiceAssistantStateObservable: Observable<VoiceAssistantState>;
     personalities: VoiceAssistant[] = [];
     personalitiesSubject: BehaviorSubject<VoiceAssistant[]> =
         new BehaviorSubject<VoiceAssistant[]>([]);
@@ -28,11 +31,27 @@ export class VoiceAssistantService implements SidebarService {
     voiceAssistantActiveStatus: boolean = false;
     voiceAssistantActiveStatusSubject: Subject<boolean> =
         new Subject<boolean>();
+
     constructor(
         private apiService: ApiService,
         private rosService: RosService,
     ) {
         this.getAllPersonalities();
+
+        this.voiceAssistantStateObservable =
+            this.rosService.voiceAssistantStateReceiver$.pipe(
+                map((state) => ({
+                    turnedOn: state.turned_on,
+                    chatId: state.chat_id,
+                })),
+            );
+    }
+
+    setVoiceAssistantState(nextState: VoiceAssistantState) {
+        return this.rosService.setVoiceAssistantState({
+            turned_on: nextState.turnedOn,
+            chat_id: nextState.chatId,
+        });
     }
 
     private updatePersonality(updatePersonality: VoiceAssistant) {
