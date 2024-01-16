@@ -12,6 +12,15 @@ textarea {
     color: #828282;
 }
 
+svg:hover path {
+    fill: var(--cerebra-pink);
+    transition: fill 0.15s ease;
+}
+
+svg {
+    height: 2.25rem;
+}
+
 textarea:focus {
     border-radius: 0px;
     background: linear-gradient(
