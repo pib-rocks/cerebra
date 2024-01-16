@@ -34,6 +34,7 @@ export class ChatWindowComponent implements OnInit {
         localStorage.setItem("chat", this.chat?.chatId ?? "");
         this.route.params.subscribe((params: Params) => {
             const chatId = params["chatUuid"];
+            if (!chatId) return;
             this.chatService
                 .getChatMessagesObservable(chatId)
                 .subscribe((messages) => (this.messages = messages));
