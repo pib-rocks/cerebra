@@ -49,7 +49,8 @@ video {
     transition: fill 0.15s ease;
 }
 
-.video-nav-element:hover {
+.video-nav-element:hover,
+.video-nav-element:hover span {
     color: #e10072;
     background-color: transparent;
 }
@@ -64,10 +65,10 @@ video {
 }
 
 .showPopover svg path {
-    fill: #e10072;
+    fill: #e10072 !important;
 }
 
-.showPopover {
-    color: #e10072;
+.showPopover span {
+    color: #e10072 !important;
     background-color: transparent;
 }
