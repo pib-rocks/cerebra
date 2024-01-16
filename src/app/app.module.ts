@@ -1,4 +1,4 @@
-import {NgModule} from "@angular/core";
+import {ErrorHandler, NgModule} from "@angular/core";
 import {ReactiveFormsModule, FormsModule} from "@angular/forms";
 import {BrowserModule} from "@angular/platform-browser";
 import {HttpClientModule} from "@angular/common/http";
@@ -30,6 +30,7 @@ import {VoiceAssistantComponent} from "./voice-assistant/voice-assistant.compone
 import {PersonalityDescriptionComponent} from "./voice-assistant/personality-description/personality-description.component";
 import {ChatWindowComponent} from "./voice-assistant/voice-assistant-chat/chat-window/chat-window.component";
 import {ProgramWorkspaceComponent} from "./program/program-workspace/program-workspace.component";
+import {CerebraErrorHandler} from "./global-error-handler/service/cerebra-error-handler.service";
 import {PersonalityWrapperComponent} from "./voice-assistant/personality-wrapper/personality-wrapper.component";
 
 @NgModule({
@@ -67,7 +68,13 @@ import {PersonalityWrapperComponent} from "./voice-assistant/personality-wrapper
         NgbDropdownModule,
         FormsModule,
     ],
-    providers: [MotorCurrentService],
+    providers: [
+        MotorCurrentService,
+        {
+            provide: ErrorHandler,
+            useClass: CerebraErrorHandler,
+        },
+    ],
     bootstrap: [AppComponent],
     entryComponents: [MatDialogModule],
 })
