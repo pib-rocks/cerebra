@@ -10,7 +10,7 @@ import {NavBarComponent} from "../../nav-bar/nav-bar.component";
 import {CircularSliderComponent} from "../circular-slider/circular-slider.component";
 import {MotorService} from "../../shared/services/motor-service/motor.service";
 import {ActivatedRoute} from "@angular/router";
-import {BehaviorSubject, Observable} from "rxjs";
+import {BehaviorSubject, Observable, Subject} from "rxjs";
 import {JointTrajectoryMessage} from "../../shared/ros-message-types/jointTrajectoryMessage";
 import {MotorSettingsMessage} from "../../shared/ros-message-types/motorSettingsMessage";
 import {Group} from "../../shared/types/motor.enum";
@@ -32,11 +32,12 @@ describe("HandComponent", () => {
         ) => Observable<MotorSettingsMessage>
     >;
 
-    const paramsSubject = new BehaviorSubject({
-        side: "right",
-    });
+    let paramsSubject: Subject<{side: string}>;
 
     beforeEach(async () => {
+        paramsSubject = new BehaviorSubject({
+            side: "right",
+        });
         await TestBed.configureTestingModule({
             declarations: [
                 HandComponent,
@@ -78,10 +79,6 @@ describe("HandComponent", () => {
             rosService.motorSettingsReceiver$.next(msg);
             return new Observable();
         });
-    });
-
-    afterEach(() => {
-        fixture.destroy();
     });
 
     it("should create", () => {

@@ -12,7 +12,7 @@ import {MotorControlComponent} from "./motor-control.component";
 import {Motor} from "../../shared/types/motor.class";
 import {MotorSettings} from "../../shared/types/motor-settings.class";
 import {Group} from "../../shared/types/motor.enum";
-import {BehaviorSubject} from "rxjs";
+import {BehaviorSubject, Subject} from "rxjs";
 import {RosService} from "../../shared/services/ros-service/ros.service";
 import {VerticalSliderComponent} from "../../sliders/vertical-slider/vertical-slider.component";
 import {HttpClientTestingModule} from "@angular/common/http/testing";
@@ -21,12 +21,13 @@ import {HorizontalSliderComponent} from "src/app/sliders/horizontal-slider/horiz
 describe("MotorControlComponent", () => {
     let component: MotorControlComponent;
     let fixture: ComponentFixture<MotorControlComponent>;
-    let motorService: MotorService;
+    let motorService: jasmine.SpyObj<MotorService>;
     let modalService: NgbModal;
-    let rosService: RosService;
     let motorSubject: BehaviorSubject<Motor> | undefined;
     let updateMotor: Motor;
     beforeEach(async () => {
+        const motorServiceSpy: jasmine.SpyObj<RosService> =
+            jasmine.createSpyObj("RosService", ["updateMotorFromComponent"]);
         await TestBed.configureTestingModule({
             declarations: [
                 MotorControlComponent,
@@ -34,20 +35,29 @@ describe("MotorControlComponent", () => {
                 VerticalSliderComponent,
             ],
             imports: [ReactiveFormsModule, HttpClientTestingModule],
-            providers: [RosService, MotorService, NgbModal],
+            providers: [
+                NgbModal,
+                {
+                    provide: MotorService,
+                    useValue: motorServiceSpy,
+                },
+            ],
         }).compileComponents();
 
         fixture = TestBed.createComponent(MotorControlComponent);
         component = fixture.componentInstance;
-        rosService = TestBed.inject(RosService);
-        rosService.initTopicsAndServices();
-        rosService.initSubscribers();
         modalService = TestBed.inject(NgbModal);
-        motorService = TestBed.inject(MotorService);
-        motorService.createMotors();
-        component.motor = motorService.getMotorByName("ring_left_stretch");
+        motorService = TestBed.inject(
+            MotorService,
+        ) as jasmine.SpyObj<MotorService>;
+        component.motor = new Motor(
+            "ring_left_stretch",
+            0,
+            Group.left_hand,
+            "Ring finger",
+        );
         component.showMotorSettingsButton = true;
-        motorSubject = motorService.getMotorSubjectByName("ring_left_stretch");
+        motorSubject = component.motor.motorSubject;
         updateMotor = new Motor(
             "ring_left_stretch",
             500,
@@ -55,7 +65,6 @@ describe("MotorControlComponent", () => {
             "undefined_label",
             new MotorSettings(500, 500, 500, 500, 500, 500, 500, 500, false),
         );
-        component.ngOnInit();
         fixture.detectChanges();
     });
 
@@ -157,26 +166,42 @@ describe("MotorControlComponent", () => {
             component,
             "setDeceleration",
         ).and.callThrough();
+
         component.setVelocity(300);
         expect(spyOnSetVelocity).toHaveBeenCalled();
         expect(component.motor.settings.velocity).toBe(300);
-        expect(
-            motorService.getMotorByName(component.motor.name).settings.velocity,
-        ).toBe(300);
+        expect(motorService.updateMotorFromComponent).toHaveBeenCalledWith(
+            jasmine.objectContaining({
+                name: "ring_left_stretch",
+                settings: jasmine.objectContaining({
+                    velocity: 300,
+                }),
+            }),
+        );
+
         component.setAcceleration(300);
         expect(spyOnSetAcceleration).toHaveBeenCalled();
         expect(component.motor.settings.acceleration).toBe(300);
-        expect(
-            motorService.getMotorByName(component.motor.name).settings
-                .acceleration,
-        ).toBe(300);
+        expect(motorService.updateMotorFromComponent).toHaveBeenCalledWith(
+            jasmine.objectContaining({
+                name: "ring_left_stretch",
+                settings: jasmine.objectContaining({
+                    acceleration: 300,
+                }),
+            }),
+        );
+
         component.setDeceleration(300);
         expect(spyOnSetDeceleration).toHaveBeenCalled();
         expect(component.motor.settings.deceleration).toBe(300);
-        expect(
-            motorService.getMotorByName(component.motor.name).settings
-                .deceleration,
-        ).toBe(300);
+        expect(motorService.updateMotorFromComponent).toHaveBeenCalledWith(
+            jasmine.objectContaining({
+                name: "ring_left_stretch",
+                settings: jasmine.objectContaining({
+                    deceleration: 300,
+                }),
+            }),
+        );
     });
 
     it("should set the degree on calling setDegree", () => {
@@ -187,14 +212,15 @@ describe("MotorControlComponent", () => {
         expect(spyOnSetDegree).toHaveBeenCalled();
         expect(component.motor.settings.rotationRangeMax).toBe(4500);
         expect(component.motor.settings.rotationRangeMin).toBe(-4500);
-        expect(
-            motorService.getMotorByName(component.motor.name).settings
-                .rotationRangeMax,
-        ).toBe(4500);
-        expect(
-            motorService.getMotorByName(component.motor.name).settings
-                .rotationRangeMin,
-        ).toBe(-4500);
+        expect(motorService.updateMotorFromComponent).toHaveBeenCalledWith(
+            jasmine.objectContaining({
+                name: "ring_left_stretch",
+                settings: jasmine.objectContaining({
+                    rotationRangeMax: 4500,
+                    rotationRangeMin: -4500,
+                }),
+            }),
+        );
     });
 
     it("should set the pulse ranges on calling setPulseRanges", () => {
@@ -208,14 +234,16 @@ describe("MotorControlComponent", () => {
         expect(spyOnSetPulseRanges).toHaveBeenCalled();
         expect(component.motor.settings.pulseWidthMin).toBe(300);
         expect(component.motor.settings.pulseWidthMax).toBe(300);
-        expect(
-            motorService.getMotorByName(component.motor.name).settings
-                .pulseWidthMax,
-        ).toBe(300);
-        expect(
-            motorService.getMotorByName(component.motor.name).settings
-                .pulseWidthMax,
-        ).toBe(300);
+        console.info(JSON.stringify(component.motor));
+        expect(motorService.updateMotorFromComponent).toHaveBeenCalledWith(
+            jasmine.objectContaining({
+                name: "ring_left_stretch",
+                settings: jasmine.objectContaining({
+                    pulseWidthMin: 300,
+                    pulseWidthMax: 300,
+                }),
+            }),
+        );
     });
 
     it("should set the periodon calling setPeriod", () => {
@@ -225,8 +253,13 @@ describe("MotorControlComponent", () => {
         component.setPeriod(300);
         expect(spyOnSetPeriod).toHaveBeenCalled();
         expect(component.motor.settings.period).toBe(300);
-        expect(
-            motorService.getMotorByName(component.motor.name).settings.period,
-        ).toBe(300);
+        expect(motorService.updateMotorFromComponent).toHaveBeenCalledWith(
+            jasmine.objectContaining({
+                name: "ring_left_stretch",
+                settings: jasmine.objectContaining({
+                    period: 300,
+                }),
+            }),
+        );
     });
 });

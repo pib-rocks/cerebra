@@ -15,7 +15,7 @@ import {ChatMessage as RosChatMessage} from "../ros-message-types/ChatMessage";
 export class ChatService implements SidebarService {
     chats: Chat[] = [];
     chatSubject: BehaviorSubject<Chat[]> = new BehaviorSubject<Chat[]>([]);
-    private MessagesSubjectFromChatId: Map<
+    private messagesSubjectFromChatId: Map<
         string,
         BehaviorSubject<ChatMessage[]>
     > = new Map();
@@ -26,7 +26,7 @@ export class ChatService implements SidebarService {
     ) {
         this.getAllChats();
         this.rosService.chatMessageReceiver$.subscribe((rosChatMessage) => {
-            const subject = this.MessagesSubjectFromChatId.get(
+            const subject = this.messagesSubjectFromChatId.get(
                 rosChatMessage.chat_id,
             );
             if (subject) {
@@ -43,7 +43,7 @@ export class ChatService implements SidebarService {
     }
 
     getChatMessagesObservable(chatId: string): Observable<ChatMessage[]> {
-        const observable = this.MessagesSubjectFromChatId.get(chatId);
+        const observable = this.messagesSubjectFromChatId.get(chatId);
         if (observable) {
             return observable;
         } else {
@@ -51,7 +51,7 @@ export class ChatService implements SidebarService {
             this.getMessagesByChatId(chatId).subscribe((messages) =>
                 messageSubject.next(messages),
             );
-            this.MessagesSubjectFromChatId.set(chatId, messageSubject);
+            this.messagesSubjectFromChatId.set(chatId, messageSubject);
             return messageSubject;
         }
     }

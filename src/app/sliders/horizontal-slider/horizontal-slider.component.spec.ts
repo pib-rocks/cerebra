@@ -6,7 +6,6 @@ import {
 } from "@angular/core/testing";
 
 import {HorizontalSliderComponent} from "./horizontal-slider.component";
-import {RosService} from "../../shared/services/ros-service/ros.service";
 import {FormControl, ReactiveFormsModule} from "@angular/forms";
 import {Subject} from "rxjs";
 import {EventEmitter} from "@angular/core";
@@ -19,7 +18,6 @@ describe("HorizontalSliderComponent", () => {
         await TestBed.configureTestingModule({
             declarations: [HorizontalSliderComponent],
             imports: [ReactiveFormsModule],
-            providers: [RosService],
         }).compileComponents();
         fixture = TestBed.createComponent(HorizontalSliderComponent);
         component = fixture.componentInstance;
