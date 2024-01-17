@@ -1,7 +1,9 @@
 import {Block} from "blockly/core/block";
 import {pythonGenerator} from "blockly/python";
 
-pythonGenerator.forBlock["face_detector_start_stop"] = function (
+pythonGenerator.addReservedWords("fd");
+
+export function face_detector_start_stop(
     block: Block,
     generator: typeof pythonGenerator,
 ) {
@@ -17,8 +19,6 @@ pythonGenerator.forBlock["face_detector_start_stop"] = function (
         (generator as any).definitions_["import_blobconverter"] =
             "import blobconverter";
         (generator as any).definitions_["import_time"] = "import time";
-
-        generator.addReservedWords("fd,FaceDetector");
 
         const className = generator.provideFunction_(
             "FaceDetector",
@@ -125,9 +125,9 @@ class ${generator.FUNCTION_NAME_PLACEHOLDER_}():
     
     if self.frame is not None:
       self.displayFrame("rgb")
-   
+      
     return self.xmin, self.ymin, self.xmax, self.ymax
- `,
+`,
         );
         code +=
             "fd = " + className + "()\n" + 'print("Starting face detector")\n';
@@ -135,12 +135,9 @@ class ${generator.FUNCTION_NAME_PLACEHOLDER_}():
         code += "fd.device.close()" + "\n" + 'print("Closing face detector")\n';
     }
     return code;
-};
+}
 
-pythonGenerator.forBlock["face_detector_running"] = function (
-    block: Block,
-    generator: any,
-) {
+export function face_detector_running(block: Block, generator: any) {
     let code = "";
     const var_xmin = generator.getVariableName(block.getFieldValue("XMIN"));
     const var_ymin = generator.getVariableName(block.getFieldValue("YMIN"));
@@ -156,7 +153,6 @@ pythonGenerator.forBlock["face_detector_running"] = function (
         ", " +
         var_ymax +
         " = fd.updateDetector()\n\n";
-    return code;
-};
 
-export {pythonGenerator};
+    return code;
+}

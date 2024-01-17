@@ -6,8 +6,11 @@ import {ProgramService} from "src/app/shared/services/program.service";
 import {asyncScheduler} from "rxjs";
 import {ITheme} from "blockly/core/theme";
 
-import {customBlockDefinition} from "../program-blocks/custom-blocks";
-import {pythonGenerator} from "../program-generators/detectors-generators";
+import {
+    customBlockDefinition,
+    maxInstances,
+} from "../program-blocks/custom-blocks";
+import {pythonGenerator} from "../program-generators/custom-generators";
 
 @Component({
     selector: "app-program-workspace",
@@ -20,6 +23,7 @@ export class ProgramWorkspaceComponent {
 
     workspace!: Blockly.WorkspaceSvg;
     toolbox: string = toolbox;
+    maxBlockInstances = maxInstances;
 
     currentProgramNumber?: string;
 
@@ -54,6 +58,7 @@ export class ProgramWorkspaceComponent {
         this.workspace = Blockly.inject("blocklyDiv", {
             toolbox: this.toolbox,
             theme: this.customTheme,
+            maxInstances: this.maxBlockInstances,
         });
 
         customBlockDefinition();
@@ -102,6 +107,8 @@ export class ProgramWorkspaceComponent {
             python: pythonGenerator.workspaceToCode(this.workspace),
         };
         this.programService.updateCodeByProgramNumber(programNumber, code);
+
+        console.log(code.python);
     }
 
     runProgram() {
