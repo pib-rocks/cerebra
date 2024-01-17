@@ -12,7 +12,7 @@ import {VoiceAssistantComponent} from "./voice-assistant/voice-assistant.compone
 import {PersonalityDescriptionComponent} from "./voice-assistant/voice-assistant-personality/personality-description/personality-description.component";
 import {voiceAssistantResolver} from "./voice-assistant/voice-assistant-resolver/voice-assistant.resolver";
 import {ChatWindowComponent} from "./voice-assistant/voice-assistant-chat/chat-window/chat-window.component";
-import {ProgramWorkspaceComponent} from "./program/program-workspace/program-workspace.component";
+import {ProgramWorkspaceComponent} from "./program/program-splitscreen/program-workspace/program-workspace.component";
 import {chatResolver} from "./voice-assistant/voice-assistant-resolver/chat.resolver";
 import {personalityGuard} from "./security/personality-guard";
 
