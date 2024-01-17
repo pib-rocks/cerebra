@@ -1,13 +1,14 @@
 <div class="d-flex justify-content-between">
-    <label
+    <!-- <label
         for="{{ motor.name }}"
         id="label_{{motor.name}}"
         class="form-label"
         >{{ motor.label }}: {{ motor.position/100 }}
-    </label>
-    <div class="d-flex align-items-center">
+    </label> -->
+
+    <div class="d-flex align-items-center spacing ml-3">
         <div
-            class="form-check d-inline"
+            class="form-check d-inline mr-5"
             *ngIf="showCheckBox === true">
             <input
                 class="form-check-input"
@@ -15,22 +16,22 @@
                 type="checkbox"
                 [formControl]="motorFormControl"
                 (click)="changeTurnedOn()" />
-            <label
+            <!-- <label
                 class="form-check-label"
                 for="checkbox_{{ motor.name }}">
                 Active
-            </label>
+            </label> -->
         </div>
         <button
             *ngIf="showMotorSettingsButton === true"
             id="dialogBtn_{{ motor.name }}"
-            class="bi bi-gear btn btn-outline-primary"
-            style="margin-left: 10px; border: 0"
+            class="bi bi-gear btn btn-outline-primary ml-5"
+            style="border: 0;"
             (click)="openPopup(content)"></button>
     </div>
 </div>
 
-<app-horizontal-slider
+<!-- <app-horizontal-slider
     [unitShort]="'°'"
     [name]="motor.name"
     [numberOfThumbs]="1"
@@ -40,7 +41,7 @@
     [rightValue]="rotationRangeMax"
     [step]="1"
     [defaultValues]="[motor.position/100]">
-</app-horizontal-slider>
+</app-horizontal-slider> -->
 
 <ng-template
     #content

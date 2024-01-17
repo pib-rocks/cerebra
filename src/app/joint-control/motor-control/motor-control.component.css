@@ -18,3 +18,12 @@ label {
 label.form-label {
     font-size: 16px;
 }
+
+.spacing {
+    height: 82.5px;
+}
+
+.sizing {
+    height: 20px;
+    width: 20px;
+}

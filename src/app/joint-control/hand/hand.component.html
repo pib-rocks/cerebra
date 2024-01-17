@@ -1,72 +1,86 @@
 <app-nav-bar></app-nav-bar>
 <div class="container-fluid mt-3">
     <div class="row background-image">
-        <div class="col-md pink-corner-frame pt-3 pl-3 pr-3 mb-2">
-            <div>
-                <div class="row">
-                    <label>Select a touchpoint to adjust</label>
+        <div class="col-md pink-corner-frame pt-3 pl-3 pr-3 ">
+            <div class="row">
+                <label>Select a touchpoint to adjust</label>
+            </div>
+            <div class="row mb-3 mt-3">
+                <div class="col-3">
+                    <div
+                        class="custom-control custom-switch custom-switch-pib my-3">
+                        <input
+                            class="custom-control-input"
+                            type="checkbox"
+                            id="toggleFingerView"
+                            (input)="switchView()"
+                            [checked]="displayAllFingers" />
+                        <label
+                            class="custom-control-label"
+                            id="label_toggleFingerView"
+                            for="toggleFingerView"
+                            >Control fingers individually</label
+                        >
+                    </div>
                 </div>
-                <div class="row mb-3 mt-3">
-                    <div class="col-3">
-                        <div
-                            class="custom-control custom-switch custom-switch-pib my-3">
-                            <input
-                                class="custom-control-input"
-                                type="checkbox"
-                                id="toggleFingerView"
-                                (input)="switchView()"
-                                [checked]="displayAllFingers" />
-                            <label
-                                class="custom-control-label"
-                                id="label_toggleFingerView"
-                                for="toggleFingerView"
-                                >Control fingers individually</label
-                            >
-                        </div>
+                <!--    Remove with all functionalities 
+                    <div
+                    class="col-3 mt-2 mb-2 pr-0 d-flex justify-content-end ">
+                    <button
+                        id="home-position-btn"
+                        type="button"
+                        class="btn"
+                        (click)="reset()">
+                        <img
+                            src="../../assets/icon-home-position.png"
+                            alt=""
+                            width="19px"
+                            height="24px" />
+                        Home position
+                    </button>
+                </div> -->
+            </div>
+            <div class="row">
+                <div
+                    class="col-2"
+                    [ngClass]="{'order-3' : side == 'left'}">
+                    <div class="row">
+                        <div class="col ml-2"><label>Active</label></div>
+                        <div class="col pl-0"><label>Settings</label></div>
                     </div>
                     <div
-                        class="col-3 mt-2 mb-2 pr-0 d-flex justify-content-end ">
-                        <button
-                            id="home-position-btn"
-                            type="button"
-                            class="btn"
-                            (click)="reset()">
-                            <img
-                                src="../../assets/icon-home-position.png"
-                                alt=""
-                                width="19px"
-                                height="24px" />
-                            Home position
-                        </button>
+                        class="row"
+                        *ngFor="let motor of displayMotors">
+                        <app-motor-control [motor]="motor"></app-motor-control>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col-3">
-                        <div
-                            class="row"
-                            *ngFor="let motor of displayMotors">
-                            <app-motor-control
-                                [motor]="motor"></app-motor-control>
+                <div
+                    class="col-3"
+                    [ngClass]="{'order-2' : side == 'left'}">
+                    <div class="row ml-3">
+                        <label>Current</label>
+                    </div>
+                    <ng-container
+                        *ngFor="let motorname of displayCurrentMotors">
+                        <div class="w-50">
+                            <app-circular-slider
+                                name="{{motorname}}"></app-circular-slider>
                         </div>
-                    </div>
-                    <div class="col-3">
-                        <ng-container
-                            *ngFor="let motorname of displayCurrentMotors">
-                            <div class="col-2 pr-0 pl-0">
-                                <app-circular-slider
-                                    name="{{motorname}}"></app-circular-slider>
-                            </div>
-                        </ng-container>
-                    </div>
-
-                    <div class="col-6">
-                        <img
-                            class="pr-0 pl-0"
-                            src="../../assets/hand_{{side}}.png"
-                            alt="" />
-                    </div>
+                    </ng-container>
                 </div>
-                <div class="row"></div>
+                <div
+                    class="col-6"
+                    [ngClass]="{'order-1' : side == 'left'}">
+                    <img
+                        class="pr-0 pl-0"
+                        src="../../assets/hand_{{side}}.png"
+                        alt="" />
+                </div>
+                <div class="row mt-2 mb-5">
+                    <div class="col-4">123</div>
+                    <div class="col-4">434</div>
+                    <div class="col-4 text-right">445</div>
+                </div>
             </div>
         </div>
     </div>
