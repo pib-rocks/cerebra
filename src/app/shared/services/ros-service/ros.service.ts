@@ -60,7 +60,7 @@ export class RosService {
     setUpRos() {
         let rosUrl: string;
         if (isDevMode()) {
-            rosUrl = "127.0.0.1";
+            rosUrl = "192.168.220.151";
         } else {
             rosUrl = window.location.hostname;
         }
@@ -193,10 +193,12 @@ export class RosService {
     sendMotorSettingsMessage(
         motorSettingsMessage: MotorSettingsMessage,
     ): Observable<MotorSettingsMessage> {
+        console.log("sendMotorSettingsMessage");
         const subject: Subject<MotorSettingsMessage> = new ReplaySubject();
         this.motorSettingsService.callService(
             motorSettingsMessage,
             (response) => {
+                console.log(response + "LOL");
                 if (response["settings_applied"]) {
                     if (response["settings_persisted"]) {
                         subject.next(motorSettingsMessage);

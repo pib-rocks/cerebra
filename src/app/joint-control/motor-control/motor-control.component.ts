@@ -1,4 +1,11 @@
-import {Component, Input, OnInit, TemplateRef, ViewChild} from "@angular/core";
+import {
+    Component,
+    ElementRef,
+    Input,
+    OnInit,
+    TemplateRef,
+    ViewChild,
+} from "@angular/core";
 import {FormControl} from "@angular/forms";
 import {BehaviorSubject} from "rxjs";
 import {MotorService} from "../../shared/services/motor-service/motor.service";
@@ -28,6 +35,7 @@ export class MotorControlComponent implements OnInit {
     accelerationSubject$ = new BehaviorSubject<number>(NaN);
     velocitySubject$ = new BehaviorSubject<number>(NaN);
     positionSubject$ = new BehaviorSubject<number[]>([]);
+    invertSubject$ = new BehaviorSubject<boolean>(false);
 
     motorFormControl: FormControl = new FormControl(true);
 
@@ -62,6 +70,7 @@ export class MotorControlComponent implements OnInit {
 
             this.motorFormControl.setValue(this.motor.settings.turnedOn);
             this.periodSubject$.next([this.motor.settings.period]);
+            this.invertSubject$.next(this.motor.settings.invert);
         });
 
         this.motorFormControl.valueChanges.subscribe(() => {
@@ -137,6 +146,10 @@ export class MotorControlComponent implements OnInit {
     }
     changeTurnedOn() {
         this.motor.settings.turnedOn = !this.motor.settings.turnedOn;
+        this.motorService.updateMotorFromComponent(this.motor);
+    }
+    setInverteState() {
+        this.motor.settings.invert = !this.motor.settings.invert;
         this.motorService.updateMotorFromComponent(this.motor);
     }
 }

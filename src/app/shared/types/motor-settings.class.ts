@@ -1,3 +1,4 @@
+import {concat} from "rxjs";
 import {MotorSettingsMessage} from "../ros-message-types/motorSettingsMessage";
 
 export class MotorSettings {
@@ -11,6 +12,7 @@ export class MotorSettings {
     rotationRangeMin: number;
     rotationRangeMax: number;
     turnedOn: boolean;
+    invert: boolean;
 
     constructor(
         velocity: number = 0,
@@ -23,6 +25,7 @@ export class MotorSettings {
         rotationRangeMax: number = 9000,
         turnedOn: boolean = true,
         public active: boolean = true,
+        invert: boolean = false,
     ) {
         this.velocity = velocity;
         this.acceleration = acceleration;
@@ -33,6 +36,7 @@ export class MotorSettings {
         this.rotationRangeMin = rotationRangeMin;
         this.rotationRangeMax = rotationRangeMax;
         this.turnedOn = turnedOn;
+        this.invert = invert;
     }
 
     toString(): string {
@@ -75,7 +79,8 @@ export class MotorSettings {
             this.acceleration !== settings.acceleration ||
             this.deceleration !== settings.deceleration ||
             this.period !== settings.period ||
-            this.active !== settings.active
+            this.active !== settings.active ||
+            this.invert !== settings.invert
         ) {
             return false;
         }
@@ -90,7 +95,8 @@ export class MotorSettings {
             settingsCopy.deceleration == this.deceleration &&
             settingsCopy.period == this.period &&
             settingsCopy.effort == this.effort &&
-            settingsCopy.active == this.active
+            settingsCopy.active == this.active &&
+            settingsCopy.invert == this.invert
         ) {
             if (settingsCopy instanceof MotorSettings) {
                 if (
@@ -125,6 +131,7 @@ export class MotorSettings {
             this.period = settingsCopy.period;
             this.effort = settingsCopy.effort;
             this.active = settingsCopy.active;
+            this.invert = settingsCopy.invert;
             if (settingsCopy instanceof MotorSettings) {
                 this.pulseWidthMin = settingsCopy.pulseWidthMin;
                 this.pulseWidthMax = settingsCopy.pulseWidthMax;
@@ -155,6 +162,7 @@ export class MotorSettings {
             this.rotationRangeMax,
             this.turnedOn,
             this.active,
+            this.invert,
         );
     }
 }

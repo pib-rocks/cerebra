@@ -178,6 +178,7 @@ export class MotorService {
     }
 
     sendMotorSettingsMessage(motor: Motor) {
+        console.log(motor);
         this.rosService.sendMotorSettingsMessage(
             motor.parseMotorToSettingsMessage(),
         );
@@ -347,6 +348,7 @@ export class MotorService {
                     motor.settings.period = o["period"];
                     motor.settings.turnedOn = o["turnedOn"];
                     motor.settings.active = o["active"];
+                    motor.settings.invert = o["invert"];
 
                     motor.motorSubject.next(motor.clone());
                     if (!motor.settings.active) {

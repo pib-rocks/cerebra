@@ -105,6 +105,7 @@ export class Motor {
             acceleration: this.settings.acceleration,
             period: this.settings.period,
             active: this.settings.active,
+            invert: this.settings.invert,
         };
     }
     parseMotorToJointTrajectoryMessage(): JointTrajectoryMessage {

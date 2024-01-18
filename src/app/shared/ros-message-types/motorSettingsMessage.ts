@@ -11,4 +11,5 @@ export interface MotorSettingsMessage {
     period: number;
     active: boolean;
     effort?: number;
+    invert: boolean;
 }
