@@ -12,7 +12,7 @@ import {MotorControlComponent} from "./motor-control.component";
 import {Motor} from "../../shared/types/motor.class";
 import {MotorSettings} from "../../shared/types/motor-settings.class";
 import {Group} from "../../shared/types/motor.enum";
-import {BehaviorSubject, Subject} from "rxjs";
+import {BehaviorSubject} from "rxjs";
 import {RosService} from "../../shared/services/ros-service/ros.service";
 import {VerticalSliderComponent} from "../../sliders/vertical-slider/vertical-slider.component";
 import {HttpClientTestingModule} from "@angular/common/http/testing";
@@ -234,7 +234,6 @@ describe("MotorControlComponent", () => {
         expect(spyOnSetPulseRanges).toHaveBeenCalled();
         expect(component.motor.settings.pulseWidthMin).toBe(300);
         expect(component.motor.settings.pulseWidthMax).toBe(300);
-        console.info(JSON.stringify(component.motor));
         expect(motorService.updateMotorFromComponent).toHaveBeenCalledWith(
             jasmine.objectContaining({
                 name: "ring_left_stretch",

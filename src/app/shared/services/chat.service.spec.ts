@@ -1,13 +1,11 @@
 import {TestBed, waitForAsync} from "@angular/core/testing";
 
 import {ChatService} from "./chat.service";
-import {HttpClientTestingModule} from "@angular/common/http/testing";
 import {ApiService} from "./api.service";
 import {Chat} from "../types/chat.class";
-import {BehaviorSubject, Observable, Subject, map, of} from "rxjs";
+import {BehaviorSubject, Subject, map, of} from "rxjs";
 import {ChatMessage} from "../types/chat-message";
 import {RosService} from "./ros-service/ros.service";
-import {UrlConstants} from "./url.constants";
 
 describe("ChatService", () => {
     let service: ChatService;
@@ -62,7 +60,6 @@ describe("ChatService", () => {
     });
 
     it("should get the messages for the provided chat id", waitForAsync(() => {
-        //BLAB
         const message: ChatMessage = {
             messageId: "message_id",
             timestamp: "tomorrow",

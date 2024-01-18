@@ -7,7 +7,6 @@ import {SidebarService} from "../interfaces/sidebar-service.interface";
 import {SidebarElement} from "../interfaces/sidebar-element.interface";
 import {ChatMessage} from "../types/chat-message";
 import {RosService} from "./ros-service/ros.service";
-import {ChatMessage as RosChatMessage} from "../ros-message-types/ChatMessage";
 
 @Injectable({
     providedIn: "root",

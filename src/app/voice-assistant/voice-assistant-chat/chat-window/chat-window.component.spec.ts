@@ -1,4 +1,4 @@
-import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
+import {ComponentFixture, TestBed} from "@angular/core/testing";
 
 import {ChatWindowComponent} from "./chat-window.component";
 import {HttpClientTestingModule} from "@angular/common/http/testing";

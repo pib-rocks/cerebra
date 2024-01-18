@@ -3,13 +3,10 @@ import * as ROSLIB from "roslib";
 import {RosService} from "./ros.service";
 import {createEmptyJointTrajectoryMessage} from "../../ros-message-types/jointTrajectoryMessage";
 import {MotorSettingsMessage} from "../../ros-message-types/motorSettingsMessage";
-import {VoiceAssistantMsg} from "../../ros-message-types/voiceAssistant";
 import {MotorSettingsSrvResponse} from "../../ros-message-types/motorSettingsSrvResponse";
-import {BehaviorSubject, Observable} from "rxjs";
-import {VoiceAssistant} from "../../types/voice-assistant";
+import {Observable} from "rxjs";
 import {VoiceAssistantState} from "../../ros-message-types/VoiceAssistantState";
 import {SetVoiceAssistantStateResponse} from "../../ros-message-types/SetVoiceAssistantState";
-import {animate} from "@angular/animations";
 
 describe("RosService", () => {
     let rosService: RosService;

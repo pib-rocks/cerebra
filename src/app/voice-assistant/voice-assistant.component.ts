@@ -5,7 +5,6 @@ import {VoiceAssistantService} from "../shared/services/voice-assistant.service"
 import {FormControl, FormGroup, Validators} from "@angular/forms";
 import {NgbModal, NgbModalRef} from "@ng-bootstrap/ng-bootstrap";
 import {VoiceAssistant} from "../shared/types/voice-assistant";
-import {RosService} from "../shared/services/ros-service/ros.service";
 import {Router} from "@angular/router";
 import {VoiceAssistantState} from "../shared/types/voice-assistant-state";
 import {CerebraRegex} from "../shared/types/cerebra-regex";
@@ -82,11 +81,10 @@ export class VoiceAssistantComponent implements OnInit {
     }
 
     toggleVoiceAssistant() {
-        let turnedOn = !this.voiceAssistantActivationToggle.value;
-        let nextState: VoiceAssistantState = {turnedOn, chatId: ""};
+        const turnedOn = !this.voiceAssistantActivationToggle.value;
+        const nextState: VoiceAssistantState = {turnedOn, chatId: ""};
 
         if (turnedOn) {
-            console.info(this.router.url);
             const match = RegExp(
                 `/voice-assistant/${CerebraRegex.UUID}/chat/(${CerebraRegex.UUID})`,
             ).exec(this.router.url);

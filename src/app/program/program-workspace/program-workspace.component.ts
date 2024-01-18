@@ -1,4 +1,11 @@
-import {Component, ElementRef, ViewChild} from "@angular/core";
+import {
+    AfterViewInit,
+    Component,
+    ElementRef,
+    OnDestroy,
+    OnInit,
+    ViewChild,
+} from "@angular/core";
 import * as Blockly from "blockly";
 import {toolbox} from "../blockly";
 import {ActivatedRoute} from "@angular/router";
@@ -14,7 +21,9 @@ import {pythonGenerator} from "../program-generators/detectors-generators";
     templateUrl: "./program-workspace.component.html",
     styleUrls: ["./program-workspace.component.css"],
 })
-export class ProgramWorkspaceComponent {
+export class ProgramWorkspaceComponent
+    implements OnInit, AfterViewInit, OnDestroy
+{
     observer!: ResizeObserver;
     @ViewChild("blocklyDiv") blocklyDiv!: ElementRef<HTMLDivElement>;
 

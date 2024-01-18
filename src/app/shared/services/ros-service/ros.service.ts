@@ -6,7 +6,6 @@ import {DiagnosticStatus} from "../../ros-message-types/DiagnosticStatus.message
 import {JointTrajectoryMessage} from "../../ros-message-types/jointTrajectoryMessage";
 import {rosDataTypes} from "../../ros-message-types/rosDataTypePaths.enum";
 import {rosTopics} from "./rosTopics.enum";
-import {VoiceAssistantMsg} from "../../ros-message-types/voiceAssistant";
 import {rosServices} from "./rosServices.enum";
 import {MotorSettingsError} from "../../error/motor-settings-error";
 import {
@@ -14,12 +13,8 @@ import {
     SetVoiceAssistantStateResponse,
 } from "../../ros-message-types/SetVoiceAssistantState";
 import {ChatMessage} from "../../ros-message-types/ChatMessage";
-import {VoiceAssistantService} from "../voice-assistant.service";
 import {VoiceAssistantState} from "../../ros-message-types/VoiceAssistantState";
-import {
-    GetVoiceAssistantStateRequest,
-    GetVoiceAssistantStateResponse,
-} from "../../ros-message-types/GetVoiceAssistantState";
+import {GetVoiceAssistantStateResponse} from "../../ros-message-types/GetVoiceAssistantState";
 
 @Injectable({
     providedIn: "root",
@@ -83,7 +78,7 @@ export class RosService {
     setUpRos() {
         let rosUrl: string;
         if (isDevMode()) {
-            rosUrl = "192.168.1.211";
+            rosUrl = "127.0.0.1";
         } else {
             rosUrl = window.location.hostname;
         }
@@ -223,19 +218,20 @@ export class RosService {
             this.voiceAssistantStateReceiver$.next(message);
         });
         const getVoiceAssistantStateService: ROSLIB.Service<
-            GetVoiceAssistantStateRequest,
+            Record<string, never>,
             GetVoiceAssistantStateResponse
         > = this.createRosService(
             rosServices.getVoiceAssistantState,
             rosDataTypes.getVoiceAssistantState,
         );
-        getVoiceAssistantStateService.callService({}, (response) => {
-            console.info(JSON.stringify(response));
-            this.voiceAssistantStateReceiver$.next(
-                response.voice_assistant_state,
-            ),
-                (error: any) => console.info("error occured: " + error);
-        });
+        getVoiceAssistantStateService.callService(
+            {},
+            (response) =>
+                this.voiceAssistantStateReceiver$.next(
+                    response.voice_assistant_state,
+                ),
+            (error: any) => console.error("error occured: " + error),
+        );
     }
 
     subscribeChatMessageTopic() {

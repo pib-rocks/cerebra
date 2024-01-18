@@ -3,7 +3,7 @@ import {VoiceAssistantService} from "./voice-assistant.service";
 import {HttpClientTestingModule} from "@angular/common/http/testing";
 import {VoiceAssistant} from "../types/voice-assistant";
 import {ApiService} from "./api.service";
-import {BehaviorSubject, Observable, Subject} from "rxjs";
+import {BehaviorSubject} from "rxjs";
 import {RosService} from "./ros-service/ros.service";
 
 describe("VoiceAssistantService", () => {
@@ -138,7 +138,7 @@ describe("VoiceAssistantService", () => {
 
     it("should be subscribed to the voice-assistant-state-receiver in the ros-service", waitForAsync(() => {
         let state = {turnedOn: true, chatId: "original-chat-id"};
-        let expectedState = {turnedOn: false, chatId: "next-chat-id"};
+        const expectedState = {turnedOn: false, chatId: "next-chat-id"};
         service.voiceAssistantStateObservable.subscribe(
             (nextState) => (state = nextState),
         );
