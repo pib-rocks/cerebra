@@ -352,13 +352,13 @@ export const toolbox: string = `<xml xmlns="http://www.w3.org/1999/xhtml" id="to
         </value>
     </block>
 </category>
-<sep></sep>
-<category name="Variables" colour="#A65C81" custom="VARIABLE_DYNAMIC"></category>
-<category name="Functions" colour="#9A5CA6" custom="PROCEDURE"></category>
 <category name="Time" colour="#ffff00">
     <block type = "sleep_for_seconds"></block>
     <block type = "loop_timer"></block>
 </category>
+<sep></sep>
+<category name="Variables" colour="#A65C81" custom="VARIABLE_DYNAMIC"></category>
+<category name="Functions" colour="#9A5CA6" custom="PROCEDURE"></category>
 <sep></sep>
 <category name="Motoric skills" colour="#A62C81"></category>
 <category name="Language skills" colour="#4A1BA6"></category>
