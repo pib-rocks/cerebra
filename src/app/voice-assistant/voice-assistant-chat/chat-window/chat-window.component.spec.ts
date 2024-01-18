@@ -4,6 +4,7 @@ import {ChatWindowComponent} from "./chat-window.component";
 import {HttpClientTestingModule} from "@angular/common/http/testing";
 import {ActivatedRoute} from "@angular/router";
 import {BehaviorSubject} from "rxjs";
+import {RouterTestingModule} from "@angular/router/testing";
 
 describe("ChatWindowComponent", () => {
     let component: ChatWindowComponent;
@@ -15,7 +16,7 @@ describe("ChatWindowComponent", () => {
     beforeEach(async () => {
         await TestBed.configureTestingModule({
             declarations: [ChatWindowComponent],
-            imports: [HttpClientTestingModule],
+            imports: [HttpClientTestingModule, RouterTestingModule],
             providers: [
                 {
                     provide: ActivatedRoute,
