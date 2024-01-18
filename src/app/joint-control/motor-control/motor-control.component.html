@@ -1,4 +1,4 @@
-<div class="d-flex justify-content-between">
+<div class="justify-content-between ml-4">
     <!-- <label
         for="{{ motor.name }}"
         id="label_{{motor.name}}"
@@ -6,9 +6,9 @@
         >{{ motor.label }}: {{ motor.position/100 }}
     </label> -->
 
-    <div class="d-flex align-items-center spacing ml-3">
+    <div class="d-flex align-items-center spacing ">
         <div
-            class="form-check d-inline mr-5"
+            class="form-check d-inline col-6"
             *ngIf="showCheckBox === true">
             <input
                 class="form-check-input"
@@ -22,12 +22,14 @@
                 Active
             </label> -->
         </div>
-        <button
-            *ngIf="showMotorSettingsButton === true"
-            id="dialogBtn_{{ motor.name }}"
-            class="bi bi-gear btn btn-outline-primary ml-5"
-            style="border: 0;"
-            (click)="openPopup(content)"></button>
+        <div class="col">
+            <button
+                *ngIf="showMotorSettingsButton === true"
+                id="dialogBtn_{{ motor.name }}"
+                class="bi bi-gear btn btn-outline-primary"
+                style="border: 0;"
+                (click)="openPopup(content)"></button>
+        </div>
     </div>
 </div>
 
@@ -79,7 +81,7 @@
             </div>
             <div class="col col-md-auto d-flex justify-content-center">
                 <button
-                    class="btn pr-0 pl-0"
+                    class="btn pr-0 pl-0 "
                     (click)="changeIcon()"
                     id="toggle-settings">
                     <img

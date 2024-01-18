@@ -23,53 +23,51 @@
                         </button>
                     </div>
                 </div>
+
                 <div class="row">
-                    <ng-template [ngIf]="side == 'right'">
-                        <div class="col-3">
-                            <ng-container *ngFor="let motor of motors">
-                                <app-motor-control [motor]="motor">
-                                </app-motor-control>
-                            </ng-container>
-                        </div>
-                        <div class="col-3">
-                            <ng-container
-                                *ngFor="let motorname of displayCurrentMotors">
-                                <div class="col-2 pr-0 pl-0">
-                                    <app-circular-slider
-                                        name="{{motorname}}"></app-circular-slider>
+                    <div
+                        class="col-6"
+                        [ngClass]="{'order-3' : side == 'left'}">
+                        <div class="row">
+                            <div class="col">
+                                <div class="row">
+                                    <div class="col ml-2">
+                                        <label>Active</label>
+                                    </div>
+                                    <div class="col pl-0">
+                                        <label>Settings</label>
+                                    </div>
+                                    <div class="col">
+                                        <label>Current</label>
+                                    </div>
                                 </div>
-                            </ng-container>
+                            </div>
                         </div>
-                        <div class="col-6">
-                            <img
-                                class="pr-0 pl-0"
-                                src="../../assets/arm_{{side}}.png"
-                                alt="" />
+                        <div class="row">
+                            <div>
+                                <ng-container *ngFor="let motor of motors">
+                                    <div class="row">
+                                        <div class="col-8">
+                                            <app-motor-control [motor]="motor">
+                                            </app-motor-control>
+                                        </div>
+                                        <div class="col">
+                                            <app-circular-slider
+                                                name="{{motor.name}}"></app-circular-slider>
+                                        </div>
+                                    </div>
+                                </ng-container>
+                            </div>
                         </div>
-                    </ng-template>
-                    <ng-template [ngIf]="side != 'right'">
-                        <div class="col-3 order-10">
-                            <ng-container *ngFor="let motor of motors">
-                                <app-motor-control [motor]="motor">
-                                </app-motor-control>
-                            </ng-container>
-                        </div>
-                        <div class="col-3 order-7">
-                            <ng-container
-                                *ngFor="let motorname of displayCurrentMotors">
-                                <div class="col-2 pr-0 pl-0">
-                                    <app-circular-slider
-                                        name="{{motorname}}"></app-circular-slider>
-                                </div>
-                            </ng-container>
-                        </div>
-                        <div class="col-6 order-1">
-                            <img
-                                class="pr-0 pl-0"
-                                src="../../assets/arm_{{side}}.png"
-                                alt="" />
-                        </div>
-                    </ng-template>
+                    </div>
+                    <div
+                        class="col-6"
+                        [ngClass]="{'order-1' : side == 'left'}">
+                        <img
+                            class="pr-0 pl-0"
+                            src="../../assets/arm_{{side}}.png"
+                            alt="" />
+                    </div>
                 </div>
                 <div class="row">
                     <div class="col-1">
