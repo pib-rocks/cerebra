@@ -14,6 +14,12 @@ export class ProgramService {
     programsSubject: BehaviorSubject<Program[]> = new BehaviorSubject<
         Program[]
     >([]);
+    viewModeSubject: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(
+        false,
+    );
+    pythonCodeSubject: BehaviorSubject<string> = new BehaviorSubject<string>(
+        "",
+    );
 
     constructor(private apiService: ApiService) {
         this.getAllPrograms();

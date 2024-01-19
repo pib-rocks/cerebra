@@ -29,7 +29,10 @@ import {HorizontalSliderComponent} from "./sliders/horizontal-slider/horizontal-
 import {VoiceAssistantComponent} from "./voice-assistant/voice-assistant.component";
 import {PersonalityDescriptionComponent} from "./voice-assistant/personality-description/personality-description.component";
 import {ChatWindowComponent} from "./voice-assistant/voice-assistant-chat/chat-window/chat-window.component";
-import {ProgramWorkspaceComponent} from "./program/program-workspace/program-workspace.component";
+import {ProgramWorkspaceComponent} from "./program/program-splitscreen/program-workspace/program-workspace.component";
+import {ProgramSplitscreenComponent} from "./program/program-splitscreen/program-splitscreen.component";
+import {AngularSplitModule} from "angular-split";
+import {HIGHLIGHT_OPTIONS, HighlightModule} from "ngx-highlightjs";
 import {CerebraErrorHandler} from "./global-error-handler/service/cerebra-error-handler.service";
 import {PersonalityWrapperComponent} from "./voice-assistant/personality-wrapper/personality-wrapper.component";
 
@@ -54,6 +57,7 @@ import {PersonalityWrapperComponent} from "./voice-assistant/personality-wrapper
         PersonalityDescriptionComponent,
         ChatWindowComponent,
         ProgramWorkspaceComponent,
+        ProgramSplitscreenComponent,
         PersonalityWrapperComponent,
     ],
     imports: [
@@ -67,9 +71,20 @@ import {PersonalityWrapperComponent} from "./voice-assistant/personality-wrapper
         BrowserAnimationsModule,
         NgbDropdownModule,
         FormsModule,
+        AngularSplitModule,
+        HighlightModule,
     ],
     providers: [
         MotorCurrentService,
+        {
+            provide: HIGHLIGHT_OPTIONS,
+            useValue: {
+                coreLibraryLoader: () => import("highlight.js/lib/core"),
+                languages: {
+                    python: () => import("highlight.js/lib/languages/python"),
+                },
+            },
+        },
         {
             provide: ErrorHandler,
             useClass: CerebraErrorHandler,
