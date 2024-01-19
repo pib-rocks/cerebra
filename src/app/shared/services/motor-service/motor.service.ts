@@ -133,7 +133,7 @@ export class MotorService {
         return from(this.motorsSubject).pipe(
             map((m) =>
                 m.filter(
-                    (n) => n.group === group && n.settings.active === true,
+                    (n) => n.group === group && n.settings.visible === true,
                 ),
             ),
         );
@@ -317,7 +317,7 @@ export class MotorService {
                 motor.settings.velocity = response["velocity"];
                 motor.settings.period = response["period"];
                 motor.settings.turnedOn = response["turnedOn"];
-                motor.settings.active = response["active"];
+                motor.settings.visible = response["visible"];
                 motor.motorSubject.next(motor.clone());
             });
     }
@@ -346,10 +346,10 @@ export class MotorService {
                     motor.settings.velocity = o["velocity"];
                     motor.settings.period = o["period"];
                     motor.settings.turnedOn = o["turnedOn"];
-                    motor.settings.active = o["active"];
+                    motor.settings.visible = o["visible"];
 
                     motor.motorSubject.next(motor.clone());
-                    if (!motor.settings.active) {
+                    if (!motor.settings.visible) {
                         console.log(o["name"]);
                     }
                 });
