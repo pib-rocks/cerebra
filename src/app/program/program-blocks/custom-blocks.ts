@@ -9,5 +9,3 @@ export function customBlockDefinition() {
 
     face_detector_blocks["face_detector_running"].editable_ = false;
 }
-
-export const maxInstances = {loop_timer: 1};

@@ -23,21 +23,11 @@ export const time_blocks = Blockly.common.createBlockDefinitionsFromJsonArray([
         helpUrl: "",
     },
     {
-        type: "loop_timer",
-        message0: "Loop time of %1 seconds",
-        args0: [
-            {
-                type: "field_number",
-                name: "LOOP_TIME",
-                value: 10,
-                min: 1,
-                max: 600,
-                precision: 1,
-            },
-        ],
-        output: "Boolean",
+        type: "get_system_time",
+        message0: "get system time",
+        output: "Number",
         colour: 130,
-        tooltip: "Breaks out of the loop after specified time",
+        tooltip: "Get the system time in milliseconds from 01. 01. 1970",
         helpUrl: "",
     },
 ]);
