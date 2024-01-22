@@ -10,7 +10,7 @@ export const time_blocks = Blockly.common.createBlockDefinitionsFromJsonArray([
                 name: "SECONDS",
                 value: 0.1,
                 min: 0.001,
-                max: 10,
+                max: 1000,
                 precision: 0.001,
             },
         ],
