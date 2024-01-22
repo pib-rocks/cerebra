@@ -1,4 +1,4 @@
-import {pythonGenerator} from "./custom-generators";
+import {pythonGenerator} from "./detectors-generators";
 
 describe("pythonGenerator", () => {
     it("should insert face detection code when the setting is 'start' and nothing when it's 'stop'", () => {

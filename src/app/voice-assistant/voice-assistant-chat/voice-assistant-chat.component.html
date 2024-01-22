@@ -52,6 +52,7 @@
         class="row m-2 mt-4 pr-2"
         id="row-name">
         <label
+            ngbAutofocus
             for="name-input"
             class="col-3 mt-2 justify-content-end"
             id="label-name"
@@ -62,6 +63,7 @@
             class="col-9"
             [formControl]="topicFormControl"
             type="text"
+            (keydown)="($event).key ==='Enter' ? this.saveChat(): ''"
             name="name-input"
             id="name-input" />
     </div>

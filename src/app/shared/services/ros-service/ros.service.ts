@@ -60,7 +60,7 @@ export class RosService {
     setUpRos() {
         let rosUrl: string;
         if (isDevMode()) {
-            rosUrl = "192.168.0.78";
+            rosUrl = "127.0.0.1";
         } else {
             rosUrl = window.location.hostname;
         }
@@ -204,11 +204,13 @@ export class RosService {
                         subject.error(
                             new MotorSettingsError(motorSettingsMessage, true),
                         );
+                        throw Error("Settings couldn't be persisted");
                     }
                 } else {
                     subject.error(
                         new MotorSettingsError(motorSettingsMessage, false),
                     );
+                    throw Error("Settings couldn't be applied");
                 }
             },
             (errorMsg) => {
