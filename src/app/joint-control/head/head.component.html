@@ -1,8 +1,8 @@
 <app-nav-bar></app-nav-bar>
 <div class="container-fluid">
-    <div class="row">
-        <div>
-            <div class="col">
+    <div class="background-image">
+        <div class="pink-corner-frame pt-3 pl-3 pr-3 mb-2">
+            <div>
                 <div class="d-flex flex-row-reverse">
                     <button
                         id="home-position-btn"
@@ -17,28 +17,53 @@
                         Home position
                     </button>
                 </div>
-                <div>
-                    <ng-container *ngFor="let motor of motors">
-                        <div class="col-8">
-                            <app-motor-control
-                                [motor]="motor"
-                                [showCheckBox]="motor.name === 'turn_head_motor' ? false : true"
-                                [showMotorSettingsButton]="motor.name === 'turn_head_motor' ? false : true">
-                            </app-motor-control>
-                        </div>
-                        <app-circular-slider
-                            name="{{motor.name}}"></app-circular-slider>
-                    </ng-container>
-                </div>
             </div>
-        </div>
-        <div class="col">
-            <div class="container-div">
-                <img
-                    class="container"
-                    style="width: 34rem"
-                    src="../../assets/head.png"
-                    alt="" />
+            <div class="row">
+                <div class="col-6">
+                    <div class="row">
+                        <div class="col">
+                            <div class="row">
+                                <div class="col ml-2">
+                                    <label>Active</label>
+                                </div>
+                                <div class="col pl-0">
+                                    <label>Settings</label>
+                                </div>
+                                <div class="col">
+                                    <label>Current</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div>
+                            <ng-container *ngFor="let motor of motors">
+                                <div class="row">
+                                    <div class="col-8">
+                                        <app-motor-control
+                                            [motor]="motor"
+                                            [showCheckBox]="motor.name === 'turn_head_motor' ? false : true"
+                                            [showMotorSettingsButton]="motor.name === 'turn_head_motor' ? false : true">
+                                        </app-motor-control>
+                                    </div>
+                                    <div class="col">
+                                        <app-circular-slider
+                                            name="{{motor.name}}"></app-circular-slider>
+                                    </div>
+                                </div>
+                            </ng-container>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="container-div">
+                        <img
+                            class="container"
+                            style="width: 34rem"
+                            src="../../assets/head.png"
+                            alt="" />
+                    </div>
+                </div>
             </div>
         </div>
     </div>

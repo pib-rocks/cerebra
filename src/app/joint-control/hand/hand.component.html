@@ -23,54 +23,55 @@
                         Home position
                     </button>
                 </div> -->
-        </div>
-        <div class="row">
-            <div
-                class="col-6"
-                [ngClass]="{'order-3' : side == 'left'}">
-                <div class="row">
-                    <div class="col ml-2">
-                        <label>Active</label>
-                    </div>
-                    <div class="col pl-0">
-                        <label>Settings</label>
-                    </div>
-                    <div class="col">
-                        <label>Current</label>
-                    </div>
-                </div>
-                <div class="row">
-                    <div>
-                        <ng-container *ngFor="let motor of motors">
-                            <div class="row">
-                                <div class="col-8">
-                                    <app-motor-control [motor]="motor">
-                                    </app-motor-control>
-                                </div>
-                                <div class="col">
-                                    <app-circular-slider
-                                        name="{{motor.name}}"></app-circular-slider>
-                                </div>
-                            </div>
-                        </ng-container>
-                    </div>
-                </div>
-            </div>
 
-            <div
-                class="col-6"
-                [ngClass]="{'order-1' : side == 'left'}">
-                <img
-                    class="pr-0 pl-0 "
-                    style="width: 800px;"
-                    src="../../assets/hand_{{side}}.png"
-                    alt="" />
+            <div class="row">
+                <div
+                    class="col-6"
+                    [ngClass]="{'order-3' : side == 'left'}">
+                    <div class="row">
+                        <div class="col ml-2">
+                            <label>Active</label>
+                        </div>
+                        <div class="col pl-0">
+                            <label>Settings</label>
+                        </div>
+                        <div class="col">
+                            <label>Current</label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div>
+                            <ng-container *ngFor="let motor of motors">
+                                <div class="row">
+                                    <div class="col-8">
+                                        <app-motor-control [motor]="motor">
+                                        </app-motor-control>
+                                    </div>
+                                    <div class="col">
+                                        <app-circular-slider
+                                            name="{{motor.name}}"></app-circular-slider>
+                                    </div>
+                                </div>
+                            </ng-container>
+                        </div>
+                    </div>
+                </div>
+
+                <div
+                    class="col-6"
+                    [ngClass]="{'order-1' : side == 'left'}">
+                    <img
+                        class="pr-0 pl-0 "
+                        style="width: 800px;"
+                        src="../../assets/hand_{{side}}.png"
+                        alt="" />
+                </div>
             </div>
         </div>
-    </div>
-    <div class="row mt-2 mb-5">
-        <div class="col-4">123</div>
-        <div class="col-4">434</div>
-        <div class="col-4 text-right">445</div>
+        <div class="row mt-2 mb-5">
+            <div class="col-4">123</div>
+            <div class="col-4">434</div>
+            <div class="col-4 text-right">445</div>
+        </div>
     </div>
 </div>
