@@ -7,4 +7,5 @@ export enum rosTopics {
     cameraQualityTopic = "/quality_factor_topic",
     chatMessages = "/chat_messages",
     voiceAssistantState = "/voice_assistant_state",
+    motorSettingsTopicName = "/motor_settings",
 }

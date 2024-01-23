@@ -124,6 +124,10 @@ export class RosService {
             rosTopics.voiceAssistantState,
             rosDataTypes.voiceAssistantState,
         );
+        this.motorSettingsTopic = this.createRosTopic(
+            rosTopics.motorSettingsTopicName,
+            rosDataTypes.motorSettings,
+        );
 
         this.motorSettingsService = this.createRosService(
             rosServices.motorSettingsServiceName,
