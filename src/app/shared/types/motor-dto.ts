@@ -1,6 +1,6 @@
 export interface BrickletPinDTO {
-    print: number;
-    uid: string;
+    pin: number;
+    bricklet: string;
 }
 
 export interface MotorSettingsDTO {
