@@ -150,7 +150,7 @@
             <div class="form-check mb-3 ml-1">
                 <input
                     type="checkbox"
-                    [checked]="motor.settings.invert"
+                    [checked]="invertSubject$"
                     class="form-check-input"
                     id="invertMotor"
                     (click)="setInverteState()" />
