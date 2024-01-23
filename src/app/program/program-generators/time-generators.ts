@@ -1,7 +1,7 @@
 import {Block} from "blockly/core/block";
 import {Order, pythonGenerator} from "blockly/python";
 
-pythonGenerator.addReservedWords("lt_start_time,lt_start");
+pythonGenerator.addReservedWords("time");
 
 export function sleep_for_seconds(
     block: Block,
