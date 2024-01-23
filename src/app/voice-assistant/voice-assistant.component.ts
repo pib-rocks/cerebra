@@ -36,8 +36,6 @@ export class VoiceAssistantComponent implements OnInit {
         private modalService: NgbModal,
     ) {}
 
-    CHAT_ROUTE_PATTERN = /^\/voice-assistant\/chat\/([a-zA-Z0-9-]+$)/;
-
     voiceAssistantActivationToggle = new FormControl(false);
     voiceAssistantActiveStatus = false;
 
