@@ -149,7 +149,6 @@ export class MotorControlComponent implements OnInit {
         this.motorService.updateMotorFromComponent(this.motor);
     }
     setInverteState() {
-        this.invertSubject$.next(!this.motor.settings.invert);
         this.motor.settings.invert = !this.motor.settings.invert;
         this.motorService.updateMotorFromComponent(this.motor);
     }
