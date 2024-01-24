@@ -281,6 +281,7 @@ describe("MotorService", () => {
             deceleration: 500,
             period: 500,
             active: true,
+            invert: false,
         };
         service.updateMotorSettingsFromMotorSettingsMessage(
             motorSettingsMessage,
@@ -339,6 +340,7 @@ describe("MotorService", () => {
             deceleration: 500,
             period: 500,
             active: true,
+            invert: false,
         };
         const motors: Motor[] = service.getMotorsByGroupNoOpposition(
             Group.right_hand,

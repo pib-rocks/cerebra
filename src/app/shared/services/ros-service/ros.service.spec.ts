@@ -23,6 +23,7 @@ describe("RosService", () => {
         deceleration: 100,
         period: 100,
         active: true,
+        invert: false,
     };
 
     beforeEach(() => {
