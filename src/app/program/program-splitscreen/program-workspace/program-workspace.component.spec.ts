@@ -12,10 +12,9 @@ describe("ProgramWorkspaceComponent", () => {
     let fixture: ComponentFixture<ProgramWorkspaceComponent>;
     let programService: jasmine.SpyObj<ProgramService>;
     let params: BehaviorSubject<Params>;
-
     beforeEach(async () => {
         const programServiceSpy: jasmine.SpyObj<ProgramService> =
-            jasmine.createSpyObj(ProgramService, [
+            jasmine.createSpyObj("ProgramService", [
                 "getProgramFromCache",
                 "getAllPrograms",
                 "getProgramByProgramNumber",
@@ -33,6 +32,8 @@ describe("ProgramWorkspaceComponent", () => {
                 new Program("name-2", "id-2"),
             ]),
         );
+        programServiceSpy.viewModeSubject = new BehaviorSubject(false);
+        programServiceSpy.pythonCodeSubject = new BehaviorSubject("");
 
         params = new BehaviorSubject<Params>({uuid: "id-0"});
 
@@ -105,5 +106,78 @@ describe("ProgramWorkspaceComponent", () => {
         expect(
             programService.updateCodeByProgramNumber,
         ).toHaveBeenCalledOnceWith("id-1", expectedCode);
+    });
+
+    it("generateCode should return when workspace.isDragging is true", () => {
+        const isDraggingSpy = spyOn(
+            component.workspace,
+            "isDragging",
+        ).and.returnValue(true);
+        const supportedEventsSpy = spyOn(component.supportedEvents, "has");
+        const event = new Blockly.Events.BubbleOpen();
+        component.generateCode(event);
+        expect(isDraggingSpy).toHaveBeenCalled();
+        expect(supportedEventsSpy).not.toHaveBeenCalled();
+    });
+
+    it("generateCode should return when event-type is not of supportedEvents", () => {
+        const isDraggingSpy = spyOn(
+            component.workspace,
+            "isDragging",
+        ).and.returnValue(false);
+        const supportedEventsSpy = spyOn(
+            component.supportedEvents,
+            "has",
+        ).and.callThrough();
+        const codeGeneratorSpy = spyOn(pythonGenerator, "workspaceToCode");
+        const event = new Blockly.Events.BubbleOpen();
+        component.generateCode(event);
+        expect(isDraggingSpy).toHaveBeenCalled();
+        expect(supportedEventsSpy).toHaveBeenCalled();
+        expect(codeGeneratorSpy).not.toHaveBeenCalled();
+    });
+
+    it("generateCode should generate pythoncode", () => {
+        const isDraggingSpy = spyOn(
+            component.workspace,
+            "isDragging",
+        ).and.returnValue(false);
+        const supportedEventsSpy = spyOn(
+            component.supportedEvents,
+            "has",
+        ).and.callThrough();
+        const codeGeneratorSpy = spyOn(pythonGenerator, "workspaceToCode");
+        const pythonCodeSubjectSpy = spyOn(
+            programService.pythonCodeSubject,
+            "next",
+        );
+        const event = new Blockly.Events.BlockChange();
+        component.generateCode(event);
+        expect(isDraggingSpy).toHaveBeenCalled();
+        expect(supportedEventsSpy).toHaveBeenCalled();
+        expect(codeGeneratorSpy).toHaveBeenCalled();
+        expect(pythonCodeSubjectSpy).toHaveBeenCalled();
+    });
+
+    it("should change the viewMode to normal view if splitscreenMode is true ", () => {
+        const viewModeSubjectSpy = spyOn(
+            programService.viewModeSubject,
+            "next",
+        );
+        component.splitscreenMode = true;
+        component.changeViewMode();
+        expect(component.splitscreenMode).toBe(false);
+        expect(viewModeSubjectSpy).toHaveBeenCalledWith(false);
+    });
+
+    it("should change the viewMode to splitscreen if splitscreenMode is false ", () => {
+        const viewModeSubjectSpy = spyOn(
+            programService.viewModeSubject,
+            "next",
+        );
+        component.splitscreenMode = false;
+        component.changeViewMode();
+        expect(component.splitscreenMode).toBe(true);
+        expect(viewModeSubjectSpy).toHaveBeenCalledWith(true);
     });
 });
