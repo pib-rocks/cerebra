@@ -33,4 +33,27 @@ describe("pythonGenerator", () => {
 
         expect(block.getFieldValue).toHaveBeenCalledWith("SETTING");
     });
+
+    it("should build the coordinate code string accordingly", () => {
+        const block = jasmine.createSpyObj("block", ["getFieldValue"]);
+
+        const generator = jasmine.createSpyObj(
+            "generator",
+            ["getVariableName"],
+            ["forBlock"],
+        );
+
+        generator.getVariableName.and.returnValue("coordinate test value");
+
+        const code = pythonGenerator.forBlock.face_detector_running(
+            block,
+            generator,
+        );
+        expect(code).toContain("coordinate test value");
+
+        expect(block.getFieldValue).toHaveBeenCalledWith("XMIN");
+        expect(block.getFieldValue).toHaveBeenCalledWith("XMAX");
+        expect(block.getFieldValue).toHaveBeenCalledWith("YMIN");
+        expect(block.getFieldValue).toHaveBeenCalledWith("YMAX");
+    });
 });
