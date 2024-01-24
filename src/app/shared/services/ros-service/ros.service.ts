@@ -1,13 +1,12 @@
 import {Injectable, isDevMode} from "@angular/core";
 import * as ROSLIB from "roslib";
-import {BehaviorSubject, Subject} from "rxjs";
+import {BehaviorSubject, Subject, ReplaySubject, Observable} from "rxjs";
 import {MotorSettingsMessage} from "../../ros-message-types/motorSettingsMessage";
 import {DiagnosticStatus} from "../../ros-message-types/DiagnosticStatus.message";
 import {JointTrajectoryMessage} from "../../ros-message-types/jointTrajectoryMessage";
 import {rosDataTypes} from "../../ros-message-types/rosDataTypePaths.enum";
 import {rosTopics} from "./rosTopics.enum";
 import {VoiceAssistantMsg} from "../../ros-message-types/voiceAssistant";
-import {ReplaySubject, Observable} from "rxjs";
 import {rosServices} from "./rosServices.enum";
 import {MotorSettingsError} from "../../error/motor-settings-error";
 
@@ -204,11 +203,13 @@ export class RosService {
                         subject.error(
                             new MotorSettingsError(motorSettingsMessage, true),
                         );
+                        throw Error("Settings couldn't be persisted");
                     }
                 } else {
                     subject.error(
                         new MotorSettingsError(motorSettingsMessage, false),
                     );
+                    throw Error("Settings couldn't be applied");
                 }
             },
             (errorMsg) => {

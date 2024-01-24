@@ -8,6 +8,7 @@ import {Chat} from "src/app/shared/types/chat.class";
 import {ChatService} from "src/app/shared/services/chat.service";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {ActivatedRoute, Router} from "@angular/router";
+import {VoiceAssistant} from "src/app/shared/types/voice-assistant";
 export class MockNgbModalRef {
     componentInstance = {
         prompt: undefined,
@@ -33,7 +34,19 @@ describe("VoiceAssistantChatComponent", () => {
                 },
                 {
                     provide: ActivatedRoute,
-                    useValue: {},
+                    useValue: {
+                        snapshot: {
+                            params: {
+                                personality: new VoiceAssistant(
+                                    "1234",
+                                    "Test",
+                                    "Female",
+                                    0.8,
+                                    "Testdescription",
+                                ),
+                            },
+                        },
+                    },
                 },
             ],
             imports: [
@@ -88,7 +101,7 @@ describe("VoiceAssistantChatComponent", () => {
         expect(component.topicFormControl.value).toBe("");
     });
 
-    it("should show a modal when calling openAddModal", () => {
+    it("should show a modal when calling openEditModal", () => {
         const spyOnShowModal = spyOn(modalService, "open").and.returnValue(
             mockModalRef as any,
         );
@@ -112,6 +125,7 @@ describe("VoiceAssistantChatComponent", () => {
             () => chatService.chats.push(new Chat("TestValue", "123", "123")),
         );
         component.topicFormControl.setValue("TestValue");
+        component.personalityId = "1234";
         component.addChat();
         expect(spyOnAddChat).toHaveBeenCalled();
         expect(spyOnCreateChat).toHaveBeenCalled();
