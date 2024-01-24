@@ -19,11 +19,12 @@ describe("pythonGenerator", () => {
     });
 
     it("should generate code to get the system time", () => {
+        const block = jasmine.createSpyObj("block", ["getFieldValue"]);
         const generator = jasmine.createSpyObj("generator", ["forBlock"]);
 
         generator.definitions_ = {};
 
-        const code = pythonGenerator.forBlock.get_system_time(generator);
+        const code = pythonGenerator.forBlock.get_system_time(block, generator);
         expect(code).toContain("round(time.time() * 1000)");
     });
 });
