@@ -45,7 +45,6 @@ export class MotorSettings {
     ) {
         return (
             motorName === settings.motor_name &&
-            motorName === settings.motor_name &&
             this.turnedOn === settings.turned_on &&
             this.pulseWidthMax === settings.pulse_width_max &&
             this.pulseWidthMin === settings.pulse_width_min &&
