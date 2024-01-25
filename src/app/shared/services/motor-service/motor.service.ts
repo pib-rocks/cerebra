@@ -221,20 +221,6 @@ export class MotorService {
                 this.updateMotorFromJointTrajectoryMessage(message);
             });
         }
-        if (message.joint_names[0].includes("all")) {
-            const motor = this.getMotorByName(message.joint_names[0]);
-            const groupMotors = this.motors
-                .filter((m) => m.group == motor.group)
-                .filter(
-                    (m) =>
-                        !m.name.includes("opposition") &&
-                        !m.name.includes("all"),
-                );
-            groupMotors.forEach((m) => {
-                message.joint_names[0] = m.name;
-                this.updateMotorFromJointTrajectoryMessage(message);
-            });
-        }
     }
     updateMotorSettingsFromMotorSettingsMessage(message: MotorSettingsMessage) {
         const motor = this.getMotorByName(message.motor_name);
@@ -334,7 +320,6 @@ export class MotorService {
             )
             .subscribe((response) => {
                 response.forEach((o) => {
-                    console.info(JSON.stringify(o));
                     const motor = this.getMotorByName(o.name);
                     motor.settings.acceleration = o.acceleration;
                     motor.settings.deceleration = o.deceleration;
