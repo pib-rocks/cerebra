@@ -1,4 +1,3 @@
-import {concat} from "rxjs";
 import {MotorSettingsMessage} from "../ros-message-types/motorSettingsMessage";
 
 export class MotorSettings {

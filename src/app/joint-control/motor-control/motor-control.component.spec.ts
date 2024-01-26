@@ -233,6 +233,7 @@ describe("MotorControlComponent", () => {
 
     it("should test invert checkbox", () => {
         motorSubject?.next(updateMotor);
+        component.motor.settings.invert = false;
         fixture.detectChanges();
         const spyOnInvertInput = spyOn(
             component,
@@ -243,7 +244,9 @@ describe("MotorControlComponent", () => {
             "updateMotorFromComponent",
         );
         component.setInverteState();
+        fixture.detectChanges();
         expect(spyOnInvertInput).toHaveBeenCalled();
+        expect(component.motor.settings.invert).toBeTrue();
         expect(spyOnUpdateMotorFromComponent).toHaveBeenCalled();
     });
 });

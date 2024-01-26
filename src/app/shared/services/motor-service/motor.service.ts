@@ -162,7 +162,6 @@ export class MotorService {
     }
 
     public updateMotorFromComponent(motorCopy: Motor) {
-        console.log(motorCopy.settings);
         const motor = this.getMotorByName(motorCopy.name);
         if (motor.updateChangedAttribute(motorCopy)) {
             this.sendJointTrajectoryMessage(motor);
@@ -179,7 +178,6 @@ export class MotorService {
     }
 
     sendMotorSettingsMessage(motor: Motor) {
-        console.log(motor);
         this.rosService.sendMotorSettingsMessage(
             motor.parseMotorToSettingsMessage(),
         );

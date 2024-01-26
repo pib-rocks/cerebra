@@ -1,11 +1,4 @@
-import {
-    Component,
-    ElementRef,
-    Input,
-    OnInit,
-    TemplateRef,
-    ViewChild,
-} from "@angular/core";
+import {Component, Input, OnInit, TemplateRef, ViewChild} from "@angular/core";
 import {FormControl} from "@angular/forms";
 import {BehaviorSubject} from "rxjs";
 import {MotorService} from "../../shared/services/motor-service/motor.service";
