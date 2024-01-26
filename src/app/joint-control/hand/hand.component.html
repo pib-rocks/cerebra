@@ -29,27 +29,40 @@
                     class="col-6"
                     [ngClass]="{'order-3' : side == 'left'}">
                     <div class="row">
-                        <div class="col ml-2">
+                        <div
+                            class="col ml-2"
+                            [ngClass]="{'order-3' : side == 'left'}">
                             <label>Active</label>
                         </div>
-                        <div class="col pl-0">
+                        <div
+                            class="col pl-0"
+                            [ngClass]="{'order-2' : side == 'left'}">
                             <label>Settings</label>
                         </div>
-                        <div class="col">
+                        <div
+                            class="col"
+                            [ngClass]="{'order-1' : side == 'left'}">
                             <label>Current</label>
                         </div>
                     </div>
                     <div class="row">
                         <div>
                             <ng-container *ngFor="let motor of motors">
-                                <div class="row">
-                                    <div class="col-8">
-                                        <app-motor-control [motor]="motor">
-                                        </app-motor-control>
-                                    </div>
-                                    <div class="col">
-                                        <app-circular-slider
-                                            name="{{motor.name}}"></app-circular-slider>
+                                <div
+                                    *ngIf="motor.name === 'all_fingers_left' || motor.name === 'all_fingers_right' ? false : true">
+                                    <div class="row">
+                                        <div
+                                            class="col-8"
+                                            [ngClass]="{'order-2' : side == 'left'}">
+                                            <app-motor-control [motor]="motor">
+                                            </app-motor-control>
+                                        </div>
+                                        <div
+                                            class="col"
+                                            [ngClass]="{'order-1' : side == 'left'}">
+                                            <app-circular-slider
+                                                name="{{motor.name}}"></app-circular-slider>
+                                        </div>
                                     </div>
                                 </div>
                             </ng-container>
@@ -61,8 +74,7 @@
                     class="col-6"
                     [ngClass]="{'order-1' : side == 'left'}">
                     <img
-                        class="pr-0 pl-0 "
-                        style="width: 800px;"
+                        class="img-fluid"
                         src="../../assets/hand_{{side}}.png"
                         alt="" />
                 </div>

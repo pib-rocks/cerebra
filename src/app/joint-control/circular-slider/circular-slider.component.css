@@ -31,3 +31,8 @@ p {
 .radius-circle {
     opacity: 0.5;
 }
+
+.circleSliderLimit {
+    max-height: 100px;
+    max-width: 100px;
+}

@@ -1,5 +1,5 @@
 <app-nav-bar></app-nav-bar>
-<div class="container-fluid">
+<div class="container-fluid mt-3">
     <div class="background-image">
         <div class="pink-corner-frame pt-3 pl-3 pr-3 mb-2">
             <div>
@@ -38,17 +38,17 @@
                     <div class="row">
                         <div>
                             <ng-container *ngFor="let motor of motors">
-                                <div class="row">
-                                    <div class="col-8">
-                                        <app-motor-control
-                                            [motor]="motor"
-                                            [showCheckBox]="motor.name === 'turn_head_motor' ? false : true"
-                                            [showMotorSettingsButton]="motor.name === 'turn_head_motor' ? false : true">
-                                        </app-motor-control>
-                                    </div>
-                                    <div class="col">
-                                        <app-circular-slider
-                                            name="{{motor.name}}"></app-circular-slider>
+                                <div
+                                    *ngIf="motor.name === 'tilt_sideways_motor' ? false : true">
+                                    <div class="row">
+                                        <div class="col-8">
+                                            <app-motor-control [motor]="motor">
+                                            </app-motor-control>
+                                        </div>
+                                        <div class="col">
+                                            <app-circular-slider
+                                                name="{{motor.name}}"></app-circular-slider>
+                                        </div>
                                     </div>
                                 </div>
                             </ng-container>
