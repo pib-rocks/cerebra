@@ -104,7 +104,7 @@ export class Motor {
             deceleration: this.settings.deceleration,
             acceleration: this.settings.acceleration,
             period: this.settings.period,
-            active: this.settings.active,
+            visible: this.settings.visible,
         };
     }
     parseMotorToJointTrajectoryMessage(): JointTrajectoryMessage {
@@ -119,7 +119,7 @@ export class Motor {
             positions: [this.position],
             velocities: [this.settings.velocity],
             accelerations: [this.settings.acceleration],
-            effort: this.settings.effort ? [this.settings.effort] : undefined,
+            effort: undefined,
             time_from_start: createDefaultRosTime(),
         } as JointTrajectoryPoint;
     }

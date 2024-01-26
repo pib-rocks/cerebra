@@ -4,7 +4,7 @@ import {RosService} from "./ros.service";
 import {createEmptyJointTrajectoryMessage} from "../../ros-message-types/jointTrajectoryMessage";
 import {MotorSettingsMessage} from "../../ros-message-types/motorSettingsMessage";
 import {VoiceAssistantMsg} from "../../ros-message-types/voiceAssistant";
-import {MotorSettingsSrvResponse} from "../../ros-message-types/motorSettingsSrvResponse";
+import {MotorSettingsServiceResponse} from "../../ros-message-types/motorSettingsService";
 import {Observable} from "rxjs";
 
 describe("RosService", () => {
@@ -22,7 +22,7 @@ describe("RosService", () => {
         acceleration: 100,
         deceleration: 100,
         period: 100,
-        active: true,
+        visible: true,
     };
 
     beforeEach(() => {
@@ -109,7 +109,7 @@ describe("RosService", () => {
     it("should handle the case correctly, where, after calling sendMotorSettingsMessage(), the motorSettingsService calls the success-callback with a message that indicates, that both application as well as persistence were successul", () => {
         spyOn(rosService["motorSettingsService"], "callService").and.callFake(
             (_msg, callback) => {
-                const res: MotorSettingsSrvResponse = {
+                const res: MotorSettingsServiceResponse = {
                     settings_applied: true,
                     settings_persisted: true,
                 };

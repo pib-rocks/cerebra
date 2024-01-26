@@ -9,6 +9,10 @@ import {rosTopics} from "./rosTopics.enum";
 import {VoiceAssistantMsg} from "../../ros-message-types/voiceAssistant";
 import {rosServices} from "./rosServices.enum";
 import {MotorSettingsError} from "../../error/motor-settings-error";
+import {
+    MotorSettingsServiceRequest,
+    MotorSettingsServiceResponse,
+} from "../../ros-message-types/motorSettingsService";
 
 @Injectable({
     providedIn: "root",
@@ -38,7 +42,10 @@ export class RosService {
     private cameraQualityFactorTopic!: ROSLIB.Topic;
     private jointTrajectoryTopic!: ROSLIB.Topic;
     private motorSettingsTopic!: ROSLIB.Topic;
-    private motorSettingsService!: ROSLIB.Service;
+    private motorSettingsService!: ROSLIB.Service<
+        MotorSettingsServiceRequest,
+        MotorSettingsServiceResponse
+    >;
 
     constructor() {
         this.ros = this.setUpRos();
@@ -194,7 +201,7 @@ export class RosService {
     ): Observable<MotorSettingsMessage> {
         const subject: Subject<MotorSettingsMessage> = new ReplaySubject();
         this.motorSettingsService.callService(
-            motorSettingsMessage,
+            {motor_settings: motorSettingsMessage},
             (response) => {
                 if (response["settings_applied"]) {
                     if (response["settings_persisted"]) {
