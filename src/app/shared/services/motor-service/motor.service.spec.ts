@@ -32,9 +32,7 @@ describe("MotorService", () => {
             "ApiService",
             ["get", "delete", "put", "post"],
         );
-        apiServiceSpy.get.and.returnValue(
-            new BehaviorSubject({motorSettings: []}),
-        );
+        apiServiceSpy.get.and.returnValue(new BehaviorSubject({motors: []}));
         TestBed.configureTestingModule({
             providers: [
                 MotorService,
