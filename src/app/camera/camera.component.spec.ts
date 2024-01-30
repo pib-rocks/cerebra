@@ -19,7 +19,6 @@ describe("CameraComponent", () => {
     let fixture: ComponentFixture<CameraComponent>;
     let rosService: RosService;
     let spyUnsubscribeCamera: jasmine.Spy<() => void>;
-    let videoSettingsButton: HTMLButtonElement;
     let cameraService: CameraService;
 
     beforeEach(async () => {
@@ -34,8 +33,6 @@ describe("CameraComponent", () => {
         component = fixture.componentInstance;
         fixture.detectChanges();
         spyUnsubscribeCamera = spyOn(rosService, "unsubscribeCameraTopic");
-        videoSettingsButton =
-            fixture.nativeElement.querySelector("#videosettings");
     });
 
     it("should create", () => {

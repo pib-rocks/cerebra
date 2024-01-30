@@ -5,6 +5,8 @@ import {ApiService} from "./api.service";
 import {UrlConstants} from "./url.constants";
 import {SidebarService} from "../interfaces/sidebar-service.interface";
 import {SidebarElement} from "../interfaces/sidebar-element.interface";
+import {ChatMessage} from "../types/chat-message";
+import {RosService} from "./ros-service/ros.service";
 
 @Injectable({
     providedIn: "root",
@@ -12,9 +14,45 @@ import {SidebarElement} from "../interfaces/sidebar-element.interface";
 export class ChatService implements SidebarService {
     chats: Chat[] = [];
     chatSubject: BehaviorSubject<Chat[]> = new BehaviorSubject<Chat[]>([]);
+    private messagesSubjectFromChatId: Map<
+        string,
+        BehaviorSubject<ChatMessage[]>
+    > = new Map();
 
-    constructor(private apiService: ApiService) {
+    constructor(
+        private apiService: ApiService,
+        private rosService: RosService,
+    ) {
         this.getAllChats();
+        this.rosService.chatMessageReceiver$.subscribe((rosChatMessage) => {
+            const subject = this.messagesSubjectFromChatId.get(
+                rosChatMessage.chat_id,
+            );
+            if (subject) {
+                const messages = subject.getValue();
+                messages.unshift({
+                    messageId: rosChatMessage.message_id,
+                    timestamp: rosChatMessage.timestamp,
+                    isUser: rosChatMessage.is_user,
+                    content: rosChatMessage.content,
+                });
+                subject.next(messages);
+            }
+        });
+    }
+
+    getChatMessagesObservable(chatId: string): Observable<ChatMessage[]> {
+        const observable = this.messagesSubjectFromChatId.get(chatId);
+        if (observable) {
+            return observable;
+        } else {
+            const messageSubject = new BehaviorSubject<ChatMessage[]>([]);
+            this.getMessagesByChatId(chatId).subscribe((messages) =>
+                messageSubject.next(messages),
+            );
+            this.messagesSubjectFromChatId.set(chatId, messageSubject);
+            return messageSubject;
+        }
     }
 
     getSubject(uuid: string): Observable<SidebarElement[]> {
@@ -163,5 +201,21 @@ export class ChatService implements SidebarService {
                     ),
                 );
             });
+    }
+
+    getMessagesByChatId(chatId: string): Observable<ChatMessage[]> {
+        return this.apiService
+            .get(`${UrlConstants.CHAT}/${chatId}/messages`)
+            .pipe(map((response) => response["messages"]));
+    }
+
+    createChatMessage(
+        chatId: string,
+        content: string,
+    ): Observable<ChatMessage> {
+        return this.apiService.post(`${UrlConstants.CHAT}/${chatId}/messages`, {
+            content,
+            isUser: true,
+        });
     }
 }
