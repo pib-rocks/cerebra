@@ -6,8 +6,6 @@ import {DiagnosticStatus} from "../../ros-message-types/DiagnosticStatus.message
 import {JointTrajectoryMessage} from "../../ros-message-types/jointTrajectoryMessage";
 import {rosDataTypes} from "../../ros-message-types/rosDataTypePaths.enum";
 import {rosTopics} from "./rosTopics.enum";
-import {rosServices} from "./rosServices.enum";
-import {MotorSettingsError} from "../../error/motor-settings-error";
 import {
     SetVoiceAssistantStateRequest,
     SetVoiceAssistantStateResponse,
@@ -15,6 +13,12 @@ import {
 import {ChatMessage} from "../../ros-message-types/ChatMessage";
 import {VoiceAssistantState} from "../../ros-message-types/VoiceAssistantState";
 import {GetVoiceAssistantStateResponse} from "../../ros-message-types/GetVoiceAssistantState";
+import {rosServices} from "./rosServices.enum";
+import {MotorSettingsError} from "../../error/motor-settings-error";
+import {
+    MotorSettingsServiceRequest,
+    MotorSettingsServiceResponse,
+} from "../../ros-message-types/motorSettingsService";
 
 @Injectable({
     providedIn: "root",
@@ -53,10 +57,13 @@ export class RosService {
     private chatMessageTopic!: ROSLIB.Topic<ChatMessage>;
     private voiceAssistantStateTopic!: ROSLIB.Topic<VoiceAssistantState>;
 
-    private motorSettingsService!: ROSLIB.Service;
     private setVoiceAssistantStateService!: ROSLIB.Service<
         SetVoiceAssistantStateRequest,
         SetVoiceAssistantStateResponse
+    >;
+    private motorSettingsService!: ROSLIB.Service<
+        MotorSettingsServiceRequest,
+        MotorSettingsServiceResponse
     >;
 
     constructor() {
@@ -279,7 +286,7 @@ export class RosService {
     ): Observable<MotorSettingsMessage> {
         const subject: Subject<MotorSettingsMessage> = new ReplaySubject();
         this.motorSettingsService.callService(
-            motorSettingsMessage,
+            {motor_settings: motorSettingsMessage},
             (response) => {
                 if (response["settings_applied"]) {
                     if (response["settings_persisted"]) {
@@ -288,11 +295,13 @@ export class RosService {
                         subject.error(
                             new MotorSettingsError(motorSettingsMessage, true),
                         );
+                        throw Error("Settings couldn't be persisted");
                     }
                 } else {
                     subject.error(
                         new MotorSettingsError(motorSettingsMessage, false),
                     );
+                    throw Error("Settings couldn't be applied");
                 }
             },
             (errorMsg) => {

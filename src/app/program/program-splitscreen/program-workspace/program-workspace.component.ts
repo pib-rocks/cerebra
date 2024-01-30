@@ -7,14 +7,15 @@ import {
     ViewChild,
 } from "@angular/core";
 import * as Blockly from "blockly";
-import {toolbox} from "../blockly";
+import {toolbox} from "../../blockly";
 import {ActivatedRoute} from "@angular/router";
 import {ProgramService} from "src/app/shared/services/program.service";
 import {asyncScheduler} from "rxjs";
 import {ITheme} from "blockly/core/theme";
+import {pythonGenerator} from "../../program-generators/custom-generators";
 
-import {customBlockDefinition} from "../program-blocks/custom-blocks";
-import {pythonGenerator} from "../program-generators/detectors-generators";
+import {customBlockDefinition} from "../../program-blocks/custom-blocks";
+import {Abstract} from "blockly/core/events/events_abstract";
 
 @Component({
     selector: "app-program-workspace",
@@ -31,10 +32,40 @@ export class ProgramWorkspaceComponent
     toolbox: string = toolbox;
 
     currentProgramNumber?: string;
+    splitscreenMode: boolean = this.programService.viewModeSubject.getValue();
 
     flyoutWidth: number = 0;
+    imgSrc: string = "../../assets/toggle-switch-left.png";
     runButtonPath: string = "../../assets/program/run.svg";
     saveButtonPath: string = "../../assets/program/save.svg";
+
+    pythonCode: string = "";
+
+    supportedEvents = new Set([
+        Blockly.Events.BLOCK_CHANGE,
+        Blockly.Events.BLOCK_CREATE,
+        Blockly.Events.BLOCK_DELETE,
+        Blockly.Events.BLOCK_MOVE,
+    ]);
+
+    generateCode(event: Abstract) {
+        if (this.workspace.isDragging()) return;
+        if (!this.supportedEvents.has(event.type)) return;
+        this.pythonCode = pythonGenerator.workspaceToCode(this.workspace);
+        this.programService.pythonCodeSubject.next(this.pythonCode);
+    }
+
+    changeViewMode() {
+        if (this.splitscreenMode) {
+            this.imgSrc = "../../assets/toggle-switch-left.png";
+            this.splitscreenMode = false;
+            this.programService.viewModeSubject.next(this.splitscreenMode);
+        } else {
+            this.imgSrc = "../../assets/toggle-switch-right.png";
+            this.splitscreenMode = true;
+            this.programService.viewModeSubject.next(this.splitscreenMode);
+        }
+    }
 
     readonly customTheme: ITheme = Blockly.Theme.defineTheme("customTheme", {
         base: Blockly.Themes.Classic,
@@ -89,6 +120,9 @@ export class ProgramWorkspaceComponent
         if (blocklyMainBackground) {
             blocklyMainBackground.style.stroke = "none";
         }
+        this.workspace.addChangeListener((event: Abstract) => {
+            this.generateCode(event);
+        });
     }
 
     ngAfterViewInit() {
