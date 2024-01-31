@@ -1,11 +1,18 @@
-import {Component, ElementRef, ViewChild} from "@angular/core";
+import {
+    AfterViewInit,
+    Component,
+    ElementRef,
+    OnDestroy,
+    OnInit,
+    ViewChild,
+} from "@angular/core";
 import * as Blockly from "blockly";
 import {toolbox} from "../../blockly";
 import {ActivatedRoute} from "@angular/router";
 import {ProgramService} from "src/app/shared/services/program.service";
 import {asyncScheduler} from "rxjs";
 import {ITheme} from "blockly/core/theme";
-import {pythonGenerator} from "blockly/python";
+import {pythonGenerator} from "../../program-generators/custom-generators";
 
 import {customBlockDefinition} from "../../program-blocks/custom-blocks";
 import {Abstract} from "blockly/core/events/events_abstract";
@@ -15,7 +22,9 @@ import {Abstract} from "blockly/core/events/events_abstract";
     templateUrl: "./program-workspace.component.html",
     styleUrls: ["./program-workspace.component.css"],
 })
-export class ProgramWorkspaceComponent {
+export class ProgramWorkspaceComponent
+    implements OnInit, AfterViewInit, OnDestroy
+{
     observer!: ResizeObserver;
     @ViewChild("blocklyDiv") blocklyDiv!: ElementRef<HTMLDivElement>;
 

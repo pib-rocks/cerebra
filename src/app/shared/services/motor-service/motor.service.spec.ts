@@ -12,25 +12,45 @@ import {
 import {MotorSettingsMessage} from "../../ros-message-types/motorSettingsMessage";
 import {createJointTrajectoryPoint} from "../../ros-message-types/jointTrajectoryPoint";
 import {ApiService} from "../api.service";
-import {HttpClientTestingModule} from "@angular/common/http/testing";
-import {BehaviorSubject} from "rxjs";
+import {BehaviorSubject, Subject} from "rxjs";
 
 describe("MotorService", () => {
     let service: MotorService;
-    let rosService: RosService;
-    let apiService: ApiService;
+    let apiService: jasmine.SpyObj<ApiService>;
+    let rosService: jasmine.SpyObj<RosService>;
     let spyOnMotors: jasmine.Spy<() => void>;
     beforeEach(() => {
+        const rosServiceSpy: jasmine.SpyObj<RosService> = jasmine.createSpyObj(
+            "RosService",
+            ["sendJointTrajectoryMessage", "sendMotorSettingsMessage"],
+            {
+                jointTrajectoryReceiver$: new Subject(),
+                motorSettingsReceiver$: new Subject(),
+            },
+        );
+        const apiServiceSpy: jasmine.SpyObj<ApiService> = jasmine.createSpyObj(
+            "ApiService",
+            ["get", "delete", "put", "post"],
+        );
+        apiServiceSpy.get.and.returnValue(new BehaviorSubject({motors: []}));
         TestBed.configureTestingModule({
-            providers: [MotorService, RosService, ApiService],
-            imports: [HttpClientTestingModule],
+            providers: [
+                MotorService,
+                {
+                    provide: RosService,
+                    useValue: rosServiceSpy,
+                },
+                {
+                    provide: ApiService,
+                    useValue: apiServiceSpy,
+                },
+            ],
         });
         service = TestBed.inject(MotorService);
-        rosService = TestBed.inject(RosService);
-        apiService = TestBed.inject(ApiService);
-        rosService.initTopicsAndServices();
-        rosService.initSubscribers();
+        apiService = TestBed.inject(ApiService) as jasmine.SpyObj<ApiService>;
+        rosService = TestBed.inject(RosService) as jasmine.SpyObj<RosService>;
         spyOnMotors = spyOn(service, "createMotors").and.callThrough();
+        apiService.get = jasmine.createSpy();
     });
 
     it("should be created", () => {
@@ -167,10 +187,7 @@ describe("MotorService", () => {
             service,
             "sendJointTrajectoryMessage",
         ).and.callThrough();
-        const spyOnRosServiceSendJointTrajectoryMessage = spyOn(
-            rosService,
-            "sendJointTrajectoryMessage",
-        ).and.callThrough();
+        rosService.sendJointTrajectoryMessage.and.callThrough();
         const updateMotor = new Motor(
             "thumb_left_stretch",
             500,
@@ -187,7 +204,7 @@ describe("MotorService", () => {
             updateMotor,
         );
         expect(spyOnParseMotorToJointTrajectoryMessage).toHaveBeenCalled();
-        expect(spyOnRosServiceSendJointTrajectoryMessage).toHaveBeenCalledWith(
+        expect(rosService.sendJointTrajectoryMessage).toHaveBeenCalledWith(
             updateMotor.parseMotorToJointTrajectoryMessage(),
         );
     });
@@ -197,10 +214,7 @@ describe("MotorService", () => {
             service,
             "sendMotorSettingsMessage",
         ).and.callThrough();
-        const spyOnRosServiceSendMotorSettingsMessage = spyOn(
-            rosService,
-            "sendMotorSettingsMessage",
-        ).and.callThrough();
+        rosService.sendMotorSettingsMessage.and.callThrough();
         const updateMotor = new Motor(
             "thumb_left_stretch",
             500,
@@ -215,7 +229,7 @@ describe("MotorService", () => {
         service.sendMotorSettingsMessage(updateMotor);
         expect(spyOnSendMotorSettingsMessage).toHaveBeenCalledWith(updateMotor);
         expect(spyOnParseMotorToJointTrajectoryMessage).toHaveBeenCalled();
-        expect(spyOnRosServiceSendMotorSettingsMessage).toHaveBeenCalledWith(
+        expect(rosService.sendMotorSettingsMessage).toHaveBeenCalledWith(
             updateMotor.parseMotorToSettingsMessage(),
         );
     });
@@ -280,7 +294,7 @@ describe("MotorService", () => {
             acceleration: 500,
             deceleration: 500,
             period: 500,
-            active: true,
+            visible: true,
         };
         service.updateMotorSettingsFromMotorSettingsMessage(
             motorSettingsMessage,
@@ -338,7 +352,7 @@ describe("MotorService", () => {
             acceleration: 500,
             deceleration: 500,
             period: 500,
-            active: true,
+            visible: true,
         };
         const motors: Motor[] = service.getMotorsByGroupNoOpposition(
             Group.right_hand,
@@ -389,12 +403,9 @@ describe("MotorService", () => {
             Group.left_hand,
             "Thumb opposition",
         );
-        const spyOnApiServiceUpdateMotor = spyOn(
-            apiService,
-            "put",
-        ).and.returnValue(emptyObservable);
+        apiService.put.and.returnValue(emptyObservable);
         service.updateMotorInDb(motor);
-        expect(spyOnApiServiceUpdateMotor).toHaveBeenCalled();
+        expect(apiService.put).toHaveBeenCalled();
     });
 
     it("should call apiSerive to get motor settings by name from a database", () => {
@@ -410,76 +421,13 @@ describe("MotorService", () => {
             true,
         );
         const observable = new BehaviorSubject<any>(motorSettings);
-        const spyOnApiServiceUpdateMotor = spyOn(
-            apiService,
-            "get",
-        ).and.returnValue(observable);
+        apiService.get.and.returnValue(observable);
         service.getMotorSettingsByNameFromDb("thumb_left_opposition");
-        expect(spyOnApiServiceUpdateMotor).toHaveBeenCalled();
+        expect(apiService.get).toHaveBeenCalled();
         expect(
             service.getMotorByName("thumb_left_opposition").settings,
         ).toEqual(motorSettings);
     });
-
-    // Callthrough problems
-    // it("should call apiSerive to get all motor settings from a database", () => {
-    //     const motorSettings1 = {
-    //         acceleration: 10000,
-    //         deceleration: 10000,
-    //         motor_name: "thumb_left_opposition",
-    //         period: 19500,
-    //         pulse_width_max: 2500,
-    //         pulse_width_min: 700,
-    //         rotation_range_max: 90,
-    //         rotation_range_min: -90,
-    //         turned_on: true,
-    //         velocity: 10000,
-    //     } as MotorSettingsMessage;
-    //     const motorSettings2 = {
-    //         acceleration: 10000,
-    //         deceleration: 10000,
-    //         motor_name: "thumb_right_opposition",
-    //         period: 19500,
-    //         pulse_width_max: 2500,
-    //         pulse_width_min: 700,
-    //         rotation_range_max: 90,
-    //         rotation_range_min: -90,
-    //         turned_on: true,
-    //         velocity: 10000,
-    //     } as MotorSettingsMessage;
-    //     const observable = new BehaviorSubject<any>({
-    //         motorSettings: [motorSettings1, motorSettings2],
-    //     });
-    //     const spyOnApiServiceUpdateMotor = spyOn(
-    //         apiService,
-    //         "get",
-    //     ).and.returnValue(observable);
-    //     service.getAllMotorSettingsFromDb();
-    //     const motorThumbLeftOpposition = service.getMotorByName(
-    //         "thumb_left_opposition",
-    //     );
-    //     const motorThumbRightOpposition = service.getMotorByName(
-    //         "thumb_right_opposition",
-    //     );
-    //     expect(spyOnApiServiceUpdateMotor).toHaveBeenCalled();
-    //     expect(motorThumbLeftOpposition.name).toEqual(motorSettings1.motor_name);
-    //     expect(motorThumbRightOpposition.name).toEqual(motorSettings2.motor_name);
-    //     expect(motorThumbLeftOpposition.settings.velocity).toEqual(
-    //         motorSettings1.velocity,
-    //     );
-    //     expect(motorThumbRightOpposition.settings.velocity).toEqual(
-    //         motorSettings2.velocity,
-    //     );
-    //     expect(motorThumbLeftOpposition.settings.pulseWidthMax).toEqual(
-    //         motorSettings1.pulse_width_max,
-    //     );
-    //     expect(motorThumbRightOpposition.settings.pulseWidthMax).toEqual(
-    //         motorSettings2.pulse_width_max,
-    //     );
-    //     expect(motorThumbRightOpposition.settings.acceleration).toEqual(
-    //         motorSettings2.acceleration,
-    //     );
-    // });
 
     it("should get response if motorSettingsReceiver is updated", () => {
         const spyOnUpdateMotorSettingsFromMotorSettingsMessage = spyOn(

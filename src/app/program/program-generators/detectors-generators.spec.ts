@@ -1,4 +1,4 @@
-import {pythonGenerator} from "./detectors-generators";
+import {pythonGenerator} from "./custom-generators";
 
 describe("pythonGenerator", () => {
     it("should insert face detection code when the setting is 'start' and nothing when it's 'stop'", () => {
@@ -32,5 +32,28 @@ describe("pythonGenerator", () => {
         expect(stopCode).not.toContain(className);
 
         expect(block.getFieldValue).toHaveBeenCalledWith("SETTING");
+    });
+
+    it("should build the coordinate code string accordingly", () => {
+        const block = jasmine.createSpyObj("block", ["getFieldValue"]);
+
+        const generator = jasmine.createSpyObj(
+            "generator",
+            ["getVariableName"],
+            ["forBlock"],
+        );
+
+        generator.getVariableName.and.returnValue("coordinate test value");
+
+        const code = pythonGenerator.forBlock.face_detector_running(
+            block,
+            generator,
+        );
+        expect(code).toContain("coordinate test value");
+
+        expect(block.getFieldValue).toHaveBeenCalledWith("XMIN");
+        expect(block.getFieldValue).toHaveBeenCalledWith("XMAX");
+        expect(block.getFieldValue).toHaveBeenCalledWith("YMIN");
+        expect(block.getFieldValue).toHaveBeenCalledWith("YMAX");
     });
 });

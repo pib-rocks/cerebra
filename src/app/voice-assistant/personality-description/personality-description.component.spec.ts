@@ -111,7 +111,7 @@ describe("PersonalityDescriptionComponent", () => {
         ).and.callFake(() => {
             voiceAssistantService.personalities.pop();
         });
-        const spyProp = spyOnProperty(router, "url").and.returnValue(
+        spyOnProperty(router, "url").and.returnValue(
             "/voice-assistant/01234567-0123-0123-0123-0123456789ab",
         );
         fakePersonality.personalityId = "01234567-0123-0123-0123-0123456789ab";

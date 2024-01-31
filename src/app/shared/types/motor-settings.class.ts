@@ -1,39 +1,18 @@
 import {MotorSettingsMessage} from "../ros-message-types/motorSettingsMessage";
 
 export class MotorSettings {
-    velocity: number;
-    acceleration: number;
-    deceleration: number;
-    effort?: number;
-    period: number;
-    pulseWidthMin: number;
-    pulseWidthMax: number;
-    rotationRangeMin: number;
-    rotationRangeMax: number;
-    turnedOn: boolean;
-
     constructor(
-        velocity: number = 0,
-        acceleration: number = 0,
-        deceleration: number = 0,
-        period: number = 0,
-        pulseWidthMin: number = 0,
-        pulseWidthMax: number = 65535,
-        rotationRangeMin: number = -9000,
-        rotationRangeMax: number = 9000,
-        turnedOn: boolean = true,
-        public active: boolean = true,
-    ) {
-        this.velocity = velocity;
-        this.acceleration = acceleration;
-        this.deceleration = deceleration;
-        this.period = period;
-        this.pulseWidthMin = pulseWidthMin;
-        this.pulseWidthMax = pulseWidthMax;
-        this.rotationRangeMin = rotationRangeMin;
-        this.rotationRangeMax = rotationRangeMax;
-        this.turnedOn = turnedOn;
-    }
+        public velocity: number = 0,
+        public acceleration: number = 0,
+        public deceleration: number = 0,
+        public period: number = 0,
+        public pulseWidthMin: number = 0,
+        public pulseWidthMax: number = 65535,
+        public rotationRangeMin: number = -9000,
+        public rotationRangeMax: number = 9000,
+        public turnedOn: boolean = true,
+        public visible: boolean = true,
+    ) {}
 
     toString(): string {
         return (
@@ -55,8 +34,8 @@ export class MotorSettings {
             this.rotationRangeMax +
             "\nturnedOn: " +
             this.turnedOn +
-            "\nactive: " +
-            this.active
+            "\visible: " +
+            this.visible
         );
     }
 
@@ -64,23 +43,19 @@ export class MotorSettings {
         motorName: string,
         settings: MotorSettingsMessage,
     ) {
-        if (
-            motorName !== settings.motor_name ||
-            this.turnedOn !== settings.turned_on ||
-            this.pulseWidthMax !== settings.pulse_width_max ||
-            this.pulseWidthMin !== settings.pulse_width_min ||
-            this.rotationRangeMax !== settings.rotation_range_max ||
-            this.rotationRangeMin !== settings.rotation_range_min ||
-            this.velocity !== settings.velocity ||
-            this.acceleration !== settings.acceleration ||
-            this.deceleration !== settings.deceleration ||
-            this.period !== settings.period ||
-            this.active !== settings.active
-        ) {
-            return false;
-        }
-
-        return true;
+        return (
+            motorName === settings.motor_name &&
+            this.turnedOn === settings.turned_on &&
+            this.pulseWidthMax === settings.pulse_width_max &&
+            this.pulseWidthMin === settings.pulse_width_min &&
+            this.rotationRangeMax === settings.rotation_range_max &&
+            this.rotationRangeMin === settings.rotation_range_min &&
+            this.velocity === settings.velocity &&
+            this.acceleration === settings.acceleration &&
+            this.deceleration === settings.deceleration &&
+            this.period === settings.period &&
+            this.visible === settings.visible
+        );
     }
 
     public equals(settingsCopy: MotorSettings | MotorSettingsMessage) {
@@ -89,8 +64,7 @@ export class MotorSettings {
             settingsCopy.acceleration == this.acceleration &&
             settingsCopy.deceleration == this.deceleration &&
             settingsCopy.period == this.period &&
-            settingsCopy.effort == this.effort &&
-            settingsCopy.active == this.active
+            settingsCopy.visible == this.visible
         ) {
             if (settingsCopy instanceof MotorSettings) {
                 if (
@@ -123,8 +97,7 @@ export class MotorSettings {
             this.acceleration = settingsCopy.acceleration;
             this.deceleration = settingsCopy.deceleration;
             this.period = settingsCopy.period;
-            this.effort = settingsCopy.effort;
-            this.active = settingsCopy.active;
+            this.visible = settingsCopy.visible;
             if (settingsCopy instanceof MotorSettings) {
                 this.pulseWidthMin = settingsCopy.pulseWidthMin;
                 this.pulseWidthMax = settingsCopy.pulseWidthMax;
@@ -154,7 +127,7 @@ export class MotorSettings {
             this.rotationRangeMin,
             this.rotationRangeMax,
             this.turnedOn,
-            this.active,
+            this.visible,
         );
     }
 }
