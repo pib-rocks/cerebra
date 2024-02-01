@@ -2,17 +2,17 @@ import {MotorSettingsMessage} from "../ros-message-types/motorSettingsMessage";
 
 export class MotorSettings {
     constructor(
-        velocity: number = 0,
-        acceleration: number = 0,
-        deceleration: number = 0,
-        period: number = 0,
-        pulseWidthMin: number = 0,
-        pulseWidthMax: number = 65535,
-        rotationRangeMin: number = -9000,
-        rotationRangeMax: number = 9000,
-        turnedOn: boolean = true,
+        public velocity: number = 0,
+        public acceleration: number = 0,
+        public deceleration: number = 0,
+        public period: number = 0,
+        public pulseWidthMin: number = 0,
+        public pulseWidthMax: number = 65535,
+        public rotationRangeMin: number = -9000,
+        public rotationRangeMax: number = 9000,
+        public turnedOn: boolean = true,
         public visible: boolean = true,
-        invert: boolean = false,
+        public invert: boolean = false,
     ) {}
 
     toString(): string {
