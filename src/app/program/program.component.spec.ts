@@ -13,7 +13,6 @@ describe("ProgramComponent", () => {
     let component: ProgramComponent;
     let fixture: ComponentFixture<ProgramComponent>;
     let programService: jasmine.SpyObj<ProgramService>;
-    let modalService: jasmine.SpyObj<NgbModal>;
     let router: {url: string};
 
     beforeEach(async () => {
@@ -65,7 +64,6 @@ describe("ProgramComponent", () => {
         programService = TestBed.inject(
             ProgramService,
         ) as jasmine.SpyObj<ProgramService>;
-        modalService = TestBed.inject(NgbModal) as jasmine.SpyObj<NgbModal>;
 
         fixture = TestBed.createComponent(ProgramComponent);
         component = fixture.componentInstance;

@@ -1,6 +1,7 @@
 .sidebar-right-wrapper {
     background-color: #1b2b44;
     min-height: 500px;
+    height: 100%;
 }
 
 a {

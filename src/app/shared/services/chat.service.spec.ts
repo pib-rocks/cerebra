@@ -1,14 +1,16 @@
-import {TestBed} from "@angular/core/testing";
+import {TestBed, waitForAsync} from "@angular/core/testing";
 
 import {ChatService} from "./chat.service";
-import {HttpClientTestingModule} from "@angular/common/http/testing";
 import {ApiService} from "./api.service";
 import {Chat} from "../types/chat.class";
-import {BehaviorSubject, map, of} from "rxjs";
+import {BehaviorSubject, Subject, map, of} from "rxjs";
+import {ChatMessage} from "../types/chat-message";
+import {RosService} from "./ros-service/ros.service";
 
 describe("ChatService", () => {
     let service: ChatService;
-    let apiService: ApiService;
+    let apiService: jasmine.SpyObj<ApiService>;
+    let rosService: jasmine.SpyObj<RosService>;
     const testChat0 = new Chat("Pib0", "12345", "54321");
     const testChat1 = new Chat("Pib1", "12345", "54322");
     const testChat2 = new Chat("Pib2", "12345", "54323");
@@ -20,19 +22,125 @@ describe("ChatService", () => {
     ]);
 
     beforeEach(() => {
+        const rosServiceSpy: jasmine.SpyObj<RosService> = jasmine.createSpyObj(
+            "RosService",
+            [],
+            {
+                chatMessageReceiver$: new Subject(),
+            },
+        );
+        const apiServiceSpy: jasmine.SpyObj<ApiService> = jasmine.createSpyObj(
+            "ApiService",
+            ["get", "delete", "put", "post"],
+        );
+        apiServiceSpy.get.and.returnValue(
+            new BehaviorSubject({voiceAssistantChats: []}),
+        );
         TestBed.configureTestingModule({
-            imports: [HttpClientTestingModule],
+            providers: [
+                ChatService,
+                {
+                    provide: RosService,
+                    useValue: rosServiceSpy,
+                },
+                {
+                    provide: ApiService,
+                    useValue: apiServiceSpy,
+                },
+            ],
         });
         service = TestBed.inject(ChatService);
-        apiService = TestBed.inject(ApiService);
+        apiService = TestBed.inject(ApiService) as jasmine.SpyObj<ApiService>;
+        rosService = TestBed.inject(RosService) as jasmine.SpyObj<RosService>;
+        apiService.get = jasmine.createSpy();
     });
 
     it("should be created", () => {
         expect(service).toBeTruthy();
     });
 
+    it("should get the messages for the provided chat id", waitForAsync(() => {
+        const message: ChatMessage = {
+            messageId: "message_id",
+            timestamp: "tomorrow",
+            isUser: false,
+            content: "world",
+        };
+        apiService.get.and.returnValue(
+            new BehaviorSubject({messages: [message]}),
+        );
+        const result = service.getMessagesByChatId("chat-id");
+        expect(apiService.get).toHaveBeenCalledOnceWith(
+            "/voice-assistant/chat/chat-id/messages",
+        );
+        result.subscribe((messages) => {
+            expect(messages).toEqual([jasmine.objectContaining(message)]);
+        });
+    }));
+
+    it("should create a chat message", waitForAsync(() => {
+        const message: ChatMessage = {
+            messageId: "message_id",
+            timestamp: "tomorrow",
+            isUser: false,
+            content: "world",
+        };
+        apiService.post.and.returnValue(new BehaviorSubject(message));
+        const result = service.createChatMessage("chat-id", "test-content");
+        expect(apiService.post).toHaveBeenCalledOnceWith(
+            "/voice-assistant/chat/chat-id/messages",
+            jasmine.objectContaining({
+                content: "test-content",
+                isUser: true,
+            }),
+        );
+        result.subscribe((message) => {
+            expect(message).toEqual(jasmine.objectContaining(message));
+        });
+    }));
+
+    it("should return the already existing chat-message-observable", () => {
+        const expectedObservable = new BehaviorSubject<ChatMessage[]>([]);
+        const getObservableSpy = spyOn(
+            service["messagesSubjectFromChatId"],
+            "get",
+        ).and.returnValue(expectedObservable);
+        const result = service.getChatMessagesObservable("chat-id");
+        expect(result).toBe(expectedObservable);
+        expect(getObservableSpy).toHaveBeenCalledOnceWith("chat-id");
+    });
+
+    it("should create a new observable and return it", () => {
+        const message: ChatMessage = {
+            messageId: "message_id",
+            timestamp: "tomorrow",
+            isUser: false,
+            content: "world",
+        };
+        const getObservableSpy = spyOn(
+            service["messagesSubjectFromChatId"],
+            "get",
+        ).and.returnValue(undefined);
+        const setObservableSpy = spyOn(
+            service["messagesSubjectFromChatId"],
+            "set",
+        );
+        spyOn(service, "getMessagesByChatId").and.returnValue(
+            new BehaviorSubject([message]),
+        );
+        const result = service.getChatMessagesObservable("chat-id");
+        expect(setObservableSpy).toHaveBeenCalledOnceWith(
+            "chat-id",
+            result as BehaviorSubject<ChatMessage[]>,
+        );
+        expect(getObservableSpy).toHaveBeenCalledOnceWith("chat-id");
+        expect((result as BehaviorSubject<ChatMessage[]>).value).toEqual([
+            message,
+        ]);
+    });
+
     it("should return all chats from database when calling getAllChats", () => {
-        const spyOnGetAllChats = spyOn(apiService, "get").and.returnValue(
+        apiService.get.and.returnValue(
             testChatAllSubject.pipe(
                 map((m) => {
                     return {voiceAssistantChats: m};
@@ -40,25 +148,23 @@ describe("ChatService", () => {
             ),
         );
         service.getAllChats();
-        expect(spyOnGetAllChats).toHaveBeenCalled();
+        expect(apiService.get).toHaveBeenCalled();
         expect(service.chatSubject.getValue().length).toEqual(3);
         expect(service.chats.length).toBe(3);
     });
 
     it("should return a created chat form db when calling createChat", () => {
-        const spyOnCreateChat = spyOn(apiService, "post").and.returnValue(
-            testChat0Subject,
-        );
+        apiService.post.and.returnValue(testChat0Subject);
         service.createChat(testChat0);
         const index = service.chats.findIndex(
             (i) => i.chatId === testChat0.chatId,
         );
-        expect(spyOnCreateChat).toHaveBeenCalled();
+        expect(apiService.post).toHaveBeenCalled();
         expect(service.chats[index]).toEqual(testChat0);
     });
 
     it("should return a chat identified by chatId when calling getChatById", () => {
-        const spyOnGet = spyOn(apiService, "get").and.returnValue(
+        apiService.get.and.returnValue(
             testChatAllSubject.pipe(
                 map((m) => m.filter((n) => n.chatId === "54321")),
             ),
@@ -72,30 +178,30 @@ describe("ChatService", () => {
         );
         service.getChatById("54321");
         expect(service.chats.length).toBe(1);
-        expect(spyOnGet).toHaveBeenCalled();
+        expect(apiService.get).toHaveBeenCalled();
         expect(spyOnGetChatById).toHaveBeenCalled();
         expect(spyOnAddChat).toHaveBeenCalled();
         expect(service.chats[0].chatId).toBe("54321");
     });
 
     it("should delete a chat from its chat-array when calling deleteChatById", () => {
-        const spyOnDelete = spyOn(apiService, "delete").and.returnValue(of({}));
+        apiService.delete.and.returnValue(of({}));
         const spyOnDeleteChat = spyOn(service, "deleteChat").and.callThrough();
         service.chats = [testChat0, testChat1, testChat2];
         service.deleteChatById("54321");
-        expect(spyOnDelete).toHaveBeenCalled();
+        expect(apiService.delete).toHaveBeenCalled();
         expect(spyOnDeleteChat).toHaveBeenCalled();
         expect(service.chats.length).toBe(2);
     });
 
     it("should update a chat from its chat-array when calling updateChatById", () => {
-        const spyOnPut = spyOn(apiService, "put").and.returnValue(
+        apiService.put.and.returnValue(
             of(new Chat("NewName", "12345", "54321")),
         );
         const spyOnEditChat = spyOn(service, "editChat").and.callThrough();
         service.chats = [testChat0];
         service.updateChatById(new Chat("NewName", "12345", "54321"));
-        expect(spyOnPut).toHaveBeenCalled();
+        expect(apiService.put).toHaveBeenCalled();
         expect(spyOnEditChat).toHaveBeenCalled();
     });
 

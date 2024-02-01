@@ -3,6 +3,7 @@ import {FormControl} from "@angular/forms";
 import {ActivatedRoute, Params} from "@angular/router";
 import {ChatService} from "src/app/shared/services/chat.service";
 import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
+import {ChatMessage} from "src/app/shared/types/chat-message";
 import {Chat} from "src/app/shared/types/chat.class";
 
 @Component({
@@ -15,6 +16,13 @@ export class ChatWindowComponent implements OnInit {
     chat?: Chat;
     promptFormControl: FormControl = new FormControl("");
     personalityName: string | undefined;
+    messages?: ChatMessage[];
+
+    readonly USER_ICON =
+        "../../../../assets/voice-assistant-svgs/personality/user.svg";
+    readonly VA_ICON =
+        "../../../../assets/voice-assistant-svgs/personality/personality.svg";
+
     constructor(
         private chatService: ChatService,
         private voiceAssistantService: VoiceAssistantService,
@@ -25,7 +33,12 @@ export class ChatWindowComponent implements OnInit {
         this.chat = this.route.snapshot.data["chat"];
         localStorage.setItem("chat", this.chat?.chatId ?? "");
         this.route.params.subscribe((params: Params) => {
-            this.chat = this.chatService.getChat(params["chatUuid"]);
+            const chatId = params["chatUuid"];
+            if (!chatId) return;
+            this.chatService
+                .getChatMessagesObservable(chatId)
+                .subscribe((messages) => (this.messages = messages));
+            this.chat = this.chatService.getChat(chatId);
             localStorage.setItem("chat", this.chat?.chatId ?? "");
             if (this.chat) {
                 this.personalityName =
