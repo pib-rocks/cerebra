@@ -1,7 +1,7 @@
-export interface ProxyRunProgramStartRequest {
+export interface ProxyRunProgramStopRequest {
     proxy_goal_id: string;
 }
 
-export interface ProxyRunProgramStartResponse {
+export interface ProxyRunProgramStopResponse {
     successful: boolean;
 }

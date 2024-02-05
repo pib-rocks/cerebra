@@ -32,8 +32,8 @@ import {
     ProxyRunProgramStartResponse,
 } from "../../ros-types/srv/proxy-run-program-start";
 import {
-    ProxyRunProgramStartRequest,
-    ProxyRunProgramStartResponse,
+    ProxyRunProgramStopRequest,
+    ProxyRunProgramStopResponse,
 } from "../../ros-types/srv/proxy-run-program-stop";
 import {ProxyRunProgramFeedback} from "../../ros-types/msg/proxy-run-program-feedback";
 import {ProxyRunProgramResult} from "../../ros-types/msg/proxy-run-program-result";
@@ -88,8 +88,8 @@ export class RosService {
         ProxyRunProgramStartResponse
     >;
     private proxyProgramStopService!: ROSLIB.Service<
-        ProxyRunProgramStartRequest,
-        ProxyRunProgramStartResponse
+        ProxyRunProgramStopRequest,
+        ProxyRunProgramStopResponse
     >;
 
     private runProgramAction!: ROSLIB.ActionClient;
