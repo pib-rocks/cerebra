@@ -1,4 +1,4 @@
-import {MotorSettingsMessage} from "./motorSettingsMessage";
+import {MotorSettingsMessage} from "../msg/motor-settings-message";
 
 export interface MotorSettingsServiceRequest {
     motor_settings: MotorSettingsMessage;

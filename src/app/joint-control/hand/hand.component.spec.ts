@@ -11,8 +11,8 @@ import {CircularSliderComponent} from "../circular-slider/circular-slider.compon
 import {MotorService} from "../../shared/services/motor-service/motor.service";
 import {ActivatedRoute} from "@angular/router";
 import {BehaviorSubject, Observable} from "rxjs";
-import {JointTrajectoryMessage} from "../../shared/ros-message-types/jointTrajectoryMessage";
-import {MotorSettingsMessage} from "../../shared/ros-message-types/motorSettingsMessage";
+import {JointTrajectoryMessage} from "../../shared/ros-types/msg/joint-trajectory-message";
+import {MotorSettingsMessage} from "../../shared/ros-types/msg/motor-settings-message";
 import {Group} from "../../shared/types/motor.enum";
 import {HttpClientTestingModule} from "@angular/common/http/testing";
 import {HorizontalSliderComponent} from "src/app/sliders/horizontal-slider/horizontal-slider.component";

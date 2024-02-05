@@ -7,4 +7,7 @@ export enum rosTopics {
     cameraTopicName = "/camera_topic",
     cameraQualityTopic = "/quality_factor_topic",
     motorSettingsTopicName = "/motor_settings",
+    proxyRunProgramFeedback = "/proxy_run_program_feedback",
+    proxyRunProgramResult = "/proxy_run_program_result",
+    proxyRunProgramStatus = "/proxy_run_program_status",
 }

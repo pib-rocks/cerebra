@@ -7,4 +7,10 @@ export enum rosDataTypes {
     jointTrajectory = "trajectory_msgs/msg/JointTrajectory",
     diagnosticStatus = "diagnostic_msgs/msg/DiagnosticStatus",
     motorSettingsSrv = "datatypes/srv/MotorSettingsSrv",
+    runProgram = "datatypes/action/RunProgram",
+    proxyRunProgramStart = "datatypes/srv/ProxyStartProgram",
+    proxyRunProgramStop = "datatypes/srv/ProxyStopProgram",
+    proxyRunProgramFeedback = "datatypes/msg/ProxyRunProgramFeedback",
+    proxyRunProgramResult = "datatypes/msg/ProxyExitCode",
+    proxyRunProgramStatus = "datatypes/msg/ProxyRunProgramStatus",
 }

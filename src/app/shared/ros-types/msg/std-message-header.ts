@@ -1,5 +1,5 @@
 // TypeScript implementation of a ROS std_msgs Header (standard Messages)
-import {RosTime} from "./rosTime";
+import {RosTime} from "./ros-time";
 
 export type StdMessageHeader = {
     stamp: RosTime;

@@ -8,9 +8,9 @@ import {RosService} from "../ros-service/ros.service";
 import {
     JointTrajectoryMessage,
     createEmptyJointTrajectoryMessage,
-} from "../../ros-message-types/jointTrajectoryMessage";
-import {MotorSettingsMessage} from "../../ros-message-types/motorSettingsMessage";
-import {createJointTrajectoryPoint} from "../../ros-message-types/jointTrajectoryPoint";
+} from "../../ros-types/msg/joint-trajectory-message";
+import {MotorSettingsMessage} from "../../ros-types/msg/motor-settings-message";
+import {createJointTrajectoryPoint} from "../../ros-types/msg/joint-trajectory-point";
 import {ApiService} from "../api.service";
 import {HttpClientTestingModule} from "@angular/common/http/testing";
 import {BehaviorSubject} from "rxjs";

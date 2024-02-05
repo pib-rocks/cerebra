@@ -15,7 +15,7 @@ import {
 import {UrlConstants} from "./url.constants";
 import {SidebarService} from "../interfaces/sidebar-service.interface";
 import {SidebarElement} from "../interfaces/sidebar-element.interface";
-import {VoiceAssistantMsg} from "../ros-message-types/voiceAssistant";
+import {VoiceAssistantMsg} from "../ros-types/msg/voice-assistant";
 import {RosService} from "./ros-service/ros.service";
 
 @Injectable({

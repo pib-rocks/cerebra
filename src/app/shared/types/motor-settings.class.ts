@@ -1,4 +1,4 @@
-import {MotorSettingsMessage} from "../ros-message-types/motorSettingsMessage";
+import {MotorSettingsMessage} from "../ros-types/msg/motor-settings-message";
 
 export class MotorSettings {
     constructor(

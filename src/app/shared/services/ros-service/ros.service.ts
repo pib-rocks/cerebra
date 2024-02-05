@@ -1,18 +1,43 @@
 import {Injectable, isDevMode} from "@angular/core";
 import * as ROSLIB from "roslib";
-import {BehaviorSubject, Subject, ReplaySubject, Observable} from "rxjs";
-import {MotorSettingsMessage} from "../../ros-message-types/motorSettingsMessage";
-import {DiagnosticStatus} from "../../ros-message-types/DiagnosticStatus.message";
-import {JointTrajectoryMessage} from "../../ros-message-types/jointTrajectoryMessage";
-import {rosDataTypes} from "../../ros-message-types/rosDataTypePaths.enum";
-import {rosTopics} from "./rosTopics.enum";
-import {VoiceAssistantMsg} from "../../ros-message-types/voiceAssistant";
-import {rosServices} from "./rosServices.enum";
+import {
+    BehaviorSubject,
+    Subject,
+    ReplaySubject,
+    Observable,
+    filter,
+    from,
+    map,
+} from "rxjs";
+import {MotorSettingsMessage} from "../../ros-types/msg/motor-settings-message";
+import {DiagnosticStatus} from "../../ros-types/msg/diagnostic-status.message";
+import {JointTrajectoryMessage} from "../../ros-types/msg/joint-trajectory-message";
+import {rosDataTypes} from "../../ros-types/path/ros-datatypes.enum";
+import {rosTopics} from "../../ros-types/path/ros-topics.enum";
+import {VoiceAssistantMsg} from "../../ros-types/msg/voice-assistant";
+import {rosServices} from "../../ros-types/path/ros-services.enum";
+import {rosActions} from "../../ros-types/path/ros-actions.enum";
 import {MotorSettingsError} from "../../error/motor-settings-error";
 import {
     MotorSettingsServiceRequest,
     MotorSettingsServiceResponse,
-} from "../../ros-message-types/motorSettingsService";
+} from "../../ros-types/srv/motor-settings-service";
+import {
+    RunProgramFeedback,
+    RunProgramResult,
+} from "../../ros-types/action/run-program";
+import {GoalHandle} from "../../ros-types/action/goal-handle";
+import {
+    ProxyStartProgramRequest,
+    ProxyStartProgramResponse,
+} from "../../ros-types/srv/proxy-run-program-start";
+import {
+    ProxyRunProgramStartRequest,
+    ProxyRunProgramStartResponse,
+} from "../../ros-types/srv/proxy-run-program-stop";
+import {ProxyRunProgramFeedback} from "../../ros-types/msg/proxy-run-program-feedback";
+import {ProxyRunProgramResult} from "../../ros-types/msg/proxy-run-program-result";
+import {ProxyRunProgramStatus} from "../../ros-types/msg/proxy-run-program-status";
 
 @Injectable({
     providedIn: "root",
@@ -33,7 +58,15 @@ export class RosService {
         new Subject<JointTrajectoryMessage>();
     motorSettingsReceiver$: Subject<MotorSettingsMessage> =
         new Subject<MotorSettingsMessage>();
+    proxyRunProgramFeedbackReceiver$: Subject<ProxyRunProgramFeedback> =
+        new Subject<ProxyRunProgramFeedback>();
+    proxyRunProgramResultReceiver$: Subject<ProxyRunProgramResult> =
+        new Subject<ProxyRunProgramResult>();
+    proxyRunProgramStatusReceiver$: Subject<ProxyRunProgramStatus> =
+        new Subject<ProxyRunProgramStatus>();
+
     private ros!: ROSLIB.Ros;
+
     private voiceAssistantTopic!: ROSLIB.Topic;
     private motorCurrentTopic!: ROSLIB.Topic;
     private cameraTopic!: ROSLIB.Topic;
@@ -42,10 +75,24 @@ export class RosService {
     private cameraQualityFactorTopic!: ROSLIB.Topic;
     private jointTrajectoryTopic!: ROSLIB.Topic;
     private motorSettingsTopic!: ROSLIB.Topic;
+    private proxyRunProgramFeedbackTopic!: ROSLIB.Topic<ProxyRunProgramFeedback>;
+    private proxyRunProgramResultTopic!: ROSLIB.Topic<ProxyRunProgramResult>;
+    private proxyRunProgramStatusTopic!: ROSLIB.Topic<ProxyRunProgramStatus>;
+
     private motorSettingsService!: ROSLIB.Service<
         MotorSettingsServiceRequest,
         MotorSettingsServiceResponse
     >;
+    private proxyProgramStartService!: ROSLIB.Service<
+        ProxyStartProgramRequest,
+        ProxyStartProgramResponse
+    >;
+    private proxyProgramStopService!: ROSLIB.Service<
+        ProxyRunProgramStartRequest,
+        ProxyRunProgramStartResponse
+    >;
+
+    private runProgramAction!: ROSLIB.ActionClient;
 
     constructor() {
         this.ros = this.setUpRos();
@@ -66,7 +113,7 @@ export class RosService {
     setUpRos() {
         let rosUrl: string;
         if (isDevMode()) {
-            rosUrl = "127.0.0.1";
+            rosUrl = "192.168.220.84";
         } else {
             rosUrl = window.location.hostname;
         }
@@ -112,9 +159,35 @@ export class RosService {
             rosTopics.motorSettingsTopicName,
             rosDataTypes.motorSettings,
         );
+        this.proxyRunProgramFeedbackTopic = this.createRosTopic(
+            rosTopics.proxyRunProgramFeedback,
+            rosDataTypes.proxyRunProgramFeedback,
+        ) as ROSLIB.Topic<ProxyRunProgramFeedback>;
+        this.proxyRunProgramResultTopic = this.createRosTopic(
+            rosTopics.proxyRunProgramResult,
+            rosDataTypes.proxyRunProgramResult,
+        ) as ROSLIB.Topic<ProxyRunProgramResult>;
+        this.proxyRunProgramStatusTopic = this.createRosTopic(
+            rosTopics.proxyRunProgramStatus,
+            rosDataTypes.proxyRunProgramStatus,
+        ) as ROSLIB.Topic<ProxyRunProgramStatus>;
+
         this.motorSettingsService = this.createRosService(
             rosServices.motorSettingsServiceName,
             rosDataTypes.motorSettingsSrv,
+        );
+        this.proxyProgramStartService = this.createRosService(
+            rosServices.proxyRunProgramStart,
+            rosDataTypes.proxyRunProgramStart,
+        );
+        this.proxyProgramStopService = this.createRosService(
+            rosServices.proxyRunProgramStop,
+            rosDataTypes.proxyRunProgramStop,
+        );
+
+        this.runProgramAction = this.createActionClient(
+            rosActions.runProgramName,
+            rosDataTypes.runProgram,
         );
     }
 
@@ -131,6 +204,14 @@ export class RosService {
             ros: this.ros,
             name: topicName,
             messageType: topicMessageType,
+        });
+    }
+
+    createActionClient(actionName: string, actionType: string) {
+        return new ROSLIB.ActionClient({
+            ros: this.ros,
+            serverName: actionName,
+            actionName: actionType,
         });
     }
 
@@ -154,6 +235,9 @@ export class RosService {
         this.subscribeMotorSettingsTopic();
         this.subscribeMotorCurrentTopic();
         this.subscribeJointTrajectoryTopic();
+        this.subscribeProxyRunProgramFeedbackTopic();
+        this.subscribeProxyRunProgramResultTopic();
+        this.subscribeProxyRunProgramStatusTopic();
     }
 
     subscribeDefaultRosMessageTopic(
@@ -180,6 +264,7 @@ export class RosService {
             );
         });
     }
+
     subscribeMotorSettingsTopic() {
         this.motorSettingsTopic.subscribe((message) => {
             this.motorSettingsReceiver$.next(message as MotorSettingsMessage);
@@ -192,9 +277,62 @@ export class RosService {
         });
     }
 
+    subscribeProxyRunProgramStatusTopic() {
+        this.proxyRunProgramStatusTopic.subscribe((message) => {
+            this.proxyRunProgramStatusReceiver$.next(message);
+        });
+    }
+
+    subscribeProxyRunProgramFeedbackTopic() {
+        this.proxyRunProgramFeedbackTopic.subscribe((message) => {
+            this.proxyRunProgramFeedbackReceiver$.next(message);
+        });
+    }
+
+    subscribeProxyRunProgramResultTopic() {
+        this.proxyRunProgramResultTopic.subscribe((message) => {
+            this.proxyRunProgramResultReceiver$.next(message);
+        });
+    }
+
     unsubscribeCameraTopic() {
         this.cameraTopic.unsubscribe();
     }
+
+    // sendActionGoal<RequestType, ResultType, FeedbackType>(
+    //     request: RequestType,
+    //     client: ROSLIB.ActionClient
+    // ): GoalHandle<FeedbackType, ResultType> {
+
+    //     const feedbackSubject = new Subject<FeedbackType>();
+    //     const resultSubject = new Subject<ResultType>();
+    //     const statusSubject = new Subject<void>();
+
+    //     const goal = new ROSLIB.Goal({
+    //         actionClient: client,
+    //         goalMessage: request
+    //     });
+
+    //     console.info("SENDING GOAL")
+    //     goal.send();
+
+    //     goal.on('result', result => resultSubject.next(result))
+    //     goal.on('feedback', feedback => feedbackSubject.next(feedback))
+    //     goal.on('status', status => statusSubject.next(status))
+
+    //     return {
+    //         feedback: feedbackSubject,
+    //         result: resultSubject,
+    //         status: statusSubject,
+    //     };
+    // }
+
+    // runProgram(programNumber: string): GoalHandle<RunProgramFeedback, RunProgramResult> {
+    //     const request: RunProgramRequest = {
+    //         program_number: programNumber
+    //     };
+    //     return this.sendActionGoal(request, this.runProgramAction);
+    // }
 
     sendMotorSettingsMessage(
         motorSettingsMessage: MotorSettingsMessage,
@@ -224,6 +362,54 @@ export class RosService {
             },
         );
         return subject;
+    }
+
+    runProgram(
+        programNumber: string,
+    ): Observable<GoalHandle<RunProgramFeedback, RunProgramResult>> {
+        return from(
+            new Promise<GoalHandle<RunProgramFeedback, RunProgramResult>>(
+                (resolve, reject) => {
+                    this.proxyProgramStartService.callService(
+                        {program_number: programNumber},
+                        (response) => {
+                            const id = response.proxy_goal_id;
+                            const feedback: Observable<RunProgramFeedback> =
+                                this.proxyRunProgramFeedbackReceiver$.pipe(
+                                    filter(
+                                        (output) => output.proxy_goal_id == id,
+                                    ),
+                                );
+                            const result: Observable<RunProgramResult> =
+                                this.proxyRunProgramResultReceiver$.pipe(
+                                    filter(
+                                        (exitCode) =>
+                                            exitCode.proxy_goal_id == id,
+                                    ),
+                                );
+                            const status: Observable<number> =
+                                this.proxyRunProgramStatusReceiver$
+                                    .pipe(
+                                        filter(
+                                            (status) =>
+                                                status.proxy_goal_id == id,
+                                        ),
+                                    )
+                                    .pipe(map((status) => status.status));
+                            const cancel = () =>
+                                this.proxyProgramStopService.callService(
+                                    {proxy_goal_id: id},
+                                    () => {},
+                                );
+                            resolve({feedback, result, status, cancel});
+                        },
+                        (errorMsg) => {
+                            reject(new Error(errorMsg));
+                        },
+                    );
+                },
+            ),
+        );
     }
 
     sendJointTrajectoryMessage(jointTrajectoryMessage: JointTrajectoryMessage) {
