@@ -14,9 +14,15 @@ import {DiagnosticStatus} from "../../ros-types/msg/diagnostic-status.message";
 import {JointTrajectoryMessage} from "../../ros-types/msg/joint-trajectory-message";
 import {rosDataTypes} from "../../ros-types/path/ros-datatypes.enum";
 import {rosTopics} from "../../ros-types/path/ros-topics.enum";
-import {VoiceAssistantMsg} from "../../ros-types/msg/voice-assistant";
 import {rosServices} from "../../ros-types/path/ros-services.enum";
 import {rosActions} from "../../ros-types/path/ros-actions.enum";
+import {
+    SetVoiceAssistantStateRequest,
+    SetVoiceAssistantStateResponse,
+} from "../../ros-types/srv/set-voice-assistant-state";
+import {ChatMessage} from "../../ros-types/msg/chat-message";
+import {VoiceAssistantState} from "../../ros-types/msg/voice-assistant-state";
+import {GetVoiceAssistantStateResponse} from "../../ros-types/srv/get-voice-assistant-state";
 import {MotorSettingsError} from "../../error/motor-settings-error";
 import {
     MotorSettingsServiceRequest,
@@ -53,7 +59,6 @@ export class RosService {
     >([0, 0]);
     cameraQualityFactorReceiver$: BehaviorSubject<number> =
         new BehaviorSubject<number>(80);
-    voiceAssistantReceiver$: Subject<any> = new Subject<any>();
     jointTrajectoryReceiver$: Subject<JointTrajectoryMessage> =
         new Subject<JointTrajectoryMessage>();
     motorSettingsReceiver$: Subject<MotorSettingsMessage> =
@@ -64,10 +69,15 @@ export class RosService {
         new Subject<ProxyRunProgramResult>();
     proxyRunProgramStatusReceiver$: Subject<ProxyRunProgramStatus> =
         new Subject<ProxyRunProgramStatus>();
+    voiceAssistantStateReceiver$: BehaviorSubject<VoiceAssistantState> =
+        new BehaviorSubject<VoiceAssistantState>({
+            turned_on: false,
+            chat_id: "",
+        });
+    chatMessageReceiver$: Subject<ChatMessage> = new Subject<ChatMessage>();
 
     private ros!: ROSLIB.Ros;
 
-    private voiceAssistantTopic!: ROSLIB.Topic;
     private motorCurrentTopic!: ROSLIB.Topic;
     private cameraTopic!: ROSLIB.Topic;
     private cameraTimerPeriodTopic!: ROSLIB.Topic;
@@ -78,7 +88,13 @@ export class RosService {
     private proxyRunProgramFeedbackTopic!: ROSLIB.Topic<ProxyRunProgramFeedback>;
     private proxyRunProgramResultTopic!: ROSLIB.Topic<ProxyRunProgramResult>;
     private proxyRunProgramStatusTopic!: ROSLIB.Topic<ProxyRunProgramStatus>;
+    private chatMessageTopic!: ROSLIB.Topic<ChatMessage>;
+    private voiceAssistantStateTopic!: ROSLIB.Topic<VoiceAssistantState>;
 
+    private setVoiceAssistantStateService!: ROSLIB.Service<
+        SetVoiceAssistantStateRequest,
+        SetVoiceAssistantStateResponse
+    >;
     private motorSettingsService!: ROSLIB.Service<
         MotorSettingsServiceRequest,
         MotorSettingsServiceResponse
@@ -113,7 +129,7 @@ export class RosService {
     setUpRos() {
         let rosUrl: string;
         if (isDevMode()) {
-            rosUrl = "192.168.220.84";
+            rosUrl = "127.0.0.1";
         } else {
             rosUrl = window.location.hostname;
         }
@@ -151,9 +167,13 @@ export class RosService {
             rosTopics.jointTrajectoryTopicName,
             rosDataTypes.jointTrajectory,
         );
-        this.voiceAssistantTopic = this.createRosTopic(
-            rosTopics.voiceTopicName,
-            rosDataTypes.string,
+        this.chatMessageTopic = this.createRosTopic(
+            rosTopics.chatMessages,
+            rosDataTypes.chatMessage,
+        );
+        this.voiceAssistantStateTopic = this.createRosTopic(
+            rosTopics.voiceAssistantState,
+            rosDataTypes.voiceAssistantState,
         );
         this.motorSettingsTopic = this.createRosTopic(
             rosTopics.motorSettingsTopicName,
@@ -162,15 +182,15 @@ export class RosService {
         this.proxyRunProgramFeedbackTopic = this.createRosTopic(
             rosTopics.proxyRunProgramFeedback,
             rosDataTypes.proxyRunProgramFeedback,
-        ) as ROSLIB.Topic<ProxyRunProgramFeedback>;
+        );
         this.proxyRunProgramResultTopic = this.createRosTopic(
             rosTopics.proxyRunProgramResult,
             rosDataTypes.proxyRunProgramResult,
-        ) as ROSLIB.Topic<ProxyRunProgramResult>;
+        );
         this.proxyRunProgramStatusTopic = this.createRosTopic(
             rosTopics.proxyRunProgramStatus,
             rosDataTypes.proxyRunProgramStatus,
-        ) as ROSLIB.Topic<ProxyRunProgramStatus>;
+        );
 
         this.motorSettingsService = this.createRosService(
             rosServices.motorSettingsServiceName,
@@ -183,6 +203,10 @@ export class RosService {
         this.proxyProgramStopService = this.createRosService(
             rosServices.proxyRunProgramStop,
             rosDataTypes.proxyRunProgramStop,
+        );
+        this.setVoiceAssistantStateService = this.createRosService(
+            rosServices.setVoiceAssistantState,
+            rosDataTypes.setVoiceAssistantState,
         );
 
         this.runProgramAction = this.createActionClient(
@@ -199,7 +223,10 @@ export class RosService {
         });
     }
 
-    createRosTopic(topicName: string, topicMessageType: string): ROSLIB.Topic {
+    createRosTopic<T>(
+        topicName: string,
+        topicMessageType: string,
+    ): ROSLIB.Topic<T> {
         return new ROSLIB.Topic({
             ros: this.ros,
             name: topicName,
@@ -217,10 +244,6 @@ export class RosService {
 
     initSubscribers() {
         this.subscribeDefaultRosMessageTopic(
-            this.voiceAssistantTopic,
-            this.voiceAssistantReceiver$,
-        );
-        this.subscribeDefaultRosMessageTopic(
             this.cameraPreviewSizeTopic,
             this.cameraPreviewSizeReceiver$,
         );
@@ -232,6 +255,9 @@ export class RosService {
             this.cameraQualityFactorTopic,
             this.cameraQualityFactorReceiver$,
         );
+
+        this.subscribeVoiceAssistantStateTopic();
+        this.subscribeChatMessageTopic();
         this.subscribeMotorSettingsTopic();
         this.subscribeMotorCurrentTopic();
         this.subscribeJointTrajectoryTopic();
@@ -295,6 +321,35 @@ export class RosService {
         });
     }
 
+    subscribeVoiceAssistantStateTopic() {
+        this.voiceAssistantStateTopic.subscribe((message: any) => {
+            console.info("message: " + message);
+            this.voiceAssistantStateReceiver$.next(message);
+        });
+        const getVoiceAssistantStateService: ROSLIB.Service<
+            Record<string, never>,
+            GetVoiceAssistantStateResponse
+        > = this.createRosService(
+            rosServices.getVoiceAssistantState,
+            rosDataTypes.getVoiceAssistantState,
+        );
+        getVoiceAssistantStateService.callService(
+            {},
+            (response) =>
+                this.voiceAssistantStateReceiver$.next(
+                    response.voice_assistant_state,
+                ),
+            (error: any) => console.error("error occured: " + error),
+        );
+    }
+
+    subscribeChatMessageTopic() {
+        this.chatMessageTopic.subscribe((message: any) => {
+            console.info("message: " + message);
+            this.chatMessageReceiver$.next(message);
+        });
+    }
+
     unsubscribeCameraTopic() {
         this.cameraTopic.unsubscribe();
     }
@@ -333,6 +388,31 @@ export class RosService {
     //     };
     //     return this.sendActionGoal(request, this.runProgramAction);
     // }
+
+    setVoiceAssistantState(
+        voiceAssistantState: VoiceAssistantState,
+    ): Observable<void> {
+        const subject: Subject<void> = new ReplaySubject();
+        const request: SetVoiceAssistantStateRequest = {
+            voice_assistant_state: voiceAssistantState,
+        };
+        const successCallback = (response: SetVoiceAssistantStateResponse) => {
+            if (response.successful) {
+                subject.next();
+            } else {
+                subject.error(new Error("could not apply state..."));
+            }
+        };
+        const errorCallback = (error: any) => {
+            subject.error(new Error(error));
+        };
+        this.setVoiceAssistantStateService.callService(
+            request,
+            successCallback,
+            errorCallback,
+        );
+        return subject;
+    }
 
     sendMotorSettingsMessage(
         motorSettingsMessage: MotorSettingsMessage,
@@ -476,11 +556,6 @@ export class RosService {
         }
 
         console.log(consoleString);
-    }
-
-    sendVoiceActivationMessage(msg: VoiceAssistantMsg) {
-        const message = new ROSLIB.Message({data: JSON.stringify(msg)});
-        this.voiceAssistantTopic.publish(message);
     }
 
     setTimerPeriod(period: number | null) {

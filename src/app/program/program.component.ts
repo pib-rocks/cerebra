@@ -45,7 +45,7 @@ export class ProgramComponent implements OnInit, AfterViewInit {
     }
 
     ngAfterViewInit() {
-        this.route.url.subscribe((segments) => {
+        this.route.url.subscribe((_segments) => {
             this.programService.getAllPrograms().subscribe((programs) => {
                 this.selected.next(programs[0]?.getUUID());
             });

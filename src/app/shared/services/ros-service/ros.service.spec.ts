@@ -1,11 +1,9 @@
-import {TestBed, fakeAsync, waitForAsync} from "@angular/core/testing";
+import {TestBed, waitForAsync} from "@angular/core/testing";
 import * as ROSLIB from "roslib";
 import {RosService} from "./ros.service";
 import {createEmptyJointTrajectoryMessage} from "../../ros-types/msg/joint-trajectory-message";
 import {MotorSettingsMessage} from "../../ros-types/msg/motor-settings-message";
-import {VoiceAssistantMsg} from "../../ros-types/msg/voice-assistant";
 import {MotorSettingsServiceResponse} from "../../ros-types/srv/motor-settings-service";
-import {BehaviorSubject, Observable, Subject} from "rxjs";
 import {ProxyRunProgramFeedback} from "../../ros-types/msg/proxy-run-program-feedback";
 import {
     ProxyRunProgramStopRequest,
@@ -17,11 +15,9 @@ import {
     ProxyRunProgramStartRequest,
     ProxyRunProgramStartResponse,
 } from "../../ros-types/srv/proxy-run-program-start";
-import {GoalHandle} from "../../ros-types/action/goal-handle";
-import {
-    RunProgramFeedback,
-    RunProgramResult,
-} from "../../ros-types/action/run-program";
+import {VoiceAssistantState} from "../../ros-types/msg/voice-assistant-state";
+import {SetVoiceAssistantStateResponse} from "../../ros-types/srv/set-voice-assistant-state";
+import {Observable, Subject} from "rxjs";
 
 describe("RosService", () => {
     let rosService: RosService;
@@ -68,27 +64,142 @@ describe("RosService", () => {
         expect(rosService["cameraTimerPeriodTopic"]).toBeTruthy();
         expect(rosService["cameraQualityFactorTopic"]).toBeTruthy();
         expect(rosService["cameraPreviewSizeTopic"]).toBeTruthy();
-        expect(rosService["voiceAssistantTopic"]).toBeTruthy();
         expect(rosService["motorSettingsService"]).toBeTruthy();
+        expect(rosService["voiceAssistantStateTopic"]).toBeTruthy();
+        expect(rosService["setVoiceAssistantStateService"]).toBeTruthy();
+        expect(rosService["chatMessageTopic"]).toBeTruthy();
     });
 
-    it("should publish the message on calling sendVoiceActivationMessage", () => {
-        const spySendVoiceActivationMessage = spyOn(
-            rosService,
-            "sendVoiceActivationMessage",
-        ).and.callThrough();
-        const spyPublish = spyOn(rosService["voiceAssistantTopic"], "publish");
-        const message: VoiceAssistantMsg = {
-            activationFlag: true,
-            personality: "1",
-            threshold: 1.3,
-            gender: "male",
+    it("should call the set_voice_assistant_state ros service", () => {
+        const setVoiceAssistantStateSpy = spyOn(
+            rosService["setVoiceAssistantStateService"],
+            "callService",
+        ).and.callFake((_msg, callback) => {
+            const res: SetVoiceAssistantStateResponse = {successful: true};
+            callback(res);
+        });
+        const subscribeObject = jasmine.createSpyObj("subscriber", [
+            "next",
+            "error",
+        ]);
+        const state: VoiceAssistantState = {
+            turned_on: true,
+            chat_id: "test-chat-id",
         };
-        rosService.sendVoiceActivationMessage(message);
-        expect(spySendVoiceActivationMessage).toHaveBeenCalled();
-        expect(spyPublish).toHaveBeenCalledWith(
-            new ROSLIB.Message({data: JSON.stringify(message)}),
+        const subject = rosService.setVoiceAssistantState(state);
+        subject.subscribe(subscribeObject);
+        expect(subscribeObject.next).toHaveBeenCalledTimes(1);
+        expect(subscribeObject.error).not.toHaveBeenCalled();
+        expect(setVoiceAssistantStateSpy).toHaveBeenCalledOnceWith(
+            jasmine.objectContaining({
+                voice_assistant_state: state,
+            }),
+            jasmine.any(Function),
+            jasmine.any(Function),
         );
+    });
+
+    it("should publish an error if the voice assistant state could not be set", () => {
+        const setVoiceAssistantStateSpy = spyOn(
+            rosService["setVoiceAssistantStateService"],
+            "callService",
+        ).and.callFake((_msg, callback) => {
+            const res: SetVoiceAssistantStateResponse = {successful: false};
+            callback(res);
+        });
+        const subscribeObject = jasmine.createSpyObj("subscriber", [
+            "next",
+            "error",
+        ]);
+        const state: VoiceAssistantState = {
+            turned_on: true,
+            chat_id: "test-chat-id",
+        };
+        const subject = rosService.setVoiceAssistantState(state);
+        subject.subscribe(subscribeObject);
+        expect(subscribeObject.next).not.toHaveBeenCalled();
+        expect(subscribeObject.error).toHaveBeenCalledOnceWith(
+            jasmine.objectContaining(new Error("could not apply state...")),
+        );
+        expect(setVoiceAssistantStateSpy).toHaveBeenCalledOnceWith(
+            jasmine.objectContaining({
+                voice_assistant_state: state,
+            }),
+            jasmine.any(Function),
+            jasmine.any(Function),
+        );
+    });
+
+    it("should publish an error if the communication with ROS fails", () => {
+        const setVoiceAssistantStateSpy = spyOn(
+            rosService["setVoiceAssistantStateService"],
+            "callService",
+        ).and.callFake((_msg, _callback, errorCallback) => {
+            if (errorCallback) errorCallback("errror-message");
+        });
+        const subscribeObject = jasmine.createSpyObj("subscriber", [
+            "next",
+            "error",
+        ]);
+        const state: VoiceAssistantState = {
+            turned_on: true,
+            chat_id: "test-chat-id",
+        };
+        const subject = rosService.setVoiceAssistantState(state);
+        subject.subscribe(subscribeObject);
+        expect(subscribeObject.next).not.toHaveBeenCalled();
+        expect(subscribeObject.error).toHaveBeenCalledOnceWith(
+            jasmine.objectContaining(new Error("error-message")),
+        );
+        expect(setVoiceAssistantStateSpy).toHaveBeenCalledOnceWith(
+            jasmine.objectContaining({
+                voice_assistant_state: state,
+            }),
+            jasmine.any(Function),
+            jasmine.any(Function),
+        );
+    });
+
+    it("should subscribe to the voice-assistant-topic and retrieve the initial state", () => {
+        const state1: VoiceAssistantState = {
+            turned_on: true,
+            chat_id: "test-chat-id-1",
+        };
+        const state2: VoiceAssistantState = {
+            turned_on: false,
+            chat_id: "test-chat-id-2",
+        };
+        const subscribeVoiceAssistantStateTopicSpy = spyOn(
+            rosService["voiceAssistantStateTopic"],
+            "subscribe",
+        ).and.callFake((callback) => callback(state1));
+        const getVoiceAssistantStateServiceSpy = jasmine.createSpyObj(
+            "get-voice-assistant-state",
+            ["callService"],
+        );
+        getVoiceAssistantStateServiceSpy.callService.and.callFake(
+            (_msg: any, callback: any, _errorCallback: any) =>
+                callback({
+                    voice_assistant_state: state2,
+                }),
+        );
+        spyOn(rosService, "createRosService").and.returnValue(
+            getVoiceAssistantStateServiceSpy,
+        );
+        const voiceAssistantStateReceiverSpy = spyOn(
+            rosService.voiceAssistantStateReceiver$,
+            "next",
+        );
+
+        rosService.subscribeVoiceAssistantStateTopic();
+
+        expect(voiceAssistantStateReceiverSpy).toHaveBeenCalledTimes(2);
+        expect(voiceAssistantStateReceiverSpy).toHaveBeenCalledWith(state1);
+        expect(voiceAssistantStateReceiverSpy).toHaveBeenCalledWith(state2);
+        expect(subscribeVoiceAssistantStateTopicSpy).toHaveBeenCalledTimes(1);
+        expect(
+            getVoiceAssistantStateServiceSpy.callService,
+        ).toHaveBeenCalledTimes(1);
     });
 
     it("should publish the JointTrajectoryMessage on calling sendJointTrajectoryMessage", () => {
