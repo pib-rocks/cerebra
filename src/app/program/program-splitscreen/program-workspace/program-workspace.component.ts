@@ -32,6 +32,8 @@ export class ProgramWorkspaceComponent {
 
     pythonCode: string = "";
 
+    cancelRunningProgram?: () => void = undefined;
+
     supportedEvents = new Set([
         Blockly.Events.BLOCK_CHANGE,
         Blockly.Events.BLOCK_CREATE,
@@ -139,7 +141,25 @@ export class ProgramWorkspaceComponent {
     }
 
     runProgram() {
-        console.log("run clicked!");
+        if (this.cancelRunningProgram) {
+            console.info("cancelling...");
+            this.cancelRunningProgram();
+            this.cancelRunningProgram = undefined;
+        } else {
+            console.info("starting...");
+            this.programService.runProgram("hui").subscribe((handle) => {
+                handle.feedback.subscribe((feedback) =>
+                    console.info(JSON.stringify(feedback)),
+                );
+                handle.status.subscribe((status) =>
+                    console.warn(JSON.stringify(status)),
+                );
+                handle.result.subscribe((result) =>
+                    console.error(JSON.stringify(result)),
+                );
+                this.cancelRunningProgram = handle.cancel;
+            });
+        }
     }
 
     flyoutChangeCallback = () => {

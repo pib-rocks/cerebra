@@ -28,8 +28,8 @@ import {
 } from "../../ros-types/action/run-program";
 import {GoalHandle} from "../../ros-types/action/goal-handle";
 import {
-    ProxyStartProgramRequest,
-    ProxyStartProgramResponse,
+    ProxyRunProgramStartRequest,
+    ProxyRunProgramStartResponse,
 } from "../../ros-types/srv/proxy-run-program-start";
 import {
     ProxyRunProgramStartRequest,
@@ -84,8 +84,8 @@ export class RosService {
         MotorSettingsServiceResponse
     >;
     private proxyProgramStartService!: ROSLIB.Service<
-        ProxyStartProgramRequest,
-        ProxyStartProgramResponse
+        ProxyRunProgramStartRequest,
+        ProxyRunProgramStartResponse
     >;
     private proxyProgramStopService!: ROSLIB.Service<
         ProxyRunProgramStartRequest,

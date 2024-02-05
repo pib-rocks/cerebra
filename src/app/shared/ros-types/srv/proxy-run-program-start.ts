@@ -1,7 +1,7 @@
-export interface ProxyStartProgramRequest {
+export interface ProxyRunProgramStartRequest {
     program_number: string;
 }
 
-export interface ProxyStartProgramResponse {
+export interface ProxyRunProgramStartResponse {
     proxy_goal_id: string;
 }
