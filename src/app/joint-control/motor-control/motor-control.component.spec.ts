@@ -271,14 +271,10 @@ describe("MotorControlComponent", () => {
             component,
             "setInverteState",
         ).and.callThrough();
-        const spyOnUpdateMotorFromComponent = spyOn(
-            motorService,
-            "updateMotorFromComponent",
-        );
         component.setInverteState();
         fixture.detectChanges();
         expect(spyOnInvertInput).toHaveBeenCalled();
         expect(component.motor.settings.invert).toBeTrue();
-        expect(spyOnUpdateMotorFromComponent).toHaveBeenCalled();
+        expect(motorService.updateMotorFromComponent).toHaveBeenCalled();
     });
 });
