@@ -5,8 +5,6 @@ import {Observable, ReplaySubject} from "rxjs";
     providedIn: "root",
 })
 export class UtilService {
-    constructor() {}
-
     static createResultObservable<Type>(
         obs: Observable<any>,
         mapper: (response: any) => Type,
