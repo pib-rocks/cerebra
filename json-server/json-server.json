@@ -469,175 +469,204 @@
       "id" : 1,
       "brickletId" : 1,
       "motorId" : 3, 
-      "pin": 0
+      "pin": 0, 
+      "invert" : 0
     },
     {
       "id" : 2,
       "brickletId" : 1,
       "motorId" : 1, 
-      "pin": 1
+      "pin": 1,
+      "invert": 0
     },
     {
       "id" : 3,
       "brickletId" : 2,
       "motorId" : 2, 
-      "pin": 8
+      "pin": 8,
+      "invert": 0
     },
     {
       "id" : 4,
       "brickletId" : 1,
       "motorId" : 5,
-      "pin": 9
+      "pin": 9,
+      "invert": 0
     },
     {
       "id" : 5,
       "brickletId" : 2,
       "motorId" : 4,
-      "pin": 0
+      "pin": 0,
+      "invert": 0
     },
     {
       "id" : 6,
       "brickletId" : 2,
       "motorId" : 6,
-      "pin": 1
+      "pin": 1,
+      "invert": 0
     },
     {
       "id" : 7,
       "brickletId" : 2,
       "motorId" : 7,
-      "pin": 2
+      "pin": 2,
+      "invert": 0
     },
     {
       "id" : 8,
       "brickletId" : 2,
       "motorId" : 8,
-      "pin": 3
+      "pin": 3,
+      "invert": 0
     },
     {
       "id" : 9,
       "brickletId" : 2,
       "motorId" : 9,
-      "pin": 4
+      "pin": 4,
+      "invert": 0
     },
     {
       "id" : 10,
       "brickletId" : 1,
       "motorId" : 11,
-      "pin": 3
+      "pin": 3,
+      "invert": 0
     },
     {
       "id" : 11,
       "brickletId" : 1,
       "motorId" : 10,
-      "pin": 4
+      "pin": 4,
+      "invert": 0
     },
     {
       "id" : 12,
       "brickletId" : 1,
       "motorId" : 12,
-      "pin": 5
+      "pin": 5,
+      "invert": 0
     },
     {
       "id" : 13,
       "brickletId" : 1,
       "motorId" : 13,
-      "pin": 6
+      "pin": 6,
+      "invert": 0
     },
     {
       "id" : 14,
       "brickletId" : 1,
       "motorId" : 14,
-      "pin": 7
+      "pin": 7,
+      "invert": 0
     },
     {
       "id" : 15,
       "brickletId" : 1,
       "motorId" : 15,
-      "pin": 8
+      "pin": 8,
+      "invert": 0
     },
     {
       "id" : 16,
       "brickletId" : 2,
       "motorId" : 16,
-      "pin": 5
+      "pin": 5,
+      "invert": 0
     },
     {
       "id" : 17,
       "brickletId" : 2,
       "motorId" : 17,
-      "pin": 6
+      "pin": 6,
+      "invert": 0
     },
     {
       "id" : 18,
       "brickletId" : 2,
       "motorId" : 18,
-      "pin": 7
+      "pin": 7,
+      "invert": 0
     },
     {
       "id" : 19,
       "brickletId" : 1,
       "motorId" : 19,
-      "pin": 2
+      "pin": 2,
+      "invert": 0
     },
     {
       "id" : 20,
       "brickletId" : 3,
       "motorId" : 20,
-      "pin": 7
+      "pin": 7,
+      "invert": 1
     },
     {
       "id" : 21,
       "brickletId" : 3,
       "motorId" : 20,
-      "pin": 9
+      "pin": 9,
+      "invert": 0
     },
     {
       "id" : 22,
       "brickletId" : 3,
       "motorId" : 21,
-      "pin": 0
+      "pin": 0,
+      "invert": 0
     },
     {
       "id" : 23,
       "brickletId" : 3,
       "motorId" : 22,
-      "pin": 1
+      "pin": 1,
+      "invert": 0
     },
     {
       "id" : 24,
       "brickletId" : 3,
       "motorId" : 23,
-      "pin": 2
+      "pin": 2,
+      "invert": 0
     },
     {
       "id" : 25,
       "brickletId" : 3,
       "motorId" : 24,
-      "pin": 3
+      "pin": 3,
+      "invert": 0
     },
     {
       "id" : 26,
       "brickletId" : 3,
       "motorId" : 25,
-      "pin": 4
+      "pin": 4,
+      "invert": 0
     },
     {
       "id" : 27,
       "brickletId" : 3,
       "motorId" : 26,
-      "pin": 5
+      "pin": 5,
+      "invert": 1
     },
     {
       "id" : 28,
       "brickletId" : 3,
       "motorId" : 26,
-      "pin": 8
+      "pin": 8,
+      "invert": 0
     },
     {
       "id" : 29,
       "brickletId" : 3,
       "motorId" : 27,
-      "pin": 6
+      "pin": 6,
+      "invert" : 0
     }
   ]
 }
