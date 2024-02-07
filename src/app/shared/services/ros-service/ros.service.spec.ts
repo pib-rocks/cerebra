@@ -315,10 +315,7 @@ describe("RosService", () => {
         >("proxy-run-program-start", ["callService"]);
 
         const stoptSpy = jasmine.createSpyObj<
-            ROSLIB.Service<
-                ProxyRunProgramStopRequest,
-                ProxyRunProgramStopResponse
-            >
+            ROSLIB.Service<ProxyRunProgramStopRequest, Record<string, never>>
         >("proxy-run-program-stop", ["callService"]);
 
         rosService["proxyProgramStartService"] = startSpy;
@@ -341,8 +338,7 @@ describe("RosService", () => {
 
             feedbackSubject.next({
                 proxy_goal_id: "test-proxy-goal-id",
-                is_stderr: true,
-                output_line: "test 1",
+                output_lines: [{is_stderr: true, content: "test 1"}],
             });
             statusSubject.next({
                 proxy_goal_id: "test-proxy-goal-id",
@@ -351,8 +347,7 @@ describe("RosService", () => {
 
             feedbackSubject.next({
                 proxy_goal_id: "other-proxy-goal-id",
-                is_stderr: true,
-                output_line: "test 2",
+                output_lines: [{is_stderr: true, content: "test 2"}],
             });
             statusSubject.next({
                 proxy_goal_id: "other-proxy-goal-id",
@@ -365,8 +360,7 @@ describe("RosService", () => {
 
             feedbackSubject.next({
                 proxy_goal_id: "test-proxy-goal-id",
-                is_stderr: true,
-                output_line: "test 3",
+                output_lines: [{is_stderr: true, content: "test 3"}],
             });
             statusSubject.next({
                 proxy_goal_id: "test-proxy-goal-id",

@@ -1,3 +1,5 @@
+import {ProgramOutputLine} from "../msg/program-output-line";
+
 export interface RunProgramRequest {
     program_number: string;
 }
@@ -7,6 +9,5 @@ export interface RunProgramResult {
 }
 
 export interface RunProgramFeedback {
-    output_line: string;
-    is_stderr: boolean;
+    output_lines: ProgramOutputLine[];
 }

@@ -1,5 +1,6 @@
+import {ProgramOutputLine} from "./program-output-line";
+
 export interface ProxyRunProgramFeedback {
     proxy_goal_id: string;
-    is_stderr: boolean;
-    output_line: string;
+    output_lines: ProgramOutputLine[];
 }
