@@ -17,6 +17,14 @@ export class Chat implements SidebarElement {
         console.log({...this});
         return {...this};
     }
+
+    static fromDto(dto: {
+        topic: string;
+        personalityId: string;
+        chatId: string;
+    }): Chat {
+        return new Chat(dto.topic, dto.personalityId, dto.chatId);
+    }
 }
 
 export class ChatDto {
