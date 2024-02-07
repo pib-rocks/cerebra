@@ -150,25 +150,7 @@ export class ProgramWorkspaceComponent
     }
 
     runProgram() {
-        if (this.cancelRunningProgram) {
-            console.info("cancelling...");
-            this.cancelRunningProgram();
-            this.cancelRunningProgram = undefined;
-        } else {
-            console.info("starting...");
-            this.programService.runProgram("hui").subscribe((handle) => {
-                handle.feedback.subscribe((feedback) =>
-                    console.info(JSON.stringify(feedback)),
-                );
-                handle.status.subscribe((status) =>
-                    console.warn(JSON.stringify(status)),
-                );
-                handle.result.subscribe((result) =>
-                    console.error(JSON.stringify(result)),
-                );
-                this.cancelRunningProgram = handle.cancel;
-            });
-        }
+        console.error("not implemented");
     }
 
     flyoutChangeCallback = () => {

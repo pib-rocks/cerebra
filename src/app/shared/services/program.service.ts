@@ -179,10 +179,4 @@ export class ProgramService {
             },
         );
     }
-
-    runProgram(
-        programNumber: string,
-    ): Observable<GoalHandle<RunProgramFeedback, RunProgramResult>> {
-        return this.rosService.runProgram(programNumber);
-    }
 }
