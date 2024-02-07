@@ -7,7 +7,7 @@ import {SidebarElement} from "src/app/shared/interfaces/sidebar-element.interfac
 import {ChatService} from "src/app/shared/services/chat.service";
 import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
 import {CerebraRegex} from "src/app/shared/types/cerebra-regex";
-import {ChatDto} from "src/app/shared/types/chat.class";
+import {Chat, ChatDto} from "src/app/shared/types/chat.class";
 import {VoiceAssistant} from "src/app/shared/types/voice-assistant";
 
 @Component({
@@ -87,14 +87,10 @@ export class VoiceAssistantChatComponent implements OnInit {
 
     addChat() {
         if (this.personalityId) {
-            this.chatService
-                .createChat(
-                    new ChatDto(
-                        this.topicFormControl.value,
-                        this.personalityId,
-                    ),
-                )
-                .subscribe((chat) => this.selected.next(chat.chatId));
+            const chat: Observable<Chat> = this.chatService.createChat(
+                new ChatDto(this.topicFormControl.value, this.personalityId),
+            );
+            chat.subscribe((chat) => this.selected.next(chat.chatId));
         } else {
             this.ngbModalRef?.close("failed");
         }
