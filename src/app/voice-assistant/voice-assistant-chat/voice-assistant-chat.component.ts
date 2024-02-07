@@ -2,7 +2,7 @@ import {Component, OnInit, TemplateRef, ViewChild} from "@angular/core";
 import {FormControl, Validators} from "@angular/forms";
 import {ActivatedRoute, Router} from "@angular/router";
 import {NgbModal, NgbModalRef} from "@ng-bootstrap/ng-bootstrap";
-import {Observable} from "rxjs";
+import {Observable, Subject} from "rxjs";
 import {SidebarElement} from "src/app/shared/interfaces/sidebar-element.interface";
 import {ChatService} from "src/app/shared/services/chat.service";
 import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
@@ -24,6 +24,8 @@ export class VoiceAssistantChatComponent implements OnInit {
     personality?: VoiceAssistant;
     personalityId?: string | null;
     uuid: string | undefined;
+
+    selected: Subject<string> = new Subject();
 
     constructor(
         private modalService: NgbModal,
@@ -85,10 +87,14 @@ export class VoiceAssistantChatComponent implements OnInit {
 
     addChat() {
         if (this.personalityId) {
-            this.chatService.createChat(
-                new ChatDto(this.topicFormControl.value, this.personalityId),
-            );
-            this.ngbModalRef?.close("saved");
+            this.chatService
+                .createChat(
+                    new ChatDto(
+                        this.topicFormControl.value,
+                        this.personalityId,
+                    ),
+                )
+                .subscribe((chat) => this.selected.next(chat.chatId));
         } else {
             this.ngbModalRef?.close("failed");
         }
