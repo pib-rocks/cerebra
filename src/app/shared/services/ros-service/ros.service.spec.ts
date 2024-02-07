@@ -5,10 +5,7 @@ import {createEmptyJointTrajectoryMessage} from "../../ros-types/msg/joint-traje
 import {MotorSettingsMessage} from "../../ros-types/msg/motor-settings-message";
 import {MotorSettingsServiceResponse} from "../../ros-types/srv/motor-settings-service";
 import {ProxyRunProgramFeedback} from "../../ros-types/msg/proxy-run-program-feedback";
-import {
-    ProxyRunProgramStopRequest,
-    ProxyRunProgramStopResponse,
-} from "../../ros-types/srv/proxy-run-program-stop";
+import {ProxyRunProgramStopRequest} from "../../ros-types/srv/proxy-run-program-stop";
 import {ProxyRunProgramResult} from "../../ros-types/msg/proxy-run-program-result";
 import {ProxyRunProgramStatus} from "../../ros-types/msg/proxy-run-program-status";
 import {

@@ -37,10 +37,7 @@ import {
     ProxyRunProgramStartRequest,
     ProxyRunProgramStartResponse,
 } from "../../ros-types/srv/proxy-run-program-start";
-import {
-    ProxyRunProgramStopRequest,
-    ProxyRunProgramStopResponse,
-} from "../../ros-types/srv/proxy-run-program-stop";
+import {ProxyRunProgramStopRequest} from "../../ros-types/srv/proxy-run-program-stop";
 import {ProxyRunProgramFeedback} from "../../ros-types/msg/proxy-run-program-feedback";
 import {ProxyRunProgramResult} from "../../ros-types/msg/proxy-run-program-result";
 import {ProxyRunProgramStatus} from "../../ros-types/msg/proxy-run-program-status";
@@ -105,7 +102,7 @@ export class RosService {
     >;
     private proxyProgramStopService!: ROSLIB.Service<
         ProxyRunProgramStopRequest,
-        ProxyRunProgramStopResponse
+        Record<string, never>
     >;
 
     private runProgramAction!: ROSLIB.ActionClient;
@@ -353,41 +350,6 @@ export class RosService {
     unsubscribeCameraTopic() {
         this.cameraTopic.unsubscribe();
     }
-
-    // sendActionGoal<RequestType, ResultType, FeedbackType>(
-    //     request: RequestType,
-    //     client: ROSLIB.ActionClient
-    // ): GoalHandle<FeedbackType, ResultType> {
-
-    //     const feedbackSubject = new Subject<FeedbackType>();
-    //     const resultSubject = new Subject<ResultType>();
-    //     const statusSubject = new Subject<void>();
-
-    //     const goal = new ROSLIB.Goal({
-    //         actionClient: client,
-    //         goalMessage: request
-    //     });
-
-    //     console.info("SENDING GOAL")
-    //     goal.send();
-
-    //     goal.on('result', result => resultSubject.next(result))
-    //     goal.on('feedback', feedback => feedbackSubject.next(feedback))
-    //     goal.on('status', status => statusSubject.next(status))
-
-    //     return {
-    //         feedback: feedbackSubject,
-    //         result: resultSubject,
-    //         status: statusSubject,
-    //     };
-    // }
-
-    // runProgram(programNumber: string): GoalHandle<RunProgramFeedback, RunProgramResult> {
-    //     const request: RunProgramRequest = {
-    //         program_number: programNumber
-    //     };
-    //     return this.sendActionGoal(request, this.runProgramAction);
-    // }
 
     setVoiceAssistantState(
         voiceAssistantState: VoiceAssistantState,
