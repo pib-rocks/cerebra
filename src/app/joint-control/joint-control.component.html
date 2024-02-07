@@ -1,0 +1,59 @@
+<ul class="nav nav-tabs">
+    <li
+        class="nav-item"
+        routerLinkActive="navbar-btn-active">
+        <a
+            id="head-nav"
+            class="nav-link sidebar-btn"
+            [routerLink]="['/joint-control/head']">
+            Head
+        </a>
+    </li>
+    <li
+        class="nav-item"
+        routerLinkActive="navbar-btn-active">
+        <a
+            id="left-hand-nav"
+            class="nav-link sidebar-btn"
+            [routerLink]="['/joint-control/left-hand']">
+            Left Hand
+        </a>
+    </li>
+    <li
+        class="nav-item"
+        routerLinkActive="navbar-btn-active">
+        <a
+            id="right-hand-nav"
+            class="nav-link sidebar-btn"
+            [routerLink]="['/joint-control/right-hand']">
+            Right Hand
+        </a>
+    </li>
+    <li
+        class="nav-item"
+        routerLinkActive="navbar-btn-active">
+        <a
+            id="left-arm-nav"
+            class="nav-link sidebar-btn"
+            [routerLink]="['/joint-control/left-arm']">
+            Left Arm
+        </a>
+    </li>
+    <li
+        class="nav-item"
+        routerLinkActive="navbar-btn-active">
+        <a
+            id="right-arm-nav"
+            class="nav-link sidebar-btn"
+            [routerLink]="['/joint-control/right-arm']">
+            Right Arm
+        </a>
+    </li>
+</ul>
+<div class="container-fluid mt-3">
+    <div class="background-image">
+        <div class="pink-corner-frame pt-3 pl-3 pr-3 ">
+            <router-outlet></router-outlet>
+        </div>
+    </div>
+</div>

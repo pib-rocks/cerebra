@@ -1,0 +1,79 @@
+<div class="row">
+    <label>Select a touchpoint to adjust</label>
+    <!-- <label>{{side}}</label> -->
+</div>
+<!-- <div class="row mb-3 mt-3">
+        Remove with all functionalities 
+        <div
+        class="col-3 mt-2 mb-2 pr-0 d-flex justify-content-end ">
+        <button
+            id="home-position-btn"
+            type="button"
+            class="btn"
+            (click)="reset()">
+            <img
+                src="../../assets/icon-home-position.png"
+                alt=""
+                width="19px"
+                height="24px" />
+            Home position
+        </button>
+    </div> -->
+
+<div class="row">
+    <div class="col-6">
+        <div id="joint-canvas">
+            <img
+                *ngFor="let motor of joint.motors"
+                src="assets/joint-control/touchpoint.svg"
+                class="touchpoint"
+                [style]="'left: ' + (motor.relativeTouchpointCenter.x*100) + '%; top: ' + (motor.relativeTouchpointCenter.y*100) + '%;'"
+                width="70px"
+                height="70px"
+                alt="toucpoint for motor"
+                (click)="selectMotor(motor)" />
+            <img
+                class="img-fluid"
+                [src]="'../../../assets' + joint.image"
+                alt="" />
+        </div>
+    </div>
+    <div class="col-6">
+        <!-- <div class="row">
+            <div
+                class="col ml-2"
+                [ngClass]="{'order-3' : side == 'left'}">
+                <label>Active</label>
+            </div>
+            <div
+                class="col pl-0"
+                [ngClass]="{'order-2' : side == 'left'}">
+                <label>Settings</label>
+            </div>
+            <div
+                class="col"
+                [ngClass]="{'order-1' : side == 'left'}">
+                <label>Current</label>
+            </div>
+        </div> -->
+        <div
+            *ngFor="let motor of joint.motors"
+            class="row">
+            <app-motor-current
+                [motorName]="motor.motorName"
+                class="col-4"></app-motor-current>
+            <app-motor-settings
+                [motorName]="motor.motorName"
+                class="col-8"></app-motor-settings>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <app-motor-position
+        *ngIf="selectedMotor"
+        [motorName]="selectedMotor.motorName"
+        [iconLeft]="selectedMotor.sliderIconLeft"
+        [iconRight]="selectedMotor.sliderIconRight">
+    </app-motor-position>
+</div>

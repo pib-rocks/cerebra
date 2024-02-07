@@ -1,0 +1,12 @@
+* {
+    color: #fff;
+}
+
+.touchpoint {
+    position: absolute;
+    transform: translate(-50%, -50%);
+}
+
+.joint-canvaas {
+    position: relative;
+}

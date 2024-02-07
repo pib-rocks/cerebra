@@ -1,44 +1,35 @@
 import {NgModule} from "@angular/core";
 import {RouterModule, Routes} from "@angular/router";
 import {CameraComponent} from "./camera/camera.component";
-import {HandComponent} from "./joint-control/hand/hand.component";
-import {ArmComponent} from "./joint-control/arm/arm.component";
-import {HeadComponent} from "./joint-control/head/head.component";
-import {ProgramComponent} from "./program/program.component";
 import {VoiceAssistantChatComponent} from "./voice-assistant/voice-assistant-chat/voice-assistant-chat.component";
-import {sideGuard} from "./security/side-guard";
+import {jointGuard} from "./security/joint-guard";
 import {VoiceAssistantComponent} from "./voice-assistant/voice-assistant.component";
 import {PersonalityDescriptionComponent} from "./voice-assistant/personality-description/personality-description.component";
 import {voiceAssistantResolver} from "./voice-assistant/voice-assistant-resolver/voice-assistant.resolver";
 import {ChatWindowComponent} from "./voice-assistant/voice-assistant-chat/chat-window/chat-window.component";
-import {ProgramWorkspaceComponent} from "./program/program-splitscreen/program-workspace/program-workspace.component";
 import {chatResolver} from "./voice-assistant/voice-assistant-resolver/chat.resolver";
 import {PersonalityWrapperComponent} from "./voice-assistant/personality-wrapper/personality-wrapper.component";
+import {JointControlComponent} from "./joint-control/joint-control.component";
+import {JointControlCoreComponent} from "./joint-control/joint-control-core/joint-control-core.component";
+import {ProgramComponent} from "./program/program.component";
+import {ProgramWorkspaceComponent} from "./program/program-splitscreen/program-workspace/program-workspace.component";
+import {jointResolver} from "./joint-control/joint-resolver/joint-resolver";
 
 const routes: Routes = [
-    {path: "", redirectTo: "head", pathMatch: "full"},
+    {path: "", redirectTo: "joint-control", pathMatch: "full"},
     {
-        path: "hand/:side",
-        component: HandComponent,
-        canActivate: [sideGuard],
-    },
-    {
-        path: "arm/:side",
-        component: ArmComponent,
-        canActivate: [sideGuard],
-    },
-    {path: "camera", component: CameraComponent},
-    {path: "head", component: HeadComponent},
-    {
-        path: "program",
-        component: ProgramComponent,
+        path: "joint-control",
+        component: JointControlComponent,
         children: [
             {
-                path: ":uuid",
-                component: ProgramWorkspaceComponent,
+                path: ":joint-name",
+                component: JointControlCoreComponent,
+                resolve: {joint: jointResolver},
+                canActivate: [jointGuard],
             },
         ],
     },
+    {path: "camera", component: CameraComponent},
     {
         path: "voice-assistant",
         component: VoiceAssistantComponent,
@@ -72,7 +63,17 @@ const routes: Routes = [
             },
         ],
     },
-    {path: "**", redirectTo: "head"},
+    {
+        path: "program",
+        component: ProgramComponent,
+        children: [
+            {
+                path: ":uuid",
+                component: ProgramWorkspaceComponent,
+            },
+        ],
+    },
+    {path: "**", redirectTo: "joint-control"},
 ];
 
 @NgModule({
