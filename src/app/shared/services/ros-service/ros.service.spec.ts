@@ -374,14 +374,12 @@ describe("RosService", () => {
             expect(feedbackSubscriber.next).toHaveBeenCalledTimes(2);
             expect(feedbackSubscriber.next).toHaveBeenCalledWith(
                 jasmine.objectContaining({
-                    is_stderr: true,
-                    output_line: "test 1",
+                    output_lines: [{is_stderr: true, content: "test 1"}],
                 }),
             );
             expect(feedbackSubscriber.next).toHaveBeenCalledWith(
                 jasmine.objectContaining({
-                    is_stderr: true,
-                    output_line: "test 3",
+                    output_lines: [{is_stderr: true, content: "test 3"}],
                 }),
             );
 
