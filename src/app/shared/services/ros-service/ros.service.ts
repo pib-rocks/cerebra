@@ -441,7 +441,9 @@ export class RosService {
                             const cancel = () =>
                                 this.proxyProgramStopService.callService(
                                     {proxy_goal_id: id},
-                                    () => {},
+                                    () => {
+                                        throw new Error("failed to cancel...");
+                                    },
                                 );
                             resolve({feedback, result, status, cancel});
                         },
