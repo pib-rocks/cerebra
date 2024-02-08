@@ -15,7 +15,7 @@ export enum rosDataTypes {
     proxyRunProgramStart = "datatypes/srv/ProxyStartProgram",
     proxyRunProgramStop = "datatypes/srv/ProxyStopProgram",
     proxyRunProgramFeedback = "datatypes/msg/ProxyRunProgramFeedback",
-    proxyRunProgramResult = "datatypes/msg/ProxyExitCode",
+    proxyRunProgramResult = "datatypes/msg/ProxyRunProgramResult",
     proxyRunProgramStatus = "datatypes/msg/ProxyRunProgramStatus",
     setVoiceAssistantState = "datatypes/srv/SetVoiceAssistantState",
     getVoiceAssistantState = "datatypes/srv/GetVoiceAssistantState",

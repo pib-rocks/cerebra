@@ -41,8 +41,6 @@ export class ProgramWorkspaceComponent
 
     pythonCode: string = "";
 
-    cancelRunningProgram?: () => void = undefined;
-
     supportedEvents = new Set([
         Blockly.Events.BLOCK_CHANGE,
         Blockly.Events.BLOCK_CREATE,
