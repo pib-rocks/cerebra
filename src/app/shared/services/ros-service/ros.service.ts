@@ -406,6 +406,40 @@ export class RosService {
         return subject;
     }
 
+    private getfilteredFeedback(
+        proxyGoalId: string,
+    ): Observable<RunProgramFeedback> {
+        return this.proxyRunProgramFeedbackReceiver$.pipe(
+            filter((output) => output.proxy_goal_id == proxyGoalId),
+        );
+    }
+
+    private getFilteredResult(
+        proxyGoalId: string,
+    ): Observable<RunProgramResult> {
+        return this.proxyRunProgramResultReceiver$.pipe(
+            filter((result) => result.proxy_goal_id == proxyGoalId),
+        );
+    }
+
+    private getfilteredStatus(proxyGoalId: string): Observable<number> {
+        return this.proxyRunProgramStatusReceiver$
+            .pipe(filter((status) => status.proxy_goal_id == proxyGoalId))
+            .pipe(map((status) => status.status));
+    }
+
+    private getCancelFunction(proxyGoalId: string): () => void {
+        return () => {
+            this.proxyProgramStopService.callService(
+                {proxy_goal_id: proxyGoalId},
+                () => undefined,
+                () => {
+                    throw new Error("failed to cancel...");
+                },
+            );
+        };
+    }
+
     runProgram(
         programNumber: string,
     ): Observable<GoalHandle<RunProgramFeedback, RunProgramResult>> {
@@ -415,37 +449,13 @@ export class RosService {
                     this.proxyProgramStartService.callService(
                         {program_number: programNumber},
                         (response) => {
-                            const id = response.proxy_goal_id;
-                            const feedback: Observable<RunProgramFeedback> =
-                                this.proxyRunProgramFeedbackReceiver$.pipe(
-                                    filter(
-                                        (output) => output.proxy_goal_id == id,
-                                    ),
-                                );
-                            const result: Observable<RunProgramResult> =
-                                this.proxyRunProgramResultReceiver$.pipe(
-                                    filter(
-                                        (exitCode) =>
-                                            exitCode.proxy_goal_id == id,
-                                    ),
-                                );
-                            const status: Observable<number> =
-                                this.proxyRunProgramStatusReceiver$
-                                    .pipe(
-                                        filter(
-                                            (status) =>
-                                                status.proxy_goal_id == id,
-                                        ),
-                                    )
-                                    .pipe(map((status) => status.status));
-                            const cancel = () =>
-                                this.proxyProgramStopService.callService(
-                                    {proxy_goal_id: id},
-                                    () => {
-                                        throw new Error("failed to cancel...");
-                                    },
-                                );
-                            resolve({feedback, result, status, cancel});
+                            const proxyGoalId = response.proxy_goal_id;
+                            resolve({
+                                feedback: this.getfilteredFeedback(proxyGoalId),
+                                result: this.getFilteredResult(proxyGoalId),
+                                status: this.getfilteredStatus(proxyGoalId),
+                                cancel: this.getCancelFunction(proxyGoalId),
+                            });
                         },
                         (errorMsg) => {
                             reject(new Error(errorMsg));
