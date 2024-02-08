@@ -12,7 +12,6 @@ export enum rosDataTypes {
     diagnosticStatus = "diagnostic_msgs/msg/DiagnosticStatus",
     // srv
     motorSettingsSrv = "datatypes/srv/MotorSettingsSrv",
-    runProgram = "datatypes/action/RunProgram",
     proxyRunProgramStart = "datatypes/srv/ProxyStartProgram",
     proxyRunProgramStop = "datatypes/srv/ProxyStopProgram",
     proxyRunProgramFeedback = "datatypes/msg/ProxyRunProgramFeedback",
@@ -20,4 +19,6 @@ export enum rosDataTypes {
     proxyRunProgramStatus = "datatypes/msg/ProxyRunProgramStatus",
     setVoiceAssistantState = "datatypes/srv/SetVoiceAssistantState",
     getVoiceAssistantState = "datatypes/srv/GetVoiceAssistantState",
+    // action
+    runProgram = "datatypes/action/RunProgram",
 }
