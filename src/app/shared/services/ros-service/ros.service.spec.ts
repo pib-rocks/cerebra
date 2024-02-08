@@ -405,6 +405,7 @@ describe("RosService", () => {
             ).toHaveBeenCalledOnceWith(
                 jasmine.objectContaining({proxy_goal_id: "test-proxy-goal-id"}),
                 jasmine.any(Function),
+                jasmine.any(Function),
             );
         });
     }));
