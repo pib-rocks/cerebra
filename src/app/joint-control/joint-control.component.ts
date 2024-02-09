@@ -1,6 +1,6 @@
 import {Component} from "@angular/core";
 import {ActivatedRoute} from "@angular/router";
-import {JointConfiguration} from "./joint-configuration/joint-configuration";
+import {JointConfiguration} from "../shared/types/joint-configuration";
 
 @Component({
     selector: "app-joint-control",

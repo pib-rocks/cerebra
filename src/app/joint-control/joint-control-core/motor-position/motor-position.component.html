@@ -1,1 +1,55 @@
-<p>{{motorName}}</p>
+<div class="d-flex m-0 p-0 flex-row bd-highlight m-0 p-0">
+    <div
+        class="d-flex m-0 p-0 flex-column justify-content-end"
+        style="background-color: blueviolet;">
+        <img
+            [src]="'../../../assets' + motor.sliderIconLeft"
+            class="slider-icon"
+            alt="left slider icon" />
+    </div>
+    <div
+        class="m-0 p-0 bd-highlight flex-grow-1"
+        style="background-color: orange;">
+        <div class="row m-0 p-0">{{motor.title}}</div>
+        <div class="row m-0 p-0 slider-container">y</div>
+    </div>
+    <div
+        class="d-flex flex-column justify-content-end"
+        style="background-color: blueviolet;">
+        <img
+            [src]="'../../../assets' + motor.sliderIconRight"
+            class="slider-icon"
+            alt="right slider icon" />
+    </div>
+</div>
+<div class="row m-0 p-0">
+    <div class="col right-icon-label">{{motor.captionLeft}}</div>
+    <div class="col left-icon-label">{{motor.captionRight}}</div>
+</div>
+
+<!-- <div class="row">{{motor.title}}</div>
+<div class="row">
+<div class="d-flex bd-highlight">
+    <div>
+        <img class="icon row"
+            [src]="'../../../assets/' + motor.sliderIconLeft"
+            alt="left icon" />
+        <div class="row">{{motor.captionLeft}}</div>
+    </div>
+    <div class="flex-grow-1">
+        <app-horizontal-slider
+            [numberOfThumbs]="1"
+            [name]="motor.motorName"
+            [unitLong]="'°'"
+            [messageReceiver$]="positionReceiver$"
+            [step]="1"
+            [defaultValues]="[0]"
+            (sliderEvent)="applyPosition($event[0])"></app-horizontal-slider>
+    </div>
+    <div>
+        <img class="icon row"
+            [src]="'../../../assets/' + motor.sliderIconRight"
+            alt="left icon" />
+        <div class="row">{{motor.captionRight}}</div>
+    </div>
+</div> -->

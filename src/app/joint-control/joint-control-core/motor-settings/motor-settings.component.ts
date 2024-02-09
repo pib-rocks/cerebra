@@ -13,7 +13,9 @@ import {HorizontalSliderComponent} from "src/app/sliders/horizontal-slider/horiz
 })
 export class MotorSettingsComponent {
     @Input() motorName!: string;
-    @ViewChild(HorizontalSliderComponent)
+    // @ViewChild(HorizontalSliderComponent)
+    @Input() reversed!: boolean;
+
     sliderComponent!: HorizontalSliderComponent;
 
     rotationRangeMin!: number;
@@ -68,10 +70,6 @@ export class MotorSettingsComponent {
                 this.velocitySubject$.next(settings.velocity);
                 this.motorFormControl.setValue(this.settings.turnedOn);
             });
-        this.motorFormControl.valueChanges.subscribe(() => {
-            this.settings.turnedOn = this.motorFormControl.value;
-            this.motorService.applySettings(this.settings);
-        });
     }
 
     changeIcon() {
@@ -94,36 +92,36 @@ export class MotorSettingsComponent {
     setPulseRanges(number: number[]) {
         this.settings.pulseWidthMin = number[0];
         this.settings.pulseWidthMax = number[1];
-        this.motorService.applySettings(this.settings);
+        this.motorService.applySettings(this.motorName, this.settings);
     }
 
     setDegree(number: number[]) {
         this.settings.rotationRangeMin = number[0] * 100;
         this.settings.rotationRangeMax = number[1] * 100;
-        this.motorService.applySettings(this.settings);
+        this.motorService.applySettings(this.motorName, this.settings);
     }
 
     setPeriod(number: number) {
         this.settings.period = number;
-        this.motorService.applySettings(this.settings);
+        this.motorService.applySettings(this.motorName, this.settings);
     }
 
     setDeceleration(number: number) {
         this.settings.deceleration = number;
-        this.motorService.applySettings(this.settings);
+        this.motorService.applySettings(this.motorName, this.settings);
     }
     setAcceleration(number: number) {
         this.settings.acceleration = number;
-        this.motorService.applySettings(this.settings);
+        this.motorService.applySettings(this.motorName, this.settings);
     }
 
     setVelocity(number: number) {
         this.settings.velocity = number;
-        this.motorService.applySettings(this.settings);
+        this.motorService.applySettings(this.motorName, this.settings);
     }
 
     changeTurnedOn() {
         this.settings.turnedOn = !this.settings.turnedOn;
-        this.motorService.applySettings(this.settings);
+        this.motorService.applySettings(this.motorName, this.settings);
     }
 }

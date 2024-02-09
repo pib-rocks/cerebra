@@ -1,0 +1,24 @@
+.icon {
+    height: 30px;
+    width: 30px;
+}
+
+.left-icon-label {
+    color: white;
+    text-align: left;
+}
+
+.left-icon-label {
+    color: white;
+    text-align: right;
+}
+
+.slider-icon {
+    width: 80px;
+    height: 80px;
+}
+
+.slider-container {
+    background-color: green;
+    height: 80px;
+}

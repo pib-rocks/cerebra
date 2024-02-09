@@ -1,5 +1,8 @@
 import {Component, Input, OnInit} from "@angular/core";
+import {Observable, Subject} from "rxjs";
 import {MotorService} from "src/app/shared/services/motor.service";
+import {MotorConfiguration} from "../../../shared/types/motor-configuration";
+import {ActivatedRoute} from "@angular/router";
 
 @Component({
     selector: "app-motor-position",
@@ -7,13 +10,28 @@ import {MotorService} from "src/app/shared/services/motor.service";
     styleUrls: ["./motor-position.component.css"],
 })
 export class MotorPositionComponent implements OnInit {
-    @Input() motorName!: string;
-    @Input() iconLeft!: string;
-    @Input() iconRight!: string;
+    motor!: MotorConfiguration;
 
-    constructor(private motorService: MotorService) {}
+    positionReceiver$: Subject<[number]> = new Subject();
 
-    ngOnInit() {
-        console.info("init");
+    constructor(
+        private motorService: MotorService,
+        private route: ActivatedRoute,
+    ) {}
+
+    ngOnInit(): void {
+        this.motor = this.route.snapshot.data["motor"];
+        this.route.data.subscribe((data) => {
+            this.motor = data["motor"];
+            this.motorService
+                .getPositionObservable(this.motor.motorName)
+                .subscribe((position) =>
+                    this.positionReceiver$.next([position]),
+                );
+        });
+    }
+
+    applyPosition(position: number) {
+        this.motorService.applyPosition(this.motor.motorName, position);
     }
 }

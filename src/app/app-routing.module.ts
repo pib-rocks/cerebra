@@ -14,6 +14,9 @@ import {JointControlCoreComponent} from "./joint-control/joint-control-core/join
 import {ProgramComponent} from "./program/program.component";
 import {ProgramWorkspaceComponent} from "./program/program-splitscreen/program-workspace/program-workspace.component";
 import {jointResolver} from "./joint-control/joint-resolver/joint-resolver";
+import {MotorPositionComponent} from "./joint-control/joint-control-core/motor-position/motor-position.component";
+import {motorResolver} from "./joint-control/joint-control-core/motor-position/motor-resolver/motor.resolver";
+import {motorGuard} from "./security/motor-guard";
 
 const routes: Routes = [
     {path: "", redirectTo: "joint-control", pathMatch: "full"},
@@ -26,10 +29,21 @@ const routes: Routes = [
                 component: JointControlCoreComponent,
                 resolve: {joint: jointResolver},
                 canActivate: [jointGuard],
+                children: [
+                    {
+                        path: "motor/:motor-name",
+                        component: MotorPositionComponent,
+                        resolve: {motor: motorResolver},
+                        canActivate: [motorGuard],
+                    },
+                ],
             },
         ],
     },
-    {path: "camera", component: CameraComponent},
+    {
+        path: "camera",
+        component: CameraComponent,
+    },
     {
         path: "voice-assistant",
         component: VoiceAssistantComponent,

@@ -2,11 +2,56 @@
     color: #fff;
 }
 
+.sidebar-label {
+    color: white;
+    font-weight: bolder;
+    text-align: center;
+}
+
 .touchpoint {
     position: absolute;
     transform: translate(-50%, -50%);
 }
 
+div.touchpoint::before {
+    content: url("../../../assets/joint-control/background/touchpoint_unselected.svg");
+}
+
+.active-touchpoint .touchpoint::before {
+    content: url("../../../assets/joint-control/background/touchpoint_selected.svg");
+}
+
 .joint-canvaas {
     position: relative;
+}
+
+.active-touchpoint .touch-area {
+    z-index: 3;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.touchpoint-overlay {
+    pointer-events: none;
+    z-index: 4;
+}
+
+.joint-overlay {
+    position: absolute;
+    pointer-events: none;
+    top: 0px;
+    left: 0px;
+    z-index: 3;
+}
+
+.touchpoint-background {
+    pointer-events: none;
+    z-index: 2;
+}
+
+.joint-background {
+    pointer-events: none;
+    top: 0px;
+    left: 0px;
+    z-index: 1;
 }

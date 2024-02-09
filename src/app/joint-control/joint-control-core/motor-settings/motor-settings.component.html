@@ -1,23 +1,20 @@
-<div class="justify-content-between ml-4">
-    <div class="d-flex align-items-center spacing ">
-        <div
-            class="form-check d-inline col-6"
-            *ngIf="showCheckBox === true">
-            <input
-                class="form-check-input"
-                id="checkbox_{{ motor.name }}"
-                type="checkbox"
-                [formControl]="motorFormControl"
-                (click)="changeTurnedOn()" />
-        </div>
-        <div class="col">
-            <button
-                *ngIf="showMotorSettingsButton === true"
-                id="dialogBtn_{{ motor.name }}"
-                class="bi bi-gear btn btn-outline-primary"
-                style="border: 0;"
-                (click)="openPopup(content)"></button>
-        </div>
+<div class="row h-100 m-0 p-0">
+    <div class="col m-0 p-0 d-flex align-items-center justify-content-center">
+        <button
+            id="dialogBtn_{{ motorName }}"
+            class="bi bi-gear btn btn-outline-primary m-0 p-0 "
+            style="border: 0;"
+            (click)="openPopup(content)"></button>
+    </div>
+    <div
+        class="col m-0 p-0 d-flex align-items-center justify-content-center"
+        [ngClass]="reversed ? 'order-first' : 'order-last'">
+        <input
+            class="active-check"
+            id="checkbox_{{ motorName }}"
+            type="checkbox"
+            [formControl]="motorFormControl"
+            (click)="changeTurnedOn()" />
     </div>
 </div>
 <ng-template
@@ -81,7 +78,7 @@
                 [unitLong]="'μs'"
                 [name]="'Pulse width'"
                 [displayName]="true"
-                [defaultValues]="[motor.settings.pulseWidthMin, motor.settings.pulseWidthMax]"
+                [defaultValues]="[settings.pulseWidthMin, settings.pulseWidthMax]"
                 [messageReceiver$]="pulseWidthSubject$"
                 (sliderEvent)="setPulseRanges($event)"></app-horizontal-slider>
         </div>
@@ -99,7 +96,7 @@
                 [unitLong]="'°/100'"
                 [name]="'Degree'"
                 [displayName]="true"
-                [defaultValues]="[motor.settings.rotationRangeMin/100, motor.settings.rotationRangeMax/100]"
+                [defaultValues]="[settings.rotationRangeMin/100, settings.rotationRangeMax/100]"
                 [messageReceiver$]="degreeSubject$"
                 (sliderEvent)="setDegree($event)"></app-horizontal-slider>
         </div>
@@ -115,7 +112,7 @@
                 [rightValue]="100000"
                 [numberOfThumbs]="1"
                 [unitLong]="'μs'"
-                [defaultValues]="[motor.settings.period]"
+                [defaultValues]="[settings.period]"
                 [step]="1"
                 [messageReceiver$]="periodSubject$"
                 (sliderEvent)="setPeriod($event[0])"></app-horizontal-slider>
@@ -132,7 +129,7 @@
                 [unitLong]="'(°/100s)'"
                 [minValue]="0"
                 [maxValue]="500000"
-                [defaultValue]="motor.settings.velocity"></app-vertical-slider>
+                [defaultValue]="settings.velocity"></app-vertical-slider>
         </div>
         <div class="col-3 ml-2 mr-2">
             <app-vertical-slider
@@ -141,7 +138,7 @@
                 (sliderEvent)="setAcceleration($event)"
                 [minValue]="0"
                 [maxValue]="500000"
-                [defaultValue]="motor.settings.acceleration"></app-vertical-slider>
+                [defaultValue]="settings.acceleration"></app-vertical-slider>
         </div>
         <div class="col-3 ml-2 mr-2">
             <app-vertical-slider
@@ -150,7 +147,7 @@
                 (sliderEvent)="setDeceleration($event)"
                 [minValue]="0"
                 [maxValue]="500000"
-                [defaultValue]="motor.settings.deceleration"></app-vertical-slider>
+                [defaultValue]="settings.deceleration"></app-vertical-slider>
         </div>
     </div>
 </ng-template>

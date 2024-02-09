@@ -1,0 +1,19 @@
+.wrapper {
+    height: 100%;
+}
+
+.active-check {
+    width: 30%;
+    height: 30%;
+    outline: 2px solid white;
+    background-color: rgba(0, 0, 0, 0);
+    border: 0;
+}
+
+.active-check:checked {
+    accent-color: rgba(0, 0, 0, 0.5);
+}
+
+.show-settings {
+    border: 0;
+}

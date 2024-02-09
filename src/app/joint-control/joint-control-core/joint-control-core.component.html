@@ -1,79 +1,81 @@
-<div class="row">
-    <label>Select a touchpoint to adjust</label>
-    <!-- <label>{{side}}</label> -->
-</div>
-<!-- <div class="row mb-3 mt-3">
-        Remove with all functionalities 
+<div class="row m-0 pl-3 pr-0 pt-0 pb-2">Select a touchpoint to adjust</div>
+<div
+    class="row m-0 p-0"
+    [ngClass]="joint.reversed ? 'flex-row-reverse' : ''">
+    <div class="col-4 m-0 p-0">
         <div
-        class="col-3 mt-2 mb-2 pr-0 d-flex justify-content-end ">
-        <button
-            id="home-position-btn"
-            type="button"
-            class="btn"
-            (click)="reset()">
-            <img
-                src="../../assets/icon-home-position.png"
-                alt=""
-                width="19px"
-                height="24px" />
-            Home position
-        </button>
-    </div> -->
-
-<div class="row">
-    <div class="col-6">
-        <div id="joint-canvas">
-            <img
-                *ngFor="let motor of joint.motors"
-                src="assets/joint-control/touchpoint.svg"
-                class="touchpoint"
-                [style]="'left: ' + (motor.relativeTouchpointCenter.x*100) + '%; top: ' + (motor.relativeTouchpointCenter.y*100) + '%;'"
-                width="70px"
-                height="70px"
-                alt="toucpoint for motor"
-                (click)="selectMotor(motor)" />
-            <img
-                class="img-fluid"
-                [src]="'../../../assets' + joint.image"
-                alt="" />
+            class="row m-0 p-0 d-flex align-items-end"
+            [ngClass]="joint.reversed ? 'flex-row-reverse' : 'flex-row'"
+            [style]="'height: ' + ((joint.segmentOffset - joint.segmentHeight/2) * 100) + '%;'">
+            <div
+                class="col-3 sidebar-label"
+                style="background-color: blueviolet;">
+                Settings
+            </div>
+            <div
+                class="col-3 sidebar-label"
+                style="background-color: aquamarine;">
+                Active
+            </div>
+            <div
+                class="col-3 sidebar-label"
+                style="background-color: blueviolet;">
+                Current
+            </div>
         </div>
-    </div>
-    <div class="col-6">
-        <!-- <div class="row">
-            <div
-                class="col ml-2"
-                [ngClass]="{'order-3' : side == 'left'}">
-                <label>Active</label>
-            </div>
-            <div
-                class="col pl-0"
-                [ngClass]="{'order-2' : side == 'left'}">
-                <label>Settings</label>
-            </div>
-            <div
-                class="col"
-                [ngClass]="{'order-1' : side == 'left'}">
-                <label>Current</label>
-            </div>
-        </div> -->
         <div
             *ngFor="let motor of joint.motors"
-            class="row">
+            class="row m-0 p-0"
+            [ngClass]="joint.reversed ? 'flex-row-reverse' : 'flex-row'"
+            [style]="'height: ' + (joint.segmentHeight*100) + '%;'">
+            <!-- <app-motor-settings
+                [reversed]="joint.reversed"
+                [motorName]="motor.motorName"
+                class="col-6 m-0 p-0"></app-motor-settings>
             <app-motor-current
+                [reversed]="joint.reversed"
                 [motorName]="motor.motorName"
-                class="col-4"></app-motor-current>
-            <app-motor-settings
-                [motorName]="motor.motorName"
-                class="col-8"></app-motor-settings>
+                class="col-6 m-0 p-0"></app-motor-current> -->
+        </div>
+    </div>
+    <div class="col-8 m-0 p-0">
+        <div
+            id="joint-canvas"
+            class="row m-0 p-0">
+            <!-- touchpoints overlay -->
+            <img
+                *ngFor="let motor of joint.motors"
+                src="assets/joint-control/overlay/touchpoint_overlay.svg"
+                class="touchpoint touchpoint-overlay m-0 p-0"
+                [style]="'width: 30px; height: 30px; left: ' + (motor.touchPointCenterX*100) + '%; top: ' + (motor.touchPointCenterY*100) + '%;'"
+                alt="touchpoint for motor" />
+            <!-- joint overlay -->
+            <img
+                class="img-fluid joint-overlay m-0 p-0"
+                [src]="'../../../assets' + joint.overlay"
+                alt="overlay for joint" />
+            <!-- touchpoints background-->
+            <a
+                *ngFor="let motor of joint.motors"
+                [routerLink]="['/joint-control/' + joint.jointPathName + '/motor/' + motor.motorPathName]"
+                routerLinkActive="active-touchpoint">
+                <div
+                    class="touchpoint touch-area m-0 p-0"
+                    [style]="'width: 70px; height: 70px; left: ' + (motor.touchPointCenterX*100) + '%; top: ' + (motor.touchPointCenterY*100) + '%;'"></div>
+                <div
+                    *ngFor="let motor of joint.motors"
+                    class="touchpoint touchpoint-background m-0 p-0"
+                    [style]="'width: 70px; height: 70px; left: ' + (motor.touchPointCenterX*100) + '%; top: ' + (motor.touchPointCenterY*100) + '%;'"
+                    alt="backgorund for touchpoint"></div>
+            </a>
+            <!-- joint background -->
+            <img
+                class="img-fluid joint-background m-0 p-0"
+                [src]="'../../../assets' + joint.background"
+                alt="background for joint" />
         </div>
     </div>
 </div>
-
-<div class="row">
-    <app-motor-position
-        *ngIf="selectedMotor"
-        [motorName]="selectedMotor.motorName"
-        [iconLeft]="selectedMotor.sliderIconLeft"
-        [iconRight]="selectedMotor.sliderIconRight">
-    </app-motor-position>
+<div class="row m-0 p-0">
+    <router-outlet></router-outlet>
 </div>

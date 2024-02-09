@@ -1,16 +1,14 @@
 import {inject} from "@angular/core";
 import {ActivatedRouteSnapshot, CanActivateFn, Router} from "@angular/router";
+import {
+    JointPathName,
+    jointNameToConfiguration,
+} from "../shared/types/joint-configuration";
 
-const LEGAL_NAMES: string[] = [
-    "head",
-    "left-hand",
-    "right-hand",
-    "left-arm",
-    "right-arm",
-];
-const DEFAULT_ROUTE: string[] = ["/joint-control/head"];
+const DEFAULT_ROUTE: string[] = [`/joint-control/${JointPathName.HEAD}`];
 
 export const jointGuard: CanActivateFn = (route: ActivatedRouteSnapshot) => {
     const name = route.params["joint-name"];
-    return LEGAL_NAMES.includes(name) || inject(Router).navigate(DEFAULT_ROUTE);
+    if (jointNameToConfiguration.get(name)) return true;
+    else return inject(Router).navigate(DEFAULT_ROUTE);
 };
