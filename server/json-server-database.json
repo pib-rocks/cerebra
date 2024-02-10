@@ -41,8 +41,8 @@
       "chatId" : 1
     },
     {
-      "id" : 1,
-      "messageId" : "539ed3e6-9e3d-11ee-8c90-0242ac120002",
+      "id" : 2,
+      "messageId" : "539ed3e6-9e3d-11ee-8c90-0242ac122222",
       "timestamp" : "2024-02-06 09:50:32",
       "isUser" : 0,
       "content" : "hello user!",
