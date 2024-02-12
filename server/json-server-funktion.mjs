@@ -6,6 +6,7 @@ import chatDto from "./dto/chat.mjs";
 import messageDto from "./dto/message.mjs";
 import brickletDto from "./dto/bricklet.mjs"
 import motorDto from "./dto/motor.mjs";
+import motorsettings from "./dto/motorsettings.mjs"
 const server = jsonServer.create();
 const router = jsonServer.router(mockData);
 const middlewares = jsonServer.defaults();
@@ -280,6 +281,38 @@ server.put("/motor/:motorName", (req, res, next) =>{
         }
       );
       motor.bricklet = bricklets;
+      return res.status(200).send(motor);
+    }
+  });
+  if(updated == false){
+    return res.status(404).send();
+  }
+});
+
+//getMotorSettingsByName
+server.get("/motor/:motorName/settings", (req, res, next) =>{
+  let response;
+  const motor = mockData.motors.find((motor) => motor.name == req.params.motorName);
+  response = motorsettings.getMotorSettings(motor);
+  return res.status(200).send(response);
+});
+
+//putMotorSettingsByName
+server.put("/motor/:motorName/settings", (req, res, next) =>{
+  let updated = false;
+  mockData.motors.forEach((motor) => {
+    if(motor.name == req.params.motorName){
+      updated = true
+      motor.turnedOn = req.body.turnedOn;
+      motor.pulseWidthMin = req.body.pulseWidthMin;
+      motor.pulseWidthMax = req.body.pulseWidthMax;
+      motor.rotationRangeMin = req.body.rotationRangeMin;
+      motor.rotationRangeMax = req.body.rotationRangeMax;
+      motor.velocity = req.body.velocity;
+      motor.acceleration = req.body.acceleration;
+      motor.deceleration = req.body.deceleration;
+      motor.period = req.body.period;
+      motor.visible = req.body.visible;
       return res.status(200).send(motor);
     }
   });
