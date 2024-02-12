@@ -1,6 +1,7 @@
 import jsonServer from "json-server";
 import mockData from "./json-server-database.json" assert {type: 'json'};
 import personalityDto from "./dto/personality.mjs";
+import cameraSettingsDto from "./dto/camera-settings.mjs";
 const server = jsonServer.create();
 const router = jsonServer.router(mockData);
 const middlewares = jsonServer.defaults();
@@ -51,6 +52,32 @@ server.delete("/voice-assistant/personality/:personalityId", (req, res, next) =>
   mockData.personality = mockData.personality.filter(perso => perso.personalityId != req.params.personalityId);
   return res.status(204).json();
 });
+
+//getCameraSettings
+server.get("/camera-settings", (req, res, next) =>{
+  const cameraSettings = mockData.cameraSettings.filter(cam => cam.id == 1);
+  const response = new cameraSettingsDto(cameraSettings[0].resolution, cameraSettings[0].refeshRate, cameraSettings[0].qualityFactor, cameraSettings[0].resX, cameraSettings[0].resY);
+  return res.status(200).send(response);
+});
+
+//updateCameraSettings
+server.put("/camera-settings", (req, res, next) =>{
+  mockData.cameraSettings.forEach((cam) => {
+    if(cam.id == 1){
+      cam.resolution = req.body.resolution;
+      cam.refeshRate = req.body.refeshRate;
+      cam.qualityFactor = req.body.qualityFactor;
+      cam.resX = req.body.resX;
+      cam.resY = req.body.resY;
+      const response = new cameraSettingsDto(cam.resolution, cam.refeshRate, cam.qualityFactor, cam.resX, cam.resY);
+      return res.status(200).send(response);
+    }
+    else{
+      return res.status(404).send();
+    }
+  });
+});
+
 
 server.use(router);
 

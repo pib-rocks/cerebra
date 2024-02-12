@@ -1,5 +1,5 @@
 export class personalityDto {
-    constructor(personalityId, name, description, gender, pauseThreshold,){
+    constructor(personalityId, name, description, gender, pauseThreshold){
         this.personalityId = personalityId;
         this.name = name;
         this.description = description;
