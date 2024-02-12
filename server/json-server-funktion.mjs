@@ -2,6 +2,7 @@ import jsonServer from "json-server";
 import mockData from "./json-server-database.json" assert {type: 'json'};
 import personalityDto from "./dto/personality.mjs";
 import cameraSettingsDto from "./dto/camera-settings.mjs";
+import chatDto from "./dto/chat.mjs";
 const server = jsonServer.create();
 const router = jsonServer.router(mockData);
 const middlewares = jsonServer.defaults();
@@ -24,7 +25,7 @@ server.get("/voice-assistant/personality/:personalityId", (req, res, next) =>{
   if(response == undefined){
     return res.status(404).send();
   }
-  return res.status(200).send(response);
+  return res.status(200).send(response[0]);
 });
 
 //postPersonality
@@ -53,10 +54,53 @@ server.delete("/voice-assistant/personality/:personalityId", (req, res, next) =>
   return res.status(204).json();
 });
 
+//getChats
+server.get("/voice-assistant/chat", (req, res, next) =>{
+  let response = [];
+    mockData.chats.forEach((chat) =>{
+      response.push(chatDto.getChat(chat.chatId, chat.topic, chat.personalityId));
+    });
+    return res.status(200).send(response);
+});
+
+//postChat
+server.post("/voice-assistant/chat", (req, res, next) =>{
+  const newPersonality = chatDto.newChat(req.body.topic, req.body.personalityId)
+  mockData.chats.push(newPersonality);
+  return res.status(200).send(newPersonality);
+});
+
+//getChatById
+server.get("/voice-assistant/chat/:chatId", (req, res, next) =>{
+  const response = mockData.chats.filter(chat => chat.chatId == req.params.chatId);
+  if(response == undefined){
+    return res.status(404).send();
+  }
+  return res.status(200).send(response[0]);
+});
+
+//updateChat
+server.put("/voice-assistant/chat/:chatId", (req, res, next) =>{
+  mockData.chats.forEach((chat) => {
+    if(chat.chatId == req.params.chatId){
+      chat.topic = req.body.topic;
+      chat.personalityId = req.body.personalityId;
+      return res.status(200).send(chatDto.getChat(chat.chatId, chat.topic, chat.personalityId));
+    }
+  });
+  return res.status(404).send();
+});
+
+//deleteChat
+server.delete("/voice-assistant/chat/:chatId", (req, res, next) =>{
+  mockData.chats = mockData.chats.filter(chat => chat.chatId != req.params.chatId);
+  return res.status(204).json();
+});
+
 //getCameraSettings
 server.get("/camera-settings", (req, res, next) =>{
   const cameraSettings = mockData.cameraSettings.filter(cam => cam.id == 1);
-  const response = new cameraSettingsDto(cameraSettings[0].resolution, cameraSettings[0].refeshRate, cameraSettings[0].qualityFactor, cameraSettings[0].resX, cameraSettings[0].resY);
+  const response = cameraSettingsDto.getCameraSettings(cameraSettings[0].resolution, cameraSettings[0].refeshRate, cameraSettings[0].qualityFactor, cameraSettings[0].resX, cameraSettings[0].resY);
   return res.status(200).send(response);
 });
 
@@ -69,7 +113,7 @@ server.put("/camera-settings", (req, res, next) =>{
       cam.qualityFactor = req.body.qualityFactor;
       cam.resX = req.body.resX;
       cam.resY = req.body.resY;
-      const response = new cameraSettingsDto(cam.resolution, cam.refeshRate, cam.qualityFactor, cam.resX, cam.resY);
+      const response = cameraSettingsDto.getCameraSettings(cam.resolution, cam.refeshRate, cam.qualityFactor, cam.resX, cam.resY);
       return res.status(200).send(response);
     }
     else{

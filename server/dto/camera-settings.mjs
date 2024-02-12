@@ -6,5 +6,9 @@ export class cameraSettings{
         this.resX = resX;
         this.resY = resY;
     }
+
+    getCameraSettings(resolution, refeshRate, qualityFactor, resX, resY){
+        return new cameraSettings(resolution, refeshRate, qualityFactor, resX, resY);
+    }
 }
 export default cameraSettings
