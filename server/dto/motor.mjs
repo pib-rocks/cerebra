@@ -1,6 +1,6 @@
-import brickletDto from "./bricklet.mjs"
+import Bricklet from "./bricklet.mjs"
 
-export class motor{
+export class Motor{
     constructor(name, turnedOn, pulseWidthMin, pulseWidthMax, rotationRangeMin, rotationRangeMax, velocity, acceleration, deceleration, period, visible, bricklet){
         this.name = name;
         this.turnedOn = turnedOn;
@@ -16,12 +16,12 @@ export class motor{
         this.bricklet = bricklet
     }
 
-    static getMotor(m, bricklets){
+    static getMotor(m, b){
         let arrModifiedBricklet = [];
-        bricklets.forEach(bricklet => {
-            arrModifiedBricklet.push(brickletDto.getBricklet(bricklet));
+        b.forEach(b => {
+            arrModifiedBricklet.push(Bricklet.getBricklet(b));
         });
-        return new motor(m.name, m.turnedOn, m.pulseWidthMin, m.pulseWidthMax, m.rotationRangeMin, m.rotationRangeMax, m.velocity, m.acceleration, m.deceleration, m.period, m.visible, arrModifiedBricklet)
+        return new Motor(m.name, m.turnedOn, m.pulseWidthMin, m.pulseWidthMax, m.rotationRangeMin, m.rotationRangeMax, m.velocity, m.acceleration, m.deceleration, m.period, m.visible, arrModifiedBricklet)
     }
 }
-export default motor
+export default Motor

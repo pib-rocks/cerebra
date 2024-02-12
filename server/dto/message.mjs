@@ -1,4 +1,4 @@
-export class message{
+export class Message{
     constructor(messageId, timestamp, isUser, content, chatId){
         this.messageId = messageId;
         this.timestamp = timestamp;
@@ -12,7 +12,7 @@ export class message{
     }
 
     static newMessage(timestamp, isUser, content, chatId){
-        return new message(Math.floor(Math.random() * (1000 - 10 + 1) + 10), timestamp, isUser, content, chatId)
+        return new Message(Math.floor(Math.random() * (1000 - 10 + 1) + 10), timestamp, isUser, content, chatId)
     }
 }
-export default message
+export default Message

@@ -1,4 +1,4 @@
-export class cameraSettings{
+export class CameraSettings{
     constructor(resolution, refeshRate, qualityFactor, resX, resY){
         this.resolution = resolution;
         this.refeshRate = refeshRate;
@@ -8,7 +8,7 @@ export class cameraSettings{
     }
 
     static getCameraSettings(cs){
-        return new cameraSettings(cs.resolution, cs.refeshRate, cs.qualityFactor, cs.resX, cs.resY);
+        return new CameraSettings(cs.resolution, cs.refeshRate, cs.qualityFactor, cs.resX, cs.resY);
     }
 }
-export default cameraSettings
+export default CameraSettings

@@ -1,4 +1,4 @@
-export class motorsettings{
+export class MotorSettings{
     constructor(name, turnedOn, pulseWidthMin, pulseWidthMax, rotationRangeMin, rotationRangeMax, velocity, acceleration, deceleration, period, visible){
         this.name = name;
         this.turnedOn = turnedOn;
@@ -14,7 +14,7 @@ export class motorsettings{
     }
         
     static getMotorSettings(m){
-        return new motorsettings(m.name, m.turnedOn, m.pulseWidthMin, m.pulseWidthMax, m.rotationRangeMin, m.rotationRangeMax, m.velocity, m.acceleration, m.deceleration, m.period, m.visible)
+        return new MotorSettings(m.name, m.turnedOn, m.pulseWidthMin, m.pulseWidthMax, m.rotationRangeMin, m.rotationRangeMax, m.velocity, m.acceleration, m.deceleration, m.period, m.visible)
     }
 }
-export default motorsettings
+export default MotorSettings

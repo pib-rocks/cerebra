@@ -1,13 +1,13 @@
 import jsonServer from "json-server";
 import mockData from "./json-server-database.json" assert {type: 'json'};
-import personalityDto from "./dto/personality.mjs";
-import cameraSettingsDto from "./dto/camera-settings.mjs";
-import chatDto from "./dto/chat.mjs";
-import messageDto from "./dto/message.mjs";
-import brickletDto from "./dto/bricklet.mjs";
-import motorDto from "./dto/motor.mjs";
-import motorsettings from "./dto/motorsettings.mjs";
-import programDto from "./dto/program.mjs";
+import Personality from "./dto/personality.mjs";
+import CameraSettings from "./dto/camera-settings.mjs";
+import Chat from "./dto/chat.mjs";
+import Message from "./dto/message.mjs";
+import Bricklet from "./dto/bricklet.mjs";
+import Motor from "./dto/motor.mjs";
+import MotorSettings from "./dto/motorsettings.mjs";
+import Program from "./dto/program.mjs";
 const server = jsonServer.create();
 const router = jsonServer.router(mockData);
 const middlewares = jsonServer.defaults();
@@ -19,7 +19,7 @@ server.use(jsonServer.bodyParser)
 server.get("/voice-assistant/personality", (req, res, next) =>{
   let response = [];
     mockData.personality.forEach((personality) =>{
-      response.push(personalityDto.getPersonality(personality));
+      response.push(Personality.getPersonality(personality));
     });
     return res.status(200).send(response);
 });
@@ -30,12 +30,12 @@ server.get("/voice-assistant/personality/:personalityId", (req, res, next) =>{
   if(response[0] == undefined){
     return res.status(404).send();
   }
-  return res.status(200).send(response[0]);
+  return res.status(200).send(Personality.getPersonality(response[0]));
 });
 
 //postPersonality
 server.post("/voice-assistant/personality", (req, res, next) =>{
-  const newPersonality = personalityDto.newPersonality(req.body.name, req.body.gender, req.body.pauseThreshold)
+  const newPersonality = Personality.newPersonality(req.body.name, req.body.gender, req.body.pauseThreshold)
   mockData.personality.push(newPersonality);
   return res.status(201).send(newPersonality);
 });
@@ -47,7 +47,7 @@ server.put("/voice-assistant/personality/:personalityId", (req, res, next) =>{
       personality.name = req.body.name;
       personality.gender = req.body.gender;
       personality.pauseThreshold = req.body.pauseThreshold;
-      return res.status(200).send(personality);
+      return res.status(200).send(Personality.getPersonality(personality));
     }
   });
   return res.status(404).send();
@@ -67,14 +67,14 @@ server.delete("/voice-assistant/personality/:personalityId", (req, res, next) =>
 server.get("/voice-assistant/chat", (req, res, next) =>{
   let response = [];
     mockData.chats.forEach((chat) =>{
-      response.push(chatDto.getChat(chat));
+      response.push(Chat.getChat(chat));
     });
     return res.status(200).send(response);
 });
 
 //postChat
 server.post("/voice-assistant/chat", (req, res, next) =>{
-  const newPersonality = chatDto.newChat(req.body.topic, req.body.personalityId)
+  const newPersonality = Chat.newChat(req.body.topic, req.body.personalityId)
   mockData.chats.push(newPersonality);
   return res.status(200).send(newPersonality);
 });
@@ -85,7 +85,7 @@ server.get("/voice-assistant/chat/:chatId", (req, res, next) =>{
   if(response[0] == undefined){
     return res.status(404).send();
   }
-  return res.status(200).send(response[0]);
+  return res.status(200).send(Chat.getChat(response[0]));
 });
 
 //putChat
@@ -94,7 +94,7 @@ server.put("/voice-assistant/chat/:chatId", (req, res, next) =>{
     if(chat.chatId == req.params.chatId){
       chat.topic = req.body.topic;
       chat.personalityId = req.body.personalityId;
-      return res.status(200).send(chatDto.getChat(chat));
+      return res.status(200).send(Chat.getChat(chat));
     }
   });
   return res.status(404).send();
@@ -115,7 +115,7 @@ server.get("/voice-assistant/chat/:chatId/messages", (req, res, next) =>{
   let response = [];
     mockData.chatMessage.forEach((message) =>{
       if(message.chatId == req.params.chatId){
-        response.push(messageDto.getMessage(message));
+        response.push(Message.getMessage(message));
       }
     });
     if(response[0] == undefined){
@@ -129,7 +129,7 @@ server.post("/voice-assistant/chat/:chatId/messages", (req, res, next) =>{
   let response;
   mockData.chats.forEach((chat) =>{
     if(chat.chatId == req.params.chatId){
-      response = messageDto.newMessage(req.body.timestamp, req.body.isUser, req.body.content, req.params.chatId);
+      response = Message.newMessage(req.body.timestamp, req.body.isUser, req.body.content, req.params.chatId);
       mockData.chatMessage.push(response);
       return res.status(200).send(response);
     }
@@ -161,7 +161,7 @@ server.delete("/voice-assistant/chat/:chatId/messages/:messageId", (req, res, ne
 //getCameraSettings
 server.get("/camera-settings", (req, res, next) =>{
   const cameraSettings = mockData.cameraSettings.filter(cam => cam.id == 1);
-  const response = cameraSettingsDto.getCameraSettings(cameraSettings[0]);
+  const response = CameraSettings.getCameraSettings(cameraSettings[0]);
   return res.status(200).send(response);
 });
 
@@ -174,8 +174,7 @@ server.put("/camera-settings", (req, res, next) =>{
       cam.qualityFactor = req.body.qualityFactor;
       cam.resX = req.body.resX;
       cam.resY = req.body.resY;
-      const response = cameraSettingsDto.getCameraSettings(cam.resolution, cam.refeshRate, cam.qualityFactor, cam.resX, cam.resY);
-      return res.status(200).send(response);
+      return res.status(200).send(CameraSettings.getCameraSettings(cam));
     }
     else{
       return res.status(404).send();
@@ -187,7 +186,7 @@ server.put("/camera-settings", (req, res, next) =>{
 server.get("/bricklet", (req, res, next) =>{
   let response = [];
   mockData.bricklet.forEach((bricklet) =>{
-    response.push(brickletDto.getBricklet(bricklet));
+    response.push(Bricklet.getBricklet(bricklet));
   });
   return res.status(200).send(response);
 });
@@ -209,7 +208,7 @@ server.put("/bricklet/:brickletNumber", (req, res, next) =>{
       console.log(brick.uid);
       console.log(req.body.uid);
       brick.uid = req.body.uid;
-      response = brickletDto.getBricklet(brick)
+      response = Bricklet.getBricklet(brick)
     }
   })
   return res.status(200).send(response);
@@ -234,7 +233,7 @@ server.get("/motor", (req, res, next) =>{
       });
       }
     );
-    response.push(motorDto.getMotor(motor, bricklets));
+    response.push(Motor.getMotor(motor, bricklets));
   });
   return res.status(200).send(response);
 });
@@ -262,7 +261,7 @@ server.get("/motor/:motorName", (req, res, next) =>{
       });
       }
     );
-    response = motorDto.getMotor(motor, bricklets);
+    response = Motor.getMotor(motor, bricklets);
     return res.status(200).send(response);
 });
 
@@ -299,7 +298,7 @@ server.put("/motor/:motorName", (req, res, next) =>{
         }
       );
       motor.bricklet = bricklets;
-      return res.status(200).send(motor);
+      return res.status(200).send(Motor.getMotor(motor, bricklets));
     }
   });
   if(updated == false){
@@ -314,7 +313,7 @@ server.get("/motor/:motorName/settings", (req, res, next) =>{
   if(motor == undefined){
     return res.status(404).send();
   }
-  response = motorsettings.getMotorSettings(motor);
+  response = MotorSettings.getMotorSettings(motor);
   return res.status(200).send(response);
 });
 
@@ -334,7 +333,7 @@ server.put("/motor/:motorName/settings", (req, res, next) =>{
       motor.deceleration = req.body.deceleration;
       motor.period = req.body.period;
       motor.visible = req.body.visible;
-      return res.status(200).send(motor);
+      return res.status(200).send(MotorSettings.getMotorSettings(motor));
     }
   });
   if(updated == false){
@@ -346,14 +345,14 @@ server.put("/motor/:motorName/settings", (req, res, next) =>{
 server.get("/program", (req, res, next) =>{
   let response = [];
   mockData.programs.forEach((program) =>{
-    response.push(programDto.getProgram(program));
+    response.push(Program.getProgram(program));
   });
   return res.status(200).send(response);
 });
 
 //postProgram
 server.post("/program", (req, res, next) =>{
-  const newProgram = programDto.newProgram(req.body.name, req.body.codeVisual);
+  const newProgram = Program.newProgram(req.body.name, req.body.codeVisual);
   mockData.programs.push(newProgram);
   return res.status(200).send(newProgram);
 });
@@ -364,7 +363,7 @@ server.get("/program/:programNumber", (req, res, next) =>{
   if(response == undefined){
     return res.status(404).send();
   }
-  return res.status(200).send(response);
+  return res.status(200).send(Program.getProgram(response));
 });
 
 //deleteByProgramNumber
@@ -383,7 +382,7 @@ server.get("/program/:programNumber/code", (req, res, next) =>{
   if(response == undefined){
     return res.status(404).send();
   }
-  response = programDto.returnCode(response);
+  response = Program.returnCode(response);
   return res.status(200).send(response);
 });
 
@@ -394,7 +393,7 @@ server.put("/program/:programNumber/code", (req, res, next) =>{
     if(program.programNumber == req.params.programNumber){
       program.codeVisual = req.body.codeVisual;
       updated = true;
-      return res.status(200).send(programDto.getProgram(program));    
+      return res.status(200).send(Program.getProgram(program));    
     }
   });
   if(updated == false){

@@ -1,4 +1,4 @@
-export class personalityDto {
+export class Personality {
     constructor(personalityId, name, description, gender, pauseThreshold){
         this.personalityId = personalityId;
         this.name = name;
@@ -8,7 +8,7 @@ export class personalityDto {
     }
 
     static getPersonality(personality){
-        return new personalityDto(
+        return new Personality(
             personality.personalityId,
             personality.name,
             personality.description,
@@ -18,7 +18,7 @@ export class personalityDto {
     }
 
     static newPersonality(name, gender, pauseThreshold){
-        return new personalityDto(
+        return new Personality(
             Math.floor(Math.random() * (1000 - 10 + 1) + 10),
             name,
             "",
@@ -27,4 +27,4 @@ export class personalityDto {
         )
     }
 }
-export default personalityDto
+export default Personality
