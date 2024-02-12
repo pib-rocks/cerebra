@@ -9,7 +9,7 @@ export class program{
         return new program(p.name, p.codeVisual, p.programNumber, p.pythonCode);
     }
 
-    static postProgram(name, codeVisual){
+    static newProgram(name, codeVisual){
         return new program(name, codeVisual, Math.floor(Math.random() * (1000 - 10 + 1) + 10), "");
     }
 

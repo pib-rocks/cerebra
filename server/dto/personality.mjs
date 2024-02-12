@@ -7,7 +7,7 @@ export class personalityDto {
         this.pauseThreshold = pauseThreshold;
     }
 
-    static getPersonalityDTO(personality){
+    static getPersonality(personality){
         return new personalityDto(
             personality.personalityId,
             personality.name,
@@ -17,7 +17,7 @@ export class personalityDto {
         )
     }
 
-    static postPersonalityDTO(name, gender, pauseThreshold){
+    static newPersonality(name, gender, pauseThreshold){
         return new personalityDto(
             Math.floor(Math.random() * (1000 - 10 + 1) + 10),
             name,

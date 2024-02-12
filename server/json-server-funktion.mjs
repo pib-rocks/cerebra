@@ -4,10 +4,10 @@ import personalityDto from "./dto/personality.mjs";
 import cameraSettingsDto from "./dto/camera-settings.mjs";
 import chatDto from "./dto/chat.mjs";
 import messageDto from "./dto/message.mjs";
-import brickletDto from "./dto/bricklet.mjs"
+import brickletDto from "./dto/bricklet.mjs";
 import motorDto from "./dto/motor.mjs";
-import motorsettings from "./dto/motorsettings.mjs"
-import programDto from "./dto/program.mjs"
+import motorsettings from "./dto/motorsettings.mjs";
+import programDto from "./dto/program.mjs";
 const server = jsonServer.create();
 const router = jsonServer.router(mockData);
 const middlewares = jsonServer.defaults();
@@ -19,7 +19,7 @@ server.use(jsonServer.bodyParser)
 server.get("/voice-assistant/personality", (req, res, next) =>{
   let response = [];
     mockData.personality.forEach((personality) =>{
-      response.push(personalityDto.getPersonalityDTO(personality));
+      response.push(personalityDto.getPersonality(personality));
     });
     return res.status(200).send(response);
 });
@@ -35,12 +35,12 @@ server.get("/voice-assistant/personality/:personalityId", (req, res, next) =>{
 
 //postPersonality
 server.post("/voice-assistant/personality", (req, res, next) =>{
-  const newPersonality = personalityDto.postPersonalityDTO(req.body.name, req.body.gender, req.body.pauseThreshold)
+  const newPersonality = personalityDto.newPersonality(req.body.name, req.body.gender, req.body.pauseThreshold)
   mockData.personality.push(newPersonality);
   return res.status(201).send(newPersonality);
 });
 
-//updatePersonalityByPersonalityId
+//putPersonalityByPersonalityId
 server.put("/voice-assistant/personality/:personalityId", (req, res, next) =>{
   mockData.personality.forEach((personality) => {
     if(personality.personalityId == req.params.personalityId){
@@ -63,7 +63,7 @@ server.delete("/voice-assistant/personality/:personalityId", (req, res, next) =>
   return res.status(204).json();
 });
 
-//getChats
+//getAllChats
 server.get("/voice-assistant/chat", (req, res, next) =>{
   let response = [];
     mockData.chats.forEach((chat) =>{
@@ -88,7 +88,7 @@ server.get("/voice-assistant/chat/:chatId", (req, res, next) =>{
   return res.status(200).send(response[0]);
 });
 
-//updateChat
+//putChat
 server.put("/voice-assistant/chat/:chatId", (req, res, next) =>{
   mockData.chats.forEach((chat) => {
     if(chat.chatId == req.params.chatId){
@@ -110,7 +110,7 @@ server.delete("/voice-assistant/chat/:chatId", (req, res, next) =>{
   return res.status(204).json();
 });
 
-//getMessages
+//getAllMessagesByChatId
 server.get("/voice-assistant/chat/:chatId/messages", (req, res, next) =>{
   let response = [];
     mockData.chatMessage.forEach((message) =>{
@@ -124,7 +124,7 @@ server.get("/voice-assistant/chat/:chatId/messages", (req, res, next) =>{
     return res.status(200).send(response);
 });
 
-//postMessage
+//postMessageByChatId
 server.post("/voice-assistant/chat/:chatId/messages", (req, res, next) =>{
   let response;
   mockData.chats.forEach((chat) =>{
@@ -139,7 +139,7 @@ server.post("/voice-assistant/chat/:chatId/messages", (req, res, next) =>{
   }
 });
 
-//deleteMessage
+//deleteMessageByChatIdAndMessageId
 server.delete("/voice-assistant/chat/:chatId/messages/:messageId", (req, res, next) =>{
   let remoed = false
   mockData.chats.forEach((chat) =>{
@@ -165,7 +165,7 @@ server.get("/camera-settings", (req, res, next) =>{
   return res.status(200).send(response);
 });
 
-//updateCameraSettings
+//putCameraSettings
 server.put("/camera-settings", (req, res, next) =>{
   mockData.cameraSettings.forEach((cam) => {
     if(cam.id == 1){
@@ -192,7 +192,7 @@ server.get("/bricklet", (req, res, next) =>{
   return res.status(200).send(response);
 });
 
-//getBrickletById
+//getBrickletByBrickletNumber
 server.get("/bricklet/:brickletNumber", (req, res, next) =>{
   const bricklet = mockData.bricklet.filter((bricklet) => bricklet.brickletNumber == req.params.brickletNumber)[0];
   if(bricklet == undefined){
@@ -201,7 +201,7 @@ server.get("/bricklet/:brickletNumber", (req, res, next) =>{
   return res.status(200).send({"uid" : bricklet.uid});
 });
 
-//updateBrickletById
+//putBrickletByBrickletNumber
 server.put("/bricklet/:brickletNumber", (req, res, next) =>{
   let response;
   mockData.bricklet.forEach((brick) =>{
@@ -266,7 +266,7 @@ server.get("/motor/:motorName", (req, res, next) =>{
     return res.status(200).send(response);
 });
 
-//updateMotorByName
+//putMotorByName
 server.put("/motor/:motorName", (req, res, next) =>{
   let updated = false
   mockData.motors.forEach((motor) => {
@@ -353,7 +353,7 @@ server.get("/program", (req, res, next) =>{
 
 //postProgram
 server.post("/program", (req, res, next) =>{
-  const newProgram = programDto.postProgram(req.body.name, req.body.codeVisual);
+  const newProgram = programDto.newProgram(req.body.name, req.body.codeVisual);
   mockData.programs.push(newProgram);
   return res.status(200).send(newProgram);
 });
