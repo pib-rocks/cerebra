@@ -16,7 +16,7 @@ server.use(middlewares);
 server.use(jsonServer.bodyParser)
 
 //getAllPersonalities
-server.get("/api/voice-assistant/personality", (req, res, next) =>{
+server.get("/voice-assistant/personality", (req, res, next) =>{
   let response = [];
     mockData.personality.forEach((personality) =>{
       response.push(personalityDto.getPersonality(personality));
@@ -25,7 +25,7 @@ server.get("/api/voice-assistant/personality", (req, res, next) =>{
 });
 
 //getPersonalityByPersonalityId
-server.get("/api/voice-assistant/personality/:personalityId", (req, res, next) =>{
+server.get("/voice-assistant/personality/:personalityId", (req, res, next) =>{
   const response = mockData.personality.filter(perso => perso.personalityId == req.params.personalityId);
   if(response[0] == undefined){
     return res.status(404).send();
@@ -34,14 +34,14 @@ server.get("/api/voice-assistant/personality/:personalityId", (req, res, next) =
 });
 
 //postPersonality
-server.post("/api/voice-assistant/personality", (req, res, next) =>{
+server.post("/voice-assistant/personality", (req, res, next) =>{
   const newPersonality = personalityDto.newPersonality(req.body.name, req.body.gender, req.body.pauseThreshold)
   mockData.personality.push(newPersonality);
   return res.status(201).send(newPersonality);
 });
 
 //putPersonalityByPersonalityId
-server.put("/api/voice-assistant/personality/:personalityId", (req, res, next) =>{
+server.put("/voice-assistant/personality/:personalityId", (req, res, next) =>{
   mockData.personality.forEach((personality) => {
     if(personality.personalityId == req.params.personalityId){
       personality.name = req.body.name;
@@ -54,7 +54,7 @@ server.put("/api/voice-assistant/personality/:personalityId", (req, res, next) =
 });
 
 //deletePersonalityByPersonalityId
-server.delete("/api/voice-assistant/personality/:personalityId", (req, res, next) =>{
+server.delete("/voice-assistant/personality/:personalityId", (req, res, next) =>{
   const lengPersonality = mockData.personality.length;
   mockData.personality = mockData.personality.filter(perso => perso.personalityId != req.params.personalityId);
   if(lengPersonality == mockData.personality.length){
@@ -64,7 +64,7 @@ server.delete("/api/voice-assistant/personality/:personalityId", (req, res, next
 });
 
 //getAllChats
-server.get("/api/voice-assistant/chat", (req, res, next) =>{
+server.get("/voice-assistant/chat", (req, res, next) =>{
   let response = [];
     mockData.chats.forEach((chat) =>{
       response.push(chatDto.getChat(chat));
@@ -73,14 +73,14 @@ server.get("/api/voice-assistant/chat", (req, res, next) =>{
 });
 
 //postChat
-server.post("/api/voice-assistant/chat", (req, res, next) =>{
+server.post("/voice-assistant/chat", (req, res, next) =>{
   const newPersonality = chatDto.newChat(req.body.topic, req.body.personalityId)
   mockData.chats.push(newPersonality);
   return res.status(200).send(newPersonality);
 });
 
 //getChatById
-server.get("/api/voice-assistant/chat/:chatId", (req, res, next) =>{
+server.get("/voice-assistant/chat/:chatId", (req, res, next) =>{
   const response = mockData.chats.filter(chat => chat.chatId == req.params.chatId);
   if(response[0] == undefined){
     return res.status(404).send();
@@ -89,7 +89,7 @@ server.get("/api/voice-assistant/chat/:chatId", (req, res, next) =>{
 });
 
 //putChat
-server.put("/api/voice-assistant/chat/:chatId", (req, res, next) =>{
+server.put("/voice-assistant/chat/:chatId", (req, res, next) =>{
   mockData.chats.forEach((chat) => {
     if(chat.chatId == req.params.chatId){
       chat.topic = req.body.topic;
@@ -101,7 +101,7 @@ server.put("/api/voice-assistant/chat/:chatId", (req, res, next) =>{
 });
 
 //deleteChat
-server.delete("/api/voice-assistant/chat/:chatId", (req, res, next) =>{
+server.delete("/voice-assistant/chat/:chatId", (req, res, next) =>{
   const lengChats = mockData.chats.length;
   mockData.chats = mockData.chats.filter(chat => chat.chatId != req.params.chatId);
   if(lengChats == mockData.chats.length){
@@ -111,7 +111,7 @@ server.delete("/api/voice-assistant/chat/:chatId", (req, res, next) =>{
 });
 
 //getAllMessagesByChatId
-server.get("/api/voice-assistant/chat/:chatId/messages", (req, res, next) =>{
+server.get("/voice-assistant/chat/:chatId/messages", (req, res, next) =>{
   let response = [];
     mockData.chatMessage.forEach((message) =>{
       if(message.chatId == req.params.chatId){
@@ -125,7 +125,7 @@ server.get("/api/voice-assistant/chat/:chatId/messages", (req, res, next) =>{
 });
 
 //postMessageByChatId
-server.post("/api/voice-assistant/chat/:chatId/messages", (req, res, next) =>{
+server.post("/voice-assistant/chat/:chatId/messages", (req, res, next) =>{
   let response;
   mockData.chats.forEach((chat) =>{
     if(chat.chatId == req.params.chatId){
@@ -140,7 +140,7 @@ server.post("/api/voice-assistant/chat/:chatId/messages", (req, res, next) =>{
 });
 
 //deleteMessageByChatIdAndMessageId
-server.delete("/api/voice-assistant/chat/:chatId/messages/:messageId", (req, res, next) =>{
+server.delete("/voice-assistant/chat/:chatId/messages/:messageId", (req, res, next) =>{
   let remoed = false
   mockData.chats.forEach((chat) =>{
     if(chat.chatId == req.params.chatId){
@@ -159,14 +159,14 @@ server.delete("/api/voice-assistant/chat/:chatId/messages/:messageId", (req, res
 });
 
 //getCameraSettings
-server.get("/api/camera-settings", (req, res, next) =>{
+server.get("/camera-settings", (req, res, next) =>{
   const cameraSettings = mockData.cameraSettings.filter(cam => cam.id == 1);
   const response = cameraSettingsDto.getCameraSettings(cameraSettings[0]);
   return res.status(200).send(response);
 });
 
 //putCameraSettings
-server.put("/api/camera-settings", (req, res, next) =>{
+server.put("/camera-settings", (req, res, next) =>{
   mockData.cameraSettings.forEach((cam) => {
     if(cam.id == 1){
       cam.resolution = req.body.resolution;
@@ -184,7 +184,7 @@ server.put("/api/camera-settings", (req, res, next) =>{
 });
 
 //getAllBricklets
-server.get("/api/bricklet", (req, res, next) =>{
+server.get("/bricklet", (req, res, next) =>{
   let response = [];
   mockData.bricklet.forEach((bricklet) =>{
     response.push(brickletDto.getBricklet(bricklet));
@@ -193,7 +193,7 @@ server.get("/api/bricklet", (req, res, next) =>{
 });
 
 //getBrickletByBrickletNumber
-server.get("/api/bricklet/:brickletNumber", (req, res, next) =>{
+server.get("/bricklet/:brickletNumber", (req, res, next) =>{
   const bricklet = mockData.bricklet.filter((bricklet) => bricklet.brickletNumber == req.params.brickletNumber)[0];
   if(bricklet == undefined){
     return res.status(404).send();  
@@ -202,7 +202,7 @@ server.get("/api/bricklet/:brickletNumber", (req, res, next) =>{
 });
 
 //putBrickletByBrickletNumber
-server.put("/api/bricklet/:brickletNumber", (req, res, next) =>{
+server.put("/bricklet/:brickletNumber", (req, res, next) =>{
   let response;
   mockData.bricklet.forEach((brick) =>{
     if(brick.brickletNumber == req.params.brickletNumber){
@@ -216,7 +216,7 @@ server.put("/api/bricklet/:brickletNumber", (req, res, next) =>{
 });
 
 //getAllMotrs
-server.get("/api/motor", (req, res, next) =>{
+server.get("/motor", (req, res, next) =>{
   let response = [];
   mockData.motors.forEach((motor) =>{
     let motorBrickletPin = [];
@@ -241,7 +241,7 @@ server.get("/api/motor", (req, res, next) =>{
 
 
 //getMotorByName
-server.get("/api/motor/:motorName", (req, res, next) =>{
+server.get("/motor/:motorName", (req, res, next) =>{
   let response;
   const motor = mockData.motors.find((motor) => motor.name == req.params.motorName);
   if(motor == undefined){
@@ -267,7 +267,7 @@ server.get("/api/motor/:motorName", (req, res, next) =>{
 });
 
 //putMotorByName
-server.put("/api/motor/:motorName", (req, res, next) =>{
+server.put("/motor/:motorName", (req, res, next) =>{
   let updated = false
   mockData.motors.forEach((motor) => {
     if(motor.name == req.params.motorName){
@@ -308,7 +308,7 @@ server.put("/api/motor/:motorName", (req, res, next) =>{
 });
 
 //getMotorSettingsByName
-server.get("/api/motor/:motorName/settings", (req, res, next) =>{
+server.get("/motor/:motorName/settings", (req, res, next) =>{
   let response;
   const motor = mockData.motors.find((motor) => motor.name == req.params.motorName);
   if(motor == undefined){
@@ -319,7 +319,7 @@ server.get("/api/motor/:motorName/settings", (req, res, next) =>{
 });
 
 //putMotorSettingsByName
-server.put("/api/motor/:motorName/settings", (req, res, next) =>{
+server.put("/motor/:motorName/settings", (req, res, next) =>{
   let updated = false;
   mockData.motors.forEach((motor) => {
     if(motor.name == req.params.motorName){
@@ -343,7 +343,7 @@ server.put("/api/motor/:motorName/settings", (req, res, next) =>{
 });
 
 //getAllPrograms
-server.get("/api/program", (req, res, next) =>{
+server.get("/program", (req, res, next) =>{
   let response = [];
   mockData.programs.forEach((program) =>{
     response.push(programDto.getProgram(program));
@@ -352,14 +352,14 @@ server.get("/api/program", (req, res, next) =>{
 });
 
 //postProgram
-server.post("/api/program", (req, res, next) =>{
+server.post("/program", (req, res, next) =>{
   const newProgram = programDto.newProgram(req.body.name, req.body.codeVisual);
   mockData.programs.push(newProgram);
   return res.status(200).send(newProgram);
 });
 
 //getProgramByProgramnumber
-server.get("/api/program/:programNumber", (req, res, next) =>{
+server.get("/program/:programNumber", (req, res, next) =>{
   let response = mockData.programs.find((program) => program.programNumber == req.params.programNumber);
   if(response == undefined){
     return res.status(404).send();
@@ -368,7 +368,7 @@ server.get("/api/program/:programNumber", (req, res, next) =>{
 });
 
 //deleteByProgramNumber
-server.delete("/api/program/:programNumber", (req, res, next) =>{
+server.delete("/program/:programNumber", (req, res, next) =>{
   const lengPrograms = mockData.programs.length;
   mockData.programs = mockData.programs.filter(programs => programs.programNumber != req.params.programNumber);
   if (lengPrograms == mockData.programs.length){
@@ -378,7 +378,7 @@ server.delete("/api/program/:programNumber", (req, res, next) =>{
 });
 
 //getCodeByProgramnumber
-server.get("/api/program/:programNumber/code", (req, res, next) =>{
+server.get("/program/:programNumber/code", (req, res, next) =>{
   let response = mockData.programs.find((program) => program.programNumber == req.params.programNumber);
   if(response == undefined){
     return res.status(404).send();
@@ -388,7 +388,7 @@ server.get("/api/program/:programNumber/code", (req, res, next) =>{
 });
 
 //putCodeByProgramnumber
-server.put("/api/program/:programNumber/code", (req, res, next) =>{
+server.put("/program/:programNumber/code", (req, res, next) =>{
   let updated = false;
   mockData.programs.forEach((program) => {
     if(program.programNumber == req.params.programNumber){
