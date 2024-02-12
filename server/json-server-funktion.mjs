@@ -4,6 +4,7 @@ import personalityDto from "./dto/personality.mjs";
 import cameraSettingsDto from "./dto/camera-settings.mjs";
 import chatDto from "./dto/chat.mjs";
 import messageDto from "./dto/message.mjs";
+import brickletDto from "./dto/bricklet.mjs"
 const server = jsonServer.create();
 const router = jsonServer.router(mockData);
 const middlewares = jsonServer.defaults();
@@ -166,6 +167,35 @@ server.put("/camera-settings", (req, res, next) =>{
       return res.status(404).send();
     }
   });
+});
+
+//getAllBricklets
+server.get("/bricklet", (req, res, next) =>{
+  let response = [];
+  mockData.bricklet.forEach((bricklet) =>{
+    response.push(brickletDto.getBricklet(bricklet));
+  });
+  return res.status(200).send(response);
+});
+
+//getBrickletById
+server.get("/bricklet/:brickletNumber", (req, res, next) =>{
+  const uid = mockData.bricklet.filter((bricklet) => bricklet.brickletNumber == req.params.brickletNumber)[0].uid;
+  return res.status(200).send({uid});
+});
+
+//updateBrickletById
+server.put("/bricklet/:brickletNumber", (req, res, next) =>{
+  let response
+  mockData.bricklet.forEach((brick) =>{
+    if(brick.brickletNumber == req.params.brickletNumber){
+      console.log(brick.uid);
+      console.log(req.body.uid);
+      brick.uid = req.body.uid;
+      response = brickletDto.getBricklet(brick)
+    }
+  })
+  return res.status(200).send(response);
 });
 
 
