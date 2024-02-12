@@ -3,6 +3,7 @@ import mockData from "./json-server-database.json" assert {type: 'json'};
 import personalityDto from "./dto/personality.mjs";
 import cameraSettingsDto from "./dto/camera-settings.mjs";
 import chatDto from "./dto/chat.mjs";
+import messageDto from "./dto/message.mjs";
 const server = jsonServer.create();
 const router = jsonServer.router(mockData);
 const middlewares = jsonServer.defaults();
@@ -97,6 +98,51 @@ server.delete("/voice-assistant/chat/:chatId", (req, res, next) =>{
   return res.status(204).json();
 });
 
+//getMessages
+server.get("/voice-assistant/chat/:chatId/messages", (req, res, next) =>{
+  let response = [];
+    mockData.chatMessage.forEach((message) =>{
+      if(message.chatId == req.params.chatId){
+        response.push(messageDto.getMessage(message.messageId, message.timestamp, message.isUser, message.content));
+      }
+    });
+    return res.status(200).send(response);
+});
+
+//postMessage
+server.post("/voice-assistant/chat/:chatId/messages", (req, res, next) =>{
+  let response
+  mockData.chats.forEach((chat) =>{
+    if(chat.chatId == req.params.chatId){
+      response = messageDto.newMessage(req.body.timestamp, req.body.isUser, req.body.content, req.params.chatId);
+      mockData.chatMessage.push(response);
+      return res.status(200).send(response);
+    }
+  });
+  if(response == undefined){
+    return res.status(404).send("No chat with the given id was found.");
+  }
+});
+
+//postDelete
+server.delete("/voice-assistant/chat/:chatId/messages/:messageId", (req, res, next) =>{
+  let remoed = false
+  mockData.chats.forEach((chat) =>{
+    if(chat.chatId == req.params.chatId){
+      mockData.chatMessage.forEach((message) => {
+        if(message.messageId == req.params.messageId){
+          mockData.chatMessage = mockData.chatMessage.filter((message) => message.messageId != req.params.messageId);
+          remoed = true
+          return res.status(204).send();
+        }
+      });
+    }
+  });
+  if(remoed == false){
+    return res.status(404).send("No content with the given ids found");
+  }
+});
+
 //getCameraSettings
 server.get("/camera-settings", (req, res, next) =>{
   const cameraSettings = mockData.cameraSettings.filter(cam => cam.id == 1);
@@ -129,11 +175,3 @@ const port = 5000;
 server.listen(port, () => {
   console.log(`JSON Server is running on port ${port}`);
 });
-
-// auslagern
-// "/voice-assistant/chat/:id/messsages/:id" : "/chats/$1?chatMessage.id=2&_embed=chatMessage" // filter für child implementieren
-// "/motor" : "/motors" // ebenfalls die pins sowie bricklet UID zurückgeben
-// "/motor/:motorName" : "/motors?name=$1" // ebenfalls die pins sowie bricklet UID zurückgeben
-// "/motor/:motorName/bricklet-pins" : "/motors?name=$1" // nur namen un dbricklet pin sowie bricklet uid returnen
-// "/program" : "/program", // ohne code
-// "/program/:programm-number" : "/program/$1", // ohne code

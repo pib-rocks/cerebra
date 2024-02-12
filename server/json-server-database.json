@@ -38,7 +38,7 @@
       "timestamp" : "2024-02-06 09:46:32",
       "isUser" : 1,
       "content" : "hello pib!",
-      "chatId" : 1
+      "chatId" : "ee3e80f9-c8f7-48c2-9f15-449ba9bbe4ab"
     },
     {
       "id" : 2,
@@ -46,7 +46,7 @@
       "timestamp" : "2024-02-06 09:50:32",
       "isUser" : 0,
       "content" : "hello user!",
-      "chatId" : 1
+      "chatId" : "ee3e80f9-c8f7-48c2-9f15-449ba9bbe4ab"
     }
   ],
   "cameraSettings" : [
