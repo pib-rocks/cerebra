@@ -11,7 +11,20 @@
         class="m-0 p-0 bd-highlight flex-grow-1"
         style="background-color: orange;">
         <div class="row m-0 p-0">{{motor.title}}</div>
-        <div class="row m-0 p-0 slider-container">y</div>
+        <div class="row m-0 p-0 slider-container">
+            <app-horizontal-slider
+                [name]="motor.title"
+                [leftValue]="-90"
+                [trackHeight]="20"
+                [thumbRadius]="10"
+                [rightValue]="+90"
+                [numberOfThumbs]="1"
+                [unitLong]="'μs'"
+                [defaultValues]="[0]"
+                [step]="1"
+                [messageReceiver$]="positionReceiver$"
+                (sliderEvent)="applyPosition($event[0])"></app-horizontal-slider>
+        </div>
     </div>
     <div
         class="d-flex flex-column justify-content-end"

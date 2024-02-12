@@ -45,22 +45,20 @@ export class MotorCurrentComponent implements AfterViewInit, OnDestroy {
         this.subscription = this.motorService
             .getCurrentObservable(this.motorName)
             .subscribe((value: number) => {
+                console.info("component received current: " + value);
                 this.currentValue = value;
                 this.renderer.setStyle(
                     this.gradientCircle.nativeElement,
                     "strokeDasharray",
-                    (Number(this.percentage(value)) * this.CIRCUMFERENCE) /
-                        100 +
-                        ", 360",
+                    `${
+                        (value / (this.maxValue - this.minValue)) *
+                        this.CIRCUMFERENCE
+                    }, 360`,
                 );
             });
     }
 
     ngOnDestroy(): void {
         this.subscription?.unsubscribe();
-    }
-
-    percentage(number: number): number {
-        return (number / (this.maxValue - this.minValue)) * 100;
     }
 }

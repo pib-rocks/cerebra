@@ -7,7 +7,7 @@ import {
 } from "@angular/core";
 import {JointConfiguration} from "../../shared/types/joint-configuration";
 import {ActivatedRoute} from "@angular/router";
-import {MotorConfiguration} from "../../shared/types/motor-configuration";
+import {motorPathNameToConfig} from "../../shared/types/motor-configuration";
 
 @Component({
     selector: "app-joint-control-core",
@@ -17,10 +17,7 @@ import {MotorConfiguration} from "../../shared/types/motor-configuration";
 export class JointControlCoreComponent implements OnInit, AfterViewInit {
     joint!: JointConfiguration;
 
-    readonly touchpointUnselected =
-        "assets/joint-control/background/touchpoint_unselected.svg";
-    readonly touchpointSelected =
-        "assets/joint-control/background/touchpoint_selected.svg";
+    motorPathNameToConfig = motorPathNameToConfig;
 
     observer!: ResizeObserver;
     @ViewChild("canvas") jointCanvas!: ElementRef<HTMLDivElement>;
@@ -39,9 +36,5 @@ export class JointControlCoreComponent implements OnInit, AfterViewInit {
 
     ngAfterViewInit() {
         this.observer.observe(this.jointCanvas.nativeElement);
-    }
-
-    f() {
-        console.info("f");
     }
 }

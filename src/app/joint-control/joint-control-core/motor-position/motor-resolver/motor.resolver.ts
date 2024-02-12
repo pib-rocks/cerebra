@@ -5,7 +5,7 @@ import {
 } from "@angular/router";
 import {
     MotorConfiguration,
-    motorNameToConfiguration,
+    motorPathNameToConfig,
 } from "src/app/shared/types/motor-configuration";
 
 export const motorResolver: ResolveFn<MotorConfiguration> = (
@@ -13,5 +13,5 @@ export const motorResolver: ResolveFn<MotorConfiguration> = (
     _state: RouterStateSnapshot,
 ): MotorConfiguration => {
     const motorName = route.params["motor-name"];
-    return motorNameToConfiguration.get(motorName)!;
+    return motorPathNameToConfig.get(motorName)!;
 };

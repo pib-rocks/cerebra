@@ -46,8 +46,8 @@ export class MotorService {
                     period: msg.period,
                     pulseWidthMin: msg.pulse_width_min,
                     pulseWidthMax: msg.pulse_width_max,
-                    rotationRangeMin: msg.rotation_range_min,
-                    rotationRangeMax: msg.rotation_range_max,
+                    rotationRangeMin: Math.floor(msg.rotation_range_min / 100),
+                    rotationRangeMax: Math.floor(msg.rotation_range_max / 100),
                     turnedOn: msg.turned_on,
                     visible: msg.visible,
                 };
@@ -79,7 +79,9 @@ export class MotorService {
         this.rosService.jointTrajectoryReceiver$.subscribe(
             (jt: JointTrajectoryMessage) => {
                 const motorName: string = jt.joint_names[0];
-                const position: number = jt.points[0].positions[0];
+                const position: number = Math.floor(
+                    jt.points[0].positions[0] / 100,
+                );
                 let subject = this.motorNameToPositionSubject.get(motorName);
                 if (!subject) {
                     subject = new BehaviorSubject(this.defaultPosition);
@@ -104,13 +106,12 @@ export class MotorService {
     }
 
     getSettingObservable(motorName: string): Observable<MotorSettings> {
-        // let subject = this.motorNameToSettingsSubject.get(motorName);
-        // if (!subject) {
-        //     subject = new BehaviorSubject(this.defaultSettings);
-        //     this.motorNameToSettingsSubject.set(motorName, subject)
-        // }
-        // return subject.pipe(settings => structuredClone(settings));
-        return new Observable();
+        let subject = this.motorNameToSettingsSubject.get(motorName);
+        if (!subject) {
+            subject = new BehaviorSubject(this.defaultSettings);
+            this.motorNameToSettingsSubject.set(motorName, subject);
+        }
+        return subject.pipe(map((settings) => structuredClone(settings)));
     }
 
     applySettings(motorName: string, settings: MotorSettings): void {
@@ -119,8 +120,8 @@ export class MotorService {
             turned_on: settings.turnedOn,
             pulse_width_min: settings.pulseWidthMin,
             pulse_width_max: settings.pulseWidthMax,
-            rotation_range_min: settings.rotationRangeMin,
-            rotation_range_max: settings.rotationRangeMax,
+            rotation_range_min: settings.rotationRangeMin * 100,
+            rotation_range_max: settings.rotationRangeMax * 100,
             velocity: settings.velocity,
             acceleration: settings.acceleration,
             deceleration: settings.deceleration,
@@ -130,17 +131,16 @@ export class MotorService {
     }
 
     getPositionObservable(motorName: string): Observable<number> {
-        // let subject = this.motorNameToPositionSubject.get(motorName);
-        // if (!subject) {
-        //     subject = new BehaviorSubject(this.defaultPosition);
-        //     this.motorNameToPositionSubject.set(motorName, subject)
-        // }
-        // return subject;
-        return new Observable();
+        let subject = this.motorNameToPositionSubject.get(motorName);
+        if (!subject) {
+            subject = new BehaviorSubject(this.defaultPosition);
+            this.motorNameToPositionSubject.set(motorName, subject);
+        }
+        return subject;
     }
 
     applyPosition(motorName: string, position: number): void {
-        this.rosService.jointTrajectoryReceiver$.next({
+        this.rosService.sendJointTrajectoryMessage({
             header: {
                 stamp: {
                     sec: 0,
@@ -151,7 +151,7 @@ export class MotorService {
             joint_names: [motorName],
             points: [
                 {
-                    positions: [position],
+                    positions: [position * 100],
                     time_from_start: {sec: 0, nanosec: 0},
                 },
             ],
@@ -159,12 +159,11 @@ export class MotorService {
     }
 
     getCurrentObservable(motorName: string): Observable<number> {
-        // let subject = this.motorNameToCurrentSubject.get(motorName);
-        // if (!subject) {
-        //     subject = new BehaviorSubject(this.defaultCurrent);
-        //     this.motorNameToCurrentSubject.set(motorName, subject)
-        // }
-        // return subject;
-        return new Observable();
+        let subject = this.motorNameToCurrentSubject.get(motorName);
+        if (!subject) {
+            subject = new BehaviorSubject(this.defaultCurrent);
+            this.motorNameToCurrentSubject.set(motorName, subject);
+        }
+        return subject;
     }
 }

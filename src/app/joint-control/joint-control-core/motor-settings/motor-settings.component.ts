@@ -1,3 +1,4 @@
+import {Expansion} from "@angular/compiler";
 import {Component, Input, TemplateRef, ViewChild} from "@angular/core";
 import {FormControl} from "@angular/forms";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
@@ -13,7 +14,6 @@ import {HorizontalSliderComponent} from "src/app/sliders/horizontal-slider/horiz
 })
 export class MotorSettingsComponent {
     @Input() motorName!: string;
-    // @ViewChild(HorizontalSliderComponent)
     @Input() reversed!: boolean;
 
     sliderComponent!: HorizontalSliderComponent;
@@ -29,7 +29,7 @@ export class MotorSettingsComponent {
     velocitySubject$ = new BehaviorSubject<number>(NaN);
     positionSubject$ = new BehaviorSubject<number[]>([]);
 
-    motorFormControl: FormControl = new FormControl(true);
+    turnedOnFormControl: FormControl = new FormControl(true);
 
     settings: MotorSettings = {
         velocity: 0,
@@ -44,7 +44,7 @@ export class MotorSettingsComponent {
         visible: true,
     };
 
-    imgSrc: string = "../../assets/toggle-switch-left.png";
+    toggled: boolean = false;
 
     constructor(
         private motorService: MotorService,
@@ -68,16 +68,8 @@ export class MotorSettingsComponent {
                 this.decelerationSubject$.next(settings.deceleration);
                 this.accelerationSubject$.next(settings.acceleration);
                 this.velocitySubject$.next(settings.velocity);
-                this.motorFormControl.setValue(this.settings.turnedOn);
+                this.turnedOnFormControl.setValue(this.settings.turnedOn);
             });
-    }
-
-    changeIcon() {
-        if (this.imgSrc === "../../assets/toggle-switch-left.png") {
-            this.imgSrc = "../../assets/toggle-switch-right.png";
-        } else {
-            this.imgSrc = "../../assets/toggle-switch-left.png";
-        }
     }
 
     openPopup(content: TemplateRef<any>) {
@@ -121,7 +113,9 @@ export class MotorSettingsComponent {
     }
 
     changeTurnedOn() {
-        this.settings.turnedOn = !this.settings.turnedOn;
-        this.motorService.applySettings(this.motorName, this.settings);
+        this.settings.turnedOn = !this.turnedOnFormControl.value;
+        setTimeout(() =>
+            this.motorService.applySettings(this.motorName, this.settings),
+        );
     }
 }

@@ -66,17 +66,25 @@
             <!-- slider track foreground -->
             <rect
                 id="slider_{{baseId}}_track_fg"
-                [attr.x]="numberOfThumbs > 1 ? currentMinBubblePosition : trackOuterOffset"
+                [attr.x]="currentMinBubblePosition"
                 [attr.y]="trackOuterOffset"
-                [attr.width]="currentMaxBubblePosition - (numberOfThumbs > 1 ? currentMinBubblePosition : trackOuterOffset)"
+                [attr.width]="currentMaxBubblePosition - currentMinBubblePosition"
                 [attr.height]="trackHeight"
-                [attr.rx]="trackHeight / 2"
+                [attr.rx]="0"
                 fill="#e10072" />
             <!-- slider thumbs -->
             <circle
                 *ngFor="let thumb of thumbs"
                 id="slider_{{baseId}}_thumb_{{thumb.id}}"
                 [attr.cx]="thumb.position"
+                [attr.cy]="thumbRadius"
+                [attr.r]="thumbRadius"
+                fill="#e10072" />
+            <!-- additional left circle if only one thumb exists-->
+            <circle
+                *ngIf="numberOfThumbs == 1"
+                id="slider_{{baseId}}_pseudo_thumb"
+                [attr.cx]="currentMinBubblePosition"
                 [attr.cy]="thumbRadius"
                 [attr.r]="thumbRadius"
                 fill="#e10072" />

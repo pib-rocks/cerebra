@@ -5,7 +5,7 @@ import {
 } from "@angular/router";
 import {
     JointConfiguration,
-    jointNameToConfiguration,
+    jointPathNameToConfig,
 } from "../../shared/types/joint-configuration";
 
 export const jointResolver: ResolveFn<JointConfiguration> = (
@@ -13,5 +13,5 @@ export const jointResolver: ResolveFn<JointConfiguration> = (
     _state: RouterStateSnapshot,
 ): JointConfiguration => {
     const jointName = route.params["joint-name"];
-    return jointNameToConfiguration.get(jointName)!;
+    return jointPathNameToConfig.get(jointName)!;
 };

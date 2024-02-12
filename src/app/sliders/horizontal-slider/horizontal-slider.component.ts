@@ -161,7 +161,8 @@ export class HorizontalSliderComponent
             this.sliderWidth - this.thumbRadius - 1,
         );
         const positions = this.thumbs.map((thumb) => thumb.position);
-        this.currentMinBubblePosition = Math.min(...positions);
+        this.currentMinBubblePosition =
+            this.numberOfThumbs > 1 ? Math.min(...positions) : this.thumbRadius;
         this.currentMaxBubblePosition = Math.max(...positions);
         this.ref.detectChanges();
     }
