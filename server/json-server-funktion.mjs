@@ -7,6 +7,7 @@ import messageDto from "./dto/message.mjs";
 import brickletDto from "./dto/bricklet.mjs"
 import motorDto from "./dto/motor.mjs";
 import motorsettings from "./dto/motorsettings.mjs"
+import programDto from "./dto/program.mjs"
 const server = jsonServer.create();
 const router = jsonServer.router(mockData);
 const middlewares = jsonServer.defaults();
@@ -127,7 +128,7 @@ server.post("/voice-assistant/chat/:chatId/messages", (req, res, next) =>{
   }
 });
 
-//postDelete
+//deleteMessage
 server.delete("/voice-assistant/chat/:chatId/messages/:messageId", (req, res, next) =>{
   let remoed = false
   mockData.chats.forEach((chat) =>{
@@ -321,6 +322,54 @@ server.put("/motor/:motorName/settings", (req, res, next) =>{
   }
 });
 
+//getAllPrograms
+server.get("/program", (req, res, next) =>{
+  let response = [];
+  mockData.programs.forEach((program) =>{
+    response.push(programDto.getProgram(program));
+  });
+  return res.status(200).send(response);
+});
+
+//postProgram
+server.post("/program", (req, res, next) =>{
+  const newProgram = programDto.postProgram(req.body.name, req.body.codeVisual);
+  mockData.programs.push(newProgram);
+  return res.status(200).send(newProgram);
+});
+
+//getProgramByProgramnumber
+server.get("/program/:programNumber", (req, res, next) =>{
+  let response = mockData.programs.find((program) => program.programNumber == req.params.programNumber);
+  return res.status(200).send(response);
+});
+
+//deleteByProgramNumber
+server.delete("/program/:programNumber", (req, res, next) =>{
+  mockData.programs = mockData.programs.filter(programs => programs.programNumber != req.params.programNumber);
+  return res.status(204).send();
+});
+
+//getCodeByProgramnumber
+server.get("/program/:programNumber", (req, res, next) =>{
+  let response = programDto.returnCode(mockData.programs.find((program) => program.programNumber == req.params.programNumber));
+  return res.status(200).send(response);
+});
+
+//putCodeByProgramnumber
+server.put("/program/:programNumber", (req, res, next) =>{
+  let updated = false;
+  mockData.programs.forEach((program) => {
+    if(program.programNumber == req.params.programNumber){
+      program.codeVisual = req.body.codeVisual;
+      updated = true;
+      return res.status(200).send(programDto.getProgram(program));    
+    }
+  });
+  if(updated == false){
+    return res.status(404).send();
+  }
+});
 
 server.use(router);
 
