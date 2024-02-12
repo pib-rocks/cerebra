@@ -5,6 +5,7 @@ import cameraSettingsDto from "./dto/camera-settings.mjs";
 import chatDto from "./dto/chat.mjs";
 import messageDto from "./dto/message.mjs";
 import brickletDto from "./dto/bricklet.mjs"
+import motorDto from "./dto/motor.mjs";
 const server = jsonServer.create();
 const router = jsonServer.router(mockData);
 const middlewares = jsonServer.defaults();
@@ -196,6 +197,95 @@ server.put("/bricklet/:brickletNumber", (req, res, next) =>{
     }
   })
   return res.status(200).send(response);
+});
+
+//getAllMotrs
+server.get("/motor", (req, res, next) =>{
+  let response = [];
+  mockData.motors.forEach((motor) =>{
+    let motorBrickletPin = [];
+    mockData.brickletPin.forEach((brickeltPin) =>{
+      if(brickeltPin.motorId == motor.id){
+        motorBrickletPin.push(brickeltPin);
+      }
+    });
+    let bricklets = [];
+    mockData.bricklet.forEach((bricklet) =>{
+      motorBrickletPin.forEach((motorBrickletPin) =>{
+        if(motorBrickletPin.brickletId == bricklet.id){
+          bricklets.push(bricklet);
+        }
+      });
+      }
+    );
+    response.push(motorDto.getMotor(motor, bricklets));
+  });
+  return res.status(200).send(response);
+});
+
+
+//getMotorByName
+server.get("/motor/:motorName", (req, res, next) =>{
+  let response;
+  const motor = mockData.motors.find((motor) => motor.name == req.params.motorName);
+  let motorBrickletPin = [];
+    mockData.brickletPin.forEach((brickeltPin) =>{
+      if(brickeltPin.motorId == motor.id){
+        motorBrickletPin.push(brickeltPin);
+      }
+    });
+    let bricklets = [];
+    mockData.bricklet.forEach((bricklet) =>{
+      motorBrickletPin.forEach((motorBrickletPin) =>{
+        if(motorBrickletPin.brickletId == bricklet.id){
+          bricklets.push(bricklet);
+        }
+      });
+      }
+    );
+    response = motorDto.getMotor(motor, bricklets);
+    return res.status(200).send(response);
+});
+
+//updateMotorByName
+server.put("/motor/:motorName", (req, res, next) =>{
+  let updated = false
+  mockData.motors.forEach((motor) => {
+    if(motor.name == req.params.motorName){
+      updated = true;
+      motor.turnedOn = req.body.turnedOn;
+      motor.pulseWidthMin = req.body.pulseWidthMin;
+      motor.pulseWidthMax = req.body.pulseWidthMax;
+      motor.rotationRangeMin = req.body.rotationRangeMin;
+      motor.rotationRangeMax = req.body.rotationRangeMax;
+      motor.velocity = req.body.velocity;
+      motor.acceleration = req.body.acceleration;
+      motor.deceleration = req.body.deceleration;
+      motor.period = req.body.period;
+      motor.visible = req.body.visible;
+
+      let motorBrickletPin = [];
+      mockData.brickletPin.forEach((brickeltPin) =>{
+        if(brickeltPin.motorId == motor.id){
+          motorBrickletPin.push(brickeltPin);
+        }
+      });
+      let bricklets = [];
+      mockData.bricklet.forEach((bricklet) =>{
+        motorBrickletPin.forEach((motorBrickletPin) =>{
+          if(motorBrickletPin.brickletId == bricklet.id){
+            bricklets.push(bricklet);
+          }
+        });
+        }
+      );
+      motor.bricklet = bricklets;
+      return res.status(200).send(motor);
+    }
+  });
+  if(updated == false){
+    return res.status(404).send();
+  }
 });
 
 
