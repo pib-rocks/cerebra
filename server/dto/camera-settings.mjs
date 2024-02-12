@@ -7,8 +7,8 @@ export class cameraSettings{
         this.resY = resY;
     }
 
-    getCameraSettings(resolution, refeshRate, qualityFactor, resX, resY){
-        return new cameraSettings(resolution, refeshRate, qualityFactor, resX, resY);
+    getCameraSettings(cs){
+        return new cameraSettings(cs.resolution, cs.refeshRate, cs.qualityFactor, cs.resX, cs.resY);
     }
 }
 export default cameraSettings

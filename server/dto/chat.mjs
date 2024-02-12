@@ -6,8 +6,8 @@ export class chat{
     }
 
     
-    static getChat(chatId, topic, personalityId){
-        return new chat(chatId, topic, personalityId);
+    static getChat(c){
+        return new chat(c.chatId, c.topic, c.personalityId);
     }
 
     static newChat(topic, personalityId){

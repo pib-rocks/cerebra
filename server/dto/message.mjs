@@ -7,8 +7,8 @@ export class message{
         this.chatId = chatId;
     }
 
-    static getMessage(messageId, timestamp, isUser, content){
-        return {"messageId" : messageId, "timestamp" : timestamp, "isUser" : isUser, "content" : content}
+    static getMessage(m){
+        return {"messageId" : m.messageId, "timestamp" : m.timestamp, "isUser" : m.isUser, "content" : m.content}
     }
 
     static newMessage(timestamp, isUser, content, chatId){
