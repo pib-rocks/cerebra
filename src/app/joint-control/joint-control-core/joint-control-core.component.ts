@@ -1,13 +1,6 @@
-import {
-    AfterViewInit,
-    Component,
-    ElementRef,
-    OnInit,
-    ViewChild,
-} from "@angular/core";
+import {Component, OnInit} from "@angular/core";
 import {JointConfiguration} from "../../shared/types/joint-configuration";
 import {ActivatedRoute} from "@angular/router";
-import {motorPathNameToConfig} from "../../shared/types/motor-configuration";
 
 @Component({
     selector: "app-joint-control-core",
