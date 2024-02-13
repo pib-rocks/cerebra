@@ -3,7 +3,7 @@
 }
 
 .active-check {
-    width: 30%;
+    width: auto;
     height: 30%;
     outline: 2px solid white;
     background-color: rgba(0, 0, 0, 0);
@@ -20,6 +20,6 @@
 
 .display-settings-button {
     border: 0;
-    width: 30%;
+    width: auto;
     height: 30%;
 }
