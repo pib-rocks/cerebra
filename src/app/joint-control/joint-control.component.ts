@@ -1,9 +1,6 @@
 import {Component} from "@angular/core";
 import {ActivatedRoute} from "@angular/router";
-import {
-    JointConfiguration,
-    JointPathName,
-} from "../shared/types/joint-configuration";
+import {JointConfiguration, joints} from "../shared/types/joint-configuration";
 
 @Component({
     selector: "app-joint-control",
@@ -13,7 +10,7 @@ import {
 export class JointControlComponent {
     joint!: JointConfiguration;
 
-    JointPathName = JointPathName;
+    joints = joints;
 
     constructor(private route: ActivatedRoute) {}
 

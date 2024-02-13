@@ -6,6 +6,7 @@ import {
 
 export interface JointConfiguration {
     jointPathName: string;
+    label: string;
     background: string;
     overlay: string;
     segmentHeight: number;
@@ -25,6 +26,7 @@ export enum JointPathName {
 export const joints: JointConfiguration[] = [
     {
         jointPathName: JointPathName.HEAD,
+        label: "Head",
         background: "/joint-control/background/head_background.png",
         overlay: "/joint-control/overlay/head_overlay.png",
         reversed: false,
@@ -37,6 +39,7 @@ export const joints: JointConfiguration[] = [
     },
     {
         jointPathName: JointPathName.LEFT_HAND,
+        label: "Left Hand",
         background: "/joint-control/background/hand_left_background.png",
         overlay: "/joint-control/overlay/hand_left_overlay.png",
         reversed: true,
@@ -53,6 +56,7 @@ export const joints: JointConfiguration[] = [
     },
     {
         jointPathName: JointPathName.RIGHT_HAND,
+        label: "Right Hand",
         background: "/joint-control/background/hand_right_background.png",
         overlay: "/joint-control/overlay/hand_right_overlay.png",
         reversed: false,
@@ -69,6 +73,7 @@ export const joints: JointConfiguration[] = [
     },
     {
         jointPathName: JointPathName.LEFT_ARM,
+        label: "Left Arm",
         background: "/joint-control/background/arm_left_background.png",
         overlay: "/joint-control/overlay/arm_left_overlay.png",
         reversed: true,
@@ -85,6 +90,7 @@ export const joints: JointConfiguration[] = [
     },
     {
         jointPathName: JointPathName.RIGHT_ARM,
+        label: "Right Arm",
         background: "/joint-control/background/arm_right_background.png",
         overlay: "/joint-control/overlay/arm_right_overlay.png",
         reversed: false,

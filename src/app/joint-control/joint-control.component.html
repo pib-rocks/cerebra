@@ -1,52 +1,13 @@
 <ul class="nav nav-tabs">
     <li
+        *ngFor="let joint of joints"
         class="nav-item"
         routerLinkActive="navbar-btn-active">
         <a
-            id="head-nav"
+            [id]="joint.jointPathName + '-nav'"
             class="nav-link sidebar-btn"
-            [routerLink]="JointPathName.HEAD">
-            Head
-        </a>
-    </li>
-    <li
-        class="nav-item"
-        routerLinkActive="navbar-btn-active">
-        <a
-            id="left-hand-nav"
-            class="nav-link sidebar-btn"
-            [routerLink]="JointPathName.LEFT_HAND">
-            Left Hand
-        </a>
-    </li>
-    <li
-        class="nav-item"
-        routerLinkActive="navbar-btn-active">
-        <a
-            id="right-hand-nav"
-            class="nav-link sidebar-btn"
-            [routerLink]="JointPathName.RIGHT_HAND">
-            Right Hand
-        </a>
-    </li>
-    <li
-        class="nav-item"
-        routerLinkActive="navbar-btn-active">
-        <a
-            id="left-arm-nav"
-            class="nav-link sidebar-btn"
-            [routerLink]="JointPathName.LEFT_ARM">
-            Left Arm
-        </a>
-    </li>
-    <li
-        class="nav-item"
-        routerLinkActive="navbar-btn-active">
-        <a
-            id="right-arm-nav"
-            class="nav-link sidebar-btn"
-            [routerLink]="JointPathName.RIGHT_ARM">
-            Right Arm
+            [routerLink]="joint.jointPathName">
+            {{joint.label}}
         </a>
     </li>
 </ul>
