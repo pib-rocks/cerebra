@@ -369,6 +369,21 @@ server.get("/program/:programNumber", (req, res, next) =>{
   return res.status(200).send(Program.getProgram(response));
 });
 
+//putProgramByProgramnumber
+server.put("/program/:programNumber", (req, res, next) =>{
+  let updated = false
+  mockData.programs.forEach((program) => {
+    if(program.programNumber == req.params.programNumber){
+      program.name = req.body.name;
+      updated = true
+      return res.status(200).send(Program.getProgram(program));
+    }
+  });
+  if(updated == false){
+    return res.status(404).send();
+  }
+});
+
 //deleteByProgramNumber
 server.delete("/program/:programNumber", (req, res, next) =>{
   const lengPrograms = mockData.programs.length;
