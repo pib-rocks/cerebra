@@ -1,6 +1,6 @@
 <div
     class="slider"
-    [ngClass]="thumbSelected ? 'no-highlight' : ''"
+    [ngClass]="(thumbSelected ? 'no-highlight' : '') + (isActive ? '' : 'inactive')"
     (mouseup)="onMouseUp($event)"
     (mouseenter)="onMouseEnter($event)"
     (mouseleave)="onMouseLeave($event)"
@@ -66,25 +66,17 @@
             <!-- slider track foreground -->
             <rect
                 id="slider_{{baseId}}_track_fg"
-                [attr.x]="currentMinBubblePosition"
+                [attr.x]="(numberOfThumbs > 1 ? (currentMinBubblePosition - (trackHeight / 2)) : trackOuterOffset)"
                 [attr.y]="trackOuterOffset"
-                [attr.width]="currentMaxBubblePosition - currentMinBubblePosition"
+                [attr.width]="currentMaxBubblePosition - (numberOfThumbs > 1 ? (currentMinBubblePosition - trackHeight) : (trackOuterOffset - (trackHeight / 2)))"
                 [attr.height]="trackHeight"
-                [attr.rx]="0"
+                [attr.rx]="trackHeight / 2"
                 fill="#e10072" />
             <!-- slider thumbs -->
             <circle
                 *ngFor="let thumb of thumbs"
                 id="slider_{{baseId}}_thumb_{{thumb.id}}"
                 [attr.cx]="thumb.position"
-                [attr.cy]="thumbRadius"
-                [attr.r]="thumbRadius"
-                fill="#e10072" />
-            <!-- additional left circle if only one thumb exists-->
-            <circle
-                *ngIf="numberOfThumbs == 1"
-                id="slider_{{baseId}}_pseudo_thumb"
-                [attr.cx]="currentMinBubblePosition"
                 [attr.cy]="thumbRadius"
                 [attr.r]="thumbRadius"
                 fill="#e10072" />

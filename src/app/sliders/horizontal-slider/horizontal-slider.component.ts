@@ -34,15 +34,18 @@ export class HorizontalSliderComponent
     @Input() step: number = 1;
     @Input() unitShort: string = "";
     @Input() unitLong: string = "";
-    @Input() messageReceiver$!: Observable<number[]>;
+    @Input() messageReceiver$!: Observable<number[] | number>;
     @Input() name: string = "";
     @Input() displayName: boolean = false;
     @Input() numberOfThumbs: number = 1;
     @Input() thumbRadius: number = 12;
     @Input() trackHeight: number = 12;
+    @Input() isActiveReceiver$: Observable<boolean> = new Observable();
 
     minValue!: number;
     maxValue!: number;
+
+    isActive: boolean = true;
 
     currentMinBubblePosition: number = 0;
     currentMaxBubblePosition: number = 0;
@@ -108,11 +111,16 @@ export class HorizontalSliderComponent
                 id: i,
             });
         }
-        this.messageReceiver$?.subscribe((values: number[]) => {
+        this.messageReceiver$?.subscribe((values: number[] | number) => {
             if (!this.thumbSelected) {
-                this.setAllThumbValues(values);
+                this.setAllThumbValues(
+                    typeof values == "number" ? [values] : values,
+                );
             }
         });
+        this.isActiveReceiver$.subscribe(
+            (isActive) => (this.isActive = isActive),
+        );
         this.ref.detectChanges();
     }
 
@@ -161,8 +169,7 @@ export class HorizontalSliderComponent
             this.sliderWidth - this.thumbRadius - 1,
         );
         const positions = this.thumbs.map((thumb) => thumb.position);
-        this.currentMinBubblePosition =
-            this.numberOfThumbs > 1 ? Math.min(...positions) : this.thumbRadius;
+        this.currentMinBubblePosition = Math.min(...positions);
         this.currentMaxBubblePosition = Math.max(...positions);
         this.ref.detectChanges();
     }

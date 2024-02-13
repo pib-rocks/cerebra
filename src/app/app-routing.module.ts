@@ -19,7 +19,6 @@ import {motorResolver} from "./joint-control/joint-control-core/motor-position/m
 import {motorGuard} from "./security/motor-guard";
 
 const routes: Routes = [
-    {path: "", redirectTo: "joint-control", pathMatch: "full"},
     {
         path: "joint-control",
         component: JointControlComponent,
@@ -87,7 +86,8 @@ const routes: Routes = [
             },
         ],
     },
-    {path: "**", redirectTo: "joint-control"},
+    {path: "", redirectTo: "joint-control/head", pathMatch: "full"},
+    {path: "**", redirectTo: "joint-control/head"},
 ];
 
 @NgModule({

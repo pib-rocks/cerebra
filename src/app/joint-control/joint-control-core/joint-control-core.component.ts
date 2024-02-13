@@ -14,13 +14,8 @@ import {motorPathNameToConfig} from "../../shared/types/motor-configuration";
     templateUrl: "./joint-control-core.component.html",
     styleUrls: ["./joint-control-core.component.css"],
 })
-export class JointControlCoreComponent implements OnInit, AfterViewInit {
+export class JointControlCoreComponent implements OnInit {
     joint!: JointConfiguration;
-
-    motorPathNameToConfig = motorPathNameToConfig;
-
-    observer!: ResizeObserver;
-    @ViewChild("canvas") jointCanvas!: ElementRef<HTMLDivElement>;
 
     constructor(private route: ActivatedRoute) {}
 
@@ -28,13 +23,5 @@ export class JointControlCoreComponent implements OnInit, AfterViewInit {
         this.route.data.subscribe((data) => {
             this.joint = data["joint"];
         });
-
-        this.observer = new ResizeObserver(() => {
-            // TODO
-        });
-    }
-
-    ngAfterViewInit() {
-        this.observer.observe(this.jointCanvas.nativeElement);
     }
 }

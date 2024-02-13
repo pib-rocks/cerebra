@@ -2,8 +2,7 @@
     <div class="col m-0 p-0 d-flex align-items-center justify-content-center">
         <button
             id="dialogBtn_{{ motorName }}"
-            class="bi bi-gear btn btn-outline-primary m-0 p-0 "
-            style="border: 0;"
+            class="display-settings-button bi bi-gear btn btn-outline-primary m-0 p-0 "
             (click)="openPopup(content)"></button>
     </div>
     <div
@@ -54,10 +53,10 @@
             <div class="col col-md-auto d-flex justify-content-center">
                 <button
                     class="btn pr-0 pl-0 "
-                    (click)="toggled = !toggled"
+                    (click)="displayExtended = !displayExtended"
                     id="toggle-settings">
                     <img
-                        [src]="'../../assets/toggle-switch-' + (toggled ? 'right' : 'left') + '.png'"
+                        [src]="'../../assets/toggle-switch-' + (displayExtended ? 'right' : 'left') + '.png'"
                         alt="Toggle for switching between speed settings and extended values" />
                 </button>
             </div>
@@ -67,7 +66,7 @@
         </div>
     </div>
     <div
-        *ngIf="toggled"
+        *ngIf="displayExtended"
         class="row justify-content-center">
         <div class="col-9">
             <app-horizontal-slider
@@ -84,7 +83,7 @@
         </div>
     </div>
     <div
-        *ngIf="toggled"
+        *ngIf="displayExtended"
         class="row display-flex justify-content-center">
         <div class="col-9">
             <app-horizontal-slider
@@ -102,7 +101,7 @@
         </div>
     </div>
     <div
-        *ngIf="toggled"
+        *ngIf="displayExtended"
         class="row display-flex justify-content-center">
         <div class="col-9">
             <app-horizontal-slider
@@ -119,7 +118,7 @@
         </div>
     </div>
     <div
-        *ngIf="!toggled"
+        *ngIf="!displayExtended"
         class="row modal-body h-100 d-flex align-items-start justify-content-center">
         <div class="col-3 ml-2 mr-2 ">
             <app-vertical-slider

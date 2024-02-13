@@ -1,24 +1,24 @@
-.icon {
-    height: 30px;
-    width: 30px;
-}
-
-.left-icon-label {
+.right-icon-label {
     color: white;
     text-align: left;
+    font-size: 18px;
 }
 
 .left-icon-label {
     color: white;
     text-align: right;
+    font-size: 18px;
 }
 
 .slider-icon {
     width: 80px;
-    height: 80px;
+    height: auto;
 }
 
 .slider-container {
-    background-color: green;
     height: 80px;
+}
+
+.motor-title {
+    font-weight: bolder;
 }

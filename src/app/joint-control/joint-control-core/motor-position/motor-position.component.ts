@@ -13,6 +13,7 @@ export class MotorPositionComponent implements OnInit {
     motor!: MotorConfiguration;
 
     positionReceiver$: Subject<[number]> = new Subject();
+    turnedOnReceiver$: Subject<boolean> = new Subject();
 
     constructor(
         private motorService: MotorService,
@@ -28,10 +29,15 @@ export class MotorPositionComponent implements OnInit {
                 .subscribe((position) =>
                     this.positionReceiver$.next([position]),
                 );
+            this.motorService
+                .getSettingObservable(this.motor.motorName)
+                .subscribe((settings) =>
+                    this.turnedOnReceiver$.next(settings.turnedOn),
+                );
         });
     }
 
-    applyPosition(position: number) {
-        this.motorService.applyPosition(this.motor.motorName, position);
+    setPosition(position: number) {
+        this.motorService.setPosition(this.motor.motorName, position);
     }
 }

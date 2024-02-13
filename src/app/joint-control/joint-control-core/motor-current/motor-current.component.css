@@ -1,5 +1,6 @@
 .current-label {
     font-weight: bold;
+    font-size: 10px;
     text-align: center;
     color: #fff;
 }
@@ -28,11 +29,15 @@
     opacity: 0.3;
 }
 
+.circular-slider {
+    width: 80%;
+}
+
 .radius-circle {
     opacity: 0.5;
 }
 
-.circleSliderLimit {
-    max-height: 100px;
-    max-width: 100px;
+svg {
+    width: 40px;
+    height: 40px;
 }

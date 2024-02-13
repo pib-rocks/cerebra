@@ -1,27 +1,15 @@
 <div class="row m-0 pl-3 pr-0 pt-0 pb-2">Select a touchpoint to adjust</div>
 <div
-    class="row m-0 p-0"
-    [ngClass]="joint.reversed ? 'flex-row-reverse' : ''">
-    <div class="col-4 m-0 p-0">
+    class="d-flex m-0 p-0"
+    [ngClass]="joint.reversed ? 'flex-row-reverse' : 'flex-row'">
+    <div class="flex-grow-1 m-0 p-0">
         <div
             class="row m-0 p-0 d-flex align-items-end"
             [ngClass]="joint.reversed ? 'flex-row-reverse' : 'flex-row'"
             [style]="'height: ' + ((joint.segmentOffset - joint.segmentHeight/2) * 100) + '%;'">
-            <div
-                class="col-3 sidebar-label"
-                style="background-color: blueviolet;">
-                Settings
-            </div>
-            <div
-                class="col-3 sidebar-label"
-                style="background-color: aquamarine;">
-                Active
-            </div>
-            <div
-                class="col-3 sidebar-label"
-                style="background-color: blueviolet;">
-                Current
-            </div>
+            <div class="col-3 sidebar-label m-0 p-0">Settings</div>
+            <div class="col-3 sidebar-label m-0 p-0">Active</div>
+            <div class="col-3 sidebar-label m-0 p-0">Current</div>
         </div>
         <div
             *ngFor="let motor of joint.motors"
@@ -38,42 +26,41 @@
                 class="col-6 m-0 p-0"></app-motor-current>
         </div>
     </div>
-    <div class="col-8 m-0 p-0">
-        <div
-            id="joint-canvas"
-            class="row m-0 p-0">
-            <!-- touchpoints overlay -->
-            <img
-                *ngFor="let motor of joint.motors"
-                src="assets/joint-control/overlay/touchpoint_overlay.svg"
-                class="touchpoint touchpoint-overlay m-0 p-0"
-                [style]="'width: 30px; height: 30px; left: ' + (motor.touchPointCenterX*100) + '%; top: ' + (motor.touchPointCenterY*100) + '%;'"
-                alt="touchpoint for motor" />
-            <!-- joint overlay -->
-            <img
-                class="img-fluid joint-overlay m-0 p-0"
-                [src]="'../../../assets' + joint.overlay"
-                alt="overlay for joint" />
-            <!-- touchpoints background-->
-            <a
-                *ngFor="let motor of joint.motors"
-                [routerLink]="['/joint-control/' + joint.jointPathName + '/motor/' + motor.motorPathName]"
-                routerLinkActive="active-touchpoint">
+    <div
+        id="joint-canvas"
+        class="m-0 p-0">
+        <!-- touchpoints overlay -->
+        <img
+            *ngFor="let motor of joint.motors"
+            src="assets/joint-control/overlay/touchpoint_overlay.svg"
+            class="touchpoint touchpoint-overlay m-0 p-0 pe-none"
+            [style]="'left: ' + (motor.touchPointCenterX*100) + '%; top: ' + (motor.touchPointCenterY*100) + '%;'"
+            alt="touchpoint for motor" />
+        <!-- joint overlay -->
+        <img
+            class="joint-overlay m-0 p-0 pe-none"
+            [src]="'../../../assets' + joint.overlay"
+            alt="overlay for joint" />
+        <!-- touchpoints background-->
+        <a
+            *ngFor="let motor of joint.motors"
+            [routerLink]="['motor', motor.motorPathName]"
+            routerLinkActive="active-touchpoint"
+            [style]="'left: ' + (motor.touchPointCenterX*100) + '%; top: ' + (motor.touchPointCenterY*100) + '%;'"
+            class="touchpoint touchpoint-link m-0 p-0 pe-none">
+            <div class="touchpoint-wrapper">
                 <div
-                    class="touchpoint touch-area m-0 p-0"
-                    [style]="'width: 70px; height: 70px; left: ' + (motor.touchPointCenterX*100) + '%; top: ' + (motor.touchPointCenterY*100) + '%;'"></div>
-                <div
-                    *ngFor="let motor of joint.motors"
-                    class="touchpoint touchpoint-background m-0 p-0"
-                    [style]="'width: 70px; height: 70px; left: ' + (motor.touchPointCenterX*100) + '%; top: ' + (motor.touchPointCenterY*100) + '%;'"
+                    class="m-0 p-0 pe-none touchpoint-background"
                     alt="backgorund for touchpoint"></div>
-            </a>
-            <!-- joint background -->
-            <img
-                class="img-fluid joint-background m-0 p-0"
-                [src]="'../../../assets' + joint.background"
-                alt="background for joint" />
-        </div>
+                <div
+                    class="m-0 p-0 touch-area pe-auto"
+                    alt="touch-area of touchpoint"></div>
+            </div>
+        </a>
+        <img
+            class="img-fluid joint-background m-0 p-0"
+            [src]="'../../../assets' + joint.background"
+            alt="background for joint" />
     </div>
 </div>
 <div class="row m-0 p-0">

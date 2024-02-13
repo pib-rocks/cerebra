@@ -5,7 +5,7 @@
         <a
             id="head-nav"
             class="nav-link sidebar-btn"
-            [routerLink]="['/joint-control/head']">
+            [routerLink]="['head']">
             Head
         </a>
     </li>
@@ -15,7 +15,7 @@
         <a
             id="left-hand-nav"
             class="nav-link sidebar-btn"
-            [routerLink]="['/joint-control/left-hand']">
+            [routerLink]="['left-hand']">
             Left Hand
         </a>
     </li>
@@ -25,7 +25,7 @@
         <a
             id="right-hand-nav"
             class="nav-link sidebar-btn"
-            [routerLink]="['/joint-control/right-hand']">
+            [routerLink]="['right-hand']">
             Right Hand
         </a>
     </li>
@@ -35,7 +35,7 @@
         <a
             id="left-arm-nav"
             class="nav-link sidebar-btn"
-            [routerLink]="['/joint-control/left-arm']">
+            [routerLink]="['left-arm']">
             Left Arm
         </a>
     </li>
@@ -45,12 +45,12 @@
         <a
             id="right-arm-nav"
             class="nav-link sidebar-btn"
-            [routerLink]="['/joint-control/right-arm']">
+            [routerLink]="['right-arm']">
             Right Arm
         </a>
     </li>
 </ul>
-<div class="mt-3 hui">
+<div class="mt-3">
     <div class="background-image">
         <div class="pink-corner-frame p-3">
             <router-outlet></router-outlet>

@@ -9,10 +9,6 @@ a {
     padding-top: 14px;
 }
 
-.hui {
-    max-height: 100%;
-}
-
 .nav-tabs {
     border-bottom: 1px solid #0094df;
     margin-top: 20px;
@@ -72,4 +68,8 @@ a {
 .background-image {
     background: url("../../assets/bg-gesamt.png") left no-repeat;
     background-size: cover;
+}
+
+* {
+    color: wheat; /* TODO REMOVE */
 }

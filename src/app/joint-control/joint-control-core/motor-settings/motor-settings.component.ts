@@ -31,20 +31,9 @@ export class MotorSettingsComponent {
 
     turnedOnFormControl: FormControl = new FormControl(true);
 
-    settings: MotorSettings = {
-        velocity: 0,
-        acceleration: 0,
-        deceleration: 0,
-        period: 0,
-        pulseWidthMin: 0,
-        pulseWidthMax: 0,
-        rotationRangeMin: 0,
-        rotationRangeMax: 0,
-        turnedOn: true,
-        visible: true,
-    };
+    settings!: MotorSettings;
 
-    toggled: boolean = false;
+    displayExtended: boolean = false;
 
     constructor(
         private motorService: MotorService,
