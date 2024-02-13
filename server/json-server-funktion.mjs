@@ -81,7 +81,7 @@ server.get("/voice-assistant/chat", (req, res, next) =>{
 server.post("/voice-assistant/chat", (req, res, next) =>{
   const newPersonality = Chat.newChat(req.body.topic, req.body.personalityId)
   mockData.chats.push(newPersonality);
-  return res.status(200).send(newPersonality);
+  return res.status(201).send(newPersonality);
 });
 
 //getChatById
@@ -95,14 +95,18 @@ server.get("/voice-assistant/chat/:chatId", (req, res, next) =>{
 
 //putChat
 server.put("/voice-assistant/chat/:chatId", (req, res, next) =>{
+  let updated = false;
   mockData.chats.forEach((chat) => {
     if(chat.chatId == req.params.chatId){
       chat.topic = req.body.topic;
       chat.personalityId = req.body.personalityId;
+      updated = true;
       return res.status(200).send(Chat.getChat(chat));
     }
   });
-  return res.status(404).send();
+  if(updated == false){
+    return res.status(404).send();
+  }
 });
 
 //deleteChat
@@ -123,9 +127,6 @@ server.get("/voice-assistant/chat/:chatId/messages", (req, res, next) =>{
         response.push(Message.getMessage(message));
       }
     });
-    if(response[0] == undefined){
-      return res.status(404).send();  
-    }
     return res.status(200).send(response);
 });
 
@@ -136,7 +137,7 @@ server.post("/voice-assistant/chat/:chatId/messages", (req, res, next) =>{
     if(chat.chatId == req.params.chatId){
       response = Message.newMessage(req.body.timestamp, req.body.isUser, req.body.content, req.params.chatId);
       mockData.chatMessage.push(response);
-      return res.status(200).send(response);
+      return res.status(201).send(response);
     }
   });
   if(response == undefined){
@@ -357,7 +358,7 @@ server.get("/program", (req, res, next) =>{
 server.post("/program", (req, res, next) =>{
   const newProgram = Program.newProgram(req.body.name, req.body.codeVisual);
   mockData.programs.push(newProgram);
-  return res.status(200).send(newProgram);
+  return res.status(201).send(newProgram);
 });
 
 //getProgramByProgramnumber
