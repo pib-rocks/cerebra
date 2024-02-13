@@ -1,7 +1,7 @@
 import Bricklet from "./bricklet.mjs"
 
 export class Motor{
-    constructor(name, turnedOn, pulseWidthMin, pulseWidthMax, rotationRangeMin, rotationRangeMax, velocity, acceleration, deceleration, period, visible, bricklet){
+    constructor(name, turnedOn, pulseWidthMin, pulseWidthMax, rotationRangeMin, rotationRangeMax, velocity, acceleration, deceleration, period, visible, brickletPins){
         this.name = name;
         this.turnedOn = turnedOn;
         this.pulseWidthMin = pulseWidthMax;
@@ -13,7 +13,7 @@ export class Motor{
         this.deceleration = deceleration;
         this.period = period;
         this.visible = visible;
-        this.bricklet = bricklet
+        this.brickletPins = brickletPins
     }
 
     static getMotor(m, b){

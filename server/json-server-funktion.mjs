@@ -21,7 +21,7 @@ server.get("/voice-assistant/personality", (req, res, next) =>{
     mockData.personality.forEach((personality) =>{
       response.push(Personality.getPersonality(personality));
     });
-    return res.status(200).send(response);
+    return res.status(200).send({"voiceAssistantPersonalities" : response});
 });
 
 //getPersonalityByPersonalityId
@@ -42,15 +42,20 @@ server.post("/voice-assistant/personality", (req, res, next) =>{
 
 //putPersonalityByPersonalityId
 server.put("/voice-assistant/personality/:personalityId", (req, res, next) =>{
+  let updated = false;
   mockData.personality.forEach((personality) => {
     if(personality.personalityId == req.params.personalityId){
       personality.name = req.body.name;
       personality.gender = req.body.gender;
       personality.pauseThreshold = req.body.pauseThreshold;
+      personality.description = req.body.description;
+      updated = true;
       return res.status(200).send(Personality.getPersonality(personality));
     }
   });
-  return res.status(404).send();
+  if(updated == false){
+    return res.status(404).send();
+  }
 });
 
 //deletePersonalityByPersonalityId
@@ -188,7 +193,7 @@ server.get("/bricklet", (req, res, next) =>{
   mockData.bricklet.forEach((bricklet) =>{
     response.push(Bricklet.getBricklet(bricklet));
   });
-  return res.status(200).send(response);
+  return res.status(200).send({"bricklets" : response});
 });
 
 //getBrickletByBrickletNumber
@@ -205,8 +210,6 @@ server.put("/bricklet/:brickletNumber", (req, res, next) =>{
   let response;
   mockData.bricklet.forEach((brick) =>{
     if(brick.brickletNumber == req.params.brickletNumber){
-      console.log(brick.uid);
-      console.log(req.body.uid);
       brick.uid = req.body.uid;
       response = Bricklet.getBricklet(brick)
     }
@@ -235,7 +238,7 @@ server.get("/motor", (req, res, next) =>{
     );
     response.push(Motor.getMotor(motor, bricklets));
   });
-  return res.status(200).send(response);
+  return res.status(200).send({"motors" : response});
 });
 
 
@@ -347,7 +350,7 @@ server.get("/program", (req, res, next) =>{
   mockData.programs.forEach((program) =>{
     response.push(Program.getProgram(program));
   });
-  return res.status(200).send(response);
+  return res.status(200).send({"programs" : response});
 });
 
 //postProgram
@@ -391,7 +394,7 @@ server.put("/program/:programNumber/code", (req, res, next) =>{
   let updated = false;
   mockData.programs.forEach((program) => {
     if(program.programNumber == req.params.programNumber){
-      program.codeVisual = req.body.codeVisual;
+      program.visual = req.body.visual;
       updated = true;
       return res.status(200).send(Program.getProgram(program));    
     }
