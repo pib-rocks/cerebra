@@ -14,7 +14,7 @@ import {MotorSettingsError} from "../error/motor-settings-error";
     providedIn: "root",
 })
 export class MotorService {
-    readonly defaultSettings: MotorSettings = {
+    private readonly defaultSettings: MotorSettings = {
         velocity: 0,
         acceleration: 0,
         deceleration: 0,
@@ -26,14 +26,17 @@ export class MotorService {
         turnedOn: true,
         visible: false,
     };
-    readonly defaultPosition: number = 0;
-    readonly defaultCurrent: number = 0;
+    private readonly defaultPosition: number = 0;
+    private readonly defaultCurrent: number = 0;
 
-    motorNameToSettingsSubject: Map<string, BehaviorSubject<MotorSettings>> =
+    private motorNameToSettingsSubject: Map<
+        string,
+        BehaviorSubject<MotorSettings>
+    > = new Map();
+    private motorNameToPositionSubject: Map<string, BehaviorSubject<number>> =
         new Map();
-    motorNameToPositionSubject: Map<string, BehaviorSubject<number>> =
+    private motorNameToCurrentSubject: Map<string, BehaviorSubject<number>> =
         new Map();
-    motorNameToCurrentSubject: Map<string, BehaviorSubject<number>> = new Map();
 
     private publishToSubject<T>(
         motorName: string,
