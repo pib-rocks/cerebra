@@ -13,7 +13,6 @@ export class JointControlComponent {
     constructor(private route: ActivatedRoute) {}
 
     ngOnInit(): void {
-        sessionStorage.setItem("hui", "hui");
         this.joint = this.route.snapshot.data["joint"];
     }
 }
