@@ -1,3 +1,5 @@
+import GenertateId from "../util/generateId.mjs";
+
 export class Personality {
     constructor(personalityId, name, description, gender, pauseThreshold){
         this.personalityId = personalityId;
@@ -19,7 +21,7 @@ export class Personality {
 
     static newPersonality(name, gender, pauseThreshold){
         return new Personality(
-            Math.floor(Math.random() * (1000 - 10 + 1) + 10),
+            GenertateId.genertateId(),
             name,
             "",
             gender,

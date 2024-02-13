@@ -1,3 +1,4 @@
+import GenertateId from "../util/generateId.mjs";
 export class Chat{
     constructor(chatId, topic, personalityId){
         this.chatId = chatId;
@@ -6,12 +7,12 @@ export class Chat{
     }
 
     
-    static getChat(c){
-        return new Chat(c.chatId, c.topic, c.personalityId);
+    static getChat(camera){
+        return new Chat(camera.chatId, camera.topic, camera.personalityId);
     }
 
     static newChat(topic, personalityId){
-        return new Chat(Math.floor(Math.random() * (1000 - 10 + 1) + 10), topic, personalityId);
+        return new Chat(GenertateId.genertateId(), topic, personalityId);
     }
 }
 export default Chat

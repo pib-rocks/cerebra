@@ -16,12 +16,12 @@ export class Motor{
         this.brickletPins = brickletPins
     }
 
-    static getMotor(m, b){
+    static getMotor(motor, bicklet){
         let arrModifiedBricklet = [];
-        b.forEach(b => {
-            arrModifiedBricklet.push(Bricklet.getBricklet(b));
+        bicklet.forEach(bicklet => {
+            arrModifiedBricklet.push(Bricklet.getBricklet(bicklet));
         });
-        return new Motor(m.name, m.turnedOn, m.pulseWidthMin, m.pulseWidthMax, m.rotationRangeMin, m.rotationRangeMax, m.velocity, m.acceleration, m.deceleration, m.period, m.visible, arrModifiedBricklet)
+        return new Motor(motor.name, motor.turnedOn, motor.pulseWidthMin, motor.pulseWidthMax, motor.rotationRangeMin, motor.rotationRangeMax, motor.velocity, motor.acceleration, motor.deceleration, motor.period, motor.visible, arrModifiedBricklet)
     }
 }
 export default Motor

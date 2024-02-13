@@ -13,8 +13,8 @@ export class MotorSettings{
         this.visible = visible;
     }
         
-    static getMotorSettings(m){
-        return new MotorSettings(m.name, m.turnedOn, m.pulseWidthMin, m.pulseWidthMax, m.rotationRangeMin, m.rotationRangeMax, m.velocity, m.acceleration, m.deceleration, m.period, m.visible)
+    static getMotorSettings(motorSettings){
+        return new MotorSettings(motorSettings.name, motorSettings.turnedOn, motorSettings.pulseWidthMin, motorSettings.pulseWidthMax, motorSettings.rotationRangeMin, motorSettings.rotationRangeMax, motorSettings.velocity, motorSettings.acceleration, motorSettings.deceleration, motorSettings.period, motorSettings.visible)
     }
 }
 export default MotorSettings

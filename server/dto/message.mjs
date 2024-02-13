@@ -7,12 +7,12 @@ export class Message{
         this.chatId = chatId;
     }
 
-    static getMessage(m){
-        return {"messageId" : m.messageId, "timestamp" : m.timestamp, "isUser" : m.isUser, "content" : m.content}
+    static getMessage(message){
+        return {"messageId" : message.messageId, "timestamp" : message.timestamp, "isUser" : message.isUser, "content" : message.content}
     }
 
     static newMessage(timestamp, isUser, content, chatId){
-        return new Message(Math.floor(Math.random() * (1000 - 10 + 1) + 10), timestamp, isUser, content, chatId)
+        return new Message(GenertateId.genertateId(), timestamp, isUser, content, chatId)
     }
 }
 export default Message
