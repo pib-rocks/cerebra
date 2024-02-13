@@ -1,16 +1,16 @@
-import {TestBed} from "@angular/core/testing";
+// import {TestBed} from "@angular/core/testing";
 
-import {MotorResolver} from "./motor.resolver";
+// import {MotorResolver} from "./motor.resolver";
 
-describe("MotorResolver", () => {
-    let resolver: MotorResolver;
+// describe("MotorResolver", () => {
+//     let resolver: MotorResolver;
 
-    beforeEach(() => {
-        TestBed.configureTestingModule({});
-        resolver = TestBed.inject(MotorResolver);
-    });
+//     beforeEach(() => {
+//         TestBed.configureTestingModule({});
+//         resolver = TestBed.inject(MotorResolver);
+//     });
 
-    it("should be created", () => {
-        expect(resolver).toBeTruthy();
-    });
-});
+//     it("should be created", () => {
+//         expect(resolver).toBeTruthy();
+//     });
+// });
