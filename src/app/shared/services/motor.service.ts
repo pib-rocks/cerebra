@@ -40,7 +40,7 @@ export class MotorService {
         motorNameToSubject: Map<string, BehaviorSubject<T>>,
         value?: T,
     ) {
-        let subject = motorNameToSubject.get(motorName);
+        const subject = motorNameToSubject.get(motorName);
         if (subject) subject.next(value ?? subject.value);
         else if (value)
             motorNameToSubject.set(motorName, new BehaviorSubject(value as T));

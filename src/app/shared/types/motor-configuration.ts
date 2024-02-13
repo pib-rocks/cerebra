@@ -49,7 +49,7 @@ export const motors: MotorConfiguration[] = [
         captionLeft: "closed",
         captionRight: "open",
         touchPointCenterX: 0.5739329268292683,
-        touchPointCenterY: 0.5887931034482759,
+        touchPointCenterY: 0.588793103448279,
     },
     {
         motorName: "turn_head_motor",
