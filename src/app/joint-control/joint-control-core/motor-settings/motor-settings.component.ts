@@ -1,5 +1,4 @@
-import {Expansion} from "@angular/compiler";
-import {Component, Input, TemplateRef, ViewChild} from "@angular/core";
+import {Component, Input, TemplateRef} from "@angular/core";
 import {FormControl} from "@angular/forms";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {BehaviorSubject} from "rxjs";
@@ -15,11 +14,6 @@ import {HorizontalSliderComponent} from "src/app/sliders/horizontal-slider/horiz
 export class MotorSettingsComponent {
     @Input() motorName!: string;
     @Input() reversed!: boolean;
-
-    sliderComponent!: HorizontalSliderComponent;
-
-    rotationRangeMin!: number;
-    rotationRangeMax!: number;
 
     pulseWidthSubject$ = new BehaviorSubject<number[]>([]);
     degreeSubject$ = new BehaviorSubject<number[]>([]);
@@ -42,7 +36,7 @@ export class MotorSettingsComponent {
 
     ngOnInit(): void {
         this.motorService
-            .getSettingObservable(this.motorName)
+            .getSettingsObservable(this.motorName)
             .subscribe((settings) => {
                 this.settings = settings;
                 this.pulseWidthSubject$.next([

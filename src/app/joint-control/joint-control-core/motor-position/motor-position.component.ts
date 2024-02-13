@@ -1,5 +1,5 @@
-import {Component, Input, OnInit} from "@angular/core";
-import {Observable, Subject} from "rxjs";
+import {Component, OnInit} from "@angular/core";
+import {Subject} from "rxjs";
 import {MotorService} from "src/app/shared/services/motor.service";
 import {MotorConfiguration} from "../../../shared/types/motor-configuration";
 import {ActivatedRoute} from "@angular/router";
@@ -21,19 +21,18 @@ export class MotorPositionComponent implements OnInit {
     ) {}
 
     ngOnInit(): void {
-        this.motor = this.route.snapshot.data["motor"];
         this.route.data.subscribe((data) => {
             this.motor = data["motor"];
             this.motorService
                 .getPositionObservable(this.motor.motorName)
-                .subscribe((position) =>
-                    this.positionReceiver$.next([position]),
-                );
+                .subscribe((position) => {
+                    this.positionReceiver$.next([position]);
+                });
             this.motorService
-                .getSettingObservable(this.motor.motorName)
-                .subscribe((settings) =>
-                    this.turnedOnReceiver$.next(settings.turnedOn),
-                );
+                .getSettingsObservable(this.motor.motorName)
+                .subscribe((settings) => {
+                    this.turnedOnReceiver$.next(settings.turnedOn);
+                });
         });
     }
 

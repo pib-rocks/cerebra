@@ -145,7 +145,7 @@ export class MotorService {
         );
     }
 
-    getSettingObservable(motorName: string): Observable<MotorSettings> {
+    getSettingsObservable(motorName: string): Observable<MotorSettings> {
         return this.getObservable(
             motorName,
             this.motorNameToSettingsSubject,
