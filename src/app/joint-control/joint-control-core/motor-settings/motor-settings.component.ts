@@ -103,8 +103,6 @@ export class MotorSettingsComponent {
 
     changeTurnedOn() {
         this.settings.turnedOn = !this.turnedOnFormControl.value;
-        setTimeout(() =>
-            this.motorService.applySettings(this.motorName, this.settings),
-        );
+        this.motorService.applySettings(this.motorName, this.settings);
     }
 }
