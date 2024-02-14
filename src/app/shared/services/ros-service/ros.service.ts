@@ -123,7 +123,7 @@ export class RosService {
         });
     }
 
-    setUpRos() {
+    private setUpRos() {
         let rosUrl: string;
         if (isDevMode()) {
             rosUrl = "127.0.0.1";
@@ -135,11 +135,11 @@ export class RosService {
         });
     }
 
-    get Ros(): ROSLIB.Ros {
+    private get Ros(): ROSLIB.Ros {
         return this.ros;
     }
 
-    initTopicsAndServices() {
+    private initTopicsAndServices() {
         this.cameraTopic = this.createRosTopic(
             rosTopics.cameraTopicName,
             rosDataTypes.string,
@@ -212,7 +212,10 @@ export class RosService {
         );
     }
 
-    createRosService(serviceName: string, serviceType: string): ROSLIB.Service {
+    private createRosService(
+        serviceName: string,
+        serviceType: string,
+    ): ROSLIB.Service {
         return new ROSLIB.Service({
             ros: this.ros,
             name: serviceName,
@@ -220,7 +223,7 @@ export class RosService {
         });
     }
 
-    createRosTopic<T>(
+    private createRosTopic<T>(
         topicName: string,
         topicMessageType: string,
     ): ROSLIB.Topic<T> {
@@ -231,7 +234,7 @@ export class RosService {
         });
     }
 
-    createActionClient(actionName: string, actionType: string) {
+    private createActionClient(actionName: string, actionType: string) {
         return new ROSLIB.ActionClient({
             ros: this.ros,
             serverName: actionName,
@@ -239,7 +242,7 @@ export class RosService {
         });
     }
 
-    initSubscribers() {
+    private initSubscribers() {
         this.subscribeDefaultRosMessageTopic(
             this.cameraPreviewSizeTopic,
             this.cameraPreviewSizeReceiver$,
@@ -263,7 +266,7 @@ export class RosService {
         this.subscribeProxyRunProgramStatusTopic();
     }
 
-    subscribeDefaultRosMessageTopic(
+    private subscribeDefaultRosMessageTopic(
         topic: ROSLIB.Topic,
         receiver$: Subject<any>,
     ) {
@@ -280,7 +283,11 @@ export class RosService {
         );
     }
 
-    subscribeJointTrajectoryTopic() {
+    unsubscribeCameraTopic() {
+        this.cameraTopic.unsubscribe();
+    }
+
+    private subscribeJointTrajectoryTopic() {
         this.jointTrajectoryTopic.subscribe((jointTrajectoryMessage) => {
             this.jointTrajectoryReceiver$.next(
                 jointTrajectoryMessage as JointTrajectoryMessage,
@@ -288,37 +295,37 @@ export class RosService {
         });
     }
 
-    subscribeMotorSettingsTopic() {
+    private subscribeMotorSettingsTopic() {
         this.motorSettingsTopic.subscribe((message) => {
             this.motorSettingsReceiver$.next(message as MotorSettingsMessage);
         });
     }
 
-    subscribeMotorCurrentTopic() {
+    private subscribeMotorCurrentTopic() {
         this.motorCurrentTopic.subscribe((message) => {
             this.currentReceiver$.next(message as DiagnosticStatus);
         });
     }
 
-    subscribeProxyRunProgramStatusTopic() {
+    private subscribeProxyRunProgramStatusTopic() {
         this.proxyRunProgramStatusTopic.subscribe((message) => {
             this.proxyRunProgramStatusReceiver$.next(message);
         });
     }
 
-    subscribeProxyRunProgramFeedbackTopic() {
+    private subscribeProxyRunProgramFeedbackTopic() {
         this.proxyRunProgramFeedbackTopic.subscribe((message) => {
             this.proxyRunProgramFeedbackReceiver$.next(message);
         });
     }
 
-    subscribeProxyRunProgramResultTopic() {
+    private subscribeProxyRunProgramResultTopic() {
         this.proxyRunProgramResultTopic.subscribe((message) => {
             this.proxyRunProgramResultReceiver$.next(message);
         });
     }
 
-    subscribeVoiceAssistantStateTopic() {
+    private subscribeVoiceAssistantStateTopic() {
         this.voiceAssistantStateTopic.subscribe((message: any) => {
             console.info("message: " + message);
             this.voiceAssistantStateReceiver$.next(message);
@@ -340,15 +347,11 @@ export class RosService {
         );
     }
 
-    subscribeChatMessageTopic() {
+    private subscribeChatMessageTopic() {
         this.chatMessageTopic.subscribe((message: any) => {
             console.info("message: " + message);
             this.chatMessageReceiver$.next(message);
         });
-    }
-
-    unsubscribeCameraTopic() {
-        this.cameraTopic.unsubscribe();
     }
 
     setVoiceAssistantState(
@@ -469,67 +472,6 @@ export class RosService {
     sendJointTrajectoryMessage(jointTrajectoryMessage: JointTrajectoryMessage) {
         const message = new ROSLIB.Message(jointTrajectoryMessage);
         this.jointTrajectoryTopic.publish(message);
-    }
-
-    //Remove this function after establishing a new test concept
-    sendJointTrajectoryConsoleLog(
-        sentReceivedPrefix: string,
-        jtMessage: ROSLIB.Message,
-    ) {
-        const jsonJtString = JSON.stringify(jtMessage);
-        const parsedJtJson = JSON.parse(jsonJtString) as JointTrajectoryMessage;
-        for (const index in parsedJtJson.joint_names) {
-            console.log(
-                sentReceivedPrefix +
-                    " jtMessage for motor: " +
-                    parsedJtJson.joint_names[index] +
-                    " position: " +
-                    parsedJtJson.points[index].positions,
-            );
-        }
-    }
-
-    //Remove this function after establishing a new test concept
-    sendMotorSettingsConsoleLog(
-        sentReceivedPrefix: string,
-        motorSettingsMessage: ROSLIB.Message,
-    ) {
-        const jsonStr = JSON.stringify(motorSettingsMessage);
-        const json = JSON.parse(jsonStr);
-        const jsonArray = JSON.parse(json["data"]);
-        const jsonObject = jsonArray.reduce((key: object, value: object) => {
-            return {...key, ...value};
-        }, {});
-
-        let consoleString =
-            sentReceivedPrefix +
-            " settings message for motorName: " +
-            jsonObject.motorName +
-            ", turnedOn: " +
-            jsonObject.turnedOn;
-
-        if (jsonObject.turnedOn) {
-            consoleString =
-                consoleString +
-                ", pulse_widths_min: " +
-                jsonObject.pulse_widths_min +
-                ", pulse_widths_max: " +
-                jsonObject.pulse_widths_max +
-                ", rotation_range_min: " +
-                jsonObject.rotation_range_min +
-                ", rotation_range_max: " +
-                jsonObject.rotation_range_max +
-                ", velocity: " +
-                jsonObject.velocity +
-                ", acceleration: " +
-                jsonObject.acceleration +
-                ", deceleration: " +
-                jsonObject.deceleration +
-                ", period: " +
-                jsonObject.period;
-        }
-
-        console.log(consoleString);
     }
 
     setTimerPeriod(period: number | null) {
