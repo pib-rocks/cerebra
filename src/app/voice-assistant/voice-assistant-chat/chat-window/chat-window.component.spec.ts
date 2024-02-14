@@ -6,7 +6,7 @@ import {ActivatedRoute} from "@angular/router";
 import {BehaviorSubject, Subject} from "rxjs";
 import {RouterTestingModule} from "@angular/router/testing";
 import {ChatService} from "src/app/shared/services/chat.service";
-import {ChatMessage} from "src/app/shared/ros-message-types/ChatMessage";
+import {ChatMessage} from "src/app/shared/ros-types/msg/chat-message";
 
 describe("ChatWindowComponent", () => {
     let component: ChatWindowComponent;

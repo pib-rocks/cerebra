@@ -1,7 +1,7 @@
 import {Injectable} from "@angular/core";
 import {RosService} from "../ros-service/ros.service";
 import {BehaviorSubject, Subscription} from "rxjs";
-import {DiagnosticStatus} from "../../ros-message-types/DiagnosticStatus.message";
+import {DiagnosticStatus} from "../../ros-types/msg/diagnostic-status.message";
 import {MotorService} from "./motor.service";
 import {Motor} from "../../types/motor.class";
 

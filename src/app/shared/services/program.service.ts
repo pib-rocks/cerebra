@@ -5,6 +5,12 @@ import {BehaviorSubject, Observable, ReplaySubject} from "rxjs";
 import {UrlConstants} from "./url.constants";
 import {ProgramCode} from "../types/program-code";
 import {UtilService} from "./util.service";
+import {RosService} from "./ros-service/ros.service";
+import {GoalHandle} from "../ros-types/action/goal-handle";
+import {
+    RunProgramFeedback,
+    RunProgramResult,
+} from "../ros-types/action/run-program";
 
 @Injectable({
     providedIn: "root",
@@ -22,7 +28,10 @@ export class ProgramService {
         "",
     );
 
-    constructor(private apiService: ApiService) {
+    constructor(
+        private apiService: ApiService,
+        private rosService: RosService,
+    ) {
         this.getAllPrograms();
     }
 
