@@ -10,7 +10,7 @@ import {MotorSettings} from "src/app/shared/types/motor-settings.class";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {TemplateRef} from "@angular/core";
 
-fdescribe("MotorSettingsComponent", () => {
+describe("MotorSettingsComponent", () => {
     let component: MotorSettingsComponent;
     let fixture: ComponentFixture<MotorSettingsComponent>;
 

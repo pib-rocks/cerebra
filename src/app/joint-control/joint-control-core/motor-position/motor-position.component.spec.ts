@@ -10,7 +10,7 @@ import {BehaviorSubject, Subject} from "rxjs";
 import {HorizontalSliderComponent} from "src/app/sliders/horizontal-slider/horizontal-slider.component";
 import {ReactiveFormsModule} from "@angular/forms";
 
-fdescribe("MotorPositionComponent", () => {
+describe("MotorPositionComponent", () => {
     let component: MotorPositionComponent;
     let fixture: ComponentFixture<MotorPositionComponent>;
 

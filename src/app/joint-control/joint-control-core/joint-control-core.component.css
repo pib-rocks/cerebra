@@ -18,22 +18,17 @@
 .touchpoint-background {
     width: 100%;
     height: 100%;
-    content: url("../../../assets/joint-control/background/touchpoint_unselected.svg");
+    content: url("../../../assets/joint-control/touchpoint/touchpoint_unselected.svg");
 }
 
 .active-touchpoint .touchpoint-background {
-    content: url("../../../assets/joint-control/background/touchpoint_selected.svg");
+    content: url("../../../assets/joint-control/touchpoint/touchpoint_selected.svg");
 }
 
 #joint-canvas {
     height: 340px;
     width: 385px;
     position: relative;
-}
-
-.touchpoint-overlay {
-    pointer-events: none;
-    z-index: 3;
 }
 
 .touch-area {
@@ -49,15 +44,6 @@
 
 .touchpoint-link {
     z-index: 1;
-}
-
-.joint-overlay {
-    position: absolute;
-    height: 100%;
-    width: 100%;
-    z-index: 2;
-    top: 0px;
-    left: 0px;
 }
 
 .joint-background {

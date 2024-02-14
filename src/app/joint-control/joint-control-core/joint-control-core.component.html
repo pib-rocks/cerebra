@@ -29,18 +29,6 @@
     <div
         id="joint-canvas"
         class="m-0 p-0">
-        <!-- touchpoints overlay -->
-        <img
-            *ngFor="let motor of joint.motors"
-            src="assets/joint-control/overlay/touchpoint_overlay.svg"
-            class="touchpoint touchpoint-overlay m-0 p-0 pe-none"
-            [style]="'left: ' + (motor.touchPointCenterX*100) + '%; top: ' + (motor.touchPointCenterY*100) + '%;'"
-            alt="touchpoint for motor" />
-        <!-- joint overlay -->
-        <img
-            class="joint-overlay m-0 p-0 pe-none"
-            [src]="'../../../assets' + joint.overlay"
-            alt="overlay for joint" />
         <!-- touchpoints background-->
         <a
             *ngFor="let motor of joint.motors"
@@ -57,6 +45,7 @@
                     alt="touch-area of touchpoint"></div>
             </div>
         </a>
+        <!-- joint background -->
         <img
             class="img-fluid joint-background m-0 p-0"
             [src]="'../../../assets' + joint.background"
