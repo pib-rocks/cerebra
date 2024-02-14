@@ -4,6 +4,7 @@ import {Program} from "../types/program";
 import {BehaviorSubject, Observable, ReplaySubject} from "rxjs";
 import {UrlConstants} from "./url.constants";
 import {ProgramCode} from "../types/program-code";
+import {UtilService} from "./util.service";
 
 @Injectable({
     providedIn: "root",
@@ -59,21 +60,6 @@ export class ProgramService {
         return this.programNumberToCode.get(programNumber);
     }
 
-    private createResultObservable<Type>(
-        obs: Observable<any>,
-        mapper: (response: any) => Type,
-    ): Observable<Type> {
-        const result: ReplaySubject<Type> = new ReplaySubject();
-        obs.subscribe({
-            next: (res) => result.next(mapper(res)),
-            error: (err) => {
-                console.log(err);
-                result.error(err);
-            },
-        });
-        return result;
-    }
-
     getProgramFromCache(programNumber: string): Program | undefined {
         const program = this.programs.find(
             (program) => program.programNumber === programNumber,
@@ -89,7 +75,7 @@ export class ProgramService {
     }
 
     getAllPrograms(): Observable<Program[]> {
-        return this.createResultObservable(
+        return UtilService.createResultObservable(
             this.apiService.get(UrlConstants.PROGRAM),
             (response) => {
                 const programs = (response["programs"] as Program[]).map(
@@ -102,14 +88,14 @@ export class ProgramService {
     }
 
     getProgramByProgramNumber(programNumber: string): Observable<Program> {
-        return this.createResultObservable(
+        return UtilService.createResultObservable(
             this.apiService.get(UrlConstants.PROGRAM + `/${programNumber}`),
             (dto) => Program.fromDTO(dto),
         );
     }
 
     createProgram(program: Program): Observable<Program> {
-        return this.createResultObservable(
+        return UtilService.createResultObservable(
             this.apiService.post(UrlConstants.PROGRAM, program.toDTO()),
             (dto) => {
                 const program = Program.fromDTO(dto);
@@ -120,7 +106,7 @@ export class ProgramService {
     }
 
     updateProgramByProgramNumber(program: Program): Observable<Program> {
-        return this.createResultObservable(
+        return UtilService.createResultObservable(
             this.apiService.put(
                 UrlConstants.PROGRAM + `/${program.programNumber}`,
                 new Program(program.name).toDTO(),
@@ -134,7 +120,7 @@ export class ProgramService {
     }
 
     deleteProgramByProgramNumber(programNumber: string): Observable<void> {
-        return this.createResultObservable(
+        return UtilService.createResultObservable(
             this.apiService.delete(UrlConstants.PROGRAM + `/${programNumber}`),
             (_) => this.deleteProgram(programNumber),
         );
@@ -144,7 +130,7 @@ export class ProgramService {
         const code = this.getCodeFromCache(programNumber);
         return code
             ? new BehaviorSubject(code)
-            : this.createResultObservable(
+            : UtilService.createResultObservable(
                   this.apiService.get(
                       `${UrlConstants.PROGRAM}/${programNumber}/${UrlConstants.CODE}`,
                   ),
@@ -159,7 +145,7 @@ export class ProgramService {
         programNumber: string,
         code: ProgramCode,
     ): Observable<ProgramCode> {
-        return this.createResultObservable(
+        return UtilService.createResultObservable(
             this.apiService.put(
                 `${UrlConstants.PROGRAM}/${programNumber}/${UrlConstants.CODE}`,
                 code,
