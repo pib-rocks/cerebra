@@ -10,4 +10,5 @@ export interface MotorSettingsMessage {
     deceleration: number;
     period: number;
     visible: boolean;
+    invert: boolean;
 }

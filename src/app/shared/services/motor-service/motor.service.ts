@@ -302,6 +302,7 @@ export class MotorService {
                 motor.settings.period = response["period"];
                 motor.settings.turnedOn = response["turnedOn"];
                 motor.settings.visible = response["visible"];
+                motor.settings.invert = response["invert"];
                 motor.motorSubject.next(motor.clone());
             });
     }
@@ -331,6 +332,7 @@ export class MotorService {
                     motor.settings.period = o.period;
                     motor.settings.turnedOn = o.turnedOn;
                     motor.settings.visible = o.visible;
+                    motor.settings.invert = o.invert;
 
                     motor.motorSubject.next(motor.clone());
                     if (!motor.settings.visible) {

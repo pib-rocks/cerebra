@@ -83,6 +83,7 @@ describe("MotorControlComponent", () => {
         expect(component.motor.settings.pulseWidthMax).toBe(500);
         expect(component.motor.settings.pulseWidthMin).toBe(500);
         expect(component.motor.settings.turnedOn).toBe(false);
+        expect(component.motor.settings.invert).toBe(false);
     });
 
     it("should open settings modal on clicking the settings-button", () => {
@@ -245,7 +246,7 @@ describe("MotorControlComponent", () => {
         );
     });
 
-    it("should set the periodon calling setPeriod", () => {
+    it("should set the period calling setPeriod", () => {
         motorSubject?.next(updateMotor);
         fixture.detectChanges();
         const spyOnSetPeriod = spyOn(component, "setPeriod").and.callThrough();
@@ -260,5 +261,20 @@ describe("MotorControlComponent", () => {
                 }),
             }),
         );
+    });
+
+    it("should test invert checkbox", () => {
+        motorSubject?.next(updateMotor);
+        component.motor.settings.invert = false;
+        fixture.detectChanges();
+        const spyOnInvertInput = spyOn(
+            component,
+            "setInverteState",
+        ).and.callThrough();
+        component.setInverteState();
+        fixture.detectChanges();
+        expect(spyOnInvertInput).toHaveBeenCalled();
+        expect(component.motor.settings.invert).toBeTrue();
+        expect(motorService.updateMotorFromComponent).toHaveBeenCalled();
     });
 });
