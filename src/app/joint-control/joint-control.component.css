@@ -56,6 +56,7 @@ a {
         url("../../assets/ep-bl.png") bottom left no-repeat;
     background-color: rgba(255, 255, 255, 0.05);
 }
+
 .blue-corner-frame {
     background:
         url("../../assets/eb-br.png") bottom right no-repeat,
@@ -70,6 +71,6 @@ a {
     background-size: cover;
 }
 
-* {
-    color: wheat; /* TODO REMOVE */
+.background-image {
+    max-width: 1000px;
 }
