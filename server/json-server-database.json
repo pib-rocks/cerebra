@@ -1,0 +1,672 @@
+{
+  "personality": [
+    {
+      "id": 1,
+      "personalityId": "66ed525d-42bb-41a2-8a52-f2c1b6e989ad",
+      "name": "Eva",
+      "description": "You are a helpful assistant.",
+      "gender": "Female",
+      "pauseThreshold": 0.8
+    },
+    {
+      "id": 2,
+      "personalityId": "2cb257e4-d173-44a6-869c-6488c98e8edb",
+      "name": "Tom",
+      "description": "You are a helpful assistant.",
+      "gender": "Male",
+      "pauseThreshold": 0.8
+    }
+  ],
+  "chats": [
+    {
+      "id": 1,
+      "chatId": "ee3e80f9-c8f7-48c2-9f15-449ba9bbe4ab",
+      "topic": "Short Stories",
+      "personalityId": 1
+    },
+    {
+      "id": 2,
+      "chatId": "b4f01552-0c09-401c-8fde-fda753fb0261",
+      "topic": "Technical Support",
+      "personalityId": 2
+    }
+  ],
+  "chatMessage" : [
+    {
+      "id" : 1,
+      "messageId" : "539ed3e6-9e3d-11ee-8c90-0242ac120002",
+      "timestamp" : "2024-02-06 09:46:32",
+      "isUser" : 1,
+      "content" : "hello pib!",
+      "chatId" : "ee3e80f9-c8f7-48c2-9f15-449ba9bbe4ab"
+    },
+    {
+      "id" : 2,
+      "messageId" : "539ed3e6-9e3d-11ee-8c90-0242ac122222",
+      "timestamp" : "2024-02-06 09:50:32",
+      "isUser" : 0,
+      "content" : "hello user!",
+      "chatId" : "ee3e80f9-c8f7-48c2-9f15-449ba9bbe4ab"
+    }
+  ],
+  "cameraSettings" : [
+    {
+      "id" : 1,
+      "resolution" : "SD",
+      "refeshRate" : 0.1,
+      "qualityFactor" : 80,
+      "resX" : 640,
+      "resY" : 480
+    }
+  ],
+  "programs": [
+    {
+      "id" : 1,
+      "name" : "hello_world", 
+      "visual" : "{\"blocks\":{\"languageVersion\":0,\"blocks\":[{\"type\":\"text_print\",\"id\":\"]l,+vC{q$rZPVdSfyx=4\",\"x\":229,\"y\":67,\"inputs\":{\"TEXT\":{\"shadow\":{\"type\":\"text\",\"id\":\"v,}3JGN5d7og[X_/KJ)|\",\"fields\":{\"TEXT\":\"hello world\"}}}}}]}",
+      "programNumber": "e1d46e2a-935e-4e2b-b2f9-0856af4257c5"
+    }
+  ],
+  "bricklet" : [
+    {
+      "id" : 1,
+      "uid" : "AAA",
+      "brickletNumber" : 1
+    },
+    {
+      "id" : 2,
+      "uid" : "BBB",
+      "brickletNumber" : 2
+    },
+    {
+      "id" : 3,
+      "uid" : "CCC",
+      "brickletNumber" : 3
+    }
+  ],
+  "motors": [
+    {
+      "id" : 1,
+      "acceleration": 10000,
+      "deceleration": 5000,
+      "name": "tilt_forward_motor",
+      "period": 19500,
+      "pulseWidthMax": 2500,
+      "pulseWidthMin": 700,
+      "rotationRangeMax": 4500,
+      "rotationRangeMin": -4500,
+      "turnedOn": true,
+      "velocity": 16000,
+      "visible": true
+    },
+    {
+      "id" : 2,
+      "acceleration": 10000,
+      "deceleration": 5000,
+      "name": "tilt_sideways_motor",
+      "period": 19500,
+      "pulseWidthMax": 2500,
+      "pulseWidthMin": 700,
+      "rotationRangeMax": 9000,
+      "rotationRangeMin": -9000,
+      "turnedOn": true,
+      "velocity": 16000,
+      "visible": false
+    },
+    {
+      "id" : 3,
+      "acceleration": 10000,
+      "deceleration": 5000,
+      "name": "turn_head_motor",
+      "period": 19500,
+      "pulseWidthMax": 2500,
+      "pulseWidthMin": 700,
+      "rotationRangeMax": 9000,
+      "rotationRangeMin": -9000,
+      "turnedOn": true,
+      "velocity": 16000,
+      "visible": true
+    },
+    {
+      "id" : 4,
+      "acceleration": 10000,
+      "deceleration": 5000,
+      "name": "thumb_left_stretch",
+      "period": 19500,
+      "pulseWidthMax": 2500,
+      "pulseWidthMin": 700,
+      "rotationRangeMax": 9000,
+      "rotationRangeMin": -9000,
+      "turnedOn": true,
+      "velocity": 16000,
+      "visible": true
+    },
+    {
+      "id" : 5,
+      "acceleration": 10000,
+      "deceleration": 5000,
+      "name": "thumb_left_opposition",
+      "period": 19500,
+      "pulseWidthMax": 2500,
+      "pulseWidthMin": 700,
+      "rotationRangeMax": 9000,
+      "rotationRangeMin": -9000,
+      "turnedOn": true,
+      "velocity": 16000,
+      "visible": true
+    },
+    {
+      "id" : 6,
+      "acceleration": 10000,
+      "deceleration": 5000,
+      "name": "index_left_stretch",
+      "period": 19500,
+      "pulseWidthMax": 2500,
+      "pulseWidthMin": 700,
+      "rotationRangeMax": 9000,
+      "rotationRangeMin": -9000,
+      "turnedOn": true,
+      "velocity": 16000,
+      "visible": true
+    },
+    {
+      "id" : 7,
+      "acceleration": 10000,
+      "deceleration": 5000,
+      "name": "middle_left_stretch",
+      "period": 19500,
+      "pulseWidthMax": 2500,
+      "pulseWidthMin": 700,
+      "rotationRangeMax": 9000,
+      "rotationRangeMin": -9000,
+      "turnedOn": true,
+      "velocity": 16000,
+      "visible": true
+    },
+    {
+      "id" : 8,
+      "acceleration": 10000,
+      "deceleration": 5000,
+      "name": "ring_left_stretch",
+      "period": 19500,
+      "pulseWidthMax": 2500,
+      "pulseWidthMin": 700,
+      "rotationRangeMax": 9000,
+      "rotationRangeMin": -9000,
+      "turnedOn": true,
+      "velocity": 16000,
+      "visible": true
+    },
+    {
+      "id" : 9,
+      "acceleration": 10000,
+      "deceleration": 5000,
+      "name": "pinky_left_stretch",
+      "period": 19500,
+      "pulseWidthMax": 2500,
+      "pulseWidthMin": 700,
+      "rotationRangeMax": 9000,
+      "rotationRangeMin": -9000,
+      "turnedOn": true,
+      "velocity": 16000,
+      "visible": true
+    },
+    {
+      "id" : 10,
+      "acceleration": 10000,
+      "deceleration": 5000,
+      "name": "thumb_right_stretch",
+      "period": 19500,
+      "pulseWidthMax": 2500,
+      "pulseWidthMin": 700,
+      "rotationRangeMax": 9000,
+      "rotationRangeMin": -9000,
+      "turnedOn": true,
+      "velocity": 16000,
+      "visible": true
+    },
+    {
+      "id" : 11,
+      "acceleration": 10000,
+      "deceleration": 5000,
+      "name": "thumb_right_opposition",
+      "period": 19500,
+      "pulseWidthMax": 2500,
+      "pulseWidthMin": 700,
+      "rotationRangeMax": 9000,
+      "rotationRangeMin": -9000,
+      "turnedOn": true,
+      "velocity": 16000,
+      "visible": true
+    },
+    {
+      "id" : 12,
+      "acceleration": 10000,
+      "deceleration": 5000,
+      "name": "index_right_stretch",
+      "period": 19500,
+      "pulseWidthMax": 2500,
+      "pulseWidthMin": 700,
+      "rotationRangeMax": 9000,
+      "rotationRangeMin": -9000,
+      "turnedOn": true,
+      "velocity": 16000,
+      "visible": true
+    },
+    {
+      "id" : 13,
+      "acceleration": 10000,
+      "deceleration": 5000,
+      "name": "middle_right_stretch",
+      "period": 19500,
+      "pulseWidthMax": 2500,
+      "pulseWidthMin": 700,
+      "rotationRangeMax": 9000,
+      "rotationRangeMin": -9000,
+      "turnedOn": true,
+      "velocity": 16000,
+      "visible": true
+    },
+    {
+      "id" : 14,
+      "acceleration": 10000,
+      "deceleration": 5000,
+      "name": "ring_right_stretch",
+      "period": 19500,
+      "pulseWidthMax": 2500,
+      "pulseWidthMin": 700,
+      "rotationRangeMax": 9000,
+      "rotationRangeMin": -9000,
+      "turnedOn": true,
+      "velocity": 16000,
+      "visible": true
+    },
+    {
+      "id" : 15,
+      "acceleration": 10000,
+      "deceleration": 5000,
+      "name": "pinky_right_stretch",
+      "period": 19500,
+      "pulseWidthMax": 2500,
+      "pulseWidthMin": 700,
+      "rotationRangeMax": 9000,
+      "rotationRangeMin": -9000,
+      "turnedOn": true,
+      "velocity": 16000,
+      "visible": true
+    },
+    {
+      "id" : 16,
+      "acceleration": 10000,
+      "deceleration": 5000,
+      "name": "upper_arm_left_rotation",
+      "period": 19500,
+      "pulseWidthMax": 2500,
+      "pulseWidthMin": 700,
+      "rotationRangeMax": 9000,
+      "rotationRangeMin": -9000,
+      "turnedOn": true,
+      "velocity": 16000,
+      "visible": true
+    },
+    {
+      "id" : 17,
+      "acceleration": 10000,
+      "deceleration": 5000,
+      "name": "elbow_left",
+      "period": 19500,
+      "pulseWidthMax": 2500,
+      "pulseWidthMin": 700,
+      "rotationRangeMax": 9000,
+      "rotationRangeMin": -9000,
+      "turnedOn": true,
+      "velocity": 16000,
+      "visible": true
+    },
+    {
+      "id" : 18,
+      "acceleration": 10000,
+      "deceleration": 5000,
+      "name": "lower_arm_left_rotation",
+      "period": 19500,
+      "pulseWidthMax": 2500,
+      "pulseWidthMin": 700,
+      "rotationRangeMax": 9000,
+      "rotationRangeMin": -9000,
+      "turnedOn": true,
+      "velocity": 16000,
+      "visible": true
+    },
+    {
+      "id" : 19,
+      "acceleration": 10000,
+      "deceleration": 5000,
+      "name": "wrist_left",
+      "period": 19500,
+      "pulseWidthMax": 2500,
+      "pulseWidthMin": 700,
+      "rotationRangeMax": 9000,
+      "rotationRangeMin": -9000,
+      "turnedOn": true,
+      "velocity": 16000,
+      "visible": true
+    },
+    {
+      "id" : 20,
+      "acceleration": 10000,
+      "deceleration": 5000,
+      "name": "shoulder_vertical_left",
+      "period": 19500,
+      "pulseWidthMax": 2500,
+      "pulseWidthMin": 700,
+      "rotationRangeMax": 9000,
+      "rotationRangeMin": -9000,
+      "turnedOn": true,
+      "velocity": 16000,
+      "visible": true
+    },
+    {
+      "id" : 21,
+      "acceleration": 10000,
+      "deceleration": 5000,
+      "name": "shoulder_horizontal_left",
+      "period": 19500,
+      "pulseWidthMax": 2500,
+      "pulseWidthMin": 700,
+      "rotationRangeMax": 9000,
+      "rotationRangeMin": -9000,
+      "turnedOn": true,
+      "velocity": 16000,
+      "visible": true
+    },
+    {
+      "id" : 22,
+      "acceleration": 10000,
+      "deceleration": 5000,
+      "name": "upper_arm_right_rotation",
+      "period": 19500,
+      "pulseWidthMax": 2500,
+      "pulseWidthMin": 700,
+      "rotationRangeMax": 9000,
+      "rotationRangeMin": -9000,
+      "turnedOn": true,
+      "velocity": 16000,
+      "visible": true
+    },
+    {
+      "id" : 23,
+      "acceleration": 10000,
+      "deceleration": 5000,
+      "name": "elbow_right",
+      "period": 19500,
+      "pulseWidthMax": 2500,
+      "pulseWidthMin": 700,
+      "rotationRangeMax": 9000,
+      "rotationRangeMin": -9000,
+      "turnedOn": true,
+      "velocity": 16000,
+      "visible": true
+    },
+    {
+      "id" : 24,
+      "acceleration": 10000,
+      "deceleration": 5000,
+      "name": "lower_arm_right_rotation",
+      "period": 19500,
+      "pulseWidthMax": 2500,
+      "pulseWidthMin": 700,
+      "rotationRangeMax": 9000,
+      "rotationRangeMin": -9000,
+      "turnedOn": true,
+      "velocity": 16000,
+      "visible": true
+    },
+    {
+      "id" : 25,
+      "acceleration": 10000,
+      "deceleration": 5000,
+      "name": "wrist_right",
+      "period": 19500,
+      "pulseWidthMax": 2500,
+      "pulseWidthMin": 700,
+      "rotationRangeMax": 9000,
+      "rotationRangeMin": -9000,
+      "turnedOn": true,
+      "velocity": 16000,
+      "visible": true
+    },
+    {
+      "id" : 26,
+      "acceleration": 10000,
+      "deceleration": 5000,
+      "name": "shoulder_vertical_right",
+      "period": 19500,
+      "pulseWidthMax": 2500,
+      "pulseWidthMin": 700,
+      "rotationRangeMax": 9000,
+      "rotationRangeMin": -9000,
+      "turnedOn": true,
+      "velocity": 16000,
+      "visible": true
+    },
+    {
+      "id" : 27,
+      "acceleration": 10000,
+      "deceleration": 5000,
+      "name": "shoulder_horizontal_right",
+      "period": 19500,
+      "pulseWidthMax": 2500,
+      "pulseWidthMin": 700,
+      "rotationRangeMax": 9000,
+      "rotationRangeMin": -9000,
+      "turnedOn": true,
+      "velocity": 16000,
+      "visible": true
+    }
+  ],
+  "brickletPin" : [
+    {
+      "id" : 1,
+      "brickletId" : 1,
+      "motorId" : 3, 
+      "pin": 0, 
+      "invert" : 0
+    },
+    {
+      "id" : 2,
+      "brickletId" : 1,
+      "motorId" : 1, 
+      "pin": 1,
+      "invert": 0
+    },
+    {
+      "id" : 3,
+      "brickletId" : 2,
+      "motorId" : 2, 
+      "pin": 8,
+      "invert": 0
+    },
+    {
+      "id" : 4,
+      "brickletId" : 1,
+      "motorId" : 5,
+      "pin": 9,
+      "invert": 0
+    },
+    {
+      "id" : 5,
+      "brickletId" : 2,
+      "motorId" : 4,
+      "pin": 0,
+      "invert": 0
+    },
+    {
+      "id" : 6,
+      "brickletId" : 2,
+      "motorId" : 6,
+      "pin": 1,
+      "invert": 0
+    },
+    {
+      "id" : 7,
+      "brickletId" : 2,
+      "motorId" : 7,
+      "pin": 2,
+      "invert": 0
+    },
+    {
+      "id" : 8,
+      "brickletId" : 2,
+      "motorId" : 8,
+      "pin": 3,
+      "invert": 0
+    },
+    {
+      "id" : 9,
+      "brickletId" : 2,
+      "motorId" : 9,
+      "pin": 4,
+      "invert": 0
+    },
+    {
+      "id" : 10,
+      "brickletId" : 1,
+      "motorId" : 11,
+      "pin": 3,
+      "invert": 0
+    },
+    {
+      "id" : 11,
+      "brickletId" : 1,
+      "motorId" : 10,
+      "pin": 4,
+      "invert": 0
+    },
+    {
+      "id" : 12,
+      "brickletId" : 1,
+      "motorId" : 12,
+      "pin": 5,
+      "invert": 0
+    },
+    {
+      "id" : 13,
+      "brickletId" : 1,
+      "motorId" : 13,
+      "pin": 6,
+      "invert": 0
+    },
+    {
+      "id" : 14,
+      "brickletId" : 1,
+      "motorId" : 14,
+      "pin": 7,
+      "invert": 0
+    },
+    {
+      "id" : 15,
+      "brickletId" : 1,
+      "motorId" : 15,
+      "pin": 8,
+      "invert": 0
+    },
+    {
+      "id" : 16,
+      "brickletId" : 2,
+      "motorId" : 16,
+      "pin": 5,
+      "invert": 0
+    },
+    {
+      "id" : 17,
+      "brickletId" : 2,
+      "motorId" : 17,
+      "pin": 6,
+      "invert": 0
+    },
+    {
+      "id" : 18,
+      "brickletId" : 2,
+      "motorId" : 18,
+      "pin": 7,
+      "invert": 0
+    },
+    {
+      "id" : 19,
+      "brickletId" : 1,
+      "motorId" : 19,
+      "pin": 2,
+      "invert": 0
+    },
+    {
+      "id" : 20,
+      "brickletId" : 3,
+      "motorId" : 20,
+      "pin": 7,
+      "invert": 1
+    },
+    {
+      "id" : 21,
+      "brickletId" : 3,
+      "motorId" : 20,
+      "pin": 9,
+      "invert": 0
+    },
+    {
+      "id" : 22,
+      "brickletId" : 3,
+      "motorId" : 21,
+      "pin": 0,
+      "invert": 0
+    },
+    {
+      "id" : 23,
+      "brickletId" : 3,
+      "motorId" : 22,
+      "pin": 1,
+      "invert": 0
+    },
+    {
+      "id" : 24,
+      "brickletId" : 3,
+      "motorId" : 23,
+      "pin": 2,
+      "invert": 0
+    },
+    {
+      "id" : 25,
+      "brickletId" : 3,
+      "motorId" : 24,
+      "pin": 3,
+      "invert": 0
+    },
+    {
+      "id" : 26,
+      "brickletId" : 3,
+      "motorId" : 25,
+      "pin": 4,
+      "invert": 0
+    },
+    {
+      "id" : 27,
+      "brickletId" : 3,
+      "motorId" : 26,
+      "pin": 5,
+      "invert": 1
+    },
+    {
+      "id" : 28,
+      "brickletId" : 3,
+      "motorId" : 26,
+      "pin": 8,
+      "invert": 0
+    },
+    {
+      "id" : 29,
+      "brickletId" : 3,
+      "motorId" : 27,
+      "pin": 6,
+      "invert" : 0
+    }
+  ]
+}
