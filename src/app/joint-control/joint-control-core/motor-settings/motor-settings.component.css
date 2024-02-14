@@ -23,3 +23,9 @@
     width: auto;
     height: 30%;
 }
+
+.settings-icon:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+    cursor: pointer;
+}
