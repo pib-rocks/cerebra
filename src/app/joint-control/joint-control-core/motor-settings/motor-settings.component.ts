@@ -71,8 +71,8 @@ export class MotorSettingsComponent {
     }
 
     setDegree(number: number[]) {
-        this.settings.rotationRangeMin = number[0] * 100;
-        this.settings.rotationRangeMax = number[1] * 100;
+        this.settings.rotationRangeMin = number[0];
+        this.settings.rotationRangeMax = number[1];
         this.motorService.applySettings(this.motorName, this.settings);
     }
 
