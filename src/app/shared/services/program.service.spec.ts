@@ -4,6 +4,7 @@ import {ProgramService} from "./program.service";
 import {ApiService} from "./api.service";
 import {BehaviorSubject, Observable} from "rxjs";
 import {Program} from "../types/program";
+import {UtilService} from "./util.service";
 
 describe("ProgramService", () => {
     let programService: ProgramService;
@@ -173,7 +174,7 @@ describe("ProgramService", () => {
             "subscribe",
         ).and.callThrough();
         const mapper = jasmine.createSpy("mapper", (_) => 2).and.callThrough();
-        const resultObservable = programService["createResultObservable"](
+        const resultObservable = UtilService["createResultObservable"](
             baseObservable,
             mapper,
         );
@@ -194,7 +195,7 @@ describe("ProgramService", () => {
             "subscribe",
         ).and.callThrough();
         const mapper = jasmine.createSpy("mapper", (_) => 2);
-        const resultObservable = programService["createResultObservable"](
+        const resultObservable = UtilService["createResultObservable"](
             baseObservable,
             mapper,
         );

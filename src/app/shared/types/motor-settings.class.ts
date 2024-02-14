@@ -12,6 +12,7 @@ export class MotorSettings {
         public rotationRangeMax: number = 9000,
         public turnedOn: boolean = true,
         public visible: boolean = true,
+        public invert: boolean = false,
     ) {}
 
     toString(): string {
@@ -43,19 +44,23 @@ export class MotorSettings {
         motorName: string,
         settings: MotorSettingsMessage,
     ) {
-        return (
-            motorName === settings.motor_name &&
-            this.turnedOn === settings.turned_on &&
-            this.pulseWidthMax === settings.pulse_width_max &&
-            this.pulseWidthMin === settings.pulse_width_min &&
-            this.rotationRangeMax === settings.rotation_range_max &&
-            this.rotationRangeMin === settings.rotation_range_min &&
-            this.velocity === settings.velocity &&
-            this.acceleration === settings.acceleration &&
-            this.deceleration === settings.deceleration &&
-            this.period === settings.period &&
-            this.visible === settings.visible
-        );
+        if (
+            motorName !== settings.motor_name ||
+            this.turnedOn !== settings.turned_on ||
+            this.pulseWidthMax !== settings.pulse_width_max ||
+            this.pulseWidthMin !== settings.pulse_width_min ||
+            this.rotationRangeMax !== settings.rotation_range_max ||
+            this.rotationRangeMin !== settings.rotation_range_min ||
+            this.velocity !== settings.velocity ||
+            this.acceleration !== settings.acceleration ||
+            this.deceleration !== settings.deceleration ||
+            this.period !== settings.period ||
+            this.visible !== settings.visible
+        ) {
+            return false;
+        }
+
+        return true;
     }
 
     public equals(settingsCopy: MotorSettings | MotorSettingsMessage) {
@@ -64,7 +69,8 @@ export class MotorSettings {
             settingsCopy.acceleration == this.acceleration &&
             settingsCopy.deceleration == this.deceleration &&
             settingsCopy.period == this.period &&
-            settingsCopy.visible == this.visible
+            settingsCopy.visible == this.visible &&
+            settingsCopy.invert == this.invert
         ) {
             if (settingsCopy instanceof MotorSettings) {
                 if (
@@ -98,6 +104,7 @@ export class MotorSettings {
             this.deceleration = settingsCopy.deceleration;
             this.period = settingsCopy.period;
             this.visible = settingsCopy.visible;
+            this.invert = settingsCopy.invert;
             if (settingsCopy instanceof MotorSettings) {
                 this.pulseWidthMin = settingsCopy.pulseWidthMin;
                 this.pulseWidthMax = settingsCopy.pulseWidthMax;
@@ -128,6 +135,7 @@ export class MotorSettings {
             this.rotationRangeMax,
             this.turnedOn,
             this.visible,
+            this.invert,
         );
     }
 }
