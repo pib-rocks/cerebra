@@ -6,7 +6,7 @@ import {ActivatedRoute} from "@angular/router";
 import {BehaviorSubject} from "rxjs";
 import {JointConfiguration} from "src/app/shared/types/joint-configuration";
 
-fdescribe("JointControlCoreComponent", () => {
+describe("JointControlCoreComponent", () => {
     let component: JointControlCoreComponent;
     let fixture: ComponentFixture<JointControlCoreComponent>;
 

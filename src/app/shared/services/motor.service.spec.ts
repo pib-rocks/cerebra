@@ -282,7 +282,7 @@ describe("MotorService", () => {
             service,
             "getObservable",
         ).and.returnValue(observable);
-        expect(service.getSettingObservable("test-motor")).toBe(
+        expect(service.getSettingsObservable("test-motor")).toBe(
             pipedObservable,
         );
         expect(getObservableSpy).toHaveBeenCalledOnceWith(

@@ -3,7 +3,7 @@ import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {JointControlComponent} from "./joint-control.component";
 import {RouterTestingModule} from "@angular/router/testing";
 
-fdescribe("JointControlComponent", () => {
+describe("JointControlComponent", () => {
     let component: JointControlComponent;
     let fixture: ComponentFixture<JointControlComponent>;
 
