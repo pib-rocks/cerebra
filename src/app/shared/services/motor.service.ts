@@ -21,8 +21,8 @@ export class MotorService {
         period: 0,
         pulseWidthMin: 0,
         pulseWidthMax: 0,
-        rotationRangeMin: 0,
-        rotationRangeMax: 0,
+        rotationRangeMin: -90,
+        rotationRangeMax: +90,
         turnedOn: true,
         visible: false,
     };

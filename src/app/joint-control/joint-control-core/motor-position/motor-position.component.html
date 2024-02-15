@@ -11,10 +11,10 @@
             <app-horizontal-slider
                 class="m-0 p-0"
                 [name]="motor.title"
-                [leftValue]="-90"
+                [leftValue]="rotationRangeMin"
                 [trackHeight]="20"
                 [thumbRadius]="10"
-                [rightValue]="+90"
+                [rightValue]="rotationRangeMax"
                 [numberOfThumbs]="1"
                 [unitLong]="'μs'"
                 [defaultValues]="[0]"

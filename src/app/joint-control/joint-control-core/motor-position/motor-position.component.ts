@@ -15,6 +15,9 @@ export class MotorPositionComponent implements OnInit {
     positionReceiver$: Subject<[number]> = new Subject();
     turnedOnReceiver$: Subject<boolean> = new Subject();
 
+    rotationRangeMin: number = -90;
+    rotationRangeMax: number = +90;
+
     constructor(
         private motorService: MotorService,
         private route: ActivatedRoute,
@@ -32,6 +35,8 @@ export class MotorPositionComponent implements OnInit {
                 .getSettingsObservable(this.motor.motorName)
                 .subscribe((settings) => {
                     this.turnedOnReceiver$.next(settings.turnedOn);
+                    this.rotationRangeMin = settings.rotationRangeMin;
+                    this.rotationRangeMax = settings.rotationRangeMax;
                 });
         });
     }
