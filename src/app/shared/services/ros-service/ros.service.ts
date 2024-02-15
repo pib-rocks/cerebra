@@ -328,7 +328,6 @@ export class RosService implements IRosService {
 
     private subscribeVoiceAssistantStateTopic() {
         this.voiceAssistantStateTopic.subscribe((message: any) => {
-            console.info("message: " + message);
             this.voiceAssistantStateReceiver$.next(message);
         });
         const getVoiceAssistantStateService: ROSLIB.Service<
@@ -350,7 +349,6 @@ export class RosService implements IRosService {
 
     private subscribeChatMessageTopic() {
         this.chatMessageTopic.subscribe((message: any) => {
-            console.info("message: " + message);
             this.chatMessageReceiver$.next(message);
         });
     }
