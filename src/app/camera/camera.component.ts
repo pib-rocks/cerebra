@@ -6,7 +6,7 @@ import {
     ViewChild,
 } from "@angular/core";
 import {FormControl} from "@angular/forms";
-import {Observable, Subject, map} from "rxjs";
+import {Observable, map} from "rxjs";
 import {CameraSetting} from "../shared/types/camera-settings";
 import {CameraService} from "../shared/services/camera.service";
 

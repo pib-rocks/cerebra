@@ -1,16 +1,10 @@
 import {Injectable} from "@angular/core";
 import {ApiService} from "./api.service";
 import {Program} from "../types/program";
-import {BehaviorSubject, Observable, ReplaySubject} from "rxjs";
+import {BehaviorSubject, Observable} from "rxjs";
 import {UrlConstants} from "./url.constants";
 import {ProgramCode} from "../types/program-code";
 import {UtilService} from "./util.service";
-import {RosService} from "./ros-service/ros.service";
-import {GoalHandle} from "../ros-types/action/goal-handle";
-import {
-    RunProgramFeedback,
-    RunProgramResult,
-} from "../ros-types/action/run-program";
 
 @Injectable({
     providedIn: "root",
@@ -28,10 +22,7 @@ export class ProgramService {
         "",
     );
 
-    constructor(
-        private apiService: ApiService,
-        private rosService: RosService,
-    ) {
+    constructor(private apiService: ApiService) {
         this.getAllPrograms();
     }
 
