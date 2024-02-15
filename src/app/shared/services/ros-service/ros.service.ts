@@ -41,11 +41,12 @@ import {ProxyRunProgramStopRequest} from "../../ros-types/srv/proxy-run-program-
 import {ProxyRunProgramFeedback} from "../../ros-types/msg/proxy-run-program-feedback";
 import {ProxyRunProgramResult} from "../../ros-types/msg/proxy-run-program-result";
 import {ProxyRunProgramStatus} from "../../ros-types/msg/proxy-run-program-status";
+import {IRosService} from "./i-ros-service";
 
 @Injectable({
     providedIn: "root",
 })
-export class RosService {
+export class RosService implements IRosService {
     currentReceiver$: Subject<DiagnosticStatus> =
         new Subject<DiagnosticStatus>();
     cameraTimerPeriodReceiver$: BehaviorSubject<number> =
@@ -126,7 +127,7 @@ export class RosService {
     private setUpRos() {
         let rosUrl: string;
         if (isDevMode()) {
-            rosUrl = "127.0.0.1";
+            rosUrl = "192.168.220.27";
         } else {
             rosUrl = window.location.hostname;
         }
@@ -474,7 +475,7 @@ export class RosService {
         this.jointTrajectoryTopic.publish(message);
     }
 
-    setTimerPeriod(period: number | null) {
+    setTimerPeriod(period: number) {
         if (!this.cameraTimerPeriodTopic) {
             console.error("ROS is not connected.");
             return;
@@ -492,7 +493,7 @@ export class RosService {
         this.cameraPreviewSizeTopic.publish(message);
     }
 
-    setQualityFactor(factor: number | null) {
+    setQualityFactor(factor: number) {
         if (!this.cameraQualityFactorTopic) {
             console.error("ROS is not connected.");
             return;
