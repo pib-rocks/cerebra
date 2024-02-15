@@ -55,8 +55,8 @@ class ${generator.FUNCTION_NAME_PLACEHOLDER_}():
         self.detection_nn = self.pipeline.create(dai.node.MobileNetDetectionNetwork)
         self.detection_nn.setConfidenceThreshold(0.5)
         self.detection_nn.setBlobPath(blobconverter.from_zoo(name = self.NN_OMZ_NAME, shaves = 6))
-        self.detection_nn.setNumInferenceThreads(1)
-        self.detection_nn.setNumNCEPerInferenceThread(2)
+        self.detection_nn.setNumInferenceThreads(2)
+        self.detection_nn.setNumNCEPerInferenceThread(1)
         self.detection_nn.input.setBlocking(False)
 
         self.cam = self.pipeline.create(dai.node.ColorCamera)
@@ -83,8 +83,6 @@ class ${generator.FUNCTION_NAME_PLACEHOLDER_}():
         self.detection_nn.out.link(self.xout_nn.input)
 
         self.device = dai.Device(self.pipeline)
-        self.device.setLogLevel(dai.LogLevel.INFO)
-        self.device.setLogOutputLevel(dai.LogLevel.INFO)
 
         try:
             self.q_cam = self.device.getOutputQueue("cam", maxSize=1, blocking = False)
