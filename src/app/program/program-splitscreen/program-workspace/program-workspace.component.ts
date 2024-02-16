@@ -148,7 +148,7 @@ export class ProgramWorkspaceComponent
     }
 
     runProgram() {
-        console.log("run clicked!");
+        console.error("not implemented");
     }
 
     flyoutChangeCallback = () => {

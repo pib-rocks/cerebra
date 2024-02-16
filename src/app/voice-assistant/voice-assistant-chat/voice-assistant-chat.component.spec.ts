@@ -3,12 +3,13 @@ import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {VoiceAssistantChatComponent} from "./voice-assistant-chat.component";
 import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {HttpClientTestingModule} from "@angular/common/http/testing";
-import {BehaviorSubject} from "rxjs";
+import {BehaviorSubject, Observable, of} from "rxjs";
 import {Chat} from "src/app/shared/types/chat.class";
 import {ChatService} from "src/app/shared/services/chat.service";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {ActivatedRoute, Router} from "@angular/router";
 import {VoiceAssistant} from "src/app/shared/types/voice-assistant";
+import {UtilService} from "src/app/shared/services/util.service";
 export class MockNgbModalRef {
     componentInstance = {
         prompt: undefined,
@@ -122,7 +123,10 @@ describe("VoiceAssistantChatComponent", () => {
     it("should add a chat when calling addChat", () => {
         const spyOnAddChat = spyOn(component, "addChat").and.callThrough();
         const spyOnCreateChat = spyOn(chatService, "createChat").and.callFake(
-            () => chatService.chats.push(new Chat("TestValue", "123", "123")),
+            () => {
+                chatService.chats.push(new Chat("TestValue", "123", "123"));
+                return of(new Chat("TestValue", "123", "123"));
+            },
         );
         component.topicFormControl.setValue("TestValue");
         component.personalityId = "1234";
@@ -142,7 +146,7 @@ describe("VoiceAssistantChatComponent", () => {
         const spyOnUpdateChat = spyOn(
             chatService,
             "updateChatById",
-        ).and.returnValue();
+        ).and.returnValue(of(new Chat("TestValue", "123", "123")));
         component.uuid = "123;";
         component.topicFormControl.setValue("UpdatedValue");
         component.editChat();
@@ -171,7 +175,7 @@ describe("VoiceAssistantChatComponent", () => {
     });
 
     it("should delete a chat when calling deleteChat", () => {
-        const spyOnDeleteChat = spyOn(
+        const spyOnDeleteChat = spyOn<ChatService, any>(
             chatService,
             "deleteChatById",
         ).and.callFake(() => chatService.deleteChat("123"));

@@ -10,8 +10,8 @@ import {
 } from "rxjs";
 import {Motor} from "../../types/motor.class";
 import {Group} from "../../types/motor.enum";
-import {MotorSettingsMessage} from "../../ros-message-types/motorSettingsMessage";
-import {JointTrajectoryMessage} from "../../ros-message-types/jointTrajectoryMessage";
+import {MotorSettingsMessage} from "../../ros-types/msg/motor-settings-message";
+import {JointTrajectoryMessage} from "../../ros-types/msg/joint-trajectory-message";
 import {MotorSettings} from "../../types/motor-settings.class";
 import {ApiService} from "../api.service";
 import {UrlConstants} from "../url.constants";
@@ -302,6 +302,7 @@ export class MotorService {
                 motor.settings.period = response["period"];
                 motor.settings.turnedOn = response["turnedOn"];
                 motor.settings.visible = response["visible"];
+                motor.settings.invert = response["invert"];
                 motor.motorSubject.next(motor.clone());
             });
     }
@@ -331,6 +332,7 @@ export class MotorService {
                     motor.settings.period = o.period;
                     motor.settings.turnedOn = o.turnedOn;
                     motor.settings.visible = o.visible;
+                    motor.settings.invert = o.invert;
 
                     motor.motorSubject.next(motor.clone());
                     if (!motor.settings.visible) {

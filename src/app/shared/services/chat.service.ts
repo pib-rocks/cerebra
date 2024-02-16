@@ -7,6 +7,7 @@ import {SidebarService} from "../interfaces/sidebar-service.interface";
 import {SidebarElement} from "../interfaces/sidebar-element.interface";
 import {ChatMessage} from "../types/chat-message";
 import {RosService} from "./ros-service/ros.service";
+import {UtilService} from "./util.service";
 
 @Injectable({
     providedIn: "root",
@@ -39,6 +40,11 @@ export class ChatService implements SidebarService {
                 subject.next(messages);
             }
         });
+    }
+
+    private setChats(chats: Chat[]) {
+        this.chats = chats;
+        this.chatSubject.next(this.chats.slice());
     }
 
     getChatMessagesObservable(chatId: string): Observable<ChatMessage[]> {
@@ -96,111 +102,60 @@ export class ChatService implements SidebarService {
         });
     }
 
-    createChat(chat: ChatDto) {
-        this.apiService
-            .post(UrlConstants.CHAT, chat)
-            .pipe(
-                catchError((err) => {
-                    return throwError(() => {
-                        console.log(err);
-                    });
-                }),
-            )
-            .subscribe((response) => {
-                this.addChat(
-                    new Chat(
-                        response["topic"],
-                        response["personalityId"],
-                        response["chatId"],
-                    ),
+    createChat(chat: ChatDto): Observable<Chat> {
+        return UtilService.createResultObservable(
+            this.apiService.post(UrlConstants.CHAT, chat),
+            (response) => {
+                const chat = Chat.fromDto(response);
+                this.addChat(chat);
+                return chat;
+            },
+        );
+    }
+
+    getAllChats(): Observable<Chat[]> {
+        return UtilService.createResultObservable(
+            this.apiService.get(UrlConstants.CHAT),
+            (response) => {
+                const chats = (response["voiceAssistantChats"] as Chat[]).map(
+                    (dto) => Chat.fromDto(dto),
                 );
-            });
+                this.setChats(chats);
+                return chats;
+            },
+        );
     }
 
-    getAllChats() {
-        this.apiService
-            .get(UrlConstants.CHAT)
-            .pipe(
-                catchError((err) => {
-                    return throwError(() => {
-                        console.log(err);
-                    });
-                }),
-                map((response) => response as {voiceAssistantChats: Chat[]}),
-            )
-            .subscribe((response) => {
-                this.chats.splice(0);
-                response.voiceAssistantChats.forEach((chatDto) => {
-                    this.chats.push(
-                        new Chat(
-                            chatDto.topic,
-                            chatDto.personalityId,
-                            chatDto.chatId,
-                        ),
-                    );
-                });
-                this.chatSubject.next(this.chats);
-            });
-    }
-
-    updateChatById(chat: Chat) {
-        this.apiService
-            .put(
+    updateChatById(chat: Chat): Observable<Chat> {
+        return UtilService.createResultObservable(
+            this.apiService.put(
                 UrlConstants.CHAT + `/${chat.chatId}`,
                 ChatDto.parseChatToDto(chat),
-            )
-            .pipe(
-                catchError((err) => {
-                    return throwError(() => {
-                        console.log(err);
-                    });
-                }),
-            )
-            .subscribe((response) => {
-                this.editChat(
-                    new Chat(
-                        response["topic"],
-                        response["personalityId"],
-                        response["chatId"],
-                    ),
-                );
-            });
+            ),
+            (response) => {
+                const chat = Chat.fromDto(response);
+                this.editChat(chat);
+                return chat;
+            },
+        );
     }
 
-    deleteChatById(uuid: string) {
-        this.apiService
-            .delete(UrlConstants.CHAT + `/${uuid}`)
-            .pipe(
-                catchError((err) => {
-                    return throwError(() => {
-                        console.log(err);
-                    });
-                }),
-            )
-            .subscribe(() => {
-                this.deleteChat(uuid);
-            });
+    deleteChatById(uuid: string): Observable<void> {
+        return UtilService.createResultObservable(
+            this.apiService.delete(UrlConstants.CHAT + `/${uuid}`),
+            (_) => this.deleteChat(uuid),
+        );
     }
 
-    getChatById(uuid: string) {
-        this.apiService
-            .get(UrlConstants.CHAT + `/${uuid}`)
-            .pipe(
-                catchError((err) => {
-                    return throwError(() => {
-                        console.log(err);
-                    });
-                }),
-            )
-            .subscribe((response) => {
-                this.addChat(
-                    new Chat(
-                        response["topic"],
-                        response["personalityId"],
-                        response["chatId"],
-                    ),
-                );
-            });
+    getChatById(uuid: string): Observable<Chat> {
+        return UtilService.createResultObservable(
+            this.apiService.get(UrlConstants.CHAT + `/${uuid}`),
+            (response) => {
+                const chat = Chat.fromDto(response);
+                this.addChat(chat);
+                return chat;
+            },
+        );
     }
 
     getMessagesByChatId(chatId: string): Observable<ChatMessage[]> {

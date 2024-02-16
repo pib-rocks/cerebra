@@ -6,7 +6,7 @@ import {ReactiveFormsModule} from "@angular/forms";
 import {NavBarComponent} from "../../nav-bar/nav-bar.component";
 import {RouterTestingModule} from "@angular/router/testing";
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {JointTrajectoryMessage} from "../../shared/ros-message-types/jointTrajectoryMessage";
+import {JointTrajectoryMessage} from "../../shared/ros-types/msg/joint-trajectory-message";
 import {Group} from "../../shared/types/motor.enum";
 import {MotorService} from "../../shared/services/motor-service/motor.service";
 import {HttpClientTestingModule} from "@angular/common/http/testing";
