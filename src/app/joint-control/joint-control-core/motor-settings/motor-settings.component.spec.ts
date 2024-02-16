@@ -90,6 +90,7 @@ describe("MotorSettingsComponent", () => {
 
         fixture = TestBed.createComponent(MotorSettingsComponent);
         component = fixture.componentInstance;
+        component.motor = motor;
         fixture.detectChanges();
     });
 

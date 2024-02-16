@@ -44,7 +44,7 @@ export class MotorCurrentComponent implements AfterViewInit, OnDestroy {
 
     ngAfterViewInit(): void {
         this.subscription = this.motorService
-            .getCurrentObservable(this.motor?.sourceMotorName)
+            .getCurrentObservable(this.motor.sourceMotorName)
             .subscribe((value: number) => {
                 this.currentValue = value;
                 this.renderer.setStyle(

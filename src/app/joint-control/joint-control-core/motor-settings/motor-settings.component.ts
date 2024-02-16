@@ -37,7 +37,7 @@ export class MotorSettingsComponent {
 
     ngOnInit(): void {
         this.motorService
-            .getSettingsObservable(this.motor?.sourceMotorName)
+            .getSettingsObservable(this.motor.sourceMotorName)
             .subscribe((settings) => {
                 this.settings = settings;
                 this.pulseWidthSubject$.next([

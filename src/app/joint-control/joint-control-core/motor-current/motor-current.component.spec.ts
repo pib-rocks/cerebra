@@ -41,6 +41,19 @@ describe("MotorCurrentComponent", () => {
 
         fixture = TestBed.createComponent(MotorCurrentComponent);
         component = fixture.componentInstance;
+        component.motor = {
+            motorName: "test_motor",
+            motorPathName: "test-motor",
+            label: "Test Motor",
+            sliderIconLeft: "/path-to-icon",
+            sliderIconRight: "/path-to-icon",
+            captionLeft: "left",
+            captionRight: "right",
+            touchPointCenterX: 0.2,
+            touchPointCenterY: 0.3,
+            displaySettings: false,
+            sourceMotorName: "test_motor",
+        };
         fixture.detectChanges();
     });
 
