@@ -149,7 +149,7 @@ export class MotorService {
                 } else {
                     motorNames = [motorName];
                 }
-                for (let motorName of motorNames) {
+                for (const motorName of motorNames) {
                     this.publishToSubject(
                         motorName,
                         this.motorNameToPositionSubject,
