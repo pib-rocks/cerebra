@@ -9,6 +9,7 @@ import {
 } from "@angular/core";
 import {Subscription} from "rxjs";
 import {MotorService} from "src/app/shared/services/motor.service";
+import {MotorConfiguration} from "src/app/shared/types/motor-configuration";
 
 @Component({
     selector: "app-motor-current",
@@ -16,7 +17,7 @@ import {MotorService} from "src/app/shared/services/motor.service";
     styleUrls: ["./motor-current.component.css"],
 })
 export class MotorCurrentComponent implements AfterViewInit, OnDestroy {
-    @Input() motorName!: string;
+    @Input() motor!: MotorConfiguration;
     @Input() reversed!: boolean;
 
     @ViewChild("numberdisplay") paragraph!: ElementRef;
@@ -43,7 +44,7 @@ export class MotorCurrentComponent implements AfterViewInit, OnDestroy {
 
     ngAfterViewInit(): void {
         this.subscription = this.motorService
-            .getCurrentObservable(this.motorName)
+            .getCurrentObservable(this.motor.sourceMotorName)
             .subscribe((value: number) => {
                 this.currentValue = value;
                 this.renderer.setStyle(

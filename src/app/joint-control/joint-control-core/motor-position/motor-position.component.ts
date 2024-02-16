@@ -27,12 +27,12 @@ export class MotorPositionComponent implements OnInit {
         this.route.data.subscribe((data) => {
             this.motor = data["motor"];
             this.motorService
-                .getPositionObservable(this.motor.motorName)
+                .getPositionObservable(this.motor.sourceMotorName)
                 .subscribe((position) => {
                     this.positionReceiver$.next([position]);
                 });
             this.motorService
-                .getSettingsObservable(this.motor.motorName)
+                .getSettingsObservable(this.motor.sourceMotorName)
                 .subscribe((settings) => {
                     this.turnedOnReceiver$.next(settings.turnedOn);
                     this.rotationRangeMin = settings.rotationRangeMin;

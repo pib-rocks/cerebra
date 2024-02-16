@@ -3,8 +3,8 @@ import {FormControl} from "@angular/forms";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {BehaviorSubject} from "rxjs";
 import {MotorService} from "src/app/shared/services/motor.service";
+import {MotorConfiguration} from "src/app/shared/types/motor-configuration";
 import {MotorSettings} from "src/app/shared/types/motor-settings.class";
-import {HorizontalSliderComponent} from "src/app/sliders/horizontal-slider/horizontal-slider.component";
 
 @Component({
     selector: "app-motor-settings",
@@ -12,7 +12,7 @@ import {HorizontalSliderComponent} from "src/app/sliders/horizontal-slider/horiz
     styleUrls: ["./motor-settings.component.css"],
 })
 export class MotorSettingsComponent {
-    @Input() motorName!: string;
+    @Input() motor!: MotorConfiguration;
     @Input() reversed!: boolean;
 
     pulseWidthSubject$ = new BehaviorSubject<number[]>([]);
@@ -36,7 +36,7 @@ export class MotorSettingsComponent {
 
     ngOnInit(): void {
         this.motorService
-            .getSettingsObservable(this.motorName)
+            .getSettingsObservable(this.motor.sourceMotorName)
             .subscribe((settings) => {
                 this.settings = settings;
                 this.pulseWidthSubject$.next([
@@ -67,36 +67,37 @@ export class MotorSettingsComponent {
     setPulseRanges(number: number[]) {
         this.settings.pulseWidthMin = number[0];
         this.settings.pulseWidthMax = number[1];
-        this.motorService.applySettings(this.motorName, this.settings);
+        this.motorService.applySettings(this.motor.motorName, this.settings);
     }
 
     setDegree(number: number[]) {
         this.settings.rotationRangeMin = number[0];
         this.settings.rotationRangeMax = number[1];
-        this.motorService.applySettings(this.motorName, this.settings);
+        this.motorService.applySettings(this.motor.motorName, this.settings);
     }
 
     setPeriod(number: number) {
         this.settings.period = number;
-        this.motorService.applySettings(this.motorName, this.settings);
+        this.motorService.applySettings(this.motor.motorName, this.settings);
     }
 
     setDeceleration(number: number) {
         this.settings.deceleration = number;
-        this.motorService.applySettings(this.motorName, this.settings);
+        this.motorService.applySettings(this.motor.motorName, this.settings);
     }
+
     setAcceleration(number: number) {
         this.settings.acceleration = number;
-        this.motorService.applySettings(this.motorName, this.settings);
+        this.motorService.applySettings(this.motor.motorName, this.settings);
     }
 
     setVelocity(number: number) {
         this.settings.velocity = number;
-        this.motorService.applySettings(this.motorName, this.settings);
+        this.motorService.applySettings(this.motor.motorName, this.settings);
     }
 
     changeTurnedOn() {
         this.settings.turnedOn = !this.turnedOnFormControl.value;
-        this.motorService.applySettings(this.motorName, this.settings);
+        this.motorService.applySettings(this.motor.motorName, this.settings);
     }
 }

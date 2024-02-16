@@ -16,14 +16,16 @@
             class="row m-0 p-0"
             [ngClass]="joint.reversed ? 'flex-row-reverse' : 'flex-row'"
             [style]="'height: ' + (joint.segmentHeight*100) + '%;'">
-            <app-motor-settings
-                [reversed]="joint.reversed"
-                [motorName]="motor.motorName"
-                class="col-6 m-0 p-0"></app-motor-settings>
-            <app-motor-current
-                [reversed]="joint.reversed"
-                [motorName]="motor.motorName"
-                class="col-6 m-0 p-0"></app-motor-current>
+            <ng-container *ngIf="motor.displaySettings">
+                <app-motor-settings
+                    [reversed]="joint.reversed"
+                    [motor]="motor"
+                    class="col-6 m-0 p-0"></app-motor-settings>
+                <app-motor-current
+                    [reversed]="joint.reversed"
+                    [motor]="motor"
+                    class="col-6 m-0 p-0"></app-motor-current>
+            </ng-container>
         </div>
     </div>
     <div

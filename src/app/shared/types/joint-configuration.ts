@@ -49,6 +49,7 @@ export const joints: JointConfiguration[] = [
             motorPathNameToConfig.get(MotorPathName.MIDDLE_LEFT_STRETCH)!,
             motorPathNameToConfig.get(MotorPathName.RING_LEFT_STRECTH)!,
             motorPathNameToConfig.get(MotorPathName.PINKY_LEFT_STRECTH)!,
+            motorPathNameToConfig.get(MotorPathName.ALL_FINGERS_LEFT)!,
         ],
     },
     {
@@ -65,6 +66,7 @@ export const joints: JointConfiguration[] = [
             motorPathNameToConfig.get(MotorPathName.MIDDLE_RIGHT_STRETCH)!,
             motorPathNameToConfig.get(MotorPathName.RING_RIGHT_STRECTH)!,
             motorPathNameToConfig.get(MotorPathName.PINKY_RIGHT_STRECTH)!,
+            motorPathNameToConfig.get(MotorPathName.ALL_FINGERS_RIGHT)!,
         ],
     },
     {
