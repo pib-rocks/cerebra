@@ -3,9 +3,9 @@ import {RosService} from "./ros-service/ros.service";
 import {ApiService} from "./api.service";
 import {BehaviorSubject, Observable, map} from "rxjs";
 import {MotorSettings} from "../types/motor-settings.class";
-import {JointTrajectoryMessage} from "../ros-message-types/jointTrajectoryMessage";
-import {DiagnosticStatus} from "../ros-message-types/DiagnosticStatus.message";
-import {MotorSettingsMessage} from "../ros-message-types/motorSettingsMessage";
+import {JointTrajectoryMessage} from "../ros-types/msg/joint-trajectory-message";
+import {DiagnosticStatus} from "../ros-types/msg/diagnostic-status.message";
+import {MotorSettingsMessage} from "../ros-types/msg/motor-settings-message";
 import {UrlConstants} from "./url.constants";
 import {MotorDTO} from "../types/motor-dto";
 import {MotorSettingsError} from "../error/motor-settings-error";
@@ -25,6 +25,7 @@ export class MotorService {
         rotationRangeMax: +90,
         turnedOn: true,
         visible: false,
+        invert: false,
     };
     private readonly defaultPosition: number = 0;
     private readonly defaultCurrent: number = 0;
@@ -80,6 +81,7 @@ export class MotorService {
                     rotationRangeMax: Math.floor(msg.rotation_range_max / 100),
                     turnedOn: msg.turned_on,
                     visible: msg.visible,
+                    invert: msg.invert,
                 };
                 this.publishToSubject(
                     motorName,
@@ -109,6 +111,7 @@ export class MotorService {
                         ),
                         turnedOn: motor.turnedOn,
                         visible: motor.visible,
+                        invert: motor.invert,
                     };
                     this.publishToSubject(
                         motorName,
@@ -124,11 +127,35 @@ export class MotorService {
                 const position: number = Math.floor(
                     jt.points[0].positions[0] / 100,
                 );
-                this.publishToSubject(
-                    motorName,
-                    this.motorNameToPositionSubject,
-                    position,
-                );
+                // TODO: conversion between multi-motor and simple-motors should be handled
+                // in the backend/motor-control-node
+                let motorNames: string[];
+                if (motorName == "all_fingers_left") {
+                    motorNames = [
+                        "thumb_left_stretch",
+                        "index_left_stretch",
+                        "middle_left_stretch",
+                        "ring_left_stretch",
+                        "pinky_left_stretch",
+                    ];
+                } else if (motorName == "all_fingers_right") {
+                    motorNames = [
+                        "thumb_right_stretch",
+                        "index_right_stretch",
+                        "middle_right_stretch",
+                        "ring_right_stretch",
+                        "pinky_right_stretch",
+                    ];
+                } else {
+                    motorNames = [motorName];
+                }
+                for (let motorName of motorNames) {
+                    this.publishToSubject(
+                        motorName,
+                        this.motorNameToPositionSubject,
+                        position,
+                    );
+                }
             },
         );
 
@@ -183,6 +210,7 @@ export class MotorService {
                 deceleration: settings.deceleration,
                 period: settings.period,
                 visible: settings.visible,
+                invert: settings.invert,
             })
             .subscribe({
                 error: (error) => {

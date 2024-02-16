@@ -9,4 +9,5 @@ export interface MotorSettings {
     rotationRangeMax: number;
     turnedOn: boolean;
     visible: boolean;
+    invert: boolean;
 }

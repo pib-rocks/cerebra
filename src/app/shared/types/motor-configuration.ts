@@ -9,7 +9,7 @@ export interface MotorConfiguration {
     touchPointCenterX: number;
     touchPointCenterY: number;
     displaySettings: boolean;
-    sourceMotorName: string;
+    sourceMotorName: string; // TODO: conversion between multi-motor and simple-motors should be handled in the backend
 }
 
 export enum MotorPathName {
@@ -151,7 +151,7 @@ export const motors: MotorConfiguration[] = [
     {
         motorName: "all_fingers_right",
         motorPathName: MotorPathName.ALL_FINGERS_RIGHT,
-        label: "All Fingers",
+        label: "Open/Close all fingers",
         sliderIconLeft: "/joint-control/slider-icons/hand-closed.svg",
         sliderIconRight: "/joint-control/slider-icons/hand-open.svg",
         captionLeft: "closed",
@@ -229,7 +229,7 @@ export const motors: MotorConfiguration[] = [
     {
         motorName: "pinky_left_stretch",
         motorPathName: MotorPathName.PINKY_LEFT_STRECTH,
-        label: "Open/Close all fingers",
+        label: "Pinky",
         sliderIconLeft: "/joint-control/slider-icons/hand-closed.svg",
         sliderIconRight: "/joint-control/slider-icons/hand-open.svg",
         captionLeft: "closed",
@@ -237,12 +237,12 @@ export const motors: MotorConfiguration[] = [
         touchPointCenterX: 0.6875,
         touchPointCenterY: 0.7896551724137931,
         displaySettings: true,
-        sourceMotorName: "tilt_forward_motor",
+        sourceMotorName: "pinky_left_stretch",
     },
     {
         motorName: "all_fingers_left",
         motorPathName: MotorPathName.ALL_FINGERS_LEFT,
-        label: "All Fingers",
+        label: "Open/Close all fingers",
         sliderIconLeft: "/joint-control/slider-icons/hand-closed.svg",
         sliderIconRight: "/joint-control/slider-icons/hand-open.svg",
         captionLeft: "closed",

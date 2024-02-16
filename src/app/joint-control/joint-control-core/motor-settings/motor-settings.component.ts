@@ -24,6 +24,7 @@ export class MotorSettingsComponent {
     positionSubject$ = new BehaviorSubject<number[]>([]);
 
     turnedOnFormControl: FormControl = new FormControl(true);
+    invertFormControl: FormControl = new FormControl(false);
 
     settings!: MotorSettings;
 
@@ -36,7 +37,7 @@ export class MotorSettingsComponent {
 
     ngOnInit(): void {
         this.motorService
-            .getSettingsObservable(this.motor.sourceMotorName)
+            .getSettingsObservable(this.motor?.sourceMotorName)
             .subscribe((settings) => {
                 this.settings = settings;
                 this.pulseWidthSubject$.next([
@@ -52,6 +53,7 @@ export class MotorSettingsComponent {
                 this.accelerationSubject$.next(settings.acceleration);
                 this.velocitySubject$.next(settings.velocity);
                 this.turnedOnFormControl.setValue(this.settings.turnedOn);
+                this.invertFormControl.setValue(this.settings.invert);
             });
     }
 
@@ -96,8 +98,13 @@ export class MotorSettingsComponent {
         this.motorService.applySettings(this.motor.motorName, this.settings);
     }
 
-    changeTurnedOn() {
+    setTurnedOn() {
         this.settings.turnedOn = !this.turnedOnFormControl.value;
+        this.motorService.applySettings(this.motor.motorName, this.settings);
+    }
+
+    setInvert() {
+        this.settings.invert = !this.invertFormControl.value;
         this.motorService.applySettings(this.motor.motorName, this.settings);
     }
 }

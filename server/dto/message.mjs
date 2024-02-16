@@ -1,5 +1,5 @@
-export class Message{
-    constructor(messageId, timestamp, isUser, content, chatId){
+export class Message {
+    constructor(messageId, timestamp, isUser, content, chatId) {
         this.messageId = messageId;
         this.timestamp = timestamp;
         this.isUser = isUser;
@@ -7,12 +7,23 @@ export class Message{
         this.chatId = chatId;
     }
 
-    static getMessage(message){
-        return {"messageId" : message.messageId, "timestamp" : message.timestamp, "isUser" : message.isUser, "content" : message.content}
+    static getMessage(message) {
+        return {
+            messageId: message.messageId,
+            timestamp: message.timestamp,
+            isUser: message.isUser,
+            content: message.content,
+        };
     }
 
-    static newMessage(timestamp, isUser, content, chatId){
-        return new Message(GenertateId.genertateId(), timestamp, isUser, content, chatId)
+    static newMessage(timestamp, isUser, content, chatId) {
+        return new Message(
+            GenertateId.genertateId(),
+            timestamp,
+            isUser,
+            content,
+            chatId,
+        );
     }
 }
-export default Message
+export default Message;

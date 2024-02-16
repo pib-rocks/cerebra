@@ -32,13 +32,15 @@ describe("MotorPositionComponent", () => {
         motorConfig = {
             motorName: "test_motor",
             motorPathName: "test-motor",
-            title: "Test Motor",
+            label: "Test Motor",
             sliderIconLeft: "/left-icon-path",
             sliderIconRight: "/right-icon-path",
             captionLeft: "closed",
             captionRight: "open",
             touchPointCenterX: 0.3,
             touchPointCenterY: 0.6,
+            displaySettings: true,
+            sourceMotorName: "test_motor",
         };
         data = new BehaviorSubject({motor: motorConfig});
 
@@ -93,13 +95,15 @@ describe("MotorPositionComponent", () => {
         const nextConfig: MotorConfiguration = {
             motorName: "next_motor",
             motorPathName: "next-motor",
-            title: "Next Motor",
+            label: "Next Motor",
             sliderIconLeft: "/left-icon",
             sliderIconRight: "/right-icon",
             captionLeft: "closed",
             captionRight: "open",
             touchPointCenterX: 0.2,
             touchPointCenterY: 0.9,
+            displaySettings: true,
+            sourceMotorName: "next_motor",
         };
 
         data.next({motor: nextConfig});
@@ -128,6 +132,7 @@ describe("MotorPositionComponent", () => {
             rotationRangeMax: 0,
             turnedOn: true,
             visible: false,
+            invert: false,
         });
         expect(turnedOnReceiverSpy).toHaveBeenCalledOnceWith(true);
     });

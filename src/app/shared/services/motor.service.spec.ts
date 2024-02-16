@@ -6,7 +6,7 @@ import {RosService} from "./ros-service/ros.service";
 import {BehaviorSubject, Observable, Subject} from "rxjs";
 import {MotorDTO} from "../types/motor-dto";
 import {MotorSettings} from "../types/motor-settings.class";
-import {MotorSettingsMessage} from "../ros-message-types/motorSettingsMessage";
+import {MotorSettingsMessage} from "../ros-types/msg/motor-settings-message";
 
 describe("MotorService", () => {
     let service: MotorService;
@@ -26,6 +26,7 @@ describe("MotorService", () => {
         deceleration: 7,
         period: 8,
         visible: true,
+        invert: false,
     };
 
     beforeEach(() => {
@@ -82,6 +83,7 @@ describe("MotorService", () => {
             rotationRangeMax: 1,
             turnedOn: false,
             visible: true,
+            invert: false,
         };
         const subject = jasmine.createSpyObj("subject-spy", ["next"]);
         subject.value = settings;
@@ -108,6 +110,7 @@ describe("MotorService", () => {
             rotationRangeMax: 1,
             turnedOn: false,
             visible: true,
+            invert: false,
         };
         const subject = jasmine.createSpyObj("subject-spy", ["next"]);
         const motorNameToSettingsSubject = new Map().set(
@@ -134,6 +137,7 @@ describe("MotorService", () => {
             rotationRangeMax: 1,
             turnedOn: false,
             visible: true,
+            invert: false,
         };
         const motorNameToSettingsSubject = new Map();
         service["publishToSubject"](
@@ -195,6 +199,7 @@ describe("MotorService", () => {
                 deceleration: 7,
                 period: 8,
                 visible: true,
+                invert: false,
             }),
         );
     });
@@ -211,6 +216,7 @@ describe("MotorService", () => {
             rotationRangeMax: 7,
             turnedOn: false,
             visible: false,
+            invert: false,
         };
         const setttingsMessage: MotorSettingsMessage = {
             motor_name: "test-motor",
@@ -224,6 +230,7 @@ describe("MotorService", () => {
             rotation_range_max: 700,
             turned_on: false,
             visible: false,
+            invert: false,
         };
         const publishToSubjectSpy = spyOn<any>(service, "publishToSubject");
         rosService.motorSettingsReceiver$.next(setttingsMessage);
@@ -333,6 +340,7 @@ describe("MotorService", () => {
             rotationRangeMax: 7,
             turnedOn: false,
             visible: false,
+            invert: false,
         };
         const setttingsMessage: MotorSettingsMessage = {
             motor_name: motorName,
@@ -346,6 +354,7 @@ describe("MotorService", () => {
             rotation_range_max: 700,
             turned_on: false,
             visible: false,
+            invert: false,
         };
         rosService.sendMotorSettingsMessage.and.returnValue(new Observable());
         service.applySettings(motorName, settings);
