@@ -1,24 +1,46 @@
 import {Injectable, isDevMode} from "@angular/core";
 import * as ROSLIB from "roslib";
-import {BehaviorSubject, Subject, ReplaySubject, Observable} from "rxjs";
-import {MotorSettingsMessage} from "../../ros-message-types/motorSettingsMessage";
-import {DiagnosticStatus} from "../../ros-message-types/DiagnosticStatus.message";
-import {JointTrajectoryMessage} from "../../ros-message-types/jointTrajectoryMessage";
-import {rosDataTypes} from "../../ros-message-types/rosDataTypePaths.enum";
-import {rosTopics} from "./rosTopics.enum";
+import {
+    BehaviorSubject,
+    Subject,
+    ReplaySubject,
+    Observable,
+    filter,
+    from,
+    map,
+} from "rxjs";
+import {MotorSettingsMessage} from "../../ros-types/msg/motor-settings-message";
+import {DiagnosticStatus} from "../../ros-types/msg/diagnostic-status.message";
+import {JointTrajectoryMessage} from "../../ros-types/msg/joint-trajectory-message";
+import {rosDataTypes} from "../../ros-types/path/ros-datatypes.enum";
+import {rosTopics} from "../../ros-types/path/ros-topics.enum";
+import {rosServices} from "../../ros-types/path/ros-services.enum";
+import {rosActions} from "../../ros-types/path/ros-actions.enum";
 import {
     SetVoiceAssistantStateRequest,
     SetVoiceAssistantStateResponse,
-} from "../../ros-message-types/SetVoiceAssistantState";
-import {ChatMessage} from "../../ros-message-types/ChatMessage";
-import {VoiceAssistantState} from "../../ros-message-types/VoiceAssistantState";
-import {GetVoiceAssistantStateResponse} from "../../ros-message-types/GetVoiceAssistantState";
-import {rosServices} from "./rosServices.enum";
+} from "../../ros-types/srv/set-voice-assistant-state";
+import {ChatMessage} from "../../ros-types/msg/chat-message";
+import {VoiceAssistantState} from "../../ros-types/msg/voice-assistant-state";
+import {GetVoiceAssistantStateResponse} from "../../ros-types/srv/get-voice-assistant-state";
 import {MotorSettingsError} from "../../error/motor-settings-error";
 import {
     MotorSettingsServiceRequest,
     MotorSettingsServiceResponse,
-} from "../../ros-message-types/motorSettingsService";
+} from "../../ros-types/srv/motor-settings-service";
+import {
+    RunProgramFeedback,
+    RunProgramResult,
+} from "../../ros-types/action/run-program";
+import {GoalHandle} from "../../ros-types/action/goal-handle";
+import {
+    ProxyRunProgramStartRequest,
+    ProxyRunProgramStartResponse,
+} from "../../ros-types/srv/proxy-run-program-start";
+import {ProxyRunProgramStopRequest} from "../../ros-types/srv/proxy-run-program-stop";
+import {ProxyRunProgramFeedback} from "../../ros-types/msg/proxy-run-program-feedback";
+import {ProxyRunProgramResult} from "../../ros-types/msg/proxy-run-program-result";
+import {ProxyRunProgramStatus} from "../../ros-types/msg/proxy-run-program-status";
 
 @Injectable({
     providedIn: "root",
@@ -38,12 +60,18 @@ export class RosService {
         new Subject<JointTrajectoryMessage>();
     motorSettingsReceiver$: Subject<MotorSettingsMessage> =
         new Subject<MotorSettingsMessage>();
-    chatMessageReceiver$: Subject<ChatMessage> = new Subject<ChatMessage>();
+    proxyRunProgramFeedbackReceiver$: Subject<ProxyRunProgramFeedback> =
+        new Subject<ProxyRunProgramFeedback>();
+    proxyRunProgramResultReceiver$: Subject<ProxyRunProgramResult> =
+        new Subject<ProxyRunProgramResult>();
+    proxyRunProgramStatusReceiver$: Subject<ProxyRunProgramStatus> =
+        new Subject<ProxyRunProgramStatus>();
     voiceAssistantStateReceiver$: BehaviorSubject<VoiceAssistantState> =
         new BehaviorSubject<VoiceAssistantState>({
             turned_on: false,
             chat_id: "",
         });
+    chatMessageReceiver$: Subject<ChatMessage> = new Subject<ChatMessage>();
 
     private ros!: ROSLIB.Ros;
 
@@ -54,6 +82,9 @@ export class RosService {
     private cameraQualityFactorTopic!: ROSLIB.Topic;
     private jointTrajectoryTopic!: ROSLIB.Topic;
     private motorSettingsTopic!: ROSLIB.Topic;
+    private proxyRunProgramFeedbackTopic!: ROSLIB.Topic<ProxyRunProgramFeedback>;
+    private proxyRunProgramResultTopic!: ROSLIB.Topic<ProxyRunProgramResult>;
+    private proxyRunProgramStatusTopic!: ROSLIB.Topic<ProxyRunProgramStatus>;
     private chatMessageTopic!: ROSLIB.Topic<ChatMessage>;
     private voiceAssistantStateTopic!: ROSLIB.Topic<VoiceAssistantState>;
 
@@ -65,6 +96,16 @@ export class RosService {
         MotorSettingsServiceRequest,
         MotorSettingsServiceResponse
     >;
+    private proxyProgramStartService!: ROSLIB.Service<
+        ProxyRunProgramStartRequest,
+        ProxyRunProgramStartResponse
+    >;
+    private proxyProgramStopService!: ROSLIB.Service<
+        ProxyRunProgramStopRequest,
+        Record<string, never>
+    >;
+
+    private runProgramAction!: ROSLIB.ActionClient;
 
     constructor() {
         this.ros = this.setUpRos();
@@ -135,14 +176,39 @@ export class RosService {
             rosTopics.motorSettingsTopicName,
             rosDataTypes.motorSettings,
         );
+        this.proxyRunProgramFeedbackTopic = this.createRosTopic(
+            rosTopics.proxyRunProgramFeedback,
+            rosDataTypes.proxyRunProgramFeedback,
+        );
+        this.proxyRunProgramResultTopic = this.createRosTopic(
+            rosTopics.proxyRunProgramResult,
+            rosDataTypes.proxyRunProgramResult,
+        );
+        this.proxyRunProgramStatusTopic = this.createRosTopic(
+            rosTopics.proxyRunProgramStatus,
+            rosDataTypes.proxyRunProgramStatus,
+        );
 
         this.motorSettingsService = this.createRosService(
             rosServices.motorSettingsServiceName,
             rosDataTypes.motorSettingsSrv,
         );
+        this.proxyProgramStartService = this.createRosService(
+            rosServices.proxyRunProgramStart,
+            rosDataTypes.proxyRunProgramStart,
+        );
+        this.proxyProgramStopService = this.createRosService(
+            rosServices.proxyRunProgramStop,
+            rosDataTypes.proxyRunProgramStop,
+        );
         this.setVoiceAssistantStateService = this.createRosService(
             rosServices.setVoiceAssistantState,
             rosDataTypes.setVoiceAssistantState,
+        );
+
+        this.runProgramAction = this.createActionClient(
+            rosActions.runProgramName,
+            rosDataTypes.runProgram,
         );
     }
 
@@ -165,6 +231,14 @@ export class RosService {
         });
     }
 
+    createActionClient(actionName: string, actionType: string) {
+        return new ROSLIB.ActionClient({
+            ros: this.ros,
+            serverName: actionName,
+            actionName: actionType,
+        });
+    }
+
     initSubscribers() {
         this.subscribeDefaultRosMessageTopic(
             this.cameraPreviewSizeTopic,
@@ -184,6 +258,9 @@ export class RosService {
         this.subscribeMotorSettingsTopic();
         this.subscribeMotorCurrentTopic();
         this.subscribeJointTrajectoryTopic();
+        this.subscribeProxyRunProgramFeedbackTopic();
+        this.subscribeProxyRunProgramResultTopic();
+        this.subscribeProxyRunProgramStatusTopic();
     }
 
     subscribeDefaultRosMessageTopic(
@@ -220,6 +297,24 @@ export class RosService {
     subscribeMotorCurrentTopic() {
         this.motorCurrentTopic.subscribe((message) => {
             this.currentReceiver$.next(message as DiagnosticStatus);
+        });
+    }
+
+    subscribeProxyRunProgramStatusTopic() {
+        this.proxyRunProgramStatusTopic.subscribe((message) => {
+            this.proxyRunProgramStatusReceiver$.next(message);
+        });
+    }
+
+    subscribeProxyRunProgramFeedbackTopic() {
+        this.proxyRunProgramFeedbackTopic.subscribe((message) => {
+            this.proxyRunProgramFeedbackReceiver$.next(message);
+        });
+    }
+
+    subscribeProxyRunProgramResultTopic() {
+        this.proxyRunProgramResultTopic.subscribe((message) => {
+            this.proxyRunProgramResultReceiver$.next(message);
         });
     }
 
@@ -313,6 +408,66 @@ export class RosService {
             subject.error(error);
         }
         return subject;
+    }
+
+    private getfilteredFeedback(
+        proxyGoalId: string,
+    ): Observable<RunProgramFeedback> {
+        return this.proxyRunProgramFeedbackReceiver$.pipe(
+            filter((output) => output.proxy_goal_id == proxyGoalId),
+        );
+    }
+
+    private getFilteredResult(
+        proxyGoalId: string,
+    ): Observable<RunProgramResult> {
+        return this.proxyRunProgramResultReceiver$.pipe(
+            filter((result) => result.proxy_goal_id == proxyGoalId),
+        );
+    }
+
+    private getfilteredStatus(proxyGoalId: string): Observable<number> {
+        return this.proxyRunProgramStatusReceiver$
+            .pipe(filter((status) => status.proxy_goal_id == proxyGoalId))
+            .pipe(map((status) => status.status));
+    }
+
+    private getCancelFunction(proxyGoalId: string): () => void {
+        return () => {
+            this.proxyProgramStopService.callService(
+                {proxy_goal_id: proxyGoalId},
+                () => undefined,
+                () => {
+                    throw new Error("failed to cancel...");
+                },
+            );
+        };
+    }
+
+    runProgram(
+        programNumber: string,
+    ): Observable<GoalHandle<RunProgramFeedback, RunProgramResult>> {
+        return from(
+            new Promise<GoalHandle<RunProgramFeedback, RunProgramResult>>(
+                (resolve, reject) => {
+                    this.proxyProgramStartService.callService(
+                        {program_number: programNumber},
+                        (response) => {
+                            const proxyGoalId = response.proxy_goal_id;
+                            resolve({
+                                feedback: this.getfilteredFeedback(proxyGoalId),
+                                result: this.getFilteredResult(proxyGoalId),
+                                status: this.getfilteredStatus(proxyGoalId),
+                                cancel: this.getCancelFunction(proxyGoalId),
+                            });
+                        },
+                        (errorMsg) => {
+                            reject(new Error(errorMsg));
+                        },
+                    );
+                },
+            ),
+        );
     }
 
     sendJointTrajectoryMessage(jointTrajectoryMessage: JointTrajectoryMessage) {

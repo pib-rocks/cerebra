@@ -155,6 +155,18 @@ button:disabled {
         url("assets/bg-gesamt.png") center scroll;
 }
 
+/* don't repeat bg-gesamt if parent container is exceeding its height */
+@container (min-height: 800px) {
+    .pink-corner-frame {
+        background:
+            url("assets/ep-br.png") bottom right no-repeat,
+            url("assets/ep-tr.png") top right no-repeat,
+            url("assets/ep-tl.png") top left no-repeat,
+            url("assets/ep-bl.png") bottom left no-repeat,
+            url("assets/bg-gesamt.png") center / cover scroll;
+    }
+}
+
 input {
     color: #fff;
     background-color: #344a69;

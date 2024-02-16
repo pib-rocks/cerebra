@@ -15,6 +15,7 @@ export interface MotorSettingsDTO {
     deceleration: number;
     period: number;
     visible: boolean;
+    invert: boolean;
 }
 
 export interface MotorDTO extends MotorSettingsDTO {

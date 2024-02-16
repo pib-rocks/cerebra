@@ -1,8 +1,8 @@
 import {
     StdMessageHeader,
     createDefaultStdMessageHeader,
-} from "./stdMessageHeader";
-import {JointTrajectoryPoint} from "./jointTrajectoryPoint";
+} from "./std-message-header";
+import {JointTrajectoryPoint} from "./joint-trajectory-point";
 
 // TypeScript implementation of the ROS Common-Interfaces JointTrajectoryMessage
 // Documentation at: https://github.com/ros2/common_interfaces/blob/rolling/trajectory_msgs/msg/JointTrajectory.msg

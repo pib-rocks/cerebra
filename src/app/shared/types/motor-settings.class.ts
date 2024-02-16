@@ -1,5 +1,3 @@
-import {MotorSettingsMessage} from "../ros-message-types/motorSettingsMessage";
-
 export interface MotorSettings {
     velocity: number;
     acceleration: number;

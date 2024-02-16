@@ -8,4 +8,7 @@ export enum rosTopics {
     chatMessages = "/chat_messages",
     voiceAssistantState = "/voice_assistant_state",
     motorSettingsTopicName = "/motor_settings",
+    proxyRunProgramFeedback = "/proxy_run_program_feedback",
+    proxyRunProgramResult = "/proxy_run_program_result",
+    proxyRunProgramStatus = "/proxy_run_program_status",
 }

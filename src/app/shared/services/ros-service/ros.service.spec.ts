@@ -1,12 +1,20 @@
-import {TestBed} from "@angular/core/testing";
+import {TestBed, waitForAsync} from "@angular/core/testing";
 import * as ROSLIB from "roslib";
 import {RosService} from "./ros.service";
-import {createEmptyJointTrajectoryMessage} from "../../ros-message-types/jointTrajectoryMessage";
-import {MotorSettingsMessage} from "../../ros-message-types/motorSettingsMessage";
-import {MotorSettingsServiceResponse} from "../../ros-message-types/motorSettingsService";
-import {Observable} from "rxjs";
-import {VoiceAssistantState} from "../../ros-message-types/VoiceAssistantState";
-import {SetVoiceAssistantStateResponse} from "../../ros-message-types/SetVoiceAssistantState";
+import {createEmptyJointTrajectoryMessage} from "../../ros-types/msg/joint-trajectory-message";
+import {MotorSettingsMessage} from "../../ros-types/msg/motor-settings-message";
+import {MotorSettingsServiceResponse} from "../../ros-types/srv/motor-settings-service";
+import {ProxyRunProgramFeedback} from "../../ros-types/msg/proxy-run-program-feedback";
+import {ProxyRunProgramStopRequest} from "../../ros-types/srv/proxy-run-program-stop";
+import {ProxyRunProgramResult} from "../../ros-types/msg/proxy-run-program-result";
+import {ProxyRunProgramStatus} from "../../ros-types/msg/proxy-run-program-status";
+import {
+    ProxyRunProgramStartRequest,
+    ProxyRunProgramStartResponse,
+} from "../../ros-types/srv/proxy-run-program-start";
+import {VoiceAssistantState} from "../../ros-types/msg/voice-assistant-state";
+import {SetVoiceAssistantStateResponse} from "../../ros-types/srv/set-voice-assistant-state";
+import {Observable, Subject} from "rxjs";
 
 describe("RosService", () => {
     let rosService: RosService;
@@ -24,6 +32,7 @@ describe("RosService", () => {
         deceleration: 100,
         period: 100,
         visible: true,
+        invert: false,
     };
 
     beforeEach(() => {
@@ -289,4 +298,116 @@ describe("RosService", () => {
         expect(spyOnSetTimerPeriod).toHaveBeenCalledWith(0.5);
         expect(spyOnTimerPeriodTopicPublish).toHaveBeenCalled();
     });
+
+    it("should run a program", waitForAsync(() => {
+        const feedbackSubject = new Subject<ProxyRunProgramFeedback>();
+        const resultSubject = new Subject<ProxyRunProgramResult>();
+        const statusSubject = new Subject<ProxyRunProgramStatus>();
+
+        rosService.proxyRunProgramFeedbackReceiver$ = feedbackSubject;
+        rosService.proxyRunProgramResultReceiver$ = resultSubject;
+        rosService.proxyRunProgramStatusReceiver$ = statusSubject;
+
+        const startSpy = jasmine.createSpyObj<
+            ROSLIB.Service<
+                ProxyRunProgramStartRequest,
+                ProxyRunProgramStartResponse
+            >
+        >("proxy-run-program-start", ["callService"]);
+
+        const stoptSpy = jasmine.createSpyObj<
+            ROSLIB.Service<ProxyRunProgramStopRequest, Record<string, never>>
+        >("proxy-run-program-stop", ["callService"]);
+
+        rosService["proxyProgramStartService"] = startSpy;
+        rosService["proxyProgramStopService"] = stoptSpy;
+
+        startSpy.callService.and.callFake((_request, callback) => {
+            callback({proxy_goal_id: "test-proxy-goal-id"});
+        });
+
+        const programNumber = "test-uuid";
+
+        rosService.runProgram(programNumber).subscribe((handle) => {
+            const feedbackSubscriber = {next: jasmine.createSpy()};
+            const resultSubscriber = {next: jasmine.createSpy()};
+            const statusSubscriber = {next: jasmine.createSpy()};
+
+            handle.feedback.subscribe(feedbackSubscriber);
+            handle.result.subscribe(resultSubscriber);
+            handle.status.subscribe(statusSubscriber);
+
+            feedbackSubject.next({
+                proxy_goal_id: "test-proxy-goal-id",
+                output_lines: [{is_stderr: true, content: "test 1"}],
+            });
+            statusSubject.next({
+                proxy_goal_id: "test-proxy-goal-id",
+                status: 1,
+            });
+
+            feedbackSubject.next({
+                proxy_goal_id: "other-proxy-goal-id",
+                output_lines: [{is_stderr: true, content: "test 2"}],
+            });
+            statusSubject.next({
+                proxy_goal_id: "other-proxy-goal-id",
+                status: 2,
+            });
+            resultSubject.next({
+                proxy_goal_id: "other-proxy-goal-id",
+                exit_code: 2,
+            });
+
+            feedbackSubject.next({
+                proxy_goal_id: "test-proxy-goal-id",
+                output_lines: [{is_stderr: true, content: "test 3"}],
+            });
+            statusSubject.next({
+                proxy_goal_id: "test-proxy-goal-id",
+                status: 3,
+            });
+            resultSubject.next({
+                proxy_goal_id: "test-proxy-goal-id",
+                exit_code: 3,
+            });
+
+            expect(feedbackSubscriber.next).toHaveBeenCalledTimes(2);
+            expect(feedbackSubscriber.next).toHaveBeenCalledWith(
+                jasmine.objectContaining({
+                    output_lines: [{is_stderr: true, content: "test 1"}],
+                }),
+            );
+            expect(feedbackSubscriber.next).toHaveBeenCalledWith(
+                jasmine.objectContaining({
+                    output_lines: [{is_stderr: true, content: "test 3"}],
+                }),
+            );
+
+            expect(resultSubscriber.next).toHaveBeenCalledTimes(1);
+            expect(resultSubscriber.next).toHaveBeenCalledWith(
+                jasmine.objectContaining({exit_code: 3}),
+            );
+
+            expect(statusSubscriber.next).toHaveBeenCalledTimes(2);
+            expect(statusSubscriber.next).toHaveBeenCalledWith(1);
+            expect(statusSubscriber.next).toHaveBeenCalledWith(3);
+
+            expect(startSpy.callService).toHaveBeenCalledOnceWith(
+                jasmine.objectContaining({program_number: programNumber}),
+                jasmine.any(Function),
+                jasmine.any(Function),
+            );
+
+            handle.cancel();
+
+            expect(
+                rosService["proxyProgramStopService"].callService,
+            ).toHaveBeenCalledOnceWith(
+                jasmine.objectContaining({proxy_goal_id: "test-proxy-goal-id"}),
+                jasmine.any(Function),
+                jasmine.any(Function),
+            );
+        });
+    }));
 });
