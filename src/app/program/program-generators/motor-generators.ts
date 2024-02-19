@@ -9,6 +9,55 @@ pythonGenerator.addReservedWords(
 
 export function move_motor(block: Block, generator: typeof pythonGenerator) {
     let code = "";
+
+    // Auslesen der Block Inputs
+    const motorName = <string>block.getFieldValue("MOTORNAME");
+    const modeInput = block.getFieldValue("MODE");
+    const positionInput = generator.valueToCode(
+        block,
+        "POSITION",
+        Order.ATOMIC,
+    );
+
+    // Alle verfügbaren Motoren
+    const motors = {
+        THUMB_LEFT_OPPOSITION: 0,
+        THUMB_LEFT_STRETCH: 1,
+        INDEX_LEFT_STRETCH: 2,
+        MIDDLE_LEFT_STRETCH: 3,
+        RING_LEFT_STRETCH: 4,
+        PINKY_LEFT_STRETCH: 5,
+        ALL_FINGERS_LEFT: 6,
+        THUMB_RIGHT_OPPOSITION: 7,
+        THUMB_RIGHT_STRETCH: 8,
+        INDEX_RIGHT_STRETCH: 9,
+        MIDDLE_RIGHT_STRETCH: 10,
+        RING_RIGHT_STRETCH: 11,
+        PINKY_RIGHT_STRETCH: 12,
+        motorNumber: 13,
+        UPPER_ARM_LEFT_ROTATION: 14,
+        ELBOW_LEFT: 15,
+        LOWER_ARM_LEFT_ROTATION: 16,
+        WRIST_LEFT: 17,
+        SHOULDER_VERTICAL_LEFT: 18,
+        SHOULDER_HORIZONTAL_LEFT: 19,
+        UPPER_ARM_RIGHT_ROTATION: 20,
+        ELBOW_RIGHT: 21,
+        LOWER_ARM_RIGHT_ROTATION: 22,
+        WRIST_RIGHT: 23,
+        SHOULDER_VERTICAL_RIGHT: 24,
+        SHOULDER_HORIZONTAL_RIGHT: 25,
+        TILT_FORWARD_MOTOR: 26,
+        TILT_SIDEWAYS_MOTOR: 27,
+        TURN_HEAD_MOTOR: 28,
+    };
+
+    // motorName auf motorNumber mappen
+    const getMotorNumber = (str: string) => {
+        return motors[str as keyof typeof motors];
+    };
+    let motorNumber = getMotorNumber(motorName);
+
     (generator as any).definitions_["import_rclpy"] = "import rclpy";
     (generator as any).definitions_["from_rclpy_node_import_Node"] =
         "from rclpy.node import Node";
@@ -17,36 +66,24 @@ export function move_motor(block: Block, generator: typeof pythonGenerator) {
         "from_trajectory_msgs_msg_import_JointTrajectory_JointTrajectoryPoint"
     ] = "from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint";
 
-    // Array mit allen Motor Namen. Reihenfolge muss mit motor_number in der Switch-Anweisung übereinstimmen
-    (generator as any).definitions_["all_motor_names"] = `all_motor_names = [
-        'thumb_left_opposition','thumb_left_stretch','index_left_stretch','middle_left_stretch','ring_left_stretch','pinky_left_stretch','all_fingers_left',
-        'thumb_right_opposition','thumg_right_stretch','index_right_stretch','middle_right_stretch','ring_right_stretch','pinky_right_stretch','all_fingers_right',
-        'upper_arm_left_rotation','elbow_left','lower_arm_left_rotation','wrist_left','shoulder_vertical_left','shoulder_horizontal_left',
-        'upper_arm_right_rotation','elbow_right','lower_arm_right_rotation','wrist_right','shoulder_vertical_right','shoulder_horizontal_right',
-        'tilt_forward_motor','tilt_sideways_motor','turn_head_motor'
-]`;
+    // Erstelle eine Pythonliste mit allen Motor Namen
+    let Keys = Object.keys(motors);
+    let strKeys = Keys.toString();
+    strKeys = strKeys.toLowerCase().replaceAll(",", "', '");
+    strKeys = "'" + strKeys + "'";
 
-    // Array zum Speichern der aktuellen Motor Positionen
+    (generator as any).definitions_["all_motor_names"] =
+        "all_motor_names = [" + strKeys + "]";
+
+    // Pythonliste zum Speichern der aktuellen Motor Positionen
     (generator as any).definitions_[
         "saved_motor_positions"
     ] = `saved_motor_positions = [0] * len(all_motor_names) `;
 
-    const motor_name = block.getFieldValue("MOTORNAME");
-    const mode_input = block.getFieldValue("MODE");
-    const position_input = generator.valueToCode(
-        block,
-        "POSITION",
-        Order.ATOMIC,
-    );
-
     // Hier werden nur Dummy-Werte für Geschwindigkeit und Beschleunigung der Motoren gesetzt, da die Werte momentan von der Motor_control-Node nicht beachtet werden.
     //Es müssen allerdings Werte übergeben werden zur korrekten Funktion des JointTrajectoryPublishers
-    const desired_velocity = 16000.0;
-    const desired_acceleration = 10000.0;
-
-    // zur Berechnung der gewünschten Position bzw. zum Selektieren des gewünschten Motors
-    let position_string = "";
-    let motor_number = 0;
+    const desiredVelocity = 16000.0;
+    const desiredAcceleration = 10000.0;
 
     // Deklaration der ros2 JointTrajectory Publisher Klasse
     const moveMotorNode = generator.provideFunction_(
@@ -67,8 +104,8 @@ class ${generator.FUNCTION_NAME_PLACEHOLDER_}(Node):
         msg.joint_names = [all_motor_names[selected_motor]]
         point = JointTrajectoryPoint()
         point.positions = [saved_motor_positions[selected_motor]]
-        point.velocities = [float(${desired_velocity})]
-        point.accelerations = [float(${desired_acceleration})]
+        point.velocities = [${desiredVelocity}.0]
+        point.accelerations = [${desiredAcceleration}.0]
         point.time_from_start.sec = 0
         point.time_from_start.nanosec = 10000000
         msg.points.append(point)
@@ -83,148 +120,28 @@ class ${generator.FUNCTION_NAME_PLACEHOLDER_}(Node):
     (generator as any).definitions_[
         "joint_trajectory_publisher_=_JointTrajectoryPublisher()"
     ] = `joint_trajectory_publisher = JointTrajectoryPublisher()`;
-    (generator as any).definitions_["selected_motor"] = `selected_motor = 0`;
-
-    // Alle Motoren auf eine motor_number mappen
-    // Ansprechen der Motoren und dem zugehörigen Positionswert über den Index "motor_number".
-    // Index wird für die Listen "current_motor_positions" und "all_motor_names" verwendet
-    switch (motor_name) {
-        case "THUMB_LEFT_OPPOSITION": {
-            motor_number = 0;
-            break;
-        }
-        case "THUMB_LEFT_STRETCH": {
-            motor_number = 1;
-            break;
-        }
-        case "INDEX_LEFT_STRETCH": {
-            motor_number = 2;
-            break;
-        }
-        case "MIDDLE_LEFT_STRETCH": {
-            motor_number = 3;
-            break;
-        }
-        case "RING_LEFT_STRETCH": {
-            motor_number = 4;
-            break;
-        }
-        case "PINKY_LEFT_STRETCH": {
-            motor_number = 5;
-            break;
-        }
-        case "ALL_FINGERS_LEFT": {
-            motor_number = 6;
-            break;
-        }
-        case "THUMB_RIGHT_OPPOSITION": {
-            motor_number = 7;
-            break;
-        }
-        case "THUMB_RIGHT_STRETCH": {
-            motor_number = 8;
-            break;
-        }
-        case "INDEX_RIGHT_STRETCH": {
-            motor_number = 9;
-            break;
-        }
-        case "MIDDLE_RIGHT_STRETCH": {
-            motor_number = 10;
-            break;
-        }
-        case "RING_RIGHT_STRETCH": {
-            motor_number = 11;
-            break;
-        }
-        case "PINKY_RIGHT_STRETCH": {
-            motor_number = 12;
-            break;
-        }
-        case "ALL_FINGERS_RIGHT": {
-            motor_number = 13;
-            break;
-        }
-        case "UPPER_ARM_LEFT_ROTATION": {
-            motor_number = 14;
-            break;
-        }
-        case "ELBOW_LEFT": {
-            motor_number = 15;
-            break;
-        }
-        case "LOWER_ARM_LEFT_ROTATION": {
-            motor_number = 16;
-            break;
-        }
-        case "WRIST_LEFT": {
-            motor_number = 17;
-            break;
-        }
-        case "SHOULDER_VERTICAL_LEFT": {
-            motor_number = 18;
-            break;
-        }
-        case "SHOULDER_HORIZONTAL_LEFT": {
-            motor_number = 19;
-            break;
-        }
-        case "UPPER_ARM_RIGHT_ROTATION": {
-            motor_number = 20;
-            break;
-        }
-        case "ELBOW_RIGHT": {
-            motor_number = 21;
-            break;
-        }
-        case "LOWER_ARM_RIGHT_ROTATION": {
-            motor_number = 22;
-            break;
-        }
-        case "WRIST_RIGHT": {
-            motor_number = 23;
-            break;
-        }
-        case "SHOULDER_VERTICAL_RIGHT": {
-            motor_number = 24;
-            break;
-        }
-        case "SHOULDER_HORIZONTAL_RIGHT": {
-            motor_number = 25;
-            break;
-        }
-        case "TILT_FORWARD_MOTOR": {
-            motor_number = 26;
-            break;
-        }
-        case "TILT_SIDEWAYS_MOTOR": {
-            motor_number = 27;
-            break;
-        }
-        case "TURN_HEAD_MOTOR": {
-            motor_number = 28;
-            break;
-        }
-    }
+    (generator as any).definitions_["selected_motor"] = `selected_motor = None`;
 
     // generiert Pythoncode für relative oder absolute Positionsvorgabe.
     // Aktuelle Position zur Berechnung für die relative Positionsvorgabe wird in generierter Pythonliste "saved_motor_positions" gespeichert
+    let positionString = "";
 
-    if (mode_input == "ABSOLUTE") {
-        position_string = position_input;
-    } else if (mode_input == "RELATIVE") {
-        position_string =
-            "saved_motor_positions[" + motor_number + "] + " + position_input;
+    if (modeInput == "ABSOLUTE") {
+        positionString = positionInput;
+    } else if (modeInput == "RELATIVE") {
+        positionString =
+            "saved_motor_positions[" + motorNumber + "] + " + positionInput;
     }
 
     // JointTrajectoryPublisher erstellen bzw. einmalig publishen der Position
-
     code =
         "selected_motor = " +
-        motor_number +
+        motorNumber +
         "\n" +
-        "saved_motor_positions[selected_motor] = float(" +
-        position_string +
+        "saved_motor_positions[" +
+        motorNumber +
+        "] = float(" +
+        positionString +
         ")\n" +
         "rclpy.spin_once(joint_trajectory_publisher)\n";
 
