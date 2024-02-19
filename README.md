@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Cerebra2
 
 
@@ -14,6 +13,3 @@ The frontend is developed using Angular 15:
 2. Run `npm install`.
 
 3. Start the application in development mode with `ng serve`. It will be available on `localhost:4200`.
-=======
-# cerebra
->>>>>>> origin/main
