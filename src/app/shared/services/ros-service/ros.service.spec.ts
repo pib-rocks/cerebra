@@ -41,8 +41,8 @@ describe("RosService", () => {
         });
 
         rosService = TestBed.inject(RosService);
-        rosService.initTopicsAndServices();
-        spyOnSetupRos = spyOn(rosService, "setUpRos").and.callThrough();
+        rosService["initTopicsAndServices"]();
+        spyOnSetupRos = spyOn<any>(rosService, "setUpRos").and.callThrough();
     });
 
     it("should be created", () => {
@@ -50,9 +50,9 @@ describe("RosService", () => {
     });
 
     it("should establish ros in the constructor", () => {
-        rosService.setUpRos();
+        rosService["setUpRos"]();
         expect(spyOnSetupRos).toHaveBeenCalled();
-        expect(rosService.Ros).toBeTruthy();
+        expect(rosService["Ros"]).toBeTruthy();
     });
 
     it("should create all ROSLIB topics and services", () => {
@@ -181,7 +181,7 @@ describe("RosService", () => {
                     voice_assistant_state: state2,
                 }),
         );
-        spyOn(rosService, "createRosService").and.returnValue(
+        spyOn<any>(rosService, "createRosService").and.returnValue(
             getVoiceAssistantStateServiceSpy,
         );
         const voiceAssistantStateReceiverSpy = spyOn(
@@ -189,7 +189,7 @@ describe("RosService", () => {
             "next",
         );
 
-        rosService.subscribeVoiceAssistantStateTopic();
+        rosService["subscribeVoiceAssistantStateTopic"]();
 
         expect(voiceAssistantStateReceiverSpy).toHaveBeenCalledTimes(2);
         expect(voiceAssistantStateReceiverSpy).toHaveBeenCalledWith(state1);

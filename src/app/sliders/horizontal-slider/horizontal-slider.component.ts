@@ -17,6 +17,7 @@ import {
 import {FormControl} from "@angular/forms";
 import {Observable, asyncScheduler} from "rxjs";
 import {SliderThumb} from "./slider-thumb";
+
 @Component({
     selector: "app-horizontal-slider",
     templateUrl: "./horizontal-slider.component.html",
