@@ -1,0 +1,61 @@
+<div class="row m-0 pl-3 pr-0 pt-0 pb-2">Select a touch point to adjust.</div>
+<div
+    class="d-flex m-0 p-0"
+    [ngClass]="joint.reversed ? 'flex-row-reverse' : 'flex-row'">
+    <div class="flex-grow-1 m-0 p-0">
+        <div
+            class="row m-0 p-0 d-flex align-items-end"
+            [ngClass]="joint.reversed ? 'flex-row-reverse' : 'flex-row'"
+            [style]="'height: ' + ((joint.segmentOffset - joint.segmentHeight/2) * 100) + '%;'">
+            <div class="col-3 sidebar-label m-0 p-0">Settings</div>
+            <div class="col-3 sidebar-label m-0 p-0">Active</div>
+            <div class="col-3 sidebar-label m-0 p-0">Current</div>
+        </div>
+        <div
+            *ngFor="let motor of joint.motors"
+            class="row m-0 p-0"
+            [ngClass]="joint.reversed ? 'flex-row-reverse' : 'flex-row'"
+            [style]="'height: ' + (joint.segmentHeight*100) + '%;'">
+            <ng-container *ngIf="motor.displaySettings">
+                <app-motor-settings
+                    [reversed]="joint.reversed"
+                    [motor]="motor"
+                    class="col-6 m-0 p-0"></app-motor-settings>
+                <app-motor-current
+                    [reversed]="joint.reversed"
+                    [motor]="motor"
+                    class="col-6 m-0 p-0"></app-motor-current>
+            </ng-container>
+        </div>
+    </div>
+    <div
+        id="joint-canvas"
+        class="m-0 p-0">
+        <!-- touchpoints background-->
+        <a
+            *ngFor="let motor of joint.motors"
+            [routerLink]="['motor', motor.motorPathName]"
+            [id]="'touchpoint-' + motor.motorPathName"
+            routerLinkActive="active-touchpoint"
+            [style]="'left: ' + (motor.touchPointCenterX*100) + '%; top: ' + (motor.touchPointCenterY*100) + '%;'"
+            class="touchpoint touchpoint-link m-0 p-0 pe-none">
+            <div class="touchpoint-wrapper">
+                <div
+                    class="m-0 p-0 pe-none touchpoint-background"
+                    alt="backgorund for touchpoint"></div>
+                <div
+                    [id]="'touch-area-' + motor.motorPathName"
+                    class="m-0 p-0 touch-area pe-auto"
+                    alt="touch-area of touchpoint"></div>
+            </div>
+        </a>
+        <!-- joint background -->
+        <img
+            class="img-fluid joint-background m-0 p-0"
+            [src]="'../../../assets' + joint.background"
+            alt="background for joint" />
+    </div>
+</div>
+<div class="row m-0 p-0">
+    <router-outlet></router-outlet>
+</div>

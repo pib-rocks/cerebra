@@ -383,29 +383,34 @@ export class RosService implements IRosService {
         motorSettingsMessage: MotorSettingsMessage,
     ): Observable<MotorSettingsMessage> {
         const subject: Subject<MotorSettingsMessage> = new ReplaySubject();
-        this.motorSettingsService.callService(
-            {motor_settings: motorSettingsMessage},
-            (response) => {
-                if (response["settings_applied"]) {
-                    if (response["settings_persisted"]) {
-                        subject.next(motorSettingsMessage);
+        try {
+            this.motorSettingsService.callService(
+                {motor_settings: motorSettingsMessage},
+                (response) => {
+                    if (response["settings_applied"]) {
+                        if (response["settings_persisted"]) {
+                            subject.next(motorSettingsMessage);
+                        } else {
+                            subject.error(
+                                new MotorSettingsError(
+                                    motorSettingsMessage,
+                                    true,
+                                ),
+                            );
+                        }
                     } else {
                         subject.error(
-                            new MotorSettingsError(motorSettingsMessage, true),
+                            new MotorSettingsError(motorSettingsMessage, false),
                         );
-                        throw Error("Settings couldn't be persisted");
                     }
-                } else {
-                    subject.error(
-                        new MotorSettingsError(motorSettingsMessage, false),
-                    );
-                    throw Error("Settings couldn't be applied");
-                }
-            },
-            (errorMsg) => {
-                subject.error(new Error(errorMsg));
-            },
-        );
+                },
+                (errorMsg) => {
+                    subject.error(new Error(errorMsg));
+                },
+            );
+        } catch (error) {
+            subject.error(error);
+        }
         return subject;
     }
 
