@@ -72,16 +72,15 @@ import {MotorPositionComponent} from "./joint-control/joint-control-core/motor-p
         HighlightModule,
     ],
     providers: [
-        // MotorCurrentService,
-        // {
-        //     provide: HIGHLIGHT_OPTIONS,
-        //     useValue: {
-        //         coreLibraryLoader: () => import("highlight.js/lib/core"),
-        //         languages: {
-        //             python: () => import("highlight.js/lib/languages/python"),
-        //         },
-        //     },
-        // },
+        {
+            provide: HIGHLIGHT_OPTIONS,
+            useValue: {
+                coreLibraryLoader: () => import("highlight.js/lib/core"),
+                languages: {
+                    python: () => import("highlight.js/lib/languages/python"),
+                },
+            },
+        },
         {
             provide: ErrorHandler,
             useClass: CerebraErrorHandler,
