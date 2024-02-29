@@ -75,14 +75,16 @@ describe("HorizontalSliderComponent", () => {
     it("should set thumb positions correctly", () => {
         component.thumbs = [
             {
-                value: 0,
+                valueRaw: 0,
+                valueSanitized: 0,
                 position: NaN,
                 bubbleFormControl: new FormControl(),
                 inputVisible: false,
                 id: 0,
             },
             {
-                value: 0,
+                valueRaw: 0,
+                valueSanitized: 0,
                 position: 200,
                 bubbleFormControl: new FormControl(),
                 inputVisible: false,
@@ -144,8 +146,8 @@ describe("HorizontalSliderComponent", () => {
 
     it("should send event", fakeAsync(() => {
         const eventSpy = spyOn(component.sliderEvent, "emit");
-        component.thumbs[0].value = 20;
-        component.thumbs[1].value = 10;
+        component.thumbs[0].valueSanitized = 20;
+        component.thumbs[1].valueSanitized = 10;
         component.sendEvent();
         tick(50);
         expect(eventSpy).not.toHaveBeenCalled();
@@ -153,14 +155,14 @@ describe("HorizontalSliderComponent", () => {
         expect(eventSpy).toHaveBeenCalledOnceWith([10, 20]);
     }));
 
-    it("should send only one event if events occur in too high frequency", fakeAsync(() => {
+    it("should send only one event if the frequency in which events occur is too thigh", fakeAsync(() => {
         const eventSpy = spyOn(component.sliderEvent, "emit");
-        component.thumbs[0].value = 20;
-        component.thumbs[1].value = 10;
+        component.thumbs[0].valueSanitized = 20;
+        component.thumbs[1].valueSanitized = 10;
         component.sendEvent();
         tick(50);
         expect(eventSpy).not.toHaveBeenCalled();
-        component.thumbs[1].value = 30;
+        component.thumbs[1].valueSanitized = 30;
         component.sendEvent();
         tick(50);
         expect(eventSpy).not.toHaveBeenCalled();
@@ -169,9 +171,9 @@ describe("HorizontalSliderComponent", () => {
     }));
 
     it("should select the closest slider", () => {
-        component.thumbs[0].value = 0;
-        component.thumbs[1].value = 100;
-        spyOn(component, "sanitizedSliderValue").and.returnValues(10, 90);
+        component.thumbs[0].valueSanitized = 0;
+        component.thumbs[1].valueSanitized = 100;
+        spyOn(component, "linearTransform").and.returnValues(20, 80);
         component.selectClosestSlider(NaN);
         expect(component.thumbSelected).toBe(component.thumbs[0]);
         component.selectClosestSlider(NaN);
@@ -193,10 +195,6 @@ describe("HorizontalSliderComponent", () => {
             component,
             "linearTransform",
         ).and.returnValue(100);
-        const sanitizedValueSpy = spyOn(
-            component,
-            "sanitizedSliderValue",
-        ).and.callThrough();
         component.thumbSelected = component.thumbs[0];
         spyOn(
             component.slider.nativeElement,
@@ -213,7 +211,6 @@ describe("HorizontalSliderComponent", () => {
             -200,
             200,
         );
-        expect(sanitizedValueSpy).toHaveBeenCalledOnceWith(100);
         expect(setThumbValueSpy).toHaveBeenCalledOnceWith(
             component.thumbs[0],
             100,

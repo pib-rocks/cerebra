@@ -26,6 +26,11 @@ span {
     display: none;
 }
 
+.inactive {
+    pointer-events: none;
+    user-select: none;
+}
+
 .bubble-input,
 .bubble-span,
 .bubble-span-left,
