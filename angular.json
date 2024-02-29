@@ -55,6 +55,14 @@
               "extractLicenses": false,
               "sourceMap": true,
               "namedChunks": true
+            },
+            "rosmock": {
+              "fileReplacements": [
+                {
+                  "replace": "src/app/shared/services/ros-service/ros.service.ts",
+                  "with": "src/app/shared/services/ros-service/ros-mock.service.ts"
+                }
+              ]
             }
           },
           "defaultConfiguration": "production"
@@ -67,6 +75,9 @@
             },
             "development": {
               "browserTarget": "cerebra:build:development"
+            },
+            "rosmock": {
+              "browserTarget": "cerebra:build:rosmock"
             }
           },
           "options": {
