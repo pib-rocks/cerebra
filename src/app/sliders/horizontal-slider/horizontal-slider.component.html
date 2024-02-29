@@ -1,6 +1,6 @@
 <div
     class="slider"
-    [ngClass]="thumbSelected ? 'no-highlight' : ''"
+    [ngClass]="(thumbSelected ? 'no-highlight' : '') + (isActive ? '' : 'inactive')"
     (mouseup)="onMouseUp($event)"
     (mouseenter)="onMouseEnter($event)"
     (mouseleave)="onMouseLeave($event)"
@@ -31,7 +31,7 @@
         <input
             *ngFor="let thumb of thumbs"
             #bubbleInput
-            id="slider_bubbleinput_{{baseId}}_{{thumb.id}}"
+            id="slider-bubbleinput-{{baseId}}-{{thumb.id}}"
             class="bubble-input overlay"
             [ngClass]="thumb.inputVisible ? '' : 'invisible'"
             [attr.style]="'left: ' + thumb.position + 'px;'"
@@ -41,22 +41,22 @@
         <!-- bubble overlay -->
         <div
             *ngFor="let thumb of thumbs"
-            id="bubbe_span_{{baseId}}_{{thumb.id}}"
+            id="bubbe_span-{{baseId}}-{{thumb.id}}"
             class="bubble-span overlay"
             [ngClass]="thumb.inputVisible ? 'invisible' : ''"
             [attr.style]="'left: ' + thumb.position + 'px;'"
             (dblclick)="toggleInputVisible(thumb)">
-            {{ thumb.value }}{{ unitShort }}
+            {{ thumb.valueSanitized }}{{ unitShort }}
         </div>
     </div>
     <div class="row pb-4 px-0 pt-0 m-0">
         <svg
             (mousedown)="onMouseDown($event)"
-            id="slider_{{baseId}}"
+            id="slider-{{baseId}}"
             [attr.style]="'height: ' + 2*thumbRadius + 'px;'">
             <!-- slider track background -->
             <rect
-                id="slider_{{baseId}}_track_bg"
+                id="slider-{{baseId}}-track-bg"
                 [attr.x]="trackOuterOffset"
                 [attr.y]="trackOuterOffset"
                 [attr.width]="trackLength"
@@ -65,17 +65,17 @@
                 fill="#344a69" />
             <!-- slider track foreground -->
             <rect
-                id="slider_{{baseId}}_track_fg"
-                [attr.x]="numberOfThumbs > 1 ? currentMinBubblePosition : trackOuterOffset"
+                id="slider-{{baseId}}-track-fg"
+                [attr.x]="(numberOfThumbs > 1 ? (currentMinBubblePosition - (trackHeight / 2)) : trackOuterOffset)"
                 [attr.y]="trackOuterOffset"
-                [attr.width]="currentMaxBubblePosition - (numberOfThumbs > 1 ? currentMinBubblePosition : trackOuterOffset)"
+                [attr.width]="currentMaxBubblePosition - (numberOfThumbs > 1 ? (currentMinBubblePosition - trackHeight) : (trackOuterOffset - (trackHeight / 2)))"
                 [attr.height]="trackHeight"
                 [attr.rx]="trackHeight / 2"
                 fill="#e10072" />
             <!-- slider thumbs -->
             <circle
                 *ngFor="let thumb of thumbs"
-                id="slider_{{baseId}}_thumb_{{thumb.id}}"
+                id="slider-{{baseId}}-thumb-{{thumb.id}}"
                 [attr.cx]="thumb.position"
                 [attr.cy]="thumbRadius"
                 [attr.r]="thumbRadius"

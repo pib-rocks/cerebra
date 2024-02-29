@@ -5,19 +5,12 @@ import {HttpClientModule} from "@angular/common/http";
 
 import {AppRoutingModule} from "./app-routing.module";
 import {AppComponent} from "./app.component";
-import {MotorControlComponent} from "./joint-control/motor-control/motor-control.component";
-import {HandComponent} from "./joint-control/hand/hand.component";
 import {CameraComponent} from "./camera/camera.component";
-import {ArmComponent} from "./joint-control/arm/arm.component";
 import {MatDialogModule} from "@angular/material/dialog";
 import {NgbModule, NgbDropdownModule} from "@ng-bootstrap/ng-bootstrap";
 import {MatSliderModule} from "@angular/material/slider";
-import {HeadComponent} from "./joint-control/head/head.component";
 import {ProgramComponent} from "./program/program.component";
 import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
-import {NavBarComponent} from "./nav-bar/nav-bar.component";
-import {CircularSliderComponent} from "./joint-control/circular-slider/circular-slider.component";
-import {MotorCurrentService} from "./shared/services/motor-service/motor-current.service";
 
 import {VoiceAssistantNavComponent} from "./voice-assistant/voice-assistant-nav/voice-assistant-nav.component";
 import {VoiceAssistantChatComponent} from "./voice-assistant/voice-assistant-chat/voice-assistant-chat.component";
@@ -35,18 +28,22 @@ import {AngularSplitModule} from "angular-split";
 import {HIGHLIGHT_OPTIONS, HighlightModule} from "ngx-highlightjs";
 import {CerebraErrorHandler} from "./global-error-handler/service/cerebra-error-handler.service";
 import {PersonalityWrapperComponent} from "./voice-assistant/personality-wrapper/personality-wrapper.component";
+import {JointControlComponent} from "./joint-control/joint-control.component";
+import {JointControlCoreComponent} from "./joint-control/joint-control-core/joint-control-core.component";
+import {MotorSettingsComponent} from "./joint-control/joint-control-core/motor-settings/motor-settings.component";
+import {MotorCurrentComponent} from "./joint-control/joint-control-core/motor-current/motor-current.component";
+import {MotorPositionComponent} from "./joint-control/joint-control-core/motor-position/motor-position.component";
 
 @NgModule({
     declarations: [
         AppComponent,
-        MotorControlComponent,
-        HandComponent,
         CameraComponent,
-        ArmComponent,
-        HeadComponent,
+        JointControlComponent,
+        JointControlCoreComponent,
+        MotorSettingsComponent,
+        MotorCurrentComponent,
+        MotorPositionComponent,
         ProgramComponent,
-        NavBarComponent,
-        CircularSliderComponent,
         VoiceAssistantNavComponent,
         VoiceAssistantChatComponent,
         SideBarRightComponent,
@@ -75,16 +72,16 @@ import {PersonalityWrapperComponent} from "./voice-assistant/personality-wrapper
         HighlightModule,
     ],
     providers: [
-        MotorCurrentService,
-        {
-            provide: HIGHLIGHT_OPTIONS,
-            useValue: {
-                coreLibraryLoader: () => import("highlight.js/lib/core"),
-                languages: {
-                    python: () => import("highlight.js/lib/languages/python"),
-                },
-            },
-        },
+        // MotorCurrentService,
+        // {
+        //     provide: HIGHLIGHT_OPTIONS,
+        //     useValue: {
+        //         coreLibraryLoader: () => import("highlight.js/lib/core"),
+        //         languages: {
+        //             python: () => import("highlight.js/lib/languages/python"),
+        //         },
+        //     },
+        // },
         {
             provide: ErrorHandler,
             useClass: CerebraErrorHandler,
