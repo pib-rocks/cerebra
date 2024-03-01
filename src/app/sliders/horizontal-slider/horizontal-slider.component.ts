@@ -41,12 +41,10 @@ export class HorizontalSliderComponent
     @Input() numberOfThumbs: number = 1;
     @Input() thumbRadius: number = 12;
     @Input() trackHeight: number = 12;
-    @Input() isActiveReceiver$: Observable<boolean> = new Observable();
+    @Input() active: boolean = true;
 
     minValue!: number;
     maxValue!: number;
-
-    isActive: boolean = true;
 
     currentMinBubblePosition: number = 0;
     currentMaxBubblePosition: number = 0;
@@ -81,6 +79,7 @@ export class HorizontalSliderComponent
         if ("rightValue" in changes) {
             this.rightValue = changes["rightValue"].currentValue;
         }
+        this.generateBaseId();
         this.calculateStaticPositionalProperties();
     }
 
@@ -96,10 +95,15 @@ export class HorizontalSliderComponent
         );
     }
 
-    ngOnInit(): void {
+    generateBaseId(): void {
         this.baseId = this.name
-            ? this.name.replace(" ", "_").toLowerCase()
-            : "_";
+            ? this.name.replace(" ", "-").toLowerCase()
+            : "-";
+    }
+
+    ngOnInit(): void {
+        console.info("b");
+        this.generateBaseId();
         this.unitLong = this.unitLong || this.unitShort;
         this.thumbs = [];
         for (let i = 0; i < this.numberOfThumbs; i++) {
@@ -119,9 +123,6 @@ export class HorizontalSliderComponent
                 );
             }
         });
-        this.isActiveReceiver$.subscribe(
-            (isActive) => (this.isActive = isActive),
-        );
         this.ref.detectChanges();
     }
 

@@ -1,6 +1,6 @@
 <div
     class="slider"
-    [ngClass]="(thumbSelected ? 'no-highlight' : '') + (isActive ? '' : 'inactive')"
+    [ngClass]="(thumbSelected ? 'no-highlight' : '') + (active ? '' : 'inactive')"
     (mouseup)="onMouseUp($event)"
     (mouseenter)="onMouseEnter($event)"
     (mouseleave)="onMouseLeave($event)"
