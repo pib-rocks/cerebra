@@ -41,7 +41,7 @@
         <!-- bubble overlay -->
         <div
             *ngFor="let thumb of thumbs"
-            id="bubbe_span-{{baseId}}-{{thumb.id}}"
+            id="bubble-span-{{baseId}}-{{thumb.id}}"
             class="bubble-span overlay"
             [ngClass]="thumb.inputVisible ? 'invisible' : ''"
             [attr.style]="'left: ' + thumb.position + 'px;'"
