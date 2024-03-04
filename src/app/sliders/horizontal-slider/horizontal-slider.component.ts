@@ -102,7 +102,6 @@ export class HorizontalSliderComponent
     }
 
     ngOnInit(): void {
-        console.info("b");
         this.generateBaseId();
         this.unitLong = this.unitLong || this.unitShort;
         this.thumbs = [];

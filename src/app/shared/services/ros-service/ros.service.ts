@@ -304,7 +304,6 @@ export class RosService implements IRosService {
 
     private subscribeMotorCurrentTopic() {
         this.motorCurrentTopic.subscribe((message) => {
-            console.info(JSON.stringify(message));
             this.currentReceiver$.next(message as DiagnosticStatus);
         });
     }
