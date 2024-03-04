@@ -41,6 +41,9 @@ export class ProgramWorkspaceComponent
 
     pythonCode: string = "";
 
+    saveBtnDisabled: boolean = true;
+    oldBlocklyVisual: string = "";
+
     supportedEvents = new Set([
         Blockly.Events.BLOCK_CHANGE,
         Blockly.Events.BLOCK_CREATE,
@@ -107,6 +110,7 @@ export class ProgramWorkspaceComponent
                 this.programService
                     .getCodeByProgramNumber(programNumber)
                     .subscribe((code) => {
+                        this.oldBlocklyVisual = code.visual;
                         this.workspaceContent = JSON.parse(code.visual);
                     });
             });
@@ -120,8 +124,15 @@ export class ProgramWorkspaceComponent
         if (blocklyMainBackground) {
             blocklyMainBackground.style.stroke = "none";
         }
+
         this.workspace.addChangeListener((event: Abstract) => {
             this.generateCode(event);
+
+            const newBlocklyVisual = JSON.stringify(this.workspaceContent);
+            if (this.oldBlocklyVisual !== newBlocklyVisual) {
+                this.saveBtnDisabled = false;
+                this.oldBlocklyVisual = newBlocklyVisual;
+            }
         });
     }
 
@@ -145,6 +156,7 @@ export class ProgramWorkspaceComponent
             python: pythonGenerator.workspaceToCode(this.workspace),
         };
         this.programService.updateCodeByProgramNumber(programNumber, code);
+        this.saveBtnDisabled = true;
     }
 
     runProgram() {

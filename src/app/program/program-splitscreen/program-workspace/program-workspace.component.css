@@ -9,3 +9,13 @@
 #blocklyDiv {
     color: white;
 }
+
+.workspaceButton:disabled {
+    all: unset;
+    cursor: not-allowed;
+    border: none;
+    outline: none;
+    filter: grayscale(100%);
+    opacity: 0.7;
+    border-radius: 5px;
+}

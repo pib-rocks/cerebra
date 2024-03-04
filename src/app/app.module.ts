@@ -33,6 +33,7 @@ import {JointControlCoreComponent} from "./joint-control/joint-control-core/join
 import {MotorSettingsComponent} from "./joint-control/joint-control-core/motor-settings/motor-settings.component";
 import {MotorCurrentComponent} from "./joint-control/joint-control-core/motor-current/motor-current.component";
 import {MotorPositionComponent} from "./joint-control/joint-control-core/motor-position/motor-position.component";
+import {ConfirmLeaveComponent} from "./program/confirm-leave/confirm-leave.component";
 
 @NgModule({
     declarations: [
@@ -56,6 +57,7 @@ import {MotorPositionComponent} from "./joint-control/joint-control-core/motor-p
         ProgramWorkspaceComponent,
         ProgramSplitscreenComponent,
         PersonalityWrapperComponent,
+        ConfirmLeaveComponent,
     ],
     imports: [
         BrowserModule,

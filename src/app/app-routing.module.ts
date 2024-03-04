@@ -17,6 +17,7 @@ import {jointResolver} from "./joint-control/joint-resolver/joint-resolver";
 import {MotorPositionComponent} from "./joint-control/joint-control-core/motor-position/motor-position.component";
 import {motorResolver} from "./joint-control/joint-control-core/motor-position/motor-resolver/motor.resolver";
 import {motorGuard} from "./security/motor-guard";
+import {SaveConfirmationGuard} from "./security/save-confirmation.guard";
 
 const routes: Routes = [
     {
@@ -83,6 +84,7 @@ const routes: Routes = [
             {
                 path: ":uuid",
                 component: ProgramWorkspaceComponent,
+                canDeactivate: [SaveConfirmationGuard],
             },
         ],
     },

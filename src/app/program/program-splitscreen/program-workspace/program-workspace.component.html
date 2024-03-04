@@ -6,6 +6,7 @@
             type="button"
             (click)="saveCode()"
             [style]="'transform: translate(' + -flyoutWidth + 'px, 0);'"
+            [disabled]="saveBtnDisabled"
             class="workspaceButton">
             <img
                 [src]="saveButtonPath"
