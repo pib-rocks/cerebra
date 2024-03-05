@@ -1,6 +1,7 @@
 import {Injectable} from "@angular/core";
 import {ProgramWorkspaceComponent} from "../program/program-splitscreen/program-workspace/program-workspace.component";
 import {SaveConfirmationGuardService} from "../shared/services/save-confirmation-guard.service";
+import {SaveConfirmationOptions} from "../shared/types/save-confirmation-options.enum";
 
 @Injectable({
     providedIn: "root",
@@ -12,10 +13,11 @@ export class SaveConfirmationGuard {
 
     async canDeactivate(
         component: ProgramWorkspaceComponent,
-    ): Promise<boolean | Promise<boolean>> {
+    ): Promise<boolean> {
         const title: string = "Save your changes?";
-        const msg: string = "You have unsaved changes in your program.";
-        const cancelMsg: string = "Don't Save";
+        const msg: string =
+            "You have unsaved changes in your program. Do you want to save them before leaving?";
+        const denyMsg: string = "Don't Save";
         const confirmationMsg: string = "Save";
 
         if (!component.saveBtnDisabled) {
@@ -24,15 +26,16 @@ export class SaveConfirmationGuard {
                     title,
                     msg,
                     confirmationMsg,
-                    cancelMsg,
+                    denyMsg,
                 );
+            if (confirmationResult === SaveConfirmationOptions.Cancel) {
+                return false;
+            }
 
-            if (confirmationResult) {
+            if (confirmationResult === SaveConfirmationOptions.Save) {
                 component.saveCode();
             }
         }
-        // Returns always true, because user is always allowed to leave the route
-        // Modal decides whether user wants to save changes or not before leaving
         return true;
     }
 }

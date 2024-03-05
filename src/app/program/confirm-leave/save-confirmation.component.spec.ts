@@ -1,17 +1,17 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 
-import {ConfirmLeaveComponent} from "./confirm-leave.component";
+import {SaveConfirmationComponent} from "./save-confirmation.component";
 
 describe("ConfirmLeaveComponent", () => {
-    let component: ConfirmLeaveComponent;
-    let fixture: ComponentFixture<ConfirmLeaveComponent>;
+    let component: SaveConfirmationComponent;
+    let fixture: ComponentFixture<SaveConfirmationComponent>;
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
-            declarations: [ConfirmLeaveComponent],
+            declarations: [SaveConfirmationComponent],
         }).compileComponents();
 
-        fixture = TestBed.createComponent(ConfirmLeaveComponent);
+        fixture = TestBed.createComponent(SaveConfirmationComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
     });

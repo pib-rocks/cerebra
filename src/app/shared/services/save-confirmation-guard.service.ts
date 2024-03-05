@@ -1,6 +1,7 @@
 import {Injectable} from "@angular/core";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
-import {ConfirmLeaveComponent} from "src/app/program/confirm-leave/confirm-leave.component";
+import {SaveConfirmationComponent} from "src/app/program/confirm-leave/save-confirmation.component";
+import {SaveConfirmationOptions} from "../types/save-confirmation-options.enum";
 
 @Injectable({
     providedIn: "root",
@@ -13,8 +14,8 @@ export class SaveConfirmationGuardService {
         message: string,
         confirmationMsg: string,
         cancelMsg: string,
-    ): Promise<boolean> {
-        const modalRef = this.modalService.open(ConfirmLeaveComponent, {
+    ): Promise<SaveConfirmationOptions> {
+        const modalRef = this.modalService.open(SaveConfirmationComponent, {
             windowClass: "myCustomModalClass",
             backdropClass: "myCustomBackdropClass",
             backdrop: "static",
@@ -25,8 +26,8 @@ export class SaveConfirmationGuardService {
         modalRef.componentInstance.confirmationMsg = confirmationMsg;
 
         return modalRef.result.then(
-            (result) => result === true,
-            () => false, // Modal dismissed without confirmation
+            (result) => result,
+            () => SaveConfirmationOptions.Cancel,
         );
     }
 }

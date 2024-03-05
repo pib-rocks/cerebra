@@ -10,15 +10,21 @@
     <div class="modal-footer">
         <button
             type="button"
-            class="btn btn-secondary"
-            (click)="cancel()">
-            {{ cancelMsg }}
-        </button>
-        <button
-            type="button"
             class="btn btn-primary"
             (click)="confirm()">
             {{ confirmationMsg }}
+        </button>
+        <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="deny()">
+            {{ denyMsg }}
+        </button>
+        <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="cancel()">
+            Cancel
         </button>
     </div>
 </div>

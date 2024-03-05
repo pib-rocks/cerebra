@@ -127,12 +127,8 @@ export class ProgramWorkspaceComponent
 
         this.workspace.addChangeListener((event: Abstract) => {
             this.generateCode(event);
-
             const newBlocklyVisual = JSON.stringify(this.workspaceContent);
-            if (this.oldBlocklyVisual !== newBlocklyVisual) {
-                this.saveBtnDisabled = false;
-                this.oldBlocklyVisual = newBlocklyVisual;
-            }
+            this.saveBtnDisabled = this.oldBlocklyVisual === newBlocklyVisual;
         });
     }
 
@@ -151,12 +147,14 @@ export class ProgramWorkspaceComponent
 
     saveCode() {
         const programNumber = this.route.snapshot.params["uuid"];
+        const newBlocklyVisual = JSON.stringify(this.workspaceContent);
         const code = {
-            visual: JSON.stringify(this.workspaceContent),
+            visual: newBlocklyVisual,
             python: pythonGenerator.workspaceToCode(this.workspace),
         };
         this.programService.updateCodeByProgramNumber(programNumber, code);
         this.saveBtnDisabled = true;
+        this.oldBlocklyVisual = newBlocklyVisual;
     }
 
     runProgram() {
