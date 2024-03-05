@@ -1,0 +1,43 @@
+.current-label {
+    font-weight: bold;
+    font-size: 13px;
+    text-align: center;
+    color: #fff;
+}
+
+.bg {
+    background: conic-gradient(
+        from 0deg,
+        rgba(0, 148, 223, 1) 0%,
+        rgba(139, 26, 118, 1) 40%,
+        rgba(226, 0, 114, 1) 80%,
+        rgba(225, 0, 114, 1) 100%
+    );
+    width: 100%;
+    height: 100%;
+}
+
+.circle {
+    stroke: white;
+    stroke-linecap: butt;
+    transform-origin: 50% 50%;
+    transform: rotate(-89deg);
+}
+.circle2 {
+    stroke: #646464;
+    stroke-linecap: butt;
+    opacity: 0.3;
+}
+
+.circular-slider {
+    width: 80%;
+}
+
+.radius-circle {
+    opacity: 0.5;
+}
+
+svg {
+    width: 40px;
+    height: 40px;
+}

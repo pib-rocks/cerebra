@@ -17,6 +17,7 @@ import {
 import {FormControl} from "@angular/forms";
 import {Observable, asyncScheduler} from "rxjs";
 import {SliderThumb} from "./slider-thumb";
+
 @Component({
     selector: "app-horizontal-slider",
     templateUrl: "./horizontal-slider.component.html",
@@ -34,12 +35,13 @@ export class HorizontalSliderComponent
     @Input() step: number = 1;
     @Input() unitShort: string = "";
     @Input() unitLong: string = "";
-    @Input() messageReceiver$!: Observable<number[]>;
+    @Input() messageReceiver$!: Observable<number[] | number>;
     @Input() name: string = "";
     @Input() displayName: boolean = false;
     @Input() numberOfThumbs: number = 1;
     @Input() thumbRadius: number = 12;
     @Input() trackHeight: number = 12;
+    @Input() active: boolean = true;
 
     minValue!: number;
     maxValue!: number;
@@ -69,48 +71,55 @@ export class HorizontalSliderComponent
     });
 
     constructor(private ref: ChangeDetectorRef) {}
+
     ngOnChanges(changes: SimpleChanges): void {
         if ("leftValue" in changes) {
             this.leftValue = changes["leftValue"].currentValue;
-            this.minValue = changes["leftValue"].currentValue;
         }
         if ("rightValue" in changes) {
             this.rightValue = changes["rightValue"].currentValue;
-            this.maxValue = changes["rightValue"].currentValue;
         }
+        this.generateBaseId();
+        this.calculateStaticPositionalProperties();
     }
 
     calculateStaticPositionalProperties() {
+        if (!this.slider) return; // if we don't check this, the motor-position-component tests fail
         this.sliderWidth = this.slider.nativeElement.clientWidth;
         this.trackOuterOffset = this.thumbRadius - this.trackHeight / 2;
         this.trackLength = this.sliderWidth - 2 * this.trackOuterOffset;
         this.minBubblePosition = this.pixelsFromEdge;
         this.maxBubblePosition = this.sliderWidth - this.pixelsFromEdge;
-        this.thumbs.forEach((thumb) => this.setThumbPosition(thumb));
+        this.thumbs.forEach((thumb) =>
+            this.setThumbValue(thumb, thumb.valueRaw),
+        );
+    }
+
+    generateBaseId(): void {
+        this.baseId = this.name
+            ? this.name.replace(" ", "-").toLowerCase()
+            : "-";
     }
 
     ngOnInit(): void {
-        this.baseId = this.name
-            ? this.name.replace(" ", "_").toLowerCase()
-            : "_";
-        [this.minValue, this.maxValue] =
-            this.leftValue < this.rightValue
-                ? [this.leftValue, this.rightValue]
-                : [this.rightValue, this.leftValue];
+        this.generateBaseId();
         this.unitLong = this.unitLong || this.unitShort;
         this.thumbs = [];
         for (let i = 0; i < this.numberOfThumbs; i++) {
             this.thumbs.push({
-                value: 0,
+                valueRaw: 0,
+                valueSanitized: 0,
                 position: 0,
                 bubbleFormControl: new FormControl(),
                 inputVisible: false,
                 id: i,
             });
         }
-        this.messageReceiver$?.subscribe((values: number[]) => {
+        this.messageReceiver$?.subscribe((values: number[] | number) => {
             if (!this.thumbSelected) {
-                this.setAllThumbValues(values);
+                this.setAllThumbValues(
+                    typeof values == "number" ? [values] : values,
+                );
             }
         });
         this.ref.detectChanges();
@@ -146,15 +155,19 @@ export class HorizontalSliderComponent
         return value;
     }
 
-    setThumbValue(thumb: SliderThumb, value: number) {
-        thumb.value = value;
-        thumb.bubbleFormControl.setValue(value);
+    setThumbValue(thumb: SliderThumb, value: number): boolean {
+        const valueSanitized = this.sanitizedSliderValue(value);
+        if (isNaN(valueSanitized)) return false;
+        thumb.valueRaw = value;
+        thumb.valueSanitized = valueSanitized;
+        thumb.bubbleFormControl.setValue(valueSanitized);
         this.setThumbPosition(thumb);
+        return true;
     }
 
     setThumbPosition(thumb: SliderThumb) {
         thumb.position = this.linearTransform(
-            thumb.value,
+            thumb.valueSanitized,
             this.leftValue,
             this.rightValue,
             this.thumbRadius,
@@ -179,7 +192,7 @@ export class HorizontalSliderComponent
 
     sendEvent() {
         const sortedValues = this.thumbs
-            .map((thumb) => thumb.value)
+            .map((thumb) => thumb.valueSanitized)
             .sort((l, r) => l - r);
         clearTimeout(this.timer);
         this.timer = setTimeout(() => this.sliderEvent.emit(sortedValues), 100);
@@ -189,7 +202,10 @@ export class HorizontalSliderComponent
         value = Number(value);
         if (isNaN(value)) return value;
         value += this.step / 2;
-        value = Math.min(Math.max(this.minValue, value), this.maxValue);
+        value =
+            this.leftValue < this.rightValue
+                ? Math.min(Math.max(this.leftValue, value), this.rightValue)
+                : Math.min(Math.max(this.rightValue, value), this.leftValue);
         value *= 1000;
         let rest = value % Math.floor(this.step * 1000);
         if (rest < 0) rest += this.step * 1000;
@@ -207,27 +223,24 @@ export class HorizontalSliderComponent
     }
 
     toggleInputInvisible(thumb: SliderThumb) {
-        const value = this.sanitizedSliderValue(thumb.bubbleFormControl.value);
-        this.setThumbValue(thumb, isNaN(value) ? thumb.value : value);
+        this.setThumbValue(thumb, thumb.bubbleFormControl.value);
         this.sendEvent();
         thumb.inputVisible = false;
     }
 
     selectClosestSlider(mouseX: number) {
         const {left, right} = this.slider.nativeElement.getBoundingClientRect();
-        const targetValue = this.sanitizedSliderValue(
-            this.linearTransform(
-                mouseX,
-                left + this.thumbRadius,
-                right - this.thumbRadius,
-                this.leftValue,
-                this.rightValue,
-            ),
+        const targetValue = this.linearTransform(
+            mouseX,
+            left + this.thumbRadius,
+            right - this.thumbRadius,
+            this.leftValue,
+            this.rightValue,
         );
         this.thumbSelected = this.thumbs
             .map((thumb) => ({
                 thumb,
-                dist: Math.abs(thumb.value - targetValue),
+                dist: Math.abs(thumb.valueSanitized - targetValue),
             }))
             .sort((l, r) => l.dist - r.dist)[0].thumb;
     }
@@ -235,14 +248,12 @@ export class HorizontalSliderComponent
     moveSelectedSlider(mouseX: number) {
         if (!this.thumbSelected) return;
         const {left, right} = this.slider.nativeElement.getBoundingClientRect();
-        const nextValue = this.sanitizedSliderValue(
-            this.linearTransform(
-                mouseX,
-                left + this.thumbRadius,
-                right - this.thumbRadius - 1,
-                this.leftValue,
-                this.rightValue,
-            ),
+        const nextValue = this.linearTransform(
+            mouseX,
+            left + this.thumbRadius,
+            right - this.thumbRadius - 1,
+            this.leftValue,
+            this.rightValue,
         );
         this.setThumbValue(this.thumbSelected, nextValue);
         this.sendEvent();

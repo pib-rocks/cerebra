@@ -1,0 +1,76 @@
+a {
+    font-weight: bold;
+    text-align: center;
+    text-transform: uppercase;
+    font-size: 16px;
+}
+
+.nav-link {
+    padding-top: 14px;
+}
+
+.nav-tabs {
+    border-bottom: 1px solid #0094df;
+    margin-top: 20px;
+}
+
+.nav-tabs .nav-item {
+    width: 160px;
+    height: 50px;
+    background-image: linear-gradient(to top, #1e304d, #000);
+}
+
+.nav-tabs .nav-item a {
+    border: none;
+    color: #0094df;
+}
+
+.nav-tabs .nav-item a:hover,
+.nav-tabs .navbar-btn-active a {
+    color: white;
+}
+
+.nav-tabs .navbar-btn-active {
+    height: 51px;
+    margin-bottom: -1px;
+}
+
+.nav-tabs .nav-item:hover,
+.nav-tabs .navbar-btn-active {
+    background-image: linear-gradient(to top, #000, #1e304d);
+    border-left: 1px solid #0094df;
+    border-top: 4px solid #e10072;
+    border-right: 1px solid #0094df;
+}
+
+.nav-tabs .nav-item:hover .nav-link,
+.nav-tabs .navbar-btn-active .nav-link {
+    padding-top: 10px;
+}
+
+.pink-corner-frame {
+    background:
+        url("../../assets/ep-br.png") bottom right no-repeat,
+        url("../../assets/ep-tr.png") top right no-repeat,
+        url("../../assets/ep-tl.png") top left no-repeat,
+        url("../../assets/ep-bl.png") bottom left no-repeat;
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.blue-corner-frame {
+    background:
+        url("../../assets/eb-br.png") bottom right no-repeat,
+        url("../../assets/eb-tr.png") top right no-repeat,
+        url("../../assets/eb-tl.png") top left no-repeat,
+        url("../../assets/eb-bl.png") bottom left no-repeat;
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.background-image {
+    background: url("../../assets/bg-gesamt.png") left no-repeat;
+    background-size: cover;
+}
+
+.background-image {
+    max-width: 1000px;
+}
