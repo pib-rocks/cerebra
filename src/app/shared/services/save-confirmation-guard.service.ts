@@ -1,7 +1,7 @@
 import {Injectable} from "@angular/core";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
-import {SaveConfirmationComponent} from "src/app/program/confirm-leave/save-confirmation.component";
 import {SaveConfirmationOptions} from "../types/save-confirmation-options.enum";
+import {SaveConfirmationComponent} from "src/app/program/confirm-leave/save-confirmation.component";
 
 @Injectable({
     providedIn: "root",
@@ -13,7 +13,7 @@ export class SaveConfirmationGuardService {
         title: string,
         message: string,
         confirmationMsg: string,
-        cancelMsg: string,
+        denyMsg: string,
     ): Promise<SaveConfirmationOptions> {
         const modalRef = this.modalService.open(SaveConfirmationComponent, {
             windowClass: "myCustomModalClass",
@@ -22,7 +22,7 @@ export class SaveConfirmationGuardService {
         });
         modalRef.componentInstance.title = title;
         modalRef.componentInstance.message = message;
-        modalRef.componentInstance.cancelMsg = cancelMsg;
+        modalRef.componentInstance.denyMsg = denyMsg;
         modalRef.componentInstance.confirmationMsg = confirmationMsg;
 
         return modalRef.result.then(
