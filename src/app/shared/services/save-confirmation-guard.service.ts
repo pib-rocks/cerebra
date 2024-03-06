@@ -1,7 +1,7 @@
 import {Injectable} from "@angular/core";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {SaveConfirmationOptions} from "../types/save-confirmation-options.enum";
-import {SaveConfirmationComponent} from "src/app/program/confirm-leave/save-confirmation.component";
+import {SaveConfirmationComponent} from "src/app/program/save-confirmation/save-confirmation.component";
 
 @Injectable({
     providedIn: "root",
