@@ -11,11 +11,12 @@
         class="col mt-1 p-0 d-flex align-items-center justify-content-center"
         [ngClass]="reversed ? 'order-first' : 'order-last'">
         <input
-        class="active-check"
-        id="active-check-{{ motor.motorPathName }}"
-        type="checkbox" name="checkbox"
-        [formControl]="turnedOnFormControl"
-        (click)="setTurnedOn()" /> 
+            class="active-check"
+            id="active-check-{{ motor.motorPathName }}"
+            type="checkbox"
+            name="checkbox"
+            [formControl]="turnedOnFormControl"
+            (click)="setTurnedOn()" />
     </div>
 </div>
 <ng-template

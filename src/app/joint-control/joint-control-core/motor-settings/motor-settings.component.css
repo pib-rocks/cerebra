@@ -17,8 +17,6 @@
 
 input[type="checkbox"] {
     appearance: none;
-    margin: 0;
-    font: inherit;
     color: currentColor;
     width: 1.15em;
     height: 1.15em;
@@ -38,7 +36,6 @@ input[type="checkbox"] {
     width: 0.63em;
     height: 0.63em;
     transform: scale(0);
-    box-shadow: inset 1em 1em var(--form-control-color);
     background-color: #e10072;
   }
 
