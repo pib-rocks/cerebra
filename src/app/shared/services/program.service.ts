@@ -14,20 +14,16 @@ import {ExecutionState, ProgramState} from "../types/program-state";
 })
 export class ProgramService {
     programs: Program[] = [];
+
     programNumberToCode: Map<string, ProgramCode> = new Map();
     programNumberToState: Map<string, BehaviorSubject<ProgramState>> =
         new Map();
     programNumberToOutput: Map<string, BehaviorSubject<ProgramOutputLine[]>> =
         new Map();
+
     programsSubject: BehaviorSubject<Program[]> = new BehaviorSubject<
         Program[]
     >([]);
-    viewModeSubject: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(
-        false,
-    );
-    pythonCodeSubject: BehaviorSubject<string> = new BehaviorSubject<string>(
-        "",
-    );
 
     constructor(
         private apiService: ApiService,
