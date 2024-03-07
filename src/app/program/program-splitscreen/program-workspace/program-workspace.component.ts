@@ -2,14 +2,17 @@ import {
     AfterViewInit,
     Component,
     ElementRef,
+    EventEmitter,
+    Input,
+    OnChanges,
     OnDestroy,
     OnInit,
+    Output,
+    SimpleChanges,
     ViewChild,
 } from "@angular/core";
 import * as Blockly from "blockly";
 import {toolbox} from "../../blockly";
-import {ActivatedRoute} from "@angular/router";
-import {ProgramService} from "src/app/shared/services/program.service";
 import {asyncScheduler} from "rxjs";
 import {ITheme} from "blockly/core/theme";
 import {pythonGenerator} from "../../program-generators/custom-generators";
@@ -23,7 +26,7 @@ import {Abstract} from "blockly/core/events/events_abstract";
     styleUrls: ["./program-workspace.component.css"],
 })
 export class ProgramWorkspaceComponent
-    implements OnInit, AfterViewInit, OnDestroy
+    implements OnInit, AfterViewInit, OnDestroy, OnChanges
 {
     observer!: ResizeObserver;
     @ViewChild("blocklyDiv") blocklyDiv!: ElementRef<HTMLDivElement>;
@@ -31,17 +34,12 @@ export class ProgramWorkspaceComponent
     workspace!: Blockly.WorkspaceSvg;
     toolbox: string = toolbox;
 
-    currentProgramNumber?: string;
-    splitscreenMode: boolean = this.programService.viewModeSubject.getValue();
+    @Input() codeVisual: string = "{}";
 
-    flyoutWidth: number = 0;
-    imgSrc: string = "../../assets/toggle-switch-left.png";
-    runButtonPath: string = "../../assets/program/run.svg";
-    saveButtonPath: string = "../../assets/program/save.svg";
+    @Output() codePythonChange = new EventEmitter<string>();
+    @Output() codeVisualChange = new EventEmitter<string>();
+    @Output() trashcanFlyoutChange = new EventEmitter<number>();
 
-    pythonCode: string = "";
-
-    saveBtnDisabled: boolean = true;
     oldBlocklyVisual: string = "";
 
     supportedEvents = new Set([
@@ -50,25 +48,6 @@ export class ProgramWorkspaceComponent
         Blockly.Events.BLOCK_DELETE,
         Blockly.Events.BLOCK_MOVE,
     ]);
-
-    generateCode(event: Abstract) {
-        if (this.workspace.isDragging()) return;
-        if (!this.supportedEvents.has(event.type)) return;
-        this.pythonCode = pythonGenerator.workspaceToCode(this.workspace);
-        this.programService.pythonCodeSubject.next(this.pythonCode);
-    }
-
-    changeViewMode() {
-        if (this.splitscreenMode) {
-            this.imgSrc = "../../assets/toggle-switch-left.png";
-            this.splitscreenMode = false;
-            this.programService.viewModeSubject.next(this.splitscreenMode);
-        } else {
-            this.imgSrc = "../../assets/toggle-switch-right.png";
-            this.splitscreenMode = true;
-            this.programService.viewModeSubject.next(this.splitscreenMode);
-        }
-    }
 
     readonly customTheme: ITheme = Blockly.Theme.defineTheme("customTheme", {
         base: Blockly.Themes.Classic,
@@ -80,18 +59,26 @@ export class ProgramWorkspaceComponent
         },
     });
 
-    get workspaceContent(): object {
-        return Blockly.serialization.workspaces.save(this.workspace);
+    get workspaceContent(): string {
+        return JSON.stringify(
+            Blockly.serialization.workspaces.save(this.workspace),
+        );
     }
 
-    set workspaceContent(content: object | undefined) {
-        Blockly.serialization.workspaces.load(content ?? {}, this.workspace);
+    set workspaceContent(content: string | undefined) {
+        Blockly.serialization.workspaces.load(
+            JSON.parse(content ?? "{}"),
+            this.workspace,
+        );
     }
 
-    constructor(
-        private programService: ProgramService,
-        private route: ActivatedRoute,
-    ) {}
+    ngOnChanges(changes: SimpleChanges): void {
+        if ("codeVisual" in changes) {
+            const codeVisual = changes["codeVisual"].currentValue;
+            this.oldBlocklyVisual = codeVisual;
+            this.workspaceContent = codeVisual;
+        }
+    }
 
     ngOnInit() {
         this.workspace = Blockly.inject("blocklyDiv", {
@@ -104,21 +91,11 @@ export class ProgramWorkspaceComponent
         this.observer = new ResizeObserver(() => {
             this.resizeBlockly();
         });
-        this.programService.getAllPrograms().subscribe((_) => {
-            this.route.params.subscribe((params) => {
-                const programNumber = params["uuid"];
-                this.programService
-                    .getCodeByProgramNumber(programNumber)
-                    .subscribe((code) => {
-                        this.oldBlocklyVisual = code.visual;
-                        this.workspaceContent = JSON.parse(code.visual);
-                    });
-            });
-        });
-        this.workspace.trashcan?.flyout
-            ?.getWorkspace()
-            .addChangeListener(this.flyoutChangeCallback);
+
+        const trashWorkspace = this.workspace.trashcan?.flyout?.getWorkspace();
+        trashWorkspace!.addChangeListener(this.flyoutChangeCallback);
         this.workspace.addChangeListener(this.flyoutChangeCallback);
+
         const blocklyMainBackground: SVGRectElement | null =
             document.querySelector(".blocklyMainBackground");
         if (blocklyMainBackground) {
@@ -126,9 +103,17 @@ export class ProgramWorkspaceComponent
         }
 
         this.workspace.addChangeListener((event: Abstract) => {
-            this.generateCode(event);
-            const newBlocklyVisual = JSON.stringify(this.workspaceContent);
-            this.saveBtnDisabled = this.oldBlocklyVisual === newBlocklyVisual;
+            if (this.workspace.isDragging()) return;
+            if (!this.supportedEvents.has(event.type)) return;
+            const newBlocklyVisual = this.workspaceContent;
+            if (this.oldBlocklyVisual !== newBlocklyVisual) {
+                const codePython = pythonGenerator.workspaceToCode(
+                    this.workspace,
+                );
+                this.codePythonChange.emit(codePython);
+                this.codeVisualChange.emit(newBlocklyVisual);
+                this.oldBlocklyVisual = newBlocklyVisual;
+            }
         });
     }
 
@@ -141,32 +126,30 @@ export class ProgramWorkspaceComponent
         Blockly.registry.unregister("theme", "customtheme");
     }
 
+    generateCode(event: Abstract) {
+        if (this.workspace.isDragging()) return;
+        if (!this.supportedEvents.has(event.type)) return;
+    }
+
     resizeBlockly() {
         Blockly.svgResize(this.workspace);
-    }
-
-    saveCode() {
-        const programNumber = this.route.snapshot.params["uuid"];
-        const newBlocklyVisual = JSON.stringify(this.workspaceContent);
-        const code = {
-            visual: newBlocklyVisual,
-            python: pythonGenerator.workspaceToCode(this.workspace),
-        };
-        this.programService.updateCodeByProgramNumber(programNumber, code);
-        this.saveBtnDisabled = true;
-        this.oldBlocklyVisual = newBlocklyVisual;
-    }
-
-    runProgram() {
-        console.error("not implemented");
     }
 
     flyoutChangeCallback = () => {
         asyncScheduler.schedule(() => {
             const contentOpen = this.workspace.trashcan?.contentsIsOpen();
-            this.flyoutWidth = contentOpen
+            const flyoutWidth = contentOpen
                 ? this.workspace.trashcan?.flyout?.getWidth() ?? 0
                 : 0;
+            this.trashcanFlyoutChange.emit(flyoutWidth);
         });
     };
 }
+
+// const programNumber = this.route.snapshot.params["uuid"];
+// const newBlocklyVisual = JSON.stringify(this.workspaceContent);
+// const code = {
+//     visual: newBlocklyVisual,
+//     python: pythonGenerator.workspaceToCode(this.workspace),
+// };
+// this.programService.updateCodeByProgramNumber(programNumber, code);

@@ -1,5 +1,7 @@
 import {Component, OnInit} from "@angular/core";
+import {ActivatedRoute} from "@angular/router";
 import {ProgramService} from "src/app/shared/services/program.service";
+import {ProgramCode} from "src/app/shared/types/program-code";
 
 @Component({
     selector: "app-program-splitscreen",
@@ -7,24 +9,71 @@ import {ProgramService} from "src/app/shared/services/program.service";
     styleUrls: ["./program-splitscreen.component.css"],
 })
 export class ProgramSplitscreenComponent implements OnInit {
-    constructor(private programService: ProgramService) {}
+    constructor(
+        private programService: ProgramService,
+        private activatedRoute: ActivatedRoute,
+    ) {}
 
-    pythonCode: string = "";
-    splitscreenMode: boolean = false;
+    codePython: string = "";
+    codeVisual: string = "";
+    programNumber: string = "";
+
+    flyoutWidth: number = 0;
+
+    saveBtnDisabled: boolean = true;
+    viewMode: boolean = false;
+
+    imgSrc: string = "../../assets/toggle-switch-left.png";
+    runButtonPath: string = "../../assets/program/run.svg";
+    saveButtonPath: string = "../../assets/program/save.svg";
 
     ngOnInit(): void {
-        this.subscribeViewMode();
-        this.subscribePythonCode();
+        this.activatedRoute.data.subscribe((data) => {
+            this.codePython = (data["code"] as ProgramCode).visual;
+            console.info("code visual: + " + this.codeVisual);
+        });
+        this.activatedRoute.params.subscribe((params) => {
+            this.programNumber = params["program-number"];
+            console.info(this.programNumber);
+        });
     }
 
-    subscribeViewMode() {
-        this.programService.viewModeSubject.subscribe((mode) => {
-            this.splitscreenMode = mode;
-        });
+    saveCode() {
+        console.info(
+            "saving: " +
+                this.codeVisual +
+                " to " +
+                this.programNumber +
+                " with code: " +
+                this.codePython,
+        );
+        this.programService
+            .updateCodeByProgramNumber(this.programNumber, {
+                visual: this.codeVisual,
+                python: this.codePython,
+            })
+            .subscribe(() => console.info("hui"));
+        this.saveBtnDisabled = true;
     }
-    subscribePythonCode() {
-        this.programService.pythonCodeSubject.subscribe((code) => {
-            this.pythonCode = code;
-        });
+
+    runProgram() {
+        console.info("run program clicked");
+    }
+
+    changeViewMode() {
+        this.viewMode = !this.viewMode;
+    }
+
+    onCodePythonChange(codePython: string) {
+        this.codePython = codePython;
+    }
+
+    onCodeVIsualChange(codeVisual: string) {
+        this.codeVisual = codeVisual;
+        this.saveBtnDisabled = false;
+    }
+
+    onTrashcanFlyoutChange(flyoutWidth: number) {
+        this.flyoutWidth = flyoutWidth;
     }
 }

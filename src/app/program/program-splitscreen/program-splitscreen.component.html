@@ -1,15 +1,79 @@
 <div class="h-100 w-100">
+    <!-- TODO: flyout width -->
+    <div
+        class="d-flex flex-row-reverse hstack gap-3 position-absolute z-2 top-0 end-0 p-4 pe-none">
+        <button
+            id="save-btn"
+            type="button"
+            (click)="saveCode()"
+            [style]="'transform: translate(' + -flyoutWidth + 'px, 0);'"
+            [disabled]="saveBtnDisabled"
+            class="workspaceButton">
+            <img
+                [src]="saveButtonPath"
+                width="75px"
+                alt="Program save button" />
+        </button>
+        <button
+            id="run-btn"
+            type="button"
+            (click)="runProgram()"
+            [style]="'transform: translate(' + -flyoutWidth + 'px, 0);'"
+            class="workspaceButton">
+            <img
+                [src]="runButtonPath"
+                width="75px"
+                alt="Program save button" />
+        </button>
+        <div
+            class="toggle-btn-icon"
+            [style]="'transform: translate(' + -flyoutWidth + 'px, 0);'">
+            <img
+                class="view-mode-icon"
+                src="../../../../assets/program/icon-fullscreen.svg"
+                alt="icon for split-screen-view" />
+        </div>
+        <button
+            [style]="'transform: translate(' + -flyoutWidth + 'px, 0);'"
+            id="toggle-btn"
+            class="workspaceButton"
+            (click)="changeViewMode()">
+            <img
+                [src]="'../../assets/toggle-switch-' + (viewMode ? 'left' : 'right') + '.png'"
+                alt="Toggle for switching between normal and split screen view" />
+        </button>
+        <div
+            class="toggle-btn-icon"
+            [style]="'transform: translate(' + -flyoutWidth + 'px, 0);'">
+            <img
+                class="view-mode-icon"
+                src="../../../../assets/program/icon-splitscreen.svg"
+                alt="icon for split-screen-view" />
+        </div>
+    </div>
     <as-split direction="vertical">
         <as-split-area
             [size]="50"
             [minSize]="15">
-            <router-outlet></router-outlet>
+            <app-program-workspace
+                [codeVisual]="codeVisual"
+                (codePythonChange)="onCodePythonChange($event)"
+                (codeVisualChange)="onCodeVIsualChange($event)"
+                (trashcanFlyoutChange)="onTrashcanFlyoutChange($event)"></app-program-workspace>
         </as-split-area>
         <as-split-area
-            id="python-code-area"
-            *ngIf="splitscreenMode"
+            *ngIf="viewMode"
             [size]="50">
-            <pre><code id="python-code" [highlight]="pythonCode"></code></pre>
+            <as-split direction="horizontal">
+                <as-split-area
+                    id="python-code-area"
+                    [size]="50">
+                    <pre><code id="python-code" [highlight]="codePython"></code></pre>
+                </as-split-area>
+                <as-split-area [size]="50">
+                    <p>Hello World</p>
+                </as-split-area>
+            </as-split>
         </as-split-area>
     </as-split>
 </div>

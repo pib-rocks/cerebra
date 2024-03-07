@@ -1,7 +1,7 @@
 import {Injectable} from "@angular/core";
-import {ProgramWorkspaceComponent} from "../program/program-splitscreen/program-workspace/program-workspace.component";
 import {SaveConfirmationGuardService} from "../shared/services/save-confirmation-guard.service";
 import {SaveConfirmationOptions} from "../shared/types/save-confirmation-options.enum";
+import {ProgramSplitscreenComponent} from "../program/program-splitscreen/program-splitscreen.component";
 
 @Injectable({
     providedIn: "root",
@@ -12,7 +12,7 @@ export class SaveConfirmationGuard {
     ) {}
 
     async canDeactivate(
-        component: ProgramWorkspaceComponent,
+        component: ProgramSplitscreenComponent,
     ): Promise<boolean> {
         const title: string = "Save your changes?";
         const msg: string =
