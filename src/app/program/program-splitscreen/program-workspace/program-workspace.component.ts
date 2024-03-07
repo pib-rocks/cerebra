@@ -73,7 +73,8 @@ export class ProgramWorkspaceComponent
     }
 
     ngOnChanges(changes: SimpleChanges): void {
-        if ("codeVisual" in changes) {
+        // TODO remove ?
+        if ("codeVisual" in changes && !changes["codeVisual"].isFirstChange()) {
             const codeVisual = changes["codeVisual"].currentValue;
             this.oldBlocklyVisual = codeVisual;
             this.workspaceContent = codeVisual;
@@ -85,6 +86,8 @@ export class ProgramWorkspaceComponent
             toolbox: this.toolbox,
             theme: this.customTheme,
         });
+        this.workspaceContent = this.codeVisual;
+        this.oldBlocklyVisual = this.codeVisual;
 
         customBlockDefinition();
 
@@ -145,11 +148,3 @@ export class ProgramWorkspaceComponent
         });
     };
 }
-
-// const programNumber = this.route.snapshot.params["uuid"];
-// const newBlocklyVisual = JSON.stringify(this.workspaceContent);
-// const code = {
-//     visual: newBlocklyVisual,
-//     python: pythonGenerator.workspaceToCode(this.workspace),
-// };
-// this.programService.updateCodeByProgramNumber(programNumber, code);
