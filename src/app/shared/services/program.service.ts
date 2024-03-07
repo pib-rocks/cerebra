@@ -5,6 +5,9 @@ import {BehaviorSubject, Observable} from "rxjs";
 import {UrlConstants} from "./url.constants";
 import {ProgramCode} from "../types/program-code";
 import {UtilService} from "./util.service";
+import {RosService} from "./ros-service/ros.service";
+import {ProgramOutputLine} from "../ros-types/msg/program-output-line";
+import {ExecutionState, ProgramState} from "../types/program-state";
 
 @Injectable({
     providedIn: "root",
@@ -12,6 +15,10 @@ import {UtilService} from "./util.service";
 export class ProgramService {
     programs: Program[] = [];
     programNumberToCode: Map<string, ProgramCode> = new Map();
+    programNumberToState: Map<string, BehaviorSubject<ProgramState>> =
+        new Map();
+    programNumberToOutput: Map<string, BehaviorSubject<ProgramOutputLine[]>> =
+        new Map();
     programsSubject: BehaviorSubject<Program[]> = new BehaviorSubject<
         Program[]
     >([]);
@@ -22,7 +29,10 @@ export class ProgramService {
         "",
     );
 
-    constructor(private apiService: ApiService) {
+    constructor(
+        private apiService: ApiService,
+        private rosService: RosService,
+    ) {
         this.getAllPrograms();
     }
 
@@ -155,5 +165,53 @@ export class ProgramService {
                 return code;
             },
         );
+    }
+
+    runProgram(programNumber: string) {
+        this.rosService.runProgram(programNumber).subscribe((handle) => {
+            const programOutput: BehaviorSubject<ProgramOutputLine[]> =
+                this.getProgramOutput(programNumber) as BehaviorSubject<
+                    ProgramOutputLine[]
+                >;
+            programOutput.next([]);
+            handle.feedback.subscribe((feedback) => {
+                programOutput.next(
+                    programOutput.getValue().concat(feedback.output_lines),
+                );
+            });
+
+            const programState: BehaviorSubject<ProgramState> =
+                this.getProgramState(
+                    programNumber,
+                ) as BehaviorSubject<ProgramState>;
+            programState.next({executionState: ExecutionState.RUNNING});
+            handle.result.subscribe((result) => {
+                programState.next({
+                    executionState: ExecutionState.FINISHED,
+                    exitCode: result.exit_code,
+                });
+            });
+        });
+    }
+
+    getProgramOutput(programNumber: string): Observable<ProgramOutputLine[]> {
+        let outputObservable = this.programNumberToOutput.get(programNumber);
+        if (!outputObservable) {
+            outputObservable = new BehaviorSubject<ProgramOutputLine[]>([]);
+            this.programNumberToOutput.set(programNumber, outputObservable);
+        }
+        return outputObservable;
+    }
+
+    getProgramState(programNumber: string): Observable<ProgramState> {
+        let stateObservable = this.programNumberToState.get(programNumber);
+        if (!stateObservable) {
+            const initState: ProgramState = {
+                executionState: ExecutionState.NOT_STARTED,
+            };
+            stateObservable = new BehaviorSubject(initState);
+            this.programNumberToState.set(programNumber, stateObservable);
+        }
+        return stateObservable;
     }
 }
