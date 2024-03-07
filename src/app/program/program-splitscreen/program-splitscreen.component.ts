@@ -29,7 +29,7 @@ export class ProgramSplitscreenComponent implements OnInit {
 
     ngOnInit(): void {
         this.activatedRoute.data.subscribe((data) => {
-            this.codePython = (data["code"] as ProgramCode).visual;
+            this.codeVisual = (data["code"] as ProgramCode).visual;
             console.info("code visual: + " + this.codeVisual);
         });
         this.activatedRoute.params.subscribe((params) => {

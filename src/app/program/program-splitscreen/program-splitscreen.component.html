@@ -68,10 +68,10 @@
                 <as-split-area
                     id="python-code-area"
                     [size]="50">
-                    <pre><code id="python-code" [highlight]="codePython"></code></pre>
+                    <app-python-code [code]="codePython"></app-python-code>
                 </as-split-area>
                 <as-split-area [size]="50">
-                    <p>Hello World</p>
+                    <app-console></app-console>
                 </as-split-area>
             </as-split>
         </as-split-area>
