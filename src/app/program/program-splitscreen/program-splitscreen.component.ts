@@ -23,10 +23,6 @@ export class ProgramSplitscreenComponent implements OnInit {
     saveBtnDisabled: boolean = true;
     viewMode: boolean = false;
 
-    imgSrc: string = "../../assets/toggle-switch-left.png";
-    runButtonPath: string = "../../assets/program/run.svg";
-    saveButtonPath: string = "../../assets/program/save.svg";
-
     ngOnInit(): void {
         this.activatedRoute.data.subscribe((data) => {
             this.codeVisual = (data["code"] as ProgramCode).visual;
@@ -39,20 +35,10 @@ export class ProgramSplitscreenComponent implements OnInit {
     }
 
     saveCode() {
-        console.info(
-            "saving: " +
-                this.codeVisual +
-                " to " +
-                this.programNumber +
-                " with code: " +
-                this.codePython,
-        );
-        this.programService
-            .updateCodeByProgramNumber(this.programNumber, {
-                visual: this.codeVisual,
-                python: this.codePython,
-            })
-            .subscribe(() => console.info("hui"));
+        this.programService.updateCodeByProgramNumber(this.programNumber, {
+            visual: this.codeVisual,
+            python: this.codePython,
+        });
         this.saveBtnDisabled = true;
     }
 
