@@ -37,7 +37,7 @@
             [style]="'transform: translate(' + -flyoutWidth + 'px, 0);'"
             id="toggle-btn"
             class="workspaceButton"
-            (click)="changeViewMode()">
+            (click)="viewMode = !viewMode">
             <img
                 [src]="'../../assets/toggle-switch-' + (viewMode ? 'left' : 'right') + '.png'"
                 alt="Toggle for switching between normal and split screen view" />

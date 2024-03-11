@@ -54,10 +54,7 @@ export class ProgramSplitscreenComponent implements OnInit {
 
     runProgram() {
         this.programService.runProgram(this.programNumber);
-    }
-
-    changeViewMode() {
-        this.viewMode = !this.viewMode;
+        this.viewMode = true;
     }
 
     onCodePythonChange(codePython: string) {
