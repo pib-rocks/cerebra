@@ -29,9 +29,9 @@
         >
         <!-- bubble input -->
         <input
-            *ngFor="let thumb of thumbs"
+            *ngFor="let thumb of thumbs; index as i"
             #bubbleInput
-            id="slider-bubbleinput-{{baseId}}-{{thumb.id}}"
+            id="slider-bubbleinput-{{baseId}}-{{i}}"
             class="bubble-input overlay"
             [ngClass]="thumb.inputVisible ? '' : 'invisible'"
             [attr.style]="'left: ' + thumb.position + 'px;'"
@@ -40,8 +40,8 @@
             (keydown.enter)="toggleInputInvisible(thumb)" />
         <!-- bubble overlay -->
         <div
-            *ngFor="let thumb of thumbs"
-            id="bubble-span-{{baseId}}-{{thumb.id}}"
+            *ngFor="let thumb of thumbs; index as i"
+            id="bubble-span-{{baseId}}-{{i}}"
             class="bubble-span overlay"
             [ngClass]="thumb.inputVisible ? 'invisible' : ''"
             [attr.style]="'left: ' + thumb.position + 'px;'"
@@ -74,8 +74,8 @@
                 fill="#e10072" />
             <!-- slider thumbs -->
             <circle
-                *ngFor="let thumb of thumbs"
-                id="slider-{{baseId}}-thumb-{{thumb.id}}"
+                *ngFor="let thumb of thumbs; index as i"
+                id="slider-{{baseId}}-thumb-{{i}}"
                 [attr.cx]="thumb.position"
                 [attr.cy]="thumbRadius"
                 [attr.r]="thumbRadius"

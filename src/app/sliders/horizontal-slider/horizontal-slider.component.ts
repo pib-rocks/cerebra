@@ -112,7 +112,6 @@ export class HorizontalSliderComponent
                 position: 0,
                 bubbleFormControl: new FormControl(),
                 inputVisible: false,
-                id: i,
             });
         }
         this.messageReceiver$?.subscribe((values: number[] | number) => {
@@ -161,6 +160,7 @@ export class HorizontalSliderComponent
         thumb.valueRaw = value;
         thumb.valueSanitized = valueSanitized;
         thumb.bubbleFormControl.setValue(valueSanitized);
+        this.thumbs.sort((t1, t2) => t1.valueRaw - t2.valueRaw);
         this.setThumbPosition(thumb);
         return true;
     }
