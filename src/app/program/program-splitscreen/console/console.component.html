@@ -5,8 +5,33 @@
         Program has not started yes (click 'Run' to start execution)
     </div>
     <div
+        *ngIf="state.executionState >= ExecutionState.STARTING"
+        class="info">
+        Starting execution of program...
+    </div>
+    <div
+        *ngIf="state.executionState >= ExecutionState.RUNNING"
+        class="info">
+        Program is now executing (output will be displayed here)
+    </div>
+    <div
         *ngFor="let line of output"
         [ngClass]="line.is_stderr ? 'stderr' : 'stdout'">
         {{line.content}}
+    </div>
+    <div
+        *ngIf="state.executionState === ExecutionState.FINISHED_SUCCESSFUL"
+        class="info">
+        Program has finished successfuly (exit-code 0)
+    </div>
+    <div
+        *ngIf="state.executionState === ExecutionState.FINISHED_ERROR"
+        class="info">
+        Program has finished with errors (exit-code {{state.exitCode}})
+    </div>
+    <div
+        *ngIf="state.executionState === ExecutionState.INTERRUPTED"
+        class="info">
+        Program was interrupted by the user.
     </div>
 </div>

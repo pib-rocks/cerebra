@@ -179,7 +179,6 @@ export class ProgramService {
 
         this.rosService.runProgram(programNumber).subscribe((handle) => {
             programState.next({executionState: ExecutionState.RUNNING});
-            this.programNumberToCancel.set(programNumber, handle.cancel);
 
             const programOutput: BehaviorSubject<ProgramOutputLine[]> =
                 this.getProgramOutput(programNumber) as BehaviorSubject<
@@ -192,7 +191,7 @@ export class ProgramService {
                 );
             });
 
-            handle.result.subscribe((result) => {
+            const resultSubscription = handle.result.subscribe((result) => {
                 const resultExecutionState =
                     result.exit_code == 0
                         ? ExecutionState.FINISHED_SUCCESSFUL
@@ -201,6 +200,11 @@ export class ProgramService {
                     executionState: resultExecutionState,
                     exitCode: result.exit_code,
                 });
+            });
+
+            this.programNumberToCancel.set(programNumber, () => {
+                resultSubscription.unsubscribe();
+                handle.cancel();
             });
         });
     }
