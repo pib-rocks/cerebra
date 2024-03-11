@@ -171,6 +171,7 @@ export class ProgramService {
                 >;
             programOutput.next([]);
             handle.feedback.subscribe((feedback) => {
+                console.info(feedback.output_lines);
                 programOutput.next(
                     programOutput.getValue().concat(feedback.output_lines),
                 );

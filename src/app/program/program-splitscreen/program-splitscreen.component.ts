@@ -1,7 +1,10 @@
 import {Component, OnInit} from "@angular/core";
 import {ActivatedRoute} from "@angular/router";
+import {Observable} from "rxjs";
+import {ProgramOutputLine} from "src/app/shared/ros-types/msg/program-output-line";
 import {ProgramService} from "src/app/shared/services/program.service";
 import {ProgramCode} from "src/app/shared/types/program-code";
+import {ProgramState} from "src/app/shared/types/program-state";
 
 @Component({
     selector: "app-program-splitscreen",
@@ -22,6 +25,9 @@ export class ProgramSplitscreenComponent implements OnInit {
 
     viewMode: boolean = false;
 
+    output: Observable<ProgramOutputLine[]> = new Observable();
+    state: Observable<ProgramState> = new Observable();
+
     ngOnInit(): void {
         this.activatedRoute.data.subscribe((data) => {
             this.codeVisualOld = (data["code"] as ProgramCode).visual;
@@ -29,6 +35,12 @@ export class ProgramSplitscreenComponent implements OnInit {
         });
         this.activatedRoute.params.subscribe((params) => {
             this.programNumber = params["program-number"];
+            this.output = this.programService.getProgramOutput(
+                this.programNumber,
+            );
+            this.state = this.programService.getProgramState(
+                this.programNumber,
+            );
         });
     }
 
@@ -41,7 +53,7 @@ export class ProgramSplitscreenComponent implements OnInit {
     }
 
     runProgram() {
-        console.info("run program clicked");
+        this.programService.runProgram(this.programNumber);
     }
 
     changeViewMode() {

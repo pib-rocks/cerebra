@@ -1,1 +1,12 @@
-<p>console works!</p>
+<div class="w-100 h-100 wrapper p-4">
+    <div
+        *ngIf="state.executionState === ExecutionState.NOT_STARTED"
+        class="info">
+        Program has not started yes (click 'Run' to start execution)
+    </div>
+    <div
+        *ngFor="let line of output"
+        [ngClass]="line.is_stderr ? 'stderr' : 'stdout'">
+        {{line.content}}
+    </div>
+</div>

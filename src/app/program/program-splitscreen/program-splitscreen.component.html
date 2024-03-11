@@ -10,7 +10,7 @@
             [disabled]="codeVisualNew === codeVisualOld"
             class="workspaceButton">
             <img
-                src="../../assets/program/save.svg"
+                src="../../assets/program/button-save-active.svg"
                 width="75px"
                 alt="Program save button" />
         </button>
@@ -21,7 +21,7 @@
             [style]="'transform: translate(' + -flyoutWidth + 'px, 0);'"
             class="workspaceButton">
             <img
-                src="../../assets/program/run.svg"
+                src="../../assets/program/button-run-play.svg"
                 width="75px"
                 alt="Program save button" />
         </button>
@@ -30,7 +30,7 @@
             [style]="'transform: translate(' + -flyoutWidth + 'px, 0);'">
             <img
                 class="view-mode-icon"
-                src="../../../../assets/program/icon-fullscreen.svg"
+                src="../../../../assets/program/icon-full-screen.svg"
                 alt="icon for split-screen-view" />
         </div>
         <button
@@ -47,7 +47,7 @@
             [style]="'transform: translate(' + -flyoutWidth + 'px, 0);'">
             <img
                 class="view-mode-icon"
-                src="../../../../assets/program/icon-splitscreen.svg"
+                src="../../../../assets/program/icon-split-screen.svg"
                 alt="icon for split-screen-view" />
         </div>
     </div>
@@ -71,7 +71,9 @@
                     <app-python-code [code]="codePython"></app-python-code>
                 </as-split-area>
                 <as-split-area [size]="50">
-                    <app-console></app-console>
+                    <app-console
+                        [output$]="output"
+                        [state$]="state"></app-console>
                 </as-split-area>
             </as-split>
         </as-split-area>
