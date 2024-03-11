@@ -27,7 +27,7 @@ export class ConsoleComponent {
                 ProgramOutputLine[]
             >;
             this.outputSubscription = outputNext.subscribe(
-                (output) => (this.output = output),
+                (output) => (this.output = [...output].reverse()),
             );
         }
         if ("state$" in changes) {

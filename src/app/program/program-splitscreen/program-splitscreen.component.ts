@@ -33,6 +33,15 @@ export class ProgramSplitscreenComponent implements OnInit {
 
     readonly PLAY_ICON = "../../assets/program/button-run-play.svg";
     readonly STOP_ICON = "../../assets/program/button-run-stop.svg";
+    readonly TOGGLE_LEFT_ICON = "../../assets/toggle-switch-left.png";
+    readonly TOGGLE_RIGHT_ICON = "../../assets/toggle-switch-right.png";
+    readonly SAVE_ACTIVE_ICON = "../../assets/program/button-save-active.svg";
+    readonly SAVE_INACTIVE_ICON =
+        "../../assets/program/button-save-inactive.svg";
+    readonly FULL_SCREEN_ICON =
+        "../../../../assets/program/icon-full-screen.svg";
+    readonly SPLIT_SCREEN_ICON =
+        "../../../../assets/program/icon-split-screen.svg";
 
     ngOnInit(): void {
         this.activatedRoute.data.subscribe((data) => {

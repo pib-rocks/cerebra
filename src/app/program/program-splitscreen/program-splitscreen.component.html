@@ -1,15 +1,15 @@
 <div class="h-100 w-100">
     <div
-        class="d-flex flex-row-reverse hstack gap-3 position-absolute z-2 top-0 end-0 p-4 pe-none">
+        class="d-flex flex-row-reverse hstack gap-3 position-absolute z-2 top-0 end-0 p-4 pe-none"
+        [style]="'transform: translate(' + -flyoutWidth + 'px, 0);'">
         <button
             id="save-btn"
             type="button"
             (click)="saveCode()"
-            [style]="'transform: translate(' + -flyoutWidth + 'px, 0);'"
             [disabled]="codeVisualNew === codeVisualOld"
             class="workspaceButton">
             <img
-                src="../../assets/program/button-save-active.svg"
+                [src]="codeVisualNew === codeVisualOld ? SAVE_INACTIVE_ICON : SAVE_ACTIVE_ICON"
                 width="75px"
                 alt="Program save button" />
         </button>
@@ -17,36 +17,30 @@
             id="run-btn"
             type="button"
             (click)="runProgram()"
-            [style]="'transform: translate(' + -flyoutWidth + 'px, 0);'"
             class="workspaceButton">
             <img
                 [src]="executionState == ExecutionState.RUNNING ? STOP_ICON : PLAY_ICON"
                 width="75px"
                 alt="Program save button" />
         </button>
-        <div
-            class="toggle-btn-icon"
-            [style]="'transform: translate(' + -flyoutWidth + 'px, 0);'">
+        <div class="toggle-btn-icon">
             <img
                 class="view-mode-icon"
-                src="../../../../assets/program/icon-full-screen.svg"
+                [src]="FULL_SCREEN_ICON"
                 alt="icon for split-screen-view" />
         </div>
         <button
-            [style]="'transform: translate(' + -flyoutWidth + 'px, 0);'"
             id="toggle-btn"
             class="workspaceButton"
             (click)="viewMode = !viewMode">
             <img
-                [src]="'../../assets/toggle-switch-' + (viewMode ? 'left' : 'right') + '.png'"
+                [src]="viewMode ? TOGGLE_LEFT_ICON : TOGGLE_RIGHT_ICON"
                 alt="Toggle for switching between normal and split screen view" />
         </button>
-        <div
-            class="toggle-btn-icon"
-            [style]="'transform: translate(' + -flyoutWidth + 'px, 0);'">
+        <div class="toggle-btn-icon">
             <img
                 class="view-mode-icon"
-                src="../../../../assets/program/icon-split-screen.svg"
+                [src]="SPLIT_SCREEN_ICON"
                 alt="icon for split-screen-view" />
         </div>
     </div>

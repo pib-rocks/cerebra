@@ -15,4 +15,9 @@
 
 .wrapper {
     background-color: #1b2b44;
+    overflow-y: scroll;
+}
+
+.wrapper > :first-child {
+    margin-bottom: auto !important;
 }
