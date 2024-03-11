@@ -20,7 +20,7 @@ export class SaveConfirmationGuard {
         const denyMsg: string = "Don't Save";
         const confirmationMsg: string = "Save";
 
-        if (!component.saveBtnDisabled) {
+        if (component.codeVisualNew !== component.codeVisualOld) {
             const confirmationResult =
                 await this.saveConfirmationGuardService.openConfirmationModal(
                     title,

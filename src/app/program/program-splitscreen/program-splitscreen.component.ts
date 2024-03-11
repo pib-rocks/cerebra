@@ -15,31 +15,29 @@ export class ProgramSplitscreenComponent implements OnInit {
     ) {}
 
     codePython: string = "";
-    codeVisual: string = "";
+    codeVisualOld: string = "";
+    codeVisualNew: string = "";
     programNumber: string = "";
-
     flyoutWidth: number = 0;
 
-    saveBtnDisabled: boolean = true;
     viewMode: boolean = false;
 
     ngOnInit(): void {
         this.activatedRoute.data.subscribe((data) => {
-            this.codeVisual = (data["code"] as ProgramCode).visual;
-            console.info("code visual: + " + this.codeVisual);
+            this.codeVisualOld = (data["code"] as ProgramCode).visual;
+            this.codeVisualNew = this.codeVisualOld;
         });
         this.activatedRoute.params.subscribe((params) => {
             this.programNumber = params["program-number"];
-            console.info(this.programNumber);
         });
     }
 
     saveCode() {
         this.programService.updateCodeByProgramNumber(this.programNumber, {
-            visual: this.codeVisual,
+            visual: this.codeVisualNew,
             python: this.codePython,
         });
-        this.saveBtnDisabled = true;
+        this.codeVisualOld = this.codeVisualNew;
     }
 
     runProgram() {
@@ -55,8 +53,7 @@ export class ProgramSplitscreenComponent implements OnInit {
     }
 
     onCodeVIsualChange(codeVisual: string) {
-        this.codeVisual = codeVisual;
-        this.saveBtnDisabled = false;
+        this.codeVisualNew = codeVisual;
     }
 
     onTrashcanFlyoutChange(flyoutWidth: number) {

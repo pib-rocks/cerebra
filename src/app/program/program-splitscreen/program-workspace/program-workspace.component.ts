@@ -40,8 +40,6 @@ export class ProgramWorkspaceComponent
     @Output() codeVisualChange = new EventEmitter<string>();
     @Output() trashcanFlyoutChange = new EventEmitter<number>();
 
-    oldBlocklyVisual: string = "";
-
     supportedEvents = new Set([
         Blockly.Events.BLOCK_CHANGE,
         Blockly.Events.BLOCK_CREATE,
@@ -72,12 +70,15 @@ export class ProgramWorkspaceComponent
         );
     }
 
+    get codePython(): string {
+        return pythonGenerator.workspaceToCode(this.workspace);
+    }
+
     ngOnChanges(changes: SimpleChanges): void {
-        // TODO remove ?
         if ("codeVisual" in changes && !changes["codeVisual"].isFirstChange()) {
             const codeVisual = changes["codeVisual"].currentValue;
-            this.oldBlocklyVisual = codeVisual;
             this.workspaceContent = codeVisual;
+            this.codePythonChange.emit(this.codePython);
         }
     }
 
@@ -87,7 +88,6 @@ export class ProgramWorkspaceComponent
             theme: this.customTheme,
         });
         this.workspaceContent = this.codeVisual;
-        this.oldBlocklyVisual = this.codeVisual;
 
         customBlockDefinition();
 
@@ -108,15 +108,8 @@ export class ProgramWorkspaceComponent
         this.workspace.addChangeListener((event: Abstract) => {
             if (this.workspace.isDragging()) return;
             if (!this.supportedEvents.has(event.type)) return;
-            const newBlocklyVisual = this.workspaceContent;
-            if (this.oldBlocklyVisual !== newBlocklyVisual) {
-                const codePython = pythonGenerator.workspaceToCode(
-                    this.workspace,
-                );
-                this.codePythonChange.emit(codePython);
-                this.codeVisualChange.emit(newBlocklyVisual);
-                this.oldBlocklyVisual = newBlocklyVisual;
-            }
+            this.codePythonChange.emit(this.codePython);
+            this.codeVisualChange.emit(this.workspaceContent);
         });
     }
 

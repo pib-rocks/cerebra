@@ -7,7 +7,7 @@
             type="button"
             (click)="saveCode()"
             [style]="'transform: translate(' + -flyoutWidth + 'px, 0);'"
-            [disabled]="saveBtnDisabled"
+            [disabled]="codeVisualNew === codeVisualOld"
             class="workspaceButton">
             <img
                 src="../../assets/program/save.svg"
@@ -56,7 +56,7 @@
             [size]="50"
             [minSize]="15">
             <app-program-workspace
-                [codeVisual]="codeVisual"
+                [codeVisual]="codeVisualOld"
                 (codePythonChange)="onCodePythonChange($event)"
                 (codeVisualChange)="onCodeVIsualChange($event)"
                 (trashcanFlyoutChange)="onTrashcanFlyoutChange($event)"></app-program-workspace>
