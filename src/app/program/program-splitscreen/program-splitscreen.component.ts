@@ -4,7 +4,7 @@ import {Observable} from "rxjs";
 import {ProgramOutputLine} from "src/app/shared/ros-types/msg/program-output-line";
 import {ProgramService} from "src/app/shared/services/program.service";
 import {ProgramCode} from "src/app/shared/types/program-code";
-import {ProgramState} from "src/app/shared/types/program-state";
+import {ExecutionState, ProgramState} from "src/app/shared/types/program-state";
 
 @Component({
     selector: "app-program-splitscreen",
@@ -17,6 +17,8 @@ export class ProgramSplitscreenComponent implements OnInit {
         private activatedRoute: ActivatedRoute,
     ) {}
 
+    ExecutionState = ExecutionState;
+
     codePython: string = "";
     codeVisualOld: string = "";
     codeVisualNew: string = "";
@@ -25,8 +27,12 @@ export class ProgramSplitscreenComponent implements OnInit {
 
     viewMode: boolean = false;
 
-    output: Observable<ProgramOutputLine[]> = new Observable();
-    state: Observable<ProgramState> = new Observable();
+    output$: Observable<ProgramOutputLine[]> = new Observable();
+    state$: Observable<ProgramState> = new Observable();
+    executionState: ExecutionState = ExecutionState.NOT_STARTED;
+
+    readonly PLAY_ICON = "../../assets/program/button-run-play.svg";
+    readonly STOP_ICON = "../../assets/program/button-run-stop.svg";
 
     ngOnInit(): void {
         this.activatedRoute.data.subscribe((data) => {
@@ -35,11 +41,14 @@ export class ProgramSplitscreenComponent implements OnInit {
         });
         this.activatedRoute.params.subscribe((params) => {
             this.programNumber = params["program-number"];
-            this.output = this.programService.getProgramOutput(
+            this.output$ = this.programService.getProgramOutput(
                 this.programNumber,
             );
-            this.state = this.programService.getProgramState(
+            this.state$ = this.programService.getProgramState(
                 this.programNumber,
+            );
+            this.state$.subscribe(
+                (state) => (this.executionState = state.executionState),
             );
         });
     }
@@ -53,8 +62,12 @@ export class ProgramSplitscreenComponent implements OnInit {
     }
 
     runProgram() {
-        this.programService.runProgram(this.programNumber);
         this.viewMode = true;
+        if (this.executionState !== ExecutionState.RUNNING) {
+            this.programService.runProgram(this.programNumber);
+        } else {
+            this.programService.terminateProgram(this.programNumber);
+        }
     }
 
     onCodePythonChange(codePython: string) {

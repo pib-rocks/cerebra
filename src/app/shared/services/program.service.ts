@@ -20,6 +20,7 @@ export class ProgramService {
         new Map();
     programNumberToOutput: Map<string, BehaviorSubject<ProgramOutputLine[]>> =
         new Map();
+    programNumberToCancel: Map<string, () => void> = new Map();
 
     programsSubject: BehaviorSubject<Program[]> = new BehaviorSubject<
         Program[]
@@ -164,31 +165,51 @@ export class ProgramService {
     }
 
     runProgram(programNumber: string) {
+        const programState: BehaviorSubject<ProgramState> =
+            this.getProgramState(
+                programNumber,
+            ) as BehaviorSubject<ProgramState>;
+        const currentExecutionState = programState.value.executionState;
+        if (
+            currentExecutionState == ExecutionState.RUNNING ||
+            currentExecutionState == ExecutionState.STARTING
+        )
+            return;
+        programState.next({executionState: ExecutionState.STARTING});
+
         this.rosService.runProgram(programNumber).subscribe((handle) => {
+            programState.next({executionState: ExecutionState.RUNNING});
+            this.programNumberToCancel.set(programNumber, handle.cancel);
+
             const programOutput: BehaviorSubject<ProgramOutputLine[]> =
                 this.getProgramOutput(programNumber) as BehaviorSubject<
                     ProgramOutputLine[]
                 >;
             programOutput.next([]);
             handle.feedback.subscribe((feedback) => {
-                console.info(feedback.output_lines);
                 programOutput.next(
                     programOutput.getValue().concat(feedback.output_lines),
                 );
             });
 
-            const programState: BehaviorSubject<ProgramState> =
-                this.getProgramState(
-                    programNumber,
-                ) as BehaviorSubject<ProgramState>;
-            programState.next({executionState: ExecutionState.RUNNING});
             handle.result.subscribe((result) => {
+                const resultExecutionState =
+                    result.exit_code == 0
+                        ? ExecutionState.FINISHED_SUCCESSFUL
+                        : ExecutionState.FINISHED_ERROR;
                 programState.next({
-                    executionState: ExecutionState.FINISHED,
+                    executionState: resultExecutionState,
                     exitCode: result.exit_code,
                 });
             });
         });
+    }
+
+    terminateProgram(programNumber: string) {
+        const state = this.programNumberToState.get(programNumber);
+        if (state?.value.executionState !== ExecutionState.RUNNING) return;
+        this.programNumberToCancel.get(programNumber)!();
+        state.next({executionState: ExecutionState.INTERRUPTED});
     }
 
     getProgramOutput(programNumber: string): Observable<ProgramOutputLine[]> {

@@ -1,5 +1,4 @@
 <div class="h-100 w-100">
-    <!-- TODO: flyout width -->
     <div
         class="d-flex flex-row-reverse hstack gap-3 position-absolute z-2 top-0 end-0 p-4 pe-none">
         <button
@@ -21,7 +20,7 @@
             [style]="'transform: translate(' + -flyoutWidth + 'px, 0);'"
             class="workspaceButton">
             <img
-                src="../../assets/program/button-run-play.svg"
+                [src]="executionState == ExecutionState.RUNNING ? STOP_ICON : PLAY_ICON"
                 width="75px"
                 alt="Program save button" />
         </button>
@@ -72,8 +71,8 @@
                 </as-split-area>
                 <as-split-area [size]="50">
                     <app-console
-                        [output$]="output"
-                        [state$]="state"></app-console>
+                        [output$]="output$"
+                        [state$]="state$"></app-console>
                 </as-split-area>
             </as-split>
         </as-split-area>
