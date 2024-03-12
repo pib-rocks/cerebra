@@ -9,7 +9,7 @@
             [disabled]="codeVisualNew === codeVisualOld"
             class="workspaceButton">
             <img
-                [src]="codeVisualNew === codeVisualOld ? SAVE_INACTIVE_ICON : SAVE_ACTIVE_ICON"
+                [src]="codeVisualNew === codeVisualOld ? SAVE_INACTIVE : SAVE_ACTIVE"
                 width="75px"
                 alt="Program save button" />
         </button>
@@ -19,14 +19,14 @@
             (click)="runProgram()"
             class="workspaceButton">
             <img
-                [src]="executionState == ExecutionState.RUNNING ? STOP_ICON : PLAY_ICON"
+                [src]="executionState == ExecutionState.RUNNING ? STOP : PLAY"
                 width="75px"
                 alt="Program save button" />
         </button>
         <div class="toggle-btn-icon">
             <img
                 class="view-mode-icon"
-                [src]="FULL_SCREEN_ICON"
+                [src]="FULL_SCREEN"
                 alt="icon for split-screen-view" />
         </div>
         <button
@@ -34,13 +34,13 @@
             class="workspaceButton"
             (click)="viewMode = !viewMode">
             <img
-                [src]="viewMode ? TOGGLE_LEFT_ICON : TOGGLE_RIGHT_ICON"
+                [src]="viewMode ? TOGGLE_LEFT : TOGGLE_RIGHT"
                 alt="Toggle for switching between normal and split screen view" />
         </button>
         <div class="toggle-btn-icon">
             <img
                 class="view-mode-icon"
-                [src]="SPLIT_SCREEN_ICON"
+                [src]="SPLIT_SCREEN"
                 alt="icon for split-screen-view" />
         </div>
     </div>
