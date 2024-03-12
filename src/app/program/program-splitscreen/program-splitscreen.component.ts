@@ -25,7 +25,7 @@ export class ProgramSplitscreenComponent implements OnInit {
     programNumber: string = "";
     flyoutWidth: number = 0;
 
-    viewMode: boolean = false;
+    inSplitMode: boolean = false;
 
     output$: Observable<ProgramOutputLine[]> = new Observable();
     state$: Observable<ProgramState> = new Observable();
@@ -68,7 +68,7 @@ export class ProgramSplitscreenComponent implements OnInit {
     }
 
     runProgram() {
-        this.viewMode = true;
+        this.inSplitMode = true;
         if (this.executionState !== ExecutionState.RUNNING) {
             this.programService.runProgram(this.programNumber);
         } else {

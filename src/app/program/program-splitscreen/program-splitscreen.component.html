@@ -26,21 +26,21 @@
         <div class="toggle-btn-icon">
             <img
                 class="view-mode-icon"
-                [src]="FULL_SCREEN"
+                [src]="SPLIT_SCREEN"
                 alt="icon for split-screen-view" />
         </div>
         <button
             id="toggle-btn"
             class="workspaceButton"
-            (click)="viewMode = !viewMode">
+            (click)="inSplitMode = !inSplitMode">
             <img
-                [src]="viewMode ? TOGGLE_LEFT : TOGGLE_RIGHT"
+                [src]="inSplitMode ? TOGGLE_RIGHT : TOGGLE_LEFT"
                 alt="Toggle for switching between normal and split screen view" />
         </button>
         <div class="toggle-btn-icon">
             <img
                 class="view-mode-icon"
-                [src]="SPLIT_SCREEN"
+                [src]="FULL_SCREEN"
                 alt="icon for split-screen-view" />
         </div>
     </div>
@@ -55,7 +55,7 @@
                 (trashcanFlyoutChange)="flyoutWidth = $event"></app-program-workspace>
         </as-split-area>
         <as-split-area
-            *ngIf="viewMode"
+            *ngIf="inSplitMode"
             [size]="50"
             class="split-screen-lower">
             <as-split direction="horizontal">
