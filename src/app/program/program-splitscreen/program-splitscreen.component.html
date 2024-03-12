@@ -50,9 +50,9 @@
             [minSize]="15">
             <app-program-workspace
                 [codeVisual]="codeVisualOld"
-                (codePythonChange)="onCodePythonChange($event)"
-                (codeVisualChange)="onCodeVIsualChange($event)"
-                (trashcanFlyoutChange)="onTrashcanFlyoutChange($event)"></app-program-workspace>
+                (codePythonChange)="codePython = $event"
+                (codeVisualChange)="codeVisualNew = $event"
+                (trashcanFlyoutChange)="flyoutWidth = $event"></app-program-workspace>
         </as-split-area>
         <as-split-area
             *ngIf="viewMode"

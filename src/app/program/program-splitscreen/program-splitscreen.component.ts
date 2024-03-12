@@ -75,16 +75,4 @@ export class ProgramSplitscreenComponent implements OnInit {
             this.programService.terminateProgram(this.programNumber);
         }
     }
-
-    onCodePythonChange(codePython: string) {
-        this.codePython = codePython;
-    }
-
-    onCodeVIsualChange(codeVisual: string) {
-        this.codeVisualNew = codeVisual;
-    }
-
-    onTrashcanFlyoutChange(flyoutWidth: number) {
-        this.flyoutWidth = flyoutWidth;
-    }
 }

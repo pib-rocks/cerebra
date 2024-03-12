@@ -87,7 +87,6 @@ export class ProgramWorkspaceComponent
             toolbox: this.toolbox,
             theme: this.customTheme,
         });
-        this.workspaceContent = this.codeVisual;
 
         customBlockDefinition();
 
@@ -115,6 +114,7 @@ export class ProgramWorkspaceComponent
 
     ngAfterViewInit() {
         this.observer.observe(this.blocklyDiv.nativeElement);
+        this.workspaceContent = this.codeVisual;
     }
 
     ngOnDestroy(): void {
