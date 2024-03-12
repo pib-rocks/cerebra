@@ -8,12 +8,13 @@
             alt="settings-icon" />
     </div>
     <div
-        class="col m-0 p-0 d-flex align-items-center justify-content-center"
+        class="col mt-1 p-0 d-flex align-items-center justify-content-center"
         [ngClass]="reversed ? 'order-first' : 'order-last'">
         <input
             class="active-check"
             id="active-check-{{ motor.motorPathName }}"
             type="checkbox"
+            name="checkbox"
             [formControl]="turnedOnFormControl"
             (click)="setTurnedOn()" />
     </div>
@@ -123,11 +124,11 @@
         *ngIf="displayExtended"
         class="row display-flex justify-content-center">
         <div class="col-9">
-            <div class="form-check mb-3 ml-1">
+            <div class="d-flex mb-3 ml-1">
                 <input
                     type="checkbox"
                     [formControl]="invertFormControl"
-                    class="form-check-input"
+                    class="active-check mr-2 mt-1"
                     id="invertMotor"
                     (click)="setInvert()" />
                 <label
