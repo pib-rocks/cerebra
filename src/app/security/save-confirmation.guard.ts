@@ -1,4 +1,4 @@
-import {Injectable, inject} from "@angular/core";
+import {Injectable} from "@angular/core";
 import {SaveConfirmationGuardService} from "../shared/services/save-confirmation-guard.service";
 import {SaveConfirmationOptions} from "../shared/types/save-confirmation-options.enum";
 import {ProgramSplitscreenComponent} from "../program/program-splitscreen/program-splitscreen.component";
