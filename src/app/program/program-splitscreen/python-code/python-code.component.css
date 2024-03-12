@@ -4,4 +4,6 @@
 
 .wrapper {
     background-color: #192021;
+    overflow-y: scroll;
+    height: 0px;
 }
