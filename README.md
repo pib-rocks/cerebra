@@ -1,8 +1,6 @@
 # Cerebra2
 
-
 This repository contains Cerebra, the frontend to be used with a pib robot. The backend, to be installed on a pib directly, is found at [pib-rocks/pib-backend](https://github.com/pib-rocks/pib-backend).
-
 
 ## Development Setup
 

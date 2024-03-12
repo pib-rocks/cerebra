@@ -1,7 +1,7 @@
 import GenertateId from "../util/generateId.mjs";
 
 export class Personality {
-    constructor(personalityId, name, description, gender, pauseThreshold){
+    constructor(personalityId, name, description, gender, pauseThreshold) {
         this.personalityId = personalityId;
         this.name = name;
         this.description = description;
@@ -9,24 +9,24 @@ export class Personality {
         this.pauseThreshold = pauseThreshold;
     }
 
-    static getPersonality(personality){
+    static getPersonality(personality) {
         return new Personality(
             personality.personalityId,
             personality.name,
             personality.description,
             personality.gender,
-            personality.pauseThreshold
-        )
+            personality.pauseThreshold,
+        );
     }
 
-    static newPersonality(name, gender, pauseThreshold){
+    static newPersonality(name, gender, pauseThreshold) {
         return new Personality(
             GenertateId.genertateId(),
             name,
             "",
             gender,
-            pauseThreshold
-        )
+            pauseThreshold,
+        );
     }
 }
-export default Personality
+export default Personality;

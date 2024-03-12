@@ -42,6 +42,8 @@ import {ProxyRunProgramFeedback} from "../../ros-types/msg/proxy-run-program-fee
 import {ProxyRunProgramResult} from "../../ros-types/msg/proxy-run-program-result";
 import {ProxyRunProgramStatus} from "../../ros-types/msg/proxy-run-program-status";
 import {IRosService} from "./i-ros-service";
+// import {ip, portWebsocket} from "../../../gloabal-conf.json"
+import config from "../../../gloabal-conf.json";
 
 @Injectable({
     providedIn: "root",
@@ -127,12 +129,12 @@ export class RosService implements IRosService {
     private setUpRos() {
         let rosUrl: string;
         if (isDevMode()) {
-            rosUrl = "127.0.0.1";
+            rosUrl = config.ip;
         } else {
             rosUrl = window.location.hostname;
         }
         return new ROSLIB.Ros({
-            url: `ws://${rosUrl}:9090`,
+            url: `ws://${rosUrl}:${config.portWebsocket}`,
         });
     }
 

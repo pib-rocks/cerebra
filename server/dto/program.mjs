@@ -1,21 +1,21 @@
 import GenertateId from "../util/generateId.mjs";
 
-export class Program{
-    constructor(name, visual, programNumber){
+export class Program {
+    constructor(name, visual, programNumber) {
         this.name = name;
         this.visual = visual;
         this.programNumber = programNumber;
     }
-    static getProgram(program){
+    static getProgram(program) {
         return new Program(program.name, program.visual, program.programNumber);
     }
 
-    static newProgram(name, visual){
+    static newProgram(name, visual) {
         return new Program(name, visual, GenertateId.genertateId(), "");
     }
 
-    static returnCode(program){
-        return {"visual" : program.visual};
+    static returnCode(program) {
+        return {visual: program.visual};
     }
 }
-export default Program
+export default Program;

@@ -1,7 +1,20 @@
-import Bricklet from "./bricklet.mjs"
+import Bricklet from "./bricklet.mjs";
 
-export class Motor{
-    constructor(name, turnedOn, pulseWidthMin, pulseWidthMax, rotationRangeMin, rotationRangeMax, velocity, acceleration, deceleration, period, visible, brickletPins){
+export class Motor {
+    constructor(
+        name,
+        turnedOn,
+        pulseWidthMin,
+        pulseWidthMax,
+        rotationRangeMin,
+        rotationRangeMax,
+        velocity,
+        acceleration,
+        deceleration,
+        period,
+        visible,
+        brickletPins,
+    ) {
         this.name = name;
         this.turnedOn = turnedOn;
         this.pulseWidthMin = pulseWidthMax;
@@ -13,15 +26,28 @@ export class Motor{
         this.deceleration = deceleration;
         this.period = period;
         this.visible = visible;
-        this.brickletPins = brickletPins
+        this.brickletPins = brickletPins;
     }
 
-    static getMotor(motor, bicklet){
+    static getMotor(motor, bicklet) {
         let arrModifiedBricklet = [];
-        bicklet.forEach(bicklet => {
+        bicklet.forEach((bicklet) => {
             arrModifiedBricklet.push(Bricklet.getBricklet(bicklet));
         });
-        return new Motor(motor.name, motor.turnedOn, motor.pulseWidthMin, motor.pulseWidthMax, motor.rotationRangeMin, motor.rotationRangeMax, motor.velocity, motor.acceleration, motor.deceleration, motor.period, motor.visible, arrModifiedBricklet)
+        return new Motor(
+            motor.name,
+            motor.turnedOn,
+            motor.pulseWidthMin,
+            motor.pulseWidthMax,
+            motor.rotationRangeMin,
+            motor.rotationRangeMax,
+            motor.velocity,
+            motor.acceleration,
+            motor.deceleration,
+            motor.period,
+            motor.visible,
+            arrModifiedBricklet,
+        );
     }
 }
-export default Motor
+export default Motor;
