@@ -15,6 +15,8 @@ import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
 import {VoiceAssistantNavComponent} from "./voice-assistant/voice-assistant-nav/voice-assistant-nav.component";
 import {VoiceAssistantChatComponent} from "./voice-assistant/voice-assistant-chat/voice-assistant-chat.component";
 import {SideBarRightComponent} from "./ui-components/sidebar-right/sidebar-right.component";
+import {VoiceAssistantPersonalitySidebarRightComponent} from "./voice-assistant/voice-assistant-sidebars/voice-assistant-personality-sidebar-right/voice-assistant-personality-sidebar-right.component";
+// import {VoiceAssistantChatSidebarRightComponent} from "./voice-assistant/voice-assistant-sidebars/voice-assistant-chat-sidebar-right/voice-assistant-chat-sidebar-right.component";
 
 import {VerticalSliderComponent} from "./sliders/vertical-slider/vertical-slider.component";
 import {BoolToOnOffPipe} from "./shared/pipes/bool-to-on-off-pipe.pipe";
@@ -56,6 +58,7 @@ import {MotorPositionComponent} from "./joint-control/joint-control-core/motor-p
         ProgramWorkspaceComponent,
         ProgramSplitscreenComponent,
         PersonalityWrapperComponent,
+        VoiceAssistantPersonalitySidebarRightComponent,
     ],
     imports: [
         BrowserModule,
