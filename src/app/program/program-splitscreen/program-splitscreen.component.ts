@@ -20,8 +20,8 @@ export class ProgramSplitscreenComponent implements OnInit {
     ExecutionState = ExecutionState;
 
     codePython: string = "";
-    codeVisualOld: string = "";
-    codeVisualNew: string = "";
+    codeVisualOld: string = "{}";
+    codeVisualNew: string = "{}";
     programNumber: string = "";
     flyoutWidth: number = 0;
 
@@ -69,10 +69,12 @@ export class ProgramSplitscreenComponent implements OnInit {
 
     runProgram() {
         this.inSplitMode = true;
-        if (this.executionState !== ExecutionState.RUNNING) {
-            this.programService.runProgram(this.programNumber);
-        } else {
+        if (this.executionState === ExecutionState.STARTING) {
+            return;
+        } else if (this.executionState === ExecutionState.RUNNING) {
             this.programService.terminateProgram(this.programNumber);
+        } else {
+            this.programService.runProgram(this.programNumber);
         }
     }
 }

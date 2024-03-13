@@ -13,7 +13,6 @@ import {
 } from "@angular/core";
 import * as Blockly from "blockly";
 import {toolbox} from "../../blockly";
-import {asyncScheduler} from "rxjs";
 import {ITheme} from "blockly/core/theme";
 import {pythonGenerator} from "../../program-generators/custom-generators";
 
@@ -62,7 +61,6 @@ export class ProgramWorkspaceComponent
             Blockly.serialization.workspaces.save(this.workspace),
         );
     }
-
     set workspaceContent(content: string | undefined) {
         Blockly.serialization.workspaces.load(
             JSON.parse(content ?? "{}"),
@@ -121,22 +119,15 @@ export class ProgramWorkspaceComponent
         Blockly.registry.unregister("theme", "customtheme");
     }
 
-    generateCode(event: Abstract) {
-        if (this.workspace.isDragging()) return;
-        if (!this.supportedEvents.has(event.type)) return;
-    }
-
     resizeBlockly() {
         Blockly.svgResize(this.workspace);
     }
 
     flyoutChangeCallback = () => {
-        asyncScheduler.schedule(() => {
-            const contentOpen = this.workspace.trashcan?.contentsIsOpen();
-            const flyoutWidth = contentOpen
-                ? this.workspace.trashcan?.flyout?.getWidth() ?? 0
-                : 0;
-            this.trashcanFlyoutChange.emit(flyoutWidth);
-        });
+        const contentOpen = this.workspace.trashcan?.contentsIsOpen();
+        const flyoutWidth = contentOpen
+            ? this.workspace.trashcan?.flyout?.getWidth() ?? 0
+            : 0;
+        this.trashcanFlyoutChange.emit(flyoutWidth);
     };
 }
