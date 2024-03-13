@@ -17,6 +17,7 @@
     background-color: #1b2b44;
     overflow-y: scroll;
     height: 0px;
+    overflow-wrap: break-word;
 }
 
 .wrapper > :first-child {
