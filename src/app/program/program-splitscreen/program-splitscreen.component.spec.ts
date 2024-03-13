@@ -35,7 +35,6 @@ describe("ProgramSplitscreenComponent", () => {
 
         params = new BehaviorSubject<Params>({"program-number": "id-0"});
         data = new BehaviorSubject<Params>({code: "{}"});
-        (data as Record<string, any>)["hui"] = "rf";
 
         await TestBed.configureTestingModule({
             declarations: [
