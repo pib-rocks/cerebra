@@ -6,8 +6,10 @@ import {UrlConstants} from "./url.constants";
 import {ProgramCode} from "../types/program-code";
 import {UtilService} from "./util.service";
 import {RosService} from "./ros-service/ros.service";
-import {ProgramOutputLine} from "../ros-types/msg/program-output-line";
+import {ProgramOutputLine as ProgramOutputLineRos} from "../ros-types/msg/program-output-line";
+import {ProgramOutputLine} from "../types/program-output-line";
 import {ExecutionState, ProgramState} from "../types/program-state";
+import {line} from "blockly/core/utils/svg_paths";
 
 @Injectable({
     providedIn: "root",
@@ -186,9 +188,13 @@ export class ProgramService {
                 >;
             programOutput.next([]);
             handle.feedback.subscribe((feedback) => {
-                programOutput.next(
-                    programOutput.getValue().concat(feedback.output_lines),
+                const lines: ProgramOutputLine[] = feedback.output_lines.map(
+                    (lineRos) => ({
+                        content: lineRos.content,
+                        isStderr: lineRos.is_stderr,
+                    }),
                 );
+                programOutput.next(programOutput.getValue().concat(lines));
             });
 
             const resultSubscription = handle.result.subscribe((result) => {

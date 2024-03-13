@@ -1,7 +1,7 @@
 import {Component, OnInit} from "@angular/core";
 import {ActivatedRoute} from "@angular/router";
 import {Observable} from "rxjs";
-import {ProgramOutputLine} from "src/app/shared/ros-types/msg/program-output-line";
+import {ProgramOutputLine} from "src/app/shared/types/program-output-line";
 import {ProgramService} from "src/app/shared/services/program.service";
 import {ProgramCode} from "src/app/shared/types/program-code";
 import {ExecutionState, ProgramState} from "src/app/shared/types/program-state";

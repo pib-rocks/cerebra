@@ -89,7 +89,6 @@ export class ProgramWorkspaceComponent
         });
 
         customBlockDefinition();
-
         this.observer = new ResizeObserver(() => {
             this.resizeBlockly();
         });

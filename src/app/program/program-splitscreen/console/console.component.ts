@@ -1,6 +1,6 @@
 import {Component, Input, SimpleChanges} from "@angular/core";
 import {Observable, Subscription} from "rxjs";
-import {ProgramOutputLine} from "src/app/shared/ros-types/msg/program-output-line";
+import {ProgramOutputLine} from "src/app/shared/types/program-output-line";
 import {ExecutionState, ProgramState} from "src/app/shared/types/program-state";
 
 @Component({
