@@ -19,7 +19,7 @@
             (click)="runProgram()"
             class="workspaceButton">
             <img
-                [src]="executionState == ExecutionState.RUNNING ? STOP : PLAY"
+                [src]="executionState === ExecutionState.RUNNING ? STOP : PLAY"
                 width="75px"
                 alt="Program save button" />
         </button>

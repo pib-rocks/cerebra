@@ -521,7 +521,7 @@ describe("ProgramService", () => {
         const stateNextSpy = spyOn(stateSubject, "next");
         const outputNextSpy = spyOn(outputSubject, "next");
 
-        let cancelCallback: () => void = () => {};
+        let cancelCallback: () => void = () => undefined;
         const programNumberToCancelSetSpy = spyOn(
             programService.programNumberToCancel,
             "set",

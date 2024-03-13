@@ -14,7 +14,7 @@ describe("ProgramSplitscreenComponent", () => {
     let fixture: ComponentFixture<ProgramSplitscreenComponent>;
     let programService: jasmine.SpyObj<ProgramService>;
     let params: BehaviorSubject<Params>;
-    let data: BehaviorSubject<Object>;
+    let data: BehaviorSubject<Record<string, any>>;
 
     beforeEach(async () => {
         const programServiceSpy: jasmine.SpyObj<ProgramService> =
