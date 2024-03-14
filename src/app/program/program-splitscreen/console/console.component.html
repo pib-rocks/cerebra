@@ -1,0 +1,39 @@
+<div
+    class="wrapper p-4 d-flex flex-column-reverse"
+    id="console-area">
+    <div
+        *ngIf="state.executionState === ExecutionState.FINISHED_SUCCESSFUL"
+        class="info">
+        Program has finished successfully (exit code: 0)
+    </div>
+    <div
+        *ngIf="state.executionState === ExecutionState.FINISHED_ERROR"
+        class="info">
+        Program has finished with errors (exit code: {{state.exitCode}})
+    </div>
+    <div
+        *ngIf="state.executionState === ExecutionState.INTERRUPTED"
+        class="info">
+        Program execution has been interrupted by the user.
+    </div>
+    <div
+        *ngFor="let line of output"
+        [ngClass]="line.isStderr ? 'stderr' : 'stdout'">
+        {{line.content}}
+    </div>
+    <div
+        *ngIf="state.executionState >= ExecutionState.RUNNING"
+        class="info">
+        Program is now executing (output will be displayed here)
+    </div>
+    <div
+        *ngIf="state.executionState >= ExecutionState.STARTING"
+        class="info">
+        Starting execution of program...
+    </div>
+    <div
+        *ngIf="state.executionState === ExecutionState.NOT_STARTED"
+        class="info">
+        Program has not started yes (click 'Run' to start execution)
+    </div>
+</div>

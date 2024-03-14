@@ -12,12 +12,13 @@ import {PersonalityWrapperComponent} from "./voice-assistant/personality-wrapper
 import {JointControlComponent} from "./joint-control/joint-control.component";
 import {JointControlCoreComponent} from "./joint-control/joint-control-core/joint-control-core.component";
 import {ProgramComponent} from "./program/program.component";
-import {ProgramWorkspaceComponent} from "./program/program-splitscreen/program-workspace/program-workspace.component";
 import {jointResolver} from "./joint-control/joint-resolver/joint-resolver";
 import {MotorPositionComponent} from "./joint-control/joint-control-core/motor-position/motor-position.component";
 import {motorResolver} from "./joint-control/joint-control-core/motor-position/motor-resolver/motor.resolver";
 import {motorGuard} from "./security/motor-guard";
 import {SaveConfirmationGuard} from "./security/save-confirmation.guard";
+import {ProgramSplitscreenComponent} from "./program/program-splitscreen/program-splitscreen.component";
+import {programCodeResolver} from "./program/program-splitscreen/resolver/program-code.resolver";
 
 const routes: Routes = [
     {
@@ -82,9 +83,10 @@ const routes: Routes = [
         component: ProgramComponent,
         children: [
             {
-                path: ":uuid",
-                component: ProgramWorkspaceComponent,
+                path: ":program-number",
+                component: ProgramSplitscreenComponent,
                 canDeactivate: [SaveConfirmationGuard],
+                resolve: {code: programCodeResolver},
             },
         ],
     },

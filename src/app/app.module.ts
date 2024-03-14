@@ -34,6 +34,8 @@ import {MotorSettingsComponent} from "./joint-control/joint-control-core/motor-s
 import {MotorCurrentComponent} from "./joint-control/joint-control-core/motor-current/motor-current.component";
 import {MotorPositionComponent} from "./joint-control/joint-control-core/motor-position/motor-position.component";
 import {SaveConfirmationComponent} from "./program/save-confirmation/save-confirmation.component";
+import {PythonCodeComponent} from "./program/program-splitscreen/python-code/python-code.component";
+import {ConsoleComponent} from "./program/program-splitscreen/console/console.component";
 
 @NgModule({
     declarations: [
@@ -58,6 +60,8 @@ import {SaveConfirmationComponent} from "./program/save-confirmation/save-confir
         ProgramSplitscreenComponent,
         PersonalityWrapperComponent,
         SaveConfirmationComponent,
+        PythonCodeComponent,
+        ConsoleComponent,
     ],
     imports: [
         BrowserModule,

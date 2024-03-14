@@ -113,18 +113,3 @@
     background-color: #1b2b44;
     fill: white;
 }
-
-::-webkit-scrollbar {
-    background-color: #1b2b44;
-    scrollbar-width: thin;
-    width: 5px;
-}
-
-::-webkit-scrollbar:hover {
-    width: 7px;
-}
-
-::-webkit-scrollbar-thumb {
-    background-color: #cccccc;
-    padding: 10%;
-}
