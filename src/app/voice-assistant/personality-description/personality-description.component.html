@@ -36,7 +36,8 @@
                 </div>
             </div>
             <div class="col">
-                <app-va-personality-sidebar-right [personality]="personality">
+                <app-va-personality-sidebar-right
+                    [personalityUUID]="personality?.getUUID()">
                 </app-va-personality-sidebar-right>
             </div>
         </div>

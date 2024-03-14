@@ -1,92 +1,109 @@
 <div class="sidebar-right-wrapper p-0">
-    <div
-        class="row m-2 pr-2"
-        id="row-name">
-        <label
-            for="name-input"
-            class="row pl-0"
-            id="label-name"
-            >Persona Name</label
-        >
-        <!-- ngClass muss geprüft werden und wieder dem input hinzugefügt werden -->
-        <!-- [ngClass]="(!this.personalityForm.controls['name-input'].valid && !this.personalityForm.controls['name-input'].pristine) ? 'invalid-form' : '' " -->
-        <input
-            ngbAutofocus
-            class="row"
-            type="text"
-            formControlName="name-input"
-            [defaultValue]="personalityName"
-            id="name-input" />
-    </div>
-    <div class="row m-2 ml-3">
-        <!-- @TODO Sobald eine änderung vorgenommen wurde Clone aktualisieren sowie die eigentliche Personality -->
+    <form [formGroup]="personalityForm">
         <div
-            class="col-4"
-            id="radio-button-female">
-            <input
-                value="Female"
-                formControlName="gender"
-                type="radio"
-                [checked]="(gender == 'female')"
-                id="radio-female" />
+            class="row m-2 pr-2"
+            id="row-name">
             <label
-                for="radio-female"
-                id="label-radio-female"
-                >Female</label
+                for="name-input"
+                class="row pl-0"
+                id="label-name"
+                >Persona Name</label
             >
-        </div>
-        <!-- @TODO Sobald eine änderung vorgenommen wurde Clone aktualisieren sowie die eigentliche Personality -->
-        <div
-            class="col-4"
-            id="radio-button-male">
-            <input
-                value="Male"
-                formControlName="gender"
-                type="radio"
-                [checked]="(gender == 'male')"
-                id="radio-male" />
-            <label
-                for="radio-male"
-                id="label-radio-male"
-                >Male</label
-            >
-        </div>
-    </div>
-    <div
-        class="row m-2 pr-2"
-        id="row-name">
-        <label
-            for="name-input"
-            class="row pl-0"
-            id="label-pause-threshold"
-            >Pause threshold</label
-        >
-        <div class="row pl-0">
+            <!-- ngClass muss geprüft werden und wieder dem input hinzugefügt werden -->
+            <!-- [ngClass]="(!this.personalityForm.controls['name-input'].valid && !this.personalityForm.controls['name-input'].pristine) ? 'invalid-form' : '' " -->
             <input
                 ngbAutofocus
-                class="col-10"
+                class="row"
                 type="text"
-                formControlName="input-pause-threshold"
-                [defaultValue]="personalityName"
-                id="input-pause-threshold" />
-            <div class="col-2 p-0">
-                <div class="row mt-1 p-0">
-                    <button
-                        id="up"
-                        type="button"
-                        (click)="adjustThreshold('0.1')">
-                        &#9650;
-                    </button>
+                formControlName="persona-name"
+                [value]="personalityClone.name"
+                id="name-input" />
+        </div>
+        <div class="row m-2 ml-3">
+            <div
+                class="col-4"
+                id="radio-button-female">
+                <input
+                    value="Female"
+                    formControlName="gender"
+                    type="radio"
+                    [checked]="(personalityClone.gender == 'female')"
+                    id="radio-female" />
+                <label
+                    for="radio-female"
+                    id="label-radio-female"
+                    >Female</label
+                >
+            </div>
+            <div
+                class="col-4"
+                id="radio-button-male">
+                <input
+                    value="Male"
+                    formControlName="gender"
+                    type="radio"
+                    [checked]="(personalityClone.gender == 'male')"
+                    id="radio-male" />
+                <label
+                    for="radio-male"
+                    id="label-radio-male"
+                    >Male</label
+                >
+            </div>
+        </div>
+        <div
+            class="row m-2 pr-2"
+            id="row-name">
+            <label
+                for="name-input"
+                class="row pl-0"
+                id="label-pause-threshold"
+                >Pause threshold</label
+            >
+            <div class="row">
+                <div class="col-11 p-0">
+                    <input
+                        type="text"
+                        id="pause-threshold-input"
+                        [(ngModel)]="thresholdString"
+                        [ngModelOptions]="{standalone: true}"
+                        readonly />
                 </div>
-                <div class="row p-0">
-                    <button
-                        id="down"
-                        type="button"
-                        (click)="adjustThreshold('-0.1')">
-                        &#9660;
-                    </button>
+                <div class="col-1 p-0">
+                    <div class="row mt-1 p-0">
+                        <button
+                            id="up"
+                            type="button"
+                            (click)="adjustThreshold('0.1')">
+                            &#9650;
+                        </button>
+                    </div>
+                    <div class="row p-0">
+                        <button
+                            id="down"
+                            type="button"
+                            (click)="adjustThreshold('-0.1')">
+                            &#9660;
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+        <div class="mr-2">
+            <button
+                id="save-button"
+                class="btn btn-regular"
+                (click)="updatePersonality()">
+                Save persona
+            </button>
+        </div>
+        <div class="mr-2">
+            <button
+                id="save-button"
+                class="btn btn-regular"
+                (click)="deletePersonality()">
+                Delete persona
+            </button>
+        </div>
+    </form>
 </div>
