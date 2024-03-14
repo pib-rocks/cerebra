@@ -26,36 +26,22 @@ export const face_detector_blocks =
         {
             type: "face_detector_running",
             message0:
-                "Run the face detector and get the face coordiantes %1 Xmin: %2 Xmax: %3 Ymin: %4 Ymax: %5",
+                "Run the face detector and get the face coordiantes %1 Horiz-Center: %2  Vert-Center: %3",
             args0: [
                 {
                     type: "input_dummy",
                 },
                 {
                     type: "field_variable",
-                    name: "XMIN",
-                    variable: "xmin",
+                    name: "HORIZ_CENTER",
+                    variable: "horiz_center",
                     variableTypes: ["Number"],
                     defaultType: "Number",
                 },
                 {
                     type: "field_variable",
-                    name: "YMIN",
-                    variable: "ymin",
-                    variableTypes: ["Number"],
-                    defaultType: "Number",
-                },
-                {
-                    type: "field_variable",
-                    name: "XMAX",
-                    variable: "xmax",
-                    variableTypes: ["Number"],
-                    defaultType: "Number",
-                },
-                {
-                    type: "field_variable",
-                    name: "YMAX",
-                    variable: "ymax",
+                    name: "VERT_CENTER",
+                    variable: "vert_center",
                     variableTypes: ["Number"],
                     defaultType: "Number",
                 },
