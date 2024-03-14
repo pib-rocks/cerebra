@@ -63,7 +63,7 @@
     {
       "id" : 1,
       "name" : "hello_world", 
-      "visual" : "{\"blocks\":{\"languageVersion\":0,\"blocks\":[{\"type\":\"text_print\",\"id\":\"]l,+vC{q$rZPVdSfyx=4\",\"x\":229,\"y\":67,\"inputs\":{\"TEXT\":{\"shadow\":{\"type\":\"text\",\"id\":\"v,}3JGN5d7og[X_/KJ)|\",\"fields\":{\"TEXT\":\"hello world\"}}}}}]}",
+      "visual" : "{\"blocks\":{\"languageVersion\":0,\"blocks\":[{\"type\":\"text_print\",\"id\":\"m]IdB%+y#}e]Wkyv(z:O\",\"x\":491,\"y\":223,\"inputs\":{\"TEXT\":{\"shadow\":{\"type\":\"text\",\"id\":\"(moPdWrtEsMA$!r[|=S_\",\"fields\":{\"TEXT\":\"abc\"}},\"block\":{\"type\":\"text\",\"id\":\"JN{F[Dkw?Uw-1]=WJ%=P\",\"fields\":{\"TEXT\":\"Hello World\"}}}}}]}}",
       "programNumber": "e1d46e2a-935e-4e2b-b2f9-0856af4257c5"
     }
   ],

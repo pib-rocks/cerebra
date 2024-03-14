@@ -1,5 +1,6 @@
 <div
     class="slider"
+    id="horizontal-slider-{{baseId}}"
     [ngClass]="(thumbSelected ? 'no-highlight' : '') + (active ? '' : 'inactive')"
     (mouseup)="onMouseUp($event)"
     (mouseenter)="onMouseEnter($event)"
@@ -29,22 +30,22 @@
         >
         <!-- bubble input -->
         <input
-            *ngFor="let thumb of thumbs"
+            *ngFor="let thumb of thumbs; index as i"
             #bubbleInput
-            id="slider-bubbleinput-{{baseId}}-{{thumb.id}}"
+            id="slider-bubbleinput-{{baseId}}-{{i}}"
             class="bubble-input overlay"
             [ngClass]="thumb.inputVisible ? '' : 'invisible'"
-            [attr.style]="'left: ' + thumb.position + 'px;'"
+            [attr.style]="'left: ' + thumb.position + 'px; z-index: ' + (10-i) + ';'"
             [formControl]="thumb.bubbleFormControl"
             (blur)="toggleInputInvisible(thumb)"
             (keydown.enter)="toggleInputInvisible(thumb)" />
         <!-- bubble overlay -->
         <div
-            *ngFor="let thumb of thumbs"
-            id="bubble-span-{{baseId}}-{{thumb.id}}"
+            *ngFor="let thumb of thumbs; index as i"
+            id="bubble-span-{{baseId}}-{{i}}"
             class="bubble-span overlay"
             [ngClass]="thumb.inputVisible ? 'invisible' : ''"
-            [attr.style]="'left: ' + thumb.position + 'px;'"
+            [attr.style]="'left: ' + thumb.position + 'px; z-index: ' + (10-i) + ';'"
             (dblclick)="toggleInputVisible(thumb)">
             {{ thumb.valueSanitized }}{{ unitShort }}
         </div>
@@ -74,8 +75,8 @@
                 fill="#e10072" />
             <!-- slider thumbs -->
             <circle
-                *ngFor="let thumb of thumbs"
-                id="slider-{{baseId}}-thumb-{{thumb.id}}"
+                *ngFor="let thumb of thumbs; index as i"
+                id="slider-{{baseId}}-thumb-{{i}}"
                 [attr.cx]="thumb.position"
                 [attr.cy]="thumbRadius"
                 [attr.r]="thumbRadius"
