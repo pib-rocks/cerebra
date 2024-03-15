@@ -1,7 +1,7 @@
 import {TestBed} from "@angular/core/testing";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {SaveConfirmationGuardService} from "./save-confirmation-guard.service";
-import {SaveConfirmationComponent} from "src/app/program/confirm-leave/save-confirmation.component";
+import {SaveConfirmationComponent} from "src/app/program/save-confirmation/save-confirmation.component";
 import {SaveConfirmationOptions} from "../types/save-confirmation-options.enum";
 
 describe("SaveConfirmationGuardService", () => {
@@ -76,7 +76,6 @@ describe("SaveConfirmationGuardService", () => {
             modalServiceSpy.open.calls.mostRecent().returnValue
                 .componentInstance as SaveConfirmationComponent;
 
-        // Check if the title property is set correctly
         expect(confirmationComponentInstance.title).toBe(title);
         expect(confirmationComponentInstance.message).toBe(msg);
         expect(confirmationComponentInstance.confirmationMsg).toBe(confMsg);

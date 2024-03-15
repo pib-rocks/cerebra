@@ -4,7 +4,7 @@ import {SaveConfirmationComponent} from "./save-confirmation.component";
 import {NgbActiveModal} from "@ng-bootstrap/ng-bootstrap";
 import {SaveConfirmationOptions} from "src/app/shared/types/save-confirmation-options.enum";
 
-describe("ConfirmLeaveComponent", () => {
+describe("SaveConfirmationComponent", () => {
     let component: SaveConfirmationComponent;
     let fixture: ComponentFixture<SaveConfirmationComponent>;
     let activeModalSpy: jasmine.SpyObj<NgbActiveModal>;
