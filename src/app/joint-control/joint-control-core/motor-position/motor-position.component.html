@@ -18,8 +18,8 @@
                 [numberOfThumbs]="1"
                 [unitLong]="'μs'"
                 [defaultValues]="[0]"
+                [active]="turnedOn"
                 [step]="1"
-                [isActiveReceiver$]="turnedOnReceiver$"
                 [messageReceiver$]="positionReceiver$"
                 (sliderEvent)="setPosition($event[0])"></app-horizontal-slider>
         </div>

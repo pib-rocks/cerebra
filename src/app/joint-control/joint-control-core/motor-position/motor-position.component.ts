@@ -18,6 +18,8 @@ export class MotorPositionComponent implements OnInit {
     rotationRangeMin: number = -90;
     rotationRangeMax: number = +90;
 
+    turnedOn: boolean = false;
+
     constructor(
         private motorService: MotorService,
         private route: ActivatedRoute,
@@ -34,7 +36,7 @@ export class MotorPositionComponent implements OnInit {
             this.motorService
                 .getSettingsObservable(this.motor.sourceMotorName)
                 .subscribe((settings) => {
-                    this.turnedOnReceiver$.next(settings.turnedOn);
+                    this.turnedOn = settings.turnedOn;
                     this.rotationRangeMin = settings.rotationRangeMin;
                     this.rotationRangeMax = settings.rotationRangeMax;
                 });
