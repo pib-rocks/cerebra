@@ -13,7 +13,7 @@ export class SaveConfirmationGuardService {
         title: string,
         message: string,
         confirmationMsg: string,
-        denyMsg: string,
+        declineMsg: string,
     ): Promise<SaveConfirmationOptions> {
         const modalRef = this.modalService.open(SaveConfirmationComponent, {
             windowClass: "myCustomModalClass",
@@ -22,7 +22,7 @@ export class SaveConfirmationGuardService {
         });
         modalRef.componentInstance.title = title;
         modalRef.componentInstance.message = message;
-        modalRef.componentInstance.denyMsg = denyMsg;
+        modalRef.componentInstance.declineMsg = declineMsg;
         modalRef.componentInstance.confirmationMsg = confirmationMsg;
 
         return modalRef.result.then(

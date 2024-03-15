@@ -62,14 +62,14 @@ describe("SaveConfirmationGuardService", () => {
         const title = "Test Title";
         const msg = "test msg";
         const confMsg = "test conf";
-        const denyMsg = "test deny";
+        const declineMsg = "test decline";
 
         modalServiceSpy.open.and.returnValue({
             result: Promise.resolve(modalResult),
             componentInstance: {},
         } as any);
 
-        await service.openConfirmationModal(title, msg, confMsg, denyMsg);
+        await service.openConfirmationModal(title, msg, confMsg, declineMsg);
 
         // Retrieve the opened component instance
         const confirmationComponentInstance =
@@ -79,6 +79,6 @@ describe("SaveConfirmationGuardService", () => {
         expect(confirmationComponentInstance.title).toBe(title);
         expect(confirmationComponentInstance.message).toBe(msg);
         expect(confirmationComponentInstance.confirmationMsg).toBe(confMsg);
-        expect(confirmationComponentInstance.denyMsg).toBe(denyMsg);
+        expect(confirmationComponentInstance.declineMsg).toBe(declineMsg);
     });
 });

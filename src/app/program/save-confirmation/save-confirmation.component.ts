@@ -12,7 +12,7 @@ export class SaveConfirmationComponent {
     @Input() message: string = "You have unsaved changes.";
 
     @Input() confirmationMsg: string = "Save";
-    @Input() denyMsg: string = "Don't Save";
+    @Input() declineMsg: string = "Don't Save";
 
     constructor(public activeModal: NgbActiveModal) {}
 
@@ -20,7 +20,7 @@ export class SaveConfirmationComponent {
         this.activeModal.close(SaveConfirmationOptions.Save);
     }
 
-    deny() {
+    decline() {
         this.activeModal.close(SaveConfirmationOptions.Decline);
     }
 

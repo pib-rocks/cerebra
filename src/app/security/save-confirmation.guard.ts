@@ -19,7 +19,7 @@ export class SaveConfirmationGuard {
         const title: string = "Save your changes?";
         const msg: string =
             "You have unsaved changes in your program. Do you want to save them before leaving?";
-        const denyMsg: string = "Don't Save";
+        const declineMsg: string = "Don't Save";
         const confirmationMsg: string = "Save";
 
         if (
@@ -31,7 +31,7 @@ export class SaveConfirmationGuard {
                     title,
                     msg,
                     confirmationMsg,
-                    denyMsg,
+                    declineMsg,
                 );
             if (confirmationResult === SaveConfirmationOptions.Cancel) {
                 return false;

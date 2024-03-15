@@ -35,8 +35,8 @@ describe("SaveConfirmationComponent", () => {
         );
     });
 
-    it("should close the modal with SaveConfirmationOptions.Decline on deny", () => {
-        component.deny();
+    it("should close the modal with SaveConfirmationOptions.Decline on declining", () => {
+        component.decline();
         expect(activeModalSpy.close).toHaveBeenCalledWith(
             SaveConfirmationOptions.Decline,
         );
@@ -53,6 +53,6 @@ describe("SaveConfirmationComponent", () => {
         expect(component.title).toBe("Warning");
         expect(component.message).toBe("You have unsaved changes.");
         expect(component.confirmationMsg).toBe("Save");
-        expect(component.denyMsg).toBe("Don't Save");
+        expect(component.declineMsg).toBe("Don't Save");
     });
 });
