@@ -24,7 +24,7 @@ describe("UtilService", () => {
         expect(defaultSpy).not.toHaveBeenCalled();
     });
 
-    it("should get the existing value from the map", () => {
+    it("should store the default value in the map and return it", () => {
         const map = new Map();
         const key = "test-key";
         const val = "test-val";
