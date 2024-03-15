@@ -27,7 +27,7 @@
                     value="Female"
                     formControlName="gender"
                     type="radio"
-                    [checked]="(personalityClone.gender == 'female')"
+                    [(ngModel)]="personalityClone.gender"
                     id="radio-female" />
                 <label
                     for="radio-female"
@@ -42,7 +42,7 @@
                     value="Male"
                     formControlName="gender"
                     type="radio"
-                    [checked]="(personalityClone.gender == 'male')"
+                    [(ngModel)]="personalityClone.gender"
                     id="radio-male" />
                 <label
                     for="radio-male"

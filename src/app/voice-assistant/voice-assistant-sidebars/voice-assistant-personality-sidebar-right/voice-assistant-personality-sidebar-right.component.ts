@@ -24,7 +24,6 @@ export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
     ) {}
 
     ngOnInit() {
-        this.personalityClone = this.route.snapshot.data["personality"];
         this.route.params.subscribe((params: Params) => {
             let temp = this.voiceAssistantService.getPersonality(
                 params["personalityUuid"],
@@ -33,8 +32,12 @@ export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
                 this.personalityClone = temp;
             }
         });
-        this.thresholdString = this.personalityClone.pauseThreshold + "s";
+        this.route.params.subscribe((params) => {
+            this.updateForm();
+        });
+    }
 
+    updateForm() {
         this.personalityForm = new FormGroup({
             "persona-name": new FormControl(this.personalityClone.name, {
                 nonNullable: true,
@@ -60,6 +63,7 @@ export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
                 },
             ),
         });
+        this.thresholdString = this.personalityClone.pauseThreshold + "s";
     }
 
     adjustThreshold(step: string) {
