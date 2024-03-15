@@ -35,10 +35,10 @@ describe("SaveConfirmationComponent", () => {
         );
     });
 
-    it("should close the modal with SaveConfirmationOptions.Deny on deny", () => {
+    it("should close the modal with SaveConfirmationOptions.Decline on deny", () => {
         component.deny();
         expect(activeModalSpy.close).toHaveBeenCalledWith(
-            SaveConfirmationOptions.Deny,
+            SaveConfirmationOptions.Decline,
         );
     });
 

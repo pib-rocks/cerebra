@@ -21,7 +21,7 @@ export class SaveConfirmationComponent {
     }
 
     deny() {
-        this.activeModal.close(SaveConfirmationOptions.Deny);
+        this.activeModal.close(SaveConfirmationOptions.Decline);
     }
 
     cancel() {

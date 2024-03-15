@@ -1,5 +1,5 @@
 export enum SaveConfirmationOptions {
     Save,
-    Deny,
+    Decline,
     Cancel,
 }
