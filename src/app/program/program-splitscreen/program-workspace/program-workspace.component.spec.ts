@@ -75,7 +75,7 @@ describe("ProgramWorkspaceComponent", () => {
         expect(codePythonEmitSpy).not.toHaveBeenCalled();
     });
 
-    it("should emit the new flyout wdith if content open", () => {
+    it("should emit the new flyout width if content open", () => {
         spyOn(component.workspace.trashcan!, "contentsIsOpen").and.returnValue(
             true,
         );
