@@ -6,10 +6,8 @@ import {UrlConstants} from "./url.constants";
 import {ProgramCode} from "../types/program-code";
 import {UtilService} from "./util.service";
 import {RosService} from "./ros-service/ros.service";
-import {ProgramOutputLine as ProgramOutputLineRos} from "../ros-types/msg/program-output-line";
 import {ProgramOutputLine} from "../types/program-output-line";
 import {ExecutionState, ProgramState} from "../types/program-state";
-import {line} from "blockly/core/utils/svg_paths";
 import {GoalHandle} from "../ros-types/action/goal-handle";
 import {
     RunProgramFeedback,
