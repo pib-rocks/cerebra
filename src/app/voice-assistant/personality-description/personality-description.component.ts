@@ -12,6 +12,7 @@ import {VoiceAssistant} from "src/app/shared/types/voice-assistant";
 export class PersonalityDescriptionComponent implements OnInit {
     personality?: VoiceAssistant;
     textAreaContent: string = "";
+    timer: any;
 
     constructor(
         private voiceAssistantService: VoiceAssistantService,
@@ -37,10 +38,17 @@ export class PersonalityDescriptionComponent implements OnInit {
     }
 
     updateDescription() {
-        if (this.personality) {
-            this.personality.description = this.textAreaContent ?? "";
-            this.voiceAssistantService.updatePersonalityById(this.personality);
-        }
+        //save description after 1.5s
+        clearTimeout(this.timer);
+        this.timer = setTimeout(() => {
+            if (this.personality) {
+                console.log("save");
+                this.personality.description = this.textAreaContent ?? "";
+                this.voiceAssistantService.updatePersonalityById(
+                    this.personality,
+                );
+            }
+        }, 1500);
     }
 
     updatePersonality() {

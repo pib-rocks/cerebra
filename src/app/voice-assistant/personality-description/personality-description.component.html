@@ -29,9 +29,10 @@
                             class="form-control p-3"
                             rows="16"
                             placeholder="Describe personality with a prompt..."
-                            [(ngModel)]="textAreaContent">
-                    {{personality?.description ?? "ERROR: Personality not found"}}</textarea
-                        >
+                            [(ngModel)]="textAreaContent"
+                            (input)="updateDescription()">
+                            {{personality?.description ?? "ERROR: Personality not found"}}
+                        </textarea>
                     </div>
                 </div>
             </div>
