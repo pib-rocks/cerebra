@@ -1,15 +1,17 @@
-<div class="row allContent mt-4 ">
-    <div class="main col-10 pink-corner-frame">
-        <router-outlet></router-outlet>
-    </div>
-    <div class="side col-2">
-        <app-sidebar-right
-            [headerElements]="headerElements"
-            [subject]="subject"
-            [lStorage]="'chat'"
-            [elementIcon]="personalityIcon"
-            [selectedObservable]="selected">
-        </app-sidebar-right>
+<div class="allContent mt-4 ">
+    <div class="row pink-corner-frame">
+        <div class="col-10">
+            <router-outlet></router-outlet>
+        </div>
+        <div class="col-2">
+            <app-sidebar-right
+                [calbackMethods]="calbackMethods"
+                [subject]="subject"
+                [lStorage]="'chat'"
+                [elementIcon]="personalityIcon"
+                [selectedObservable]="selected">
+            </app-sidebar-right>
+        </div>
     </div>
 </div>
 

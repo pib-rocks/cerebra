@@ -52,8 +52,4 @@ export class ChatWindowComponent implements OnInit {
     sendMessage() {
         throw Error("not implemented");
     }
-
-    exportChat() {
-        throw Error("not implemented");
-    }
 }

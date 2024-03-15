@@ -104,21 +104,21 @@ export class ProgramComponent implements OnInit, AfterViewInit {
             });
     };
 
-    headerElements = [
+    calbackMethods = [
         {
             icon: "../../assets/program/program-add.svg",
-            label: "ADD",
+            label: "New Program",
             clickCallback: this.addProgram,
         },
         {
-            icon: "../../assets/program/program-delete.svg",
-            label: "DELETE",
-            clickCallback: this.deleteProgram,
+            icon: "../../assets/program/program-edit.svg",
+            label: "Rename",
+            clickCallback: this.editProgram,
         },
         {
-            icon: "../../assets/program/program-edit.svg",
-            label: "EDIT",
-            clickCallback: this.editProgram,
+            icon: "../../assets/program/program-delete.svg",
+            label: "delete",
+            clickCallback: this.deleteProgram,
         },
     ];
 }

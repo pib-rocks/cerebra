@@ -1,25 +1,21 @@
 <div class="row mt-2">
-    <div class="col-4">
-        <div class="row pt-1">
-            <div class="col-auto text-right">
-                <span class="align-middle"> Personality </span>
-            </div>
-            <div class="col-auto  pr-0 pl-0">
-                <a
-                    class="toggle-button"
-                    id="toggle-voice-assistant"
-                    [routerLink]="this.chat ? ['../../'] : ['../']">
-                    <img
-                        [src]="'../../assets/toggle-switch-right.png'"
-                        alt="Toggle for turning the Voice Assistant on and off" />
-                </a>
-            </div>
-            <div class="col-auto text-left">
-                <span class="align-middle"> Chats </span>
-            </div>
-        </div>
+    <div class="col-6 text-right">
+        <span class="align-middle"> Personality </span>
     </div>
-    <div class="col-8 d-flex justify-content-end">
+    <div class="col-auto pr-0 pl-0">
+        <a
+            class="toggle-button"
+            id="toggle-voice-assistant"
+            [routerLink]="this.chat ? ['../../'] : ['../']">
+            <img
+                [src]="'../../assets/toggle-switch-right.png'"
+                alt="Toggle for turning the Voice Assistant on and off" />
+        </a>
+    </div>
+    <div class="col text-left">
+        <span class="align-middle"> Chats </span>
+    </div>
+    <!-- <div class="col-8 d-flex justify-content-end">
         <button
             id="export-button"
             class="btn btn-regular"
@@ -28,7 +24,7 @@
             [disabled]="!this.chat">
             Export chat
         </button>
-    </div>
+    </div> -->
 </div>
 <div class="row mt-2 content-window pb-2">
     <div class="col-12">

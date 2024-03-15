@@ -9,7 +9,7 @@ import {SidebarElement} from "src/app/shared/interfaces/sidebar-element.interfac
     styleUrls: ["./sidebar-right.component.css"],
 })
 export class SideBarRightComponent implements OnInit, OnDestroy {
-    @Input() headerElements: {
+    @Input() calbackMethods: {
         icon: string;
         label: string;
         clickCallback: () => void;

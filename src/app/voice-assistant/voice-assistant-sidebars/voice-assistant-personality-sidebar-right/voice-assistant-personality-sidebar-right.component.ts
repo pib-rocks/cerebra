@@ -104,7 +104,6 @@ export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
 
     updatePersonality() {
         if (this.personalityForm.valid) {
-            console.log("Saved");
             this.personalityClone.name =
                 this.personalityForm.controls["persona-name"].value;
             this.personalityClone.gender =
