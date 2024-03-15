@@ -1,12 +1,13 @@
+.bg-sidebar {
+    background-color: #041939;
+}
+
 label {
+    padding-left: 0;
     font-weight: normal !important;
 }
 
-.invalid-form {
-    border: 1px solid red !important;
-}
-
-#pause-threshold-input {
+.input {
     background-color: #344a69;
     border: none;
     height: 30px;
@@ -53,4 +54,13 @@ label {
     font-size: 10px;
     line-height: 10px;
     padding: 0;
+}
+
+.delete {
+    background-color: #e10072;
+}
+
+.delete:hover,
+.delete:checked {
+    background-color: #0094df;
 }

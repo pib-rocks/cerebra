@@ -88,6 +88,7 @@ export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
             this.personalityForm.controls["pausethreshold"].value + "s";
         this.personalityClone.pauseThreshold =
             this.personalityForm.controls["pausethreshold"].value;
+        this.updatePersonality();
     }
 
     deletePersonality = () => {
@@ -103,6 +104,7 @@ export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
 
     updatePersonality() {
         if (this.personalityForm.valid) {
+            console.log("Saved");
             this.personalityClone.name =
                 this.personalityForm.controls["persona-name"].value;
             this.personalityClone.gender =
