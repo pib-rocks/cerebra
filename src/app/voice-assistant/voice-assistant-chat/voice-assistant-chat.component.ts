@@ -68,22 +68,20 @@ export class VoiceAssistantChatComponent implements OnInit {
         return this.ngbModalRef;
     };
 
-    openAddModal = () => {
+    // nothing is just there, that no error will be thrown
+    openAddModal(nothing: string) {
         this.topicFormControl.setValue("");
         this.showModal();
-    };
+    }
 
-    openEditModal = () => {
-        this.uuid =
-            this.router.url.split("/").length > 3
-                ? this.router.url.split("/").pop()
-                : undefined;
+    openEditModal(uuid: string) {
+        this.uuid = uuid;
         if (this.uuid) {
             const updateChat = this.chatService.getChat(this.uuid);
             this.topicFormControl.setValue(updateChat?.topic ?? "");
             this.showModal();
         }
-    };
+    }
 
     addChat() {
         if (this.personalityId) {
@@ -124,16 +122,12 @@ export class VoiceAssistantChatComponent implements OnInit {
         this.uuid = undefined;
     };
 
-    deleteChat = () => {
-        const uuid =
-            this.router.url.split("/").length > 3
-                ? this.router.url.split("/").pop()
-                : undefined;
-        if (uuid) {
-            this.chatService.deleteChatById(uuid);
+    deleteChat(uudi: string) {
+        if (uudi) {
+            this.chatService.deleteChatById(uudi);
             localStorage.removeItem("chat");
         }
-    };
+    }
 
     export() {
         throw Error("not implemented");
@@ -143,22 +137,22 @@ export class VoiceAssistantChatComponent implements OnInit {
         {
             icon: "",
             label: "New Chat",
-            clickCallback: this.openAddModal,
+            clickCallback: this.openAddModal.bind(this),
         },
         {
             icon: "../../assets/voice-assistant-svgs/chat/chat_edit.svg",
             label: "Rename",
-            clickCallback: this.openEditModal,
+            clickCallback: this.openEditModal.bind(this),
         },
         {
             icon: "../../assets/voice-assistant-svgs/chat/chat_delete.svg",
             label: "Delete",
-            clickCallback: this.deleteChat,
+            clickCallback: this.deleteChat.bind(this),
         },
         {
             icon: "../../assets/voice-assistant-svgs/chat/chat_delete.svg",
             label: "Export",
-            clickCallback: this.export,
+            clickCallback: this.export.bind(this),
         },
     ];
 }

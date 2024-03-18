@@ -12,7 +12,7 @@ export class SideBarRightComponent implements OnInit, OnDestroy {
     @Input() calbackMethods: {
         icon: string;
         label: string;
-        clickCallback: () => void;
+        clickCallback: (uuid: string) => void;
     }[] = [];
     @Input() elementIcon: string = "";
     @Input() rerouteOnRefresh: boolean = true;
@@ -60,5 +60,19 @@ export class SideBarRightComponent implements OnInit, OnDestroy {
         this.selectedObservable?.subscribe((uuid?: string) => {
             this.router.navigate([uuid ?? "."], {relativeTo: this.route});
         });
+    }
+
+    removeCssClass(uuid: string) {
+        const videoSettingsButton = document.getElementById(
+            "dropdownbutton-" + uuid,
+        );
+        videoSettingsButton?.classList.remove("showPopover");
+    }
+
+    addCssClass(uuid: string) {
+        const videoSettingsButton = document.getElementById(
+            "dropdownbutton-" + uuid,
+        );
+        videoSettingsButton?.classList.add("showPopover");
     }
 }

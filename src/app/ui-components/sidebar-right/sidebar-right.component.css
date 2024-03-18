@@ -2,8 +2,6 @@
     border-radius: 5px;
     background-color: #344864;
     min-height: 30px;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
 .element-div:hover,
@@ -15,6 +13,7 @@
     font-weight: bold;
     font-size: 1rem;
     display: inline-block;
+    padding-top: 5px;
 }
 
 .sidebar-right-wrapper {
@@ -34,4 +33,42 @@
 ::-webkit-scrollbar-thumb {
     background-color: #cccccc;
     padding: 10%;
+}
+
+.dot {
+    height: 5px;
+    width: 5px;
+    background-color: #ffffff;
+    border-radius: 50%;
+    display: inline-block;
+}
+.dropdown:hover .dot {
+    background-color: #000000;
+}
+.showPopover {
+    background-color: #000000;
+}
+
+.btn {
+    border: 0px;
+}
+
+.btn:hover {
+    background-color: transparent;
+}
+
+.dropdown-menu {
+    background-color: #03142e;
+    border: 1px;
+    border-radius: 5px;
+    border-color: #314664;
+}
+
+.dropdown-toggle::after {
+    content: none;
+}
+
+.dropdown-item:hover {
+    color: #e10072;
+    background-color: transparent;
 }

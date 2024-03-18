@@ -25,6 +25,7 @@ export class ProgramComponent implements OnInit, AfterViewInit {
     ngbModalRef?: NgbModalRef;
     subject!: Observable<SidebarElement[]>;
     nameFormControl: FormControl = new FormControl("");
+    program: Program | undefined;
 
     selected: Subject<string> = new Subject();
 
@@ -69,7 +70,8 @@ export class ProgramComponent implements OnInit, AfterViewInit {
         }).result;
     }
 
-    addProgram = () => {
+    // nothing is just there, that no error will be thrown
+    addProgram(nothing: string) {
         this.nameFormControl.setValue("");
         this.showModal().then(() => {
             if (this.nameFormControl.valid) {
@@ -80,45 +82,45 @@ export class ProgramComponent implements OnInit, AfterViewInit {
                     );
             }
         });
-    };
+    }
 
-    editProgram = () => {
-        const program = this.getProgramFromRoute()?.clone();
-        if (!program) return;
-        this.nameFormControl.setValue(program.name);
+    editProgram(uuid: string) {
+        const programObservable =
+            this.programService.getProgramByProgramNumber(uuid);
+        programObservable.subscribe((program: Program) => {
+            this.program = program;
+        });
+        if (!this.program) return;
+        this.nameFormControl.setValue(this.program.name);
         this.showModal().then(() => {
             if (this.nameFormControl.valid) {
-                program.name = this.nameFormControl.value;
-                this.programService.updateProgramByProgramNumber(program);
+                this.program!.name = this.nameFormControl.value;
+                this.programService.updateProgramByProgramNumber(this.program!);
             }
         });
-    };
+    }
 
-    deleteProgram = () => {
-        const program = this.getProgramFromRoute();
-        if (!program) return;
-        this.programService
-            .deleteProgramByProgramNumber(program.programNumber)
-            .subscribe(() => {
-                this.selected.next(this.programService.programs[0]?.getUUID());
-            });
-    };
+    deleteProgram(uuid: string) {
+        this.programService.deleteProgramByProgramNumber(uuid).subscribe(() => {
+            this.selected.next(this.programService.programs[0]?.getUUID());
+        });
+    }
 
     calbackMethods = [
         {
             icon: "../../assets/program/program-add.svg",
             label: "New Program",
-            clickCallback: this.addProgram,
+            clickCallback: this.addProgram.bind(this),
         },
         {
             icon: "../../assets/program/program-edit.svg",
             label: "Rename",
-            clickCallback: this.editProgram,
+            clickCallback: this.editProgram.bind(this),
         },
         {
             icon: "../../assets/program/program-delete.svg",
             label: "delete",
-            clickCallback: this.deleteProgram,
+            clickCallback: this.deleteProgram.bind(this),
         },
     ];
 }
