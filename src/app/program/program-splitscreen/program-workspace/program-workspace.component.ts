@@ -13,7 +13,6 @@ import {ProgramService} from "src/app/shared/services/program.service";
 import {asyncScheduler} from "rxjs";
 import {ITheme} from "blockly/core/theme";
 import {pythonGenerator} from "../../program-generators/custom-generators";
-
 import {customBlockDefinition} from "../../program-blocks/custom-blocks";
 import {Abstract} from "blockly/core/events/events_abstract";
 
