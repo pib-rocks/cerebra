@@ -1,7 +1,11 @@
 import {Component, Input, OnDestroy, OnInit} from "@angular/core";
+import {FormControl} from "@angular/forms";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Observable, Subscription} from "rxjs";
 import {SidebarElement} from "src/app/shared/interfaces/sidebar-element.interface";
+import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
+import {CerebraRegex} from "src/app/shared/types/cerebra-regex";
+import {VoiceAssistantState} from "src/app/shared/types/voice-assistant-state";
 
 @Component({
     selector: "app-sidebar-right",
@@ -21,11 +25,16 @@ export class SideBarRightComponent implements OnInit, OnDestroy {
     @Input() selectedObservable?: Observable<string | undefined>;
     sidebarElements!: SidebarElement[];
     subscription!: Subscription;
+    vaState: boolean = false;
 
     constructor(
         private router: Router,
         private route: ActivatedRoute,
+        private voiceAssistantService: VoiceAssistantService,
     ) {}
+
+    voiceAssistantActivationToggle = new FormControl(false);
+
     ngOnDestroy(): void {
         this.subscription.unsubscribe();
     }
@@ -60,6 +69,11 @@ export class SideBarRightComponent implements OnInit, OnDestroy {
         this.selectedObservable?.subscribe((uuid?: string) => {
             this.router.navigate([uuid ?? "."], {relativeTo: this.route});
         });
+        this.voiceAssistantService.voiceAssistantStateObservable.subscribe(
+            (state: VoiceAssistantState) => {
+                this.voiceAssistantActivationToggle.setValue(state.turnedOn);
+            },
+        );
     }
 
     removeCssClass(uuid: string) {
@@ -74,5 +88,23 @@ export class SideBarRightComponent implements OnInit, OnDestroy {
             "dropdownbutton-" + uuid,
         );
         videoSettingsButton?.classList.add("showPopover");
+    }
+
+    toggleVoiceAssistant() {
+        const turnedOn = !this.voiceAssistantActivationToggle.value;
+        const nextState: VoiceAssistantState = {turnedOn, chatId: ""};
+        if (turnedOn) {
+            const match = RegExp(
+                `/voice-assistant/${CerebraRegex.UUID}/chat/(${CerebraRegex.UUID})`,
+            ).exec(this.router.url);
+            if (match) nextState.chatId = match[1];
+            else throw new Error("no chat selected");
+        }
+
+        this.vaState = turnedOn;
+
+        this.voiceAssistantService.setVoiceAssistantState(nextState).subscribe({
+            error: (error) => console.error(error),
+        });
     }
 }

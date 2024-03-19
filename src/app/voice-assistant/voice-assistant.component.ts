@@ -78,23 +78,6 @@ export class VoiceAssistantComponent implements OnInit {
         });
     }
 
-    toggleVoiceAssistant() {
-        const turnedOn = !this.voiceAssistantActivationToggle.value;
-        const nextState: VoiceAssistantState = {turnedOn, chatId: ""};
-
-        if (turnedOn) {
-            const match = RegExp(
-                `/voice-assistant/${CerebraRegex.UUID}/chat/(${CerebraRegex.UUID})`,
-            ).exec(this.router.url);
-            if (match) nextState.chatId = match[1];
-            else throw new Error("no chat selected");
-        }
-
-        this.voiceAssistantService.setVoiceAssistantState(nextState).subscribe({
-            error: (error) => console.error(error),
-        });
-    }
-
     showModal = () => {
         return (this.ngbModalRef = this.modalService.open(this.modalContent, {
             ariaLabelledBy: "modal-basic-title",

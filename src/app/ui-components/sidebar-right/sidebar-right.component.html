@@ -3,6 +3,41 @@
         <div class="mt-4">
             <div
                 class="row"
+                *ngIf="lStorage == 'chat'">
+                <label class="text-center">Voice interaction</label>
+                <div class="col">
+                    <div class="row mt-1 mb-2">
+                        <div
+                            class="col-11 ml-3 onOff"
+                            [ngClass]="vaState == true ? 'on' : 'off'">
+                            <div class="row">
+                                <button
+                                    type="button"
+                                    class="col btn pl-1 text-truncate element text-start"
+                                    id="toggle-voice-assistant"
+                                    (click)="toggleVoiceAssistant()"
+                                    alt="Toggle for turning the Voice Assistant on and off"
+                                    value="{{vaState}}">
+                                    <div
+                                        *ngIf="vaState == true; then thenBlock else elseBlock"></div>
+                                    <ng-template #thenBlock
+                                        ><label class="mb-0"
+                                            >ON</label
+                                        ></ng-template
+                                    >
+                                    <ng-template #elseBlock
+                                        ><label class="mb-0"
+                                            >OFF</label
+                                        ></ng-template
+                                    >
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div
+                class="row"
                 *ngFor="let sidebarElement of sidebarElements">
                 <div
                     class="col-11 element-div ml-3 mt-2 text-nowrap"
@@ -34,12 +69,34 @@
                                     id="edit"
                                     ngbDropdownItem
                                     (click)="calbackMethods[1].clickCallback(sidebarElement.getUUID())">
+                                    <img
+                                        class="item"
+                                        *ngIf="calbackMethods[1].icon !== ''"
+                                        [src]="calbackMethods[1].icon" />
                                     <label>{{calbackMethods[1].label}}</label>
                                 </button>
+                                <div *ngIf="lStorage == 'chat'">
+                                    <button
+                                        id="export"
+                                        ngbDropdownItem
+                                        (click)="calbackMethods[3].clickCallback(sidebarElement.getUUID())">
+                                        <img
+                                            class="item"
+                                            *ngIf="calbackMethods[3].icon !== ''"
+                                            [src]="calbackMethods[3].icon" />
+                                        <label
+                                            >{{calbackMethods[3].label}}</label
+                                        >
+                                    </button>
+                                </div>
                                 <button
                                     id="delete"
                                     ngbDropdownItem
                                     (click)="calbackMethods[2].clickCallback(sidebarElement.getUUID())">
+                                    <img
+                                        class="item"
+                                        *ngIf="calbackMethods[2].icon !== ''"
+                                        [src]="calbackMethods[2].icon" />
                                     <label>{{calbackMethods[2].label}}</label>
                                 </button>
                             </div>
@@ -52,10 +109,12 @@
                     <div class="row">
                         <button
                             type="button"
-                            class="col btn pl-1 text-truncate element text-start mt-1"
-                            id="modal-save-button"
+                            class="col btn pl-1 text-truncate element text-start"
+                            id="add-new-button"
                             (click)="calbackMethods[0].clickCallback('')">
-                            <label>{{calbackMethods[0].label}}</label>
+                            <label class="mb-0"
+                                >{{calbackMethods[0].label}}</label
+                            >
                         </button>
                     </div>
                 </div>

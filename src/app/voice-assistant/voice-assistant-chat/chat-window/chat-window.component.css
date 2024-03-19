@@ -24,35 +24,31 @@
 
 .va-message .message-author {
     color: #ffffff;
-    background-color: #001236;
-    border-radius: 6px;
-    border-width: 1px;
-    border-style: solid;
+    background-color: #344864;
+    border-radius: 10px;
 }
 
 .user-message .message-author {
-    color: #001236;
+    color: #344864;
     background-color: #ffffff;
-    border-radius: 6px;
+    border-radius: 10px;
 }
 
 .va-message .message-content {
     color: #ffffff;
-    background-color: #001236;
-    border-top-right-radius: 6px;
-    border-bottom-left-radius: 6px;
-    border-bottom-right-radius: 6px;
-    border-width: 1px;
-    border-style: solid;
+    background-color: #344864;
+    border-top-right-radius: 10px;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
     height: 100%;
 }
 
 .user-message .message-content {
-    color: #001236;
+    color: #344864;
     background-color: #ffffff;
-    border-top-left-radius: 6px;
-    border-bottom-left-radius: 6px;
-    border-bottom-right-radius: 6px;
+    border-top-left-radius: 10px;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
 }
 
 .messages {
@@ -77,7 +73,7 @@
     width: 100%;
     border-radius: 10px;
     padding: 10px;
-    background-color: #1b2b44;
+    background-color: #344864;
     font-size: medium;
     font-weight: normal;
 }
@@ -104,13 +100,13 @@
     border: none;
     outline: none;
     font-size: 16px;
-    background-color: #1b2b44;
+    background-color: #344864;
 }
 
 #chat-send-button {
     border: none;
     outline: none;
-    background-color: #1b2b44;
+    background-color: #344864;
     fill: white;
 }
 
