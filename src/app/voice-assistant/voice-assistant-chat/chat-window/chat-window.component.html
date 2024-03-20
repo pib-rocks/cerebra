@@ -16,9 +16,9 @@
         <span class="align-middle"> Chats </span>
     </div>
 </div>
-<div class="row mt-2 content-window pb-2">
+<div class="row mt-3 content-window pb-2">
     <div class="col-12">
-        <div class="chat-container p-3">
+        <div class="chat-container mb-3 p-2 ">
             <div class="messages mb-3 d-flex flex-column-reverse">
                 <div
                     *ngFor="let message of messages"
@@ -47,14 +47,9 @@
                     id="message-input"
                     placeholder="Send a message" />
                 <button id="chat-send-button">
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        height="24px"
-                        viewBox="0 -960 960 960"
-                        width="24px"
-                        (click)="{}">
-                        <path [attr.d]="sendButton" />
-                    </svg>
+                    <img
+                        class="author-icon"
+                        [src]="arrow" />
                 </button>
             </div>
         </div>

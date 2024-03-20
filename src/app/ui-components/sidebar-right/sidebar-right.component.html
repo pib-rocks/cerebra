@@ -6,14 +6,14 @@
                 *ngIf="lStorage == 'chat'">
                 <label class="text-center">Voice interaction</label>
                 <div class="col">
-                    <div class="row mt-1 mb-2">
+                    <div class="row mt-1 mb-3">
                         <div
                             class="col-11 ml-3 onOff"
                             [ngClass]="vaState == true ? 'on' : 'off'">
                             <div class="row">
                                 <button
                                     type="button"
-                                    class="col btn pl-1 text-truncate element text-start"
+                                    class="col btn text-truncate element text-center p-3"
                                     id="toggle-voice-assistant"
                                     (click)="toggleVoiceAssistant()"
                                     alt="Toggle for turning the Voice Assistant on and off"
@@ -40,12 +40,12 @@
                 class="row"
                 *ngFor="let sidebarElement of sidebarElements">
                 <div
-                    class="col-11 element-div ml-3 mt-2 text-nowrap"
+                    class="col-11 element-div ml-3 mt-3 text-nowrap"
                     routerLinkActive="element-div-active">
                     <div class="row">
                         <a
                             [routerLink]="sidebarElement.getUUID()"
-                            class="element text-truncate col-10 pl-1">
+                            class="element text-truncate col-10 pl-3 p-2">
                             {{ sidebarElement.getName() }}
                         </a>
                         <div
@@ -104,12 +104,12 @@
                     </div>
                 </div>
             </div>
-            <div class="row mt-3">
+            <div class="row mt-4">
                 <div class="col-11 ml-3 element-div">
                     <div class="row">
                         <button
                             type="button"
-                            class="col btn pl-1 text-truncate element text-start"
+                            class="col btn pl-3 p-3 text-truncate element text-center"
                             id="add-new-button"
                             (click)="calbackMethods[0].clickCallback('')">
                             <label class="mb-0"

@@ -1,8 +1,7 @@
 .chat-container {
+    height: 68vh;
     display: flex;
     flex-direction: column;
-    height: 100%;
-    width: 100%;
     border: 1px solid #ccc;
     overflow: hidden;
 }
@@ -30,7 +29,7 @@
 
 .user-message .message-author {
     color: #344864;
-    background-color: #ffffff;
+    background-color: #344864;
     border-radius: 10px;
 }
 
@@ -44,8 +43,8 @@
 }
 
 .user-message .message-content {
-    color: #344864;
-    background-color: #ffffff;
+    color: #ffffff;
+    background-color: #344864;
     border-top-left-radius: 10px;
     border-bottom-left-radius: 10px;
     border-bottom-right-radius: 10px;

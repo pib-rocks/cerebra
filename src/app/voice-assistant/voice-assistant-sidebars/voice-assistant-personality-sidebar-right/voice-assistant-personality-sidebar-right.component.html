@@ -36,6 +36,7 @@
                         (click)="updatePersonality()"
                         id="radio-female" />
                     <label
+                        class="pl-4 pt-1"
                         for="radio-female"
                         id="label-radio-female"
                         >Female</label
@@ -54,6 +55,7 @@
                         (click)="updatePersonality()"
                         id="radio-male" />
                     <label
+                        class="pl-4 pt-1"
                         for="radio-male"
                         id="label-radio-male"
                         >Male</label
@@ -80,7 +82,7 @@
                         [ngModelOptions]="{standalone: true}"
                         readonly />
                 </div>
-                <div class="col-1">
+                <div class="col-1 pt-2">
                     <div class="row mt-1">
                         <button
                             id="up"
@@ -104,7 +106,7 @@
             class="row position-absolute bottom-0 start-50 translate-middle-x mb-4">
             <button
                 id="delete-button"
-                class="btn btn-regular delete pl-2 pr-2 pt-1 pb-1"
+                class="btn btn-regular delete p-3"
                 (click)="deletePersonality()">
                 Delete persona
             </button>

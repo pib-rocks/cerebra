@@ -12,16 +12,15 @@ import {Chat} from "src/app/shared/types/chat.class";
     styleUrls: ["./chat-window.component.css"],
 })
 export class ChatWindowComponent implements OnInit {
-    sendButton: string = "M120-160v-240l320-80-320-80v-240l760 320-760 320Z";
     chat?: Chat;
     promptFormControl: FormControl = new FormControl("");
     personalityName: string | undefined;
     messages?: ChatMessage[];
 
     readonly USER_ICON =
-        "../../../../assets/voice-assistant-svgs/personality/user.svg";
-    readonly VA_ICON =
-        "../../../../assets/voice-assistant-svgs/personality/personality.svg";
+        "../../../../assets/voice-assistant-svgs/chat/user.svg";
+    readonly VA_ICON = "../../../../assets/voice-assistant-svgs/chat/user.svg";
+    readonly arrow = "../../../../assets/voice-assistant-svgs/chat/arrow.svg";
 
     constructor(
         private chatService: ChatService,
