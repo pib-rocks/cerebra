@@ -45,7 +45,7 @@
                     <div class="row">
                         <a
                             [routerLink]="sidebarElement.getUUID()"
-                            class="element text-truncate col-10 pl-3 p-2">
+                            class="element text-truncate col-9 pl-3 p-2">
                             {{ sidebarElement.getName() }}
                         </a>
                         <div
@@ -58,9 +58,9 @@
                                 ngbDropdownToggle
                                 (hidden)="removeCssClass(sidebarElement.getUUID())"
                                 (shown)="addCssClass(sidebarElement.getUUID())">
-                                <div class="dot mb-1 ml-1"></div>
-                                <div class="dot mb-1 ml-1"></div>
-                                <div class="dot mb-1 ml-1"></div>
+                                <div class="dot ml-1"></div>
+                                <div class="dot ml-1"></div>
+                                <div class="dot ml-1"></div>
                             </button>
                             <div
                                 ngbDropdownMenu
@@ -70,7 +70,7 @@
                                     ngbDropdownItem
                                     (click)="calbackMethods[1].clickCallback(sidebarElement.getUUID())">
                                     <img
-                                        class="item"
+                                        class="item pr-1 mb-1"
                                         *ngIf="calbackMethods[1].icon !== ''"
                                         [src]="calbackMethods[1].icon" />
                                     <label>{{calbackMethods[1].label}}</label>
@@ -81,7 +81,7 @@
                                         ngbDropdownItem
                                         (click)="calbackMethods[3].clickCallback(sidebarElement.getUUID())">
                                         <img
-                                            class="item"
+                                            class="item pr-1 mb-2"
                                             *ngIf="calbackMethods[3].icon !== ''"
                                             [src]="calbackMethods[3].icon" />
                                         <label
@@ -94,7 +94,7 @@
                                     ngbDropdownItem
                                     (click)="calbackMethods[2].clickCallback(sidebarElement.getUUID())">
                                     <img
-                                        class="item"
+                                        class="item pr-1 mb-1"
                                         *ngIf="calbackMethods[2].icon !== ''"
                                         [src]="calbackMethods[2].icon" />
                                     <label>{{calbackMethods[2].label}}</label>

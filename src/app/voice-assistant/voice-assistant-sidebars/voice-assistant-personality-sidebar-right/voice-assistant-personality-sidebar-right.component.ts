@@ -112,7 +112,6 @@ export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
                 this.personalityClone!,
             );
         } else {
-            // @TODO Throw error
             console.log("Persona could not be saved, invalid input");
         }
     }

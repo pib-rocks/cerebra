@@ -4,6 +4,10 @@
     min-height: 30px;
 }
 
+label {
+    cursor: pointer;
+}
+
 .element-div:hover,
 .element-div-active {
     background-color: #951b81;
@@ -36,6 +40,7 @@
 }
 
 .dot {
+    margin-bottom: 2px;
     height: 5px;
     width: 5px;
     background-color: #ffffff;

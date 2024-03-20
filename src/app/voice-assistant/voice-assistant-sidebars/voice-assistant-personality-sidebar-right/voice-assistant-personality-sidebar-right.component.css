@@ -4,7 +4,6 @@
 
 label {
     padding-left: 0;
-    font-weight: normal !important;
 }
 
 .input {
@@ -16,6 +15,18 @@ label {
 #radio-male,
 #radio-female {
     display: none;
+}
+
+.radioHover:hover {
+    cursor: pointer;
+}
+
+.marginFemale {
+    margin-top: 5px;
+}
+
+.marginMale {
+    margin-top: 5px;
 }
 
 #label-radio-male::before,
@@ -33,11 +44,6 @@ label {
     box-sizing: border-box;
     box-shadow: inset 0 0 0 2px #000;
 }
-
-/* #label-radio-male,
-#label-radio-female {
-    padding-left: 25px;
-} */
 
 #radio-male:checked + #label-radio-male::before,
 #radio-female:checked + #label-radio-female::before {

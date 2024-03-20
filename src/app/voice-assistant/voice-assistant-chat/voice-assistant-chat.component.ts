@@ -69,7 +69,7 @@ export class VoiceAssistantChatComponent implements OnInit {
     };
 
     // nothing is just there, that no error will be thrown
-    openAddModal(nothing: string) {
+    openAddModal(nothing: string = "") {
         this.topicFormControl.setValue("");
         this.showModal();
     }
@@ -147,12 +147,12 @@ export class VoiceAssistantChatComponent implements OnInit {
         },
         {
             icon: "../../assets/voice-assistant-svgs/chat/delete.svg",
-            label: "Delete",
+            label: "Delete chat",
             clickCallback: this.deleteChat.bind(this),
         },
         {
             icon: "../../assets/voice-assistant-svgs/chat/export.svg",
-            label: "Export",
+            label: "Export chat",
             clickCallback: this.export.bind(this),
         },
     ];

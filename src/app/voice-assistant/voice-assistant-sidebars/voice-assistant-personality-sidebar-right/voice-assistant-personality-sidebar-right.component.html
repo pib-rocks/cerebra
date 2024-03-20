@@ -7,7 +7,7 @@
                 for="name-input"
                 class="row m-1 mt-3"
                 id="label-name"
-                >Persona Name</label
+                >Persona name</label
             >
             <input
                 ngbAutofocus
@@ -36,7 +36,7 @@
                         (click)="updatePersonality()"
                         id="radio-female" />
                     <label
-                        class="pl-4 pt-1"
+                        class="pl-4 radioHover marginFemale"
                         for="radio-female"
                         id="label-radio-female"
                         >Female</label
@@ -55,7 +55,7 @@
                         (click)="updatePersonality()"
                         id="radio-male" />
                     <label
-                        class="pl-4 pt-1"
+                        class="pl-4 radioHover marginMale"
                         for="radio-male"
                         id="label-radio-male"
                         >Male</label
@@ -108,7 +108,7 @@
                 id="delete-button"
                 class="btn btn-regular delete p-3"
                 (click)="deletePersonality()">
-                Delete persona
+                <label mb-0> Delete persona </label>
             </button>
         </div>
     </form>
