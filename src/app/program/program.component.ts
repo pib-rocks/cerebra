@@ -71,7 +71,7 @@ export class ProgramComponent implements OnInit, AfterViewInit {
     }
 
     // nothing is just there, that no error will be thrown
-    addProgram(nothing: string) {
+    addProgram(nothing: string = "") {
         this.nameFormControl.setValue("");
         this.showModal().then(() => {
             if (this.nameFormControl.valid) {
@@ -84,12 +84,12 @@ export class ProgramComponent implements OnInit, AfterViewInit {
         });
     }
 
-    editProgram(uuid: string) {
-        const programObservable =
-            this.programService.getProgramByProgramNumber(uuid);
-        programObservable.subscribe((program: Program) => {
-            this.program = program;
-        });
+    editProgram(uuid: string = "") {
+        this.programService
+            .getProgramByProgramNumber(uuid)
+            .subscribe((program: Program) => {
+                this.program = program;
+            });
         if (!this.program) return;
         this.nameFormControl.setValue(this.program.name);
         this.showModal().then(() => {
@@ -100,7 +100,7 @@ export class ProgramComponent implements OnInit, AfterViewInit {
         });
     }
 
-    deleteProgram(uuid: string) {
+    deleteProgram(uuid: string = "") {
         this.programService.deleteProgramByProgramNumber(uuid).subscribe(() => {
             this.selected.next(this.programService.programs[0]?.getUUID());
         });

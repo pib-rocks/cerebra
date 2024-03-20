@@ -7,7 +7,7 @@ import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {RouterTestingModule} from "@angular/router/testing";
 import {HttpClientTestingModule} from "@angular/common/http/testing";
 import {Program} from "../shared/types/program";
-import {BehaviorSubject, Observable} from "rxjs";
+import {BehaviorSubject, Observable, of} from "rxjs";
 
 describe("ProgramComponent", () => {
     let component: ProgramComponent;
@@ -100,7 +100,7 @@ describe("ProgramComponent", () => {
             new BehaviorSubject(new Program("new-name", "id-0")),
         );
 
-        fixture.componentInstance.addProgram();
+        fixture.componentInstance.addProgram("");
         expect(showModalSpy).toHaveBeenCalled();
         expect(programService.createProgram).toHaveBeenCalledOnceWith(
             jasmine.objectContaining({
@@ -112,25 +112,21 @@ describe("ProgramComponent", () => {
     });
 
     it("should edit a program", () => {
-        const showModalSpy = spyOn(
-            fixture.componentInstance,
-            "showModal",
-        ).and.returnValue({
+        const oldProgram = new Program("testname", "id-0");
+
+        const showModalSpy = spyOn(component, "showModal").and.returnValue({
             then: (callback) => {
-                fixture.componentInstance.nameFormControl.setValue("new-name");
+                component.nameFormControl.setValue("new-name");
                 callback?.("");
             },
         } as Promise<string>);
-        const expected = new Program("testname", "id-0");
-        const getProgramSpy = spyOn(
-            fixture.componentInstance,
-            "getProgramFromRoute",
-        ).and.returnValue(expected);
+        programService.getProgramByProgramNumber.and.returnValue(
+            of(oldProgram),
+        );
         programService.updateProgramByProgramNumber.and.returnValue(
             new BehaviorSubject(new Program("new-name", "id-0")),
         );
-
-        fixture.componentInstance.editProgram();
+        component.editProgram("id-0");
 
         expect(showModalSpy).toHaveBeenCalled();
         expect(
@@ -141,7 +137,6 @@ describe("ProgramComponent", () => {
                 programNumber: "id-0",
             }),
         );
-        expect(getProgramSpy).toHaveBeenCalledTimes(1);
     });
 
     it("should delete a program", () => {
@@ -150,16 +145,9 @@ describe("ProgramComponent", () => {
             new BehaviorSubject(undefined),
         );
         programService.programs = [new Program("testname", "id-1")];
-        const expected = new Program("testname", "id-0");
-        const getProgramSpy = spyOn(
-            fixture.componentInstance,
-            "getProgramFromRoute",
-        ).and.returnValue(expected);
-        fixture.componentInstance.deleteProgram();
-        expect(
-            programService.deleteProgramByProgramNumber,
-        ).toHaveBeenCalledOnceWith("id-0");
-        expect(getProgramSpy).toHaveBeenCalledTimes(1);
+        fixture.componentInstance.deleteProgram(
+            programService.programs[0].getUUID(),
+        );
         expect(selectedSpy).toHaveBeenCalledOnceWith("id-1");
     });
 });

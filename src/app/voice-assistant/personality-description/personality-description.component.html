@@ -1,8 +1,8 @@
 <div class="row mt-4">
     <div class="pink-corner-frame">
-        <div class="row pt-1">
+        <div class="row">
             <div class="col-10">
-                <div class="row pt-1">
+                <div class="row pt-2">
                     <div class="col-6 text-right">
                         <span class="align-middle"> Personality </span>
                     </div>
@@ -34,8 +34,9 @@
                     </div>
                 </div>
             </div>
-            <div class="col">
+            <div class="col p-0">
                 <app-va-personality-sidebar-right
+                    class="m-0"
                     [personalityUUID]="personality?.getUUID()">
                 </app-va-personality-sidebar-right>
             </div>

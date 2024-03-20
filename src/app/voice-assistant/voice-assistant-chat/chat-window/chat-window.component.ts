@@ -19,7 +19,8 @@ export class ChatWindowComponent implements OnInit {
 
     readonly USER_ICON =
         "../../../../assets/voice-assistant-svgs/chat/user.svg";
-    readonly VA_ICON = "../../../../assets/voice-assistant-svgs/chat/user.svg";
+    readonly VA_ICON =
+        "../../../../assets/voice-assistant-svgs/chat/pib-icon-speaking.png";
     readonly arrow = "../../../../assets/voice-assistant-svgs/chat/arrow.svg";
 
     constructor(
