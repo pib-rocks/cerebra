@@ -2,13 +2,23 @@ import {TestBed} from "@angular/core/testing";
 
 import {ProgramService} from "./program.service";
 import {ApiService} from "./api.service";
-import {BehaviorSubject, Observable} from "rxjs";
+import {BehaviorSubject, Observable, Subject} from "rxjs";
 import {Program} from "../types/program";
 import {UtilService} from "./util.service";
+import {ExecutionState, ProgramState} from "../types/program-state";
+import {ProgramOutputLine} from "../types/program-output-line";
+import {GoalHandle} from "../ros-types/action/goal-handle";
+import {
+    RunProgramFeedback,
+    RunProgramResult,
+} from "../ros-types/action/run-program";
+import {RosService} from "./ros-service/ros.service";
 
 describe("ProgramService", () => {
     let programService: ProgramService;
     let apiService: jasmine.SpyObj<ApiService>;
+    let utilService: jasmine.SpyObj<UtilService>;
+    let rosService: jasmine.SpyObj<RosService>;
 
     let proDto: {name: string; programNumber: string}[];
     let newProDto: {name: string; programNumber: string};
@@ -59,11 +69,27 @@ describe("ProgramService", () => {
         );
         apiServiceSpy.get.and.returnValue(new BehaviorSubject({programs: []}));
 
+        const utilServiceSpy: jasmine.SpyObj<UtilService> =
+            jasmine.createSpyObj(UtilService.name, ["getFromMapOrDefault"]);
+
+        const rosServiceSpy: jasmine.SpyObj<RosService> = jasmine.createSpyObj(
+            RosService.name,
+            ["runProgram"],
+        );
+
         TestBed.configureTestingModule({
             providers: [
                 {
                     provide: ApiService,
                     useValue: apiServiceSpy,
+                },
+                {
+                    provide: UtilService,
+                    useValue: utilServiceSpy,
+                },
+                {
+                    provide: RosService,
+                    useValue: rosServiceSpy,
                 },
                 ProgramService,
             ],
@@ -76,6 +102,10 @@ describe("ProgramService", () => {
         >("programSubjectSpy", ["next"]);
         apiService = TestBed.inject(ApiService) as jasmine.SpyObj<ApiService>;
         apiService.get = jasmine.createSpy();
+        utilService = TestBed.inject(
+            UtilService,
+        ) as jasmine.SpyObj<UtilService>;
+        rosService = TestBed.inject(RosService) as jasmine.SpyObj<RosService>;
     });
 
     it("should be created", () => {
@@ -346,5 +376,223 @@ describe("ProgramService", () => {
         );
         expect(setCodeSpy).toHaveBeenCalledOnceWith("id-1", codeVisualOnly);
         expect(resultCode).toEqual(codeVisualOnly);
+    });
+
+    it("should terminate a program", () => {
+        const programnNumber = "test-number";
+        const cancelSpy = jasmine.createSpy();
+        const currentState: ProgramState = {
+            executionState: ExecutionState.RUNNING,
+        };
+        const stateObservable = new BehaviorSubject(currentState);
+        const nextSpy = spyOn(stateObservable, "next");
+        programService.programNumberToState.set(
+            programnNumber,
+            stateObservable,
+        );
+        programService.programNumberToCancel.set(programnNumber, cancelSpy);
+        programService.terminateProgram(programnNumber);
+        expect(cancelSpy).toHaveBeenCalledTimes(1);
+        expect(nextSpy).toHaveBeenCalledOnceWith({
+            executionState: ExecutionState.INTERRUPTED,
+        });
+    });
+
+    it("should not terminate a program if current state is not 'running'", () => {
+        const programnNumber = "test-number";
+        const cancelSpy = jasmine.createSpy();
+        const currentState: ProgramState = {
+            executionState: ExecutionState.NOT_STARTED,
+        };
+        const stateObservable = new BehaviorSubject(currentState);
+        const nextSpy = spyOn(stateObservable, "next");
+        programService.programNumberToState.set(
+            programnNumber,
+            new BehaviorSubject(currentState),
+        );
+        programService.programNumberToCancel.set(programnNumber, cancelSpy);
+        programService.terminateProgram(programnNumber);
+        expect(cancelSpy).not.toHaveBeenCalled();
+        expect(nextSpy).not.toHaveBeenCalled();
+    });
+
+    it("should not terminate a program if no program-state-observable is set yet'", () => {
+        const programnNumber = "test-number";
+        const cancelSpy = jasmine.createSpy();
+        programService.programNumberToCancel.set(programnNumber, cancelSpy);
+        programService.terminateProgram(programnNumber);
+        expect(cancelSpy).not.toHaveBeenCalled();
+    });
+
+    it("should get the program-output", () => {
+        const programNumber = "test-number";
+        const expectedObservable: Observable<ProgramOutputLine[]> =
+            new Observable();
+        utilService.getFromMapOrDefault.and.returnValue(expectedObservable);
+        expect(programService.getProgramOutput(programNumber)).toBe(
+            expectedObservable,
+        );
+        expect(utilService.getFromMapOrDefault).toHaveBeenCalledOnceWith(
+            programService.programNumberToOutput,
+            programNumber,
+            jasmine.any(Function),
+        );
+    });
+
+    it("should get the program-state", () => {
+        const programNumber = "test-number";
+        const expectedObservable: Observable<ProgramState> = new Observable();
+        utilService.getFromMapOrDefault.and.returnValue(expectedObservable);
+        expect(programService.getProgramOutput(programNumber)).toBe(
+            expectedObservable,
+        );
+        expect(utilService.getFromMapOrDefault).toHaveBeenCalledOnceWith(
+            programService.programNumberToState,
+            programNumber,
+            jasmine.any(Function),
+        );
+    });
+
+    it("should run a program", () => {
+        const programNumber: string = "test-number";
+        const stateSubject = new BehaviorSubject<ProgramState>({
+            executionState: ExecutionState.NOT_STARTED,
+        });
+        spyOn(programService, "getProgramState").and.returnValue(stateSubject);
+        const stateNextSpy = spyOn(stateSubject, "next");
+        const handle = {} as GoalHandle<RunProgramFeedback, RunProgramResult>;
+        rosService.runProgram.and.returnValue(new BehaviorSubject(handle));
+        const onRunSpy = spyOn<any>(programService, "onRunProgramGoalReceive");
+        programService.runProgram(programNumber);
+        expect(stateNextSpy).toHaveBeenCalledOnceWith({
+            executionState: ExecutionState.STARTING,
+        });
+        expect(rosService.runProgram).toHaveBeenCalledOnceWith(programNumber);
+        expect(onRunSpy).toHaveBeenCalledOnceWith(programNumber, handle);
+    });
+
+    it("should not run a program if current state is already active", () => {
+        const programNumber: string = "test-number";
+        const stateSubject = new BehaviorSubject<ProgramState>({
+            executionState: ExecutionState.RUNNING,
+        });
+        spyOn(programService, "getProgramState").and.returnValue(stateSubject);
+        const stateNextSpy = spyOn(stateSubject, "next");
+        const handle = {} as GoalHandle<RunProgramFeedback, RunProgramResult>;
+        rosService.runProgram.and.returnValue(new BehaviorSubject(handle));
+        const onRunSpy = spyOn<any>(programService, "onRunProgramGoalReceive");
+        programService.runProgram(programNumber);
+        expect(stateNextSpy).not.toHaveBeenCalled();
+        expect(rosService.runProgram).not.toHaveBeenCalled();
+        expect(onRunSpy).not.toHaveBeenCalled();
+    });
+
+    it("should process an incoming goal-handle correctly", () => {
+        const state: ProgramState = {
+            executionState: ExecutionState.NOT_STARTED,
+        };
+        const output: ProgramOutputLine[] = [
+            {
+                content: "goodbye",
+                isStderr: true,
+            },
+        ];
+
+        const stateSubject = new BehaviorSubject(state);
+        const outputSubject = new BehaviorSubject(output);
+
+        const feedbackSubject: Subject<RunProgramFeedback> = new Subject();
+        const resultSubject: Subject<RunProgramResult> = new Subject();
+        const cancelSpy = jasmine.createSpy();
+        const handle: GoalHandle<RunProgramFeedback, RunProgramResult> = {
+            feedback: feedbackSubject,
+            result: resultSubject,
+            cancel: cancelSpy,
+            status: new Subject(),
+        };
+
+        const programnNumber = "test-number";
+
+        spyOn(programService, "getProgramState").and.returnValue(stateSubject);
+        spyOn(programService, "getProgramOutput").and.returnValue(
+            outputSubject,
+        );
+
+        const stateNextSpy = spyOn(stateSubject, "next");
+        const outputNextSpy = spyOn(outputSubject, "next");
+
+        let cancelCallback: () => void = () => undefined;
+        const programNumberToCancelSetSpy = spyOn(
+            programService.programNumberToCancel,
+            "set",
+        ).and.callFake((key, value) => {
+            cancelCallback = value;
+            return programService.programNumberToCancel;
+        });
+
+        programService["onRunProgramGoalReceive"](programnNumber, handle);
+
+        expect(stateNextSpy).toHaveBeenCalledWith({
+            executionState: ExecutionState.RUNNING,
+        });
+        expect(outputNextSpy).toHaveBeenCalledOnceWith([]);
+        expect(programNumberToCancelSetSpy).toHaveBeenCalledOnceWith(
+            programnNumber,
+            jasmine.any(Function),
+        );
+
+        feedbackSubject.next({
+            output_lines: [
+                {
+                    content: "hello",
+                    is_stderr: false,
+                },
+                {
+                    content: "world",
+                    is_stderr: true,
+                },
+            ],
+        });
+        expect(outputNextSpy).toHaveBeenCalledWith([
+            {
+                content: "goodbye",
+                isStderr: true,
+            },
+            {
+                content: "hello",
+                isStderr: false,
+            },
+            {
+                content: "world",
+                isStderr: true,
+            },
+        ]);
+
+        resultSubject.next({
+            exit_code: 0,
+        });
+        expect(stateNextSpy).toHaveBeenCalledWith({
+            executionState: ExecutionState.FINISHED_SUCCESSFUL,
+            exitCode: 0,
+        });
+        resultSubject.next({
+            exit_code: 1,
+        });
+        expect(stateNextSpy).toHaveBeenCalledWith({
+            executionState: ExecutionState.FINISHED_ERROR,
+            exitCode: 1,
+        });
+
+        expect(cancelSpy).not.toHaveBeenCalled();
+        cancelCallback();
+        expect(cancelSpy).toHaveBeenCalledTimes(1);
+
+        resultSubject.next({
+            exit_code: 2,
+        });
+        expect(stateNextSpy).not.toHaveBeenCalledWith({
+            executionState: ExecutionState.FINISHED_ERROR,
+            exitCode: 2,
+        });
     });
 });
