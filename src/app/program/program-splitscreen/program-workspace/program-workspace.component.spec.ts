@@ -1,66 +1,16 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {ProgramWorkspaceComponent} from "./program-workspace.component";
-import {ProgramService} from "src/app/shared/services/program.service";
-import {ActivatedRoute, Params} from "@angular/router";
-import {BehaviorSubject} from "rxjs";
-import {Program} from "src/app/shared/types/program";
 import * as Blockly from "blockly";
-import {pythonGenerator} from "blockly/python";
+import {SimpleChange} from "@angular/core";
 
 describe("ProgramWorkspaceComponent", () => {
     let component: ProgramWorkspaceComponent;
     let fixture: ComponentFixture<ProgramWorkspaceComponent>;
-    let programService: jasmine.SpyObj<ProgramService>;
-    let params: BehaviorSubject<Params>;
     beforeEach(async () => {
-        const programServiceSpy: jasmine.SpyObj<ProgramService> =
-            jasmine.createSpyObj("ProgramService", [
-                "getProgramFromCache",
-                "getAllPrograms",
-                "getProgramByProgramNumber",
-                "createProgram",
-                "updateProgramByProgramNumber",
-                "deleteProgramByProgramNumber",
-                "getCodeByProgramNumber",
-                "updateCodeByProgramNumber",
-            ]);
-
-        programServiceSpy.getAllPrograms.and.returnValue(
-            new BehaviorSubject([
-                new Program("name-0", "id-0"),
-                new Program("name-1", "id-1"),
-                new Program("name-2", "id-2"),
-            ]),
-        );
-        programServiceSpy.viewModeSubject = new BehaviorSubject(false);
-        programServiceSpy.pythonCodeSubject = new BehaviorSubject("");
-
-        params = new BehaviorSubject<Params>({uuid: "id-0"});
-
         await TestBed.configureTestingModule({
             declarations: [ProgramWorkspaceComponent],
-            providers: [
-                {
-                    provide: ProgramService,
-                    useValue: programServiceSpy,
-                },
-                {
-                    provide: ActivatedRoute,
-                    useValue: {
-                        params,
-                        snapshot: {
-                            params: {
-                                uuid: "id-1",
-                            },
-                        },
-                    },
-                },
-            ],
         }).compileComponents();
 
-        programService = TestBed.inject(
-            ProgramService,
-        ) as jasmine.SpyObj<ProgramService>;
         fixture = TestBed.createComponent(ProgramWorkspaceComponent);
         component = fixture.componentInstance;
         Blockly.registry.unregister("theme", "customtheme");
@@ -71,113 +21,83 @@ describe("ProgramWorkspaceComponent", () => {
         expect(component).toBeTruthy();
     });
 
-    it("should update the workspace content when route params are changed", () => {
-        programService.getCodeByProgramNumber.and.returnValue(
-            new BehaviorSubject({
-                visual: '{"testfield": 1}',
-            }),
-        );
-        const spyOnWorkspace = spyOnProperty(
-            fixture.componentRef.instance,
+    it("should update the visual code and emit python code", () => {
+        const currentCodeVisual = '{"a":1}';
+        const previousCodeVisual = '{"a":2}';
+        const codePython = "print('hi')";
+        const codePythonEmitSpy = spyOn(component.codePythonChange, "emit");
+        const codePythonSpy = spyOnProperty(
+            component,
+            "codePython",
+            "get",
+        ).and.returnValue(codePython);
+        const codeVisualSpy = spyOnProperty(
+            component,
             "workspaceContent",
             "set",
         );
-        params.next({uuid: "id-1"});
-        expect(programService.getCodeByProgramNumber).toHaveBeenCalledWith(
-            "id-1",
-        );
-        expect(spyOnWorkspace).toHaveBeenCalledOnceWith({testfield: 1});
+        component.ngOnChanges({
+            codeVisual: new SimpleChange(
+                previousCodeVisual,
+                currentCodeVisual,
+                false,
+            ),
+        });
+        expect(codeVisualSpy).toHaveBeenCalledWith(currentCodeVisual);
+        expect(codePythonSpy).toHaveBeenCalled();
+        expect(codePythonEmitSpy).toHaveBeenCalledOnceWith(codePython);
     });
 
-    it("should save the code", () => {
-        spyOnProperty(
-            fixture.componentRef.instance,
-            "workspaceContent",
+    it("should neither update the visual code nor emit python code", () => {
+        const currentCodeVisual = '{"a":1}';
+        const previousCodeVisual = '{"a":2}';
+        const codePython = "print('hi')";
+        const codePythonEmitSpy = spyOn(component.codePythonChange, "emit");
+        const codePythonSpy = spyOnProperty(
+            component,
+            "codePython",
             "get",
-        ).and.returnValue({testfield: "1"});
-        spyOn(pythonGenerator, "workspaceToCode").and.returnValue(
-            'print("test")',
+        ).and.returnValue(codePython);
+        const codeVisualSpy = spyOnProperty(
+            component,
+            "workspaceContent",
+            "set",
         );
-        const expectedCode = {
-            visual: '{"testfield":"1"}',
-            python: 'print("test")',
-        };
-        component.saveCode();
-        expect(
-            programService.updateCodeByProgramNumber,
-        ).toHaveBeenCalledOnceWith("id-1", expectedCode);
+        component.ngOnChanges({
+            codeVisual: new SimpleChange(
+                previousCodeVisual,
+                currentCodeVisual,
+                true,
+            ),
+        });
+        expect(codeVisualSpy).not.toHaveBeenCalled();
+        expect(codePythonSpy).not.toHaveBeenCalled();
+        expect(codePythonEmitSpy).not.toHaveBeenCalled();
     });
 
-    it("generateCode should return when workspace.isDragging is true", () => {
-        const isDraggingSpy = spyOn(
-            component.workspace,
-            "isDragging",
-        ).and.returnValue(true);
-        const supportedEventsSpy = spyOn(component.supportedEvents, "has");
-        const event = new Blockly.Events.BubbleOpen();
-        component.generateCode(event);
-        expect(isDraggingSpy).toHaveBeenCalled();
-        expect(supportedEventsSpy).not.toHaveBeenCalled();
-    });
-
-    it("generateCode should return when event-type is not of supportedEvents", () => {
-        const isDraggingSpy = spyOn(
-            component.workspace,
-            "isDragging",
-        ).and.returnValue(false);
-        const supportedEventsSpy = spyOn(
-            component.supportedEvents,
-            "has",
-        ).and.callThrough();
-        const codeGeneratorSpy = spyOn(pythonGenerator, "workspaceToCode");
-        const event = new Blockly.Events.BubbleOpen();
-        component.generateCode(event);
-        expect(isDraggingSpy).toHaveBeenCalled();
-        expect(supportedEventsSpy).toHaveBeenCalled();
-        expect(codeGeneratorSpy).not.toHaveBeenCalled();
-    });
-
-    it("generateCode should generate pythoncode", () => {
-        const isDraggingSpy = spyOn(
-            component.workspace,
-            "isDragging",
-        ).and.returnValue(false);
-        const supportedEventsSpy = spyOn(
-            component.supportedEvents,
-            "has",
-        ).and.callThrough();
-        const codeGeneratorSpy = spyOn(pythonGenerator, "workspaceToCode");
-        const pythonCodeSubjectSpy = spyOn(
-            programService.pythonCodeSubject,
-            "next",
+    it("should emit the new flyout width if content open", () => {
+        spyOn(component.workspace.trashcan!, "contentsIsOpen").and.returnValue(
+            true,
         );
-        const event = new Blockly.Events.BlockChange();
-        component.generateCode(event);
-        expect(isDraggingSpy).toHaveBeenCalled();
-        expect(supportedEventsSpy).toHaveBeenCalled();
-        expect(codeGeneratorSpy).toHaveBeenCalled();
-        expect(pythonCodeSubjectSpy).toHaveBeenCalled();
+        spyOn(
+            component.workspace.trashcan!.flyout!,
+            "getWidth",
+        ).and.returnValue(100);
+        const flyoutChangeSpy = spyOn(component.trashcanFlyoutChange, "emit");
+        component.flyoutChangeCallback();
+        expect(flyoutChangeSpy).toHaveBeenCalledOnceWith(100);
     });
 
-    it("should change the viewMode to normal view if splitscreenMode is true ", () => {
-        const viewModeSubjectSpy = spyOn(
-            programService.viewModeSubject,
-            "next",
+    it("should emit width 0 if content not open", () => {
+        spyOn(component.workspace.trashcan!, "contentsIsOpen").and.returnValue(
+            false,
         );
-        component.splitscreenMode = true;
-        component.changeViewMode();
-        expect(component.splitscreenMode).toBe(false);
-        expect(viewModeSubjectSpy).toHaveBeenCalledWith(false);
-    });
-
-    it("should change the viewMode to splitscreen if splitscreenMode is false ", () => {
-        const viewModeSubjectSpy = spyOn(
-            programService.viewModeSubject,
-            "next",
-        );
-        component.splitscreenMode = false;
-        component.changeViewMode();
-        expect(component.splitscreenMode).toBe(true);
-        expect(viewModeSubjectSpy).toHaveBeenCalledWith(true);
+        spyOn(
+            component.workspace.trashcan!.flyout!,
+            "getWidth",
+        ).and.returnValue(100);
+        const flyoutChangeSpy = spyOn(component.trashcanFlyoutChange, "emit");
+        component.flyoutChangeCallback();
+        expect(flyoutChangeSpy).toHaveBeenCalledOnceWith(0);
     });
 });
