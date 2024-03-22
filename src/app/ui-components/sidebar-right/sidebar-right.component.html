@@ -8,7 +8,7 @@
                 <div class="col">
                     <div class="row mt-1 mb-3">
                         <div
-                            class="col-11 ml-3 onOff"
+                            class="col-11 ml-3 on-off"
                             [ngClass]="vaState == true ? 'on' : 'off'">
                             <div class="row">
                                 <button
@@ -68,36 +68,36 @@
                                 <button
                                     id="edit"
                                     ngbDropdownItem
-                                    (click)="calbackMethods[1].clickCallback(sidebarElement.getUUID())">
+                                    (click)="callbackMethods[1].clickCallback(sidebarElement.getUUID())">
                                     <img
                                         class="item pr-1 mb-1"
-                                        *ngIf="calbackMethods[1].icon !== ''"
-                                        [src]="calbackMethods[1].icon" />
-                                    <label>{{calbackMethods[1].label}}</label>
+                                        *ngIf="callbackMethods[1].icon !== ''"
+                                        [src]="callbackMethods[1].icon" />
+                                    <label>{{callbackMethods[1].label}}</label>
                                 </button>
                                 <div *ngIf="lStorage == 'chat'">
                                     <button
                                         id="export"
                                         ngbDropdownItem
-                                        (click)="calbackMethods[3].clickCallback(sidebarElement.getUUID())">
+                                        (click)="callbackMethods[3].clickCallback(sidebarElement.getUUID())">
                                         <img
                                             class="item pr-1 mb-2"
-                                            *ngIf="calbackMethods[3].icon !== ''"
-                                            [src]="calbackMethods[3].icon" />
+                                            *ngIf="callbackMethods[3].icon !== ''"
+                                            [src]="callbackMethods[3].icon" />
                                         <label
-                                            >{{calbackMethods[3].label}}</label
+                                            >{{callbackMethods[3].label}}</label
                                         >
                                     </button>
                                 </div>
                                 <button
                                     id="delete"
                                     ngbDropdownItem
-                                    (click)="calbackMethods[2].clickCallback(sidebarElement.getUUID())">
+                                    (click)="callbackMethods[2].clickCallback(sidebarElement.getUUID())">
                                     <img
                                         class="item pr-1 mb-1"
-                                        *ngIf="calbackMethods[2].icon !== ''"
-                                        [src]="calbackMethods[2].icon" />
-                                    <label>{{calbackMethods[2].label}}</label>
+                                        *ngIf="callbackMethods[2].icon !== ''"
+                                        [src]="callbackMethods[2].icon" />
+                                    <label>{{callbackMethods[2].label}}</label>
                                 </button>
                             </div>
                         </div>
@@ -111,9 +111,9 @@
                             type="button"
                             class="col btn pl-3 p-3 text-truncate element text-center"
                             id="add-new-button"
-                            (click)="calbackMethods[0].clickCallback('')">
+                            (click)="callbackMethods[0].clickCallback('')">
                             <label class="mb-0"
-                                >{{calbackMethods[0].label}}</label
+                                >{{callbackMethods[0].label}}</label
                             >
                         </button>
                     </div>

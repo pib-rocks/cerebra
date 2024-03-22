@@ -70,8 +70,7 @@ export class ProgramComponent implements OnInit, AfterViewInit {
         }).result;
     }
 
-    // nothing is just there, that no error will be thrown
-    addProgram(nothing: string = "") {
+    addProgram(_: string = "") {
         this.nameFormControl.setValue("");
         this.showModal().then(() => {
             if (this.nameFormControl.valid) {
@@ -85,17 +84,13 @@ export class ProgramComponent implements OnInit, AfterViewInit {
     }
 
     editProgram(uuid: string = "") {
-        this.programService
-            .getProgramByProgramNumber(uuid)
-            .subscribe((program: Program) => {
-                this.program = program;
-            });
-        if (!this.program) return;
-        this.nameFormControl.setValue(this.program.name);
+        const program = this.getProgramFromRoute()?.clone();
+        if (!program) return;
+        this.nameFormControl.setValue(program.name);
         this.showModal().then(() => {
             if (this.nameFormControl.valid) {
-                this.program!.name = this.nameFormControl.value;
-                this.programService.updateProgramByProgramNumber(this.program!);
+                program.name = this.nameFormControl.value;
+                this.programService.updateProgramByProgramNumber(program);
             }
         });
     }
@@ -106,8 +101,7 @@ export class ProgramComponent implements OnInit, AfterViewInit {
         });
     }
 
-    //Change Icons
-    calbackMethods = [
+    callbackMethods = [
         {
             icon: "",
             label: "New program",

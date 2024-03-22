@@ -13,7 +13,7 @@ import {VoiceAssistantState} from "src/app/shared/types/voice-assistant-state";
     styleUrls: ["./sidebar-right.component.css"],
 })
 export class SideBarRightComponent implements OnInit, OnDestroy {
-    @Input() calbackMethods: {
+    @Input() callbackMethods: {
         icon: string;
         label: string;
         clickCallback: (uuid: string) => void;

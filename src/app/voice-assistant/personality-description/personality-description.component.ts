@@ -38,7 +38,7 @@ export class PersonalityDescriptionComponent implements OnInit {
     }
 
     updateDescription() {
-        //save description after 1.5s
+        //save description after 1s
         clearTimeout(this.timer);
         this.timer = setTimeout(() => {
             if (this.personality) {
@@ -48,7 +48,7 @@ export class PersonalityDescriptionComponent implements OnInit {
                     this.personality,
                 );
             }
-        }, 1500);
+        }, 1000);
     }
 
     updatePersonality() {

@@ -68,8 +68,7 @@ export class VoiceAssistantChatComponent implements OnInit {
         return this.ngbModalRef;
     };
 
-    // nothing is just there, that no error will be thrown
-    openAddModal(nothing: string = "") {
+    openAddModal(_: string = "") {
         this.topicFormControl.setValue("");
         this.showModal();
     }
@@ -133,8 +132,7 @@ export class VoiceAssistantChatComponent implements OnInit {
         throw Error("not implemented");
     }
 
-    //Change Icons
-    calbackMethods = [
+    callbackMethods = [
         {
             icon: "",
             label: "New chat",

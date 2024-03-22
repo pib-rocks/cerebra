@@ -1,32 +1,43 @@
+.bg-sidebar {
+    background-color: #041939;
+}
+
 label {
-    font-weight: normal !important;
+    padding-left: 0;
 }
 
-.invalid-form {
-    border: 1px solid red !important;
-}
-
-#pause-threshold-input {
-    width: 60px;
+.input {
     background-color: #344a69;
     border: none;
-    height: 30px;
+    height: 50px;
 }
 
-#new-radio-male,
-#new-radio-female {
+#radio-male,
+#radio-female {
     display: none;
 }
 
-#new-label-radio-male::before,
-#new-label-radio-female::before {
+.radioHover:hover {
+    cursor: pointer;
+}
+
+.marginFemale {
+    margin-top: 5px;
+}
+
+.marginMale {
+    margin-top: 5px;
+}
+
+#label-radio-male::before,
+#label-radio-female::before {
     content: "";
     position: absolute;
     top: 3px;
     left: 0;
-    width: 15px;
+    width: 25px;
     margin-top: 2.5px;
-    height: 15px;
+    height: 25px;
     border: 2px solid #fff;
     border-radius: 50%;
     background-color: transparent;
@@ -34,13 +45,8 @@ label {
     box-shadow: inset 0 0 0 2px #000;
 }
 
-#new-label-radio-male,
-#new-label-radio-female {
-    padding-left: 10px;
-}
-
-#new-radio-male:checked + #new-label-radio-male::before,
-#new-radio-female:checked + #new-label-radio-female::before {
+#radio-male:checked + #label-radio-male::before,
+#radio-female:checked + #label-radio-female::before {
     background-color: var(--cerebra-pink);
     border-color: #fff;
     padding: 5px;
@@ -54,4 +60,13 @@ label {
     font-size: 10px;
     line-height: 10px;
     padding: 0;
+}
+
+.delete {
+    background-color: #e10072;
+}
+
+.delete:hover,
+.delete:checked {
+    background-color: #0094df;
 }

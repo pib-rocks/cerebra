@@ -7,7 +7,6 @@ import {NgbModal, NgbModalRef} from "@ng-bootstrap/ng-bootstrap";
 import {VoiceAssistant} from "../shared/types/voice-assistant";
 import {Router} from "@angular/router";
 import {VoiceAssistantState} from "../shared/types/voice-assistant-state";
-import {CerebraRegex} from "../shared/types/cerebra-regex";
 
 @Component({
     selector: "app-voice-assistant",
