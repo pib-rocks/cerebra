@@ -84,14 +84,18 @@ export class ProgramComponent implements OnInit, AfterViewInit {
     }
 
     editProgram(uuid: string = "") {
-        const program = this.getProgramFromRoute()?.clone();
-        if (!program) return;
-        this.nameFormControl.setValue(program.name);
-        this.showModal().then(() => {
-            if (this.nameFormControl.valid) {
-                program.name = this.nameFormControl.value;
-                this.programService.updateProgramByProgramNumber(program);
-            }
+        const program$ = this.programService.getProgramByProgramNumber(uuid);
+        program$.subscribe((program) => {
+            if (!program) return;
+
+            this.nameFormControl.setValue(program.name);
+
+            this.showModal().then(() => {
+                if (this.nameFormControl.valid) {
+                    program.name = this.nameFormControl.value;
+                    this.programService.updateProgramByProgramNumber(program);
+                }
+            });
         });
     }
 
