@@ -16,7 +16,7 @@ export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
     personalityClone!: VoiceAssistant;
     thresholdString: string = "";
     personalityFormSidebar!: FormGroup;
-    @Input() personalityUUID: String | undefined;
+    @Input() personalityUUID: string | undefined;
 
     constructor(
         private voiceAssistantService: VoiceAssistantService,
@@ -25,7 +25,7 @@ export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
 
     ngOnInit() {
         this.route.params.subscribe((params: Params) => {
-            let temp = this.voiceAssistantService.getPersonality(
+            const temp = this.voiceAssistantService.getPersonality(
                 params["personalityUuid"],
             );
             if (temp !== undefined) {

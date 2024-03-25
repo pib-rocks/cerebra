@@ -3,13 +3,13 @@
         <div class="mt-4">
             <div
                 class="row"
-                *ngIf="lStorage == 'chat'">
+                *ngIf="lStorage === 'chat'">
                 <label class="text-center">Voice interaction</label>
                 <div class="col">
                     <div class="row mt-1 mb-3">
                         <div
                             class="col-11 ml-3 on-off"
-                            [ngClass]="vaState == true ? 'on' : 'off'">
+                            [ngClass]="vaState ? 'on' : 'off'">
                             <div class="row">
                                 <button
                                     type="button"
@@ -19,7 +19,7 @@
                                     alt="Toggle for turning the Voice Assistant on and off"
                                     value="{{vaState}}">
                                     <div
-                                        *ngIf="vaState == true; then thenBlock else elseBlock"></div>
+                                        *ngIf="vaState; then thenBlock else elseBlock"></div>
                                     <ng-template #thenBlock
                                         ><label class="mb-0"
                                             >ON</label
@@ -65,6 +65,7 @@
                             <div
                                 ngbDropdownMenu
                                 attr.aria-labelledby="dropdownbutton-{{sidebarElement.getName()}}">
+                                <h2>{{sidebarElement.getName()}}</h2>
                                 <button
                                     id="edit"
                                     ngbDropdownItem
@@ -75,7 +76,7 @@
                                         [src]="callbackMethods[1].icon" />
                                     <label>{{callbackMethods[1].label}}</label>
                                 </button>
-                                <div *ngIf="lStorage == 'chat'">
+                                <div *ngIf="lStorage === 'chat'">
                                     <button
                                         id="export"
                                         ngbDropdownItem

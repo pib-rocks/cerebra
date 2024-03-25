@@ -4,12 +4,12 @@
         (change)="formChanged(personalityFormSidebar)">
         <div
             class="row"
-            id="row-name">
+            id="personality-sidebar-persona-name-row">
             <label
-                for="name-input"
+                for="personality-sidebar-persona-name-input"
                 class="row m-1 mt-3"
-                id="label-name"
-                >Persona name</label
+                id="personality-sidebar-persona-name-label"
+                >Persona nameee</label
             >
             <input
                 ngbAutofocus
@@ -17,14 +17,10 @@
                 type="text"
                 formControlName="persona-name"
                 [value]="personalityClone.name"
-                id="name-input" />
+                id="personality-sidebar-persona-name-input" />
         </div>
         <div class="row pl-1 mt-4">
-            <label
-                for="gander"
-                id="label-name"
-                >Voice gender</label
-            >
+            <label id="label-name">Voice gender</label>
             <div class="row pl-2">
                 <div
                     class="col-4"

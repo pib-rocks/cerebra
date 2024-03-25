@@ -2,12 +2,12 @@
     <form [formGroup]="personalityForm">
         <div
             class="row"
-            id="row-name">
+            id="personality-sidebar-name-input-row">
             <label
-                for="name-input"
+                for="personality-sidebar-name-input-field"
                 class="row m-1 mt-3"
-                id="label-name"
-                >Persona name</label
+                id="personality-sidebar-name-input-label"
+                >Persona namee</label
             >
             <input
                 ngbAutofocus
@@ -16,60 +16,62 @@
                 formControlName="persona-name"
                 [value]="personalityClone.name"
                 (input)="updatePersonality()"
-                id="name-input" />
+                id="personality-sidebar-name-input-field" />
         </div>
         <div class="row pl-1 mt-4">
             <label
-                for="gander"
-                id="label-name"
+                for="personality-sidebar-gender-selection"
+                id="personality-sidebar-gender-label"
                 >Voice gender</label
             >
-            <div class="row pl-2">
-                <div
-                    class="col-4"
-                    id="radio-button-female">
-                    <input
-                        value="Female"
-                        formControlName="gender"
-                        type="radio"
-                        [(ngModel)]="personalityClone.gender"
-                        (click)="updatePersonality()"
-                        id="radio-female" />
-                    <label
-                        class="pl-4 radioHover marginFemale"
-                        for="radio-female"
-                        id="label-radio-female"
-                        >Female</label
-                    >
+            <div id="personality-sidebar-gender-selection">
+                <div class="row pl-2">
+                    <div
+                        class="col-4"
+                        id="personality-sidebar-radio-button-female">
+                        <input
+                            value="Female"
+                            formControlName="gender"
+                            type="radio"
+                            [(ngModel)]="personalityClone.gender"
+                            (click)="updatePersonality()"
+                            id="personality-sidebar-radio-female" />
+                        <label
+                            class="pl-4 radioHover marginFemale"
+                            for="personality-sidebar-radio-female"
+                            id="personality-sidebar-label-radio-female"
+                            >Female</label
+                        >
+                    </div>
                 </div>
-            </div>
-            <div class="row pl-2">
-                <div
-                    class="col-4"
-                    id="radio-button-male">
-                    <input
-                        value="Male"
-                        formControlName="gender"
-                        type="radio"
-                        [(ngModel)]="personalityClone.gender"
-                        (click)="updatePersonality()"
-                        id="radio-male" />
-                    <label
-                        class="pl-4 radioHover marginMale"
-                        for="radio-male"
-                        id="label-radio-male"
-                        >Male</label
-                    >
+                <div class="row pl-2">
+                    <div
+                        class="col-4"
+                        id="personality-sidebar-radio-button-male">
+                        <input
+                            value="Male"
+                            formControlName="gender"
+                            type="radio"
+                            [(ngModel)]="personalityClone.gender"
+                            (click)="updatePersonality()"
+                            id="personality-sidebar-radio-male" />
+                        <label
+                            class="pl-4 radioHover marginMale"
+                            for="personality-sidebar-radio-male"
+                            id="label-radio-male"
+                            >Male</label
+                        >
+                    </div>
                 </div>
             </div>
         </div>
         <div
             class="row m-1 pr-2 mt-4"
-            id="row-name">
+            id="personality-sidebar-pause-threshold-row">
             <label
-                for="pause-threshold-input"
+                for="personality-sidebar-pause-threshold-input"
                 class="row"
-                id="label-pause-threshold"
+                id="personality-sidebar-label-pause-threshold"
                 >Pause threshold</label
             >
             <div class="row pl-0">
@@ -77,7 +79,7 @@
                     <input
                         type="text"
                         class="input w-100 pl-2"
-                        id="pause-threshold-input"
+                        id="personality-sidebar-pause-threshold-input"
                         [(ngModel)]="thresholdString"
                         [ngModelOptions]="{standalone: true}"
                         readonly />

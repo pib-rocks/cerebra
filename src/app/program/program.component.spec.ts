@@ -83,24 +83,19 @@ describe("ProgramComponent", () => {
     });
 
     it("should add a program", () => {
-        const showModalSpy = spyOn(
-            fixture.componentInstance,
-            "showModal",
-        ).and.returnValue({
+        const showModalSpy = spyOn(component, "showModal").and.returnValue({
             then: (callback) => {
-                expect(fixture.componentInstance.nameFormControl.value).toEqual(
-                    "",
-                );
-                fixture.componentInstance.nameFormControl.setValue("new-name");
+                expect(component.nameFormControl.value).toEqual("");
+                component.nameFormControl.setValue("new-name");
                 callback?.("");
             },
         } as Promise<string>);
-        const selectedSpy = spyOn(fixture.componentInstance.selected, "next");
+        const selectedSpy = spyOn(component.selected, "next");
         programService.createProgram.and.returnValue(
             new BehaviorSubject(new Program("new-name", "id-0")),
         );
 
-        fixture.componentInstance.addProgram("");
+        component.addProgram("");
         expect(showModalSpy).toHaveBeenCalled();
         expect(programService.createProgram).toHaveBeenCalledOnceWith(
             jasmine.objectContaining({
@@ -113,20 +108,21 @@ describe("ProgramComponent", () => {
 
     it("should edit a program", () => {
         const oldProgram = new Program("testname", "id-0");
-
         const showModalSpy = spyOn(component, "showModal").and.returnValue({
             then: (callback) => {
                 component.nameFormControl.setValue("new-name");
                 callback?.("");
             },
         } as Promise<string>);
+
         programService.getProgramByProgramNumber.and.returnValue(
             of(oldProgram),
         );
         programService.updateProgramByProgramNumber.and.returnValue(
             new BehaviorSubject(new Program("new-name", "id-0")),
         );
-        component.editProgram("id-0");
+        component.showModal();
+        component.editProgram("");
 
         expect(showModalSpy).toHaveBeenCalled();
         expect(
