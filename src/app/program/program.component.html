@@ -1,15 +1,17 @@
-<div class="row pt-5 pl-3 pr-3 full-height">
-    <div class="main col-10 pink-corner-frame p-0">
-        <app-program-splitscreen></app-program-splitscreen>
-    </div>
-    <div class="col-2">
-        <app-sidebar-right
-            [callbackMethods]="callbackMethods"
-            [subject]="subject"
-            [rerouteOnRefresh]="false"
-            [selectedObservable]="selected"
-            [lStorage]="'program'">
-        </app-sidebar-right>
+<div class="m-2 pr-3 full-height">
+    <div class="row full-height pb-4 pink-corner-frame">
+        <div class="main col-10 p-0">
+            <app-program-splitscreen></app-program-splitscreen>
+        </div>
+        <div class="col-2">
+            <app-sidebar-right
+                [callbackMethods]="callbackMethods"
+                [subject]="subject"
+                [rerouteOnRefresh]="false"
+                [selectedObservable]="selected"
+                [lStorage]="'program'">
+            </app-sidebar-right>
+        </div>
     </div>
 </div>
 
