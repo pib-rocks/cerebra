@@ -1,5 +1,6 @@
 <div class="sidebar-right-wrapper bg-sidebar h-100 pl-4">
     <form
+        (keydown.enter)="$event.preventDefault()"
         [formGroup]="personalityFormSidebar"
         (change)="formChanged(personalityFormSidebar)">
         <div
@@ -103,7 +104,7 @@
                 id="delete-button"
                 class="btn btn-regular delete p-3"
                 (click)="deletePersonality()">
-                <label class="mb-0"> Delete persona </label>
+                Delete personality
             </button>
         </div>
     </form>
