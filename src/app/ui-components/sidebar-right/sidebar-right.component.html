@@ -16,7 +16,7 @@
                                     class="col btn text-truncate element text-center p-3"
                                     id="toggle-voice-assistant"
                                     (click)="toggleVoiceAssistant()"
-                                    alt="Toggle for turning the Voice Assistant on and off"
+                                    title="Toggle for turning Voice Assistant on and off"
                                     value="{{vaState}}">
                                     <div
                                         *ngIf="vaState; then thenBlock else elseBlock"></div>

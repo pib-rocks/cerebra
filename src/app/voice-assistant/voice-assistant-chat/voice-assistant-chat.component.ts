@@ -68,7 +68,7 @@ export class VoiceAssistantChatComponent implements OnInit {
         return this.ngbModalRef;
     };
 
-    openAddModal(_: string = "") {
+    openAddModal() {
         this.topicFormControl.setValue("");
         this.showModal();
     }
