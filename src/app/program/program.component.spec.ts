@@ -95,7 +95,7 @@ describe("ProgramComponent", () => {
             new BehaviorSubject(new Program("new-name", "id-0")),
         );
 
-        component.addProgram("");
+        component.addProgram();
         expect(showModalSpy).toHaveBeenCalled();
         expect(programService.createProgram).toHaveBeenCalledOnceWith(
             jasmine.objectContaining({

@@ -70,7 +70,7 @@ export class ProgramComponent implements OnInit, AfterViewInit {
         }).result;
     }
 
-    addProgram(_: string = "") {
+    addProgram() {
         this.nameFormControl.setValue("");
         this.showModal().then(() => {
             if (this.nameFormControl.valid) {
