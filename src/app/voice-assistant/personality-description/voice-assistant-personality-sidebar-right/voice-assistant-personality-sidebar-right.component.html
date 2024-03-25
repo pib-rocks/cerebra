@@ -10,7 +10,7 @@
                 for="personality-sidebar-persona-name-input"
                 class="row m-1 mt-3"
                 id="personality-sidebar-persona-name-label"
-                >Persona nameee</label
+                >Persona name</label
             >
             <input
                 ngbAutofocus
@@ -21,21 +21,21 @@
                 id="personality-sidebar-persona-name-input" />
         </div>
         <div class="row pl-1 mt-4">
-            <label id="label-name">Voice gender</label>
+            <label id="personality-sidebar-label-name">Voice gender</label>
             <div class="row pl-2">
                 <div
                     class="col-4"
-                    id="radio-button-female">
+                    id="personality-sidebar-radio-button-female">
                     <input
                         value="Female"
                         formControlName="gender"
                         type="radio"
                         [(ngModel)]="personalityClone.gender"
-                        id="radio-female" />
+                        id="personality-sidebar-radio-female" />
                     <label
                         class="pl-4 radioHover marginFemale"
-                        for="radio-female"
-                        id="label-radio-female"
+                        for="personality-sidebar-radio-female"
+                        id="personality-sidebar-label-radio-female"
                         >Female</label
                     >
                 </div>
@@ -43,17 +43,17 @@
             <div class="row pl-2">
                 <div
                     class="col-4"
-                    id="radio-button-male">
+                    id="personality-sidebar-radio-button-male">
                     <input
                         value="Male"
                         formControlName="gender"
                         type="radio"
                         [(ngModel)]="personalityClone.gender"
-                        id="radio-male" />
+                        id="personality-sidebar-radio-male" />
                     <label
                         class="pl-4 radioHover marginMale"
-                        for="radio-male"
-                        id="label-radio-male"
+                        for="personality-sidebar-radio-male"
+                        id="personality-sidebar-label-radio-male"
                         >Male</label
                     >
                 </div>
@@ -61,11 +61,11 @@
         </div>
         <div
             class="row m-1 pr-2 mt-4"
-            id="row-name">
+            id="personality-sidebar-row-pause-threshold">
             <label
-                for="pause-threshold-input"
+                for="personality-sidebar-pause-threshold-input"
                 class="row"
-                id="label-pause-threshold"
+                id="personality-sidebar-label-pause-threshold"
                 >Pause threshold</label
             >
             <div class="row pl-0">
@@ -73,7 +73,7 @@
                     <input
                         type="text"
                         class="input w-100 pl-2"
-                        id="pause-threshold-input"
+                        id="personality-sidebar-pause-threshold-input"
                         [(ngModel)]="thresholdString"
                         [ngModelOptions]="{standalone: true}"
                         readonly />
@@ -101,10 +101,10 @@
         <div
             class="row position-absolute bottom-0 start-50 translate-middle-x mb-4">
             <button
-                id="delete-button"
+                id="personality-sidebar-delete-persona-button"
                 class="btn btn-regular delete p-3"
                 (click)="deletePersonality()">
-                Delete personality
+                Delete persona
             </button>
         </div>
     </form>
