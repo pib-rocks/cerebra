@@ -76,20 +76,6 @@ export class SideBarRightComponent implements OnInit, OnDestroy {
         );
     }
 
-    removeCssClass(uuid: string) {
-        const videoSettingsButton = document.getElementById(
-            "dropdownbutton-" + uuid,
-        );
-        videoSettingsButton?.classList.remove("showPopover");
-    }
-
-    addCssClass(uuid: string) {
-        const videoSettingsButton = document.getElementById(
-            "dropdownbutton-" + uuid,
-        );
-        videoSettingsButton?.classList.add("showPopover");
-    }
-
     toggleVoiceAssistant() {
         const turnedOn = !this.voiceAssistantActivationToggle.value;
         const nextState: VoiceAssistantState = {turnedOn, chatId: ""};

@@ -38,20 +38,11 @@ label {
     background-color: #cccccc;
     padding: 10%;
 }
-
-.dot {
-    margin-bottom: 2px;
-    height: 5px;
-    width: 5px;
-    background-color: #ffffff;
-    border-radius: 50%;
-    display: inline-block;
+.dot-menu {
+    font-size: 1.4em;
 }
-.dropdown:hover .dot {
-    background-color: #000000;
-}
-.showPopover {
-    background-color: #000000;
+.dot-menu:hover {
+    color: black;
 }
 
 .btn {

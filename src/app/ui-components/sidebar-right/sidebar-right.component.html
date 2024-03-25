@@ -39,28 +39,27 @@
             <div
                 class="row"
                 *ngFor="let sidebarElement of sidebarElements">
+                <!--                <div class="d-flex justify-content-between element-div rounded">-->
+                <!--                    <a [routerLink]="sidebarElement.getUUID()" class="element">{{ sidebarElement.getName() }}</a>-->
+                <!--                    <button type="button" class="btn"><i class="bi bi-three-dots"></i></button>-->
+                <!--                </div>-->
                 <div
                     class="col-11 element-div ml-3 mt-3 text-nowrap"
                     routerLinkActive="element-div-active">
-                    <div class="row">
+                    <div class="d-flex justify-content-between">
                         <a
                             [routerLink]="sidebarElement.getUUID()"
                             class="element text-truncate col-9 pl-3 p-2">
                             {{ sidebarElement.getName() }}
                         </a>
-                        <div
-                            ngbDropdown
-                            class="d-inline-block col-2">
+                        <div ngbDropdown>
                             <button
                                 type="button"
                                 class="btn"
                                 id="dropdownbutton-{{sidebarElement.getName()}}"
-                                ngbDropdownToggle
-                                (hidden)="removeCssClass(sidebarElement.getUUID())"
-                                (shown)="addCssClass(sidebarElement.getUUID())">
-                                <div class="dot ml-1"></div>
-                                <div class="dot ml-1"></div>
-                                <div class="dot ml-1"></div>
+                                title="Edit"
+                                ngbDropdownToggle>
+                                <i class="bi bi-three-dots dot-menu"></i>
                             </button>
                             <div
                                 ngbDropdownMenu
