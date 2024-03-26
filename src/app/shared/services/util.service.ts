@@ -19,4 +19,17 @@ export class UtilService {
         });
         return result;
     }
+
+    getFromMapOrDefault<KeyType, ValueType>(
+        map: Map<KeyType, ValueType>,
+        key: KeyType,
+        defaultValueGenerator: () => ValueType,
+    ): ValueType {
+        let value = map.get(key);
+        if (value === undefined) {
+            value = defaultValueGenerator();
+            map.set(key, value);
+        }
+        return value;
+    }
 }

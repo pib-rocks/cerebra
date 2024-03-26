@@ -1,15 +1,75 @@
-<div class="h-100 w-100">
+<div class="h-100 w-100 p-3">
+    <div
+        class="d-flex flex-row-reverse hstack gap-3 position-absolute z-2 top-0 end-0 pt-4 pb-4 pr-5 pe-none"
+        [style]="'transform: translate(' + -flyoutWidth + 'px, 0);'">
+        <button
+            id="save-btn"
+            type="button"
+            (click)="saveCode()"
+            [disabled]="codeVisualNew === codeVisualOld"
+            class="workspaceButton p-0">
+            <img
+                [src]="codeVisualNew === codeVisualOld ? SAVE_INACTIVE : SAVE_ACTIVE"
+                width="75px"
+                alt="Program save button" />
+        </button>
+        <button
+            id="run-btn"
+            type="button"
+            (click)="runProgram()"
+            class="workspaceButton">
+            <img
+                [src]="executionState === ExecutionState.RUNNING ? STOP : PLAY"
+                width="75px"
+                alt="Program save button" />
+        </button>
+        <div class="toggle-btn-icon">
+            <img
+                class="view-mode-icon"
+                [src]="SPLIT_SCREEN"
+                alt="icon for split-screen-view" />
+        </div>
+        <button
+            id="toggle-btn"
+            class="workspaceButton"
+            (click)="inSplitMode = !inSplitMode">
+            <img
+                [src]="inSplitMode ? TOGGLE_RIGHT : TOGGLE_LEFT"
+                alt="Toggle for switching between normal and split screen view" />
+        </button>
+        <div class="toggle-btn-icon">
+            <img
+                class="view-mode-icon"
+                [src]="FULL_SCREEN"
+                alt="icon for split-screen-view" />
+        </div>
+    </div>
     <as-split direction="vertical">
         <as-split-area
             [size]="50"
             [minSize]="15">
-            <router-outlet></router-outlet>
+            <app-program-workspace
+                [codeVisual]="codeVisualOld"
+                (codePythonChange)="codePython = $event"
+                (codeVisualChange)="codeVisualNew = $event"
+                (trashcanFlyoutChange)="flyoutWidth = $event"></app-program-workspace>
         </as-split-area>
         <as-split-area
-            id="python-code-area"
-            *ngIf="splitscreenMode"
-            [size]="50">
-            <pre><code id="python-code" [highlight]="pythonCode"></code></pre>
+            *ngIf="inSplitMode"
+            [size]="50"
+            class="split-screen-lower">
+            <as-split direction="horizontal">
+                <as-split-area
+                    id="python-code-area"
+                    [size]="50">
+                    <app-python-code [code]="codePython"></app-python-code>
+                </as-split-area>
+                <as-split-area [size]="50">
+                    <app-console
+                        [output$]="output$"
+                        [state$]="state$"></app-console>
+                </as-split-area>
+            </as-split>
         </as-split-area>
     </as-split>
 </div>
