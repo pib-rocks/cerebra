@@ -66,6 +66,7 @@
             >
             <input
                 [ngClass]="(!this.personalityForm.controls['name-input'].valid && !this.personalityForm.controls['name-input'].pristine) ? 'invalid-form' : '' "
+                ngbAutofocus
                 class="col-9"
                 type="text"
                 formControlName="name-input"
