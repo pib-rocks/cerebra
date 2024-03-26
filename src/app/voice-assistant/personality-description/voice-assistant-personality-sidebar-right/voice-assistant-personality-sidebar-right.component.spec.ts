@@ -14,21 +14,30 @@ import {
     Validators,
 } from "@angular/forms";
 import {VoiceAssistant} from "src/app/shared/types/voice-assistant";
+import {VoiceAssistantService} from "../../../shared/services/voice-assistant.service";
 
 describe("VoiceAssistantPersonalitySidebarRightComponent", () => {
     let component: VoiceAssistantPersonalitySidebarRightComponent;
     let fixture: ComponentFixture<VoiceAssistantPersonalitySidebarRightComponent>;
-    let chatService: jasmine.SpyObj<ChatService>;
+    let voiceAssistantService: jasmine.SpyObj<VoiceAssistantService>;
     let paramsSubject: Subject<{chatUuid: string}>;
 
     beforeEach(async () => {
         paramsSubject = new BehaviorSubject<{chatUuid: string}>({chatUuid: ""});
-
-        const chatServiceSpy: jasmine.SpyObj<ChatService> =
+        const voiceAssistantServiceSpy: jasmine.SpyObj<VoiceAssistantService> =
             jasmine.createSpyObj(ChatService, [
-                "getChatMessagesObservable",
-                "getChat",
+                "updatePersonality",
+                "addPersonality",
+                "deletePersonalityById",
+                "getAllPersonalities",
+                "updatePersonalityById",
             ]);
+
+        // const chatServiceSpy: jasmine.SpyObj<ChatService> =
+        //     jasmine.createSpyObj(ChatService, [
+        //         "getChatMessagesObservable",
+        //         "getChat",
+        //     ]);
         await TestBed.configureTestingModule({
             declarations: [VoiceAssistantPersonalitySidebarRightComponent],
             imports: [
@@ -50,15 +59,15 @@ describe("VoiceAssistantPersonalitySidebarRightComponent", () => {
                     },
                 },
                 {
-                    provide: ChatService,
-                    useValue: chatServiceSpy,
+                    provide: VoiceAssistantService,
+                    useValue: voiceAssistantServiceSpy,
                 },
             ],
         }).compileComponents();
 
-        chatService = TestBed.inject(
-            ChatService,
-        ) as jasmine.SpyObj<ChatService>;
+        voiceAssistantService = TestBed.inject(
+            VoiceAssistantService,
+        ) as jasmine.SpyObj<VoiceAssistantService>;
 
         fixture = TestBed.createComponent(
             VoiceAssistantPersonalitySidebarRightComponent,
@@ -96,6 +105,7 @@ describe("VoiceAssistantPersonalitySidebarRightComponent", () => {
                 },
             ),
         });
+        voiceAssistantService.personalities = [component.personalityClone];
         fixture.detectChanges();
     });
 
@@ -103,14 +113,20 @@ describe("VoiceAssistantPersonalitySidebarRightComponent", () => {
         expect(component).toBeTruthy();
     });
 
-    //Test für
     //adjustThreshold
-    // it("should test if adjustThreshold sets the pausethreshold correctly", () =>{
-    //     component.thresholdString = "0.7"
-    //     component.adjustThreshold("0.1")
-    //     expect(component.thresholdString).toBe("0.9")
-    // });
+    it("should test if adjustThreshold sets the pausethreshold correctly", () => {
+        component.thresholdString = "0.7";
+        component.adjustThreshold("0.1");
+        expect(component.thresholdString).toBe("0.9s");
+    });
     //deletePersonality
-    //updateForm
+    it("should delete personality", () => {
+        component.deletePersonality();
+        expect(voiceAssistantService.deletePersonalityById).toHaveBeenCalled();
+    });
     //updatePersonality
+    it("should update personality", () => {
+        component.updatePersonality();
+        expect(voiceAssistantService.updatePersonalityById).toHaveBeenCalled();
+    });
 });
