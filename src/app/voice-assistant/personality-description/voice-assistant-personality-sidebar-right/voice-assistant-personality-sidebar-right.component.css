@@ -54,8 +54,8 @@ label {
     padding: 5px;
 }
 
-#up,
-#down {
+#personality-sidebar-up,
+#personality-sidebar-down {
     background-color: transparent;
     color: #f3f3f3;
     border: none;

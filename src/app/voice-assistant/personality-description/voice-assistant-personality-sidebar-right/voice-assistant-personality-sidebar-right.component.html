@@ -1,3 +1,6 @@
+<link
+    rel="stylesheet"
+    href="voice-assistant-personality-sidebar-right.component.css" />
 <div class="sidebar-right-wrapper bg-sidebar h-100 pl-4">
     <form
         (keydown.enter)="$event.preventDefault()"
@@ -78,7 +81,7 @@
                 <div class="col-1 pt-2">
                     <div class="row mt-1">
                         <button
-                            id="up"
+                            id="personality-sidebar-up"
                             type="button"
                             (click)="adjustThreshold('0.1')">
                             &#9650;
@@ -86,7 +89,7 @@
                     </div>
                     <div class="row">
                         <button
-                            id="down"
+                            id="personality-sidebar-down"
                             type="button"
                             (click)="adjustThreshold('-0.1')">
                             &#9660;
