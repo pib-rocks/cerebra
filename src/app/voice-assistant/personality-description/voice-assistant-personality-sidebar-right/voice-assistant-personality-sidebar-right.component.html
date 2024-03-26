@@ -66,35 +66,19 @@
                 for="personality-sidebar-pause-threshold-input"
                 class="row"
                 id="personality-sidebar-label-pause-threshold"
-                >Pause threshold</label
+                >Pause threshold (in s)</label
             >
             <div class="row pl-0">
                 <div class="col-11 pl-0">
                     <input
-                        type="text"
+                        type="number"
                         class="input w-100 pl-2"
                         id="personality-sidebar-pause-threshold-input"
+                        step="0.1"
+                        alt="The waiting period of not receiving any voice input before voice assistants starts to answer"
                         [(ngModel)]="thresholdString"
                         [ngModelOptions]="{standalone: true}"
-                        readonly />
-                </div>
-                <div class="col-1 pt-2">
-                    <div class="row mt-1">
-                        <button
-                            id="personality-sidebar-up"
-                            type="button"
-                            (click)="adjustThreshold('0.1')">
-                            &#9650;
-                        </button>
-                    </div>
-                    <div class="row">
-                        <button
-                            id="personality-sidebar-down"
-                            type="button"
-                            (click)="adjustThreshold('-0.1')">
-                            &#9660;
-                        </button>
-                    </div>
+                        (ngModelChange)="adjustThreshold()" />
                 </div>
             </div>
         </div>

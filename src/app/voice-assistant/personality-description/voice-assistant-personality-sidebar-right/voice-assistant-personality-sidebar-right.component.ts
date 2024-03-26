@@ -63,16 +63,12 @@ export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
                 },
             ),
         });
-        this.thresholdString = this.personalityClone.pauseThreshold + "s";
+        this.thresholdString = this.personalityClone.pauseThreshold + "";
     }
 
-    adjustThreshold(step: string) {
-        const newValue =
-            (Number(this.personalityClone.pauseThreshold) * 10 +
-                Number(step) * 10) /
-            10;
+    adjustThreshold() {
         this.personalityFormSidebar.patchValue({
-            pausethreshold: newValue,
+            pausethreshold: this.thresholdString,
         });
         if (
             this.personalityFormSidebar.controls["pausethreshold"].hasError(
@@ -92,11 +88,8 @@ export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
                 pausethreshold: this.pauseThresholdMax,
             });
         }
-        this.thresholdString =
-            this.personalityFormSidebar.controls["pausethreshold"].value + "s";
         this.personalityClone.pauseThreshold =
             this.personalityFormSidebar.controls["pausethreshold"].value;
-        this.updatePersonality();
     }
 
     deletePersonality = () => {
