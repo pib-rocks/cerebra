@@ -39,10 +39,6 @@
             <div
                 class="row"
                 *ngFor="let sidebarElement of sidebarElements">
-                <!--                <div class="d-flex justify-content-between element-div rounded">-->
-                <!--                    <a [routerLink]="sidebarElement.getUUID()" class="element">{{ sidebarElement.getName() }}</a>-->
-                <!--                    <button type="button" class="btn"><i class="bi bi-three-dots"></i></button>-->
-                <!--                </div>-->
                 <div
                     class="col-11 element-div ml-3 mt-3 text-nowrap"
                     routerLinkActive="element-div-active">
@@ -64,40 +60,20 @@
                             <div
                                 ngbDropdownMenu
                                 attr.aria-labelledby="dropdownbutton-{{sidebarElement.getName()}}">
-                                <button
-                                    id="edit"
-                                    ngbDropdownItem
-                                    (click)="callbackMethods[1].clickCallback(sidebarElement.getUUID())">
-                                    <img
-                                        class="item pr-1 mb-1"
-                                        *ngIf="callbackMethods[1].icon !== ''"
-                                        [src]="callbackMethods[1].icon" />
-                                    <label>{{callbackMethods[1].label}}</label>
-                                </button>
-                                <div *ngIf="lStorage === 'chat'">
+                                <div
+                                    *ngFor="let callback of dropdownCallbackMethods">
                                     <button
-                                        id="export"
                                         ngbDropdownItem
-                                        (click)="callbackMethods[3].clickCallback(sidebarElement.getUUID())">
+                                        [disabled]="callback.disabled"
+                                        id="sidebar-right-{{callback.label}}"
+                                        (click)="callback.clickCallback(sidebarElement.getUUID())">
                                         <img
-                                            class="item pr-1 mb-2"
-                                            *ngIf="callbackMethods[3].icon !== ''"
-                                            [src]="callbackMethods[3].icon" />
-                                        <label
-                                            >{{callbackMethods[3].label}}</label
-                                        >
+                                            *ngIf="callback.icon !== ''"
+                                            [src]="callback.icon"
+                                            class="item pr-1 mb-1" />
+                                        <label>{{callback.label}}</label>
                                     </button>
                                 </div>
-                                <button
-                                    id="delete"
-                                    ngbDropdownItem
-                                    (click)="callbackMethods[2].clickCallback(sidebarElement.getUUID())">
-                                    <img
-                                        class="item pr-1 mb-1"
-                                        *ngIf="callbackMethods[2].icon !== ''"
-                                        [src]="callbackMethods[2].icon" />
-                                    <label>{{callbackMethods[2].label}}</label>
-                                </button>
                             </div>
                         </div>
                     </div>
@@ -105,15 +81,15 @@
             </div>
             <div class="row mt-4">
                 <div class="col-11 ml-3 element-div">
-                    <div class="row">
+                    <div
+                        *ngFor="let option of optionCallbackMethods"
+                        class="row">
                         <button
                             type="button"
                             class="col btn pl-3 p-3 text-truncate element text-center"
-                            id="add-new-button"
-                            (click)="callbackMethods[0].clickCallback('')">
-                            <label class="mb-0"
-                                >{{callbackMethods[0].label}}</label
-                            >
+                            id="sidebar-right-{{option.label}}"
+                            (click)="option.clickCallback('')">
+                            <label class="mb-0">{{option.label}}</label>
                         </button>
                     </div>
                 </div>

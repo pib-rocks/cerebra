@@ -105,21 +105,27 @@ export class ProgramComponent implements OnInit, AfterViewInit {
         });
     }
 
-    callbackMethods = [
+    optionCallbackMethods = [
         {
             icon: "",
             label: "New program",
             clickCallback: this.addProgram.bind(this),
+            disabled: false,
         },
+    ];
+
+    dropdownCallbackMethods = [
         {
             icon: "../../assets/program/edit.svg",
             label: "Rename",
             clickCallback: this.editProgram.bind(this),
+            disabled: false,
         },
         {
             icon: "../../assets/program/delete.svg",
             label: "Delete",
             clickCallback: this.deleteProgram.bind(this),
+            disabled: false,
         },
     ];
 }

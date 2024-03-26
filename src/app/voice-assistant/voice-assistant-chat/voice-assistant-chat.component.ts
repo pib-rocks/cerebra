@@ -132,26 +132,33 @@ export class VoiceAssistantChatComponent implements OnInit {
         throw Error("not implemented");
     }
 
-    callbackMethods = [
+    optionCallbackMethods = [
         {
             icon: "",
             label: "New chat",
             clickCallback: this.openAddModal.bind(this),
+            disabled: false,
         },
+    ];
+
+    dropdownCallbackMethods = [
         {
             icon: "../../assets/voice-assistant-svgs/chat/edit.svg",
             label: "Rename",
             clickCallback: this.openEditModal.bind(this),
-        },
-        {
-            icon: "../../assets/voice-assistant-svgs/chat/delete.svg",
-            label: "Delete chat",
-            clickCallback: this.deleteChat.bind(this),
+            disabled: false,
         },
         {
             icon: "../../assets/voice-assistant-svgs/chat/export.svg",
             label: "Export chat",
             clickCallback: this.export.bind(this),
+            disabled: true,
+        },
+        {
+            icon: "../../assets/voice-assistant-svgs/chat/delete.svg",
+            label: "Delete chat",
+            clickCallback: this.deleteChat.bind(this),
+            disabled: false,
         },
     ];
 }

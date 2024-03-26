@@ -36,24 +36,30 @@ describe("SideBarRightComponent", () => {
         component.subject = testSubject;
         component.lStorage = "temp";
 
-        component.callbackMethods = [
+        component.optionCallbackMethods = [
             {
                 icon: "",
                 label: "New program",
                 // eslint-disable-next-line @typescript-eslint/no-empty-function
                 clickCallback: () => {},
+                disabled: false,
             },
+        ];
+
+        component.dropdownCallbackMethods = [
             {
                 icon: "",
                 label: "Rename",
                 // eslint-disable-next-line @typescript-eslint/no-empty-function
                 clickCallback: () => {},
+                disabled: false,
             },
             {
                 icon: "",
                 label: "Delete",
                 // eslint-disable-next-line @typescript-eslint/no-empty-function
                 clickCallback: () => {},
+                disabled: false,
             },
         ];
         fixture.detectChanges();
