@@ -116,8 +116,8 @@ describe("VoiceAssistantPersonalitySidebarRightComponent", () => {
     //adjustThreshold
     it("should test if adjustThreshold sets the pausethreshold correctly", () => {
         component.thresholdString = "0.7";
-        component.adjustThreshold("0.1");
-        expect(component.thresholdString).toBe("0.9s");
+        component.adjustThreshold();
+        expect(component.personalityClone.pauseThreshold).toBe(0.7);
     });
     //deletePersonality
     it("should delete personality", () => {

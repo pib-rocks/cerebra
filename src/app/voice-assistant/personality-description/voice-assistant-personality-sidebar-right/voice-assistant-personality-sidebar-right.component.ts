@@ -88,8 +88,9 @@ export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
                 pausethreshold: this.pauseThresholdMax,
             });
         }
-        this.personalityClone.pauseThreshold =
-            this.personalityFormSidebar.controls["pausethreshold"].value;
+        this.personalityClone.pauseThreshold = parseFloat(
+            this.personalityFormSidebar.controls["pausethreshold"].value,
+        );
     }
 
     deletePersonality = () => {
