@@ -93,6 +93,22 @@ export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
         );
     }
 
+    adjustThresholdViaButton(up: boolean) {
+        let threshold = parseFloat(this.thresholdString);
+        if (isNaN(threshold)) {
+            return;
+        }
+
+        if (up) {
+            threshold += 0.1;
+        } else {
+            threshold -= 0.1;
+        }
+        this.thresholdString = threshold.toFixed(1) + "";
+        this.adjustThreshold();
+        this.updatePersonality();
+    }
+
     deletePersonality = () => {
         if (
             this.personalityClone!.getUUID() &&

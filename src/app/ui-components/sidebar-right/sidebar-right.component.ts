@@ -96,7 +96,6 @@ export class SideBarRightComponent implements OnInit, OnDestroy {
         }
 
         this.vaState = turnedOn;
-
         this.voiceAssistantService.setVoiceAssistantState(nextState).subscribe({
             error: (error) => console.error(error),
         });

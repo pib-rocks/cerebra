@@ -69,7 +69,7 @@
                 >Pause threshold (in s)</label
             >
             <div class="row pl-0">
-                <div class="col-11 pl-0">
+                <div class="col-11 pl-0 number-input">
                     <input
                         type="number"
                         class="input w-100 pl-2"
@@ -79,6 +79,18 @@
                         [(ngModel)]="thresholdString"
                         [ngModelOptions]="{standalone: true}"
                         (ngModelChange)="adjustThreshold()" />
+                    <button
+                        type="button"
+                        id="personality-sidebar-up"
+                        (click)="adjustThresholdViaButton(true)">
+                        &#9650;
+                    </button>
+                    <button
+                        type="button"
+                        id="personality-sidebar-down"
+                        (click)="adjustThresholdViaButton(false)">
+                        &#9660;
+                    </button>
                 </div>
             </div>
         </div>
