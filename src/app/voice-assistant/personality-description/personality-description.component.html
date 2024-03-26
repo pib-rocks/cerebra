@@ -1,45 +1,43 @@
 <div class="row mt-4">
-    <div class="pink-corner-frame">
-        <div class="row">
-            <div class="col-10">
-                <div class="row pt-2">
-                    <div class="col-6 text-right">
-                        <span class="align-middle"> Personality </span>
-                    </div>
-                    <div class="col-auto pr-0 pl-0">
-                        <a
-                            class="toggle-button"
-                            id="toggle-voice-assistant"
-                            [routerLink]="['chat']">
-                            <img
-                                [src]="'../../assets/toggle-switch-left.png'"
-                                alt="Toggle for turning the Voice Assistant on and off" />
-                        </a>
-                    </div>
-                    <div class="col text-left">
-                        <span class="align-middle">Chats</span>
-                    </div>
+    <div class="row pink-corner-frame w-100">
+        <div class="main col-10">
+            <div class="row pt-2">
+                <div class="col-6 text-right">
+                    <span class="align-middle"> Personality </span>
                 </div>
-                <div class="row mt-3 content-window">
-                    <div class="col">
-                        <textarea
-                            id="textarea-personality"
-                            class="form-control p-3 mb-4"
-                            rows="16"
-                            placeholder="Describe personality with a prompt..."
-                            [(ngModel)]="textAreaContent"
-                            (input)="updateDescription()">
-                            {{personality?.description ?? "ERROR: Personality not found"}}
-                        </textarea>
-                    </div>
+                <div class="col-auto pr-0 pl-0">
+                    <a
+                        class="toggle-button"
+                        id="toggle-voice-assistant"
+                        [routerLink]="['chat']">
+                        <img
+                            [src]="'../../assets/toggle-switch-left.png'"
+                            alt="Toggle for turning the Voice Assistant on and off" />
+                    </a>
+                </div>
+                <div class="col text-left">
+                    <span class="align-middle">Chats</span>
                 </div>
             </div>
-            <div class="col p-0">
-                <app-va-personality-sidebar-right
-                    class="m-0"
-                    [personalityUUID]="personality?.getUUID()">
-                </app-va-personality-sidebar-right>
+            <div class="row mt-3 content-window">
+                <div class="col">
+                    <textarea
+                        id="textarea-personality"
+                        class="form-control p-3 mb-4"
+                        rows="16"
+                        placeholder="Describe personality with a prompt..."
+                        [(ngModel)]="textAreaContent"
+                        (input)="updateDescription()">
+                        {{personality?.description ?? "ERROR: Personality not found"}}
+                    </textarea>
+                </div>
             </div>
+        </div>
+        <div class="col-2 p-0">
+            <app-va-personality-sidebar-right
+                class="m-0"
+                [personalityUUID]="personality?.getUUID()">
+            </app-va-personality-sidebar-right>
         </div>
     </div>
 </div>
