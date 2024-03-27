@@ -5,7 +5,6 @@ import {VoiceAssistantService} from "../shared/services/voice-assistant.service"
 import {FormControl, FormGroup, Validators} from "@angular/forms";
 import {NgbModal, NgbModalRef} from "@ng-bootstrap/ng-bootstrap";
 import {VoiceAssistant} from "../shared/types/voice-assistant";
-import {Router} from "@angular/router";
 import {VoiceAssistantState} from "../shared/types/voice-assistant-state";
 
 @Component({
@@ -30,7 +29,6 @@ export class VoiceAssistantComponent implements OnInit {
     };
 
     constructor(
-        private router: Router,
         private voiceAssistantService: VoiceAssistantService,
         private modalService: NgbModal,
     ) {}

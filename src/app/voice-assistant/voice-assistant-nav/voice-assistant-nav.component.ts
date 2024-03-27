@@ -34,7 +34,7 @@ export class VoiceAssistantNavComponent implements OnInit {
                         this.sidebarElements.length > 0
                     ) {
                         this.router.navigate(
-                            [this.sidebarElements[0].getUUID()],
+                            [this.sidebarElements[0].getUUID(), "chat"],
                             {relativeTo: this.route},
                         );
                     }
@@ -47,20 +47,24 @@ export class VoiceAssistantNavComponent implements OnInit {
             const len = this.sidebarElements?.length ?? 0;
             this.sidebarElements = elements;
             if (len == 0 && elements.length > 0) {
-                this.router.navigate([this.sidebarElements[0].getUUID()], {
-                    relativeTo: this.route,
-                });
+                this.router.navigate(
+                    [this.sidebarElements[0].getUUID(), "chat"],
+                    {
+                        relativeTo: this.route,
+                    },
+                );
             } else if (diff > 0 && len != 0) {
                 this.router.navigate(
                     [
                         this.sidebarElements[
                             this.sidebarElements.length - 1
                         ].getUUID(),
+                        "chat",
                     ],
                     {relativeTo: this.route},
                 );
             } else if (this.getRedirectRoute()) {
-                this.router.navigate([this.getRedirectRoute()], {
+                this.router.navigate([this.getRedirectRoute(), "chat"], {
                     relativeTo: this.route,
                 });
             } else {
@@ -84,5 +88,10 @@ export class VoiceAssistantNavComponent implements OnInit {
             }
         }
         return undefined;
+    }
+
+    isRouteActive(currentId: string): boolean {
+        const routerUrl = this.router.url;
+        return routerUrl.includes(currentId);
     }
 }

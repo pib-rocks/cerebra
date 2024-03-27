@@ -7,7 +7,7 @@ import {BehaviorSubject, Observable, of} from "rxjs";
 import {Chat} from "src/app/shared/types/chat.class";
 import {ChatService} from "src/app/shared/services/chat.service";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
-import {ActivatedRoute, Router} from "@angular/router";
+import {ActivatedRoute, convertToParamMap, Router} from "@angular/router";
 import {VoiceAssistant} from "src/app/shared/types/voice-assistant";
 import {UtilService} from "src/app/shared/services/util.service";
 export class MockNgbModalRef {
@@ -36,6 +36,9 @@ describe("VoiceAssistantChatComponent", () => {
                 {
                     provide: ActivatedRoute,
                     useValue: {
+                        paramMap: of(
+                            convertToParamMap({personalityUuid: "1234"}),
+                        ),
                         snapshot: {
                             params: {
                                 personality: new VoiceAssistant(

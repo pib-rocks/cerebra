@@ -48,6 +48,27 @@ export class SideBarRightComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
+        this._updateSidebar();
+        this.selectedObservable?.subscribe((uuid?: string) => {
+            this.router.navigate([uuid ?? "."], {relativeTo: this.route});
+        });
+
+        this.voiceAssistantService.voiceAssistantStateObservable.subscribe(
+            (state: VoiceAssistantState) => {
+                this.voiceAssistantActivationToggle.setValue(state.turnedOn);
+            },
+        );
+    }
+
+    // if subject is modified, routing won't update in VA
+    // therefore, watch for changes to update
+    ngOnChanges(changes: {[x: string]: any}) {
+        if (changes["subject"]) {
+            this._updateSidebar();
+        }
+    }
+
+    _updateSidebar() {
         this.subscription = this.subject.subscribe(
             (serviceElements: SidebarElement[]) => {
                 this.sidebarElements = serviceElements;
@@ -72,14 +93,6 @@ export class SideBarRightComponent implements OnInit, OnDestroy {
                 } else {
                     this.router.navigate(["."], {relativeTo: this.route});
                 }
-            },
-        );
-        this.selectedObservable?.subscribe((uuid?: string) => {
-            this.router.navigate([uuid ?? "."], {relativeTo: this.route});
-        });
-        this.voiceAssistantService.voiceAssistantStateObservable.subscribe(
-            (state: VoiceAssistantState) => {
-                this.voiceAssistantActivationToggle.setValue(state.turnedOn);
             },
         );
     }

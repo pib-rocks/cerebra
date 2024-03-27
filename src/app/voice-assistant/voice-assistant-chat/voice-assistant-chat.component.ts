@@ -36,26 +36,30 @@ export class VoiceAssistantChatComponent implements OnInit {
     ) {}
 
     ngOnInit() {
-        this.personalityId = this.router.url
-            .split("/")
-            .find((segment) => RegExp(CerebraRegex.UUID).test(segment));
-        this.personality = this.personalityId
-            ? this.voiceAssistantService.getPersonality(this.personalityId) ??
-              this.route.snapshot.params["personality"]
-            : this.route.snapshot.params["personality"];
-        if (this.personality) {
-            this.subject = this.chatService.getSubject(
-                this.personality.personalityId,
-            );
-        } else {
-            throw Error("undefined personality and subject");
-        }
-        localStorage.setItem("voice-assistant-tab", "chat");
-        this.topicFormControl.setValidators([
-            Validators.required,
-            Validators.minLength(2),
-            Validators.maxLength(255),
-        ]);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        this.route.paramMap.subscribe((_) => {
+            this.personalityId = this.router.url
+                .split("/")
+                .find((segment) => RegExp(CerebraRegex.UUID).test(segment));
+            this.personality = this.personalityId
+                ? this.voiceAssistantService.getPersonality(
+                      this.personalityId,
+                  ) ?? this.route.snapshot.params["personality"]
+                : this.route.snapshot.params["personality"];
+            if (this.personality) {
+                this.subject = this.chatService.getSubject(
+                    this.personality.personalityId,
+                );
+            } else {
+                throw Error("undefined personality and subject");
+            }
+            localStorage.setItem("voice-assistant-tab", "chat");
+            this.topicFormControl.setValidators([
+                Validators.required,
+                Validators.minLength(2),
+                Validators.maxLength(255),
+            ]);
+        });
     }
 
     showModal = () => {

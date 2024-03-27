@@ -42,7 +42,6 @@ export class PersonalityDescriptionComponent implements OnInit {
         clearTimeout(this.timer);
         this.timer = setTimeout(() => {
             if (this.personality) {
-                console.log("save");
                 this.personality.description = this.textAreaContent ?? "";
                 this.voiceAssistantService.updatePersonalityById(
                     this.personality,
