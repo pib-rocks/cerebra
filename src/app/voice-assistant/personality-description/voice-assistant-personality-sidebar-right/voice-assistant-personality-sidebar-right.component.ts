@@ -78,6 +78,7 @@ export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
             this.personalityFormSidebar.patchValue({
                 pausethreshold: this.pauseThresholdMin,
             });
+            this.thresholdString = this.pauseThresholdMin + "";
         }
         if (
             this.personalityFormSidebar.controls["pausethreshold"].hasError(
@@ -87,6 +88,7 @@ export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
             this.personalityFormSidebar.patchValue({
                 pausethreshold: this.pauseThresholdMax,
             });
+            this.thresholdString = this.pauseThresholdMax + "";
         }
         this.personalityClone.pauseThreshold = parseFloat(
             this.personalityFormSidebar.controls["pausethreshold"].value,
