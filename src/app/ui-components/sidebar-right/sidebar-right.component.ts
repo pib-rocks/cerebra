@@ -33,15 +33,12 @@ export class SideBarRightComponent implements OnInit, OnDestroy {
     @Input() selectedObservable?: Observable<string | undefined>;
     sidebarElements!: SidebarElement[];
     subscription!: Subscription;
-    vaState: boolean = false;
 
     constructor(
         private router: Router,
         private route: ActivatedRoute,
         private voiceAssistantService: VoiceAssistantService,
     ) {}
-
-    voiceAssistantActivationToggle = new FormControl(false);
 
     ngOnDestroy(): void {
         this.subscription.unsubscribe();
@@ -52,12 +49,6 @@ export class SideBarRightComponent implements OnInit, OnDestroy {
         this.selectedObservable?.subscribe((uuid?: string) => {
             this.router.navigate([uuid ?? "."], {relativeTo: this.route});
         });
-
-        this.voiceAssistantService.voiceAssistantStateObservable.subscribe(
-            (state: VoiceAssistantState) => {
-                this.voiceAssistantActivationToggle.setValue(state.turnedOn);
-            },
-        );
     }
 
     // if subject is modified, routing won't update in VA
@@ -95,22 +86,5 @@ export class SideBarRightComponent implements OnInit, OnDestroy {
                 }
             },
         );
-    }
-
-    toggleVoiceAssistant() {
-        const turnedOn = !this.voiceAssistantActivationToggle.value;
-        const nextState: VoiceAssistantState = {turnedOn, chatId: ""};
-        if (turnedOn) {
-            const match = RegExp(
-                `/voice-assistant/${CerebraRegex.UUID}/chat/(${CerebraRegex.UUID})`,
-            ).exec(this.router.url);
-            if (match) nextState.chatId = match[1];
-            else throw new Error("no chat selected");
-        }
-
-        this.vaState = turnedOn;
-        this.voiceAssistantService.setVoiceAssistantState(nextState).subscribe({
-            error: (error) => console.error(error),
-        });
     }
 }

@@ -3,7 +3,44 @@
         <div class="main col-10">
             <router-outlet></router-outlet>
         </div>
-        <div class="col-2 p-0">
+        <div
+            class="col-2 p-0"
+            style="background-color: #041939">
+            <div
+                class="mt-4 text-center"
+                style="background-color: #041939">
+                <label>Voice interaction</label>
+                <div class="col">
+                    <div class="row mt-1 mb-3">
+                        <div
+                            class="col-11 ml-3 on-off"
+                            [ngClass]="vaState ? 'on' : 'off'">
+                            <div class="row">
+                                <button
+                                    type="button"
+                                    class="col btn text-truncate element text-center p-3"
+                                    id="sidebar-right-toggle-voice-assistant"
+                                    (click)="toggleVoiceAssistant()"
+                                    title="Toggle for turning Voice Assistant on and off"
+                                    value="{{vaState}}">
+                                    <div
+                                        *ngIf="vaState; then thenBlock else elseBlock"></div>
+                                    <ng-template #thenBlock
+                                        ><label class="mb-0"
+                                            >ON</label
+                                        ></ng-template
+                                    >
+                                    <ng-template #elseBlock
+                                        ><label class="mb-0"
+                                            >OFF</label
+                                        ></ng-template
+                                    >
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <app-sidebar-right
                 [optionCallbackMethods]="optionCallbackMethods"
                 [dropdownCallbackMethods]="dropdownCallbackMethods"

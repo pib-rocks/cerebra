@@ -9,6 +9,7 @@ import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.ser
 import {CerebraRegex} from "src/app/shared/types/cerebra-regex";
 import {Chat, ChatDto} from "src/app/shared/types/chat.class";
 import {VoiceAssistant} from "src/app/shared/types/voice-assistant";
+import {VoiceAssistantState} from "../../shared/types/voice-assistant-state";
 
 @Component({
     selector: "app-voice-assistant-chat",
@@ -26,6 +27,8 @@ export class VoiceAssistantChatComponent implements OnInit {
     uuid: string | undefined;
 
     selected: Subject<string> = new Subject();
+    vaState: boolean = false;
+    voiceAssistantActivationToggle = new FormControl(false);
 
     constructor(
         private modalService: NgbModal,
@@ -60,6 +63,12 @@ export class VoiceAssistantChatComponent implements OnInit {
                 Validators.maxLength(255),
             ]);
         });
+
+        this.voiceAssistantService.voiceAssistantStateObservable.subscribe(
+            (state: VoiceAssistantState) => {
+                this.voiceAssistantActivationToggle.setValue(state.turnedOn);
+            },
+        );
     }
 
     showModal = () => {
@@ -134,6 +143,30 @@ export class VoiceAssistantChatComponent implements OnInit {
 
     export() {
         throw Error("not implemented");
+    }
+
+    toggleVoiceAssistant() {
+        const turnedOn = !this.voiceAssistantActivationToggle.value;
+        const nextState: VoiceAssistantState = {turnedOn, chatId: ""};
+        if (turnedOn) {
+            const match = RegExp(
+                `/voice-assistant/${CerebraRegex.UUID}/chat/(${CerebraRegex.UUID})`,
+            ).exec(this.router.url);
+            if (match) nextState.chatId = match[1];
+            else throw new Error("no chat selected");
+        }
+
+        this.vaState = turnedOn;
+        this.voiceAssistantService.setVoiceAssistantState(nextState).subscribe({
+            error: (error) => console.error(error),
+        });
+
+        const deleteChat = this.dropdownCallbackMethods.find(
+            (e) => e.label === "Delete chat",
+        );
+        if (deleteChat) {
+            deleteChat.disabled = this.vaState;
+        }
     }
 
     optionCallbackMethods = [
