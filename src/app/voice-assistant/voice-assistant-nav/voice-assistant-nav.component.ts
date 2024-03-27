@@ -59,12 +59,11 @@ export class VoiceAssistantNavComponent implements OnInit {
                         this.sidebarElements[
                             this.sidebarElements.length - 1
                         ].getUUID(),
-                        "chat",
                     ],
                     {relativeTo: this.route},
                 );
             } else if (this.getRedirectRoute()) {
-                this.router.navigate([this.getRedirectRoute(), "chat"], {
+                this.router.navigate([this.getRedirectRoute()], {
                     relativeTo: this.route,
                 });
             } else {
