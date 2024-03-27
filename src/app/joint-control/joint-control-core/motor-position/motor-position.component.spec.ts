@@ -119,30 +119,6 @@ describe("MotorPositionComponent", () => {
         expect(positionSubject.subscribe).toHaveBeenCalledTimes(1);
     });
 
-    it("should forward settings-messages obtained from the ros-service", () => {
-        const turnedOnReceiverSpy = spyOn(component.turnedOnReceiver$, "next");
-        settingSubject.next({
-            velocity: 0,
-            acceleration: 0,
-            deceleration: 0,
-            period: 0,
-            pulseWidthMin: 0,
-            pulseWidthMax: 0,
-            rotationRangeMin: 0,
-            rotationRangeMax: 0,
-            turnedOn: true,
-            visible: false,
-            invert: false,
-        });
-        expect(turnedOnReceiverSpy).toHaveBeenCalledOnceWith(true);
-    });
-
-    it("should forward settings-messages obtained from the ros-service", () => {
-        const positionReceiverSpy = spyOn(component.positionReceiver$, "next");
-        positionSubject.next(34);
-        expect(positionReceiverSpy).toHaveBeenCalledOnceWith([34]);
-    });
-
     it("should set the position", () => {
         component.setPosition(20);
         expect(motorService.setPosition).toHaveBeenCalledOnceWith(

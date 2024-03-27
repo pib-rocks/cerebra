@@ -1,17 +1,17 @@
-version: '3'
+version: "3"
 
 networks:
-  pib-network:
-    driver: bridge
+    pib-network:
+        driver: bridge
 
 services:
-  angular-app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        NODE_ENV: production  # or 'development' for dev build
-    ports:
-      - "8080:80"
-    networks:
-      - pib-network
+    angular-app:
+        build:
+            context: .
+            dockerfile: Dockerfile
+            args:
+                NODE_ENV: production # or 'development' for dev build
+        ports:
+            - "8080:80"
+        networks:
+            - pib-network

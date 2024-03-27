@@ -18,7 +18,7 @@
     --cerebra-pink: #e10072;
     --cerebra-button-color: #0094df;
     --cerebra-button-color-disabled: #5f5f5f;
-    --cerebra-text-color-default: #fff: ;
+    --cerebra-text-color-default: #fff;
 }
 
 .btn {
@@ -146,26 +146,26 @@ button:disabled {
     background-color: transparent !important;
 }
 
-.pink-corner-frame {
-    background:
-        url("assets/ep-br.png") bottom right no-repeat,
-        url("assets/ep-tr.png") top right no-repeat,
-        url("assets/ep-tl.png") top left no-repeat,
-        url("assets/ep-bl.png") bottom left no-repeat,
-        url("assets/bg-gesamt.png") center scroll;
-}
+/*.pink-corner-frame {*/
+/*    background:*/
+/*        url("assets/ep-br.png") bottom right no-repeat,*/
+/*        url("assets/ep-tr.png") top right no-repeat,*/
+/*        url("assets/ep-tl.png") top left no-repeat,*/
+/*        url("assets/ep-bl.png") bottom left no-repeat,*/
+/*        url("assets/bg-gesamt.png") center / cover scroll;*/
+/*}*/
 
-/* don't repeat bg-gesamt if parent container is exceeding its height */
-@container (min-height: 800px) {
-    .pink-corner-frame {
-        background:
-            url("assets/ep-br.png") bottom right no-repeat,
-            url("assets/ep-tr.png") top right no-repeat,
-            url("assets/ep-tl.png") top left no-repeat,
-            url("assets/ep-bl.png") bottom left no-repeat,
-            url("assets/bg-gesamt.png") center / cover scroll;
-    }
-}
+/*!* don't repeat bg-gesamt if parent container is exceeding its height *!*/
+/*@container (min-height: 800px) {*/
+/*    .pink-corner-frame {*/
+/*        background:*/
+/*            url("assets/ep-br.png") bottom right no-repeat,*/
+/*            url("assets/ep-tr.png") top right no-repeat,*/
+/*            url("assets/ep-tl.png") top left no-repeat,*/
+/*            url("assets/ep-bl.png") bottom left no-repeat,*/
+/*            url("assets/bg-gesamt.png") center / cover scroll;*/
+/*    }*/
+/*}*/
 
 input {
     color: #fff;
@@ -200,4 +200,16 @@ input:focus {
 ::-webkit-scrollbar-thumb {
     background-color: #cccccc;
     padding: 10%;
+}
+
+.pink-corner-frame {
+    --s: 7px; /* the size on the corner */
+
+    padding: 0px; /* the gap between the border and image */
+    border: 1px solid #d5016c; /* the thickness and color */
+    -webkit-mask:
+        conic-gradient(at var(--s) var(--s), #0000 75%, #000 0) 0 0 /
+            calc(100% - var(--s)) calc(100% - var(--s)),
+        linear-gradient(#000 0 0) content-box;
+    background: url("assets/bg-gesamt.png") center / cover scroll;
 }

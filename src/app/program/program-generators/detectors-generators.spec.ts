@@ -51,9 +51,7 @@ describe("pythonGenerator", () => {
         );
         expect(code).toContain("coordinate test value");
 
-        expect(block.getFieldValue).toHaveBeenCalledWith("XMIN");
-        expect(block.getFieldValue).toHaveBeenCalledWith("XMAX");
-        expect(block.getFieldValue).toHaveBeenCalledWith("YMIN");
-        expect(block.getFieldValue).toHaveBeenCalledWith("YMAX");
+        expect(block.getFieldValue).toHaveBeenCalledWith("HORIZ_CENTER");
+        expect(block.getFieldValue).toHaveBeenCalledWith("VERT_CENTER");
     });
 });

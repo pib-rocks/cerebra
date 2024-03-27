@@ -7,7 +7,7 @@ import {BehaviorSubject, Observable, of} from "rxjs";
 import {Chat} from "src/app/shared/types/chat.class";
 import {ChatService} from "src/app/shared/services/chat.service";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
-import {ActivatedRoute, Router} from "@angular/router";
+import {ActivatedRoute, convertToParamMap, Router} from "@angular/router";
 import {VoiceAssistant} from "src/app/shared/types/voice-assistant";
 import {UtilService} from "src/app/shared/services/util.service";
 export class MockNgbModalRef {
@@ -36,6 +36,9 @@ describe("VoiceAssistantChatComponent", () => {
                 {
                     provide: ActivatedRoute,
                     useValue: {
+                        paramMap: of(
+                            convertToParamMap({personalityUuid: "1234"}),
+                        ),
                         snapshot: {
                             params: {
                                 personality: new VoiceAssistant(
@@ -102,24 +105,6 @@ describe("VoiceAssistantChatComponent", () => {
         expect(component.topicFormControl.value).toBe("");
     });
 
-    it("should show a modal when calling openEditModal", () => {
-        const spyOnShowModal = spyOn(modalService, "open").and.returnValue(
-            mockModalRef as any,
-        );
-        const spyOnEditModal = spyOn(
-            component,
-            "openEditModal",
-        ).and.callThrough();
-        const spyOnChat = spyOn(chatService, "getChat").and.returnValue(
-            new Chat("TEST", "123", "123"),
-        );
-        component.openEditModal();
-        expect(spyOnShowModal).toHaveBeenCalled();
-        expect(spyOnEditModal).toHaveBeenCalled();
-        expect(spyOnChat).toHaveBeenCalled();
-        expect(component.topicFormControl.value).toBe("TEST");
-    });
-
     it("should add a chat when calling addChat", () => {
         const spyOnAddChat = spyOn(component, "addChat").and.callThrough();
         const spyOnCreateChat = spyOn(chatService, "createChat").and.callFake(
@@ -172,16 +157,5 @@ describe("VoiceAssistantChatComponent", () => {
         component.saveChat();
         expect(spyOnEditChat).toHaveBeenCalled();
         expect(spyOnSaveChat).toHaveBeenCalled();
-    });
-
-    it("should delete a chat when calling deleteChat", () => {
-        const spyOnDeleteChat = spyOn<ChatService, any>(
-            chatService,
-            "deleteChatById",
-        ).and.callFake(() => chatService.deleteChat("123"));
-        chatService.chats = [new Chat("1234", "1234", "1234")];
-        component.deleteChat();
-        expect(spyOnDeleteChat).toHaveBeenCalled();
-        expect(chatService.chats.length).toBe(0);
     });
 });

@@ -5,9 +5,7 @@ import {VoiceAssistantService} from "../shared/services/voice-assistant.service"
 import {FormControl, FormGroup, Validators} from "@angular/forms";
 import {NgbModal, NgbModalRef} from "@ng-bootstrap/ng-bootstrap";
 import {VoiceAssistant} from "../shared/types/voice-assistant";
-import {Router} from "@angular/router";
 import {VoiceAssistantState} from "../shared/types/voice-assistant-state";
-import {CerebraRegex} from "../shared/types/cerebra-regex";
 
 @Component({
     selector: "app-voice-assistant",
@@ -31,7 +29,6 @@ export class VoiceAssistantComponent implements OnInit {
     };
 
     constructor(
-        private router: Router,
         private voiceAssistantService: VoiceAssistantService,
         private modalService: NgbModal,
     ) {}
@@ -75,23 +72,6 @@ export class VoiceAssistantComponent implements OnInit {
         });
         this.voiceAssistantService.uuidSubject.subscribe((uuid: string) => {
             this.openEditModal(uuid);
-        });
-    }
-
-    toggleVoiceAssistant() {
-        const turnedOn = !this.voiceAssistantActivationToggle.value;
-        const nextState: VoiceAssistantState = {turnedOn, chatId: ""};
-
-        if (turnedOn) {
-            const match = RegExp(
-                `/voice-assistant/${CerebraRegex.UUID}/chat/(${CerebraRegex.UUID})`,
-            ).exec(this.router.url);
-            if (match) nextState.chatId = match[1];
-            else throw new Error("no chat selected");
-        }
-
-        this.voiceAssistantService.setVoiceAssistantState(nextState).subscribe({
-            error: (error) => console.error(error),
         });
     }
 
