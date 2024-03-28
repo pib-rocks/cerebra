@@ -103,7 +103,7 @@ class ${generator.FUNCTION_NAME_PLACEHOLDER_}(Node):
         msg.header.stamp.sec = round(time.time())
         msg.joint_names = [all_motor_names[selected_motor]]
         point = JointTrajectoryPoint()
-        point.positions = [saved_motor_positions[selected_motor]]
+        point.positions = [saved_motor_positions[selected_motor] * 100]
         point.velocities = [${desiredVelocity}.0]
         point.accelerations = [${desiredAcceleration}.0]
         point.time_from_start.sec = 0
@@ -127,10 +127,13 @@ class ${generator.FUNCTION_NAME_PLACEHOLDER_}(Node):
     let positionString = "";
 
     if (modeInput == "ABSOLUTE") {
-        positionString = positionInput;
+        positionString = String(positionInput);
     } else if (modeInput == "RELATIVE") {
         positionString =
-            "saved_motor_positions[" + motorNumber + "] + " + positionInput;
+            "saved_motor_positions[" +
+            motorNumber +
+            "] + " +
+            String(positionInput);
     }
 
     // JointTrajectoryPublisher erstellen bzw. einmalig publishen der Position
