@@ -1,4 +1,10 @@
-import {Component, OnInit, TemplateRef, ViewChild} from "@angular/core";
+import {
+    Component,
+    OnInit,
+    SimpleChanges,
+    TemplateRef,
+    ViewChild,
+} from "@angular/core";
 import {FormControl, Validators} from "@angular/forms";
 import {ActivatedRoute, Router} from "@angular/router";
 import {NgbModal, NgbModalRef} from "@ng-bootstrap/ng-bootstrap";
@@ -28,6 +34,9 @@ export class VoiceAssistantChatComponent implements OnInit {
 
     selected: Subject<string> = new Subject();
     vaState: boolean = false;
+    activeChat: string = "";
+    activePersonality: string = "";
+    currentChat: string | null = "";
     voiceAssistantActivationToggle = new FormControl(false);
 
     constructor(
@@ -40,7 +49,11 @@ export class VoiceAssistantChatComponent implements OnInit {
 
     ngOnInit() {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        this.route.paramMap.subscribe((_) => {
+        this.route.paramMap.subscribe((params) => {
+            console.log(params);
+            const routeParts: string[] = this.router.url.split("/");
+            this.currentChat = routeParts[routeParts.length - 1];
+
             this.personalityId = this.router.url
                 .split("/")
                 .find((segment) => RegExp(CerebraRegex.UUID).test(segment));
@@ -157,6 +170,11 @@ export class VoiceAssistantChatComponent implements OnInit {
         }
 
         this.vaState = turnedOn;
+        this.activeChat = nextState.chatId;
+        if (this.personalityId) {
+            this.activePersonality = this.personalityId;
+        }
+
         this.voiceAssistantService.setVoiceAssistantState(nextState).subscribe({
             error: (error) => console.error(error),
         });

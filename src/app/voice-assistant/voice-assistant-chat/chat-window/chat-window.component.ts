@@ -5,6 +5,7 @@ import {ChatService} from "src/app/shared/services/chat.service";
 import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
 import {ChatMessage} from "src/app/shared/types/chat-message";
 import {Chat} from "src/app/shared/types/chat.class";
+import {Observable, Subscription} from "rxjs";
 
 @Component({
     selector: "app-chat-window",
@@ -16,6 +17,7 @@ export class ChatWindowComponent implements OnInit {
     promptFormControl: FormControl = new FormControl("");
     personalityName: string | undefined;
     messages?: ChatMessage[];
+    messageObservable$: Subscription | undefined;
 
     readonly USER_ICON =
         "../../../../assets/voice-assistant-svgs/chat/user.svg";
@@ -27,15 +29,21 @@ export class ChatWindowComponent implements OnInit {
         private chatService: ChatService,
         private voiceAssistantService: VoiceAssistantService,
         private route: ActivatedRoute,
-    ) {}
+    ) {
+        this.messageObservable$ = undefined;
+    }
 
     ngOnInit(): void {
         this.chat = this.route.snapshot.data["chat"];
         localStorage.setItem("chat", this.chat?.chatId ?? "");
+
         this.route.params.subscribe((params: Params) => {
+            if (this.messageObservable$ !== undefined) {
+                this.messageObservable$.unsubscribe();
+            }
             const chatId = params["chatUuid"];
             if (!chatId) return;
-            this.chatService
+            this.messageObservable$ = this.chatService
                 .getChatMessagesObservable(chatId)
                 .subscribe((messages) => (this.messages = messages));
             this.chat = this.chatService.getChat(chatId);
