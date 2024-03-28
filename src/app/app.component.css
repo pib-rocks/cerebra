@@ -51,6 +51,7 @@
     font-style: normal;
     line-height: normal;
     text-transform: uppercase;
+    border-radius: 0px;
 }
 
 .nav-link.sidebar-btn.btn-active {
