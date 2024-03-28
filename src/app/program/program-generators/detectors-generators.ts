@@ -27,14 +27,11 @@ class ${generator.FUNCTION_NAME_PLACEHOLDER_}():
     def __init__(self):
         self.NN_OMZ_NAME = "face-detection-retail-0004"
         self.labelMap = ["background", "face"]        
-        #self.labelMap = [ "face", "background" ]           # für Face-Detection 0200-0205
         self.NN_WIDTH = 300
         self.NN_HEIGHT = 300
 
-        self.VIDEO_WIDTH = 1080                 #1920
-        self.VIDEO_HEIGHT = 720                 #1040
-
-        self.camera_sichtfeld = 81.3
+        self.VIDEO_WIDTH = 1080                 
+        self.VIDEO_HEIGHT = 720                 
 
         self.frame = None
         self.detections = []
@@ -72,7 +69,7 @@ class ${generator.FUNCTION_NAME_PLACEHOLDER_}():
         self.cam.setFps(120)						
         self.cam.setBoardSocket(dai.CameraBoardSocket.CAM_A)
         self.cam.setColorOrder(dai.ColorCameraProperties.ColorOrder.BGR)
-        self.cam.setResolution(dai.ColorCameraProperties.SensorResolution.THE_1080_P)       # Bei Wechsel auf 4K muss IspScales 2. Parameter auch erhöht werden
+        self.cam.setResolution(dai.ColorCameraProperties.SensorResolution.THE_1080_P)      
         self.cam.setIspScale(1, 1)
         self.cam.setVideoSize(self.VIDEO_WIDTH, self.VIDEO_HEIGHT)
 
@@ -125,16 +122,11 @@ class ${generator.FUNCTION_NAME_PLACEHOLDER_}():
         cv2.imshow(name, self.frame)
         self.calculateMidpoint()
 
-
     def calculateMidpoint(self):
         if (self.xmin_big != 0 and self.ymin_big != 0 and self.xmax_big != 0 and self.ymax_big != 0):
             bbox = self.frameNorm((self.xmin_big, self.ymin_big, self.xmax_big, self.ymax_big))
             self.x_center = (bbox[0] + bbox[2])/2 - self.VIDEO_WIDTH/2
             self.y_center = (self.VIDEO_HEIGHT/2) - (bbox[1] + bbox[3])/2
-
-            self.x_center = self.x_center / self.VIDEO_WIDTH * self.camera_sichtfeld
-            self.y_center = self.y_center / self.VIDEO_HEIGHT * self.camera_sichtfeld
-
 
     def updateDetector(self):
         self.in_frame = self.q_cam.tryGet()

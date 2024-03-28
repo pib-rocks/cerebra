@@ -94,7 +94,7 @@ class ${generator.FUNCTION_NAME_PLACEHOLDER_}(Node):
         super().__init__('joint_trajectory_publisher')
         qos_policy = rclpy.qos.QoSProfile(reliability=rclpy.qos.ReliabilityPolicy.RELIABLE, history=rclpy.qos.HistoryPolicy.KEEP_LAST, durability=rclpy.qos.DurabilityPolicy.TRANSIENT_LOCAL, depth=1)
         self.publisher = self.create_publisher(JointTrajectory, '/joint_trajectory', qos_profile=qos_policy)
-        timer_period = 0.1
+        timer_period = 1
         self.timer = self.create_timer(timer_period, self.timer_callback)
 
     def timer_callback(self):
