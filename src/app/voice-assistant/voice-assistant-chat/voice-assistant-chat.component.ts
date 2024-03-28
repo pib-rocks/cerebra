@@ -1,10 +1,4 @@
-import {
-    Component,
-    OnInit,
-    SimpleChanges,
-    TemplateRef,
-    ViewChild,
-} from "@angular/core";
+import {Component, OnInit, TemplateRef, ViewChild} from "@angular/core";
 import {FormControl, Validators} from "@angular/forms";
 import {ActivatedRoute, Router} from "@angular/router";
 import {NgbModal, NgbModalRef} from "@ng-bootstrap/ng-bootstrap";
@@ -48,7 +42,14 @@ export class VoiceAssistantChatComponent implements OnInit {
     ) {}
 
     ngOnInit() {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        // set current state of VA (in case another user is using it)
+        this.voiceAssistantService.voiceAssistantStateObservable.subscribe(
+            (state: VoiceAssistantState) => {
+                this.voiceAssistantActivationToggle.setValue(state.turnedOn);
+                this.vaState = state.turnedOn;
+            },
+        );
+
         this.route.paramMap.subscribe((params) => {
             console.log(params);
             const routeParts: string[] = this.router.url.split("/");

@@ -37,14 +37,6 @@ export class VoiceAssistantComponent implements OnInit {
     voiceAssistantActiveStatus = false;
 
     ngOnInit() {
-        this.voiceAssistantService.voiceAssistantStateObservable.subscribe(
-            (state: VoiceAssistantState) => {
-                this.voiceAssistantActivationToggle.setValue(state.turnedOn);
-                this.imgSrc = `../../assets/toggle-switch-${
-                    state.turnedOn ? "right" : "left"
-                }.png`;
-            },
-        );
         this.button.enabled = true;
         this.button.func = this.openAddModal;
         this.subject = this.voiceAssistantService.getSubject();
