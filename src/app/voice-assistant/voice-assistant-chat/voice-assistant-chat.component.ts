@@ -47,6 +47,12 @@ export class VoiceAssistantChatComponent implements OnInit {
             (state: VoiceAssistantState) => {
                 this.voiceAssistantActivationToggle.setValue(state.turnedOn);
                 this.vaState = state.turnedOn;
+                const deleteChat = this.dropdownCallbackMethods.find(
+                    (e) => e.label === "Delete chat",
+                );
+                if (deleteChat) {
+                    deleteChat.disabled = this.vaState;
+                }
             },
         );
 
