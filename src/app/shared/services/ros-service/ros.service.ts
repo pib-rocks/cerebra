@@ -42,8 +42,8 @@ import {ProxyRunProgramFeedback} from "../../ros-types/msg/proxy-run-program-fee
 import {ProxyRunProgramResult} from "../../ros-types/msg/proxy-run-program-result";
 import {ProxyRunProgramStatus} from "../../ros-types/msg/proxy-run-program-status";
 import {IRosService} from "./i-ros-service";
-// import {ip, portWebsocket} from "../../../gloabal-conf.json"
-import config from "../../../gloabal-conf.json";
+// import {ip, portWebsocket} from "../../../global-conf.json"
+import config from "../../../global-conf.json";
 
 @Injectable({
     providedIn: "root",

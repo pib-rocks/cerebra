@@ -1,5 +1,5 @@
 {
-    "protocoll" : "http://",
+    "protocol": "http://",
     "ip" : "127.0.0.1",
     "portWebsocket" : "9090",
     "portTarget" : "5000",
