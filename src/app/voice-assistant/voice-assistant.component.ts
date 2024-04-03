@@ -111,7 +111,8 @@ export class VoiceAssistantComponent implements OnInit {
             });
         }
         this.thresholdString =
-            this.personalityForm.controls["pausethreshold"].value + "s";
+            this.personalityForm.controls["pausethreshold"].value.toFixed(1) +
+            "s";
     }
 
     openAddModal = () => {

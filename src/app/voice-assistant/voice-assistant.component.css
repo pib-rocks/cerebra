@@ -36,6 +36,7 @@ label {
 
 #new-label-radio-male,
 #new-label-radio-female {
+    padding-top: 1px;
     padding-left: 10px;
 }
 

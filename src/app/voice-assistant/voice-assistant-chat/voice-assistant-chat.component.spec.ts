@@ -7,8 +7,15 @@ import {BehaviorSubject, Observable, of} from "rxjs";
 import {Chat} from "src/app/shared/types/chat.class";
 import {ChatService} from "src/app/shared/services/chat.service";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
-import {ActivatedRoute, convertToParamMap, Router} from "@angular/router";
+import {
+    ActivatedRoute,
+    convertToParamMap,
+    NavigationExtras,
+    Router,
+} from "@angular/router";
 import {VoiceAssistant} from "src/app/shared/types/voice-assistant";
+import {RouterTestingModule} from "@angular/router/testing";
+import {SideBarRightComponent} from "src/app/ui-components/sidebar-right/sidebar-right.component";
 export class MockNgbModalRef {
     componentInstance = {
         prompt: undefined,
@@ -21,14 +28,32 @@ describe("VoiceAssistantChatComponent", () => {
     let fixture: ComponentFixture<VoiceAssistantChatComponent>;
     let chatService: ChatService;
     let modalService: NgbModal;
-    const mockModalRef: MockNgbModalRef = new MockNgbModalRef();
 
     beforeEach(async () => {
+        const modalServiceSpy: jasmine.SpyObj<NgbModal> = jasmine.createSpyObj(
+            NgbModal,
+            ["open"],
+        );
         await TestBed.configureTestingModule({
+            declarations: [VoiceAssistantChatComponent, SideBarRightComponent],
             providers: [
+                {
+                    provide: NgbModal,
+                    useValue: modalServiceSpy,
+                },
                 {
                     provide: Router,
                     useValue: {
+                        //Need this navigate for the right-sidebar-component (mock of "this.router.navigate([uuid ?? "."], {relativeTo: this.route});")
+                        navigate: (
+                            commands: any[],
+                            extras?: NavigationExtras,
+                        ) => {
+                            return new Promise((resolve, reject) => {
+                                return true;
+                            });
+                        },
+
                         url: "localhost/voice-assistant/personality/1234",
                     },
                 },
@@ -53,6 +78,7 @@ describe("VoiceAssistantChatComponent", () => {
                 },
             ],
             imports: [
+                RouterTestingModule,
                 ReactiveFormsModule,
                 FormsModule,
                 HttpClientTestingModule,
@@ -82,25 +108,22 @@ describe("VoiceAssistantChatComponent", () => {
     });
 
     it("should show a modal when calling showModal", () => {
-        const spyOnShowModal = spyOn(modalService, "open").and.returnValue(
-            mockModalRef as any,
-        );
+        const spyOnAddModal = spyOn(component, "showModal").and.callThrough();
         component.showModal();
-        expect(spyOnShowModal).toHaveBeenCalled();
+        expect(spyOnAddModal).toHaveBeenCalled();
+        expect(modalService.open).toHaveBeenCalled();
     });
 
     it("should show a modal when calling openAddModal", () => {
-        const spyOnShowModal = spyOn(modalService, "open").and.returnValue(
-            mockModalRef as any,
-        );
         const spyOnAddModal = spyOn(
             component,
             "openAddModal",
         ).and.callThrough();
+        component.openAddModal();
         component.topicFormControl.setValue("TEST");
         component.openAddModal();
-        expect(spyOnShowModal).toHaveBeenCalled();
         expect(spyOnAddModal).toHaveBeenCalled();
+        expect(modalService.open).toHaveBeenCalled();
         expect(component.topicFormControl.value).toBe("");
     });
 
