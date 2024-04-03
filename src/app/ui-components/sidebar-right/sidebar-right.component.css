@@ -92,3 +92,7 @@ label {
     border-radius: 5px;
     min-height: 30px;
 }
+
+.text-center-vertical {
+    padding-top: 10px;
+}

@@ -7,22 +7,22 @@
         [formGroup]="personalityFormSidebar"
         (change)="formChanged(personalityFormSidebar)">
         <div
-            class="row"
+            class="row pt-4"
             id="personality-sidebar-persona-name-row">
             <label
                 for="personality-sidebar-persona-name-input"
-                class="row m-1 mt-3"
+                class="pt-1 row label-text-center"
                 id="personality-sidebar-persona-name-label"
                 >Persona name</label
             >
             <input
-                class="row input col-11 m-1 pl-2"
+                class="row input col-11"
                 type="text"
                 formControlName="persona-name"
                 [value]="personalityClone.name"
                 id="personality-sidebar-persona-name-input" />
         </div>
-        <div class="row pl-1 mt-4">
+        <div class="row pl-1 mt-sm-3 mt-xl-4">
             <label id="personality-sidebar-label-name">Voice gender</label>
             <div class="row pl-2">
                 <div
@@ -60,11 +60,11 @@
             </div>
         </div>
         <div
-            class="row m-1 pr-2 mt-4"
+            class="row m-1 mt-sm-3 mt-xl-4"
             id="personality-sidebar-row-pause-threshold">
             <label
                 for="personality-sidebar-pause-threshold-input"
-                class="row"
+                class="row pr-3"
                 id="personality-sidebar-label-pause-threshold"
                 >Pause threshold (in s)</label
             >
@@ -72,7 +72,7 @@
                 <div class="col pl-0 number-input">
                     <input
                         type="number"
-                        class="input w-100 pl-2"
+                        class="input w-50 pl-2"
                         id="personality-sidebar-pause-threshold-input"
                         step="0.1"
                         alt="The waiting period of not receiving any voice input before voice assistants starts to answer"
@@ -100,7 +100,7 @@
             class="row position-absolute bottom-0 start-50 translate-middle-x mb-4">
             <button
                 id="personality-sidebar-delete-persona-button"
-                class="btn btn-regular delete p-3"
+                class="btn btn-regular delete p-sm-1 p-xl-3"
                 (click)="deletePersonality()">
                 Delete persona
             </button>

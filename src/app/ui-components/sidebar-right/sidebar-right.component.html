@@ -5,18 +5,18 @@
                 class="row"
                 *ngFor="let sidebarElement of sidebarElements">
                 <div
-                    class="col-11 element-div ml-3 mt-3 text-nowrap"
+                    class="col-11 element-div ml-sm-2 ml-xl-3 mt-3 text-nowrap"
                     routerLinkActive="element-div-active">
                     <div class="d-flex justify-content-between">
                         <a
                             [routerLink]="sidebarElement.getUUID()"
-                            class="element text-truncate col-9 pl-3 p-2">
+                            class="element text-truncate col-9 pl-sm-1 pl-xl-3 pr-2 pb-2 text-center-vertical">
                             {{ sidebarElement.getName() }}
                         </a>
                         <div ngbDropdown>
                             <button
                                 type="button"
-                                class="btn"
+                                class="btn pl-sm-0"
                                 id="dropdownbutton-{{sidebarElement.getName()}}"
                                 title="Edit"
                                 ngbDropdownToggle>
@@ -45,7 +45,7 @@
                 </div>
             </div>
             <div class="row mt-4">
-                <div class="col-11 ml-3 element-div">
+                <div class="col-11 ml-sm-2 ml-xl-3 element-div">
                     <div
                         *ngFor="let option of optionCallbackMethods"
                         class="row">
