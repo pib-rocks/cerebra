@@ -62,9 +62,11 @@
             >Name</label
         >
         <input
+            ngbAutofocus
             class="col-9"
             [formControl]="nameFormControl"
             type="text"
+            (keydown)="($event).key ==='Enter' ? modal.close('Save'): ''"
             name="name-input"
             id="name-input" />
     </div>
@@ -74,6 +76,7 @@
                 type="button"
                 class="btn btn-regular"
                 id="modal-save-button"
+                (keydown.enter)="modal.close('Save')"
                 (click)="modal.close('Save')">
                 Save
             </button>
