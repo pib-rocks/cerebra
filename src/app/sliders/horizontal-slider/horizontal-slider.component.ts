@@ -115,11 +115,9 @@ export class HorizontalSliderComponent
             });
         }
         this.messageReceiver$?.subscribe((values: number[] | number) => {
-            if (!this.thumbSelected) {
-                this.setAllThumbValues(
-                    typeof values == "number" ? [values] : values,
-                );
-            }
+            this.setAllThumbValues(
+                typeof values == "number" ? [values] : values,
+            );
         });
         this.ref.detectChanges();
     }
