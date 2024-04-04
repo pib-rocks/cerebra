@@ -5,24 +5,37 @@ import {BehaviorSubject, Observable} from "rxjs";
 import {UrlConstants} from "./url.constants";
 import {ProgramCode} from "../types/program-code";
 import {UtilService} from "./util.service";
+import {RosService} from "./ros-service/ros.service";
+import {ProgramOutputLine} from "../types/program-output-line";
+import {ExecutionState, ProgramState} from "../types/program-state";
+import {GoalHandle} from "../ros-types/action/goal-handle";
+import {
+    RunProgramFeedback,
+    RunProgramResult,
+} from "../ros-types/action/run-program";
 
 @Injectable({
     providedIn: "root",
 })
 export class ProgramService {
     programs: Program[] = [];
+
     programNumberToCode: Map<string, ProgramCode> = new Map();
+    programNumberToState: Map<string, BehaviorSubject<ProgramState>> =
+        new Map();
+    programNumberToOutput: Map<string, BehaviorSubject<ProgramOutputLine[]>> =
+        new Map();
+    programNumberToCancel: Map<string, () => void> = new Map();
+
     programsSubject: BehaviorSubject<Program[]> = new BehaviorSubject<
         Program[]
     >([]);
-    viewModeSubject: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(
-        false,
-    );
-    pythonCodeSubject: BehaviorSubject<string> = new BehaviorSubject<string>(
-        "",
-    );
 
-    constructor(private apiService: ApiService) {
+    constructor(
+        private apiService: ApiService,
+        private rosService: RosService,
+        private utilService: UtilService,
+    ) {
         this.getAllPrograms();
     }
 
@@ -154,6 +167,92 @@ export class ProgramService {
                 this.setCode(programNumber, code);
                 return code;
             },
+        );
+    }
+
+    private onRunProgramGoalReceive(
+        programNumber: string,
+        handle: GoalHandle<RunProgramFeedback, RunProgramResult>,
+    ) {
+        const programState: BehaviorSubject<ProgramState> =
+            this.getProgramState(
+                programNumber,
+            ) as BehaviorSubject<ProgramState>;
+        programState.next({executionState: ExecutionState.RUNNING});
+
+        const programOutput: BehaviorSubject<ProgramOutputLine[]> =
+            this.getProgramOutput(programNumber) as BehaviorSubject<
+                ProgramOutputLine[]
+            >;
+        programOutput.next([]);
+        handle.feedback.subscribe((feedback) => {
+            const lines: ProgramOutputLine[] = feedback.output_lines.map(
+                (lineRos) => ({
+                    content: lineRos.content,
+                    isStderr: lineRos.is_stderr,
+                }),
+            );
+            programOutput.next(programOutput.getValue().concat(lines));
+        });
+
+        const resultSubscription = handle.result.subscribe((result) => {
+            const resultExecutionState =
+                result.exit_code == 0
+                    ? ExecutionState.FINISHED_SUCCESSFUL
+                    : ExecutionState.FINISHED_ERROR;
+            programState.next({
+                executionState: resultExecutionState,
+                exitCode: result.exit_code,
+            });
+        });
+
+        this.programNumberToCancel.set(programNumber, () => {
+            resultSubscription.unsubscribe();
+            handle.cancel();
+        });
+    }
+
+    runProgram(programNumber: string) {
+        const programState: BehaviorSubject<ProgramState> =
+            this.getProgramState(
+                programNumber,
+            ) as BehaviorSubject<ProgramState>;
+        const currentExecutionState = programState.value.executionState;
+        if (
+            currentExecutionState !== ExecutionState.RUNNING &&
+            currentExecutionState !== ExecutionState.STARTING
+        ) {
+            programState.next({executionState: ExecutionState.STARTING});
+
+            this.rosService.runProgram(programNumber).subscribe((handle) => {
+                this.onRunProgramGoalReceive(programNumber, handle);
+            });
+        }
+    }
+
+    terminateProgram(programNumber: string) {
+        const state = this.programNumberToState.get(programNumber);
+        if (state?.value.executionState !== ExecutionState.RUNNING) return;
+        this.programNumberToCancel.get(programNumber)!();
+        state.next({executionState: ExecutionState.INTERRUPTED});
+    }
+
+    getProgramOutput(programNumber: string): Observable<ProgramOutputLine[]> {
+        return this.utilService.getFromMapOrDefault(
+            this.programNumberToOutput,
+            programNumber,
+            () => new BehaviorSubject<ProgramOutputLine[]>([]),
+        );
+    }
+
+    getProgramState(programNumber: string): Observable<ProgramState> {
+        return this.utilService.getFromMapOrDefault(
+            this.programNumberToState,
+            programNumber,
+            () =>
+                new BehaviorSubject<ProgramState>({
+                    executionState: ExecutionState.NOT_STARTED,
+                }),
         );
     }
 }
