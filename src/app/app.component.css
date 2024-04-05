@@ -52,6 +52,8 @@
     line-height: normal;
     text-transform: uppercase;
     border-radius: 0px;
+    display: flex;
+    align-items: center;
 }
 
 .nav-link.sidebar-btn.btn-active {
@@ -80,4 +82,7 @@
 svg path {
     fill: #0094de;
     stroke: #0094de;
+}
+
+#camera-style {
 }
