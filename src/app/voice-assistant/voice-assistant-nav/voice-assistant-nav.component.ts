@@ -59,6 +59,7 @@ export class VoiceAssistantNavComponent implements OnInit {
                         this.sidebarElements[
                             this.sidebarElements.length - 1
                         ].getUUID(),
+                        "chat",
                     ],
                     {relativeTo: this.route},
                 );
