@@ -12,12 +12,11 @@
                 <label class="p-1 text-break">Voice interaction</label>
                 <div class="col">
                     <div class="row pt-1 mb-3">
-                        <div
-                            class="col-11 ml-sm-2 ml-xl-3 on-off"
-                            [ngClass]="vaState ? 'on' : 'off'">
+                        <div class="col-11 ml-sm-2 ml-xl-3">
                             <div class="row">
                                 <button
                                     type="button"
+                                    [ngClass]="vaState ? 'on' : 'off'"
                                     class="col btn text-truncate element text-center p-3"
                                     id="sidebar-right-toggle-voice-assistant"
                                     (click)="toggleVoiceAssistant()"

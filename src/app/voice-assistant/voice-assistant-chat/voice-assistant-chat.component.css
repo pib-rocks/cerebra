@@ -108,3 +108,10 @@ input:focus {
 #message-input::placeholder {
     color: #ccc;
 }
+
+.on {
+    background-color: #e10072;
+}
+.off {
+    background-color: #0094df;
+}
