@@ -1,6 +1,6 @@
 import {Component, OnInit, TemplateRef, ViewChild} from "@angular/core";
 import {FormControl, Validators} from "@angular/forms";
-import {ActivatedRoute, Router} from "@angular/router";
+import {ActivatedRoute, Route, Router} from "@angular/router";
 import {NgbModal, NgbModalRef} from "@ng-bootstrap/ng-bootstrap";
 import {Observable, Subject} from "rxjs";
 import {SidebarElement} from "src/app/shared/interfaces/sidebar-element.interface";
@@ -10,6 +10,7 @@ import {CerebraRegex} from "src/app/shared/types/cerebra-regex";
 import {Chat, ChatDto} from "src/app/shared/types/chat.class";
 import {VoiceAssistant} from "src/app/shared/types/voice-assistant";
 import {VoiceAssistantState} from "../../shared/types/voice-assistant-state";
+import {Location} from "@angular/common";
 
 @Component({
     selector: "app-voice-assistant-chat",
@@ -39,7 +40,13 @@ export class VoiceAssistantChatComponent implements OnInit {
         private chatService: ChatService,
         private voiceAssistantService: VoiceAssistantService,
         private route: ActivatedRoute,
-    ) {}
+        private location: Location,
+    ) {
+        location.onUrlChange((url, state) => {
+            let urlArray: string[] = url.split("/");
+            this.currentChat = urlArray[urlArray.length - 1];
+        });
+    }
 
     ngOnInit() {
         // set current state of VA (in case another user is using it)

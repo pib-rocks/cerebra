@@ -27,7 +27,7 @@
                                     >
                                 </button>
                                 <a
-                                    *ngIf="vaState"
+                                    *ngIf="vaState && (activeChat != currentChat)"
                                     [routerLink]="['/', 'voice-assistant', activePersonality, 'chat', activeChat]"
                                     >Jump to active chat</a
                                 >
