@@ -18,6 +18,11 @@ import {SidebarService} from "../interfaces/sidebar-service.interface";
 import {SidebarElement} from "../interfaces/sidebar-element.interface";
 import {RosService} from "./ros-service/ros.service";
 import {VoiceAssistantState} from "../types/voice-assistant-state";
+import {
+    VoiceAssistantModel,
+    VoiceAssistantModelDto,
+} from "../types/voiceAssistantModel";
+import {ConsoleComponent} from "src/app/program/program-splitscreen/console/console.component";
 
 @Injectable({
     providedIn: "root",
@@ -29,6 +34,7 @@ export class VoiceAssistantService implements SidebarService {
         new BehaviorSubject<VoiceAssistant[]>([]);
     uuidSubject: Subject<string> = new Subject<string>();
     voiceAssistantActiveStatus: boolean = false;
+    voiceAssistantModel: VoiceAssistantModel[] = [];
     voiceAssistantActiveStatusSubject: Subject<boolean> =
         new Subject<boolean>();
 
@@ -37,6 +43,7 @@ export class VoiceAssistantService implements SidebarService {
         private rosService: RosService,
     ) {
         this.getAllPersonalities();
+        this.getAllvoiceAssistantModels();
 
         this.voiceAssistantStateObservable =
             this.rosService.voiceAssistantStateReceiver$.pipe(
@@ -65,7 +72,6 @@ export class VoiceAssistantService implements SidebarService {
     private setPersonalities(personalities: VoiceAssistant[]) {
         const newPersonalities: VoiceAssistant[] = [];
 
-        //FIXME ab in die pipe @christopher
         personalities.forEach((m) => {
             newPersonalities.push(
                 new VoiceAssistant(
@@ -74,6 +80,7 @@ export class VoiceAssistantService implements SidebarService {
                     m.gender,
                     m.pauseThreshold,
                     m.description,
+                    m.assistant_id,
                 ),
             );
         });
@@ -114,6 +121,29 @@ export class VoiceAssistantService implements SidebarService {
                 this.setPersonalities(
                     response["voiceAssistantPersonalities"] as VoiceAssistant[],
                 );
+            });
+    }
+
+    getAllvoiceAssistantModels() {
+        this.apiService
+            .get(UrlConstants.ASSISTANT_MODEL)
+            .pipe(
+                catchError((err) => {
+                    return throwError(() => {
+                        console.log(err);
+                    });
+                }),
+            )
+            .subscribe((respone) => {
+                this.voiceAssistantModel = [];
+                const voiceAssistantModelDto = respone[
+                    "voiceAssistantModels"
+                ] as VoiceAssistantModelDto[];
+                voiceAssistantModelDto.forEach((dto) => {
+                    this.voiceAssistantModel.push(
+                        VoiceAssistantModel.parseDtoToVoiceAssistantModel(dto),
+                    );
+                });
             });
     }
 

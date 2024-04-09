@@ -64,7 +64,6 @@ export class VoiceAssistantChatComponent implements OnInit {
         );
 
         this.route.paramMap.subscribe((params) => {
-            console.log(params);
             const routeParts: string[] = this.router.url.split("/");
             this.currentChat = routeParts[routeParts.length - 1];
 
