@@ -10,10 +10,10 @@ export const textToSpeechBlock =
                     type: "field_dropdown",
                     name: "VOICENAME",
                     options: [
-                        ["Hannah (DE)", "HANNAH"],
-                        ["Daniel (DE)", "DANIEL"],
-                        ["Emma (EN)", "EMMA"],
-                        ["Brian (EN)", "BRIAN"],
+                        ["Hannah (DE)", '"Hannah"'],
+                        ["Daniel (DE)", '"Daniel"'],
+                        ["Emma (EN)", '"Emma"'],
+                        ["Brian (EN)", '"Brian"'],
                     ],
                 },
                 {
