@@ -1,22 +1,4 @@
-<div class="col">
-    <div class="row mt-5">
-        <div class="col-auto text-right">
-            <span class="align-middle"> Off </span>
-        </div>
-        <div class="col-auto pr-0 pl-0">
-            <button
-                class="toggle-button"
-                (click)="toggleVoiceAssistant()"
-                id="toggle-voice-assistant">
-                <img
-                    [src]="imgSrc"
-                    alt="Toggle for turning the Voice Assistant on and off" />
-            </button>
-        </div>
-        <div class="col-auto text-left">
-            <span class="align-middle"> On </span>
-        </div>
-    </div>
+<div class="col mt-4">
     <div class="row">
         <div class="col">
             <app-voice-assistant-nav
@@ -63,7 +45,7 @@
                         fill="#FFF"
                         font-weight="bold"
                         font-size="16"
-                        y="11.062">
+                        y="12">
                         X
                     </text>
                 </svg>
@@ -83,8 +65,8 @@
                 >Name</label
             >
             <input
-                ngbAutofocus
                 [ngClass]="(!this.personalityForm.controls['name-input'].valid && !this.personalityForm.controls['name-input'].pristine) ? 'invalid-form' : '' "
+                ngbAutofocus
                 class="col-9"
                 type="text"
                 formControlName="name-input"
@@ -92,30 +74,30 @@
         </div>
         <div class="row m-2 ml-3">
             <div
-                class="col-4"
-                id="radio-button-female">
+                class="col-4 pointer"
+                id="new-radio-button-female">
                 <input
                     value="Female"
                     formControlName="gender"
                     type="radio"
-                    id="radio-female" />
+                    id="new-radio-female" />
                 <label
-                    for="radio-female"
-                    id="label-radio-female"
+                    for="new-radio-female"
+                    id="new-label-radio-female"
                     >Female</label
                 >
             </div>
             <div
-                class="col-4"
-                id="radio-button-male">
+                class="col-4 pointer"
+                id="new-radio-button-male">
                 <input
                     value="Male"
                     formControlName="gender"
                     type="radio"
-                    id="radio-male" />
+                    id="new-radio-male" />
                 <label
-                    for="radio-male"
-                    id="label-radio-male"
+                    for="new-radio-male"
+                    id="new-label-radio-male"
                     >Male</label
                 >
             </div>
@@ -167,6 +149,7 @@
                     type="button"
                     class="btn btn-regular"
                     id="modal-save-button"
+                    (keydown.enter)="this.savePersonality()"
                     (click)="this.savePersonality()">
                     Save
                 </button>

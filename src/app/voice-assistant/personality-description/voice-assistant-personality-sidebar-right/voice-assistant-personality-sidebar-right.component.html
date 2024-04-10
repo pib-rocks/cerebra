@@ -1,0 +1,110 @@
+<link
+    rel="stylesheet"
+    href="voice-assistant-personality-sidebar-right.component.css" />
+<div class="sidebar-right-wrapper bg-sidebar h-100 pl-4">
+    <form
+        (keydown.enter)="$event.preventDefault()"
+        [formGroup]="personalityFormSidebar"
+        (change)="formChanged(personalityFormSidebar)">
+        <div
+            class="row pt-4"
+            id="personality-sidebar-persona-name-row">
+            <label
+                for="personality-sidebar-persona-name-input"
+                class="pt-1 row label-text-center"
+                id="personality-sidebar-persona-name-label"
+                >Persona name</label
+            >
+            <input
+                class="row input col-11 ml-0"
+                type="text"
+                formControlName="persona-name"
+                [value]="personalityClone.name"
+                id="personality-sidebar-persona-name-input" />
+        </div>
+        <div class="row pl-1 mt-sm-3 mt-xl-4">
+            <label id="personality-sidebar-label-name">Voice gender</label>
+            <div class="row pl-2">
+                <div
+                    class="col-4"
+                    id="personality-sidebar-radio-button-female">
+                    <input
+                        value="Female"
+                        formControlName="gender"
+                        type="radio"
+                        id="personality-sidebar-radio-female" />
+                    <label
+                        class="pl-4 radioHover marginFemale"
+                        for="personality-sidebar-radio-female"
+                        id="personality-sidebar-label-radio-female"
+                        >Female</label
+                    >
+                </div>
+            </div>
+            <div class="row pl-2">
+                <div
+                    class="col-4"
+                    id="personality-sidebar-radio-button-male">
+                    <input
+                        value="Male"
+                        formControlName="gender"
+                        type="radio"
+                        id="personality-sidebar-radio-male" />
+                    <label
+                        class="pl-4 radioHover marginMale"
+                        for="personality-sidebar-radio-male"
+                        id="personality-sidebar-label-radio-male"
+                        >Male</label
+                    >
+                </div>
+            </div>
+        </div>
+        <div
+            class="row m-1 mt-sm-3 mt-xl-4"
+            id="personality-sidebar-row-pause-threshold">
+            <label
+                for="personality-sidebar-pause-threshold-input"
+                class="row pr-3"
+                id="personality-sidebar-label-pause-threshold"
+                >Pause threshold (in s)</label
+            >
+            <div class="row pl-0">
+                <div class="col pl-0 number-input">
+                    <input
+                        readonly
+                        type="text"
+                        class="input w-50 pl-2"
+                        id="personality-sidebar-pause-threshold-input"
+                        step="0.1"
+                        alt="The waiting period of not receiving any voice input before voice assistants starts to answer"
+                        [(ngModel)]="thresholdString"
+                        [ngModelOptions]="{standalone: true}"
+                        (ngModelChange)="adjustThreshold()" />
+                    <button
+                        type="button"
+                        id="personality-sidebar-up"
+                        class="h-auto w-25 ml-1"
+                        (click)="adjustThresholdViaButton(true)">
+                        &#9650;
+                    </button>
+                    <button
+                        type="button"
+                        id="personality-sidebar-down"
+                        class="h-auto w-25 ml-1"
+                        (click)="adjustThresholdViaButton(false)">
+                        &#9660;
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div
+            class="row position-absolute bottom-0 start-50 translate-middle-x mb-4">
+            <button
+                id="personality-sidebar-delete-persona-button"
+                class="btn btn-regular delete p-sm-1 p-xl-3"
+                (click)="deletePersonality()">
+                Delete persona
+            </button>
+        </div>
+    </form>
+</div>

@@ -1,7 +1,11 @@
 import {Component, Input, OnDestroy, OnInit} from "@angular/core";
+import {FormControl} from "@angular/forms";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Observable, Subscription} from "rxjs";
 import {SidebarElement} from "src/app/shared/interfaces/sidebar-element.interface";
+import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
+import {CerebraRegex} from "src/app/shared/types/cerebra-regex";
+import {VoiceAssistantState} from "src/app/shared/types/voice-assistant-state";
 
 @Component({
     selector: "app-sidebar-right",
@@ -9,10 +13,18 @@ import {SidebarElement} from "src/app/shared/interfaces/sidebar-element.interfac
     styleUrls: ["./sidebar-right.component.css"],
 })
 export class SideBarRightComponent implements OnInit, OnDestroy {
-    @Input() headerElements: {
+    @Input() optionCallbackMethods: {
         icon: string;
         label: string;
-        clickCallback: () => void;
+        clickCallback: (uuid: string) => void;
+        disabled: boolean;
+    }[] = [];
+
+    @Input() dropdownCallbackMethods: {
+        icon: string;
+        label: string;
+        clickCallback: (uuid: string) => void;
+        disabled: boolean;
     }[] = [];
     @Input() elementIcon: string = "";
     @Input() rerouteOnRefresh: boolean = true;
@@ -25,12 +37,29 @@ export class SideBarRightComponent implements OnInit, OnDestroy {
     constructor(
         private router: Router,
         private route: ActivatedRoute,
+        private voiceAssistantService: VoiceAssistantService,
     ) {}
+
     ngOnDestroy(): void {
         this.subscription.unsubscribe();
     }
 
     ngOnInit() {
+        this._updateSidebar();
+        this.selectedObservable?.subscribe((uuid?: string) => {
+            this.router.navigate([uuid ?? "."], {relativeTo: this.route});
+        });
+    }
+
+    // if subject is modified, routing won't update in VA
+    // therefore, watch for changes to update
+    ngOnChanges(changes: {[x: string]: any}) {
+        if (changes["subject"]) {
+            this._updateSidebar();
+        }
+    }
+
+    _updateSidebar() {
         this.subscription = this.subject.subscribe(
             (serviceElements: SidebarElement[]) => {
                 this.sidebarElements = serviceElements;
@@ -57,8 +86,5 @@ export class SideBarRightComponent implements OnInit, OnDestroy {
                 }
             },
         );
-        this.selectedObservable?.subscribe((uuid?: string) => {
-            this.router.navigate([uuid ?? "."], {relativeTo: this.route});
-        });
     }
 }
