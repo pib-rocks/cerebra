@@ -39,8 +39,20 @@ a {
 .nav-tabs .navbar-btn-active {
     background-image: linear-gradient(to top, #000, #1e304d);
     border-left: 1px solid #0094df;
-    border-top: 4px solid #e10072;
     border-right: 1px solid #0094df;
+    box-sizing: border-box;
+    position: relative;
+}
+
+.nav-tabs .nav-item:hover::before,
+.nav-tabs .navbar-btn-active::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -1px;
+    width: calc(100% + 2px);
+    height: 4px;
+    background-color: #e10072;
 }
 
 .nav-tabs .nav-item:hover .nav-link,
