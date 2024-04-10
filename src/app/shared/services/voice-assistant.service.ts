@@ -22,7 +22,6 @@ import {
     VoiceAssistantModel,
     VoiceAssistantModelDto,
 } from "../types/voiceAssistantModel";
-import {ConsoleComponent} from "src/app/program/program-splitscreen/console/console.component";
 
 @Injectable({
     providedIn: "root",
@@ -148,6 +147,7 @@ export class VoiceAssistantService implements SidebarService {
     }
 
     createPersonality(personality: VoiceAssistant) {
+        console.log(parseVoiceAssistantToDto(personality));
         this.apiService
             .post(
                 UrlConstants.PERSONALITY,

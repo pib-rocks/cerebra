@@ -28,20 +28,18 @@ export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
     ) {}
 
     ngOnInit() {
+        this.models = this.voiceAssistantService.voiceAssistantModel;
         this.route.params.subscribe((params: Params) => {
             const temp = this.voiceAssistantService.getPersonality(
                 params["personalityUuid"],
             );
             if (temp !== undefined) {
-                console.log(temp);
                 this.personalityClone = temp;
             }
         });
         this.route.params.subscribe((params) => {
             this.updateForm();
         });
-        this.voiceAssistantService.getAllvoiceAssistantModels();
-        this.models = this.voiceAssistantService.voiceAssistantModel;
     }
 
     updateForm() {

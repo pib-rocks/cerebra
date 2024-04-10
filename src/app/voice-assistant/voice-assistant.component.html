@@ -72,6 +72,18 @@
                 formControlName="name-input"
                 id="name-input" />
         </div>
+        <div class="row">
+            <select
+                formControlName="voiceAssistantModel"
+                class="form-select"
+                aria-label="Voice-assistant language model">
+                <option
+                    *ngFor="let model of models"
+                    [value]="model.id">
+                    {{model.visualName}}
+                </option>
+            </select>
+        </div>
         <div class="row m-2 ml-3">
             <div
                 class="col-4 pointer"

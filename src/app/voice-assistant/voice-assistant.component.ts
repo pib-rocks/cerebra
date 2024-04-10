@@ -5,7 +5,7 @@ import {VoiceAssistantService} from "../shared/services/voice-assistant.service"
 import {FormControl, FormGroup, Validators} from "@angular/forms";
 import {NgbModal, NgbModalRef} from "@ng-bootstrap/ng-bootstrap";
 import {VoiceAssistant} from "../shared/types/voice-assistant";
-import {VoiceAssistantState} from "../shared/types/voice-assistant-state";
+import {VoiceAssistantModel} from "../shared/types/voiceAssistantModel";
 
 @Component({
     selector: "app-voice-assistant",
@@ -20,6 +20,7 @@ export class VoiceAssistantComponent implements OnInit {
     ngbModalRef?: NgbModalRef;
     imgSrc: string = "../../assets/toggle-switch-left.png";
     subject!: Observable<SidebarElement[]>;
+    models: VoiceAssistantModel[] = [];
 
     button: {enabled: boolean; func: () => void} = {
         enabled: true,
@@ -61,6 +62,10 @@ export class VoiceAssistantComponent implements OnInit {
                     Validators.max(3),
                 ],
             }),
+            voiceAssistantModel: new FormControl(1, {
+                nonNullable: true,
+                validators: [Validators.required],
+            }),
         });
         this.voiceAssistantService.uuidSubject.subscribe((uuid: string) => {
             this.openEditModal(uuid);
@@ -68,6 +73,7 @@ export class VoiceAssistantComponent implements OnInit {
     }
 
     showModal = () => {
+        this.models = this.voiceAssistantService.voiceAssistantModel;
         return (this.ngbModalRef = this.modalService.open(this.modalContent, {
             ariaLabelledBy: "modal-basic-title",
             size: "sm",
@@ -147,6 +153,8 @@ export class VoiceAssistantComponent implements OnInit {
                     this.personalityForm.controls["name-input"].value,
                     this.personalityForm.controls["gender"].value,
                     this.personalityForm.controls["pausethreshold"].value,
+                    "",
+                    this.personalityForm.controls["voiceAssistantModel"].value,
                 ),
             );
         }
@@ -167,4 +175,7 @@ export class VoiceAssistantComponent implements OnInit {
         }
         this.uuid = undefined;
     };
+}
+function sleep(arg0: number) {
+    throw new Error("Function not implemented.");
 }

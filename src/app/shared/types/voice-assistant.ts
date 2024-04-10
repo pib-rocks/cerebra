@@ -37,6 +37,7 @@ export class VoiceAssistant implements SidebarElement {
             String(this.gender),
             Number(this.pauseThreshold),
             String(this.description),
+            Number(this.assistant_id),
         );
     }
 }
@@ -68,6 +69,7 @@ export function parseVoiceAssistantToDto(
         description: voiceAssistant.description,
         gender: voiceAssistant.gender,
         pauseThreshold: voiceAssistant.pauseThreshold,
+        assistant_id: voiceAssistant.assistant_id,
     } as VoiceAssistantDto;
 }
 
@@ -80,5 +82,6 @@ export function parseDtoToVoiceAssistant(
         dummyVoiceAssistant.gender,
         dummyVoiceAssistant.pauseThreshold,
         dummyVoiceAssistant.description,
+        dummyVoiceAssistant.assistant_id,
     );
 }
