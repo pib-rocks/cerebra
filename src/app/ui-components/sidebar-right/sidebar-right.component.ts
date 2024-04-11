@@ -88,7 +88,7 @@ export class SideBarRightComponent implements OnInit, OnDestroy {
         );
     }
 
-    toLowerCaseRMSpace(label: string): string {
+    toLowerCaseAndRemoveSpace(label: string): string {
         return label.toLowerCase().replace(/\s+/g, "-");
     }
 }
