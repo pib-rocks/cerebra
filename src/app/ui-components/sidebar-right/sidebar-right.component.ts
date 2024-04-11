@@ -88,7 +88,7 @@ export class SideBarRightComponent implements OnInit, OnDestroy {
         );
     }
 
-    getDropdownButtonId(label: string): string {
-        return "dropdownbutton-" + label.replace(/\s+/g, "-").toLowerCase();
+    toLowerCase(label: string): string {
+        return label.toLowerCase();
     }
 }

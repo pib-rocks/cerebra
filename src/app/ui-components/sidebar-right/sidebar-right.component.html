@@ -17,17 +17,20 @@
                             <button
                                 type="button"
                                 class="btn pl-sm-0"
+                                id="dropdownbutton-{{sidebarElement.getName()}}"
+                                title="Edit"
                                 ngbDropdownToggle>
                                 <i class="bi bi-three-dots dot-menu"></i>
                             </button>
-                            <div ngbDropdownMenu>
+                            <div
+                                ngbDropdownMenu
+                                attr.aria-labelledby="dropdownbutton-{{sidebarElement.getName()}}">
                                 <div
                                     *ngFor="let callback of dropdownCallbackMethods">
                                     <button
-                                        type="button"
                                         ngbDropdownItem
-                                        [id]="getDropdownButtonId(callback.label)"
                                         [disabled]="callback.disabled"
+                                        id="sidebar-right-{{toLowerCase(callback.label)}}-{{sidebarElement.getName()}}"
                                         (click)="callback.clickCallback(sidebarElement.getUUID())">
                                         <img
                                             *ngIf="callback.icon !== ''"
