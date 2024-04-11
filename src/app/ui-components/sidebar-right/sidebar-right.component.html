@@ -30,7 +30,7 @@
                                     <button
                                         ngbDropdownItem
                                         [disabled]="callback.disabled"
-                                        id="sidebar-right-{{toLowerCase(callback.label)}}-{{sidebarElement.getName()}}"
+                                        id="sidebar-right-{{toLowerCaseRMSpace(callback.label)}}-{{sidebarElement.getName()}}"
                                         (click)="callback.clickCallback(sidebarElement.getUUID())">
                                         <img
                                             *ngIf="callback.icon !== ''"
