@@ -1,6 +1,6 @@
 import {Component, OnInit, TemplateRef, ViewChild} from "@angular/core";
 import {FormControl, Validators} from "@angular/forms";
-import {ActivatedRoute, Router} from "@angular/router";
+import {ActivatedRoute, Route, Router} from "@angular/router";
 import {NgbModal, NgbModalRef} from "@ng-bootstrap/ng-bootstrap";
 import {Observable, Subject} from "rxjs";
 import {SidebarElement} from "src/app/shared/interfaces/sidebar-element.interface";
@@ -9,6 +9,8 @@ import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.ser
 import {CerebraRegex} from "src/app/shared/types/cerebra-regex";
 import {Chat, ChatDto} from "src/app/shared/types/chat.class";
 import {VoiceAssistant} from "src/app/shared/types/voice-assistant";
+import {VoiceAssistantState} from "../../shared/types/voice-assistant-state";
+import {Location} from "@angular/common";
 
 @Component({
     selector: "app-voice-assistant-chat",
@@ -26,6 +28,11 @@ export class VoiceAssistantChatComponent implements OnInit {
     uuid: string | undefined;
 
     selected: Subject<string> = new Subject();
+    vaState: boolean = false;
+    activeChat: string = "";
+    activePersonality: string = "";
+    currentChat: string | null = "";
+    voiceAssistantActivationToggle = new FormControl(false);
 
     constructor(
         private modalService: NgbModal,
@@ -33,29 +40,62 @@ export class VoiceAssistantChatComponent implements OnInit {
         private chatService: ChatService,
         private voiceAssistantService: VoiceAssistantService,
         private route: ActivatedRoute,
-    ) {}
+        private location: Location,
+    ) {
+        location.onUrlChange((url, state) => {
+            let urlArray: string[] = url.split("/");
+            this.currentChat = urlArray[urlArray.length - 1];
+        });
+    }
 
     ngOnInit() {
-        this.personalityId = this.router.url
-            .split("/")
-            .find((segment) => RegExp(CerebraRegex.UUID).test(segment));
-        this.personality = this.personalityId
-            ? this.voiceAssistantService.getPersonality(this.personalityId) ??
-              this.route.snapshot.params["personality"]
-            : this.route.snapshot.params["personality"];
-        if (this.personality) {
-            this.subject = this.chatService.getSubject(
-                this.personality.personalityId,
-            );
-        } else {
-            throw Error("undefined personality and subject");
-        }
-        localStorage.setItem("voice-assistant-tab", "chat");
-        this.topicFormControl.setValidators([
-            Validators.required,
-            Validators.minLength(2),
-            Validators.maxLength(255),
-        ]);
+        // set current state of VA (in case another user is using it)
+        this.voiceAssistantService.voiceAssistantStateObservable.subscribe(
+            (state: VoiceAssistantState) => {
+                this.voiceAssistantActivationToggle.setValue(state.turnedOn);
+                this.vaState = state.turnedOn;
+                const deleteChat = this.dropdownCallbackMethods.find(
+                    (e) => e.label === "Delete chat",
+                );
+                if (deleteChat) {
+                    deleteChat.disabled = this.vaState;
+                }
+            },
+        );
+
+        this.route.paramMap.subscribe((params) => {
+            console.log(params);
+            const routeParts: string[] = this.router.url.split("/");
+            this.currentChat = routeParts[routeParts.length - 1];
+
+            this.personalityId = this.router.url
+                .split("/")
+                .find((segment) => RegExp(CerebraRegex.UUID).test(segment));
+            this.personality = this.personalityId
+                ? this.voiceAssistantService.getPersonality(
+                      this.personalityId,
+                  ) ?? this.route.snapshot.params["personality"]
+                : this.route.snapshot.params["personality"];
+            if (this.personality) {
+                this.subject = this.chatService.getSubject(
+                    this.personality.personalityId,
+                );
+            } else {
+                throw Error("undefined personality and subject");
+            }
+            localStorage.setItem("voice-assistant-tab", "chat");
+            this.topicFormControl.setValidators([
+                Validators.required,
+                Validators.minLength(2),
+                Validators.maxLength(255),
+            ]);
+        });
+
+        this.voiceAssistantService.voiceAssistantStateObservable.subscribe(
+            (state: VoiceAssistantState) => {
+                this.voiceAssistantActivationToggle.setValue(state.turnedOn);
+            },
+        );
     }
 
     showModal = () => {
@@ -68,22 +108,19 @@ export class VoiceAssistantChatComponent implements OnInit {
         return this.ngbModalRef;
     };
 
-    openAddModal = () => {
+    openAddModal() {
         this.topicFormControl.setValue("");
         this.showModal();
-    };
+    }
 
-    openEditModal = () => {
-        this.uuid =
-            this.router.url.split("/").length > 3
-                ? this.router.url.split("/").pop()
-                : undefined;
+    openEditModal(uuid: string) {
+        this.uuid = uuid;
         if (this.uuid) {
             const updateChat = this.chatService.getChat(this.uuid);
             this.topicFormControl.setValue(updateChat?.topic ?? "");
             this.showModal();
         }
-    };
+    }
 
     addChat() {
         if (this.personalityId) {
@@ -124,32 +161,73 @@ export class VoiceAssistantChatComponent implements OnInit {
         this.uuid = undefined;
     };
 
-    deleteChat = () => {
-        const uuid =
-            this.router.url.split("/").length > 3
-                ? this.router.url.split("/").pop()
-                : undefined;
-        if (uuid) {
-            this.chatService.deleteChatById(uuid);
+    deleteChat(uudi: string) {
+        if (uudi) {
+            this.chatService.deleteChatById(uudi);
             localStorage.removeItem("chat");
         }
-    };
+    }
 
-    headerElements = [
+    export() {
+        throw Error("not implemented");
+    }
+
+    toggleVoiceAssistant() {
+        const turnedOn = !this.voiceAssistantActivationToggle.value;
+        const nextState: VoiceAssistantState = {turnedOn, chatId: ""};
+        if (turnedOn) {
+            const match = RegExp(
+                `/voice-assistant/${CerebraRegex.UUID}/chat/(${CerebraRegex.UUID})`,
+            ).exec(this.router.url);
+            if (match) nextState.chatId = match[1];
+            else throw new Error("no chat selected");
+        }
+
+        this.vaState = turnedOn;
+        this.activeChat = nextState.chatId;
+        if (this.personalityId) {
+            this.activePersonality = this.personalityId;
+        }
+
+        this.voiceAssistantService.setVoiceAssistantState(nextState).subscribe({
+            error: (error) => console.error(error),
+        });
+
+        const deleteChat = this.dropdownCallbackMethods.find(
+            (e) => e.label === "Delete chat",
+        );
+        if (deleteChat) {
+            deleteChat.disabled = this.vaState;
+        }
+    }
+
+    optionCallbackMethods = [
         {
-            icon: "../../assets/voice-assistant-svgs/chat/chat_add.svg",
-            label: "ADD",
-            clickCallback: this.openAddModal,
+            icon: "",
+            label: "New chat",
+            clickCallback: this.openAddModal.bind(this),
+            disabled: false,
+        },
+    ];
+
+    dropdownCallbackMethods = [
+        {
+            icon: "../../assets/voice-assistant-svgs/chat/edit.svg",
+            label: "Rename",
+            clickCallback: this.openEditModal.bind(this),
+            disabled: false,
         },
         {
-            icon: "../../assets/voice-assistant-svgs/chat/chat_delete.svg",
-            label: "DELETE",
-            clickCallback: this.deleteChat,
+            icon: "../../assets/voice-assistant-svgs/chat/export.svg",
+            label: "Export chat",
+            clickCallback: this.export.bind(this),
+            disabled: true,
         },
         {
-            icon: "../../assets/voice-assistant-svgs/chat/chat_edit.svg",
-            label: "EDIT",
-            clickCallback: this.openEditModal,
+            icon: "../../assets/voice-assistant-svgs/chat/delete.svg",
+            label: "Delete chat",
+            clickCallback: this.deleteChat.bind(this),
+            disabled: false,
         },
     ];
 }

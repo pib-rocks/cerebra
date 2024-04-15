@@ -80,7 +80,6 @@ describe("HorizontalSliderComponent", () => {
                 position: NaN,
                 bubbleFormControl: new FormControl(),
                 inputVisible: false,
-                id: 0,
             },
             {
                 valueRaw: 0,
@@ -88,7 +87,6 @@ describe("HorizontalSliderComponent", () => {
                 position: 200,
                 bubbleFormControl: new FormControl(),
                 inputVisible: false,
-                id: 1,
             },
         ];
         component.sliderWidth = 1000;

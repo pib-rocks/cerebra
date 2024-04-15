@@ -13,7 +13,6 @@ export class MotorPositionComponent implements OnInit {
     motor!: MotorConfiguration;
 
     positionReceiver$: Subject<[number]> = new Subject();
-    turnedOnReceiver$: Subject<boolean> = new Subject();
 
     rotationRangeMin: number = -90;
     rotationRangeMax: number = +90;
