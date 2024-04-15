@@ -3,7 +3,7 @@ export class VoiceAssistantModel {
         public id: number,
         public apiName: string,
         public visualName: string,
-        public has_image_support: boolean,
+        public hasImageSupport: boolean,
     ) {}
 
     getId(): number {
@@ -17,9 +17,9 @@ export class VoiceAssistantModel {
     static parseDtoToVoiceAssistantModel(model: VoiceAssistantModelDto) {
         return new VoiceAssistantModel(
             model.id,
-            model.api_name,
-            model.visual_name,
-            model.has_image_support,
+            model.apiName,
+            model.visualName,
+            model.hasImageSupport,
         );
     }
 }
@@ -27,8 +27,8 @@ export class VoiceAssistantModel {
 export class VoiceAssistantModelDto {
     constructor(
         public id: number,
-        public api_name: string,
-        public visual_name: string,
-        public has_image_support: boolean,
+        public apiName: string,
+        public visualName: string,
+        public hasImageSupport: boolean,
     ) {}
 }
