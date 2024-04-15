@@ -79,7 +79,7 @@ export class VoiceAssistantService implements SidebarService {
                     m.gender,
                     m.pauseThreshold,
                     m.description,
-                    m.assistant_id,
+                    m.assistantId,
                 ),
             );
         });

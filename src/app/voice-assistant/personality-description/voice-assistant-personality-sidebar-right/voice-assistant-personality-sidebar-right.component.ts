@@ -146,7 +146,7 @@ export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
                 this.personalityFormSidebar.controls["persona-name"].value;
             this.personalityClone.gender =
                 this.personalityFormSidebar.controls["gender"].value;
-            this.personalityClone.assistant_id =
+            this.personalityClone.assistantId =
                 this.personalityFormSidebar.controls[
                     "voiceAssistantModel"
                 ].value;
