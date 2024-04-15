@@ -67,10 +67,13 @@ export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
                     ],
                 },
             ),
-            voiceAssistantModel: new FormControl(1, {
-                nonNullable: true,
-                validators: [Validators.required],
-            }),
+            voiceAssistantModel: new FormControl(
+                this.personalityClone?.assistantId ?? this.models[0].id,
+                {
+                    nonNullable: true,
+                    validators: [Validators.required],
+                },
+            ),
         });
         this.thresholdString = this.personalityClone.pauseThreshold.toFixed(1);
     }
@@ -132,10 +135,6 @@ export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
     };
 
     formChanged(event: any) {
-        console.log("event");
-        console.log(event);
-        console.log("personalityFormSidebar");
-        console.log(this.personalityFormSidebar);
         this.personalityFormSidebar = event;
         this.updatePersonality();
     }
