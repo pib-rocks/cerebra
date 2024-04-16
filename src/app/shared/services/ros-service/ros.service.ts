@@ -44,6 +44,15 @@ import {ProxyRunProgramStatus} from "../../ros-types/msg/proxy-run-program-statu
 import {IRosService} from "./i-ros-service";
 // import {ip, portWebsocket} from "../../../global-conf.json"
 import config from "../../../global-conf.json";
+import {
+    SendChatMessageRequest,
+    SendChatMessageResponse,
+} from "../../ros-types/srv/send-chat-message";
+import {VoiceAssistantChatIsListening} from "../../ros-types/msg/voice-assistant-chat-is-listening";
+import {
+    GetVoiceAssistantChatIsListeningRequest,
+    GetVoiceAssistantChatIsListeningResponse,
+} from "../../ros-types/srv/get-voice-assistant-chat-is-listening";
 
 @Injectable({
     providedIn: "root",
@@ -69,6 +78,8 @@ export class RosService implements IRosService {
         new Subject<ProxyRunProgramResult>();
     proxyRunProgramStatusReceiver$: Subject<ProxyRunProgramStatus> =
         new Subject<ProxyRunProgramStatus>();
+    voiceAssistantChatIsListeningReceiver$: Subject<VoiceAssistantChatIsListening> =
+        new Subject<VoiceAssistantChatIsListening>();
     voiceAssistantStateReceiver$: BehaviorSubject<VoiceAssistantState> =
         new BehaviorSubject<VoiceAssistantState>({
             turned_on: false,
@@ -90,10 +101,19 @@ export class RosService implements IRosService {
     private proxyRunProgramStatusTopic!: ROSLIB.Topic<ProxyRunProgramStatus>;
     private chatMessageTopic!: ROSLIB.Topic<ChatMessage>;
     private voiceAssistantStateTopic!: ROSLIB.Topic<VoiceAssistantState>;
+    private voiceAssistantChatIsListeningTopic!: ROSLIB.Topic<VoiceAssistantChatIsListening>;
 
     private setVoiceAssistantStateService!: ROSLIB.Service<
         SetVoiceAssistantStateRequest,
         SetVoiceAssistantStateResponse
+    >;
+    private getVoiceAssistantChatIsListeningService!: ROSLIB.Service<
+        GetVoiceAssistantChatIsListeningRequest,
+        GetVoiceAssistantChatIsListeningResponse
+    >;
+    private sendChatMessageService!: ROSLIB.Service<
+        SendChatMessageRequest,
+        SendChatMessageResponse
     >;
     private motorSettingsService!: ROSLIB.Service<
         MotorSettingsServiceRequest,
@@ -175,6 +195,10 @@ export class RosService implements IRosService {
             rosTopics.voiceAssistantState,
             rosDataTypes.voiceAssistantState,
         );
+        this.voiceAssistantChatIsListeningTopic = this.createRosTopic(
+            rosTopics.voiceAssistantChatIsListening,
+            rosDataTypes.voiceAssistantChatIsListening,
+        );
         this.motorSettingsTopic = this.createRosTopic(
             rosTopics.motorSettingsTopicName,
             rosDataTypes.motorSettings,
@@ -207,6 +231,14 @@ export class RosService implements IRosService {
         this.setVoiceAssistantStateService = this.createRosService(
             rosServices.setVoiceAssistantState,
             rosDataTypes.setVoiceAssistantState,
+        );
+        this.sendChatMessageService = this.createRosService(
+            rosServices.sendChatMessage,
+            rosDataTypes.sendChatMessage,
+        );
+        this.getVoiceAssistantChatIsListeningService = this.createRosService(
+            rosServices.getVoiceAssistantChatIsListening,
+            rosDataTypes.getVoiceAssistantChatIsListening,
         );
 
         this.runProgramAction = this.createActionClient(
@@ -260,6 +292,7 @@ export class RosService implements IRosService {
         );
 
         this.subscribeVoiceAssistantStateTopic();
+        this.subscribeVoiceAssistantChatIsListeningTopic();
         this.subscribeChatMessageTopic();
         this.subscribeMotorSettingsTopic();
         this.subscribeMotorCurrentTopic();
@@ -354,6 +387,13 @@ export class RosService implements IRosService {
             this.chatMessageReceiver$.next(message);
         });
     }
+    private subscribeVoiceAssistantChatIsListeningTopic() {
+        this.voiceAssistantChatIsListeningTopic.subscribe(
+            (message: VoiceAssistantChatIsListening) => {
+                this.voiceAssistantChatIsListeningReceiver$.next(message);
+            },
+        );
+    }
 
     setVoiceAssistantState(
         voiceAssistantState: VoiceAssistantState,
@@ -373,6 +413,51 @@ export class RosService implements IRosService {
             subject.error(new Error(error));
         };
         this.setVoiceAssistantStateService.callService(
+            request,
+            successCallback,
+            errorCallback,
+        );
+        return subject;
+    }
+
+    sendChatMessage(chatId: string, content: string): Observable<void> {
+        const subject: Subject<void> = new ReplaySubject();
+        const request: SendChatMessageRequest = {
+            chat_id: chatId,
+            content: content,
+        };
+        const successCallback = (response: SendChatMessageResponse) => {
+            if (response.successful) {
+                subject.next();
+            } else {
+                subject.error(new Error("failed to send message"));
+            }
+        };
+        const errorCallback = (error: any) => {
+            subject.error(new Error(error));
+        };
+        this.sendChatMessageService.callService(
+            request,
+            successCallback,
+            errorCallback,
+        );
+        return subject;
+    }
+
+    getVoiceAssistantChatIsListening(chatId: string): Observable<boolean> {
+        const subject: Subject<boolean> = new ReplaySubject();
+        const request: GetVoiceAssistantChatIsListeningRequest = {
+            chat_id: chatId,
+        };
+        const successCallback = (
+            response: GetVoiceAssistantChatIsListeningResponse,
+        ) => {
+            subject.next(response.listening);
+        };
+        const errorCallback = (error: any) => {
+            subject.error(new Error(error));
+        };
+        this.getVoiceAssistantChatIsListeningService.callService(
             request,
             successCallback,
             errorCallback,

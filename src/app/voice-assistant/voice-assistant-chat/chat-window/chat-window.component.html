@@ -45,10 +45,15 @@
                 <input
                     type="text"
                     id="message-input"
+                    (keyup.enter)="sendChatMessage(chatMessageFormControl.value)"
+                    [formControl]="chatMessageFormControl"
                     placeholder="Send a message" />
-                <button id="chat-send-button">
+                <button
+                    id="chat-send-button"
+                    [disabled]="!textInputIsValid || !listening"
+                    (click)="sendChatMessage(chatMessageFormControl.value)">
                     <img
-                        class="author-icon"
+                        class="author-icon p-0 m-0"
                         [src]="arrow" />
                 </button>
             </div>

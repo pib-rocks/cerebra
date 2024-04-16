@@ -19,6 +19,8 @@ export class ChatService implements SidebarService {
         string,
         BehaviorSubject<ChatMessage[]>
     > = new Map();
+    private IsListeningFromChatId: Map<string, BehaviorSubject<boolean>> =
+        new Map();
 
     constructor(
         private apiService: ApiService,
@@ -40,6 +42,19 @@ export class ChatService implements SidebarService {
                 subject.next(messages);
             }
         });
+        this.rosService.voiceAssistantChatIsListeningReceiver$.subscribe(
+            ({chat_id, listening}) => {
+                const subject = this.IsListeningFromChatId.get(chat_id);
+                if (subject === undefined) {
+                    this.IsListeningFromChatId.set(
+                        chat_id,
+                        new BehaviorSubject<boolean>(listening),
+                    );
+                } else {
+                    subject.next(listening);
+                }
+            },
+        );
     }
 
     private setChats(chats: Chat[]) {
@@ -172,5 +187,29 @@ export class ChatService implements SidebarService {
             content,
             isUser: true,
         });
+    }
+
+    getIsListening(chatId: string): Observable<boolean> {
+        let subject = this.IsListeningFromChatId.get(chatId);
+        if (subject === undefined) {
+            subject = new BehaviorSubject<boolean>(false);
+            this.IsListeningFromChatId.set(chatId, subject);
+            this.rosService
+                .getVoiceAssistantChatIsListening(chatId)
+                .subscribe((listening) => {
+                    subject!.next(listening);
+                });
+        }
+        return subject;
+    }
+
+    sendChatMessage(chatId: string, content: string): Observable<void> {
+        return this.rosService.sendChatMessage(chatId, content);
+    }
+
+    getIsActive(chatId: string): Observable<boolean> {
+        return this.rosService.voiceAssistantStateReceiver$.pipe(
+            map((state) => state.turned_on && state.chat_id === chatId),
+        );
     }
 }

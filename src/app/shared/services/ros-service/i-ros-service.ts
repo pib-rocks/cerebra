@@ -12,6 +12,7 @@ import {ProxyRunProgramResult} from "../../ros-types/msg/proxy-run-program-resul
 import {ProxyRunProgramFeedback} from "../../ros-types/msg/proxy-run-program-feedback";
 import {ProxyRunProgramStatus} from "../../ros-types/msg/proxy-run-program-status";
 import {ChatMessage} from "../../ros-types/msg/chat-message";
+import {VoiceAssistantChatIsListening} from "../../ros-types/msg/voice-assistant-chat-is-listening";
 
 export interface IRosService {
     currentReceiver$: Subject<DiagnosticStatus>;
@@ -26,22 +27,35 @@ export interface IRosService {
     proxyRunProgramStatusReceiver$: Subject<ProxyRunProgramStatus>;
     voiceAssistantStateReceiver$: BehaviorSubject<VoiceAssistantState>;
     chatMessageReceiver$: Subject<ChatMessage>;
+    voiceAssistantChatIsListeningReceiver$: Subject<VoiceAssistantChatIsListening>;
 
     setVoiceAssistantState: (
         voiceAssistantState: VoiceAssistantState,
     ) => Observable<void>;
+
+    getVoiceAssistantChatIsListening(chatId: string): Observable<boolean>;
+
+    sendChatMessage(chatId: string, content: string): Observable<void>;
+
     sendMotorSettingsMessage: (
         motorSettingsMessage: MotorSettingsMessage,
     ) => Observable<MotorSettingsMessage>;
+
     runProgram: (
         programNumber: string,
     ) => Observable<GoalHandle<RunProgramFeedback, RunProgramResult>>;
+
     sendJointTrajectoryMessage: (
         jointTrajectoryMessage: JointTrajectoryMessage,
     ) => void;
+
     setTimerPeriod: (period: number) => void;
+
     setPreviewSize: (width: number, height: number) => void;
+
     setQualityFactor: (factor: number) => void;
+
     subscribeCameraTopic: () => void;
+
     unsubscribeCameraTopic: () => void;
 }
