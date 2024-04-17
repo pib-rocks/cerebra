@@ -17,14 +17,16 @@ export class ChatWindowComponent implements OnInit {
     promptFormControl: FormControl = new FormControl("");
     personalityName: string | undefined;
     messages?: ChatMessage[];
-    messageObservable$: Subscription | undefined;
+
+    chatMessagesSubscription?: Subscription;
+    isActiveSubscription?: Subscription;
+    isListeningSubscription?: Subscription;
 
     chatMessageFormControl: FormControl<string> = new FormControl();
 
     textInputIsValid: boolean = false;
     active: boolean = false;
     listening: boolean = false;
-    chatId?: string = "";
 
     readonly USER_ICON =
         "../../../../assets/voice-assistant-svgs/chat/user.svg";
@@ -43,31 +45,28 @@ export class ChatWindowComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        // TODO: can this be removed
-        // this.chat = this.route.snapshot.data["chat"];
-        // localStorage.setItem("chat", this.chat?.chatId ?? "");
+        this.chat = this.route.snapshot.data["chat"];
+        localStorage.setItem("chat", this.chat?.chatId ?? "");
 
         this.route.params.subscribe((params: Params) => {
-            this.messageObservable$?.unsubscribe();
+            this.chatMessagesSubscription?.unsubscribe();
+            this.isActiveSubscription?.unsubscribe();
+            this.isListeningSubscription?.unsubscribe();
 
-            this.chatId = params["chatUuid"];
-            if (!this.chatId) return;
+            const chatId = params["chatId"];
+            if (chatId) return;
 
-            this.chatService
-                .getIsListening(this.chatId)
-                .subscribe((listening) => {
-                    this.listening = listening;
-                });
-
-            this.chatService
-                .getIsActive(this.chatId)
+            this.chatMessagesSubscription = this.chatService
+                .getChatMessagesObservable(chatId)
+                .subscribe((messages) => (this.messages = messages));
+            this.isListeningSubscription = this.chatService
+                .getIsListeningObservable(chatId)
+                .subscribe((listening) => (this.listening = listening));
+            this.isActiveSubscription = this.chatService
+                .getIsActiveObservable(chatId)
                 .subscribe((active) => (this.active = active));
 
-            this.messageObservable$ = this.chatService
-                .getChatMessagesObservable(this.chatId)
-                .subscribe((messages) => (this.messages = messages));
-
-            this.chat = this.chatService.getChat(this.chatId);
+            this.chat = this.chatService.getChat(chatId);
             localStorage.setItem("chat", this.chat?.chatId ?? "");
             if (this.chat) {
                 this.personalityName =
@@ -79,9 +78,9 @@ export class ChatWindowComponent implements OnInit {
     }
 
     sendChatMessage(content: string) {
-        if (!this.chatId) return;
+        if (!this.chat) return;
         this.chatService
-            .sendChatMessage(this.chatId, content)
+            .sendChatMessage(this.chat.chatId, content)
             .subscribe(() => this.chatMessageFormControl.setValue(""));
     }
 }

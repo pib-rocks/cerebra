@@ -7,24 +7,31 @@ import {BehaviorSubject, Subject} from "rxjs";
 import {RouterTestingModule} from "@angular/router/testing";
 import {ChatService} from "src/app/shared/services/chat.service";
 import {ChatMessage} from "src/app/shared/ros-types/msg/chat-message";
+import {ReactiveFormsModule} from "@angular/forms";
 
-describe("ChatWindowComponent", () => {
+fdescribe("ChatWindowComponent", () => {
     let component: ChatWindowComponent;
     let fixture: ComponentFixture<ChatWindowComponent>;
     let chatService: jasmine.SpyObj<ChatService>;
-    let paramsSubject: Subject<{chatUuid: string}>;
+    let paramsSubject: Subject<{chatId: string}>;
 
     beforeEach(async () => {
-        paramsSubject = new BehaviorSubject<{chatUuid: string}>({chatUuid: ""});
+        paramsSubject = new BehaviorSubject<{chatId: string}>({chatId: ""});
 
         const chatServiceSpy: jasmine.SpyObj<ChatService> =
-            jasmine.createSpyObj(ChatService, [
+            jasmine.createSpyObj("chat-service", [
                 "getChatMessagesObservable",
+                "getIsActiveObservable",
+                "getIsListeningObservable",
                 "getChat",
             ]);
         await TestBed.configureTestingModule({
             declarations: [ChatWindowComponent],
-            imports: [HttpClientTestingModule, RouterTestingModule],
+            imports: [
+                HttpClientTestingModule,
+                RouterTestingModule,
+                ReactiveFormsModule,
+            ],
             providers: [
                 {
                     provide: ActivatedRoute,
@@ -76,12 +83,24 @@ describe("ChatWindowComponent", () => {
         chatService.getChatMessagesObservable.and.returnValue(
             messagesObservableSpy,
         );
-        paramsSubject.next({chatUuid: "chat-id"});
+        paramsSubject.next({chatId: "chat-id"});
         expect(chatService.getChatMessagesObservable).toHaveBeenCalledOnceWith(
             "chat-id",
         );
         expect(messagesObservableSpy.subscribe).toHaveBeenCalledTimes(1);
         expect(component.messages).toBeDefined();
         expect(component.messages).toEqual([jasmine.objectContaining(message)]);
+    });
+
+    it("should get the correct is-active observable and obtain its active-status from it", () => {
+        const isActiveSubject = new Subject<boolean>();
+        chatService.getIsActiveObservable.and.returnValue(isActiveSubject);
+        paramsSubject.next({chatId: "chat-id"});
+        expect(chatService.getIsActiveObservable).toHaveBeenCalledOnceWith(
+            "chat-id",
+        );
+        expect(component.active).toBeFalse();
+        isActiveSubject.next(true);
+        expect(component.active).toBeTrue();
     });
 });

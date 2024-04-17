@@ -189,27 +189,25 @@ export class ChatService implements SidebarService {
         });
     }
 
-    getIsListening(chatId: string): Observable<boolean> {
+    sendChatMessage(chatId: string, content: string): Observable<void> {
+        return this.rosService.sendChatMessage(chatId, content);
+    }
+
+    getIsActiveObservable(chatId: string): Observable<boolean> {
+        return this.rosService.voiceAssistantStateReceiver$.pipe(
+            map((state) => state.turned_on && state.chat_id === chatId),
+        );
+    }
+
+    getIsListeningObservable(chatId: string): Observable<boolean> {
         let subject = this.IsListeningFromChatId.get(chatId);
         if (subject === undefined) {
             subject = new BehaviorSubject<boolean>(false);
             this.IsListeningFromChatId.set(chatId, subject);
             this.rosService
                 .getVoiceAssistantChatIsListening(chatId)
-                .subscribe((listening) => {
-                    subject!.next(listening);
-                });
+                .subscribe((listening) => subject!.next(listening));
         }
         return subject;
-    }
-
-    sendChatMessage(chatId: string, content: string): Observable<void> {
-        return this.rosService.sendChatMessage(chatId, content);
-    }
-
-    getIsActive(chatId: string): Observable<boolean> {
-        return this.rosService.voiceAssistantStateReceiver$.pipe(
-            map((state) => state.turned_on && state.chat_id === chatId),
-        );
     }
 }
