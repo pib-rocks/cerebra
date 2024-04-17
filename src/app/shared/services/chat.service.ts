@@ -62,20 +62,6 @@ export class ChatService implements SidebarService {
         this.chatSubject.next(this.chats.slice());
     }
 
-    getChatMessagesObservable(chatId: string): Observable<ChatMessage[]> {
-        const observable = this.messagesSubjectFromChatId.get(chatId);
-        if (observable) {
-            return observable;
-        } else {
-            const messageSubject = new BehaviorSubject<ChatMessage[]>([]);
-            this.getMessagesByChatId(chatId).subscribe((messages) =>
-                messageSubject.next(messages),
-            );
-            this.messagesSubjectFromChatId.set(chatId, messageSubject);
-            return messageSubject;
-        }
-    }
-
     getSubject(uuid: string): Observable<SidebarElement[]> {
         return this.chatSubject.pipe(
             map((value) => {
@@ -189,7 +175,25 @@ export class ChatService implements SidebarService {
         });
     }
 
-    getIsListening(chatId: string): Observable<boolean> {
+    sendChatMessage(chatId: string, content: string): Observable<void> {
+        return this.rosService.sendChatMessage(chatId, content);
+    }
+
+    getChatMessagesObservable(chatId: string): Observable<ChatMessage[]> {
+        const observable = this.messagesSubjectFromChatId.get(chatId);
+        if (observable) {
+            return observable;
+        } else {
+            const messageSubject = new BehaviorSubject<ChatMessage[]>([]);
+            this.getMessagesByChatId(chatId).subscribe((messages) =>
+                messageSubject.next(messages),
+            );
+            this.messagesSubjectFromChatId.set(chatId, messageSubject);
+            return messageSubject;
+        }
+    }
+
+    getIsListeningObservable(chatId: string): Observable<boolean> {
         let subject = this.IsListeningFromChatId.get(chatId);
         if (subject === undefined) {
             subject = new BehaviorSubject<boolean>(false);
@@ -203,11 +207,7 @@ export class ChatService implements SidebarService {
         return subject;
     }
 
-    sendChatMessage(chatId: string, content: string): Observable<void> {
-        return this.rosService.sendChatMessage(chatId, content);
-    }
-
-    getIsActive(chatId: string): Observable<boolean> {
+    getIsActiveObservable(chatId: string): Observable<boolean> {
         return this.rosService.voiceAssistantStateReceiver$.pipe(
             map((state) => state.turned_on && state.chat_id === chatId),
         );

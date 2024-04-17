@@ -54,13 +54,13 @@ export class ChatWindowComponent implements OnInit {
             if (!this.chatId) return;
 
             this.chatService
-                .getIsListening(this.chatId)
+                .getIsListeningObservable(this.chatId)
                 .subscribe((listening) => {
                     this.listening = listening;
                 });
 
             this.chatService
-                .getIsActive(this.chatId)
+                .getIsActiveObservable(this.chatId)
                 .subscribe((active) => (this.active = active));
 
             this.messageObservable$ = this.chatService
