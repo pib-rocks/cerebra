@@ -26,7 +26,7 @@ import {IRosService} from "./i-ros-service";
 import {ApiService} from "../api.service";
 import {UrlConstants} from "../url.constants";
 import {MotorSettingsError} from "../../error/motor-settings-error";
-import {VoiceAssistantChatIsListening} from "../../ros-types/msg/voice-assistant-chat-is-listening";
+import {ChatIsListening} from "../../ros-types/msg/chat-is-listening";
 
 @Injectable({
     providedIn: "root",
@@ -34,7 +34,7 @@ import {VoiceAssistantChatIsListening} from "../../ros-types/msg/voice-assistant
 export class RosService implements IRosService {
     private setIsListening(chatId: string, listening: boolean) {
         this.isListeningFromChatId.set(chatId, listening);
-        this.voiceAssistantChatIsListeningReceiver$.next({
+        this.chatIsListeningReceiver$.next({
             chat_id: chatId,
             listening,
         });
@@ -97,8 +97,8 @@ export class RosService implements IRosService {
             turned_on: false,
             chat_id: "",
         });
-    voiceAssistantChatIsListeningReceiver$: Subject<VoiceAssistantChatIsListening> =
-        new Subject<VoiceAssistantChatIsListening>();
+    chatIsListeningReceiver$: Subject<ChatIsListening> =
+        new Subject<ChatIsListening>();
     chatMessageReceiver$: Subject<ChatMessage> = new Subject<ChatMessage>();
 
     cameraTimer: any;
@@ -153,7 +153,7 @@ export class RosService implements IRosService {
         }, 1000);
     }
 
-    getVoiceAssistantChatIsListening(chatId: string): Observable<boolean> {
+    getChatIsListening(chatId: string): Observable<boolean> {
         return new BehaviorSubject(this.getIsListening(chatId));
     }
 

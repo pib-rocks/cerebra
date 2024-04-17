@@ -8,7 +8,7 @@ export enum rosDataTypes {
     motorSettings = "datatypes/msg/MotorSettings",
     chatMessage = "datatypes/msg/ChatMessage",
     voiceAssistantState = "datatypes/msg/VoiceAssistantState",
-    voiceAssistantChatIsListening = "datatypes/msg/VoiceAssistantChatIsListening",
+    chatIsListening = "datatypes/msg/ChatIsListening",
     jointTrajectory = "trajectory_msgs/msg/JointTrajectory",
     diagnosticStatus = "diagnostic_msgs/msg/DiagnosticStatus",
     // srv
@@ -21,7 +21,7 @@ export enum rosDataTypes {
     setVoiceAssistantState = "datatypes/srv/SetVoiceAssistantState",
     sendChatMessage = "datatypes/srv/SendChatMessage",
     getVoiceAssistantState = "datatypes/srv/GetVoiceAssistantState",
-    getVoiceAssistantChatIsListening = "datatypes/srv/GetVoiceAssistantChatIsListening",
+    getChatIsListening = "datatypes/srv/GetChatIsListening",
     // action
     runProgram = "datatypes/action/RunProgram",
 }

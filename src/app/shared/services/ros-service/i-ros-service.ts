@@ -12,7 +12,7 @@ import {ProxyRunProgramResult} from "../../ros-types/msg/proxy-run-program-resul
 import {ProxyRunProgramFeedback} from "../../ros-types/msg/proxy-run-program-feedback";
 import {ProxyRunProgramStatus} from "../../ros-types/msg/proxy-run-program-status";
 import {ChatMessage} from "../../ros-types/msg/chat-message";
-import {VoiceAssistantChatIsListening} from "../../ros-types/msg/voice-assistant-chat-is-listening";
+import {ChatIsListening} from "../../ros-types/msg/chat-is-listening";
 
 export interface IRosService {
     currentReceiver$: Subject<DiagnosticStatus>;
@@ -27,13 +27,13 @@ export interface IRosService {
     proxyRunProgramStatusReceiver$: Subject<ProxyRunProgramStatus>;
     voiceAssistantStateReceiver$: BehaviorSubject<VoiceAssistantState>;
     chatMessageReceiver$: Subject<ChatMessage>;
-    voiceAssistantChatIsListeningReceiver$: Subject<VoiceAssistantChatIsListening>;
+    chatIsListeningReceiver$: Subject<ChatIsListening>;
 
     setVoiceAssistantState: (
         voiceAssistantState: VoiceAssistantState,
     ) => Observable<void>;
 
-    getVoiceAssistantChatIsListening(chatId: string): Observable<boolean>;
+    getChatIsListening(chatId: string): Observable<boolean>;
 
     sendChatMessage(chatId: string, content: string): Observable<void>;
 

@@ -42,7 +42,7 @@ export class ChatService implements SidebarService {
                 subject.next(messages);
             }
         });
-        this.rosService.voiceAssistantChatIsListeningReceiver$.subscribe(
+        this.rosService.chatIsListeningReceiver$.subscribe(
             ({chat_id, listening}) => {
                 const subject = this.IsListeningFromChatId.get(chat_id);
                 if (subject === undefined) {
@@ -195,7 +195,7 @@ export class ChatService implements SidebarService {
             subject = new BehaviorSubject<boolean>(false);
             this.IsListeningFromChatId.set(chatId, subject);
             this.rosService
-                .getVoiceAssistantChatIsListening(chatId)
+                .getChatIsListening(chatId)
                 .subscribe((listening) => {
                     subject!.next(listening);
                 });
