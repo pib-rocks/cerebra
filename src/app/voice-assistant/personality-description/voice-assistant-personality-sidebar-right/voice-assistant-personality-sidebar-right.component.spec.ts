@@ -20,10 +20,10 @@ describe("VoiceAssistantPersonalitySidebarRightComponent", () => {
     let component: VoiceAssistantPersonalitySidebarRightComponent;
     let fixture: ComponentFixture<VoiceAssistantPersonalitySidebarRightComponent>;
     let voiceAssistantService: jasmine.SpyObj<VoiceAssistantService>;
-    let paramsSubject: Subject<{chatId: string}>;
+    let paramsSubject: Subject<{chatUuid: string}>;
 
     beforeEach(async () => {
-        paramsSubject = new BehaviorSubject<{chatId: string}>({chatId: ""});
+        paramsSubject = new BehaviorSubject<{chatUuid: string}>({chatUuid: ""});
         const voiceAssistantServiceSpy: jasmine.SpyObj<VoiceAssistantService> =
             jasmine.createSpyObj(ChatService, [
                 "updatePersonality",
