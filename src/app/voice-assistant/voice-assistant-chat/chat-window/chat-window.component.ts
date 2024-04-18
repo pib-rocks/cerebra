@@ -5,7 +5,7 @@ import {ChatService} from "src/app/shared/services/chat.service";
 import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
 import {ChatMessage} from "src/app/shared/types/chat-message";
 import {Chat} from "src/app/shared/types/chat.class";
-import {Observable, Subscription} from "rxjs";
+import {Observable, Subscription, combineLatest} from "rxjs";
 
 @Component({
     selector: "app-chat-window",
@@ -14,17 +14,15 @@ import {Observable, Subscription} from "rxjs";
 })
 export class ChatWindowComponent implements OnInit {
     chat?: Chat;
-    promptFormControl: FormControl = new FormControl("");
     personalityName: string | undefined;
     messages?: ChatMessage[];
-    messageObservable$: Subscription | undefined;
+
+    chatMessagesSubscription: Subscription | undefined;
+    textInputActiveSubscription: Subscription | undefined;
 
     chatMessageFormControl: FormControl<string> = new FormControl();
 
-    textInputIsValid: boolean = false;
-    active: boolean = false;
-    listening: boolean = false;
-    chatId?: string = "";
+    textInputActive = false;
 
     readonly USER_ICON =
         "../../../../assets/voice-assistant-svgs/chat/user.svg";
@@ -36,11 +34,7 @@ export class ChatWindowComponent implements OnInit {
         private chatService: ChatService,
         private voiceAssistantService: VoiceAssistantService,
         private route: ActivatedRoute,
-    ) {
-        this.chatMessageFormControl.valueChanges.subscribe((value) => {
-            this.textInputIsValid = Boolean(value);
-        });
-    }
+    ) {}
 
     ngOnInit(): void {
         // TODO: can this be removed
@@ -48,26 +42,24 @@ export class ChatWindowComponent implements OnInit {
         // localStorage.setItem("chat", this.chat?.chatId ?? "");
 
         this.route.params.subscribe((params: Params) => {
-            this.messageObservable$?.unsubscribe();
+            this.chatMessagesSubscription?.unsubscribe();
+            this.textInputActiveSubscription?.unsubscribe();
 
-            this.chatId = params["chatUuid"];
-            if (!this.chatId) return;
+            const chatId = params["chatUuid"];
+            if (!chatId) return;
 
-            this.chatService
-                .getIsListeningObservable(this.chatId)
-                .subscribe((listening) => {
-                    this.listening = listening;
-                });
+            this.textInputActiveSubscription = combineLatest([
+                this.chatMessageFormControl.valueChanges,
+                this.chatService.getIsListeningObservable(chatId),
+            ]).subscribe(([inputText, isListening]) => {
+                this.textInputActive = Boolean(inputText && isListening);
+            });
 
-            this.chatService
-                .getIsActiveObservable(this.chatId)
-                .subscribe((active) => (this.active = active));
-
-            this.messageObservable$ = this.chatService
-                .getChatMessagesObservable(this.chatId)
+            this.chatMessagesSubscription = this.chatService
+                .getChatMessagesObservable(chatId)
                 .subscribe((messages) => (this.messages = messages));
 
-            this.chat = this.chatService.getChat(this.chatId);
+            this.chat = this.chatService.getChat(chatId);
             localStorage.setItem("chat", this.chat?.chatId ?? "");
             if (this.chat) {
                 this.personalityName =
@@ -78,10 +70,14 @@ export class ChatWindowComponent implements OnInit {
         });
     }
 
-    sendChatMessage(content: string) {
-        if (!this.chatId) return;
-        this.chatService
-            .sendChatMessage(this.chatId, content)
-            .subscribe(() => this.chatMessageFormControl.setValue(""));
+    sendChatMessage() {
+        if (this.chat && this.textInputActive) {
+            this.chatService
+                .sendChatMessage(
+                    this.chat.chatId,
+                    this.chatMessageFormControl.value,
+                )
+                .subscribe(() => this.chatMessageFormControl.setValue(""));
+        }
     }
 }

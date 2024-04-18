@@ -3,9 +3,11 @@ import {TestBed, waitForAsync} from "@angular/core/testing";
 import {ChatService} from "./chat.service";
 import {ApiService} from "./api.service";
 import {Chat} from "../types/chat.class";
-import {BehaviorSubject, Subject, map, of} from "rxjs";
+import {BehaviorSubject, Observable, Subject, map, of} from "rxjs";
 import {ChatMessage} from "../types/chat-message";
+import {ChatMessage as ChatMessageRos} from "../ros-types/msg/chat-message";
 import {RosService} from "./ros-service/ros.service";
+import {ChatIsListening} from "../ros-types/msg/chat-is-listening";
 
 describe("ChatService", () => {
     let service: ChatService;
@@ -20,15 +22,23 @@ describe("ChatService", () => {
         testChat1,
         testChat2,
     ]);
+    let chatMessageReceiver$: Subject<ChatMessageRos>;
+    let voiceAssistantChatIsListeningReceiver$: Subject<ChatIsListening>;
 
     beforeEach(() => {
         const rosServiceSpy: jasmine.SpyObj<RosService> = jasmine.createSpyObj(
             "RosService",
-            [],
+            ["sendChatMessage", "getChatIsListening"],
             {
                 chatMessageReceiver$: new Subject(),
             },
         );
+        chatMessageReceiver$ = new Subject();
+        rosServiceSpy.chatMessageReceiver$ = chatMessageReceiver$;
+        voiceAssistantChatIsListeningReceiver$ = new Subject();
+        rosServiceSpy.chatIsListeningReceiver$ =
+            voiceAssistantChatIsListeningReceiver$;
+
         const apiServiceSpy: jasmine.SpyObj<ApiService> = jasmine.createSpyObj(
             "ApiService",
             ["get", "delete", "put", "post"],
@@ -36,6 +46,7 @@ describe("ChatService", () => {
         apiServiceSpy.get.and.returnValue(
             new BehaviorSubject({voiceAssistantChats: []}),
         );
+
         TestBed.configureTestingModule({
             providers: [
                 ChatService,
@@ -52,6 +63,7 @@ describe("ChatService", () => {
         service = TestBed.inject(ChatService);
         apiService = TestBed.inject(ApiService) as jasmine.SpyObj<ApiService>;
         rosService = TestBed.inject(RosService) as jasmine.SpyObj<RosService>;
+
         apiService.get = jasmine.createSpy();
     });
 
@@ -253,5 +265,60 @@ describe("ChatService", () => {
             );
             expect(sidebarElements.length).toBe(5);
         });
+    });
+
+    it("should send a chat message", () => {
+        const observable = new Observable<void>();
+        const chatId = "test-id";
+        const content = "some-content";
+        rosService.sendChatMessage.and.returnValue(observable);
+        expect(service.sendChatMessage(chatId, content)).toBe(observable);
+        expect(rosService.sendChatMessage).toHaveBeenCalledOnceWith(
+            chatId,
+            content,
+        );
+    });
+
+    it("should get the correct listening-state if no inital status was published yet", () => {
+        const chatId = "test-id";
+        const next = jasmine.createSpy();
+        rosService.getChatIsListening.and.returnValue(
+            new BehaviorSubject(true),
+        );
+        service.getIsListeningObservable(chatId).subscribe({next});
+        expect(rosService.getChatIsListening).toHaveBeenCalledOnceWith(chatId);
+        voiceAssistantChatIsListeningReceiver$.next({
+            chat_id: chatId,
+            listening: false,
+        });
+        voiceAssistantChatIsListeningReceiver$.next({
+            chat_id: chatId,
+            listening: true,
+        });
+        voiceAssistantChatIsListeningReceiver$.next({
+            chat_id: "other-chat-id",
+            listening: true,
+        });
+        expect(next.calls.allArgs()).toEqual([[true], [false], [true]]);
+    });
+
+    it("should get the correct listening-state if an inital status was already published", () => {
+        const chatId = "test-id";
+        const next = jasmine.createSpy();
+        voiceAssistantChatIsListeningReceiver$.next({
+            chat_id: chatId,
+            listening: true,
+        });
+        service.getIsListeningObservable(chatId).subscribe({next});
+        expect(rosService.getChatIsListening).not.toHaveBeenCalled();
+        voiceAssistantChatIsListeningReceiver$.next({
+            chat_id: chatId,
+            listening: false,
+        });
+        voiceAssistantChatIsListeningReceiver$.next({
+            chat_id: "other-chat-id",
+            listening: true,
+        });
+        expect(next.calls.allArgs()).toEqual([[true], [false]]);
     });
 });
