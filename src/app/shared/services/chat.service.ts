@@ -26,22 +26,22 @@ export class ChatService implements SidebarService {
         private apiService: ApiService,
         private rosService: RosService,
     ) {
-        // this.getAllChats();
-        // this.rosService.chatMessageReceiver$.subscribe((rosChatMessage) => {
-        //     const subject = this.messagesSubjectFromChatId.get(
-        //         rosChatMessage.chat_id,
-        //     );
-        //     if (subject) {
-        //         const messages = subject.getValue();
-        //         messages.unshift({
-        //             messageId: rosChatMessage.message_id,
-        //             timestamp: rosChatMessage.timestamp,
-        //             isUser: rosChatMessage.is_user,
-        //             content: rosChatMessage.content,
-        //         });
-        //         subject.next(messages);
-        //     }
-        // });
+        this.getAllChats();
+        this.rosService.chatMessageReceiver$.subscribe((rosChatMessage) => {
+            const subject = this.messagesSubjectFromChatId.get(
+                rosChatMessage.chat_id,
+            );
+            if (subject) {
+                const messages = subject.getValue();
+                messages.unshift({
+                    messageId: rosChatMessage.message_id,
+                    timestamp: rosChatMessage.timestamp,
+                    isUser: rosChatMessage.is_user,
+                    content: rosChatMessage.content,
+                });
+                subject.next(messages);
+            }
+        });
         this.rosService.chatIsListeningReceiver$.subscribe(
             ({chat_id, listening}) => {
                 const subject = this.IsListeningFromChatId.get(chat_id);
