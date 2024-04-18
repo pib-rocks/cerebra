@@ -1,82 +1,68 @@
-.nav-content {
-    font-weight: bold;
-    text-align: center;
-    text-transform: uppercase;
-    font-size: 16px;
-    padding-top: 14px;
-    height: 50px;
-    width: 160px;
-    background-image: linear-gradient(to top, #1e304d, #000);
-    border: none;
-    color: #0094df;
-    position: relative;
-}
-
-.nav-content a {
-    border: none;
-    color: #0094df;
-}
-
-.nav-content a:hover,
-.navbar-tab-active a {
-    color: white;
-}
-
-.nav-content:hover,
-.navbar-ref-active {
-    background-image: linear-gradient(to top, #000, #1e304d);
-    border-left: 1px solid #0094df;
-    border-right: 1px solid #0094df;
-    box-sizing: border-box;
-}
-
-.nav-content:hover::before,
-.navbar-ref-active::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: -1px;
-    width: calc(100% + 2px);
-    height: 4px;
-    background-color: #e10072;
-}
-
-.nav {
+.nav.nav-tabs {
     border-bottom: 1px solid #0094df;
     margin-top: 20px;
 }
 
-.nav-tab {
-    margin-top: 20px;
-    min-width: 160px;
+.nav.nav-tabs .nav-item {
+    position: relative;
 }
 
-.nav-tab a {
+.nav.nav-tabs .nav-item:last-child {
+    border-right: none;
+}
+
+.nav.nav-tabs .nav-item .nav-link {
+    font-weight: bold;
     text-align: center;
     text-transform: uppercase;
+    font-size: 16px;
+    padding: 14px;
+    width: 160px;
+    height: 50px;
+    background-image: linear-gradient(to top, #1e304d, #000);
+    border: none;
     color: #0094df;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
 }
 
-.nav-tab:hover .nav-content,
-.navbar-ref-active {
+.nav.nav-tabs .nav-item .nav-link:hover,
+.nav.nav-tabs .nav-item.navbar-tab-active .nav-link {
     color: white;
-    padding-top: 14px;
-    padding-left: 0;
-    padding-right: 0;
-    background-image: linear-gradient(to top, #000, #1e304d);
     border-left: 1px solid #0094df;
     border-right: 1px solid #0094df;
 }
 
+.nav.nav-tabs .nav-item .nav-link::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0px;
+    width: 100%;
+    height: 4px;
+    background-color: #e10072;
+    display: none;
+}
+
+.nav.nav-tabs .nav-item .nav-link:hover::before,
+.nav.nav-tabs .nav-item.navbar-tab-active .nav-link::before {
+    display: block;
+}
+
+.nav.nav-tabs .nav-item .navbar-tab-active {
+    border-bottom: 1px solid #0094df;
+}
+
 #add-personality-button {
     font-size: 1.5rem;
-    padding-top: 6px;
+    padding: 0px;
+    color: #0094df;
+    background-image: linear-gradient(to top, #1e304d, #000);
+    border: none;
+    cursor: pointer;
     width: 50px !important;
 }
 
 #add-personality-button:hover {
-    padding-top: 6px;
+    color: white;
+    border-left: 1px solid #0094df;
+    border-right: 1px solid #0094df;
 }
