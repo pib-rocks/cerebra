@@ -244,7 +244,7 @@ export const toolbox: string = `<xml xmlns="http://www.w3.org/1999/xhtml" id="to
         </value>
     </block>
 </category>
-<category name="Lists" colour="259">
+<category name="Lists" colour="260">
     <block type="lists_indexOf">
         <field name="END">FIRST</field>
         <value name="VALUE">
@@ -357,10 +357,10 @@ export const toolbox: string = `<xml xmlns="http://www.w3.org/1999/xhtml" id="to
     <block type = "get_system_time"></block>
 </category>
 <sep></sep>
-<category name="Variables" colour="330" custom="VARIABLE_DYNAMIC"></category>
-<category name="Functions" colour="315" custom="PROCEDURE"></category>
+<category name="Variables" colour="310" custom="VARIABLE_DYNAMIC"></category>
+<category name="Functions" colour="290" custom="PROCEDURE"></category>
 <sep></sep>
-<category name="Motoric skills" colour="120">
+<category name="Motoric skills" colour="355">
     <block type="move_motor"></block>
 </category>
 <category name="Language skills" colour="260"></category>
