@@ -1,15 +1,31 @@
-.sidebar-right-wrapper {
-    background-color: #1b2b44;
-    min-height: 500px;
-    height: 100%;
+.element-div {
+    border-radius: 5px;
+    background-color: #344864;
+    min-height: 30px;
 }
 
-a {
-    width: 100%;
+label {
+    cursor: pointer;
+}
+
+.element-div:hover,
+.element-div-active {
+    background-color: #951b81;
+}
+.element {
+    color: #ffffff;
+    font-weight: bold;
+    font-size: 1rem;
+    display: inline-block;
+    padding-top: 5px;
+}
+
+.sidebar-right-wrapper {
+    background-color: #041939;
 }
 
 ::-webkit-scrollbar {
-    background-color: #1b2b44;
+    background-color: #041939;
     scrollbar-width: thin;
     width: 5px;
 }
@@ -22,69 +38,47 @@ a {
     background-color: #cccccc;
     padding: 10%;
 }
-
-.header-button {
-    background-color: #192021;
-    border: none;
-    width: 100%;
-    color: var(--cerebra-button-color);
+.dot-menu {
+    font-size: 1.4em;
+}
+.dot-menu:hover {
+    color: black;
 }
 
-.header-button:hover img,
-.header-button:hover p {
-    filter: brightness(0) invert(1);
+.btn {
+    border: 0;
 }
 
-.header-button:focus-visible {
-    position: relative;
-    z-index: 1030;
-}
-.header-button:focus-visible img,
-.header-button:focus-visible p {
-    filter: brightness(0) invert(1);
+.btn:hover {
+    background-color: transparent;
 }
 
-.header-button img {
-    width: 1em;
-    height: 1em;
+.dropdown-menu {
+    background-color: #03142e;
+    border: 1px;
+    border-radius: 5px;
+    border-color: #314664;
 }
 
-.sidebar-element {
-    margin-top: 0.5rem;
-    padding-right: 13%;
+.dropdown-toggle::after {
+    content: none;
 }
 
-.sidebar-element div {
-    width: 100%;
-    min-height: 2.5rem;
+.dropdown-item {
+    background-color: transparent;
 }
 
-.sidebar-element a {
-    font-weight: bold;
-    font-size: 1rem;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    display: inline-block;
-    max-width: 95%;
-    border-bottom: 0.5rem solid #1b2b44;
-    margin-left: 13%;
+.item {
+    max-height: 24px;
 }
 
-.sidebar-element a img {
-    width: 1rem;
-    padding-bottom: 2px;
-    margin-right: 0.25rem;
+.dropdown-item:hover label,
+.dropdown-item:hover .item {
+    filter: invert(80%) sepia(50%) saturate(2000%) hue-rotate(300deg)
+        brightness(142%) contrast(110%)
+        drop-shadow(0px 0px 10px rgba(149, 27, 129, 1));
 }
 
-.sidebar-element:hover a img,
-.sidebar-element-active a img {
-    filter: brightness(0) invert(1);
-}
-
-.sidebar-element:hover a,
-.sidebar-element-active a {
-    color: white;
-    border-bottom: #e10072 solid 4px;
-    padding-bottom: 4px;
+.text-center-vertical {
+    padding-top: 10px;
 }

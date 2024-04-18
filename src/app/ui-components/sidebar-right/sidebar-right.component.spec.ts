@@ -11,6 +11,7 @@ import {BehaviorSubject} from "rxjs";
 import {SidebarElement} from "src/app/shared/interfaces/sidebar-element.interface";
 import {VoiceAssistant} from "src/app/shared/types/voice-assistant";
 import {ActivatedRoute} from "@angular/router";
+import {HttpClientTestingModule} from "@angular/common/http/testing";
 
 describe("SideBarRightComponent", () => {
     let component: SideBarRightComponent;
@@ -27,13 +28,40 @@ describe("SideBarRightComponent", () => {
                     useValue: {},
                 },
             ],
-            imports: [RouterTestingModule],
+            imports: [RouterTestingModule, HttpClientTestingModule],
         }).compileComponents();
 
         fixture = TestBed.createComponent(SideBarRightComponent);
         component = fixture.componentInstance;
         component.subject = testSubject;
         component.lStorage = "temp";
+
+        component.optionCallbackMethods = [
+            {
+                icon: "",
+                label: "New program",
+                // eslint-disable-next-line @typescript-eslint/no-empty-function
+                clickCallback: () => {},
+                disabled: false,
+            },
+        ];
+
+        component.dropdownCallbackMethods = [
+            {
+                icon: "",
+                label: "Rename",
+                // eslint-disable-next-line @typescript-eslint/no-empty-function
+                clickCallback: () => {},
+                disabled: false,
+            },
+            {
+                icon: "",
+                label: "Delete",
+                // eslint-disable-next-line @typescript-eslint/no-empty-function
+                clickCallback: () => {},
+                disabled: false,
+            },
+        ];
         fixture.detectChanges();
     });
 

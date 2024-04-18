@@ -1,15 +1,52 @@
-<div class="row allContent mt-4 ">
-    <div class="main col-10 pink-corner-frame">
-        <router-outlet></router-outlet>
-    </div>
-    <div class="side col-2">
-        <app-sidebar-right
-            [headerElements]="headerElements"
-            [subject]="subject"
-            [lStorage]="'chat'"
-            [elementIcon]="personalityIcon"
-            [selectedObservable]="selected">
-        </app-sidebar-right>
+<div class="row mt-4">
+    <div class="row pink-corner-frame w-100">
+        <div class="col-sm-9 col-xl-10">
+            <router-outlet></router-outlet>
+        </div>
+        <div
+            class="col-sm-3 col-xl-2 p-0"
+            style="background-color: #041939">
+            <div
+                class="pt-4 text-center"
+                style="background-color: #041939">
+                <label class="p-1 text-break">Voice interaction</label>
+                <div class="col">
+                    <div class="row pt-1 mb-3">
+                        <div class="col-11 ml-sm-2 ml-xl-3">
+                            <div class="row">
+                                <button
+                                    type="button"
+                                    [ngClass]="vaState ? 'on' : 'off'"
+                                    class="col btn text-truncate element text-center p-3"
+                                    id="sidebar-right-toggle-voice-assistant"
+                                    (click)="toggleVoiceAssistant()"
+                                    title="Toggle for turning Voice Assistant on and off"
+                                    value="{{vaState}}">
+                                    <label class="mb-0"
+                                        >{{ vaState ? 'ON' : 'OFF' }}</label
+                                    >
+                                </button>
+                                <a
+                                    *ngIf="vaState && (activeChat != currentChat)"
+                                    [routerLink]="['/', 'voice-assistant', activePersonality, 'chat', activeChat]"
+                                    >Jump to active chat</a
+                                >
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <app-sidebar-right
+                    [optionCallbackMethods]="optionCallbackMethods"
+                    [dropdownCallbackMethods]="dropdownCallbackMethods"
+                    [subject]="subject"
+                    [lStorage]="'chat'"
+                    [elementIcon]="personalityIcon"
+                    [selectedObservable]="selected">
+                </app-sidebar-right>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -23,7 +60,7 @@
         <div
             class="col-10"
             id="header-title">
-            <span id="header-title-text">TOPIC</span>
+            <span id="header-title-text">ADD CHAT</span>
         </div>
         <div
             class="col-2 text-right"
@@ -42,7 +79,7 @@
                         fill="#FFF"
                         font-weight="bold"
                         font-size="16"
-                        y="11.062">
+                        y="12">
                         X
                     </text>
                 </svg>
@@ -53,7 +90,6 @@
         class="row m-2 mt-4 pr-2"
         id="row-name">
         <label
-            ngbAutofocus
             for="name-input"
             class="col-3 mt-2 justify-content-end"
             id="label-name"
@@ -74,6 +110,7 @@
                 type="button"
                 class="btn btn-regular"
                 id="modal-save-button"
+                (keydown.enter)="this.saveChat()"
                 (click)="this.saveChat()">
                 Save
             </button>

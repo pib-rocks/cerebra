@@ -1,88 +1,43 @@
-<div class="row mt-4 ">
-    <div class="col-12 pink-corner-frame">
-        <div class="row mt-2">
-            <div class="col-4">
-                <div class="row pt-1">
-                    <div class="col-auto text-right">
-                        <span class="align-middle"> Personality </span>
-                    </div>
-                    <div class="col-auto  pr-0 pl-0">
-                        <a
-                            class="toggle-button"
-                            id="toggle-voice-assistant"
-                            [routerLink]="['chat']">
-                            <img
-                                [src]="'../../assets/toggle-switch-left.png'"
-                                alt="Toggle for turning the Voice Assistant on and off" />
-                        </a>
-                    </div>
-                    <div class="col-auto text-left">
-                        <span class="align-middle"> Chats </span>
-                    </div>
+<div class="row mt-4">
+    <div class="row pink-corner-frame w-100">
+        <div class="main col-sm-9 col-xl-10">
+            <div class="row pt-2 mt-2">
+                <div class="col-6 text-right">
+                    <span class="align-middle"> Chats </span>
+                </div>
+                <div class="col-auto pr-0 pl-0">
+                    <a
+                        class="toggle-button"
+                        id="personality-description-toggle-voice-assistant"
+                        [routerLink]="['chat']">
+                        <img
+                            [src]="'../../assets/toggle-switch-right.png'"
+                            alt="Toggle for turning the Voice Assistant on and off" />
+                    </a>
+                </div>
+                <div class="col text-left">
+                    <span class="align-middle">Personality</span>
                 </div>
             </div>
-            <div class="col-8 d-flex justify-content-end">
-                <div class="mr-2">
-                    <button
-                        id="edit-button"
-                        class="btn btn-regular"
-                        (click)="updatePersonality()">
-                        Edit
-                    </button>
-                </div>
-                <div class="mr-2">
-                    <button
-                        id="save-button"
-                        class="btn btn-regular"
-                        (click)="updateDescription()">
-                        Save
-                    </button>
-                </div>
-                <div class="mr-2">
-                    <button
-                        id="clone-button"
-                        class="btn btn-regular"
-                        (click)="cloneDescription()">
-                        Clone
-                    </button>
-                </div>
-                <div>
-                    <button
-                        id="delete-button"
-                        class="transparent-button"
-                        (click)="deletePersonality()">
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 18 18">
-                            <defs>
-                                <style>
-                                    .uuid-08731573-3572-4348-912f-b45be2e8e936{fill:#0094df;fill-rule:evenodd;stroke-width:0px;}
-                                </style>
-                            </defs>
-                            <path
-                                class="uuid-08731573-3572-4348-912f-b45be2e8e936"
-                                d="m.82,5.07l1.02,10.27c0,.37.31.66.68.66h7.58c.38,0,.68-.3.68-.66l1.02-10.27H.82Zm6.05,8.99h-1.07v-7.08h1.07v7.08h0Zm2,0h-1.07l1-7.08h1.07l-1,7.08h0Zm-4,0h-1.07l-1-7.08h1.07l1,7.08h0Z" />
-                            <path
-                                class="uuid-08731573-3572-4348-912f-b45be2e8e936"
-                                d="m11.92,2.11h-3.14V.71c0-.39-.46-.71-.86-.71h-3.1c-.4,0-.95.22-.95.62v1.4l-3.15.09c-.4,0-.73.32-.73.71v1.15h12.64v-1.15c0-.39-.32-.71-.73-.71h0Zm-7.13-.66c0-.31.35-.57.78-.57h1.56c.43,0,.78.25.78.57v.66h-3.13v-.66h0Z" />
-                        </svg>
-                    </button>
+            <div class="row mt-3 content-window">
+                <div class="col">
+                    <textarea
+                        id="textarea-personality"
+                        class="form-control p-3 mb-4"
+                        rows="16"
+                        placeholder="Describe personality with a prompt..."
+                        [(ngModel)]="textAreaContent"
+                        (input)="updateDescription()">
+                        {{personality?.description ?? "ERROR: Personality not found"}}
+                    </textarea>
                 </div>
             </div>
         </div>
-        <div class="row mt-2 content-window">
-            <div
-                class="col-12"
-                style="height: 100%">
-                <textarea
-                    id="textarea-personality"
-                    class="form-control p-3"
-                    rows="16"
-                    placeholder="Describe personality with a prompt..."
-                    [(ngModel)]="textAreaContent">
-        {{personality?.description ?? "ERROR: Personality not found"}}</textarea
-                >
-            </div>
+        <div class="col-sm-3 col-xl-2 p-0">
+            <app-va-personality-sidebar-right
+                class="m-0"
+                [personalityUUID]="personality?.getUUID()">
+            </app-va-personality-sidebar-right>
         </div>
     </div>
 </div>

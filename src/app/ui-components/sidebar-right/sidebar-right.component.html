@@ -1,32 +1,63 @@
-<div class="col-12 sidebar-right-wrapper p-0">
-    <div class="row p-0 m-0 mb-1">
-        <div
-            class="col-4 p-0"
-            *ngFor="let element of headerElements">
-            <button
-                class="header-button"
-                (click)="element.clickCallback()"
-                id="label_{{element.label}}">
-                <img
-                    class="mt-3"
-                    [src]="element.icon"
-                    alt="" />
-                <p>{{element.label}}</p>
-            </button>
-        </div>
-    </div>
+<div class="col sidebar-right-wrapper h-100">
     <div class="row">
-        <div
-            class="sidebar-element row"
-            *ngFor="let sidebarElement of sidebarElements"
-            routerLinkActive="sidebar-element-active">
-            <div class="col-auto">
-                <a [routerLink]="sidebarElement.getUUID()"
-                    ><img
-                        *ngIf="elementIcon"
-                        [src]="elementIcon" />
-                    {{ sidebarElement.getName() }}</a
-                >
+        <div class="mt-4">
+            <div
+                class="row"
+                *ngFor="let sidebarElement of sidebarElements">
+                <div
+                    class="col-11 element-div ml-sm-2 ml-xl-3 mt-3 text-nowrap"
+                    routerLinkActive="element-div-active">
+                    <div class="d-flex justify-content-between">
+                        <a
+                            [routerLink]="sidebarElement.getUUID()"
+                            class="element text-truncate col-9 pl-sm-1 pl-xl-3 pr-2 pb-2 text-center-vertical">
+                            {{ sidebarElement.getName() }}
+                        </a>
+                        <div ngbDropdown>
+                            <button
+                                type="button"
+                                class="btn pl-sm-0"
+                                id="dropdownbutton-{{sidebarElement.getName()}}"
+                                title="Edit"
+                                ngbDropdownToggle>
+                                <i class="bi bi-three-dots dot-menu"></i>
+                            </button>
+                            <div
+                                ngbDropdownMenu
+                                attr.aria-labelledby="dropdownbutton-{{sidebarElement.getName()}}">
+                                <div
+                                    *ngFor="let callback of dropdownCallbackMethods">
+                                    <button
+                                        ngbDropdownItem
+                                        [disabled]="callback.disabled"
+                                        id="sidebar-right-{{toLowerCaseAndRemoveSpace(callback.label)}}-{{sidebarElement.getName()}}"
+                                        (click)="callback.clickCallback(sidebarElement.getUUID())">
+                                        <img
+                                            *ngIf="callback.icon !== ''"
+                                            [src]="callback.icon"
+                                            class="item pr-1 mb-1" />
+                                        <label>{{callback.label}}</label>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-4">
+                <div class="col-11 ml-sm-2 ml-xl-3 element-div">
+                    <div
+                        *ngFor="let option of optionCallbackMethods"
+                        class="row">
+                        <button
+                            type="button"
+                            class="col btn pl-3 p-3 text-truncate element text-center"
+                            id="sidebar-right-{{option.label}}"
+                            (click)="option.clickCallback('')">
+                            <label class="mb-0">{{option.label}}</label>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
