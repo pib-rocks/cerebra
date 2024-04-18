@@ -2,7 +2,7 @@
     <li
         *ngFor="let sidebarElement of sidebarElements"
         class="nav-item"
-        [ngClass]="{'navbar-tab-active': isRouteActive(sidebarElement.getUUID())}">
+        [ngClass]="{'navbar-btn-active': isRouteActive(sidebarElement.getUUID())}">
         <a
             class="nav-link"
             id="personality-{{sidebarElement.getUUID()}}"

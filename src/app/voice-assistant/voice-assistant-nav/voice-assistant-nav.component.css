@@ -25,7 +25,7 @@
 }
 
 .nav.nav-tabs .nav-item .nav-link:hover,
-.nav.nav-tabs .nav-item.navbar-tab-active .nav-link {
+.nav.nav-tabs .nav-item.navbar-btn-active .nav-link {
     color: white;
     border-left: 1px solid #0094df;
     border-right: 1px solid #0094df;
@@ -43,11 +43,11 @@
 }
 
 .nav.nav-tabs .nav-item .nav-link:hover::before,
-.nav.nav-tabs .nav-item.navbar-tab-active .nav-link::before {
+.nav.nav-tabs .nav-item.navbar-btn-active .nav-link::before {
     display: block;
 }
 
-.nav.nav-tabs .nav-item .navbar-tab-active {
+.nav.nav-tabs .nav-item .navbar-btn-active {
     border-bottom: 1px solid #0094df;
 }
 
