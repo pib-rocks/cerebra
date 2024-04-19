@@ -1,9 +1,9 @@
 import * as Blockly from "blockly";
 
-export const textToSpeechBlock =
+export const playAudioFromSpeech =
     Blockly.common.createBlockDefinitionsFromJsonArray([
         {
-            type: "text_to_speech",
+            type: "play_audio_from_speech",
             message0: "as  %1 say %2",
             args0: [
                 {
