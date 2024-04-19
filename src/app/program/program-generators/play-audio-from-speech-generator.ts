@@ -3,9 +3,8 @@ import {Block} from "blockly/core/block";
 
 import {Order, pythonGenerator} from "blockly/python";
 
-// Hinzufügen von verbotenen Wörtern, damit die Variablen im Pythoncode nicht überschrieben werden können
 pythonGenerator.addReservedWords(
-    "saved_motor_positions,all_motor_names,selected_motor,joint_trajectory_publisher,JointTrajectoryPublisher()",
+    "play_audio_from_speech_client,PlayAudioFromSpeechClient()",
 );
 
 export function playAudioFromSpeechGenerator(
