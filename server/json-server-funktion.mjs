@@ -457,16 +457,16 @@ server.put("/program/:programNumber/code", (req, res, next) => {
 });
 
 //getAssistantModel
-server.get("/assistant-model", (req, res, next) =>{
+server.get("/assistant-model", (req, res, next) => {
     let response = [];
     mockData.assistantModel.forEach((model) => {
         response.push(AssistantModel.getAssistantModel(model));
     });
-    return res.status(200).send({"voiceAssistantModels": response});
+    return res.status(200).send({voiceAssistantModels: response});
 });
 
 //getAssistantModelById
-server.get("/assistant-model/:id", (req, res, next) =>{
+server.get("/assistant-model/:id", (req, res, next) => {
     let response = mockData.assistantModel.find(
         (assistantModel) => assistantModel.id == req.params.id,
     );
