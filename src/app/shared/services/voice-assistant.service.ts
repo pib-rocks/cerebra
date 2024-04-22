@@ -134,10 +134,15 @@ export class VoiceAssistantService implements SidebarService {
                 }),
             )
             .subscribe((respone) => {
+                console.log(respone);
                 this.voiceAssistantModel = [];
                 const voiceAssistantModelDto = respone[
                     "voiceAssistantModels"
                 ] as VoiceAssistantModelDto[];
+                console.log(voiceAssistantModelDto);
+                if (undefined == voiceAssistantModelDto) {
+                    return;
+                }
                 voiceAssistantModelDto.forEach((dto) => {
                     this.voiceAssistantModel.push(
                         VoiceAssistantModel.parseDtoToVoiceAssistantModel(dto),
