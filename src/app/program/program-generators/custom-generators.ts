@@ -15,9 +15,7 @@ const generators: typeof pythonGenerator.forBlock = {
 };
 
 for (const name in generators) {
-    console.log(name);
     pythonGenerator.forBlock[name] = generators[name];
 }
-console.log(generators);
 pythonGenerator.forBlock["play_audio_from_speech"] =
     generators["playAudioFromSpeechGenerator"];
