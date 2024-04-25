@@ -60,6 +60,9 @@ export class VoiceAssistantChatComponent implements OnInit {
                 if (deleteChat) {
                     deleteChat.disabled = this.turnedOn;
                 }
+                this.chatService.getChatById(state.chatId).subscribe((chat) => {
+                    this.activePersonalityId = chat.personalityId;
+                });
             },
         );
 
@@ -184,9 +187,6 @@ export class VoiceAssistantChatComponent implements OnInit {
 
         this.turnedOn = turnedOn;
         this.activeChatId = nextState.chatId;
-        if (this.personalityId) {
-            this.activePersonalityId = this.personalityId;
-        }
 
         this.voiceAssistantService.setVoiceAssistantState(nextState).subscribe({
             error: (error) => console.error(error),
