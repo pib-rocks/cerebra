@@ -55,6 +55,7 @@ export class CameraComponent implements OnInit, OnDestroy {
 
     ngOnDestroy(): void {
         this.stopCamera();
+        this.cameraSettings!.isActive = false;
     }
 
     setSize(
