@@ -22,9 +22,12 @@
                     [motor]="motor"
                     class="col-6 m-0 p-0"></app-motor-settings>
                 <app-motor-current
+                    [routerLink]="['motor', motor.motorPathName]"
+                    [id]="'touchpoint-' + motor.motorPathName"
+                    routerLinkActive="active-touchpoint"
                     [reversed]="joint.reversed"
                     [motor]="motor"
-                    class="col-6 m-0 p-0"></app-motor-current>
+                    class="col-6 background-class m-0 p-0"></app-motor-current>
             </ng-container>
         </div>
     </div>
