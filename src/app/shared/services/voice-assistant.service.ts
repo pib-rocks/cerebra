@@ -18,10 +18,7 @@ import {SidebarService} from "../interfaces/sidebar-service.interface";
 import {SidebarElement} from "../interfaces/sidebar-element.interface";
 import {RosService} from "./ros-service/ros.service";
 import {VoiceAssistantState} from "../types/voice-assistant-state";
-import {
-    VoiceAssistantModel,
-    VoiceAssistantModelDto,
-} from "../types/voiceAssistantModel";
+import {AssistantModel, AssistantModelDto} from "../types/assistantModel";
 
 @Injectable({
     providedIn: "root",
@@ -33,7 +30,7 @@ export class VoiceAssistantService implements SidebarService {
         new BehaviorSubject<VoiceAssistant[]>([]);
     uuidSubject: Subject<string> = new Subject<string>();
     voiceAssistantActiveStatus: boolean = false;
-    voiceAssistantModel: VoiceAssistantModel[] = [];
+    assistantModel: AssistantModel[] = [];
     voiceAssistantActiveStatusSubject: Subject<boolean> =
         new Subject<boolean>();
 
@@ -42,7 +39,7 @@ export class VoiceAssistantService implements SidebarService {
         private rosService: RosService,
     ) {
         this.getAllPersonalities();
-        this.getAllvoiceAssistantModels();
+        this.getAllAssistantModels();
 
         this.voiceAssistantStateObservable =
             this.rosService.voiceAssistantStateReceiver$.pipe(
@@ -123,7 +120,7 @@ export class VoiceAssistantService implements SidebarService {
             });
     }
 
-    getAllvoiceAssistantModels() {
+    getAllAssistantModels() {
         this.apiService
             .get(UrlConstants.ASSISTANT_MODEL)
             .pipe(
@@ -134,25 +131,22 @@ export class VoiceAssistantService implements SidebarService {
                 }),
             )
             .subscribe((respone) => {
-                console.log(respone);
-                this.voiceAssistantModel = [];
-                const voiceAssistantModelDto = respone[
-                    "voiceAssistantModels"
-                ] as VoiceAssistantModelDto[];
-                console.log(voiceAssistantModelDto);
-                if (undefined == voiceAssistantModelDto) {
+                this.assistantModel = [];
+                const assistantModelDto = respone[
+                    "assistantModels"
+                ] as AssistantModelDto[];
+                if (undefined == assistantModelDto) {
                     return;
                 }
-                voiceAssistantModelDto.forEach((dto) => {
-                    this.voiceAssistantModel.push(
-                        VoiceAssistantModel.parseDtoToVoiceAssistantModel(dto),
+                assistantModelDto.forEach((dto) => {
+                    this.assistantModel = assistantModelDto.map((dto) =>
+                        AssistantModel.parseDtoToAssistantModel(dto),
                     );
                 });
             });
     }
 
     createPersonality(personality: VoiceAssistant) {
-        console.log(parseVoiceAssistantToDto(personality));
         this.apiService
             .post(
                 UrlConstants.PERSONALITY,
