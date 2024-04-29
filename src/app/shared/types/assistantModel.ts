@@ -1,13 +1,13 @@
 export class AssistantModel {
     constructor(
-        public id: number,
+        public model_id: number,
         public apiName: string,
         public visualName: string,
         public hasImageSupport: boolean,
     ) {}
 
     getId(): number {
-        return this.id;
+        return this.model_id;
     }
 
     getVisualName(): string {
@@ -16,7 +16,7 @@ export class AssistantModel {
 
     static parseDtoToAssistantModel(model: AssistantModelDto) {
         return new AssistantModel(
-            model.id,
+            model.model_id,
             model.apiName,
             model.visualName,
             model.hasImageSupport,
@@ -26,7 +26,7 @@ export class AssistantModel {
 
 export class AssistantModelDto {
     constructor(
-        public id: number,
+        public model_id: number,
         public apiName: string,
         public visualName: string,
         public hasImageSupport: boolean,

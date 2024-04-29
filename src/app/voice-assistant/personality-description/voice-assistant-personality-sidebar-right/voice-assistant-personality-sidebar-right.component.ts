@@ -66,7 +66,7 @@ export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
                 },
             ),
             assistantModel: new FormControl(
-                this.personalityClone?.assistantId ?? this.models[0].id,
+                this.personalityClone?.assistantId ?? this.models[0].model_id,
                 {
                     nonNullable: true,
                     validators: [Validators.required],
