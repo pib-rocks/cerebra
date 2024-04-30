@@ -66,7 +66,7 @@ export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
                 },
             ),
             assistantModel: new FormControl(
-                this.personalityClone?.assistantId ?? this.models[0].modelId,
+                this.personalityClone?.assistantModelId ?? this.models[0].id,
                 {
                     nonNullable: true,
                     validators: [Validators.required],
@@ -143,7 +143,7 @@ export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
                 this.personalityFormSidebar.controls["persona-name"].value;
             this.personalityClone.gender =
                 this.personalityFormSidebar.controls["gender"].value;
-            this.personalityClone.assistantId =
+            this.personalityClone.assistantModelId =
                 this.personalityFormSidebar.controls["assistantModel"].value;
             this.voiceAssistantService.updatePersonalityById(
                 this.personalityClone!,

@@ -76,7 +76,7 @@ export class VoiceAssistantService implements SidebarService {
                     m.gender,
                     m.pauseThreshold,
                     m.description,
-                    m.assistantId,
+                    m.assistantModelId,
                 ),
             );
         });
@@ -133,7 +133,7 @@ export class VoiceAssistantService implements SidebarService {
             .subscribe((respone) => {
                 this.assistantModel = [];
                 const assistantModelDto = respone[
-                    "assistantModels"
+                    "voiceAssistantModels"
                 ] as AssistantModelDto[];
                 if (undefined == assistantModelDto) {
                     return;
@@ -167,6 +167,7 @@ export class VoiceAssistantService implements SidebarService {
     }
 
     updatePersonalityById(personality: VoiceAssistant) {
+        console.log(personality);
         this.apiService
             .put(
                 UrlConstants.PERSONALITY + `/${personality.personalityId}`,
