@@ -38,7 +38,6 @@ export class VerticalSliderComponent implements OnInit, AfterViewInit {
     valueSanitized: boolean = false;
 
     ngOnInit(): void {
-        this.name = this.name?.toLowerCase();
         this.rangeFormControl.setValue(this.defaultValue);
         this.messageReceiver$.subscribe((value: number) => {
             this.rangeFormControl.setValue(value);
