@@ -133,7 +133,7 @@ export class VoiceAssistantService implements SidebarService {
             .subscribe((respone) => {
                 this.assistantModel = [];
                 const assistantModelDto = respone[
-                    "voiceAssistantModels"
+                    "assistantModels"
                 ] as AssistantModelDto[];
                 if (undefined == assistantModelDto) {
                     return;
