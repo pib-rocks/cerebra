@@ -20,7 +20,7 @@ export class VoiceAssistantComponent implements OnInit {
     ngbModalRef?: NgbModalRef;
     imgSrc: string = "../../assets/toggle-switch-left.png";
     subject!: Observable<SidebarElement[]>;
-    models: AssistantModel[] = [];
+    models!: AssistantModel[];
 
     button: {enabled: boolean; func: () => void} = {
         enabled: true,
@@ -38,6 +38,11 @@ export class VoiceAssistantComponent implements OnInit {
     voiceAssistantActiveStatus = false;
 
     ngOnInit() {
+        this.voiceAssistantService.assistantModelsSubject.subscribe(
+            (models) => {
+                this.models = models;
+            },
+        );
         this.button.enabled = true;
         this.button.func = this.openAddModal;
         this.subject = this.voiceAssistantService.getSubject();
@@ -73,7 +78,7 @@ export class VoiceAssistantComponent implements OnInit {
     }
 
     showModal = () => {
-        this.models = this.voiceAssistantService.assistantModel;
+        this.models;
         return (this.ngbModalRef = this.modalService.open(this.modalContent, {
             ariaLabelledBy: "modal-basic-title",
             size: "sm",

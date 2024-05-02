@@ -30,7 +30,8 @@ export class VoiceAssistantService implements SidebarService {
         new BehaviorSubject<VoiceAssistant[]>([]);
     uuidSubject: Subject<string> = new Subject<string>();
     voiceAssistantActiveStatus: boolean = false;
-    assistantModels: AssistantModel[] = [];
+    assistantModelsSubject: BehaviorSubject<AssistantModel[]> =
+        new BehaviorSubject<AssistantModel[]>([]);
     voiceAssistantActiveStatusSubject: Subject<boolean> =
         new Subject<boolean>();
 
@@ -131,15 +132,16 @@ export class VoiceAssistantService implements SidebarService {
                 }),
             )
             .subscribe((respone) => {
-                this.assistantModels = [];
                 const assistantModelDto = respone[
-                    "assistantModels"
+                    "voiceAssistantModels"
                 ] as AssistantModelDto[];
                 if (undefined == assistantModelDto) {
                     return;
                 }
-                this.assistantModels = assistantModelDto.map((dto) =>
-                    AssistantModel.parseDtoToAssistantModel(dto),
+                this.assistantModelsSubject.next(
+                    assistantModelDto.map((dto) =>
+                        AssistantModel.parseDtoToAssistantModel(dto),
+                    ),
                 );
             });
     }
@@ -165,7 +167,6 @@ export class VoiceAssistantService implements SidebarService {
     }
 
     updatePersonalityById(personality: VoiceAssistant) {
-        console.log(personality);
         this.apiService
             .put(
                 UrlConstants.PERSONALITY + `/${personality.personalityId}`,
@@ -202,5 +203,9 @@ export class VoiceAssistantService implements SidebarService {
 
     getSubject(): Observable<SidebarElement[]> {
         return this.personalitiesSubject;
+    }
+
+    getModels(): Observable<AssistantModel[]> {
+        return this.assistantModelsSubject;
     }
 }

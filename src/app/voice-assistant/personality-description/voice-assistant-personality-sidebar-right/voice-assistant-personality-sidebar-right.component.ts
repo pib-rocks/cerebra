@@ -4,6 +4,7 @@ import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.ser
 import {ActivatedRoute, Params} from "@angular/router";
 import {FormControl, FormGroup, Validators} from "@angular/forms";
 import {AssistantModel} from "src/app/shared/types/assistantModel";
+import {Observable} from "rxjs";
 @Component({
     selector: "app-va-personality-sidebar-right",
     templateUrl: "./voice-assistant-personality-sidebar-right.component.html",
@@ -17,7 +18,7 @@ export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
     personalityClone!: VoiceAssistant;
     thresholdString: string = "";
     personalityFormSidebar!: FormGroup;
-    models: AssistantModel[] = [];
+    models!: AssistantModel[];
     @Input() personalityUUID: string | undefined;
 
     constructor(
@@ -26,7 +27,12 @@ export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
     ) {}
 
     ngOnInit() {
-        this.models = this.voiceAssistantService.assistantModel;
+        // this.voiceAssistantService.getAllAssistantModels()
+        this.voiceAssistantService.assistantModelsSubject.subscribe(
+            (models) => {
+                this.models = models;
+            },
+        );
         this.route.params.subscribe((params: Params) => {
             const temp = this.voiceAssistantService.getPersonality(
                 params["personalityUuid"],
