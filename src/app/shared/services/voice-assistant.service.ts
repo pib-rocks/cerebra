@@ -30,7 +30,7 @@ export class VoiceAssistantService implements SidebarService {
         new BehaviorSubject<VoiceAssistant[]>([]);
     uuidSubject: Subject<string> = new Subject<string>();
     voiceAssistantActiveStatus: boolean = false;
-    assistantModel: AssistantModel[] = [];
+    assistantModels: AssistantModel[] = [];
     voiceAssistantActiveStatusSubject: Subject<boolean> =
         new Subject<boolean>();
 
@@ -131,18 +131,16 @@ export class VoiceAssistantService implements SidebarService {
                 }),
             )
             .subscribe((respone) => {
-                this.assistantModel = [];
+                this.assistantModels = [];
                 const assistantModelDto = respone[
                     "voiceAssistantModels"
                 ] as AssistantModelDto[];
                 if (undefined == assistantModelDto) {
                     return;
                 }
-                assistantModelDto.forEach((dto) => {
-                    this.assistantModel = assistantModelDto.map((dto) =>
-                        AssistantModel.parseDtoToAssistantModel(dto),
-                    );
-                });
+                this.assistantModels = assistantModelDto.map((dto) =>
+                    AssistantModel.parseDtoToAssistantModel(dto),
+                );
             });
     }
 
