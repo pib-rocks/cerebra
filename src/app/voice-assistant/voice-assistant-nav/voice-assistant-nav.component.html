@@ -1,28 +1,25 @@
-<div>
-    <div class="row nav">
-        <div
-            class="col-1 nav-tab p-0"
-            [ngClass]="{'navbar-tab-active': isRouteActive(sidebarElement.getUUID())}"
-            *ngFor="let sidebarElement of sidebarElements ">
-            <a
-                class="nav-link nav-content"
-                id="personality-{{sidebarElement.getUUID()}}"
-                [routerLink]="[sidebarElement.getUUID(), 'chat']"
-                [ngClass]="{'navbar-ref-active': isRouteActive(sidebarElement.getUUID())}"
-                >{{sidebarElement.getName()}}</a
-            >
-        </div>
-        <div
-            class="col-auto nav-tab p-0"
-            routerLinkActive="navbar-tab-active"
-            *ngIf="button?.enabled ?? false">
-            <button
-                id="add-personality-button"
-                type="button"
-                class="nav-link w-100 nav-content"
-                (click)="button?.func()">
-                +
-            </button>
-        </div>
-    </div>
-</div>
+<ul class="nav nav-tabs">
+    <li
+        *ngFor="let sidebarElement of sidebarElements"
+        class="nav-item"
+        [ngClass]="{'navbar-btn-active': isRouteActive(sidebarElement.getUUID())}">
+        <a
+            class="nav-link"
+            id="personality-{{sidebarElement.getUUID()}}"
+            [routerLink]="[sidebarElement.getUUID(), 'chat']"
+            [ngClass]="{'navbar-ref-active': isRouteActive(sidebarElement.getUUID())}">
+            {{sidebarElement.getName()}}
+        </a>
+    </li>
+    <li
+        class=""
+        *ngIf="button?.enabled ?? false">
+        <button
+            id="add-personality-button"
+            type="button"
+            class="nav-link"
+            (click)="button?.func()">
+            +
+        </button>
+    </li>
+</ul>
