@@ -27,7 +27,6 @@ export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
     ) {}
 
     ngOnInit() {
-        // this.voiceAssistantService.getAllAssistantModels()
         this.voiceAssistantService.assistantModelsSubject.subscribe(
             (models) => {
                 this.models = models;

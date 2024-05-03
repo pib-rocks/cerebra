@@ -11,6 +11,7 @@ import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {HttpClientTestingModule} from "@angular/common/http/testing";
 import {VoiceAssistant} from "../shared/types/voice-assistant";
 import {BehaviorSubject, Subject} from "rxjs";
+import {AssistantModel} from "../shared/types/assistantModel";
 export class MockNgbModalRef {
     componentInstance = {
         prompt: undefined,
@@ -24,6 +25,10 @@ describe("VoiceAssistantComponent", () => {
     let voiceAssistantService: jasmine.SpyObj<VoiceAssistantService>;
     let modalService: NgbModal;
     let router: Router;
+    const models = [
+        new AssistantModel(1, "gpt-3", "GPT-3", false),
+        new AssistantModel(1, "gpt-4", "GPT-4", true),
+    ];
 
     const mockModalRef: MockNgbModalRef = new MockNgbModalRef();
 
@@ -37,6 +42,7 @@ describe("VoiceAssistantComponent", () => {
                 "getPersonality",
                 "createPersonality",
                 "updatePersonalityById",
+                "getAllAssistantModels",
             ],
             {
                 voiceAssistantStateObservable: new BehaviorSubject({
@@ -82,9 +88,11 @@ describe("VoiceAssistantComponent", () => {
         ) as jasmine.SpyObj<VoiceAssistantService>;
         modalService = TestBed.inject(NgbModal);
         router = TestBed.inject(Router);
-
         fixture = TestBed.createComponent(VoiceAssistantComponent);
         component = fixture.componentInstance;
+        voiceAssistantService.assistantModelsSubject = new BehaviorSubject<
+            AssistantModel[]
+        >(models);
         component.ngOnInit();
     });
 

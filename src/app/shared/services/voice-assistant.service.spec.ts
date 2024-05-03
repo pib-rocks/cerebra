@@ -5,6 +5,7 @@ import {VoiceAssistant} from "../types/voice-assistant";
 import {ApiService} from "./api.service";
 import {BehaviorSubject} from "rxjs";
 import {RosService} from "./ros-service/ros.service";
+import {AssistantModel} from "../types/assistantModel";
 
 describe("VoiceAssistantService", () => {
     let service: VoiceAssistantService;
@@ -37,6 +38,15 @@ describe("VoiceAssistantService", () => {
     const observableOfTwo = new BehaviorSubject<{
         voiceAssistantPersonalities: VoiceAssistant[];
     }>(res);
+    const models = {
+        voiceAssistantModels: [
+            new AssistantModel(1, "gpt-3.5-turbo", "GPT-3.5 Turbo", false),
+            new AssistantModel(2, "claude-3-sonnet", "Claude 3 Sonnet", true),
+        ],
+    };
+    const observableModels = new BehaviorSubject<{
+        voiceAssistantModels: AssistantModel[];
+    }>(models);
 
     beforeEach(() => {
         const rosServiceSpy: jasmine.SpyObj<RosService> = jasmine.createSpyObj(
@@ -53,6 +63,7 @@ describe("VoiceAssistantService", () => {
             "ApiService",
             ["get", "delete", "put", "post"],
         );
+
         apiServiceSpy.get.and.returnValue(
             new BehaviorSubject({voiceAssistantPersonalities: []}),
         );
@@ -147,5 +158,12 @@ describe("VoiceAssistantService", () => {
             chat_id: "next-chat-id",
         });
         expect(state).toEqual(jasmine.objectContaining(expectedState));
+    }));
+
+    it("should save a behavior subject to a local var", waitForAsync(() => {
+        apiService.get.and.returnValue(observableModels);
+        service.getAllAssistantModels();
+        expect(apiService.get).toHaveBeenCalled();
+        expect(service.assistantModelsSubject.getValue().length).toBe(2);
     }));
 });
