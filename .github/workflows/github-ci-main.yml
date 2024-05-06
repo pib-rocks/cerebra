@@ -1,0 +1,58 @@
+on:
+  push:
+  pull_request:
+    types: [opened, reopened]
+  workflow_dispatch:
+
+jobs:
+
+  Pipeline:
+    name: Cerebra CI/CD-Pipeline
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18]
+        
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies   
+        run: npm ci
+        
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - name: Link Angular CLI
+        run: npm link @angular/cli
+        
+      - name: Run Lint   
+        run: ng lint
+        continue-on-error: true
+
+      - name: Run Unit Tests
+        if: ( success() || failure() ) && github.event_name == 'pull_request' 
+        run: ng test --code-coverage --watch=false --browsers=NoSandbox
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: ( success() || failure() ) && github.event_name == 'pull_request'
+        with:
+          name: coverage-report
+          path: coverage/cerebra/lcov.info
+
+  SonarCloud-Analysis:
+    name: Analyze with SonarCloud
+    uses: ./.github/workflows/sonarcloud.yml
+    secrets: inherit
+    needs: Pipeline
+    if: github.event_name == 'pull_request'
+        
+  CodeQL-Analysis:
+    name: Analyze with CodeQl
+    uses: ./.github/workflows/codeql.yml
+

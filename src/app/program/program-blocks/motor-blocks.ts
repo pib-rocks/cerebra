@@ -60,7 +60,7 @@ export const motor_blocks = Blockly.common.createBlockDefinitionsFromJsonArray([
         ],
         previousStatement: null,
         nextStatement: null,
-        colour: 300,
+        colour: 355,
         tooltip: "",
         helpUrl: "",
     },

@@ -84,10 +84,20 @@ describe("ProgramSplitscreenComponent", () => {
         component.inSplitMode = false;
         component.programNumber = "test-number";
         component.executionState = ExecutionState.NOT_STARTED;
+        component.codeVisualOld = "visual-old";
+        component.codeVisualNew = "visual-new";
+        component.codePython = "python";
         component.runProgram();
         expect(programService.runProgram).toHaveBeenCalledWith("test-number");
         expect(programService.terminateProgram).not.toHaveBeenCalled();
         expect(component.inSplitMode).toBeTrue();
+        expect(
+            programService.updateCodeByProgramNumber,
+        ).toHaveBeenCalledOnceWith("test-number", {
+            visual: "visual-new",
+            python: "python",
+        });
+        expect(component.codeVisualOld).toEqual("visual-new");
     });
 
     it("should terminate the program", () => {

@@ -53,6 +53,7 @@ p span {
         #324c71 var(--pos-relative),
         #324c71
     );
+    cursor: pointer;
 }
 
 input[type="range"]::-webkit-slider-thumb {

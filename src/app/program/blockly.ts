@@ -1,5 +1,5 @@
-export const toolbox: string = `<xml xmlns="http://www.w3.org/1999/xhtml" id="toolbox" style="display: none;">
-<category name="Logic" colour="#5C81A6">
+export const toolbox: string = `<xml xmlns="http://www.w3.org/1999/xhtml" id="toolbox" style="display: none; colour="200"">
+<category name="Logic" colour="210">
     <block type="controls_if"></block>
     <block type="logic_compare">
         <field name="OP">EQ</field>
@@ -14,7 +14,7 @@ export const toolbox: string = `<xml xmlns="http://www.w3.org/1999/xhtml" id="to
     <block type="logic_null"></block>
     <block type="logic_ternary"></block>
 </category>
-<category name="Loops" colour="#5CA65C">
+<category name="Loops" colour="120">
     <block type="controls_repeat_ext">
         <value name="TIMES">
             <shadow type="math_number">
@@ -50,7 +50,7 @@ export const toolbox: string = `<xml xmlns="http://www.w3.org/1999/xhtml" id="to
         <field name="FLOW">BREAK</field>
     </block>
 </category>
-<category name="Math" colour="#5C68A6">
+<category name="Math" colour="230">
     <block type="math_round">
         <field name="OP">ROUND</field>
         <value name="NUM">
@@ -150,7 +150,7 @@ export const toolbox: string = `<xml xmlns="http://www.w3.org/1999/xhtml" id="to
     </block>
     <block type="math_random_float"></block>
 </category>
-<category name="Text" colour="#5CA68D">
+<category name="Text" colour="159">
     <block type="text_charAt">
         <mutation at="true"></mutation>
         <field name="WHERE">FROM_START</field>
@@ -244,7 +244,7 @@ export const toolbox: string = `<xml xmlns="http://www.w3.org/1999/xhtml" id="to
         </value>
     </block>
 </category>
-<category name="Lists" colour="#745CA6">
+<category name="Lists" colour="260">
     <block type="lists_indexOf">
         <field name="END">FIRST</field>
         <value name="VALUE">
@@ -312,9 +312,9 @@ export const toolbox: string = `<xml xmlns="http://www.w3.org/1999/xhtml" id="to
         <field name="DIRECTION">1</field>
     </block>
 </category>
-<category name="Colour" colour="#A6745C">
+<category name="Colour" colour="19">
     <block type="colour_picker">
-        <field name="COLOUR">#ff0000</field>
+        <field name="COLOUR">0</field>
     </block>
     <block type="colour_random"></block>
     <block type="colour_rgb">
@@ -337,12 +337,12 @@ export const toolbox: string = `<xml xmlns="http://www.w3.org/1999/xhtml" id="to
     <block type="colour_blend">
         <value name="COLOUR1">
             <shadow type="colour_picker">
-                <field name="COLOUR">#ff0000</field>
+                <field name="COLOUR">0</field>
             </shadow>
         </value>
         <value name="COLOUR2">
             <shadow type="colour_picker">
-                <field name="COLOUR">#3333ff</field>
+                <field name="COLOUR">240</field>
             </shadow>
         </value>
         <value name="RATIO">
@@ -352,21 +352,21 @@ export const toolbox: string = `<xml xmlns="http://www.w3.org/1999/xhtml" id="to
         </value>
     </block>
 </category>
-<category name="Time" colour="#ffff00">
+<category name="Time" colour="60">
     <block type = "sleep_for_seconds"></block>
     <block type = "get_system_time"></block>
 </category>
 <sep></sep>
-<category name="Variables" colour="#A65C81" custom="VARIABLE_DYNAMIC"></category>
-<category name="Functions" colour="#9A5CA6" custom="PROCEDURE"></category>
+<category name="Variables" colour="310" custom="VARIABLE_DYNAMIC"></category>
+<category name="Functions" colour="290" custom="PROCEDURE"></category>
 <sep></sep>
-<category name="Motoric skills" colour="#A62C81">
+<category name="Motoric skills" colour="355">
     <block type="move_motor"></block>
 </category>
-<category name="Language skills" colour="#4A1BA6">
+<category name="Language skills" colour="260">
     <block type="play_audio_from_speech"></block>
 </category>
-<category name="Visual Skills" colour="#00AEFF">
+<category name="Visual Skills" colour="200">
     <block type="face_detector_start_stop"></block>
     <block type="face_detector_running"></block>
 </category>
