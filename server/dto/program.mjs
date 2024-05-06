@@ -15,7 +15,7 @@ export class Program {
     }
 
     static returnCode(program) {
-        return {visual: program.visual};
+        return {codeVisual: program.visual};
     }
 }
 export default Program;
