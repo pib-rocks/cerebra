@@ -9,7 +9,7 @@ import {
 import {RosService} from "./ros-mock.service";
 import {MotorSettingsMessage} from "../../ros-types/msg/motor-settings-message";
 import {orangeJpegBase64, redJpegBase64} from "./ros-mock-data";
-import {BehaviorSubject} from "rxjs";
+import {BehaviorSubject, Subscriber} from "rxjs";
 import {
     RunProgramFeedback,
     RunProgramResult,
@@ -17,12 +17,50 @@ import {
 import {GoalHandle} from "../../ros-types/action/goal-handle";
 import {GoalStatus} from "../../ros-types/action/goal-status";
 import {ApiService} from "../api.service";
+import {ChatMessage} from "../../types/chat-message";
+import {ChatMessage as ChatMessageRos} from "../../ros-types/msg/chat-message";
 
 describe("RosMockService", () => {
     let service: RosService;
     let apiService: jasmine.SpyObj<ApiService>;
 
+    const chatId = "chat-id";
+    let userMessage: ChatMessage;
+    let userMessageRos: ChatMessageRos;
+    let vaMessage: ChatMessage;
+    let vaMessageRos: ChatMessageRos;
+    let subscriber: jasmine.SpyObj<Subscriber<any>>;
+
     beforeEach(() => {
+        userMessage = {
+            messageId: "message-id",
+            timestamp: "timestamp",
+            isUser: true,
+            content: "hello world",
+        };
+        userMessageRos = {
+            chat_id: chatId,
+            message_id: userMessage.messageId,
+            timestamp: userMessage.timestamp,
+            is_user: userMessage.isUser,
+            content: userMessage.content,
+        };
+        vaMessage = {
+            messageId: "message-id",
+            timestamp: "timestamp",
+            isUser: true,
+            content: 'this is the response to your input "hello world".',
+        };
+        vaMessageRos = {
+            chat_id: chatId,
+            message_id: userMessage.messageId,
+            timestamp: userMessage.timestamp,
+            is_user: userMessage.isUser,
+            content: userMessage.content,
+        };
+
+        subscriber = jasmine.createSpyObj("subscriber", ["next", "error"]);
+
         const apiServiceSpy: jasmine.SpyObj<ApiService> = jasmine.createSpyObj(
             ApiService.name,
             ["get", "post", "put", "delete"],
@@ -479,4 +517,87 @@ describe("RosMockService", () => {
         expect(service.cameraTimer).toBeUndefined();
         expect(clearIntervalSpy).toHaveBeenCalledOnceWith(21);
     });
+
+    it("should get the listening status of the chat", () => {
+        const listening = false;
+        const chatId = "chat-id";
+        const subscriber = jasmine.createSpyObj("subscriber", [
+            "next",
+            "error",
+        ]);
+        service["isListeningFromChatId"].set(chatId, listening);
+
+        service.getChatIsListening(chatId).subscribe(subscriber);
+
+        expect(subscriber.next).toHaveBeenCalledOnceWith(listening);
+        expect(subscriber.error).not.toHaveBeenCalled();
+    });
+
+    it("should assume, that a chat is currently listening, if not explicit status was set yet", () => {
+        const chatId = "chat-id";
+        const subscriber = jasmine.createSpyObj("subscriber", [
+            "next",
+            "error",
+        ]);
+
+        service.getChatIsListening(chatId).subscribe(subscriber);
+
+        expect(subscriber.next).toHaveBeenCalledOnceWith(true);
+        expect(subscriber.error).not.toHaveBeenCalled();
+    });
+
+    it("should send a chat message", fakeAsync(() => {
+        service["isListeningFromChatId"].set(chatId, true);
+        apiService.post.and.returnValue(new BehaviorSubject(userMessage));
+        const messageReceiverNextSpy = spyOn(
+            service.chatMessageReceiver$,
+            "next",
+        );
+
+        service
+            .sendChatMessage(chatId, userMessage.content)
+            .subscribe(subscriber);
+        flush();
+
+        expect(subscriber.next).toHaveBeenCalledTimes(1);
+        expect(subscriber.error).not.toHaveBeenCalled();
+        expect(apiService.post.calls.allArgs()).toEqual([
+            [
+                `/voice-assistant/chat/${chatId}/messages`,
+                {
+                    content: userMessage.content,
+                    isUser: true,
+                },
+            ],
+            [
+                `/voice-assistant/chat/${chatId}/messages`,
+                {
+                    content: vaMessage.content,
+                    isUser: false,
+                },
+            ],
+        ]);
+        expect(messageReceiverNextSpy.calls.allArgs()).toEqual([
+            [userMessageRos],
+            [vaMessageRos],
+        ]);
+    }));
+
+    it("should not send a chat message if currently not listening", fakeAsync(() => {
+        service["isListeningFromChatId"].set(chatId, false);
+        const messageReceiverNextSpy = spyOn(
+            service.chatMessageReceiver$,
+            "next",
+        );
+
+        service
+            .sendChatMessage(chatId, userMessage.content)
+            .subscribe(subscriber);
+        flush();
+
+        expect(subscriber.next).not.toHaveBeenCalled();
+        expect(subscriber.error).toHaveBeenCalledTimes(1);
+        expect(messageReceiverNextSpy).not.toHaveBeenCalled();
+        expect(apiService.post).not.toHaveBeenCalled();
+    }));
 });

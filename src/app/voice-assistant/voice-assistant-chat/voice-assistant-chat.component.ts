@@ -28,10 +28,10 @@ export class VoiceAssistantChatComponent implements OnInit {
     uuid: string | undefined;
 
     selected: Subject<string> = new Subject();
-    vaState: boolean = false;
-    activeChat: string = "";
-    activePersonality: string = "";
-    currentChat: string | null = "";
+    turnedOn: boolean = false;
+    activeChatId: string = "";
+    activePersonalityId: string = "";
+    currentChatId: string | null = "";
     voiceAssistantActivationToggle = new FormControl(false);
 
     constructor(
@@ -44,7 +44,7 @@ export class VoiceAssistantChatComponent implements OnInit {
     ) {
         location.onUrlChange((url, state) => {
             let urlArray: string[] = url.split("/");
-            this.currentChat = urlArray[urlArray.length - 1];
+            this.currentChatId = urlArray[urlArray.length - 1];
         });
     }
 
@@ -53,20 +53,22 @@ export class VoiceAssistantChatComponent implements OnInit {
         this.voiceAssistantService.voiceAssistantStateObservable.subscribe(
             (state: VoiceAssistantState) => {
                 this.voiceAssistantActivationToggle.setValue(state.turnedOn);
-                this.vaState = state.turnedOn;
+                this.turnedOn = state.turnedOn;
                 const deleteChat = this.dropdownCallbackMethods.find(
                     (e) => e.label === "Delete chat",
                 );
                 if (deleteChat) {
-                    deleteChat.disabled = this.vaState;
+                    deleteChat.disabled = this.turnedOn;
                 }
+                this.chatService.getChatById(state.chatId).subscribe((chat) => {
+                    this.activePersonalityId = chat.personalityId;
+                });
             },
         );
 
         this.route.paramMap.subscribe((params) => {
-            console.log(params);
             const routeParts: string[] = this.router.url.split("/");
-            this.currentChat = routeParts[routeParts.length - 1];
+            this.currentChatId = routeParts[routeParts.length - 1];
 
             this.personalityId = this.router.url
                 .split("/")
@@ -183,11 +185,8 @@ export class VoiceAssistantChatComponent implements OnInit {
             else throw new Error("no chat selected");
         }
 
-        this.vaState = turnedOn;
-        this.activeChat = nextState.chatId;
-        if (this.personalityId) {
-            this.activePersonality = this.personalityId;
-        }
+        this.turnedOn = turnedOn;
+        this.activeChatId = nextState.chatId;
 
         this.voiceAssistantService.setVoiceAssistantState(nextState).subscribe({
             error: (error) => console.error(error),
@@ -197,7 +196,7 @@ export class VoiceAssistantChatComponent implements OnInit {
             (e) => e.label === "Delete chat",
         );
         if (deleteChat) {
-            deleteChat.disabled = this.vaState;
+            deleteChat.disabled = this.turnedOn;
         }
     }
 
