@@ -27,6 +27,7 @@ export class MotorPositionComponent implements OnInit {
     ngOnInit(): void {
         this.route.data.subscribe((data) => {
             this.motor = data["motor"];
+            this.motorService.selectedMotorName.next(this.motor.motorName);
             this.motorService
                 .getPositionObservable(this.motor.sourceMotorName)
                 .subscribe((position) => {

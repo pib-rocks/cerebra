@@ -66,3 +66,15 @@
 .background-class:hover {
     cursor: pointer;
 }
+
+.backgroundSelected {
+    background: rgb(0, 0, 0);
+    background: linear-gradient(
+        90deg,
+        rgba(0, 0, 0, 0) 0%,
+        rgba(2, 90, 138, 100) 40%,
+        rgba(2, 90, 138, 100) 50%,
+        rgba(2, 90, 138, 100) 60%,
+        rgba(0, 0, 0, 0) 100%
+    );
+}
