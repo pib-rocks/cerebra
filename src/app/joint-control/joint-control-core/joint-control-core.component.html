@@ -18,7 +18,7 @@
         <div
             *ngFor="let motor of joint.motors"
             class="row m-0 p-0"
-            [ngClass]="[motor.motorName == motorName && motor.motorName != 'all_fingers_left' && motor.sourceMotorName != 'all_fingers_right' || ( (motorName == 'all_fingers_left' || motorName == 'all_fingers_right') && motor.motorName != 'all_fingers_left' && motor.sourceMotorName != 'all_fingers_right') ? 'backgroundSelected' : '',
+            [ngClass]="[motor.motorName == motorName && motor.motorName != 'all_fingers_left' && motor.motorName != 'all_fingers_right' || ( (motorName == 'all_fingers_left' || motorName == 'all_fingers_right') && motor.motorName != 'all_fingers_left' && motor.sourceMotorName != 'all_fingers_right') ? 'backgroundSelected' : '',
                 joint.reversed ? 'flex-row-reverse' : 'flex-row']"
             [style]="'height: ' + (joint.segmentHeight*100) + '%;'">
             <ng-container *ngIf="motor.displaySettings">

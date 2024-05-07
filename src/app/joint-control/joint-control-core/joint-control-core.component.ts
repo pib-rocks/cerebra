@@ -23,7 +23,6 @@ export class JointControlCoreComponent implements OnInit {
             this.joint = data["joint"];
         });
         this.motorService.selectedMotorName.subscribe((motorName) => {
-            console.log(motorName);
             this.motorName = motorName;
         });
     }
