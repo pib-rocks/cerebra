@@ -1,7 +1,7 @@
 import {Component, OnInit} from "@angular/core";
 import {JointConfiguration} from "../../shared/types/joint-configuration";
-import {ActivatedRoute} from "@angular/router";
-import {MotorService} from "src/app/shared/services/motor.service";
+import {ActivatedRoute, Router} from "@angular/router";
+import {MotorConfiguration} from "src/app/shared/types/motor-configuration";
 
 @Component({
     selector: "app-joint-control-core",
@@ -10,20 +10,34 @@ import {MotorService} from "src/app/shared/services/motor.service";
 })
 export class JointControlCoreComponent implements OnInit {
     joint!: JointConfiguration;
-    selectedMotorName: string = "";
+    selectedMotor!: any;
+    displayMotors: MotorConfiguration[] = new Array();
 
     constructor(
         private route: ActivatedRoute,
-        private motorService: MotorService,
+        private router: Router,
     ) {}
 
     ngOnInit(): void {
         this.route.data.subscribe((data) => {
-            this.selectedMotorName = "";
             this.joint = data["joint"];
+            this.displayMotors = new Array();
+            this.selectedMotor = undefined;
+            this.joint.motors.forEach((motor) => {
+                if (
+                    motor.motorName !== "all_fingers_right" &&
+                    motor.motorName !== "all_fingers_left"
+                ) {
+                    this.displayMotors.push(motor);
+                }
+            });
         });
-        this.motorService.selectedMotorName.subscribe((selectedMotorName) => {
-            this.selectedMotorName = selectedMotorName;
+    }
+
+    selectMotor(motor: any) {
+        this.router.navigate(["motor", motor.motorPathName], {
+            relativeTo: this.route,
         });
+        this.selectedMotor = motor;
     }
 }

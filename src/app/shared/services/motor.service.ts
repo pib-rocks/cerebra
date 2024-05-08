@@ -14,9 +14,6 @@ import {MotorSettingsError} from "../error/motor-settings-error";
     providedIn: "root",
 })
 export class MotorService {
-    selectedMotorName: BehaviorSubject<string> = new BehaviorSubject<string>(
-        "",
-    );
     private readonly defaultSettings: MotorSettings = {
         velocity: 0,
         acceleration: 0,
