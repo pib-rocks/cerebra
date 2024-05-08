@@ -10,7 +10,7 @@ import {MotorService} from "src/app/shared/services/motor.service";
 })
 export class JointControlCoreComponent implements OnInit {
     joint!: JointConfiguration;
-    motorName: string = "";
+    selectedMotorName: string = "";
 
     constructor(
         private route: ActivatedRoute,
@@ -19,11 +19,11 @@ export class JointControlCoreComponent implements OnInit {
 
     ngOnInit(): void {
         this.route.data.subscribe((data) => {
-            this.motorName = "";
+            this.selectedMotorName = "";
             this.joint = data["joint"];
         });
-        this.motorService.selectedMotorName.subscribe((motorName) => {
-            this.motorName = motorName;
+        this.motorService.selectedMotorName.subscribe((selectedMotorName) => {
+            this.selectedMotorName = selectedMotorName;
         });
     }
 }

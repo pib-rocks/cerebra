@@ -12,13 +12,13 @@
             <div class="col-3 sidebar-label m-0 p-0">Current</div>
         </div>
         <!--
-            In ngClass you can find the following statement: [motor.motorName == motorName && motor.motorName != 'all_fingers_left' && motor.sourceMotorName != 'all_fingers_right' || ( (motorName == 'all_fingers_left' || motorName == 'all_fingers_right') && motor.motorName != 'all_fingers_left' && motor.sourceMotorName != 'all_fingers_right') ? 'backgroundSelected' : ''  
+            In ngClass you can find the following statement: [motor.motorName == motorName && motor.motorName != 'all_fingers_left' && motor.sourceMotorName != 'all_fingers_right' || ( (motorName == 'all_fingers_left' || motorName == 'all_fingers_right') && motor.motorName != 'all_fingers_left' && motor.sourceMotorName != 'all_fingers_right') ? 'background-selected' : ''  
             This is used to higlite all rows when a motor is selected. This excludes the row of all_fingers_left and all_fingers_right
         -->
         <div
             *ngFor="let motor of joint.motors"
             class="row m-0 p-0"
-            [ngClass]="[motor.motorName == motorName && motor.motorName != 'all_fingers_left' && motor.motorName != 'all_fingers_right' || ( (motorName == 'all_fingers_left' || motorName == 'all_fingers_right') && motor.motorName != 'all_fingers_left' && motor.motorName != 'all_fingers_right') ? 'backgroundSelected' : '',
+            [ngClass]="[motor.motorName == selectedMotorName && motor.motorName != 'all_fingers_left' && motor.motorName != 'all_fingers_right' || ( (selectedMotorName == 'all_fingers_left' || selectedMotorName == 'all_fingers_right') && motor.motorName != 'all_fingers_left' && motor.motorName != 'all_fingers_right') ? 'background-selected' : '',
                 joint.reversed ? 'flex-row-reverse' : 'flex-row']"
             [style]="'height: ' + (joint.segmentHeight*100) + '%;'">
             <ng-container *ngIf="motor.displaySettings">
@@ -32,7 +32,7 @@
                     routerLinkActive="active-touchpoint"
                     [reversed]="joint.reversed"
                     [motor]="motor"
-                    class="col-6 background-class m-0 p-0"></app-motor-current>
+                    class="col-6 background m-0 p-0"></app-motor-current>
             </ng-container>
         </div>
     </div>
