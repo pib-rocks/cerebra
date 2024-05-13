@@ -17,7 +17,7 @@ export const face_detector_blocks =
             ],
             previousStatement: null,
             nextStatement: null,
-            colour: 160,
+            colour: 200,
             tooltip:
                 "Starts or stops the face detector, must be placed before and after 'face detector running'",
             helpUrl: "",
@@ -48,7 +48,7 @@ export const face_detector_blocks =
             ],
             previousStatement: null,
             nextStatement: null,
-            colour: 160,
+            colour: 200,
             tooltip:
                 "Runs the face detector and stores the position of the bounding boxes in the variables",
             helpUrl: "",

@@ -50,7 +50,7 @@ export class ProgramWorkspaceComponent
         name: "transparentBackground",
         componentStyles: {
             workspaceBackgroundColour: "transparent",
-            toolboxBackgroundColour: "transparent",
+            toolboxBackgroundColour: "#ffffff12",
             flyoutBackgroundColour: "#314969",
         },
     });
