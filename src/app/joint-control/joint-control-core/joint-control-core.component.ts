@@ -23,14 +23,9 @@ export class JointControlCoreComponent implements OnInit {
             this.joint = data["joint"];
             this.displayMotors = new Array();
             this.selectedMotor = undefined;
-            this.joint.motors.forEach((motor) => {
-                if (
-                    motor.motorName !== "all_fingers_right" &&
-                    motor.motorName !== "all_fingers_left"
-                ) {
-                    this.displayMotors.push(motor);
-                }
-            });
+            this.displayMotors = this.joint.motors.filter(
+                (motor) => motor.displaySettings,
+            );
         });
     }
 

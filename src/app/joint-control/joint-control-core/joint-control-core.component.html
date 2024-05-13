@@ -14,7 +14,7 @@
         <div
             *ngFor="let motor of displayMotors"
             class="row m-0 p-0"
-            [ngClass]="[joint.reversed ? 'flex-row-reverse' : 'flex-row', motor.motorName == selectedMotor?.motorName ? 'background-selected' : '']"
+            [ngClass]="[joint.reversed ? 'flex-row-reverse' : 'flex-row', motor == selectedMotor || selectedMotor?.motorName == 'all_fingers_left' || selectedMotor?.motorName == 'all_fingers_right' ? 'background-selected' : '']"
             [style]="'height: ' + (joint.segmentHeight*100) + '%;'">
             <app-motor-settings
                 [reversed]="joint.reversed"
