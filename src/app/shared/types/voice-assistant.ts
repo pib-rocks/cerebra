@@ -19,7 +19,7 @@ export class VoiceAssistant implements SidebarElement {
         this.personalityId = personalityId;
         this.name = name;
         this.description = description ?? "";
-        this.gender = gender.toLocaleLowerCase();
+        this.gender = gender;
         this.pauseThreshold = pauseThreshold;
         this.assistantModelId = assistantModelId ?? -1;
     }
