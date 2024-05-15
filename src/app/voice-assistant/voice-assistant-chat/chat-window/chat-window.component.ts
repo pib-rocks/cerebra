@@ -5,7 +5,7 @@ import {ChatService} from "src/app/shared/services/chat.service";
 import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
 import {ChatMessage} from "src/app/shared/types/chat-message";
 import {Chat} from "src/app/shared/types/chat.class";
-import {Observable, Subscription} from "rxjs";
+import {Subscription, map} from "rxjs";
 
 @Component({
     selector: "app-chat-window",
@@ -45,6 +45,7 @@ export class ChatWindowComponent implements OnInit {
             if (!chatId) return;
             this.messageObservable$ = this.chatService
                 .getChatMessagesObservable(chatId)
+                .pipe(map((messages) => messages.slice().reverse()))
                 .subscribe((messages) => (this.messages = messages));
             this.chat = this.chatService.getChat(chatId);
             localStorage.setItem("chat", this.chat?.chatId ?? "");

@@ -3,10 +3,10 @@ import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {ChatWindowComponent} from "./chat-window.component";
 import {HttpClientTestingModule} from "@angular/common/http/testing";
 import {ActivatedRoute} from "@angular/router";
-import {BehaviorSubject, Subject} from "rxjs";
+import {BehaviorSubject, Observable, Subject} from "rxjs";
 import {RouterTestingModule} from "@angular/router/testing";
 import {ChatService} from "src/app/shared/services/chat.service";
-import {ChatMessage} from "src/app/shared/ros-types/msg/chat-message";
+import {ChatMessage} from "src/app/shared/types/chat-message";
 
 describe("ChatWindowComponent", () => {
     let component: ChatWindowComponent;
@@ -59,29 +59,23 @@ describe("ChatWindowComponent", () => {
     });
 
     it("should get the correct chat-message observable and obtain its messages from it", () => {
-        const message: ChatMessage = {
-            chat_id: "chat-id",
-            message_id: "message-id",
+        const firstMessage: ChatMessage = {
+            messageId: "message-id",
             timestamp: "yesterday",
-            is_user: false,
+            isUser: false,
             content: "hello world",
         };
-        const messagesObservableSpy = jasmine.createSpyObj(
-            "message-observable",
-            ["subscribe"],
-        );
-        messagesObservableSpy.subscribe.and.callFake((callback: any) =>
-            callback([message]),
-        );
-        chatService.getChatMessagesObservable.and.returnValue(
-            messagesObservableSpy,
-        );
+        const secondMessage: ChatMessage = {
+            messageId: "message-id",
+            timestamp: "today",
+            isUser: false,
+            content: "hello world",
+        };
+        const messagesSubject = new Subject<ChatMessage[]>();
+        chatService.getChatMessagesObservable.and.returnValue(messagesSubject);
         paramsSubject.next({chatUuid: "chat-id"});
-        expect(chatService.getChatMessagesObservable).toHaveBeenCalledOnceWith(
-            "chat-id",
-        );
-        expect(messagesObservableSpy.subscribe).toHaveBeenCalledTimes(1);
+        messagesSubject.next([firstMessage, secondMessage]);
         expect(component.messages).toBeDefined();
-        expect(component.messages).toEqual([jasmine.objectContaining(message)]);
+        expect(component.messages).toEqual([secondMessage, firstMessage]);
     });
 });
