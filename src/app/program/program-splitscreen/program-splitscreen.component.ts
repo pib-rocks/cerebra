@@ -67,6 +67,7 @@ export class ProgramSplitscreenComponent implements OnInit {
     }
 
     runProgram() {
+        this.saveCode();
         this.inSplitMode = true;
         if (this.executionState === ExecutionState.STARTING) {
             return;
