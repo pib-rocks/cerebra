@@ -131,8 +131,8 @@ export class VoiceAssistantService implements SidebarService {
                     });
                 }),
             )
-            .subscribe((respone) => {
-                const assistantModelDto = respone[
+            .subscribe((response) => {
+                const assistantModelDto = response[
                     "assistantModels"
                 ] as AssistantModelDto[];
                 if (undefined == assistantModelDto) {

@@ -39,13 +39,13 @@ describe("VoiceAssistantService", () => {
         voiceAssistantPersonalities: VoiceAssistant[];
     }>(res);
     const models = {
-        voiceAssistantModels: [
+        assistantModels: [
             new AssistantModel(1, "gpt-3.5-turbo", "GPT-3.5 Turbo", false),
             new AssistantModel(2, "claude-3-sonnet", "Claude 3 Sonnet", true),
         ],
     };
     const observableModels = new BehaviorSubject<{
-        voiceAssistantModels: AssistantModel[];
+        assistantModels: AssistantModel[];
     }>(models);
 
     beforeEach(() => {
