@@ -93,8 +93,7 @@ describe("ProgramSplitscreenComponent", () => {
         expect(
             programService.updateCodeByProgramNumber,
         ).toHaveBeenCalledOnceWith("test-number", {
-            visual: "visual-new",
-            python: "python",
+            codeVisual: "visual-new",
         });
         expect(component.codeVisualOld).toEqual("visual-new");
     });
