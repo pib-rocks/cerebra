@@ -60,8 +60,8 @@ input[type="checkbox"]:checked::before {
 }
 
 .min-size-active {
-    min-height: 2vw;
-    min-width: 2vw;
+    min-height: 1.75vw;
+    min-width: 1.75vw;
 }
 
 .settings-icon:hover {

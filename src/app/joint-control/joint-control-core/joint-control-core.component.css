@@ -5,7 +5,7 @@
 .sidebar-label {
     color: white;
     font-weight: bolder;
-    font-size: 1.5vw;
+    font-size: 1.33vw;
     text-align: center;
 }
 
@@ -65,5 +65,5 @@
 }
 
 .head-line {
-    font-size: 1.75vw;
+    font-size: 1vw;
 }
