@@ -1,7 +1,7 @@
 <div class="row h-100 m-0 p-0">
     <div class="col m-0 p-0 d-flex align-items-center justify-content-center">
         <img
-            class="settings-icon"
+            class="settings-icon min-size"
             [id]="'settings-' + motor.motorPathName"
             src="../../../../assets/joint-control/other/settings-icon.svg"
             (click)="openPopup(content)"
@@ -11,7 +11,7 @@
         class="col mt-1 p-0 d-flex align-items-center justify-content-center"
         [ngClass]="reversed ? 'order-first' : 'order-last'">
         <input
-            class="active-check"
+            class="active-check min-size"
             id="active-check-{{ motor.motorPathName }}"
             type="checkbox"
             name="checkbox"

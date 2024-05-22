@@ -39,6 +39,20 @@ input[type="checkbox"]::before {
     background-color: #e10072;
 }
 
+@media only screen and (min-width: 1200px) {
+    input[type="checkbox"]::before {
+        width: 0.93em;
+        height: 0.93em;
+    }
+}
+
+@media only screen and (min-width: 1800px) {
+    input[type="checkbox"]::before {
+        width: 1.63em;
+        height: 1.63em;
+    }
+}
+
 input[type="checkbox"]:checked::before {
     transform: scale(1);
     transform-origin: bottom left;
@@ -53,6 +67,10 @@ input[type="checkbox"]:checked::before {
     border: 0;
     width: auto;
     height: 30%;
+}
+.min-size {
+    min-width: 20%;
+    min-height: 50%;
 }
 
 .settings-icon:hover {
