@@ -33,24 +33,10 @@ input[type="checkbox"] {
 
 input[type="checkbox"]::before {
     content: "";
-    width: 0.63em;
-    height: 0.63em;
+    width: 1vw;
+    height: 1vw;
     transform: scale(0);
     background-color: #e10072;
-}
-
-@media only screen and (min-width: 1200px) {
-    input[type="checkbox"]::before {
-        width: 0.73em;
-        height: 0.73em;
-    }
-}
-
-@media only screen and (min-width: 1800px) {
-    input[type="checkbox"]::before {
-        width: 1em;
-        height: 1em;
-    }
 }
 
 input[type="checkbox"]:checked::before {
@@ -68,9 +54,14 @@ input[type="checkbox"]:checked::before {
     width: auto;
     height: 30%;
 }
-.min-size {
+
+.min-size-settings {
     min-width: 15%;
-    min-height: 40%;
+}
+
+.min-size-active {
+    min-height: 2vw;
+    min-width: 2vw;
 }
 
 .settings-icon:hover {

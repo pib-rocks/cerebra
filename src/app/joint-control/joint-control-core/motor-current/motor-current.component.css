@@ -1,24 +1,8 @@
 .current-label {
     font-weight: bold;
-    font-size: 13px;
+    font-size: 1.33vw;
     text-align: center;
     color: #fff;
-}
-
-@media only screen and (min-width: 600px) {
-    .current-label {
-        font-size: 15px;
-    }
-}
-@media only screen and (min-width: 1400px) {
-    .current-label {
-        font-size: 18px;
-    }
-}
-@media only screen and (min-width: 1800px) {
-    .current-label {
-        font-size: 21px;
-    }
 }
 
 .bg {
@@ -54,30 +38,5 @@
 }
 
 svg {
-    height: 40px;
-}
-@media only screen and (min-width: 1000px) {
-    svg {
-        height: 30px;
-    }
-}
-@media only screen and (min-width: 1200px) {
-    svg {
-        height: 40px;
-    }
-}
-@media only screen and (min-width: 1400px) {
-    svg {
-        height: 50px;
-    }
-}
-@media only screen and (min-width: 1600px) {
-    svg {
-        height: 60px;
-    }
-}
-@media only screen and (min-width: 1800px) {
-    svg {
-        height: 75px;
-    }
+    height: 3.5vw;
 }
