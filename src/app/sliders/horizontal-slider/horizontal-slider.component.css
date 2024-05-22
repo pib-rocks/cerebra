@@ -66,14 +66,10 @@ span {
     transform: translate(-50%, 0);
 }
 
-.bubble-span-left {
-    background: #344a69;
-    left: 0px;
-}
-
+.bubble-span-left,
 .bubble-span-right {
     background: #344a69;
-    right: 0px;
+    left: 0px;
 }
 
 .bubble-span:before {

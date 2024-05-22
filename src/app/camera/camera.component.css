@@ -44,31 +44,17 @@ video {
     transition: fill 0.15s ease;
 }
 
-.video-nav-element:hover svg path {
-    fill: #e10072;
-    transition: fill 0.15s ease;
-}
-
 .video-nav-element:hover,
-.video-nav-element:hover span {
-    color: #e10072;
-    background-color: transparent;
-}
-
-.show .video-nav-element svg path {
-    fill: #e10072;
-}
-
-.show .video-nav-element {
-    color: #e10072;
-    background-color: transparent;
-}
-
-.showPopover svg path {
-    fill: #e10072 !important;
-}
-
+.video-nav-element:hover span,
+.show .video-nav-element,
 .showPopover span {
     color: #e10072 !important;
     background-color: transparent;
+}
+
+.video-nav-element:hover svg path,
+.show .video-nav-element svg path,
+.showPopover svg path {
+    fill: #e10072 !important;
+    transition: fill 0.15s ease;
 }

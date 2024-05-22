@@ -1,12 +1,7 @@
-.right-icon-label {
-    color: white;
-    text-align: left;
-    font-size: 18px;
-}
-
+.right-icon-label,
 .left-icon-label {
     color: white;
-    text-align: right;
+    text-align: left;
     font-size: 18px;
 }
 

@@ -61,10 +61,7 @@ input[type="number"]::-webkit-outer-spin-button {
     cursor: pointer;
 }
 
-.marginFemale {
-    margin-top: 5px;
-}
-
+.marginFemale,
 .marginMale {
     margin-top: 5px;
 }

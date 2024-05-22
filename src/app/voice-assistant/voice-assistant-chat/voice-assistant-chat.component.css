@@ -64,10 +64,6 @@
 }
 
 .exportButton:hover {
-    font-size: medium;
-    float: right;
-    width: auto;
-    border: none;
     background: #e10072;
 }
 
