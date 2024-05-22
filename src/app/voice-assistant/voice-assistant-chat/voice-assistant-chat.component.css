@@ -5,12 +5,6 @@
     .side {
         min-width: 250px;
     }
-
-    .exportButton {
-        margin-top: 5px;
-        margin-left: 2px;
-        padding-top: 5%;
-    }
 }
 
 @media (max-width: 833px) {
@@ -53,18 +47,6 @@
     letter-spacing: 0.4px;
     text-align: left;
     color: #fff;
-}
-
-.exportButton {
-    font-size: medium;
-    float: right;
-    width: auto;
-    border: none;
-    background-color: #0094df;
-}
-
-.exportButton:hover {
-    background: #e10072;
 }
 
 .chat-input {
