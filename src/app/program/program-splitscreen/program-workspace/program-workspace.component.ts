@@ -17,6 +17,8 @@ import {ITheme} from "blockly/core/theme";
 import {pythonGenerator} from "../../program-generators/custom-generators";
 import {customBlockDefinition} from "../../program-blocks/custom-blocks";
 import {Abstract} from "blockly/core/events/events_abstract";
+import {GuardsCheckStart, Router} from "@angular/router";
+import {Subscription} from "rxjs";
 
 @Component({
     selector: "app-program-workspace",
@@ -26,6 +28,7 @@ import {Abstract} from "blockly/core/events/events_abstract";
 export class ProgramWorkspaceComponent
     implements OnInit, AfterViewInit, OnDestroy, OnChanges
 {
+    routerEventSubscription!: Subscription;
     observer!: ResizeObserver;
     @ViewChild("blocklyDiv") blocklyDiv!: ElementRef<HTMLDivElement>;
 
@@ -55,6 +58,8 @@ export class ProgramWorkspaceComponent
         },
     });
 
+    constructor(private router: Router) {}
+
     get workspaceContent(): string {
         return JSON.stringify(
             Blockly.serialization.workspaces.save(this.workspace),
@@ -80,6 +85,13 @@ export class ProgramWorkspaceComponent
     }
 
     ngOnInit() {
+        this.routerEventSubscription = this.router.events.subscribe((event) => {
+            if (event instanceof GuardsCheckStart) {
+                this.codeVisualChange.emit(this.workspaceContent);
+                Blockly.hideChaff();
+            }
+        });
+
         this.workspace = Blockly.inject("blocklyDiv", {
             toolbox: this.toolbox,
             theme: this.customTheme,
@@ -116,7 +128,7 @@ export class ProgramWorkspaceComponent
     ngOnDestroy(): void {
         this.observer.unobserve(this.blocklyDiv.nativeElement);
         Blockly.registry.unregister("theme", "customtheme");
-        Blockly.hideChaff();
+        this.routerEventSubscription.unsubscribe();
     }
 
     resizeBlockly() {
