@@ -5,7 +5,7 @@ import {ChatService} from "src/app/shared/services/chat.service";
 import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
 import {ChatMessage} from "src/app/shared/types/chat-message";
 import {Chat} from "src/app/shared/types/chat.class";
-import {Observable, Subscription, combineLatest} from "rxjs";
+import {Subscription, combineLatest} from "rxjs";
 
 @Component({
     selector: "app-chat-window",

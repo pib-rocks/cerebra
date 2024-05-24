@@ -13,7 +13,7 @@ export class Chat implements SidebarElement {
     getUUID(): string {
         return this.chatId;
     }
-    clone(): Chat {
+    clone(): this {
         console.log({...this});
         return {...this};
     }

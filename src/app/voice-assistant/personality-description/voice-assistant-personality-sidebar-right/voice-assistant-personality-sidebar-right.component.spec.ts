@@ -33,11 +33,6 @@ describe("VoiceAssistantPersonalitySidebarRightComponent", () => {
                 "updatePersonalityById",
             ]);
 
-        // const chatServiceSpy: jasmine.SpyObj<ChatService> =
-        //     jasmine.createSpyObj(ChatService, [
-        //         "getChatMessagesObservable",
-        //         "getChat",
-        //     ]);
         await TestBed.configureTestingModule({
             declarations: [VoiceAssistantPersonalitySidebarRightComponent],
             imports: [

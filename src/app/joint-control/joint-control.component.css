@@ -72,8 +72,5 @@ a {
 .background-image {
     background: url("../../assets/bg-gesamt.png") left no-repeat;
     background-size: cover;
-}
-
-.background-image {
     max-width: 1000px;
 }

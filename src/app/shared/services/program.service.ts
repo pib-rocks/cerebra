@@ -233,6 +233,7 @@ export class ProgramService {
     terminateProgram(programNumber: string) {
         const state = this.programNumberToState.get(programNumber);
         if (state?.value.executionState !== ExecutionState.RUNNING) return;
+        if (!this.programNumberToCancel.has(programNumber)) return;
         this.programNumberToCancel.get(programNumber)!();
         state.next({executionState: ExecutionState.INTERRUPTED});
     }
