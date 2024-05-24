@@ -5,7 +5,7 @@ import {ChatService} from "src/app/shared/services/chat.service";
 import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
 import {ChatMessage} from "src/app/shared/types/chat-message";
 import {Chat} from "src/app/shared/types/chat.class";
-import {Observable, Subscription, combineLatest} from "rxjs";
+import {Subscription, combineLatest} from "rxjs";
 
 @Component({
     selector: "app-chat-window",
@@ -37,10 +37,6 @@ export class ChatWindowComponent implements OnInit {
     ) {}
 
     ngOnInit(): void {
-        // TODO: can this be removed
-        // this.chat = this.route.snapshot.data["chat"];
-        // localStorage.setItem("chat", this.chat?.chatId ?? "");
-
         this.route.params.subscribe((params: Params) => {
             this.chatMessagesSubscription?.unsubscribe();
             this.textInputActiveSubscription?.unsubscribe();
@@ -60,7 +56,6 @@ export class ChatWindowComponent implements OnInit {
                 .subscribe((messages) => (this.messages = messages));
 
             this.chat = this.chatService.getChat(chatId);
-            localStorage.setItem("chat", this.chat?.chatId ?? "");
             if (this.chat) {
                 this.personalityName =
                     this.voiceAssistantService.getPersonality(

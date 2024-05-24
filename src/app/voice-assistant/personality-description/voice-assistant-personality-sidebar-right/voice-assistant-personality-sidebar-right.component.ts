@@ -16,7 +16,6 @@ export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
     personalityClone!: VoiceAssistant;
     thresholdString: string = "";
     personalityFormSidebar!: FormGroup;
-    @Input() personalityUUID: string | undefined;
 
     constructor(
         private voiceAssistantService: VoiceAssistantService,
@@ -31,8 +30,6 @@ export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
             if (temp !== undefined) {
                 this.personalityClone = temp;
             }
-        });
-        this.route.params.subscribe((params) => {
             this.updateForm();
         });
     }

@@ -40,9 +40,9 @@ export class VoiceAssistantChatComponent implements OnInit {
         private chatService: ChatService,
         private voiceAssistantService: VoiceAssistantService,
         private route: ActivatedRoute,
-        private location: Location,
+        location: Location,
     ) {
-        location.onUrlChange((url, state) => {
+        location.onUrlChange((url, _state) => {
             let urlArray: string[] = url.split("/");
             this.currentChatId = urlArray[urlArray.length - 1];
         });
@@ -66,7 +66,7 @@ export class VoiceAssistantChatComponent implements OnInit {
             },
         );
 
-        this.route.paramMap.subscribe((params) => {
+        this.route.paramMap.subscribe((_params) => {
             const routeParts: string[] = this.router.url.split("/");
             this.currentChatId = routeParts[routeParts.length - 1];
 
@@ -92,12 +92,6 @@ export class VoiceAssistantChatComponent implements OnInit {
                 Validators.maxLength(255),
             ]);
         });
-
-        this.voiceAssistantService.voiceAssistantStateObservable.subscribe(
-            (state: VoiceAssistantState) => {
-                this.voiceAssistantActivationToggle.setValue(state.turnedOn);
-            },
-        );
     }
 
     showModal = () => {
