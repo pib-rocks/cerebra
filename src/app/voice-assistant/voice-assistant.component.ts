@@ -10,7 +10,7 @@ import {VoiceAssistantState} from "../shared/types/voice-assistant-state";
 @Component({
     selector: "app-voice-assistant",
     templateUrl: "./voice-assistant.component.html",
-    styleUrls: ["./voice-assistant.component.css"],
+    styleUrls: ["./voice-assistant.component.scss"],
 })
 export class VoiceAssistantComponent implements OnInit {
     personalityForm!: FormGroup;

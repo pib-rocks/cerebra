@@ -13,7 +13,7 @@ import {CameraService} from "../shared/services/camera.service";
 @Component({
     selector: "app-camera",
     templateUrl: "./camera.component.html",
-    styleUrls: ["./camera.component.css"],
+    styleUrls: ["./camera.component.scss"],
 })
 export class CameraComponent implements OnInit, OnDestroy {
     @ViewChild("videobox") videoBox?: ElementRef;

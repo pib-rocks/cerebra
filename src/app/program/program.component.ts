@@ -17,7 +17,7 @@ import {ProgramService} from "../shared/services/program.service";
 @Component({
     selector: "app-program",
     templateUrl: "./program.component.html",
-    styleUrls: ["./program.component.css"],
+    styleUrls: ["./program.component.scss"],
 })
 export class ProgramComponent implements OnInit, AfterViewInit {
     @ViewChild("modalContent") modalContent: TemplateRef<any> | undefined;

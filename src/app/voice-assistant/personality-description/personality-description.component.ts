@@ -7,7 +7,7 @@ import {VoiceAssistant} from "src/app/shared/types/voice-assistant";
 @Component({
     selector: "app-personality-description",
     templateUrl: "./personality-description.component.html",
-    styleUrls: ["./personality-description.component.css"],
+    styleUrls: ["./personality-description.component.scss"],
 })
 export class PersonalityDescriptionComponent implements OnInit {
     personality?: VoiceAssistant;

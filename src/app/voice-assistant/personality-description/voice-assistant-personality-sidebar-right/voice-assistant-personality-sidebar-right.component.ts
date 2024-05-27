@@ -6,7 +6,7 @@ import {FormControl, FormGroup, Validators} from "@angular/forms";
 @Component({
     selector: "app-va-personality-sidebar-right",
     templateUrl: "./voice-assistant-personality-sidebar-right.component.html",
-    styleUrls: ["./voice-assistant-personality-sidebar-right.component.css"],
+    styleUrls: ["./voice-assistant-personality-sidebar-right.component.scss"],
 })
 export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
     pauseThresholdMin = 0.1;

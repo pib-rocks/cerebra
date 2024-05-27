@@ -10,7 +10,7 @@ import {Observable, Subscription, combineLatest} from "rxjs";
 @Component({
     selector: "app-chat-window",
     templateUrl: "./chat-window.component.html",
-    styleUrls: ["./chat-window.component.css"],
+    styleUrls: ["./chat-window.component.scss"],
 })
 export class ChatWindowComponent implements OnInit {
     chat?: Chat;

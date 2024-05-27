@@ -15,7 +15,7 @@ import {Location} from "@angular/common";
 @Component({
     selector: "app-voice-assistant-chat",
     templateUrl: "./voice-assistant-chat.component.html",
-    styleUrls: ["./voice-assistant-chat.component.css"],
+    styleUrls: ["./voice-assistant-chat.component.scss"],
 })
 export class VoiceAssistantChatComponent implements OnInit {
     @ViewChild("modalContent") modalContent: TemplateRef<any> | undefined;
