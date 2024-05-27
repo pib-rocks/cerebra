@@ -8,14 +8,12 @@ export function compareValuesPulseValidator(
         if (control1.value >= control2.value) {
             control1.setErrors({notGreaterThan: true});
             return {notGreaterThan: true};
+        } else if (control2.value >= 0 && control1.value >= 0) {
+            control1.setErrors(null);
+            return null;
         } else {
-            if (control2.value >= 0 && control1.value >= 0) {
-                control1.setErrors(null);
-                return null;
-            } else {
-                control1.setErrors({error: true});
-                return {error: true};
-            }
+            control1.setErrors({error: true});
+            return {error: true};
         }
     };
 }
@@ -28,14 +26,12 @@ export function compareValuesDegreeValidator(
         if (control1.value >= control2.value) {
             control1.setErrors({notGreaterThan: true});
             return {notGreaterThan: true};
+        } else if (control2.value >= -9000 && control1.value >= -9000) {
+            control1.setErrors(null);
+            return null;
         } else {
-            if (control2.value >= -9000 && control1.value >= -9000) {
-                control1.setErrors(null);
-                return null;
-            } else {
-                control1.setErrors({error: true});
-                return {error: true};
-            }
+            control1.setErrors({error: true});
+            return {error: true};
         }
     };
 }

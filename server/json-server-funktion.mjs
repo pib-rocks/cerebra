@@ -61,7 +61,7 @@ server.put("/voice-assistant/personality/:personalityId", (req, res, next) => {
                 .send(Personality.getPersonality(personality));
         }
     });
-    if (updated == false) {
+    if (!updated) {
         return res.status(404).send();
     }
 });
@@ -119,7 +119,7 @@ server.put("/voice-assistant/chat/:chatId", (req, res, next) => {
             return res.status(200).send(Chat.getChat(chat));
         }
     });
-    if (updated == false) {
+    if (!updated) {
         return res.status(404).send();
     }
 });
@@ -332,7 +332,7 @@ server.put("/motor/:motorName", (req, res, next) => {
             return res.status(200).send(Motor.getMotor(motor, bricklets));
         }
     });
-    if (updated == false) {
+    if (!updated) {
         return res.status(404).send();
     }
 });
@@ -369,7 +369,7 @@ server.put("/motor/:motorName/settings", (req, res, next) => {
             return res.status(200).send(MotorSettings.getMotorSettings(motor));
         }
     });
-    if (updated == false) {
+    if (!updated) {
         return res.status(404).send();
     }
 });
@@ -411,7 +411,7 @@ server.put("/program/:programNumber", (req, res, next) => {
             return res.status(200).send(Program.getProgram(program));
         }
     });
-    if (updated == false) {
+    if (!updated) {
         return res.status(404).send();
     }
 });
@@ -450,7 +450,7 @@ server.put("/program/:programNumber/code", (req, res, next) => {
             return res.status(200).send(Program.getProgram(program));
         }
     });
-    if (updated == false) {
+    if (!updated) {
         return res.status(404).send();
     }
 });

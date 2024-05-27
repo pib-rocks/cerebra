@@ -5,7 +5,6 @@ import {VoiceAssistantService} from "../shared/services/voice-assistant.service"
 import {FormControl, FormGroup, Validators} from "@angular/forms";
 import {NgbModal, NgbModalRef} from "@ng-bootstrap/ng-bootstrap";
 import {VoiceAssistant} from "../shared/types/voice-assistant";
-import {VoiceAssistantState} from "../shared/types/voice-assistant-state";
 
 @Component({
     selector: "app-voice-assistant",
@@ -68,12 +67,13 @@ export class VoiceAssistantComponent implements OnInit {
     }
 
     showModal = () => {
-        return (this.ngbModalRef = this.modalService.open(this.modalContent, {
+        this.ngbModalRef = this.modalService.open(this.modalContent, {
             ariaLabelledBy: "modal-basic-title",
             size: "sm",
             windowClass: "myCustomModalClass",
             backdropClass: "myCustomBackdropClass",
-        }));
+        });
+        return this.ngbModalRef;
     };
 
     savePersonality = () => {

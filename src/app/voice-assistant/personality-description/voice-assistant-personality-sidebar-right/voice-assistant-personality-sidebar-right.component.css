@@ -29,7 +29,6 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 .number-input {
-    /*border: 2px solid #ddd;*/
     display: inline-flex;
 }
 
