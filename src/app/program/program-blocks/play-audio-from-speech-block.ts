@@ -24,7 +24,7 @@ export const playAudioFromSpeech =
             ],
             previousStatement: null,
             nextStatement: null,
-            colour: 112,
+            colour: 260,
             tooltip: "",
             helpUrl: "",
         },
