@@ -8,6 +8,7 @@ import Bricklet from "./dto/bricklet.mjs";
 import Motor from "./dto/motor.mjs";
 import MotorSettings from "./dto/motorsettings.mjs";
 import Program from "./dto/program.mjs";
+import AssistantModel from "./dto/assistantmodel.mjs";
 const server = jsonServer.create();
 const router = jsonServer.router(mockData);
 const middlewares = jsonServer.defaults();
@@ -453,6 +454,26 @@ server.put("/program/:programNumber/code", (req, res, next) => {
     if (updated == false) {
         return res.status(404).send();
     }
+});
+
+//getAssistantModel
+server.get("/assistant-model", (req, res, next) => {
+    let response = [];
+    mockData.assistantModel.forEach((model) => {
+        response.push(AssistantModel.getAssistantModel(model));
+    });
+    return res.status(200).send({voiceAssistantModels: response});
+});
+
+//getAssistantModelById
+server.get("/assistant-model/:id", (req, res, next) => {
+    let response = mockData.assistantModel.find(
+        (assistantModel) => assistantModel.id == req.params.id,
+    );
+    if (response == undefined) {
+        return res.status(404).send();
+    }
+    return res.status(200).send(response);
 });
 
 server.use(router);

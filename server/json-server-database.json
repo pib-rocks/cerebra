@@ -17,6 +17,26 @@
       "pauseThreshold": 0.8
     }
   ],
+  "assistantModel": [
+    {
+      "id": 1,
+      "apiName": "gpt-3.5-turbo",
+      "hasImageSupport": false,
+      "visualName": "GPT-3.5 Turbo"
+    },
+    {
+      "id": 2,
+      "apiName": "claude-3-sonnet",
+      "hasImageSupport": true,
+      "visualName": "Claude 3 Sonnet"
+    },
+    {
+      "id": 3,
+      "apiName": "gpt-4.0-turbo",
+      "hasImageSupport": false,
+      "visualName": "GPT-4.0 Turbo"
+    }
+  ],
   "chats": [
     {
       "id": 1,
