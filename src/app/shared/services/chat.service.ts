@@ -1,6 +1,6 @@
 import {Injectable} from "@angular/core";
 import {Chat, ChatDto} from "../types/chat.class";
-import {BehaviorSubject, Observable, catchError, map, throwError} from "rxjs";
+import {BehaviorSubject, Observable, map} from "rxjs";
 import {ApiService} from "./api.service";
 import {UrlConstants} from "./url.constants";
 import {SidebarService} from "../interfaces/sidebar-service.interface";
