@@ -1,0 +1,33 @@
+* {
+    color: white;
+}
+
+.pose-item {
+    border: none;
+    height: 40px;
+    line-height: 40px;
+}
+
+.play-button {
+    border-top-left-radius: 10px;
+    border-bottom-left-radius: 10px;
+    border: 2px solid #344864;
+    background-color: #041939;
+    width: 70px;
+    display: flex;
+}
+
+.play-button:hover {
+    cursor: pointer;
+}
+
+.pose-label {
+    background-color: #344864;
+}
+
+.apply-pose {
+    display: block;
+    margin: auto;
+    width: 25px;
+    height: 25px;
+}

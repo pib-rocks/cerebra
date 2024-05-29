@@ -1,0 +1,108 @@
+<div class="d-flex flex-row m-0 pb-2 bt-0 pl-0 pr-0">
+    <div class="flex-grow-1">Poses</div>
+    <button
+        type="button"
+        id="save-pose-button"
+        class="btn btn-regular"
+        (click)="showModal()">
+        Save pose
+    </button>
+</div>
+
+<div
+    *ngFor="let pose of poses"
+    class="pose-item d-flex flex-row mt-1 mb-1">
+    <div class="play-button">
+        <img
+            class="apply-pose"
+            src="../../../assets/program/button-run-play.svg"
+            alt="apply post button" />
+    </div>
+    <div class="pose-label flex-grow-1 pl-3">{{pose.name}}</div>
+    <div
+        class=""
+        style="background-color: yellow; width: 10px; height: 50px;">
+        edt
+    </div>
+    <div
+        class=""
+        style="background-color: green; width: 10px; height: 50px;">
+        del
+    </div>
+</div>
+
+<ng-template
+    #content
+    let-modal
+    id="template">
+    <div
+        class="row display-flex modal-header"
+        id="modal-header">
+        <div
+            class="col-10"
+            id="header-title">
+            <span id="header-title-text">POSE</span>
+        </div>
+        <div
+            class="col-2 text-right"
+            id="close-button">
+            <button
+                id="modal-close-button"
+                type="button"
+                (click)="modal.dismiss('Cross')"
+                class="btn">
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="10"
+                    height="16">
+                    <text
+                        font-family="Titillium"
+                        fill="#FFF"
+                        font-weight="bold"
+                        font-size="16"
+                        y="11.062">
+                        X
+                    </text>
+                </svg>
+            </button>
+        </div>
+    </div>
+    <div
+        class="row m-2 mt-4 pr-2"
+        id="row-name">
+        <label
+            for="name-input"
+            class="col-3 mt-2 justify-content-end"
+            id="label-name"
+            >Name</label
+        >
+        <input
+            ngbAutofocus
+            class="col-9"
+            type="text"
+            (keydown)="($event).key ==='Enter' ? modal.close('Save'): ''"
+            name="name-input"
+            id="name-input" />
+    </div>
+    <div class="row justify-content-center mt-2 mb-3">
+        <div class="col-3 align-self-center">
+            <button
+                type="button"
+                class="btn btn-regular"
+                id="modal-save-button"
+                (keydown.enter)="modal.close('Save')"
+                (click)="modal.close('Save')">
+                Save
+            </button>
+        </div>
+        <div class="col-3 align-self-center">
+            <button
+                type="button"
+                class="btn btn-regular"
+                id="modal-cancel-button"
+                (click)="modal.dismiss('Cancel')">
+                Cancel
+            </button>
+        </div>
+    </div>
+</ng-template>
