@@ -9,12 +9,17 @@ import {ChatService} from "src/app/shared/services/chat.service";
 import {ChatMessage} from "src/app/shared/types/chat-message";
 import {ReactiveFormsModule} from "@angular/forms";
 import {Chat} from "src/app/shared/types/chat.class";
+import {ChatIsListening} from "src/app/shared/ros-types/msg/chat-is-listening";
 
 describe("ChatWindowComponent", () => {
     let component: ChatWindowComponent;
     let fixture: ComponentFixture<ChatWindowComponent>;
     let chatService: jasmine.SpyObj<ChatService>;
     let paramsSubject: Subject<{chatUuid: string}>;
+    let messagesSubject: Subject<ChatMessage[]>;
+    let isListeningSubject: Subject<boolean>;
+
+    const chatId = "chat-id";
 
     beforeEach(async () => {
         paramsSubject = new Subject<{chatUuid: string}>();
@@ -57,6 +62,13 @@ describe("ChatWindowComponent", () => {
             ChatService,
         ) as jasmine.SpyObj<ChatService>;
 
+        messagesSubject = new Subject<ChatMessage[]>();
+        chatService.getChatMessagesObservable.and.returnValue(messagesSubject);
+        isListeningSubject = new Subject<boolean>();
+        chatService.getIsListeningObservable.and.returnValue(
+            isListeningSubject,
+        );
+
         fixture = TestBed.createComponent(ChatWindowComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
@@ -66,44 +78,47 @@ describe("ChatWindowComponent", () => {
         expect(component).toBeTruthy();
     });
 
-    it("should get the correct observables and obtain its values from them", () => {
-        const chatId = "chat-id";
-
-        const messages = [
-            {
-                messageId: "message-id",
-                timestamp: "yesterday",
-                isUser: false,
-                content: "hello world",
-            },
-        ];
-        const messagesSubject = new Subject<ChatMessage[]>();
-        chatService.getChatMessagesObservable.and.returnValue(messagesSubject);
-        const isListeningSubject = new Subject<boolean>();
-        chatService.getIsListeningObservable.and.returnValue(
-            isListeningSubject,
-        );
+    it("should get the correct chat-message observable and obtain its messages from it", () => {
+        const firstMessage: ChatMessage = {
+            messageId: "message-id",
+            timestamp: "yesterday",
+            isUser: false,
+            content: "hello world",
+        };
+        const secondMessage: ChatMessage = {
+            messageId: "message-id",
+            timestamp: "today",
+            isUser: false,
+            content: "hello world",
+        };
 
         paramsSubject.next({chatUuid: chatId});
+        messagesSubject.next([firstMessage, secondMessage]);
 
         expect(chatService.getChatMessagesObservable).toHaveBeenCalledOnceWith(
             chatId,
         );
-        expect(chatService.getIsListeningObservable).toHaveBeenCalledOnceWith(
+        expect(component.messages).toEqual([secondMessage, firstMessage]);
+    });
+
+    it("should set the active-state based on the listening-status and text-input", () => {
+        paramsSubject.next({chatUuid: chatId});
+        expect(chatService.getIsListeningObservable).toHaveBeenCalledWith(
             chatId,
         );
 
-        messagesSubject.next(messages);
-        expect(component.messages).toEqual(messages);
-
         isListeningSubject.next(true);
         expect(component.textInputActive).toBeFalse();
+
         component.chatMessageFormControl.setValue("non empty text");
         expect(component.textInputActive).toBeTrue();
+
         isListeningSubject.next(false);
         expect(component.textInputActive).toBeFalse();
+
         isListeningSubject.next(true);
         expect(component.textInputActive).toBeTrue();
+
         component.chatMessageFormControl.setValue("");
         expect(component.textInputActive).toBeFalse();
     });
