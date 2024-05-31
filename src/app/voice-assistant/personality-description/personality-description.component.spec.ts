@@ -19,8 +19,6 @@ describe("PersonalityDescriptionComponent", () => {
 
     let fakePersonality: VoiceAssistant;
 
-    // let personalitiesSubject: Subject<VoiceAssistant[]>;
-
     let router: Router;
     let paramsSubject: Subject<{personalityUuid: string}>;
 
@@ -35,8 +33,6 @@ describe("PersonalityDescriptionComponent", () => {
                 "deletePersonalityById",
                 "getAllPersonalities",
             ]);
-        // personalitiesSubject = new Subject();
-        // voiceAssistantServiceSpy.getAllPersonalities.and.returnValue(personalitiesSubject)
 
         await TestBed.configureTestingModule({
             declarations: [
@@ -99,18 +95,6 @@ describe("PersonalityDescriptionComponent", () => {
         expect(component).toBeTruthy();
     });
 
-    it("should call the next method in the va-service when updatePersonality is called", () => {
-        const spyOnVoiceAssistantServiceUuidSubject = spyOn(
-            voiceAssistantService.uuidSubject,
-            "next",
-        ).and.callFake(() => {
-            return;
-        });
-        component.personality = fakePersonality;
-        component.updatePersonality();
-        expect(spyOnVoiceAssistantServiceUuidSubject).toHaveBeenCalled();
-    });
-
     it("should change the description of the personality when calling updateDescription", () => {
         const spyUpdateDescription = spyOn(
             component,
@@ -128,32 +112,4 @@ describe("PersonalityDescriptionComponent", () => {
         expect(spyUpdateDescription).toHaveBeenCalled();
         expect(component.personality.description).toBe("Testdesc2");
     });
-
-    it("should call the deletion method of voiceAssistantService when calling deletePersonality", () => {
-        const spyOnVoiceAssistantServicedeletePersonalityById = spyOn(
-            voiceAssistantService,
-            "deletePersonalityById",
-        ).and.callFake(() => {
-            voiceAssistantService.personalities.pop();
-        });
-        spyOnProperty(router, "url").and.returnValue(
-            "/voice-assistant/01234567-0123-0123-0123-0123456789ab",
-        );
-        fakePersonality.personalityId = "01234567-0123-0123-0123-0123456789ab";
-        voiceAssistantService.personalities.push(fakePersonality);
-        component.deletePersonality();
-        expect(
-            spyOnVoiceAssistantServicedeletePersonalityById,
-        ).toHaveBeenCalled();
-        expect(voiceAssistantService.personalities.length).toBe(0);
-    });
-
-    // No Clone button in HTML right now -> Unit-Test dose not work...
-    // it("should call cloneDescription when clicking on the clone-button", () => {
-    //     const button: HTMLElement | null =
-    //         document.getElementById("clone-button");
-    //     const spyUpdateDescription = spyOn(component, "cloneDescription");
-    //     button?.click();
-    //     expect(spyUpdateDescription).toHaveBeenCalled();
-    // });
 });

@@ -1,4 +1,4 @@
-import {ComponentFixture, TestBed, waitForAsync} from "@angular/core/testing";
+import {ComponentFixture, TestBed} from "@angular/core/testing";
 
 import {VoiceAssistantComponent} from "./voice-assistant.component";
 import {ActivatedRoute, Router} from "@angular/router";
@@ -10,7 +10,7 @@ import {VoiceAssistantService} from "../shared/services/voice-assistant.service"
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {HttpClientTestingModule} from "@angular/common/http/testing";
 import {VoiceAssistant} from "../shared/types/voice-assistant";
-import {BehaviorSubject, Subject} from "rxjs";
+import {BehaviorSubject} from "rxjs";
 import {AssistantModel} from "../shared/types/assistantModel";
 export class MockNgbModalRef {
     componentInstance = {

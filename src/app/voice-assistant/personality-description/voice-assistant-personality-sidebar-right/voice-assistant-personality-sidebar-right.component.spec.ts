@@ -40,11 +40,6 @@ describe("VoiceAssistantPersonalitySidebarRightComponent", () => {
                 "getAllAssistantModels",
             ]);
 
-        // const chatServiceSpy: jasmine.SpyObj<ChatService> =
-        //     jasmine.createSpyObj(ChatService, [
-        //         "getChatMessagesObservable",
-        //         "getChat",
-        //     ]);
         await TestBed.configureTestingModule({
             declarations: [VoiceAssistantPersonalitySidebarRightComponent],
             imports: [
@@ -114,6 +109,10 @@ describe("VoiceAssistantPersonalitySidebarRightComponent", () => {
                     ],
                 },
             ),
+            assistantModel: new FormControl(1, {
+                nonNullable: true,
+                validators: [Validators.required],
+            }),
         });
         voiceAssistantService.personalities = [component.personalityClone];
         voiceAssistantService.assistantModelsSubject = new BehaviorSubject<
@@ -126,18 +125,17 @@ describe("VoiceAssistantPersonalitySidebarRightComponent", () => {
         expect(component).toBeTruthy();
     });
 
-    //adjustThreshold
     it("should test if adjustThreshold sets the pausethreshold correctly", () => {
         component.thresholdString = "0.7";
         component.adjustThreshold();
         expect(component.personalityClone.pauseThreshold).toBe(0.7);
     });
-    //deletePersonality
+
     it("should delete personality", () => {
         component.deletePersonality();
         expect(voiceAssistantService.deletePersonalityById).toHaveBeenCalled();
     });
-    //updatePersonality
+
     it("should update personality", () => {
         component.updatePersonality();
         expect(voiceAssistantService.updatePersonalityById).toHaveBeenCalled();
