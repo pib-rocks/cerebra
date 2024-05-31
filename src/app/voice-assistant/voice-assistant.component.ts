@@ -5,6 +5,7 @@ import {VoiceAssistantService} from "../shared/services/voice-assistant.service"
 import {FormControl, FormGroup, Validators} from "@angular/forms";
 import {NgbModal, NgbModalRef} from "@ng-bootstrap/ng-bootstrap";
 import {VoiceAssistant} from "../shared/types/voice-assistant";
+import {AssistantModel} from "../shared/types/assistantModel";
 
 @Component({
     selector: "app-voice-assistant",
@@ -19,6 +20,7 @@ export class VoiceAssistantComponent implements OnInit {
     ngbModalRef?: NgbModalRef;
     imgSrc: string = "../../assets/toggle-switch-left.png";
     subject!: Observable<SidebarElement[]>;
+    models!: AssistantModel[];
 
     button: {enabled: boolean; func: () => void} = {
         enabled: true,
@@ -36,6 +38,11 @@ export class VoiceAssistantComponent implements OnInit {
     voiceAssistantActiveStatus = false;
 
     ngOnInit() {
+        this.voiceAssistantService.assistantModelsSubject.subscribe(
+            (models) => {
+                this.models = models;
+            },
+        );
         this.button.enabled = true;
         this.button.func = this.openAddModal;
         this.subject = this.voiceAssistantService.getSubject();
@@ -59,6 +66,10 @@ export class VoiceAssistantComponent implements OnInit {
                     Validators.min(0.1),
                     Validators.max(3),
                 ],
+            }),
+            assistantModel: new FormControl(1, {
+                nonNullable: true,
+                validators: [Validators.required],
             }),
         });
         this.voiceAssistantService.uuidSubject.subscribe((uuid: string) => {
@@ -147,6 +158,8 @@ export class VoiceAssistantComponent implements OnInit {
                     this.personalityForm.controls["name-input"].value,
                     this.personalityForm.controls["gender"].value,
                     this.personalityForm.controls["pausethreshold"].value,
+                    "",
+                    this.personalityForm.controls["assistantModel"].value,
                 ),
             );
         }

@@ -3,6 +3,8 @@ import {VoiceAssistant} from "src/app/shared/types/voice-assistant";
 import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
 import {ActivatedRoute, Params} from "@angular/router";
 import {FormControl, FormGroup, Validators} from "@angular/forms";
+import {AssistantModel} from "src/app/shared/types/assistantModel";
+import {Observable} from "rxjs";
 @Component({
     selector: "app-va-personality-sidebar-right",
     templateUrl: "./voice-assistant-personality-sidebar-right.component.html",
@@ -16,6 +18,7 @@ export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
     personalityClone!: VoiceAssistant;
     thresholdString: string = "";
     personalityFormSidebar!: FormGroup;
+    models!: AssistantModel[];
 
     constructor(
         private voiceAssistantService: VoiceAssistantService,
@@ -23,6 +26,11 @@ export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
     ) {}
 
     ngOnInit() {
+        this.voiceAssistantService.assistantModelsSubject.subscribe(
+            (models) => {
+                this.models = models;
+            },
+        );
         this.route.params.subscribe((params: Params) => {
             const temp = this.voiceAssistantService.getPersonality(
                 params["personalityUuid"],
@@ -57,6 +65,13 @@ export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
                         Validators.min(this.pauseThresholdMin),
                         Validators.max(this.pauseThresholdMax),
                     ],
+                },
+            ),
+            assistantModel: new FormControl(
+                this.personalityClone?.assistantModelId ?? this.models[0].id,
+                {
+                    nonNullable: true,
+                    validators: [Validators.required],
                 },
             ),
         });
@@ -130,6 +145,8 @@ export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
                 this.personalityFormSidebar.controls["persona-name"].value;
             this.personalityClone.gender =
                 this.personalityFormSidebar.controls["gender"].value;
+            this.personalityClone.assistantModelId =
+                this.personalityFormSidebar.controls["assistantModel"].value;
             this.voiceAssistantService.updatePersonalityById(
                 this.personalityClone!,
             );

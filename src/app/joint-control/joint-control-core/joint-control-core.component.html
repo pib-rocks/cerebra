@@ -6,7 +6,7 @@
     [ngClass]="joint.reversed ? 'flex-row-reverse' : 'flex-row'">
     <div class="flex-grow-1 m-0 p-0">
         <div
-            class="row m-0 p-0 d-flex align-items-end"
+            class="row m-0 p-0 d-flex align-items-end pb-2"
             [ngClass]="joint.reversed ? 'flex-row-reverse' : 'flex-row'"
             [style]="'height: ' + ((joint.segmentOffset - joint.segmentHeight/2) * 100) + '%;'">
             <div class="col-3 sidebar-label m-0 p-0">Settings</div>
@@ -14,33 +14,32 @@
             <div class="col-3 sidebar-label m-0 p-0">Current</div>
         </div>
         <div
-            *ngFor="let motor of joint.motors"
+            *ngFor="let motor of displayMotors"
             class="row m-0 p-0"
-            [ngClass]="joint.reversed ? 'flex-row-reverse' : 'flex-row'"
+            [ngClass]="[joint.reversed ? 'flex-row-reverse' : 'flex-row', motor == selectedMotor || selectedMotor?.motorName == 'all_fingers_left' || selectedMotor?.motorName == 'all_fingers_right' ? 'background-selected' : '']"
             [style]="'height: ' + (joint.segmentHeight*100) + '%;'">
-            <ng-container *ngIf="motor.displaySettings">
-                <app-motor-settings
-                    [reversed]="joint.reversed"
-                    [motor]="motor"
-                    class="col-6 m-0 p-0"></app-motor-settings>
-                <app-motor-current
-                    [reversed]="joint.reversed"
-                    [motor]="motor"
-                    class="col-6 m-0 p-0"></app-motor-current>
-            </ng-container>
+            <app-motor-settings
+                [reversed]="joint.reversed"
+                [motor]="motor"
+                class="col-6 m-0 p-0"></app-motor-settings>
+            <app-motor-current
+                (click)="selectMotor(motor)"
+                [id]="'touchpoint-' + motor.motorPathName"
+                [reversed]="joint.reversed"
+                [motor]="motor"
+                class="col-6 cursor m-0 p-0"></app-motor-current>
         </div>
     </div>
     <div
         id="joint-canvas"
         class="m-0 p-0">
-        <!-- touchpoints background-->
         <a
             *ngFor="let motor of joint.motors"
-            [routerLink]="['motor', motor.motorPathName]"
+            (click)="selectMotor(motor)"
             [id]="'touchpoint-' + motor.motorPathName"
-            routerLinkActive="active-touchpoint"
+            [ngClass]="selectedMotor?.motorName == motor.motorName ? 'active-touchpoint' : ''"
             [style]="'left: ' + (motor.touchPointCenterX*100) + '%; top: ' + (motor.touchPointCenterY*100) + '%;'"
-            class="touchpoint touchpoint-link m-0 p-0 pe-none">
+            class="touchpoint touchpoint-link m-0 p-0 pe-none cursor">
             <div class="touchpoint-wrapper">
                 <div
                     class="m-0 p-0 pe-none touchpoint-background"
@@ -51,11 +50,10 @@
                     alt="touch-area of touchpoint"></div>
             </div>
         </a>
-        <!-- joint background -->
         <img
             class="img-fluid joint-background m-0 p-0"
             [src]="'../../../assets' + joint.background"
-            alt="background for joint" />
+            alt="cursor for joint" />
     </div>
 </div>
 <div class="row m-0 p-0">
