@@ -3,7 +3,7 @@ import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {VoiceAssistantChatComponent} from "./voice-assistant-chat.component";
 import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {HttpClientTestingModule} from "@angular/common/http/testing";
-import {BehaviorSubject, Observable, of} from "rxjs";
+import {BehaviorSubject, of} from "rxjs";
 import {Chat} from "src/app/shared/types/chat.class";
 import {ChatService} from "src/app/shared/services/chat.service";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";

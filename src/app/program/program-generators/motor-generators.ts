@@ -86,7 +86,7 @@ export function move_motor(block: Block, generator: typeof pythonGenerator) {
     const desiredAcceleration = 10000.0;
 
     // Deklaration der ros2 JointTrajectory Publisher Klasse
-    const moveMotorNode = generator.provideFunction_(
+    generator.provideFunction_(
         "JointTrajectoryPublisher",
         `
 class ${generator.FUNCTION_NAME_PLACEHOLDER_}(Node):

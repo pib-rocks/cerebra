@@ -27,6 +27,7 @@ import {ApiService} from "../api.service";
 import {UrlConstants} from "../url.constants";
 import {MotorSettingsError} from "../../error/motor-settings-error";
 import {ChatIsListening} from "../../ros-types/msg/chat-is-listening";
+import {motors} from "../../types/motor-configuration";
 
 @Injectable({
     providedIn: "root",
@@ -103,37 +104,7 @@ export class RosService implements IRosService {
 
     cameraTimer: any;
 
-    private motorNames = [
-        "thumb_left_opposition",
-        "thumb_left_stretch",
-        "index_left_stretch",
-        "middle_left_stretch",
-        "ring_left_stretch",
-        "pinky_left_stretch",
-        "all_fingers_left",
-        "thumb_right_opposition",
-        "thumb_right_stretch",
-        "index_right_stretch",
-        "middle_right_stretch",
-        "ring_right_stretch",
-        "pinky_right_stretch",
-        "all_fingers_right",
-        "upper_arm_left_rotation",
-        "elbow_left",
-        "lower_arm_left_rotation",
-        "wrist_left",
-        "shoulder_vertical_left",
-        "shoulder_horizontal_left",
-        "upper_arm_right_rotation",
-        "elbow_right",
-        "lower_arm_right_rotation",
-        "wrist_right",
-        "shoulder_vertical_right",
-        "shoulder_horizontal_right",
-        "tilt_forward_motor",
-        "tilt_sideways_motor",
-        "turn_head_motor",
-    ];
+    private motorNames = motors.map((motor) => motor.motorName);
 
     private isListeningFromChatId: Map<string, boolean> = new Map();
 

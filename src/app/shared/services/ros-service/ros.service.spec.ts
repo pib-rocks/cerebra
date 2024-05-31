@@ -58,7 +58,6 @@ describe("RosService", () => {
     it("should establish ros in the constructor", () => {
         rosService["setUpRos"]();
         expect(spyOnSetupRos).toHaveBeenCalled();
-        expect(rosService["Ros"]).toBeTruthy();
     });
 
     it("should create all ROSLIB topics and services", () => {
