@@ -15,7 +15,6 @@ import {JointTrajectoryMessage} from "../../ros-types/msg/joint-trajectory-messa
 import {rosDataTypes} from "../../ros-types/path/ros-datatypes.enum";
 import {rosTopics} from "../../ros-types/path/ros-topics.enum";
 import {rosServices} from "../../ros-types/path/ros-services.enum";
-import {rosActions} from "../../ros-types/path/ros-actions.enum";
 import {
     SetVoiceAssistantStateRequest,
     SetVoiceAssistantStateResponse,
@@ -42,7 +41,6 @@ import {ProxyRunProgramFeedback} from "../../ros-types/msg/proxy-run-program-fee
 import {ProxyRunProgramResult} from "../../ros-types/msg/proxy-run-program-result";
 import {ProxyRunProgramStatus} from "../../ros-types/msg/proxy-run-program-status";
 import {IRosService} from "./i-ros-service";
-// import {ip, portWebsocket} from "../../../global-conf.json"
 import config from "../../../global-conf.json";
 import {
     SendChatMessageRequest,
@@ -158,10 +156,6 @@ export class RosService implements IRosService {
         });
     }
 
-    private get Ros(): ROSLIB.Ros {
-        return this.ros;
-    }
-
     private initTopicsAndServices() {
         this.cameraTopic = this.createRosTopic(
             rosTopics.cameraTopicName,
@@ -240,11 +234,6 @@ export class RosService implements IRosService {
             rosServices.getChatIsListening,
             rosDataTypes.getChatIsListening,
         );
-
-        this.runProgramAction = this.createActionClient(
-            rosActions.runProgramName,
-            rosDataTypes.runProgram,
-        );
     }
 
     private createRosService(
@@ -266,14 +255,6 @@ export class RosService implements IRosService {
             ros: this.ros,
             name: topicName,
             messageType: topicMessageType,
-        });
-    }
-
-    private createActionClient(actionName: string, actionType: string) {
-        return new ROSLIB.ActionClient({
-            ros: this.ros,
-            serverName: actionName,
-            actionName: actionType,
         });
     }
 

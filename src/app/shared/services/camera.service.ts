@@ -1,4 +1,4 @@
-import {CameraSetting} from "../types/camera-settings";
+import {CameraSettings} from "../types/camera-settings";
 import {ApiService} from "./api.service";
 import {UrlConstants} from "../../shared/services/url.constants";
 import {BehaviorSubject, Subject, catchError, throwError} from "rxjs";
@@ -28,12 +28,12 @@ export class CameraService {
         this.rosService.cameraQualityFactorReceiver$;
     rosCameraTimerPeriodReceiver = this.rosService.cameraTimerPeriodReceiver$;
     cameraReciver$: Subject<string> = new Subject<string>();
-    cameraSettings: BehaviorSubject<CameraSetting> =
-        new BehaviorSubject<CameraSetting>({} as CameraSetting);
+    cameraSettings: BehaviorSubject<CameraSettings> =
+        new BehaviorSubject<CameraSettings>({} as CameraSettings);
 
-    updateCameraSettings(updateCameraSetting: CameraSetting) {
+    updateCameraSettings(updateCameraSettings: CameraSettings) {
         this.apiService
-            .put(UrlConstants.CAMERA, updateCameraSetting)
+            .put(UrlConstants.CAMERA, updateCameraSettings)
             .pipe(
                 catchError((err) => {
                     return throwError(() => {
@@ -138,7 +138,7 @@ export class CameraService {
         this.rosService.unsubscribeCameraTopic();
     }
 
-    publishCameraSettings(cameraSettings: CameraSetting) {
+    publishCameraSettings(cameraSettings: CameraSettings) {
         this.cameraSettings.next(cameraSettings);
         this.updateCameraSettings(cameraSettings);
     }

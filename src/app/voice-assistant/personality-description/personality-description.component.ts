@@ -17,7 +17,6 @@ export class PersonalityDescriptionComponent implements OnInit {
     constructor(
         private voiceAssistantService: VoiceAssistantService,
         private route: ActivatedRoute,
-        private router: Router,
     ) {}
 
     ngOnInit(): void {
@@ -49,25 +48,4 @@ export class PersonalityDescriptionComponent implements OnInit {
             }
         }, 1000);
     }
-
-    updatePersonality() {
-        if (this.personality) {
-            this.voiceAssistantService.uuidSubject.next(
-                this.personality?.getUUID(),
-            );
-        }
-    }
-
-    cloneDescription() {
-        throw Error("not implemented");
-    }
-
-    deletePersonality = () => {
-        const uuid = this.router.url
-            .split("/")
-            .find((segment) => RegExp(CerebraRegex.UUID).test(segment));
-        if (uuid && this.voiceAssistantService.personalities.length > 0) {
-            this.voiceAssistantService.deletePersonalityById(uuid);
-        }
-    };
 }

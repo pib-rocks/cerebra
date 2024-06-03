@@ -18,6 +18,7 @@ import {SidebarService} from "../interfaces/sidebar-service.interface";
 import {SidebarElement} from "../interfaces/sidebar-element.interface";
 import {RosService} from "./ros-service/ros.service";
 import {VoiceAssistantState} from "../types/voice-assistant-state";
+import {AssistantModel, AssistantModelDto} from "../types/assistantModel";
 
 @Injectable({
     providedIn: "root",
@@ -29,6 +30,8 @@ export class VoiceAssistantService implements SidebarService {
         new BehaviorSubject<VoiceAssistant[]>([]);
     uuidSubject: Subject<string> = new Subject<string>();
     voiceAssistantActiveStatus: boolean = false;
+    assistantModelsSubject: BehaviorSubject<AssistantModel[]> =
+        new BehaviorSubject<AssistantModel[]>([]);
     voiceAssistantActiveStatusSubject: Subject<boolean> =
         new Subject<boolean>();
 
@@ -37,6 +40,7 @@ export class VoiceAssistantService implements SidebarService {
         private rosService: RosService,
     ) {
         this.getAllPersonalities();
+        this.getAllAssistantModels();
 
         this.voiceAssistantStateObservable =
             this.rosService.voiceAssistantStateReceiver$.pipe(
@@ -65,7 +69,6 @@ export class VoiceAssistantService implements SidebarService {
     private setPersonalities(personalities: VoiceAssistant[]) {
         const newPersonalities: VoiceAssistant[] = [];
 
-        //FIXME ab in die pipe @christopher
         personalities.forEach((m) => {
             newPersonalities.push(
                 new VoiceAssistant(
@@ -74,6 +77,7 @@ export class VoiceAssistantService implements SidebarService {
                     m.gender,
                     m.pauseThreshold,
                     m.description,
+                    m.assistantModelId,
                 ),
             );
         });
@@ -113,6 +117,31 @@ export class VoiceAssistantService implements SidebarService {
             .subscribe((response) => {
                 this.setPersonalities(
                     response["voiceAssistantPersonalities"] as VoiceAssistant[],
+                );
+            });
+    }
+
+    getAllAssistantModels() {
+        this.apiService
+            .get(UrlConstants.ASSISTANT_MODEL)
+            .pipe(
+                catchError((err) => {
+                    return throwError(() => {
+                        console.log(err);
+                    });
+                }),
+            )
+            .subscribe((response) => {
+                const assistantModelDto = response[
+                    "assistantModels"
+                ] as AssistantModelDto[];
+                if (undefined == assistantModelDto) {
+                    return;
+                }
+                this.assistantModelsSubject.next(
+                    assistantModelDto.map((dto) =>
+                        AssistantModel.parseDtoToAssistantModel(dto),
+                    ),
                 );
             });
     }
@@ -174,5 +203,9 @@ export class VoiceAssistantService implements SidebarService {
 
     getSubject(): Observable<SidebarElement[]> {
         return this.personalitiesSubject;
+    }
+
+    getModels(): Observable<AssistantModel[]> {
+        return this.assistantModelsSubject;
     }
 }

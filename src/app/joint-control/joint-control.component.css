@@ -57,17 +57,12 @@ a {
     background-color: #e10072;
 }
 
-.blue-corner-frame {
-    background:
-        url("../../assets/eb-br.png") bottom right no-repeat,
-        url("../../assets/eb-tr.png") top right no-repeat,
-        url("../../assets/eb-tl.png") top left no-repeat,
-        url("../../assets/eb-bl.png") bottom left no-repeat;
-    background-color: rgba(255, 255, 255, 0.05);
+.nav-tabs .nav-item:hover .nav-link,
+.nav-tabs .navbar-btn-active .nav-link {
+    padding-top: 14px;
 }
 
 .background-image {
     background: url("../../assets/bg-gesamt.png") left no-repeat;
     background-size: cover;
-    max-width: 1000px;
 }
