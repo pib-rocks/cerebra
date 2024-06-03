@@ -1,5 +1,4 @@
 <div
-    class="slider"
     id="horizontal-slider-{{baseId}}"
     [ngClass]="(thumbSelected ? 'no-highlight' : '') + (active ? '' : 'inactive')"
     (mouseup)="onMouseUp($event)"
@@ -15,7 +14,7 @@
             {{ name + ' ' }}<span>({{ unitLong }})</span>
         </p>
     </div>
-    <div class="row m-0 p-0 bubble-row">
+    <div class="row ml-0 p-0 bubble-row">
         <!-- left bubble span -->
         <span
             *ngIf="minBubblePosition <= currentMinBubblePosition"
@@ -50,13 +49,15 @@
             {{ thumb.valueSanitized }}{{ unitShort }}
         </div>
     </div>
-    <div class="row pb-4 px-0 pt-0 m-0">
+    <div class="row pb-2 px-0 pt-0 m-0 display-flex">
         <svg
             (mousedown)="onMouseDown($event)"
+            class="slider-row"
             id="slider-{{baseId}}"
             [attr.style]="'height: ' + 2*thumbRadius + 'px;'">
             <!-- slider track background -->
             <rect
+                class="rect"
                 id="slider-{{baseId}}-track-bg"
                 [attr.x]="trackOuterOffset"
                 [attr.y]="trackOuterOffset"
@@ -66,6 +67,7 @@
                 fill="#344a69" />
             <!-- slider track foreground -->
             <rect
+                class="rect"
                 id="slider-{{baseId}}-track-fg"
                 [attr.x]="(numberOfThumbs > 1 ? (currentMinBubblePosition - (trackHeight / 2)) : trackOuterOffset)"
                 [attr.y]="trackOuterOffset"
@@ -75,6 +77,7 @@
                 fill="#e10072" />
             <!-- slider thumbs -->
             <circle
+                class="circle"
                 *ngFor="let thumb of thumbs; index as i"
                 id="slider-{{baseId}}-thumb-{{i}}"
                 [attr.cx]="thumb.position"

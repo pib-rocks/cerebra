@@ -3,11 +3,12 @@
 }
 
 .bubble-row {
-    height: 34px;
+    height: clamp(24px, 2.5vw, 4px);
     position: relative;
 }
 
 svg {
+    overflow: visible;
     width: 100%;
     padding: 0px;
     margin: 0px;
@@ -39,16 +40,16 @@ span {
     padding-right: 1px;
     padding-top: 0px;
     padding-bottom: 0px;
-    line-height: 24px;
+    line-height: clamp(24px, 1.8vw, 34px);
     text-align: center;
     position: absolute;
     border-radius: 6px;
-    height: 24px;
+    height: clamp(24px, 1.8vw, 34px);
     display: block;
     font-weight: normal;
     color: #fff;
-    font-size: 13px;
-    min-width: 40px;
+    font-size: clamp(13px, 1.1vw, 24px);
+    min-width: clamp(40px, 2.5vw, 60px);
     width: fit-content;
 }
 
@@ -88,4 +89,36 @@ span {
     top: 100%;
     left: 50%;
     transform: translate(-50%, 0px);
+}
+
+.rect {
+    y: 19px;
+    height: clamp(12px, 1.5vw, 24px);
+}
+
+.circle {
+    r: clamp(12px, 1.5vw, 24px);
+    cy: 2.5vw;
+}
+
+@media screen and (min-width: 1900px) {
+    .bubble-row {
+        height: clamp(24px, 2.5vw, 4px);
+        position: relative;
+        margin-bottom: 14px;
+    }
+
+    .circle {
+        r: clamp(12px, 1.5vw, 24px);
+        cy: 1.5vw;
+    }
+
+    p {
+        font-size: 18px;
+        font-weight: bold;
+    }
+}
+
+.slider-row {
+    min-height: 55px;
 }

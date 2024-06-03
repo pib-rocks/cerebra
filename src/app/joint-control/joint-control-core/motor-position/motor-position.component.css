@@ -11,7 +11,7 @@
 }
 
 .slider-icon {
-    width: 50px;
+    width: 3vw;
     height: auto;
 }
 
@@ -21,4 +21,5 @@
 
 .motor-label {
     font-weight: bolder;
+    font-size: clamp(14px, 1.3vw, 36px);
 }
