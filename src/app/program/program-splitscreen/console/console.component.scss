@@ -1,20 +1,22 @@
+@import "src/styles";
+
 .stdout {
-    color: #ffffff;
+    color: $white-color;
     font-family: Consolas, "Courier New", monospace;
 }
 
 .stderr {
-    color: #e10072;
+    color: $pink-color;
     font-family: Consolas, "Courier New", monospace;
 }
 
 .info {
-    color: #0094df;
+    color: $blue-light;
     font-family: Consolas, "Courier New", monospace;
 }
 
 .wrapper {
-    background-color: #1b2b44;
+    background-color: $blue-dark-4;
     overflow-y: scroll;
     height: 0px;
     overflow-wrap: break-word;

@@ -1,9 +1,11 @@
+@import "src/styles";
+
 * {
-    color: #fff;
+    color: $white-color;
 }
 
 .sidebar-label {
-    color: white;
+    color: $white-color;
     font-weight: bolder;
     text-align: center;
 }

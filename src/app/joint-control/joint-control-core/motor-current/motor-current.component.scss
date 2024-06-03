@@ -1,8 +1,10 @@
+@import "src/styles";
+
 .current-label {
     font-weight: bold;
     font-size: 13px;
     text-align: center;
-    color: #fff;
+    color: $white-color;
 }
 
 .bg {
@@ -18,13 +20,13 @@
 }
 
 .circle {
-    stroke: white;
+    stroke: $white-color;
     stroke-linecap: butt;
     transform-origin: 50% 50%;
     transform: rotate(-89deg);
 }
 .circle2 {
-    stroke: #646464;
+    stroke: $grey-dark-2;
     stroke-linecap: butt;
     opacity: 0.3;
 }

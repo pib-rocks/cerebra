@@ -1,14 +1,16 @@
+@import "src/styles";
+
 label {
     font-weight: normal !important;
 }
 
 .invalid-form {
-    border: 1px solid red !important;
+    border: 1px solid $red-color !important;
 }
 
 #pause-threshold-input {
     width: 60px;
-    background-color: #344a69;
+    background-color: $blue-dark-1;
     border: none;
     height: 30px;
 }
@@ -27,11 +29,11 @@ label {
     width: 15px;
     margin-top: 2.5px;
     height: 15px;
-    border: 2px solid #fff;
+    border: 2px solid $white-color;
     border-radius: 50%;
     background-color: transparent;
     box-sizing: border-box;
-    box-shadow: inset 0 0 0 2px #000;
+    box-shadow: inset 0 0 0 2px $black-color;
 }
 
 #new-label-radio-male,
@@ -43,14 +45,14 @@ label {
 #new-radio-male:checked + #new-label-radio-male::before,
 #new-radio-female:checked + #new-label-radio-female::before {
     background-color: var(--cerebra-pink);
-    border-color: #fff;
+    border-color: $white-color;
     padding: 5px;
 }
 
 #up,
 #down {
     background-color: transparent;
-    color: #f3f3f3;
+    color: $white-color;
     border: none;
     font-size: 10px;
     line-height: 10px;

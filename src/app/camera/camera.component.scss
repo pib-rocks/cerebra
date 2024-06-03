@@ -1,3 +1,5 @@
+@import "src/styles";
+
 video {
     display: block;
     width: 100%;
@@ -14,8 +16,8 @@ video {
 }
 
 .cameraIcon path {
-    fill: #ffffff;
-    stroke: #ffffff;
+    fill: $white-color;
+    stroke: $white-color;
 }
 
 #cameraToggle {
@@ -40,35 +42,35 @@ video {
 }
 
 .video-nav-element svg path {
-    fill: #ffffff;
+    fill: $white-color;
     transition: fill 0.15s ease;
 }
 
 .video-nav-element:hover svg path {
-    fill: #e10072;
+    fill: $pink-color;
     transition: fill 0.15s ease;
 }
 
 .video-nav-element:hover,
 .video-nav-element:hover span {
-    color: #e10072;
+    color: $pink-color;
     background-color: transparent;
 }
 
 .show .video-nav-element svg path {
-    fill: #e10072;
+    fill: $pink-color;
 }
 
 .show .video-nav-element {
-    color: #e10072;
+    color: $pink-color;
     background-color: transparent;
 }
 
 .showPopover svg path {
-    fill: #e10072 !important;
+    fill: $pink-color !important;
 }
 
 .showPopover span {
-    color: #e10072 !important;
+    color: $pink-color !important;
     background-color: transparent;
 }

@@ -1,3 +1,5 @@
+@import "src/styles";
+
 a {
     font-weight: bold;
     text-align: center;
@@ -10,24 +12,24 @@ a {
 }
 
 .nav-tabs {
-    border-bottom: 1px solid #0094df;
+    border-bottom: 1px solid $white-color;
     margin-top: 20px;
 }
 
 .nav-tabs .nav-item {
     width: 160px;
     height: 50px;
-    background-image: linear-gradient(to top, #1e304d, #000);
+    background-image: linear-gradient(to top, $blue-dark-2, $black-color);
 }
 
 .nav-tabs .nav-item a {
     border: none;
-    color: #0094df;
+    color: $white-color;
 }
 
 .nav-tabs .nav-item a:hover,
 .nav-tabs .navbar-btn-active a {
-    color: white;
+    color: $white-color;
 }
 
 .nav-tabs .navbar-btn-active {
@@ -37,9 +39,9 @@ a {
 
 .nav-tabs .nav-item:hover,
 .nav-tabs .navbar-btn-active {
-    background-image: linear-gradient(to top, #000, #1e304d);
-    border-left: 1px solid #0094df;
-    border-right: 1px solid #0094df;
+    background-image: linear-gradient(to top, $black-color, $blue-dark-2);
+    border-left: 1px solid $white-color;
+    border-right: 1px solid $white-color;
     box-sizing: border-box;
     position: relative;
 }
@@ -52,7 +54,7 @@ a {
     left: -1px;
     width: calc(100% + 2px);
     height: 4px;
-    background-color: #e10072;
+    background-color: $pink-color;
 }
 
 .nav-tabs .nav-item:hover .nav-link,
@@ -66,7 +68,7 @@ a {
         url("/assets/eb-tr.png") top right no-repeat,
         url("/assets/eb-tl.png") top left no-repeat,
         url("/assets/eb-bl.png") bottom left no-repeat;
-    background-color: rgba(255, 255, 255, 0.05);
+    background-color: $black-transparent-2;
 }
 
 .background-image {
@@ -81,8 +83,8 @@ a {
 #add-personality-button {
     font-size: 1.5rem;
     padding: 0px;
-    color: #0094df;
-    background-image: linear-gradient(to top, #1e304d, #000);
+    color: $white-color;
+    background-image: linear-gradient(to top, $blue-dark-2, $black-color);
     border: none;
     cursor: pointer;
     width: 50px !important;
@@ -90,5 +92,5 @@ a {
 }
 
 #add-personality-button:hover {
-    color: white;
+    color: $white-color;
 }
