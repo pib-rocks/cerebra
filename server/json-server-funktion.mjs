@@ -380,7 +380,7 @@ server.put("/motor/:motorName/settings", (req, res, next) => {
 
 //getAllPoses
 server.get("/pose", (req, res, next) => {
-    const poses = mockData.poses.map(pose => Pose.getPose(pose));
+    const poses = mockData.poses.map((pose) => Pose.getPose(pose));
     return res.status(200).send({poses});
 });
 
@@ -393,7 +393,9 @@ server.post("/pose", (req, res, next) => {
 
 //renamePose
 server.patch("/pose/:poseId", (req, res, next) => {
-    const pose = mockData.poses.find(pose => pose.poseId == req.params.poseId);
+    const pose = mockData.poses.find(
+        (pose) => pose.poseId == req.params.poseId,
+    );
     if (!pose) {
         return res.status(404).send();
     }
@@ -403,7 +405,9 @@ server.patch("/pose/:poseId", (req, res, next) => {
 
 //deletePose
 server.delete("/pose/:poseId", (req, res, next) => {
-    const index = mockData.poses.findIndex(pose => pose.poseId === req.params.poseId);
+    const index = mockData.poses.findIndex(
+        (pose) => pose.poseId === req.params.poseId,
+    );
     if (index === -1) {
         return res.status(404).send();
     }
@@ -413,11 +417,15 @@ server.delete("/pose/:poseId", (req, res, next) => {
 
 //getMotorPositionsByPose
 server.get("/pose/:poseId/motor-positions", (req, res, next) => {
-    const pose = mockData.poses.find(pose => pose.poseId == req.params.poseId);
+    const pose = mockData.poses.find(
+        (pose) => pose.poseId == req.params.poseId,
+    );
     if (!pose) {
-        return res.status(404).send(); 
+        return res.status(404).send();
     }
-    const motorPositions = pose.motorPositions.map(mp => MotorPosition.getMotorPosition(mp));
+    const motorPositions = pose.motorPositions.map((mp) =>
+        MotorPosition.getMotorPosition(mp),
+    );
     return res.status(200).send({motorPositions});
 });
 
