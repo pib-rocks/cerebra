@@ -1,7 +1,7 @@
 import {Component, Input, TemplateRef} from "@angular/core";
 import {FormControl} from "@angular/forms";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
-import {BehaviorSubject} from "rxjs";
+import {BehaviorSubject, map} from "rxjs";
 import {MotorService} from "src/app/shared/services/motor.service";
 import {MotorConfiguration} from "src/app/shared/types/motor-configuration";
 import {MotorSettings} from "src/app/shared/types/motor-settings.class";
@@ -38,6 +38,18 @@ export class MotorSettingsComponent {
     ngOnInit(): void {
         this.motorService
             .getSettingsObservable(this.motor.sourceMotorName)
+            .pipe(
+                map((settings) => {
+                    settings = structuredClone(settings);
+                    settings.rotationRangeMin = Math.floor(
+                        settings.rotationRangeMin / 100,
+                    );
+                    settings.rotationRangeMax = Math.floor(
+                        settings.rotationRangeMax / 100,
+                    );
+                    return settings;
+                }),
+            )
             .subscribe((settings) => {
                 this.settings = settings;
                 this.pulseWidthSubject$.next([
@@ -73,8 +85,8 @@ export class MotorSettingsComponent {
     }
 
     setDegree(number: number[]) {
-        this.settings.rotationRangeMin = number[0];
-        this.settings.rotationRangeMax = number[1];
+        this.settings.rotationRangeMin = number[0] * 100;
+        this.settings.rotationRangeMax = number[1] * 100;
         this.motorService.applySettings(this.motor.motorName, this.settings);
     }
 

@@ -1,38 +1,51 @@
 <div class="d-flex flex-row m-0 pb-2 bt-0 pl-0 pr-0">
-    <div class="flex-grow-1">Poses</div>
+    <div class="flex-grow-1 pl-2">Poses</div>
     <button
         type="button"
         id="save-pose-button"
         class="btn btn-regular"
-        (click)="showModal()">
+        (click)="savePose()">
         Save pose
     </button>
 </div>
 
 <div
     *ngFor="let pose of poses"
-    class="pose-item d-flex flex-row mt-1 mb-1">
-    <div class="play-button">
+    class="pose-item d-flex flex-row mt-1 mb-2"
+    [ngClass]="pose.poseId == selectedPoseId ? 'selected' : 'unselected'">
+    <button
+        class="apply-button"
+        (click)="applyPose(pose)">
         <img
             class="apply-pose"
-            src="../../../assets/program/button-run-play.svg"
-            alt="apply post button" />
-    </div>
-    <div class="pose-label flex-grow-1 pl-3">{{pose.name}}</div>
+            [class.inactive]="!pose.active"
+            src="../../../assets/joint-control/other/apply-pose.svg"
+            alt="apply pose button" />
+    </button>
     <div
-        class=""
-        style="background-color: yellow; width: 10px; height: 50px;">
-        edt
+        class="pose-label flex-grow-1 pl-3"
+        (click)="selectPose(pose)"
+        (dblclick)="renamePose(pose)">
+        {{pose.name}}
     </div>
-    <div
-        class=""
-        style="background-color: green; width: 10px; height: 50px;">
-        del
-    </div>
+    <button
+        class="rename-button"
+        (click)="renamePose(pose)">
+        <img
+            class="icon"
+            src="../../../assets/edit.svg" />
+    </button>
+    <button
+        class="delete-button"
+        (click)="deletePose(pose)">
+        <img
+            class="icon"
+            src="../../../assets/trash-icon-white.svg" />
+    </button>
 </div>
 
 <ng-template
-    #content
+    #modalContent
     let-modal
     id="template">
     <div
@@ -41,7 +54,7 @@
         <div
             class="col-10"
             id="header-title">
-            <span id="header-title-text">POSE</span>
+            <span id="header-title-text">{{modalTitle}}</span>
         </div>
         <div
             class="col-2 text-right"
@@ -82,6 +95,7 @@
             type="text"
             (keydown)="($event).key ==='Enter' ? modal.close('Save'): ''"
             name="name-input"
+            [formControl]="nameFormControl"
             id="name-input" />
     </div>
     <div class="row justify-content-center mt-2 mb-3">

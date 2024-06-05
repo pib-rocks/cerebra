@@ -8,26 +8,67 @@
     line-height: 40px;
 }
 
-.play-button {
+.apply-button {
+    width: 80px;
+    height: 40px;
     border-top-left-radius: 10px;
     border-bottom-left-radius: 10px;
-    border: 2px solid #344864;
+    border: 2px solid;
     background-color: #041939;
-    width: 70px;
     display: flex;
 }
 
-.play-button:hover {
+.apply-button:hover {
     cursor: pointer;
-}
-
-.pose-label {
-    background-color: #344864;
 }
 
 .apply-pose {
     display: block;
     margin: auto;
-    width: 25px;
-    height: 25px;
+    width: 15px;
+    height: 15px;
+}
+
+.icon {
+    color: white;
+    width: 20px;
+    height: 20px;
+    position: absolute;
+    transform: translate(-50%, -50%);
+}
+
+.inactive {
+    opacity: 0.5;
+}
+
+.delete-button,
+.rename-button {
+    border: none;
+    background-color: black;
+    width: 40px;
+    height: 40px;
+}
+.delete-button {
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
+}
+
+.pose-label {
+    user-select: none;
+}
+
+.selected .apply-button {
+    border-color: #e10072;
+}
+
+.unselected .apply-button {
+    border-color: #344864;
+}
+
+.selected :is(.pose-label, .delete-button, .rename-button) {
+    background-color: #e10072;
+}
+
+.unselected :is(.pose-label, .delete-button, .rename-button) {
+    background-color: #344864;
 }

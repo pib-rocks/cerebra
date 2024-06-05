@@ -211,7 +211,7 @@ export class VoiceAssistantChatComponent implements OnInit {
 
     dropdownCallbackMethods = [
         {
-            icon: "../../assets/voice-assistant-svgs/chat/edit.svg",
+            icon: "../../assets/edit.svg",
             label: "Rename",
             clickCallback: this.openEditModal.bind(this),
             disabled: false,

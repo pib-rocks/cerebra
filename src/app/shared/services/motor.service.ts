@@ -2,13 +2,22 @@ import {Injectable} from "@angular/core";
 import {RosService} from "./ros-service/ros.service";
 import {ApiService} from "./api.service";
 import {BehaviorSubject, Observable, map} from "rxjs";
-import {MotorSettings} from "../types/motor-settings.class";
-import {JointTrajectoryMessage} from "../ros-types/msg/joint-trajectory-message";
+import {
+    MotorSettings,
+    fromMotorDTO,
+    fromMotorSettingsMessage,
+} from "../types/motor-settings.class";
+import {fromMotorPosition} from "../ros-types/msg/joint-trajectory-message";
 import {DiagnosticStatus} from "../ros-types/msg/diagnostic-status.message";
-import {MotorSettingsMessage} from "../ros-types/msg/motor-settings-message";
+import {
+    MotorSettingsMessage,
+    fromMotorSettings,
+} from "../ros-types/msg/motor-settings-message";
 import {UrlConstants} from "./url.constants";
 import {MotorDTO} from "../types/motor-dto";
 import {MotorSettingsError} from "../error/motor-settings-error";
+import {MotorPosition, fromJointTrajectory} from "../types/motor-position";
+import {motors} from "../types/motor-configuration";
 
 @Injectable({
     providedIn: "root",
@@ -21,14 +30,21 @@ export class MotorService {
         period: 0,
         pulseWidthMin: 0,
         pulseWidthMax: 0,
-        rotationRangeMin: -90,
-        rotationRangeMax: +90,
+        rotationRangeMin: -9000,
+        rotationRangeMax: +9000,
         turnedOn: true,
         visible: false,
         invert: false,
     };
     private readonly defaultPosition: number = 0;
     private readonly defaultCurrent: number = 0;
+
+    private currentMotorPositions: MotorPosition[] = motors
+        .filter((motor) => motor.displaySettings)
+        .map((motor) => ({
+            motorname: motor.motorName,
+            position: this.defaultPosition,
+        }));
 
     private motorNameToSettingsSubject: Map<
         string,
@@ -70,19 +86,7 @@ export class MotorService {
         this.rosService.motorSettingsReceiver$.subscribe(
             (msg: MotorSettingsMessage) => {
                 const motorName: string = msg.motor_name;
-                const settings: MotorSettings = {
-                    velocity: msg.velocity,
-                    acceleration: msg.acceleration,
-                    deceleration: msg.deceleration,
-                    period: msg.period,
-                    pulseWidthMin: msg.pulse_width_min,
-                    pulseWidthMax: msg.pulse_width_max,
-                    rotationRangeMin: Math.floor(msg.rotation_range_min / 100),
-                    rotationRangeMax: Math.floor(msg.rotation_range_max / 100),
-                    turnedOn: msg.turned_on,
-                    visible: msg.visible,
-                    invert: msg.invert,
-                };
+                const settings: MotorSettings = fromMotorSettingsMessage(msg);
                 this.publishToSubject(
                     motorName,
                     this.motorNameToSettingsSubject,
@@ -96,23 +100,7 @@ export class MotorService {
             .subscribe((dto: {motors: MotorDTO[]}) => {
                 dto.motors.forEach((motor) => {
                     const motorName: string = motor.name;
-                    const settings: MotorSettings = {
-                        velocity: motor.velocity,
-                        acceleration: motor.acceleration,
-                        deceleration: motor.deceleration,
-                        period: motor.period,
-                        pulseWidthMin: motor.pulseWidthMin,
-                        pulseWidthMax: motor.pulseWidthMax,
-                        rotationRangeMin: Math.floor(
-                            motor.rotationRangeMin / 100,
-                        ),
-                        rotationRangeMax: Math.floor(
-                            motor.rotationRangeMax / 100,
-                        ),
-                        turnedOn: motor.turnedOn,
-                        visible: motor.visible,
-                        invert: motor.invert,
-                    };
+                    const settings: MotorSettings = fromMotorDTO(motor);
                     this.publishToSubject(
                         motorName,
                         this.motorNameToSettingsSubject,
@@ -121,16 +109,14 @@ export class MotorService {
                 });
             });
 
-        this.rosService.jointTrajectoryReceiver$.subscribe(
-            (jt: JointTrajectoryMessage) => {
-                const motorName: string = jt.joint_names[0];
-                const position: number = Math.floor(
-                    jt.points[0].positions[0] / 100,
-                );
+        this.rosService.jointTrajectoryReceiver$
+            .pipe(map(fromJointTrajectory))
+            .subscribe(({motorname, position}) => {
+                this.setCurrentMotorPosition(motorname, position);
                 // TODO: conversion between multi-motor and simple-motors should be handled
                 // in the backend/motor-control-node
                 let motorNames: string[];
-                if (motorName == "all_fingers_left") {
+                if (motorname == "all_fingers_left") {
                     motorNames = [
                         "thumb_left_stretch",
                         "index_left_stretch",
@@ -138,7 +124,7 @@ export class MotorService {
                         "ring_left_stretch",
                         "pinky_left_stretch",
                     ];
-                } else if (motorName == "all_fingers_right") {
+                } else if (motorname == "all_fingers_right") {
                     motorNames = [
                         "thumb_right_stretch",
                         "index_right_stretch",
@@ -147,7 +133,7 @@ export class MotorService {
                         "pinky_right_stretch",
                     ];
                 } else {
-                    motorNames = [motorName];
+                    motorNames = [motorname];
                 }
                 for (const motorName of motorNames) {
                     this.publishToSubject(
@@ -156,8 +142,7 @@ export class MotorService {
                         position,
                     );
                 }
-            },
-        );
+            });
 
         this.rosService.currentReceiver$.subscribe(
             (status: DiagnosticStatus) => {
@@ -198,20 +183,7 @@ export class MotorService {
 
     applySettings(motorName: string, settings: MotorSettings): void {
         this.rosService
-            .sendMotorSettingsMessage({
-                motor_name: motorName,
-                turned_on: settings.turnedOn,
-                pulse_width_min: settings.pulseWidthMin,
-                pulse_width_max: settings.pulseWidthMax,
-                rotation_range_min: settings.rotationRangeMin * 100,
-                rotation_range_max: settings.rotationRangeMax * 100,
-                velocity: settings.velocity,
-                acceleration: settings.acceleration,
-                deceleration: settings.deceleration,
-                period: settings.period,
-                visible: settings.visible,
-                invert: settings.invert,
-            })
+            .sendMotorSettingsMessage(fromMotorSettings(motorName, settings))
             .subscribe({
                 error: (error) => {
                     if (
@@ -228,22 +200,21 @@ export class MotorService {
             });
     }
 
-    setPosition(motorName: string, position: number): void {
-        this.rosService.sendJointTrajectoryMessage({
-            header: {
-                stamp: {
-                    sec: 0,
-                    nanosec: 0,
-                },
-                frame_id: "",
-            },
-            joint_names: [motorName],
-            points: [
-                {
-                    positions: [position * 100],
-                    time_from_start: {sec: 0, nanosec: 0},
-                },
-            ],
-        });
+    getCurrentPositions(): MotorPosition[] {
+        return this.currentMotorPositions;
+    }
+
+    setPosition(motorname: string, position: number): void {
+        const message = fromMotorPosition(motorname, position);
+        this.rosService.sendJointTrajectoryMessage(message);
+    }
+
+    private setCurrentMotorPosition(motorname: string, position: number): void {
+        const motorPosition = this.currentMotorPositions.find(
+            (mp) => mp.motorname === motorname,
+        );
+        if (motorPosition) {
+            motorPosition.position = position;
+        }
     }
 }

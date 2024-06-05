@@ -9,6 +9,9 @@ import Motor from "./dto/motor.mjs";
 import MotorSettings from "./dto/motorsettings.mjs";
 import Program from "./dto/program.mjs";
 import AssistantModel from "./dto/assistantmodel.mjs";
+import Pose from "./dto/pose.mjs";
+import MotorPosition from "./dto/motor-position.mjs";
+
 const server = jsonServer.create();
 const router = jsonServer.router(mockData);
 const middlewares = jsonServer.defaults();
@@ -373,6 +376,49 @@ server.put("/motor/:motorName/settings", (req, res, next) => {
     if (updated == false) {
         return res.status(404).send();
     }
+});
+
+//getAllPoses
+server.get("/pose", (req, res, next) => {
+    const poses = mockData.poses.map(pose => Pose.getPose(pose));
+    return res.status(200).send({poses});
+});
+
+//createPose
+server.post("/pose", (req, res, next) => {
+    const pose = Pose.newPose(req.body.name, req.body.motorPositions);
+    mockData.poses.push(pose);
+    return res.status(201).send(pose);
+});
+
+//renamePose
+server.patch("/pose/:poseId", (req, res, next) => {
+    const pose = mockData.poses.find(pose => pose.poseId == req.params.poseId);
+    if (!pose) {
+        return res.status(404).send();
+    }
+    pose.name = req.body.name;
+    return res.status(200).send(Pose.newPose(pose));
+});
+
+//deletePose
+server.delete("/pose/:poseId", (req, res, next) => {
+    const index = mockData.poses.findIndex(pose => pose.poseId === req.params.poseId);
+    if (index === -1) {
+        return res.status(404).send();
+    }
+    mockData.poses.splice(index, 1);
+    return res.status(204).send();
+});
+
+//getMotorPositionsByPose
+server.get("/pose/:poseId/motor-positions", (req, res, next) => {
+    const pose = mockData.poses.find(pose => pose.poseId == req.params.poseId);
+    if (!pose) {
+        return res.status(404).send(); 
+    }
+    const motorPositions = pose.motorPositions.map(mp => MotorPosition.getMotorPosition(mp));
+    return res.status(200).send({motorPositions});
 });
 
 //getAllPrograms

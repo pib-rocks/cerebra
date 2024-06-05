@@ -1,7 +1,7 @@
 import {Component, OnInit, TemplateRef, ViewChild} from "@angular/core";
 import {FormControl} from "@angular/forms";
-import {ActivatedRoute} from "@angular/router";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
+import {Observable, from} from "rxjs";
 import {PoseService} from "src/app/shared/services/pose.service";
 import {Pose} from "src/app/shared/types/pose";
 
@@ -15,44 +15,72 @@ export class PoseComponent implements OnInit {
 
     poses: Pose[] = [];
 
+    modalTitle = "";
+
     nameFormControl: FormControl<string> = new FormControl();
 
     selectedPoseId?: string;
 
     constructor(
-        private route: ActivatedRoute,
         private poseService: PoseService,
         private modalService: NgbModal,
     ) {}
 
     ngOnInit(): void {
-        this.route.data.subscribe((data) => {
-            this.poses = data["poses"];
-            console.info(this.poses);
-        });
-        this.poseService.getAllPoses().subscribe((poses) => {
-            console.log(poses);
-            this.poses = poses;
-        });
-    }
-
-    showModal(): Promise<string> {
-        return this.modalService.open(this.modalContent, {
-            ariaLabelledBy: "modal-basic-title",
-            size: "sm",
-            windowClass: "myCustomModalClass",
-            backdropClass: "myCustomBackdropClass",
-        }).result;
+        this.poseService
+            .getPosesObservable()
+            .subscribe((poses) => (this.poses = poses));
     }
 
     savePose() {
         this.nameFormControl.setValue("");
-        this.showModal().then(() => {
-            if (this.nameFormControl.valid) {
-                this.poseService
-                    .saveCurrentPose(this.nameFormControl.value)
-                    .subscribe((pose) => (this.selectedPoseId = pose.poseId));
-            }
+        this.getNameInput("Add new pose", "New Pose").subscribe((name) => {
+            this.poseService.saveCurrentPose(name).subscribe((pose) => {
+                this.selectPose(pose);
+            });
         });
+    }
+
+    renamePose(pose: Pose) {
+        this.selectPose(pose);
+        this.getNameInput("Rename pose", pose.name).subscribe((name) => {
+            this.poseService.renamePose(pose.poseId, name);
+        });
+    }
+
+    deletePose(pose: Pose) {
+        this.poseService.deletePose(pose.poseId);
+    }
+
+    applyPose(pose: Pose) {
+        this.selectPose(pose);
+        this.poseService.applyPose(pose.poseId);
+    }
+
+    selectPose(pose: Pose) {
+        this.selectedPoseId = pose.poseId;
+    }
+
+    private getNameInput(
+        modalTitle: string,
+        defaultValue: string,
+    ): Observable<string> {
+        this.modalTitle = modalTitle;
+        this.nameFormControl.setValue(defaultValue);
+        return from(
+            this.modalService
+                .open(this.modalContent, {
+                    ariaLabelledBy: "modal-basic-title",
+                    size: "sm",
+                    windowClass: "myCustomModalClass",
+                    backdropClass: "myCustomBackdropClass",
+                })
+                .result.then(() => {
+                    if (!this.nameFormControl.valid) {
+                        throw new Error("invalid name");
+                    }
+                    return this.nameFormControl.value;
+                }),
+        );
     }
 }

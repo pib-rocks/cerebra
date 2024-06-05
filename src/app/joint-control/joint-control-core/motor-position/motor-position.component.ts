@@ -30,19 +30,23 @@ export class MotorPositionComponent implements OnInit {
             this.motorService
                 .getPositionObservable(this.motor.sourceMotorName)
                 .subscribe((position) => {
-                    this.positionReceiver$.next([position]);
+                    this.positionReceiver$.next([Math.floor(position / 100)]);
                 });
             this.motorService
                 .getSettingsObservable(this.motor.sourceMotorName)
                 .subscribe((settings) => {
                     this.turnedOn = settings.turnedOn;
-                    this.rotationRangeMin = settings.rotationRangeMin;
-                    this.rotationRangeMax = settings.rotationRangeMax;
+                    this.rotationRangeMin = Math.floor(
+                        settings.rotationRangeMin / 100,
+                    );
+                    this.rotationRangeMax = Math.floor(
+                        settings.rotationRangeMax / 100,
+                    );
                 });
         });
     }
 
     setPosition(position: number) {
-        this.motorService.setPosition(this.motor.motorName, position);
+        this.motorService.setPosition(this.motor.motorName, position * 100);
     }
 }

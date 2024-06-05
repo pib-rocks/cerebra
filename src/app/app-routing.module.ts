@@ -20,7 +20,6 @@ import {SaveConfirmationGuard} from "./security/save-confirmation.guard";
 import {ProgramSplitscreenComponent} from "./program/program-splitscreen/program-splitscreen.component";
 import {programCodeResolver} from "./program/program-splitscreen/resolver/program-code.resolver";
 import {PoseComponent} from "./joint-control/pose/pose.component";
-import {posesResolver} from "./joint-control/pose/poses-resolver";
 
 const routes: Routes = [
     {
@@ -30,7 +29,6 @@ const routes: Routes = [
             {
                 path: "poses",
                 component: PoseComponent,
-                resolve: {poses: posesResolver},
             },
             {
                 path: ":joint-name",
