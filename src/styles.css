@@ -109,12 +109,6 @@ span {
     padding: 0;
 }
 
-button:disabled {
-    background-color: var(--cerebra-button-color-disabled) !important;
-    color: #fff !important;
-    border-color: #fff !important;
-}
-
 .myCustomModalClass .modal-header {
     z-index: 1060 !important;
     border-bottom: 1px solid #009fe3;
