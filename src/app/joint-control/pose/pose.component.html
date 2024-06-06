@@ -15,10 +15,10 @@
     [ngClass]="pose.poseId == selectedPoseId ? 'selected' : 'unselected'">
     <button
         class="apply-button"
+        [disabled]="!pose.active"
         (click)="applyPose(pose)">
         <img
             class="apply-pose"
-            [class.inactive]="!pose.active"
             src="../../../assets/joint-control/other/apply-pose.svg"
             alt="apply pose button" />
     </button>

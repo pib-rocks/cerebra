@@ -16,8 +16,7 @@ import {
 import {UrlConstants} from "./url.constants";
 import {MotorDTO} from "../types/motor-dto";
 import {MotorSettingsError} from "../error/motor-settings-error";
-import {MotorPosition, fromJointTrajectory} from "../types/motor-position";
-import {motors} from "../types/motor-configuration";
+import {fromJointTrajectory} from "../types/motor-position";
 
 @Injectable({
     providedIn: "root",
@@ -38,13 +37,6 @@ export class MotorService {
     };
     private readonly defaultPosition: number = 0;
     private readonly defaultCurrent: number = 0;
-
-    private currentMotorPositions: MotorPosition[] = motors
-        .filter((motor) => motor.displaySettings)
-        .map((motor) => ({
-            motorname: motor.motorName,
-            position: this.defaultPosition,
-        }));
 
     private motorNameToSettingsSubject: Map<
         string,
@@ -112,7 +104,6 @@ export class MotorService {
         this.rosService.jointTrajectoryReceiver$
             .pipe(map(fromJointTrajectory))
             .subscribe(({motorname, position}) => {
-                this.setCurrentMotorPosition(motorname, position);
                 // TODO: conversion between multi-motor and simple-motors should be handled
                 // in the backend/motor-control-node
                 let motorNames: string[];
@@ -200,21 +191,8 @@ export class MotorService {
             });
     }
 
-    getCurrentPositions(): MotorPosition[] {
-        return this.currentMotorPositions;
-    }
-
     setPosition(motorname: string, position: number): void {
         const message = fromMotorPosition(motorname, position);
         this.rosService.sendJointTrajectoryMessage(message);
-    }
-
-    private setCurrentMotorPosition(motorname: string, position: number): void {
-        const motorPosition = this.currentMotorPositions.find(
-            (mp) => mp.motorname === motorname,
-        );
-        if (motorPosition) {
-            motorPosition.position = position;
-        }
     }
 }

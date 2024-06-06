@@ -1,7 +1,7 @@
 import {Component, OnInit, TemplateRef, ViewChild} from "@angular/core";
 import {FormControl} from "@angular/forms";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
-import {Observable, from} from "rxjs";
+import {Observable, from, map} from "rxjs";
 import {PoseService} from "src/app/shared/services/pose.service";
 import {Pose} from "src/app/shared/types/pose";
 
@@ -33,7 +33,6 @@ export class PoseComponent implements OnInit {
     }
 
     savePose() {
-        this.nameFormControl.setValue("");
         this.getNameInput("Add new pose", "New Pose").subscribe((name) => {
             this.poseService.saveCurrentPose(name).subscribe((pose) => {
                 this.selectPose(pose);
@@ -67,20 +66,21 @@ export class PoseComponent implements OnInit {
     ): Observable<string> {
         this.modalTitle = modalTitle;
         this.nameFormControl.setValue(defaultValue);
-        return from(
-            this.modalService
-                .open(this.modalContent, {
-                    ariaLabelledBy: "modal-basic-title",
-                    size: "sm",
-                    windowClass: "myCustomModalClass",
-                    backdropClass: "myCustomBackdropClass",
-                })
-                .result.then(() => {
-                    if (!this.nameFormControl.valid) {
-                        throw new Error("invalid name");
-                    }
-                    return this.nameFormControl.value;
-                }),
+        const observable = from(
+            this.modalService.open(this.modalContent, {
+                ariaLabelledBy: "modal-basic-title",
+                size: "sm",
+                windowClass: "myCustomModalClass",
+                backdropClass: "myCustomBackdropClass",
+            }).result,
+        );
+        return observable.pipe(
+            map(() => {
+                if (!this.nameFormControl.valid) {
+                    throw new Error("invalid name");
+                }
+                return this.nameFormControl.value;
+            }),
         );
     }
 }

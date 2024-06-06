@@ -5,6 +5,7 @@ import {ApiService} from "./api.service";
 import {UrlConstants} from "./url.constants";
 import {MotorPosition} from "../types/motor-position";
 import {MotorService} from "./motor.service";
+import {motors} from "../types/motor-configuration";
 
 @Injectable({
     providedIn: "root",
@@ -13,11 +14,20 @@ export class PoseService {
     private poses: Pose[] = [];
     private posesSubject: Subject<Pose[]> = new BehaviorSubject(this.poses);
     private poseIdToMotorPositions: Map<string, MotorPosition[]> = new Map();
+    private currentMotorPositions: MotorPosition[];
 
     constructor(
         private apiService: ApiService,
         private motorService: MotorService,
     ) {
+        this.currentMotorPositions = motors
+            .filter((motor) => motor.displaySettings)
+            .map((motor) => ({motorname: motor.motorName, position: 0}));
+        this.currentMotorPositions.forEach((motorPosition) => {
+            motorService
+                .getPositionObservable(motorPosition.motorname)
+                .subscribe((position) => (motorPosition.position = position));
+        });
         this.getAllPosesFromDb().subscribe((poses) => {
             this.poses.unshift(...poses);
             this.publishPoses();
@@ -29,7 +39,7 @@ export class PoseService {
     }
 
     public saveCurrentPose(name: string): Observable<Pose> {
-        const motorPositions = this.motorService.getCurrentPositions();
+        const motorPositions = this.currentMotorPositions;
         return this.createPoseInDb(name, motorPositions).pipe(
             tap((pose) => {
                 this.poses.push(pose);

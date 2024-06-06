@@ -123,7 +123,7 @@ describe("MotorPositionComponent", () => {
         component.setPosition(20);
         expect(motorService.setPosition).toHaveBeenCalledOnceWith(
             "test_motor",
-            20,
+            2000,
         );
     });
 });
