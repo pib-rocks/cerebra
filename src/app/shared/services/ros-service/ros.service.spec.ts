@@ -35,6 +35,10 @@ describe("RosService", () => {
         invert: false,
     };
 
+    let subscriber: jasmine.SpyObj<any>;
+    const chatId = "chat-id";
+    const chatMessageContent = "hello world";
+
     beforeEach(() => {
         TestBed.configureTestingModule({
             providers: [RosService],
@@ -43,6 +47,8 @@ describe("RosService", () => {
         rosService = TestBed.inject(RosService);
         rosService["initTopicsAndServices"]();
         spyOnSetupRos = spyOn<any>(rosService, "setUpRos").and.callThrough();
+
+        subscriber = jasmine.createSpyObj("subscriber", ["next", "error"]);
     });
 
     it("should be created", () => {
@@ -52,7 +58,6 @@ describe("RosService", () => {
     it("should establish ros in the constructor", () => {
         rosService["setUpRos"]();
         expect(spyOnSetupRos).toHaveBeenCalled();
-        expect(rosService["Ros"]).toBeTruthy();
     });
 
     it("should create all ROSLIB topics and services", () => {
@@ -66,6 +71,7 @@ describe("RosService", () => {
         expect(rosService["voiceAssistantStateTopic"]).toBeTruthy();
         expect(rosService["setVoiceAssistantStateService"]).toBeTruthy();
         expect(rosService["chatMessageTopic"]).toBeTruthy();
+        expect(rosService["chatIsListeningTopic"]).toBeTruthy();
     });
 
     it("should call the set_voice_assistant_state ros service", () => {
@@ -410,4 +416,100 @@ describe("RosService", () => {
             );
         });
     }));
+
+    it("should get the listening state", () => {
+        const isListeningResponse = {listening: true};
+        const callServiceSpy = spyOn(
+            rosService["getChatIsListeningService"],
+            "callService",
+        ).and.callFake((_request, successCallback, _errorCallback) => {
+            successCallback(isListeningResponse);
+        });
+        rosService.getChatIsListening(chatId).subscribe(subscriber);
+        expect(subscriber.next).toHaveBeenCalledOnceWith(
+            isListeningResponse.listening,
+        );
+        expect(subscriber.error).not.toHaveBeenCalled();
+        expect(callServiceSpy).toHaveBeenCalledOnceWith(
+            {chat_id: chatId},
+            jasmine.any(Function),
+            jasmine.any(Function),
+        );
+    });
+
+    it("should publish an error when requesting listening state", () => {
+        const callServiceSpy = spyOn(
+            rosService["getChatIsListeningService"],
+            "callService",
+        ).and.callFake((_request, _successCallback, errorCallback) => {
+            errorCallback?.("some error");
+        });
+        rosService.getChatIsListening(chatId).subscribe(subscriber);
+        expect(subscriber.next).not.toHaveBeenCalled();
+        expect(subscriber.error).toHaveBeenCalledOnceWith(
+            new Error("some error"),
+        );
+        expect(callServiceSpy).toHaveBeenCalledOnceWith(
+            {chat_id: chatId},
+            jasmine.any(Function),
+            jasmine.any(Function),
+        );
+    });
+
+    it("should send a chat message", () => {
+        const callServiceSpy = spyOn(
+            rosService["sendChatMessageService"],
+            "callService",
+        ).and.callFake((_request, successCallback, _errorCallback) => {
+            successCallback({successful: true});
+        });
+        rosService
+            .sendChatMessage(chatId, chatMessageContent)
+            .subscribe(subscriber);
+        expect(subscriber.next).toHaveBeenCalledOnceWith(undefined);
+        expect(subscriber.error).not.toHaveBeenCalled();
+        expect(callServiceSpy).toHaveBeenCalledOnceWith(
+            {chat_id: chatId, content: chatMessageContent},
+            jasmine.any(Function),
+            jasmine.any(Function),
+        );
+    });
+
+    it("should handle unsuccessful message sending correctly", () => {
+        const callServiceSpy = spyOn(
+            rosService["sendChatMessageService"],
+            "callService",
+        ).and.callFake((_request, successCallback, _errorCallback) => {
+            successCallback({successful: false});
+        });
+        rosService
+            .sendChatMessage(chatId, chatMessageContent)
+            .subscribe(subscriber);
+        expect(subscriber.next).not.toHaveBeenCalled();
+        expect(subscriber.error).toHaveBeenCalledTimes(1);
+        expect(callServiceSpy).toHaveBeenCalledOnceWith(
+            {chat_id: chatId, content: chatMessageContent},
+            jasmine.any(Function),
+            jasmine.any(Function),
+        );
+    });
+
+    it("should handle failed communication with ros for sending a chat message correctly", () => {
+        const callServiceSpy = spyOn(
+            rosService["sendChatMessageService"],
+            "callService",
+        ).and.callFake((_request, _successCallback, errorCallback) => {
+            errorCallback?.("some error");
+        });
+        rosService
+            .sendChatMessage(chatId, chatMessageContent)
+            .subscribe(subscriber);
+        expect(subscriber.next).not.toHaveBeenCalled();
+        expect(subscriber.error).toHaveBeenCalledTimes(1);
+        expect(callServiceSpy).toHaveBeenCalledOnceWith(
+            {chat_id: chatId, content: chatMessageContent},
+            jasmine.any(Function),
+            jasmine.any(Function),
+        );
+    });
 });

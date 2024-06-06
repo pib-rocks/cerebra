@@ -1,6 +1,6 @@
 import {Component, OnInit, TemplateRef, ViewChild} from "@angular/core";
 import {FormControl, Validators} from "@angular/forms";
-import {ActivatedRoute, Route, Router} from "@angular/router";
+import {ActivatedRoute, Router} from "@angular/router";
 import {NgbModal, NgbModalRef} from "@ng-bootstrap/ng-bootstrap";
 import {Observable, Subject} from "rxjs";
 import {SidebarElement} from "src/app/shared/interfaces/sidebar-element.interface";
@@ -28,10 +28,10 @@ export class VoiceAssistantChatComponent implements OnInit {
     uuid: string | undefined;
 
     selected: Subject<string> = new Subject();
-    vaState: boolean = false;
-    activeChat: string = "";
-    activePersonality: string = "";
-    currentChat: string | null = "";
+    turnedOn: boolean = false;
+    activeChatId: string = "";
+    activePersonalityId: string = "";
+    currentChatId: string | null = "";
     voiceAssistantActivationToggle = new FormControl(false);
 
     constructor(
@@ -40,11 +40,11 @@ export class VoiceAssistantChatComponent implements OnInit {
         private chatService: ChatService,
         private voiceAssistantService: VoiceAssistantService,
         private route: ActivatedRoute,
-        private location: Location,
+        location: Location,
     ) {
-        location.onUrlChange((url, state) => {
+        location.onUrlChange((url, _state) => {
             let urlArray: string[] = url.split("/");
-            this.currentChat = urlArray[urlArray.length - 1];
+            this.currentChatId = urlArray[urlArray.length - 1];
         });
     }
 
@@ -53,19 +53,22 @@ export class VoiceAssistantChatComponent implements OnInit {
         this.voiceAssistantService.voiceAssistantStateObservable.subscribe(
             (state: VoiceAssistantState) => {
                 this.voiceAssistantActivationToggle.setValue(state.turnedOn);
-                this.vaState = state.turnedOn;
+                this.turnedOn = state.turnedOn;
                 const deleteChat = this.dropdownCallbackMethods.find(
                     (e) => e.label === "Delete chat",
                 );
                 if (deleteChat) {
-                    deleteChat.disabled = this.vaState;
+                    deleteChat.disabled = this.turnedOn;
                 }
+                this.chatService.getChatById(state.chatId).subscribe((chat) => {
+                    this.activePersonalityId = chat.personalityId;
+                });
             },
         );
 
-        this.route.paramMap.subscribe((params) => {
+        this.route.paramMap.subscribe((_params) => {
             const routeParts: string[] = this.router.url.split("/");
-            this.currentChat = routeParts[routeParts.length - 1];
+            this.currentChatId = routeParts[routeParts.length - 1];
 
             this.personalityId = this.router.url
                 .split("/")
@@ -89,12 +92,6 @@ export class VoiceAssistantChatComponent implements OnInit {
                 Validators.maxLength(255),
             ]);
         });
-
-        this.voiceAssistantService.voiceAssistantStateObservable.subscribe(
-            (state: VoiceAssistantState) => {
-                this.voiceAssistantActivationToggle.setValue(state.turnedOn);
-            },
-        );
     }
 
     showModal = () => {
@@ -182,11 +179,8 @@ export class VoiceAssistantChatComponent implements OnInit {
             else throw new Error("no chat selected");
         }
 
-        this.vaState = turnedOn;
-        this.activeChat = nextState.chatId;
-        if (this.personalityId) {
-            this.activePersonality = this.personalityId;
-        }
+        this.turnedOn = turnedOn;
+        this.activeChatId = nextState.chatId;
 
         this.voiceAssistantService.setVoiceAssistantState(nextState).subscribe({
             error: (error) => console.error(error),
@@ -196,7 +190,7 @@ export class VoiceAssistantChatComponent implements OnInit {
             (e) => e.label === "Delete chat",
         );
         if (deleteChat) {
-            deleteChat.disabled = this.vaState;
+            deleteChat.disabled = this.turnedOn;
         }
     }
 

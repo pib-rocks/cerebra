@@ -1,6 +1,6 @@
 import {Injectable} from "@angular/core";
 import {Chat, ChatDto} from "../types/chat.class";
-import {BehaviorSubject, Observable, catchError, map, throwError} from "rxjs";
+import {BehaviorSubject, Observable, map} from "rxjs";
 import {ApiService} from "./api.service";
 import {UrlConstants} from "./url.constants";
 import {SidebarService} from "../interfaces/sidebar-service.interface";
@@ -19,6 +19,8 @@ export class ChatService implements SidebarService {
         string,
         BehaviorSubject<ChatMessage[]>
     > = new Map();
+    private IsListeningFromChatId: Map<string, BehaviorSubject<boolean>> =
+        new Map();
 
     constructor(
         private apiService: ApiService,
@@ -31,7 +33,7 @@ export class ChatService implements SidebarService {
             );
             if (subject) {
                 const messages = subject.getValue();
-                messages.unshift({
+                messages.push({
                     messageId: rosChatMessage.message_id,
                     timestamp: rosChatMessage.timestamp,
                     isUser: rosChatMessage.is_user,
@@ -40,25 +42,24 @@ export class ChatService implements SidebarService {
                 subject.next(messages);
             }
         });
+        this.rosService.chatIsListeningReceiver$.subscribe(
+            ({chat_id, listening}) => {
+                const subject = this.IsListeningFromChatId.get(chat_id);
+                if (subject === undefined) {
+                    this.IsListeningFromChatId.set(
+                        chat_id,
+                        new BehaviorSubject<boolean>(listening),
+                    );
+                } else {
+                    subject.next(listening);
+                }
+            },
+        );
     }
 
     private setChats(chats: Chat[]) {
         this.chats = chats;
         this.chatSubject.next(this.chats.slice());
-    }
-
-    getChatMessagesObservable(chatId: string): Observable<ChatMessage[]> {
-        const observable = this.messagesSubjectFromChatId.get(chatId);
-        if (observable) {
-            return observable;
-        } else {
-            const messageSubject = new BehaviorSubject<ChatMessage[]>([]);
-            this.getMessagesByChatId(chatId).subscribe((messages) =>
-                messageSubject.next(messages),
-            );
-            this.messagesSubjectFromChatId.set(chatId, messageSubject);
-            return messageSubject;
-        }
     }
 
     getSubject(uuid: string): Observable<SidebarElement[]> {
@@ -172,5 +173,37 @@ export class ChatService implements SidebarService {
             content,
             isUser: true,
         });
+    }
+
+    sendChatMessage(chatId: string, content: string): Observable<void> {
+        return this.rosService.sendChatMessage(chatId, content);
+    }
+
+    getChatMessagesObservable(chatId: string): Observable<ChatMessage[]> {
+        const observable = this.messagesSubjectFromChatId.get(chatId);
+        if (observable) {
+            return observable;
+        } else {
+            const messageSubject = new BehaviorSubject<ChatMessage[]>([]);
+            this.getMessagesByChatId(chatId).subscribe((messages) =>
+                messageSubject.next(messages),
+            );
+            this.messagesSubjectFromChatId.set(chatId, messageSubject);
+            return messageSubject;
+        }
+    }
+
+    getIsListeningObservable(chatId: string): Observable<boolean> {
+        let subject = this.IsListeningFromChatId.get(chatId);
+        if (subject === undefined) {
+            subject = new BehaviorSubject<boolean>(false);
+            this.IsListeningFromChatId.set(chatId, subject);
+            this.rosService
+                .getChatIsListening(chatId)
+                .subscribe((listening) => {
+                    subject!.next(listening);
+                });
+        }
+        return subject;
     }
 }

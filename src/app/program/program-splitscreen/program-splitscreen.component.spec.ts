@@ -4,7 +4,7 @@ import {ProgramSplitscreenComponent} from "./program-splitscreen.component";
 import {AngularSplitModule} from "angular-split";
 import {ActivatedRoute, Params} from "@angular/router";
 import {ProgramService} from "src/app/shared/services/program.service";
-import {BehaviorSubject, Observable, Subject} from "rxjs";
+import {BehaviorSubject, Subject} from "rxjs";
 import {ProgramWorkspaceComponent} from "./program-workspace/program-workspace.component";
 import {ExecutionState, ProgramState} from "src/app/shared/types/program-state";
 import {ProgramOutputLine} from "src/app/shared/types/program-output-line";
@@ -84,10 +84,20 @@ describe("ProgramSplitscreenComponent", () => {
         component.inSplitMode = false;
         component.programNumber = "test-number";
         component.executionState = ExecutionState.NOT_STARTED;
+        component.codeVisualOld = "visual-old";
+        component.codeVisualNew = "visual-new";
+        component.codePython = "python";
         component.runProgram();
         expect(programService.runProgram).toHaveBeenCalledWith("test-number");
         expect(programService.terminateProgram).not.toHaveBeenCalled();
         expect(component.inSplitMode).toBeTrue();
+        expect(
+            programService.updateCodeByProgramNumber,
+        ).toHaveBeenCalledOnceWith("test-number", {
+            visual: "visual-new",
+            python: "python",
+        });
+        expect(component.codeVisualOld).toEqual("visual-new");
     });
 
     it("should terminate the program", () => {

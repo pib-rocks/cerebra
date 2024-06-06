@@ -1,4 +1,4 @@
-export class CameraSetting {
+export class CameraSettings {
     resolution: string;
     refreshRate: number;
     qualityFactor: number;

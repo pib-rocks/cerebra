@@ -1,5 +1,12 @@
 import {Injectable} from "@angular/core";
-import {BehaviorSubject, Subject, Observable, ReplaySubject} from "rxjs";
+import {
+    BehaviorSubject,
+    Subject,
+    Observable,
+    ReplaySubject,
+    throwError,
+    tap,
+} from "rxjs";
 import {MotorSettingsMessage} from "../../ros-types/msg/motor-settings-message";
 import {DiagnosticStatus} from "../../ros-types/msg/diagnostic-status.message";
 import {JointTrajectoryMessage} from "../../ros-types/msg/joint-trajectory-message";
@@ -19,11 +26,45 @@ import {IRosService} from "./i-ros-service";
 import {ApiService} from "../api.service";
 import {UrlConstants} from "../url.constants";
 import {MotorSettingsError} from "../../error/motor-settings-error";
+import {ChatIsListening} from "../../ros-types/msg/chat-is-listening";
+import {motors} from "../../types/motor-configuration";
 
 @Injectable({
     providedIn: "root",
 })
 export class RosService implements IRosService {
+    private setIsListening(chatId: string, listening: boolean) {
+        this.isListeningFromChatId.set(chatId, listening);
+        this.chatIsListeningReceiver$.next({
+            chat_id: chatId,
+            listening,
+        });
+    }
+
+    private getIsListening(chatId: string): boolean {
+        return this.isListeningFromChatId.get(chatId) ?? true;
+    }
+
+    private createChatMessage(
+        chatId: string,
+        content: string,
+        isUser: boolean,
+    ): Observable<any> {
+        return this.apiService
+            .post(`${UrlConstants.CHAT}/${chatId}/messages`, {content, isUser})
+            .pipe(
+                tap((chatMessage) => {
+                    this.chatMessageReceiver$.next({
+                        chat_id: chatId,
+                        message_id: chatMessage.messageId,
+                        timestamp: chatMessage.timestamp,
+                        is_user: chatMessage.isUser,
+                        content: chatMessage.content,
+                    });
+                }),
+            );
+    }
+
     private voiceAssistantState: VoiceAssistantState = {
         turned_on: false,
         chat_id: "",
@@ -57,41 +98,15 @@ export class RosService implements IRosService {
             turned_on: false,
             chat_id: "",
         });
+    chatIsListeningReceiver$: Subject<ChatIsListening> =
+        new Subject<ChatIsListening>();
     chatMessageReceiver$: Subject<ChatMessage> = new Subject<ChatMessage>();
 
     cameraTimer: any;
 
-    private motorNames = [
-        "thumb_left_opposition",
-        "thumb_left_stretch",
-        "index_left_stretch",
-        "middle_left_stretch",
-        "ring_left_stretch",
-        "pinky_left_stretch",
-        "all_fingers_left",
-        "thumb_right_opposition",
-        "thumb_right_stretch",
-        "index_right_stretch",
-        "middle_right_stretch",
-        "ring_right_stretch",
-        "pinky_right_stretch",
-        "all_fingers_right",
-        "upper_arm_left_rotation",
-        "elbow_left",
-        "lower_arm_left_rotation",
-        "wrist_left",
-        "shoulder_vertical_left",
-        "shoulder_horizontal_left",
-        "upper_arm_right_rotation",
-        "elbow_right",
-        "lower_arm_right_rotation",
-        "wrist_right",
-        "shoulder_vertical_right",
-        "shoulder_horizontal_right",
-        "tilt_forward_motor",
-        "tilt_sideways_motor",
-        "turn_head_motor",
-    ];
+    private motorNames = motors.map((motor) => motor.motorName);
+
+    private isListeningFromChatId: Map<string, boolean> = new Map();
 
     constructor(private apiService: ApiService) {
         let currentToggle: boolean = true;
@@ -109,10 +124,36 @@ export class RosService implements IRosService {
         }, 1000);
     }
 
+    getChatIsListening(chatId: string): Observable<boolean> {
+        return new BehaviorSubject(this.getIsListening(chatId));
+    }
+
+    sendChatMessage(chatId: string, content: string): Observable<void> {
+        console.info(JSON.stringify({chat_id: chatId, content: content}));
+        const listening = this.getIsListening(chatId);
+        if (!listening) return throwError(() => "not listening");
+        this.createChatMessage(chatId, content, true).subscribe();
+        setTimeout(() => {
+            this.createChatMessage(
+                chatId,
+                `this is the response to your input "${content}".`,
+                false,
+            ).subscribe((_) => {
+                this.setIsListening(chatId, true);
+            });
+        }, 2000);
+        return new BehaviorSubject<void>(undefined);
+    }
+
     setVoiceAssistantState(
         voiceAssistantState: VoiceAssistantState,
     ): Observable<void> {
         console.info(JSON.stringify(voiceAssistantState));
+        const chatId = voiceAssistantState.chat_id;
+        if (!this.getIsListening(voiceAssistantState.chat_id)) {
+            return throwError(() => "cannot set state if not listening");
+        }
+        this.setIsListening(chatId, false);
         const subject = new ReplaySubject<void>();
         if (
             this.voiceAssistantState.turned_on == voiceAssistantState.turned_on
@@ -123,39 +164,18 @@ export class RosService implements IRosService {
             this.voiceAssistantState = structuredClone(voiceAssistantState);
             if (voiceAssistantState.turned_on) {
                 this.userMessageTimeout = setTimeout(() => {
-                    const chatId = this.voiceAssistantState.chat_id;
-                    this.apiService
-                        .post(`${UrlConstants.CHAT}/${chatId}/messages`, {
-                            content: "hello, pib!",
-                            isUser: true,
-                        })
-                        .subscribe((chatMessage) => {
-                            this.chatMessageReceiver$.next({
-                                chat_id: chatId,
-                                message_id: chatMessage.messageId,
-                                timestamp: chatMessage.timestamp,
-                                is_user: chatMessage.isUser,
-                                content: chatMessage.content,
-                            });
-                        });
+                    this.createChatMessage(
+                        chatId,
+                        "hello, pib!",
+                        true,
+                    ).subscribe();
                 }, 500);
                 this.vaMessageTimeout = setTimeout(() => {
-                    const chatId = this.voiceAssistantState.chat_id;
-                    this.apiService
-                        .post(`${UrlConstants.CHAT}/${chatId}/messages`, {
-                            content: "hello, user!",
-                            isUser: false,
-                        })
-                        .subscribe((chatMessage) => {
-                            console.info(JSON.stringify(chatMessage));
-                            this.chatMessageReceiver$.next({
-                                chat_id: chatId,
-                                message_id: chatMessage.messageId,
-                                timestamp: chatMessage.timestamp,
-                                is_user: chatMessage.isUser,
-                                content: chatMessage.content,
-                            });
-                        });
+                    this.createChatMessage(
+                        chatId,
+                        "hello, user!",
+                        false,
+                    ).subscribe((_) => this.setIsListening(chatId, true));
                 }, 1000);
             } else {
                 clearTimeout(this.userMessageTimeout);

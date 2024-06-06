@@ -86,7 +86,7 @@ export function move_motor(block: Block, generator: typeof pythonGenerator) {
     const desiredAcceleration = 10000.0;
 
     // Deklaration der ros2 JointTrajectory Publisher Klasse
-    const moveMotorNode = generator.provideFunction_(
+    generator.provideFunction_(
         "JointTrajectoryPublisher",
         `
 class ${generator.FUNCTION_NAME_PLACEHOLDER_}(Node):
@@ -94,7 +94,7 @@ class ${generator.FUNCTION_NAME_PLACEHOLDER_}(Node):
         super().__init__('joint_trajectory_publisher')
         qos_policy = rclpy.qos.QoSProfile(reliability=rclpy.qos.ReliabilityPolicy.RELIABLE, history=rclpy.qos.HistoryPolicy.KEEP_LAST, durability=rclpy.qos.DurabilityPolicy.TRANSIENT_LOCAL, depth=1)
         self.publisher = self.create_publisher(JointTrajectory, '/joint_trajectory', qos_profile=qos_policy)
-        timer_period = 0.1
+        timer_period = 1
         self.timer = self.create_timer(timer_period, self.timer_callback)
 
     def timer_callback(self):
@@ -103,7 +103,7 @@ class ${generator.FUNCTION_NAME_PLACEHOLDER_}(Node):
         msg.header.stamp.sec = round(time.time())
         msg.joint_names = [all_motor_names[selected_motor]]
         point = JointTrajectoryPoint()
-        point.positions = [saved_motor_positions[selected_motor]]
+        point.positions = [saved_motor_positions[selected_motor] * 100]
         point.velocities = [${desiredVelocity}.0]
         point.accelerations = [${desiredAcceleration}.0]
         point.time_from_start.sec = 0
@@ -127,10 +127,13 @@ class ${generator.FUNCTION_NAME_PLACEHOLDER_}(Node):
     let positionString = "";
 
     if (modeInput == "ABSOLUTE") {
-        positionString = positionInput;
+        positionString = String(positionInput);
     } else if (modeInput == "RELATIVE") {
         positionString =
-            "saved_motor_positions[" + motorNumber + "] + " + positionInput;
+            "saved_motor_positions[" +
+            motorNumber +
+            "] + " +
+            String(positionInput);
     }
 
     // JointTrajectoryPublisher erstellen bzw. einmalig publishen der Position

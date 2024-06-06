@@ -78,13 +78,13 @@ export class VoiceAssistantComponent implements OnInit {
     }
 
     showModal = () => {
-        this.models;
-        return (this.ngbModalRef = this.modalService.open(this.modalContent, {
+        this.ngbModalRef = this.modalService.open(this.modalContent, {
             ariaLabelledBy: "modal-basic-title",
             size: "sm",
             windowClass: "myCustomModalClass",
             backdropClass: "myCustomBackdropClass",
-        }));
+        });
+        return this.ngbModalRef;
     };
 
     savePersonality = () => {

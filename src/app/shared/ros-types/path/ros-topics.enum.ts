@@ -7,6 +7,7 @@ export enum rosTopics {
     cameraQualityTopic = "/quality_factor_topic",
     chatMessages = "/chat_messages",
     voiceAssistantState = "/voice_assistant_state",
+    chatIsListening = "/chat_is_listening",
     motorSettingsTopicName = "/motor_settings",
     proxyRunProgramFeedback = "/proxy_run_program_feedback",
     proxyRunProgramResult = "/proxy_run_program_result",

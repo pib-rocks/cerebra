@@ -105,6 +105,12 @@
 #chat-send-button {
     border: none;
     outline: none;
-    background-color: #344864;
+    background-color: rgba(0, 0, 0, 0);
     fill: white;
+}
+
+#chat-send-button:disabled {
+    cursor: not-allowed;
+    outline: none;
+    opacity: 0.3;
 }

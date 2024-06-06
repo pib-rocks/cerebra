@@ -17,7 +17,7 @@ export const time_blocks = Blockly.common.createBlockDefinitionsFromJsonArray([
         inputsInline: true,
         previousStatement: null,
         nextStatement: null,
-        colour: 130,
+        colour: 60,
         tooltip:
             "Sleeps for specified time. Accepts numbers with a maximum of three decimal places",
         helpUrl: "",
@@ -26,7 +26,7 @@ export const time_blocks = Blockly.common.createBlockDefinitionsFromJsonArray([
         type: "get_system_time",
         message0: "get system time",
         output: "Number",
-        colour: 130,
+        colour: 60,
         tooltip: "Get the system time in milliseconds from 01. 01. 1970",
         helpUrl: "",
     },
