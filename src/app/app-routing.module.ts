@@ -27,7 +27,7 @@ const routes: Routes = [
         component: JointControlComponent,
         children: [
             {
-                path: "poses",
+                path: "pose",
                 component: PoseComponent,
             },
             {
