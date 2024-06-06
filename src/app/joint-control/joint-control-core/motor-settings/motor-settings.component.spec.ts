@@ -60,7 +60,7 @@ describe("MotorSettingsComponent", () => {
             captionRight: "right",
             touchPointCenterX: 0.2,
             touchPointCenterY: 0.3,
-            displaySettings: false,
+            isMultiMotor: true,
             sourceMotorName: "test_motor",
         };
 

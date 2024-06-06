@@ -21,7 +21,7 @@ export class PoseService {
         private motorService: MotorService,
     ) {
         this.currentMotorPositions = motors
-            .filter((motor) => motor.displaySettings)
+            .filter((motor) => !motor.isMultiMotor)
             .map((motor) => ({motorname: motor.motorName, position: 0}));
         this.currentMotorPositions.forEach((motorPosition) => {
             motorService

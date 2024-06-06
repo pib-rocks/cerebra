@@ -39,7 +39,7 @@ describe("MotorPositionComponent", () => {
             captionRight: "open",
             touchPointCenterX: 0.3,
             touchPointCenterY: 0.6,
-            displaySettings: true,
+            isMultiMotor: false,
             sourceMotorName: "test_motor",
         };
         data = new BehaviorSubject({motor: motorConfig});
@@ -102,7 +102,7 @@ describe("MotorPositionComponent", () => {
             captionRight: "open",
             touchPointCenterX: 0.2,
             touchPointCenterY: 0.9,
-            displaySettings: true,
+            isMultiMotor: false,
             sourceMotorName: "next_motor",
         };
 
