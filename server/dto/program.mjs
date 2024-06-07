@@ -11,7 +11,7 @@ export class Program {
     }
 
     static newProgram(name, visual) {
-        return new Program(name, visual, GenertateId.genertateId(), "");
+        return new Program(name, visual, GenertateId.genertateId());
     }
 
     static returnCode(program) {

@@ -1,11 +1,7 @@
 import {Component, Input, OnDestroy, OnInit} from "@angular/core";
-import {FormControl} from "@angular/forms";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Observable, Subscription} from "rxjs";
 import {SidebarElement} from "src/app/shared/interfaces/sidebar-element.interface";
-import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
-import {CerebraRegex} from "src/app/shared/types/cerebra-regex";
-import {VoiceAssistantState} from "src/app/shared/types/voice-assistant-state";
 
 @Component({
     selector: "app-sidebar-right",
@@ -37,7 +33,6 @@ export class SideBarRightComponent implements OnInit, OnDestroy {
     constructor(
         private router: Router,
         private route: ActivatedRoute,
-        private voiceAssistantService: VoiceAssistantService,
     ) {}
 
     ngOnDestroy(): void {

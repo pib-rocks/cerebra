@@ -5,6 +5,7 @@
 .sidebar-label {
     color: white;
     font-weight: bolder;
+    font-size: 1.33vw;
     text-align: center;
 }
 
@@ -26,8 +27,8 @@
 }
 
 #joint-canvas {
-    height: 360px;
-    width: 407px;
+    height: 45%;
+    width: 45%;
     position: relative;
 }
 
@@ -61,4 +62,24 @@
     left: 0px;
     width: 100%;
     height: 100%;
+}
+
+.head-line {
+    font-size: 1vw;
+}
+
+.cursor:hover {
+    cursor: pointer;
+}
+
+.background-selected {
+    background: rgb(0, 0, 0);
+    background: linear-gradient(
+        90deg,
+        rgba(0, 0, 0, 0) 0%,
+        rgba(2, 90, 138, 100) 40%,
+        rgba(2, 90, 138, 100) 50%,
+        rgba(2, 90, 138, 100) 60%,
+        rgba(0, 0, 0, 0) 100%
+    );
 }

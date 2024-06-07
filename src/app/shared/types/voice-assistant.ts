@@ -6,6 +6,7 @@ export class VoiceAssistant implements SidebarElement {
     description: string | undefined;
     gender: string;
     pauseThreshold: number;
+    assistantModelId: number;
 
     constructor(
         personalityId: string,
@@ -13,12 +14,14 @@ export class VoiceAssistant implements SidebarElement {
         gender: string,
         pauseThreshold: number,
         description?: string,
+        assistantModelId?: number,
     ) {
         this.personalityId = personalityId;
         this.name = name;
         this.description = description ?? "";
         this.gender = gender;
         this.pauseThreshold = pauseThreshold;
+        this.assistantModelId = assistantModelId ?? -1;
     }
     getName(): string {
         return this.name;
@@ -34,6 +37,7 @@ export class VoiceAssistant implements SidebarElement {
             String(this.gender),
             Number(this.pauseThreshold),
             String(this.description),
+            Number(this.assistantModelId),
         );
     }
 }
@@ -65,6 +69,7 @@ export function parseVoiceAssistantToDto(
         description: voiceAssistant.description,
         gender: voiceAssistant.gender,
         pauseThreshold: voiceAssistant.pauseThreshold,
+        assistantModelId: voiceAssistant.assistantModelId,
     } as VoiceAssistantDto;
 }
 
@@ -77,5 +82,6 @@ export function parseDtoToVoiceAssistant(
         dummyVoiceAssistant.gender,
         dummyVoiceAssistant.pauseThreshold,
         dummyVoiceAssistant.description,
+        dummyVoiceAssistant.assistantModelId,
     );
 }

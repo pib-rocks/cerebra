@@ -4,7 +4,7 @@ import {ProgramSplitscreenComponent} from "./program-splitscreen.component";
 import {AngularSplitModule} from "angular-split";
 import {ActivatedRoute, Params} from "@angular/router";
 import {ProgramService} from "src/app/shared/services/program.service";
-import {BehaviorSubject, Observable, Subject} from "rxjs";
+import {BehaviorSubject, Subject} from "rxjs";
 import {ProgramWorkspaceComponent} from "./program-workspace/program-workspace.component";
 import {ExecutionState, ProgramState} from "src/app/shared/types/program-state";
 import {ProgramOutputLine} from "src/app/shared/types/program-output-line";
