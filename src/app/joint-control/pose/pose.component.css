@@ -55,6 +55,7 @@ button:disabled img {
 
 .pose-label {
     user-select: none;
+    overflow: hidden;
 }
 
 .selected .apply-button {

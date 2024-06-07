@@ -14,7 +14,7 @@
     class="pose-item d-flex flex-row mt-1 mb-2"
     [ngClass]="pose.poseId == selectedPoseId ? 'selected' : 'unselected'">
     <button
-        class="apply-button"
+        class="apply-button flex-shrink-0"
         [disabled]="!pose.active"
         (click)="applyPose(pose)">
         <img
@@ -29,7 +29,7 @@
         {{pose.name}}
     </div>
     <button
-        class="rename-button"
+        class="rename-button flex-shrink-0"
         (click)="renamePose(pose)">
         <img
             class="icon"
@@ -37,7 +37,7 @@
             alt="rename-pose-image" />
     </button>
     <button
-        class="delete-button"
+        class="delete-button flex-shrink-0"
         (click)="deletePose(pose)">
         <img
             class="icon"
