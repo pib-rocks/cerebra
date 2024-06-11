@@ -8,7 +8,6 @@
         Save pose
     </button>
 </div>
-
 <div
     *ngFor="let pose of poses"
     class="pose-item d-flex flex-row mt-1 mb-2"
@@ -23,7 +22,7 @@
             alt="apply-pose-image" />
     </button>
     <div
-        class="pose-label flex-grow-1 pl-3"
+        class="pose-label flex-grow-1 flex-shrink-1 pl-3"
         (click)="selectPose(pose)"
         (dblclick)="renamePose(pose)">
         {{pose.name}}
