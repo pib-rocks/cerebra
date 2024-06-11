@@ -1,13 +1,13 @@
 import {JointTrajectoryMessage} from "../ros-types/msg/joint-trajectory-message";
 
 export interface MotorPosition {
-    motorname: string;
+    motorName: string;
     position: number;
 }
 
 export function fromJointTrajectory(jt: JointTrajectoryMessage) {
     return {
-        motorname: jt.joint_names[0],
+        motorName: jt.joint_names[0],
         position: jt.points[0].positions[0],
     };
 }

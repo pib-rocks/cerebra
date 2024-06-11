@@ -15,6 +15,8 @@ describe("PoseComponent", () => {
 
     let posesSubject = new Subject();
 
+    let posesSubscriber: jasmine.Spy;
+
     const pose1 = new Pose("pose-1", "id-1");
     const pose2 = new Pose("pose-2", "id-2");
     const pose3 = new Pose("pose-3", "id-3");
@@ -51,9 +53,13 @@ describe("PoseComponent", () => {
         ) as jasmine.SpyObj<PoseService>;
         modalService = TestBed.inject(NgbModal) as jasmine.SpyObj<NgbModal>;
 
+        posesSubscriber = jasmine.createSpy();
+
         fixture = TestBed.createComponent(PoseComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
+
+        component.poses.subscribe(posesSubscriber);
     });
 
     it("should create", () => {
@@ -62,9 +68,9 @@ describe("PoseComponent", () => {
 
     it("should get its poses from the service", () => {
         posesSubject.next([pose1, pose2]);
-        expect(component.poses).toEqual([pose1, pose2]);
+        expect(posesSubscriber).toHaveBeenCalledWith([pose1, pose2]);
         posesSubject.next([pose3]);
-        expect(component.poses).toEqual([pose3]);
+        expect(posesSubscriber).toHaveBeenCalledWith([pose3]);
     });
 
     it("should save the pose", async () => {

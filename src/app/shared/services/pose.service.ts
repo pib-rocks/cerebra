@@ -22,10 +22,10 @@ export class PoseService {
     ) {
         this.currentMotorPositions = motors
             .filter((motor) => !motor.isMultiMotor)
-            .map((motor) => ({motorname: motor.motorName, position: 0}));
+            .map((motor) => ({motorName: motor.motorName, position: 0}));
         this.currentMotorPositions.forEach((motorPosition) => {
             motorService
-                .getPositionObservable(motorPosition.motorname)
+                .getPositionObservable(motorPosition.motorName)
                 .subscribe((position) => (motorPosition.position = position));
         });
         this.getAllPosesFromDb().subscribe((poses) => {
@@ -76,8 +76,8 @@ export class PoseService {
                   tap((mp) => this.poseIdToMotorPositions.set(poseId, mp)),
               );
         positionsObservable.subscribe((motorPositions) => {
-            for (const {motorname, position} of motorPositions) {
-                this.motorService.setPosition(motorname, position);
+            for (const {motorName, position} of motorPositions) {
+                this.motorService.setPosition(motorName, position);
             }
             pose.active = false;
             this.publishPoses();

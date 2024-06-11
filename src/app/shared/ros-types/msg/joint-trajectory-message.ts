@@ -22,7 +22,7 @@ export function createEmptyJointTrajectoryMessage(): JointTrajectoryMessage {
     return jointTrajectoryMessage;
 }
 
-export function fromMotorPosition(motorname: string, position: number) {
+export function fromMotorPosition(motorName: string, position: number) {
     return {
         header: {
             stamp: {
@@ -31,7 +31,7 @@ export function fromMotorPosition(motorname: string, position: number) {
             },
             frame_id: "",
         },
-        joint_names: [motorname],
+        joint_names: [motorName],
         points: [
             {
                 positions: [position],

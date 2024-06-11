@@ -1,12 +1,12 @@
 export class MotorPosition {
-    constructor(motorname, position) {
-        this.motorname = motorname;
+    constructor(motorName, position) {
+        this.motorName = motorName;
         this.position = position;
     }
 
     static getMotorPosition(motorPosition) {
         return new MotorPosition(
-            motorPosition.motorname,
+            motorPosition.motorName,
             motorPosition.position,
         );
     }

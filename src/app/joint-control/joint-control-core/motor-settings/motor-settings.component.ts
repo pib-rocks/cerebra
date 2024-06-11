@@ -73,8 +73,8 @@ export class MotorSettingsComponent {
         this.modalService.open(content, {
             ariaLabelledBy: "modal-basic-title",
             size: "xl",
-            windowClass: "myCustomModalClass",
-            backdropClass: "myCustomBackdropClass",
+            windowClass: "cerebra-modal",
+            backdropClass: "cerebra-modal-backdrop",
         });
     }
 

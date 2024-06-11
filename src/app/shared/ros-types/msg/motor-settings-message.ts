@@ -16,11 +16,11 @@ export interface MotorSettingsMessage {
 }
 
 export function fromMotorSettings(
-    motorname: string,
+    motorName: string,
     motorSettings: MotorSettings,
 ): MotorSettingsMessage {
     return {
-        motor_name: motorname,
+        motor_name: motorName,
         turned_on: motorSettings.turnedOn,
         pulse_width_min: motorSettings.pulseWidthMin,
         pulse_width_max: motorSettings.pulseWidthMax,

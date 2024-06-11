@@ -13,7 +13,7 @@ import {Pose} from "src/app/shared/types/pose";
 export class PoseComponent implements OnInit {
     @ViewChild("modalContent") modalContent: TemplateRef<any> | undefined;
 
-    poses: Pose[] = [];
+    poses!: Observable<Pose[]>;
 
     modalTitle = "";
 
@@ -27,9 +27,7 @@ export class PoseComponent implements OnInit {
     ) {}
 
     ngOnInit(): void {
-        this.poseService
-            .getPosesObservable()
-            .subscribe((poses) => (this.poses = poses));
+        this.poses = this.poseService.getPosesObservable();
     }
 
     savePose() {
@@ -68,10 +66,10 @@ export class PoseComponent implements OnInit {
         this.nameFormControl.setValue(defaultValue);
         const observable = from(
             this.modalService.open(this.modalContent, {
-                ariaLabelledBy: "modal-basic-title",
+                ariaLabelledBy: "rename-pose",
                 size: "sm",
-                windowClass: "myCustomModalClass",
-                backdropClass: "myCustomBackdropClass",
+                windowClass: "cerebra-modal",
+                backdropClass: "cerebra-modal-backdrop",
             }).result,
         );
         return observable.pipe(

@@ -223,8 +223,8 @@ describe("MotorSettingsComponent", () => {
         expect(modalService.open).toHaveBeenCalledOnceWith(content, {
             ariaLabelledBy: "modal-basic-title",
             size: "xl",
-            windowClass: "myCustomModalClass",
-            backdropClass: "myCustomBackdropClass",
+            windowClass: "cerebra-modal",
+            backdropClass: "cerebra-modal-backdrop",
         });
     });
 });

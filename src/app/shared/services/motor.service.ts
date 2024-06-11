@@ -103,11 +103,11 @@ export class MotorService {
 
         this.rosService.jointTrajectoryReceiver$
             .pipe(map(fromJointTrajectory))
-            .subscribe(({motorname, position}) => {
+            .subscribe(({motorName, position}) => {
                 // TODO: conversion between multi-motor and simple-motors should be handled
                 // in the backend/motor-control-node
                 let motorNames: string[];
-                if (motorname == "all_fingers_left") {
+                if (motorName == "all_fingers_left") {
                     motorNames = [
                         "thumb_left_stretch",
                         "index_left_stretch",
@@ -115,7 +115,7 @@ export class MotorService {
                         "ring_left_stretch",
                         "pinky_left_stretch",
                     ];
-                } else if (motorname == "all_fingers_right") {
+                } else if (motorName == "all_fingers_right") {
                     motorNames = [
                         "thumb_right_stretch",
                         "index_right_stretch",
@@ -124,7 +124,7 @@ export class MotorService {
                         "pinky_right_stretch",
                     ];
                 } else {
-                    motorNames = [motorname];
+                    motorNames = [motorName];
                 }
                 for (const motorName of motorNames) {
                     this.publishToSubject(
@@ -191,8 +191,8 @@ export class MotorService {
             });
     }
 
-    setPosition(motorname: string, position: number): void {
-        const message = fromMotorPosition(motorname, position);
+    setPosition(motorName: string, position: number): void {
+        const message = fromMotorPosition(motorName, position);
         this.rosService.sendJointTrajectoryMessage(message);
     }
 }

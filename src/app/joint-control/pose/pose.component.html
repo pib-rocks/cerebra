@@ -9,7 +9,7 @@
     </button>
 </div>
 <div
-    *ngFor="let pose of poses"
+    *ngFor="let pose of poses | async"
     class="pose-item d-flex flex-row mt-1 mb-2"
     [ngClass]="pose.poseId == selectedPoseId ? 'selected' : 'unselected'">
     <button

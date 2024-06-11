@@ -21,11 +21,11 @@ describe("PoseService", () => {
 
     const motorPositions: MotorPosition[] = [
         {
-            motorname: "index_left_stretch",
+            motorName: "index_left_stretch",
             position: 1000,
         },
         {
-            motorname: "index_right_stretch",
+            motorName: "index_right_stretch",
             position: 2000,
         },
     ];
@@ -70,8 +70,8 @@ describe("PoseService", () => {
             ],
         });
 
-        motorServiceSpy.getPositionObservable.and.callFake((motorname) => {
-            return motorname == "index_left_stretch" ? indexLeftSubject : of();
+        motorServiceSpy.getPositionObservable.and.callFake((motorName) => {
+            return motorName == "index_left_stretch" ? indexLeftSubject : of();
         });
 
         poseService = TestBed.inject(PoseService);
@@ -110,7 +110,7 @@ describe("PoseService", () => {
         expect(name).toEqual(pose3.name);
         expect(motorPositions.length).toEqual(26);
         for (const motorPosition of motorPositions) {
-            if (motorPosition.motorname == "index_left_stretch") {
+            if (motorPosition.motorName == "index_left_stretch") {
                 expect(motorPosition.position).toEqual(3000);
             } else {
                 expect(motorPosition.position).toEqual(0);
@@ -166,9 +166,9 @@ describe("PoseService", () => {
             `/pose/${pose1.poseId}/motor-positions`,
         );
         for (let i = 0; i < motorPositions.length; i++) {
-            const {motorname, position} = motorPositions[i];
+            const {motorName, position} = motorPositions[i];
             expect(motorService.setPosition.calls.argsFor(i)).toEqual([
-                motorname,
+                motorName,
                 position,
             ]);
         }
@@ -200,12 +200,12 @@ describe("PoseService", () => {
         expect(apiService.get).toHaveBeenCalledTimes(1);
         // now, 'setPosition' should not have been called again, because the pose active again
         for (let i = 0; i < motorPositions.length; i++) {
-            const {motorname, position} = motorPositions[i];
+            const {motorName, position} = motorPositions[i];
             expect(
                 motorService.setPosition.calls.argsFor(
                     motorPositions.length + i,
                 ),
-            ).toEqual([motorname, position]);
+            ).toEqual([motorName, position]);
         }
 
         flush();
