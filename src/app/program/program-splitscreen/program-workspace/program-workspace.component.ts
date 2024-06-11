@@ -14,8 +14,8 @@ import {
 import * as Blockly from "blockly";
 import {toolbox} from "../../blockly";
 import {ITheme} from "blockly/core/theme";
-import {pythonGenerator} from "../../program-generators/custom-generators";
-import {customBlockDefinition} from "../../program-blocks/custom-blocks";
+import {pythonGenerator} from "../../pib-blockly/program-generators/custom-generators";
+import {customBlockDefinition} from "../../pib-blockly/program-blocks/custom-blocks";
 import {Abstract} from "blockly/core/events/events_abstract";
 import {GuardsCheckStart, Router} from "@angular/router";
 import {Subscription} from "rxjs";
