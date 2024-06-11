@@ -2,7 +2,7 @@
 
 .a {
     fill: none;
-    stroke: $blue-light;
+    stroke: $blue-color;
     stroke-linecap: round;
     stroke-linejoin: round;
 }
@@ -39,7 +39,7 @@
 }
 
 .menu-open {
-    color: $blue-light;
+    color: $blue-color;
 }
 
 .nav-link.sidebar-btn {
@@ -48,7 +48,7 @@
     font-weight: bold;
     letter-spacing: 0.4px;
     text-align: left;
-    color: $blue-light;
+    color: $blue-color;
     font-stretch: normal;
     font-style: normal;
     line-height: normal;
@@ -82,6 +82,6 @@
 }
 
 svg path {
-    fill: $blue-light;
-    stroke: $blue-light;
+    fill: $blue-color;
+    stroke: $blue-color;
 }

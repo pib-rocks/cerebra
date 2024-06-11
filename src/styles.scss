@@ -35,7 +35,7 @@ $blue-dark-5: #041939 !default;
 
 :root {
     --cerebra-pink: $pink-color;
-    --cerebra-button-color: $blue-light;
+    --cerebra-button-color: $blue-color;
     --cerebra-text-color-default: $white-color;
 }
 
@@ -46,7 +46,7 @@ $blue-dark-5: #041939 !default;
 
 .btn:hover {
     border: 1px solid $white-color;
-    background-color: $blue-light;
+    background-color: $blue-color;
     color: $white-color;
 }
 
@@ -129,17 +129,17 @@ span {
 
 button:disabled {
     background-color: var(--cerebra-button-color-disabled) !important;
-    color: $blue-light !important;
-    border-color: $blue-light !important;
+    color: $blue-color !important;
+    border-color: $blue-color !important;
 }
 
 .myCustomModalClass .modal-header {
     z-index: 1060 !important;
-    border-bottom: 1px solid $blue-light;
+    border-bottom: 1px solid $blue-color;
 }
 
 .myCustomModalClass .modal-footer {
-    border-top: 1px solid $blue-light;
+    border-top: 1px solid $blue-color;
 }
 
 .myCustomModalClass .modal-content {
