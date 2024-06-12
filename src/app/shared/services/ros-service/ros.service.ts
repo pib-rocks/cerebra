@@ -51,6 +51,10 @@ import {
     GetChatIsListeningRequest,
     GetChatIsListeningResponse,
 } from "../../ros-types/srv/get-chat-is-listening";
+import {
+    ApplyJointTrajectoryRequest,
+    ApplyJointTrajectoryResponse,
+} from "../../ros-types/srv/apply-joint-trajectory";
 
 @Injectable({
     providedIn: "root",
@@ -124,6 +128,10 @@ export class RosService implements IRosService {
     private proxyProgramStopService!: ROSLIB.Service<
         ProxyRunProgramStopRequest,
         Record<string, never>
+    >;
+    private applyJointTrajectoryService!: ROSLIB.Service<
+        ApplyJointTrajectoryRequest,
+        ApplyJointTrajectoryResponse
     >;
 
     private runProgramAction!: ROSLIB.ActionClient;
@@ -233,6 +241,10 @@ export class RosService implements IRosService {
         this.getChatIsListeningService = this.createRosService(
             rosServices.getChatIsListening,
             rosDataTypes.getChatIsListening,
+        );
+        this.applyJointTrajectoryService = this.createRosService(
+            rosServices.applyJointTrajectory,
+            rosDataTypes.applyJointTrajectory,
         );
     }
 
@@ -399,6 +411,26 @@ export class RosService implements IRosService {
         return subject;
     }
 
+    applyJointTrajectory(
+        jointTrajectory: JointTrajectoryMessage,
+    ): Observable<void> {
+        return from<Promise<ApplyJointTrajectoryResponse>>(
+            new Promise((resolve, reject) => {
+                this.applyJointTrajectoryService.callService(
+                    {joint_trajectory: jointTrajectory},
+                    resolve,
+                    reject,
+                );
+            }),
+        ).pipe(
+            map((response: ApplyJointTrajectoryResponse) => {
+                if (!response.successful) {
+                    throw new Error("failed to apply joint-trajectory...");
+                }
+            }),
+        );
+    }
+
     sendChatMessage(chatId: string, content: string): Observable<void> {
         const subject: Subject<void> = new ReplaySubject();
         const request: SendChatMessageRequest = {
@@ -535,11 +567,6 @@ export class RosService implements IRosService {
                 },
             ),
         );
-    }
-
-    sendJointTrajectoryMessage(jointTrajectoryMessage: JointTrajectoryMessage) {
-        const message = new ROSLIB.Message(jointTrajectoryMessage);
-        this.jointTrajectoryTopic.publish(message);
     }
 
     setTimerPeriod(period: number) {

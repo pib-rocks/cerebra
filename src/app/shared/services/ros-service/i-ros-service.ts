@@ -45,9 +45,7 @@ export interface IRosService {
         programNumber: string,
     ) => Observable<GoalHandle<RunProgramFeedback, RunProgramResult>>;
 
-    sendJointTrajectoryMessage: (
-        jointTrajectoryMessage: JointTrajectoryMessage,
-    ) => void;
+    applyJointTrajectory: (jointTrajectory: JointTrajectoryMessage) => void;
 
     setTimerPeriod: (period: number) => void;
 

@@ -22,6 +22,7 @@ export enum rosDataTypes {
     sendChatMessage = "datatypes/srv/SendChatMessage",
     getVoiceAssistantState = "datatypes/srv/GetVoiceAssistantState",
     getChatIsListening = "datatypes/srv/GetChatIsListening",
+    applyJointTrajectory = "datatypes/srv/ApplyJointTrajectory",
     // action
     runProgram = "datatypes/action/RunProgram",
 }
