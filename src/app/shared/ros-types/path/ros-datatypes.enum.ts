@@ -1,5 +1,6 @@
 export enum rosDataTypes {
     // std msgs
+    empty = "std_msgs/Empty",
     int32 = "std_msgs/Int32",
     int32MultiArray = "std_msgs/Int32MultiArray",
     float64 = "std_msgs/Float64",
@@ -22,6 +23,9 @@ export enum rosDataTypes {
     sendChatMessage = "datatypes/srv/SendChatMessage",
     getVoiceAssistantState = "datatypes/srv/GetVoiceAssistantState",
     getChatIsListening = "datatypes/srv/GetChatIsListening",
+    existToken = "datatypes/srv/ExistToken",
+    encryptToken = "datatypes/srv/EncryptToken",
+    decryptToken = "datatypes/srv/DecryptToken",
     // action
     runProgram = "datatypes/action/RunProgram",
 }

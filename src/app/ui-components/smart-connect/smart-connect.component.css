@@ -1,0 +1,40 @@
+.smart-connect-btn {
+    border-radius: 10px;
+    color: white;
+    background: linear-gradient(to right, #009ee2, #951b81, #e5007e);
+    border: none;
+    padding: 5px 15px;
+}
+
+.modal-title {
+    text-transform: uppercase;
+}
+
+.input {
+    color: white;
+    background-color: #344a69 !important;
+    border: none;
+    /*width: 100%;*/
+}
+
+.button-link {
+    display: inline;
+    padding: 0;
+    border: 0;
+    font: inherit;
+    cursor: pointer;
+    background: transparent;
+    color: #007bff;
+
+    -webkit-appearance: none;
+    /*color: #0056b3;*/
+    /*cursor: pointer;*/
+}
+
+.button-link:hover {
+    color: #0056b3;
+}
+
+.disabled {
+    color: #a7afba;
+}

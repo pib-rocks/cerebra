@@ -8,6 +8,7 @@ import {
     filter,
     from,
     map,
+    of,
 } from "rxjs";
 import {MotorSettingsMessage} from "../../ros-types/msg/motor-settings-message";
 import {DiagnosticStatus} from "../../ros-types/msg/diagnostic-status.message";
@@ -51,6 +52,15 @@ import {
     GetChatIsListeningRequest,
     GetChatIsListeningResponse,
 } from "../../ros-types/srv/get-chat-is-listening";
+import {
+    EncryptTokenRequest,
+    EncryptTokenResponse,
+} from "../../ros-types/srv/encrypt-token";
+import {
+    DecryptTokenRequest,
+    DecryptTokenResponse,
+} from "../../ros-types/srv/decrypt-token";
+import {ExistTokenResponse} from "../../ros-types/srv/exist-token";
 
 @Injectable({
     providedIn: "root",
@@ -94,6 +104,7 @@ export class RosService implements IRosService {
     private cameraQualityFactorTopic!: ROSLIB.Topic;
     private jointTrajectoryTopic!: ROSLIB.Topic;
     private motorSettingsTopic!: ROSLIB.Topic;
+    private deleteTokenTopic!: ROSLIB.Topic;
     private proxyRunProgramFeedbackTopic!: ROSLIB.Topic<ProxyRunProgramFeedback>;
     private proxyRunProgramResultTopic!: ROSLIB.Topic<ProxyRunProgramResult>;
     private proxyRunProgramStatusTopic!: ROSLIB.Topic<ProxyRunProgramStatus>;
@@ -101,6 +112,18 @@ export class RosService implements IRosService {
     private voiceAssistantStateTopic!: ROSLIB.Topic<VoiceAssistantState>;
     private chatIsListeningTopic!: ROSLIB.Topic<ChatIsListening>;
 
+    private existTokenService!: ROSLIB.Service<
+        Record<string, never>,
+        ExistTokenResponse
+    >;
+    private encryptTokenService!: ROSLIB.Service<
+        EncryptTokenRequest,
+        EncryptTokenResponse
+    >;
+    private decryptTokenService!: ROSLIB.Service<
+        DecryptTokenRequest,
+        DecryptTokenResponse
+    >;
     private setVoiceAssistantStateService!: ROSLIB.Service<
         SetVoiceAssistantStateRequest,
         SetVoiceAssistantStateResponse
@@ -125,7 +148,6 @@ export class RosService implements IRosService {
         ProxyRunProgramStopRequest,
         Record<string, never>
     >;
-
     private runProgramAction!: ROSLIB.ActionClient;
 
     constructor() {
@@ -209,6 +231,10 @@ export class RosService implements IRosService {
             rosTopics.proxyRunProgramStatus,
             rosDataTypes.proxyRunProgramStatus,
         );
+        this.deleteTokenTopic = this.createRosTopic(
+            rosTopics.deleteTokenTopic,
+            rosDataTypes.empty,
+        );
 
         this.motorSettingsService = this.createRosService(
             rosServices.motorSettingsServiceName,
@@ -233,6 +259,18 @@ export class RosService implements IRosService {
         this.getChatIsListeningService = this.createRosService(
             rosServices.getChatIsListening,
             rosDataTypes.getChatIsListening,
+        );
+        this.existTokenService = this.createRosService(
+            rosServices.existToken,
+            rosDataTypes.existToken,
+        );
+        this.encryptTokenService = this.createRosService(
+            rosServices.encryptToken,
+            rosDataTypes.encryptToken,
+        );
+        this.decryptTokenService = this.createRosService(
+            rosServices.decryptToken,
+            rosDataTypes.decryptToken,
         );
     }
 
@@ -372,6 +410,86 @@ export class RosService implements IRosService {
         this.chatIsListeningTopic.subscribe((message: ChatIsListening) => {
             this.chatIsListeningReceiver$.next(message);
         });
+    }
+
+    checkTokenExists(): Subject<ExistTokenResponse> {
+        const failedResponse: ExistTokenResponse = {
+            token_exists: false,
+            token_active: false,
+        };
+        const subject: Subject<ExistTokenResponse> = new ReplaySubject();
+        if (this.existTokenService === undefined) {
+            subject.next(failedResponse);
+            return subject;
+        }
+
+        const successCallback = (response: ExistTokenResponse) => {
+            subject.next(response);
+        };
+        const errorCallback = (error: any) => {
+            subject.next(failedResponse);
+        };
+        this.existTokenService.callService({}, successCallback, errorCallback);
+
+        return subject;
+    }
+
+    deleteTokenMessage() {
+        const message = new ROSLIB.Message({});
+        this.deleteTokenTopic.publish(message);
+    }
+
+    encryptToken(token: string, password: string): Subject<boolean> {
+        const subject: Subject<boolean> = new ReplaySubject();
+        if (this.encryptTokenService === undefined) {
+            subject.next(false);
+            return subject;
+        }
+
+        const request: EncryptTokenRequest = {
+            token: token,
+            password: password,
+        };
+
+        const successCallback = (response: DecryptTokenResponse) => {
+            subject.next(response.is_successful);
+        };
+        const errorCallback = (error: any) => {
+            subject.next(false);
+        };
+
+        this.encryptTokenService.callService(
+            request,
+            successCallback,
+            errorCallback,
+        );
+        return subject;
+    }
+
+    decryptToken(password: string): Subject<boolean> {
+        console.log("PASSWORD: ", password);
+        const subject: Subject<boolean> = new ReplaySubject();
+        if (this.decryptTokenService === undefined) {
+            subject.next(false);
+            return subject;
+        }
+        const request: DecryptTokenRequest = {
+            password: password,
+        };
+
+        const successCallback = (response: EncryptTokenResponse) => {
+            subject.next(response.is_successful);
+        };
+        const errorCallback = (error: any) => {
+            subject.next(false);
+        };
+
+        this.decryptTokenService.callService(
+            request,
+            successCallback,
+            errorCallback,
+        );
+        return subject;
     }
 
     setVoiceAssistantState(
