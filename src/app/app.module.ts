@@ -96,6 +96,5 @@ import {SmartConnectComponent} from "./ui-components/smart-connect/smart-connect
         },
     ],
     bootstrap: [AppComponent],
-    entryComponents: [MatDialogModule],
 })
 export class AppModule {}
