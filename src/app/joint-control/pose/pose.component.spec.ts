@@ -80,7 +80,7 @@ describe("PoseComponent", () => {
         let mockRef: NgbModalRef = {
             get result() {
                 let promise = new Promise((resolve, reject) => {
-                    nameFormValueBefore = component.nameFormControl.value;
+                    nameFormValueBefore = component.nameFormControl.value!;
                     component.nameFormControl.setValue(name);
                     resolve(undefined);
                 });
@@ -108,7 +108,7 @@ describe("PoseComponent", () => {
         let mockRef: NgbModalRef = {
             get result() {
                 let promise = new Promise((resolve, reject) => {
-                    nameFormValueBefore = component.nameFormControl.value;
+                    nameFormValueBefore = component.nameFormControl.value!;
                     component.nameFormControl.setValue(name);
                     resolve(undefined);
                 });

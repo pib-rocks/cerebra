@@ -1,5 +1,5 @@
 import {Component, OnInit, TemplateRef, ViewChild} from "@angular/core";
-import {FormControl} from "@angular/forms";
+import {FormControl, Validators} from "@angular/forms";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {Observable, from, map} from "rxjs";
 import {PoseService} from "src/app/shared/services/pose.service";
@@ -17,7 +17,13 @@ export class PoseComponent implements OnInit {
 
     modalTitle = "";
 
-    nameFormControl: FormControl<string> = new FormControl();
+    nameFormControl: FormControl<string | null> = new FormControl("", {
+        validators: [
+            Validators.required,
+            Validators.minLength(2),
+            Validators.maxLength(255),
+        ],
+    });
 
     selectedPoseId?: string;
 
@@ -77,7 +83,7 @@ export class PoseComponent implements OnInit {
                 if (!this.nameFormControl.valid) {
                     throw new Error("invalid name");
                 }
-                return this.nameFormControl.value;
+                return this.nameFormControl.value!;
             }),
         );
     }
