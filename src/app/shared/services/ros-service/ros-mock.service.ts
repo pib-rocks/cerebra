@@ -124,6 +124,11 @@ export class RosService implements IRosService {
         }, 1000);
     }
 
+    applyJointTrajectory(jointTrajectory: JointTrajectoryMessage) {
+        console.info(JSON.stringify({joint_trajectory: jointTrajectory}));
+        this.jointTrajectoryReceiver$.next(structuredClone(jointTrajectory));
+    }
+
     getChatIsListening(chatId: string): Observable<boolean> {
         return new BehaviorSubject(this.getIsListening(chatId));
     }
@@ -293,15 +298,6 @@ export class RosService implements IRosService {
                     ),
             });
         return subject;
-    }
-
-    sendJointTrajectoryMessage(
-        jointTrajectoryMessage: JointTrajectoryMessage,
-    ): void {
-        console.info(JSON.stringify(jointTrajectoryMessage));
-        this.jointTrajectoryReceiver$.next(
-            structuredClone(jointTrajectoryMessage),
-        );
     }
 
     setTimerPeriod(period: number): void {
