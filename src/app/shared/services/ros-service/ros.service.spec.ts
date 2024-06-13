@@ -1,7 +1,10 @@
 import {TestBed, waitForAsync} from "@angular/core/testing";
 import * as ROSLIB from "roslib";
 import {RosService} from "./ros.service";
-import {createEmptyJointTrajectoryMessage} from "../../ros-types/msg/joint-trajectory-message";
+import {
+    JointTrajectoryMessage,
+    createEmptyJointTrajectoryMessage,
+} from "../../ros-types/msg/joint-trajectory-message";
 import {MotorSettingsMessage} from "../../ros-types/msg/motor-settings-message";
 import {MotorSettingsServiceResponse} from "../../ros-types/srv/motor-settings-service";
 import {ProxyRunProgramFeedback} from "../../ros-types/msg/proxy-run-program-feedback";
@@ -206,21 +209,55 @@ describe("RosService", () => {
         ).toHaveBeenCalledTimes(1);
     });
 
-    it("should publish the JointTrajectoryMessage on calling sendJointTrajectoryMessage", () => {
-        const spySendJointTrajectoryMessage = spyOn(
-            rosService,
-            "sendJointTrajectoryMessage",
-        ).and.callThrough();
-        const spyJointTrajectoryTopicPublish = spyOn(
-            rosService["jointTrajectoryTopic"],
-            "publish",
-        );
-        const jtMessage = createEmptyJointTrajectoryMessage();
-        rosService.sendJointTrajectoryMessage(jtMessage);
-        expect(spySendJointTrajectoryMessage).toHaveBeenCalled();
-        expect(spyJointTrajectoryTopicPublish).toHaveBeenCalledWith(
-            new ROSLIB.Message(jtMessage),
-        );
+    it("should notify, that the jt was applied, by publihsing to the observable", () => {
+        const jt = {} as JointTrajectoryMessage;
+        spyOn(
+            rosService["applyJointTrajectoryService"],
+            "callService",
+        ).and.callFake((_jt, resolve, _reject) => {
+            resolve({successful: true});
+        });
+        const subscriberSpy = jasmine.createSpyObj("subscriber-spy", [
+            "next",
+            "error",
+        ]);
+        rosService.applyJointTrajectory(jt).subscribe(subscriberSpy);
+        expect(subscriberSpy.next).toHaveBeenCalled();
+        expect(subscriberSpy.error).not.toHaveBeenCalled();
+    });
+
+    it("should return an error, if communication with ros was not successful", () => {
+        const jt = {} as JointTrajectoryMessage;
+        spyOn(
+            rosService["applyJointTrajectoryService"],
+            "callService",
+        ).and.callFake((_jt, _resolve, reject) => {
+            reject?.("error");
+        });
+        const subscriberSpy = jasmine.createSpyObj("subscriber-spy", [
+            "next",
+            "error",
+        ]);
+        rosService.applyJointTrajectory(jt).subscribe(subscriberSpy);
+        expect(subscriberSpy.next).not.toHaveBeenCalled();
+        expect(subscriberSpy.error).toHaveBeenCalled();
+    });
+
+    it("should return an error, if communication with ros was successful, but jt could not be applied", () => {
+        const jt = {} as JointTrajectoryMessage;
+        spyOn(
+            rosService["applyJointTrajectoryService"],
+            "callService",
+        ).and.callFake((_jt, resolve, _reject) => {
+            resolve({successful: false});
+        });
+        const subscriberSpy = jasmine.createSpyObj("subscriber-spy", [
+            "next",
+            "error",
+        ]);
+        rosService.applyJointTrajectory(jt).subscribe(subscriberSpy);
+        expect(subscriberSpy.next).not.toHaveBeenCalled();
+        expect(subscriberSpy.error).toHaveBeenCalled();
     });
 
     it("should call the service with the MotorSettingsMessage on calling sendMotorSettingsMessage", () => {

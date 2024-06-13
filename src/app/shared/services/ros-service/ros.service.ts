@@ -414,21 +414,26 @@ export class RosService implements IRosService {
     applyJointTrajectory(
         jointTrajectory: JointTrajectoryMessage,
     ): Observable<void> {
-        return from<Promise<ApplyJointTrajectoryResponse>>(
-            new Promise((resolve, reject) => {
-                this.applyJointTrajectoryService.callService(
-                    {joint_trajectory: jointTrajectory},
-                    resolve,
-                    reject,
-                );
-            }),
-        ).pipe(
-            map((response: ApplyJointTrajectoryResponse) => {
-                if (!response.successful) {
-                    throw new Error("failed to apply joint-trajectory...");
-                }
-            }),
+        const subject: Subject<void> = new ReplaySubject();
+        const request: ApplyJointTrajectoryRequest = {
+            joint_trajectory: jointTrajectory,
+        };
+        const successCallback = (response: ApplyJointTrajectoryResponse) => {
+            if (response.successful) {
+                subject.next();
+            } else {
+                subject.error(new Error("failed to apply joint-trajectory."));
+            }
+        };
+        const errorCallback = (error: any) => {
+            subject.error(new Error(error));
+        };
+        this.applyJointTrajectoryService.callService(
+            request,
+            successCallback,
+            errorCallback,
         );
+        return subject;
     }
 
     sendChatMessage(chatId: string, content: string): Observable<void> {
