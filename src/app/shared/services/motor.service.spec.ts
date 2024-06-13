@@ -33,7 +33,7 @@ describe("MotorService", () => {
     beforeEach(() => {
         const rosServiceSpy: jasmine.SpyObj<RosService> = jasmine.createSpyObj(
             "RosService",
-            ["sendMotorSettingsMessage", "applyJointTrajectory"],
+            ["applyMotorSettings", "applyJointTrajectory"],
             {
                 motorSettingsReceiver$: new Subject(),
                 jointTrajectoryReceiver$: new Subject(),
@@ -357,9 +357,9 @@ describe("MotorService", () => {
             visible: false,
             invert: false,
         };
-        rosService.sendMotorSettingsMessage.and.returnValue(new Observable());
+        rosService.applyMotorSettings.and.returnValue(new Observable());
         service.applySettings(motorName, settings);
-        expect(rosService.sendMotorSettingsMessage).toHaveBeenCalledOnceWith(
+        expect(rosService.applyMotorSettings).toHaveBeenCalledOnceWith(
             setttingsMessage,
         );
     });

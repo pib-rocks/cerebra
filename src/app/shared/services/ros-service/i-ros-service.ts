@@ -37,7 +37,7 @@ export interface IRosService {
 
     sendChatMessage(chatId: string, content: string): Observable<void>;
 
-    sendMotorSettingsMessage: (
+    applyMotorSettings: (
         motorSettingsMessage: MotorSettingsMessage,
     ) => Observable<MotorSettingsMessage>;
 

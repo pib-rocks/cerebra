@@ -446,7 +446,7 @@ describe("RosMockService", () => {
             visible: false,
         };
         apiService.put.and.returnValue(new BehaviorSubject(motorSettings));
-        service.sendMotorSettingsMessage(motorSettingsMessage);
+        service.applyMotorSettings(motorSettingsMessage);
         expect(sendMotorSettingsSpy).toHaveBeenCalledOnceWith(
             motorSettingsMessage,
         );

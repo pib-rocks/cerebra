@@ -6,7 +6,7 @@ import {
     createEmptyJointTrajectoryMessage,
 } from "../../ros-types/msg/joint-trajectory-message";
 import {MotorSettingsMessage} from "../../ros-types/msg/motor-settings-message";
-import {MotorSettingsServiceResponse} from "../../ros-types/srv/motor-settings-service";
+import {ApplyMotorSettingsResponse} from "../../ros-types/srv/apply-motor-settings";
 import {ProxyRunProgramFeedback} from "../../ros-types/msg/proxy-run-program-feedback";
 import {ProxyRunProgramStopRequest} from "../../ros-types/srv/proxy-run-program-stop";
 import {ProxyRunProgramResult} from "../../ros-types/msg/proxy-run-program-result";
@@ -70,7 +70,7 @@ describe("RosService", () => {
         expect(rosService["cameraTimerPeriodTopic"]).toBeTruthy();
         expect(rosService["cameraQualityFactorTopic"]).toBeTruthy();
         expect(rosService["cameraPreviewSizeTopic"]).toBeTruthy();
-        expect(rosService["motorSettingsService"]).toBeTruthy();
+        expect(rosService["applyMotorSettingsService"]).toBeTruthy();
         expect(rosService["voiceAssistantStateTopic"]).toBeTruthy();
         expect(rosService["setVoiceAssistantStateService"]).toBeTruthy();
         expect(rosService["chatMessageTopic"]).toBeTruthy();
@@ -260,34 +260,35 @@ describe("RosService", () => {
         expect(subscriberSpy.error).toHaveBeenCalled();
     });
 
-    it("should call the service with the MotorSettingsMessage on calling sendMotorSettingsMessage", () => {
+    it("should call the service with the MotorSettingsMessage on calling applyMotorSettings", () => {
         const spyOnSendMotorSettingsMessage = spyOn(
             rosService,
-            "sendMotorSettingsMessage",
+            "applyMotorSettings",
         ).and.callThrough();
         const spyMotorSettingsServiceCall = spyOn(
-            rosService["motorSettingsService"],
+            rosService["applyMotorSettingsService"],
             "callService",
         );
-        rosService.sendMotorSettingsMessage(motorSettingsMessage);
+        rosService.applyMotorSettings(motorSettingsMessage);
         expect(spyOnSendMotorSettingsMessage).toHaveBeenCalled();
         expect(spyMotorSettingsServiceCall).toHaveBeenCalled();
     });
 
-    it("should handle the case correctly, where, after calling sendMotorSettingsMessage(), the motorSettingsService calls the success-callback with a message that indicates, that both application as well as persistence were successul", () => {
-        spyOn(rosService["motorSettingsService"], "callService").and.callFake(
-            (_msg, callback) => {
-                const res: MotorSettingsServiceResponse = {
-                    settings_applied: true,
-                    settings_persisted: true,
-                };
-                callback(res);
-            },
-        );
+    it("should handle the case correctly, where, after calling applyMotorSettings(), the applyMotorSettingsService calls the success-callback with a message that indicates, that both application as well as persistence were successul", () => {
+        spyOn(
+            rosService["applyMotorSettingsService"],
+            "callService",
+        ).and.callFake((_msg, callback) => {
+            const res: ApplyMotorSettingsResponse = {
+                settings_applied: true,
+                settings_persisted: true,
+            };
+            callback(res);
+        });
         spyOn(rosService.motorSettingsReceiver$, "next");
 
         const obs: Observable<MotorSettingsMessage> =
-            rosService.sendMotorSettingsMessage(motorSettingsMessage);
+            rosService.applyMotorSettings(motorSettingsMessage);
         const subscribeCallBackSpy = jasmine.createSpyObj("subscriber", [
             "next",
             "error",
@@ -297,7 +298,7 @@ describe("RosService", () => {
         expect(subscribeCallBackSpy.next).toHaveBeenCalledOnceWith(
             motorSettingsMessage,
         );
-        rosService.sendMotorSettingsMessage(motorSettingsMessage);
+        rosService.applyMotorSettings(motorSettingsMessage);
     });
 
     it("should publish the preview size on calling setPreviewsize", () => {

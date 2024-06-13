@@ -24,9 +24,9 @@ import {VoiceAssistantState} from "../../ros-types/msg/voice-assistant-state";
 import {GetVoiceAssistantStateResponse} from "../../ros-types/srv/get-voice-assistant-state";
 import {MotorSettingsError} from "../../error/motor-settings-error";
 import {
-    MotorSettingsServiceRequest,
-    MotorSettingsServiceResponse,
-} from "../../ros-types/srv/motor-settings-service";
+    ApplyMotorSettingsRequest,
+    ApplyMotorSettingsResponse,
+} from "../../ros-types/srv/apply-motor-settings";
 import {
     RunProgramFeedback,
     RunProgramResult,
@@ -117,9 +117,9 @@ export class RosService implements IRosService {
         SendChatMessageRequest,
         SendChatMessageResponse
     >;
-    private motorSettingsService!: ROSLIB.Service<
-        MotorSettingsServiceRequest,
-        MotorSettingsServiceResponse
+    private applyMotorSettingsService!: ROSLIB.Service<
+        ApplyMotorSettingsRequest,
+        ApplyMotorSettingsResponse
     >;
     private proxyProgramStartService!: ROSLIB.Service<
         ProxyRunProgramStartRequest,
@@ -218,9 +218,9 @@ export class RosService implements IRosService {
             rosDataTypes.proxyRunProgramStatus,
         );
 
-        this.motorSettingsService = this.createRosService(
-            rosServices.motorSettingsServiceName,
-            rosDataTypes.motorSettingsSrv,
+        this.applyMotorSettingsService = this.createRosService(
+            rosServices.applyMotorSettings,
+            rosDataTypes.applyMotorSettings,
         );
         this.proxyProgramStartService = this.createRosService(
             rosServices.proxyRunProgramStart,
@@ -479,12 +479,12 @@ export class RosService implements IRosService {
         return subject;
     }
 
-    sendMotorSettingsMessage(
+    applyMotorSettings(
         motorSettingsMessage: MotorSettingsMessage,
     ): Observable<MotorSettingsMessage> {
         const subject: Subject<MotorSettingsMessage> = new ReplaySubject();
         try {
-            this.motorSettingsService.callService(
+            this.applyMotorSettingsService.callService(
                 {motor_settings: motorSettingsMessage},
                 (response) => {
                     if (response["settings_applied"]) {

@@ -174,7 +174,7 @@ export class MotorService {
 
     applySettings(motorName: string, settings: MotorSettings): void {
         this.rosService
-            .sendMotorSettingsMessage(fromMotorSettings(motorName, settings))
+            .applyMotorSettings(fromMotorSettings(motorName, settings))
             .subscribe({
                 error: (error) => {
                     if (

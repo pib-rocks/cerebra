@@ -262,7 +262,7 @@ export class RosService implements IRosService {
         return new BehaviorSubject({feedback, status, result, cancel});
     }
 
-    sendMotorSettingsMessage(
+    applyMotorSettings(
         motorSettingsMessage: MotorSettingsMessage,
     ): Observable<MotorSettingsMessage> {
         console.info(JSON.stringify(motorSettingsMessage));
