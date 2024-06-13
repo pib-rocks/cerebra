@@ -6,6 +6,7 @@ import {
     ReplaySubject,
     throwError,
     tap,
+    of,
 } from "rxjs";
 import {MotorSettingsMessage} from "../../ros-types/msg/motor-settings-message";
 import {DiagnosticStatus} from "../../ros-types/msg/diagnostic-status.message";
@@ -124,9 +125,12 @@ export class RosService implements IRosService {
         }, 1000);
     }
 
-    applyJointTrajectory(jointTrajectory: JointTrajectoryMessage) {
+    applyJointTrajectory(
+        jointTrajectory: JointTrajectoryMessage,
+    ): Observable<void> {
         console.info(JSON.stringify({joint_trajectory: jointTrajectory}));
         this.jointTrajectoryReceiver$.next(structuredClone(jointTrajectory));
+        return of(undefined);
     }
 
     getChatIsListening(chatId: string): Observable<boolean> {

@@ -38,7 +38,7 @@ describe("PoseService", () => {
         const motorServiceSpy: jasmine.SpyObj<MotorService> =
             jasmine.createSpyObj("MotorService", [
                 "getPositionObservable",
-                "setPosition",
+                "setPositions",
             ]);
 
         const poses: PoseDTO[] = [
@@ -151,7 +151,7 @@ describe("PoseService", () => {
 
         poseService.applyPose(unknownPoseId);
 
-        expect(motorService.setPosition).not.toHaveBeenCalled();
+        expect(motorService.setPositions).not.toHaveBeenCalled();
     });
 
     it("should apply the pose", fakeAsync(() => {
@@ -165,13 +165,9 @@ describe("PoseService", () => {
         expect(apiService.get).toHaveBeenCalledWith(
             `/pose/${pose1.poseId}/motor-positions`,
         );
-        for (let i = 0; i < motorPositions.length; i++) {
-            const {motorName, position} = motorPositions[i];
-            expect(motorService.setPosition.calls.argsFor(i)).toEqual([
-                motorName,
-                position,
-            ]);
-        }
+        expect(motorService.setPositions.calls.argsFor(0)).toEqual([
+            motorPositions,
+        ]);
         expect(posesSubscriber.calls.argsFor(1)).toEqual([
             [pose1Deactivated, pose2],
         ]);
@@ -182,10 +178,8 @@ describe("PoseService", () => {
         // motor-positions should now be cached locally and api-service should not have been
         // called again
         expect(apiService.get).toHaveBeenCalledTimes(1);
-        // 'setPosition' should not have been called again, because the pose is not active
-        expect(motorService.setPosition).toHaveBeenCalledTimes(
-            motorPositions.length,
-        );
+        // 'setPositions' should not have been called again, because the pose is not active
+        expect(motorService.setPositions).toHaveBeenCalledTimes(1);
         // new poses should not have been published yet
         expect(posesSubscriber).toHaveBeenCalledTimes(2);
 
@@ -198,15 +192,10 @@ describe("PoseService", () => {
         // motor-positions should now be cached locally and api-service should not have been
         // called again
         expect(apiService.get).toHaveBeenCalledTimes(1);
-        // now, 'setPosition' should not have been called again, because the pose active again
-        for (let i = 0; i < motorPositions.length; i++) {
-            const {motorName, position} = motorPositions[i];
-            expect(
-                motorService.setPosition.calls.argsFor(
-                    motorPositions.length + i,
-                ),
-            ).toEqual([motorName, position]);
-        }
+        // now, 'setPositions' should not have been called again, because the pose is active again
+        expect(motorService.setPositions.calls.argsFor(1)).toEqual([
+            motorPositions,
+        ]);
 
         flush();
     }));

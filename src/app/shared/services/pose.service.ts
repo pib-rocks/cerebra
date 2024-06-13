@@ -76,9 +76,7 @@ export class PoseService {
                   tap((mp) => this.poseIdToMotorPositions.set(poseId, mp)),
               );
         positionsObservable.subscribe((motorPositions) => {
-            for (const {motorName, position} of motorPositions) {
-                this.motorService.setPosition(motorName, position);
-            }
+            this.motorService.setPositions(motorPositions);
             pose.active = false;
             this.publishPoses();
             setTimeout(() => {
