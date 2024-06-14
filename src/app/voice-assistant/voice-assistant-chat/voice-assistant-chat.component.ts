@@ -211,13 +211,13 @@ export class VoiceAssistantChatComponent implements OnInit {
             disabled: false,
         },
         {
-            icon: "../../assets/voice-assistant-svgs/chat/export.svg",
+            icon: "../../assets/export.svg",
             label: "Export chat",
             clickCallback: this.export.bind(this),
             disabled: true,
         },
         {
-            icon: "../../assets/voice-assistant-svgs/chat/delete.svg",
+            icon: "../../assets/delete.svg",
             label: "Delete chat",
             clickCallback: this.deleteChat.bind(this),
             disabled: false,

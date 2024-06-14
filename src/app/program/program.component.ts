@@ -116,13 +116,13 @@ export class ProgramComponent implements OnInit, AfterViewInit {
 
     dropdownCallbackMethods = [
         {
-            icon: "../../assets/program/edit.svg",
+            icon: "../../assets/edit.svg",
             label: "Rename",
             clickCallback: this.editProgram.bind(this),
             disabled: false,
         },
         {
-            icon: "../../assets/program/delete.svg",
+            icon: "../../assets/delete.svg",
             label: "Delete",
             clickCallback: this.deleteProgram.bind(this),
             disabled: false,
