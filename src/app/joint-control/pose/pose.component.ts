@@ -37,7 +37,7 @@ export class PoseComponent implements OnInit {
     }
 
     savePose() {
-        this.getNameInput("Add new pose", "New Pose").subscribe((name) => {
+        this.getNameInput("Add new pose", "New pose").subscribe((name) => {
             this.poseService.saveCurrentPose(name).subscribe((pose) => {
                 this.selectPose(pose);
             });
