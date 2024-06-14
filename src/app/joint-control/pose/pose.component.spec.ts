@@ -94,7 +94,7 @@ describe("PoseComponent", () => {
         component.savePose();
         await modalPromise;
 
-        expect(nameFormValueBefore).toEqual("New Pose");
+        expect(nameFormValueBefore).toEqual("New pose");
         expect(component.modalTitle).toEqual("Add new pose");
         expect(poseService.saveCurrentPose).toHaveBeenCalledOnceWith(name);
         expect(component.selectedPoseId).toEqual(pose3.poseId);

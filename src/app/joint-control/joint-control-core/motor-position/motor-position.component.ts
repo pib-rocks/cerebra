@@ -1,5 +1,5 @@
 import {Component, OnInit} from "@angular/core";
-import {Subject} from "rxjs";
+import {BehaviorSubject} from "rxjs";
 import {MotorService} from "src/app/shared/services/motor.service";
 import {MotorConfiguration} from "../../../shared/types/motor-configuration";
 import {ActivatedRoute} from "@angular/router";
@@ -12,7 +12,7 @@ import {ActivatedRoute} from "@angular/router";
 export class MotorPositionComponent implements OnInit {
     motor!: MotorConfiguration;
 
-    positionReceiver$: Subject<[number]> = new Subject();
+    positionReceiver$: BehaviorSubject<[number]> = new BehaviorSubject([0]);
 
     rotationRangeMin: number = -90;
     rotationRangeMax: number = +90;
