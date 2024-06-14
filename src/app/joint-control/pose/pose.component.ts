@@ -1,4 +1,12 @@
-import {Component, OnInit, TemplateRef, ViewChild} from "@angular/core";
+import {
+    Component,
+    ElementRef,
+    OnInit,
+    QueryList,
+    TemplateRef,
+    ViewChild,
+    ViewChildren,
+} from "@angular/core";
 import {FormControl, Validators} from "@angular/forms";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {Observable, from, map} from "rxjs";
@@ -12,6 +20,9 @@ import {Pose} from "src/app/shared/types/pose";
 })
 export class PoseComponent implements OnInit {
     @ViewChild("modalContent") modalContent: TemplateRef<any> | undefined;
+    @ViewChildren("renameButton") renameButtons:
+        | QueryList<ElementRef<HTMLButtonElement>>
+        | undefined;
 
     poses!: Observable<Pose[]>;
 
@@ -45,6 +56,7 @@ export class PoseComponent implements OnInit {
     }
 
     renamePose(pose: Pose) {
+        this.blurRenameButtons();
         this.selectPose(pose);
         this.getNameInput("Rename pose", pose.name).subscribe((name) => {
             this.poseService.renamePose(pose.poseId, name);
@@ -86,5 +98,11 @@ export class PoseComponent implements OnInit {
                 return this.nameFormControl.value!;
             }),
         );
+    }
+
+    private blurRenameButtons() {
+        this.renameButtons?.forEach((button) => {
+            button.nativeElement.blur();
+        });
     }
 }
