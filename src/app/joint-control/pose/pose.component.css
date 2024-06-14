@@ -29,12 +29,21 @@
     height: 15px;
 }
 
-.icon {
+.rename-icon,
+.delete-icon {
     color: white;
-    width: 22px;
-    height: 22px;
     position: absolute;
     transform: translate(-50%, -50%);
+}
+
+.rename-icon {
+    width: 21px;
+    height: 21px;
+}
+
+.delete-icon {
+    width: 22px;
+    height: 22px;
 }
 
 button:disabled img {
@@ -48,6 +57,7 @@ button:disabled img {
     width: 40px;
     height: 40px;
 }
+
 .delete-button {
     border-top-right-radius: 10px;
     border-bottom-right-radius: 10px;
