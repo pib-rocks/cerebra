@@ -81,8 +81,8 @@ export class VoiceAssistantComponent implements OnInit {
         this.ngbModalRef = this.modalService.open(this.modalContent, {
             ariaLabelledBy: "modal-basic-title",
             size: "sm",
-            windowClass: "myCustomModalClass",
-            backdropClass: "myCustomBackdropClass",
+            windowClass: "cerebra-modal",
+            backdropClass: "cerebra-modal-backdrop",
         });
         return this.ngbModalRef;
     };

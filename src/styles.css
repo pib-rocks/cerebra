@@ -80,7 +80,7 @@ span {
     color: #fff;
 }
 
-.myCustomModalClass {
+.cerebra-modal {
     z-index: 1060 !important;
     color: #fff;
     font-weight: bold;
@@ -88,12 +88,12 @@ span {
     font-size: 1rem;
 }
 
-.myCustomModalClass .row {
+.cerebra-modal .row {
     margin-left: 0;
     margin-right: 0;
 }
 
-.myCustomModalClass .btn {
+.cerebra-modal .btn {
     border: none;
     padding-top: 0;
     padding-bottom: 0;
@@ -105,22 +105,16 @@ span {
     padding: 0;
 }
 
-button:disabled {
-    background-color: var(--cerebra-button-color-disabled) !important;
-    color: #fff !important;
-    border-color: #fff !important;
-}
-
-.myCustomModalClass .modal-header {
+.cerebra-modal .modal-header {
     z-index: 1060 !important;
     border-bottom: 1px solid #009fe3;
 }
 
-.myCustomModalClass .modal-footer {
+.cerebra-modal .modal-footer {
     border-top: 1px solid #009fe3;
 }
 
-.myCustomModalClass .modal-content {
+.cerebra-modal .modal-content {
     background:
         url("assets/ep-br.png") bottom right no-repeat,
         url("assets/ep-tr.png") top right no-repeat,
@@ -137,7 +131,7 @@ button:disabled {
     padding: 0.75rem 1.5rem;
 }
 
-.myCustomBackdropClass {
+.cerebra-modal-backdrop {
     z-index: 1040 !important;
     background-color: transparent !important;
 }

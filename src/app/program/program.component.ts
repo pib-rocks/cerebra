@@ -65,8 +65,8 @@ export class ProgramComponent implements OnInit, AfterViewInit {
         return this.modalService.open(this.modalContent, {
             ariaLabelledBy: "modal-basic-title",
             size: "sm",
-            windowClass: "myCustomModalClass",
-            backdropClass: "myCustomBackdropClass",
+            windowClass: "cerebra-modal",
+            backdropClass: "cerebra-modal-backdrop",
         }).result;
     }
 
@@ -116,13 +116,13 @@ export class ProgramComponent implements OnInit, AfterViewInit {
 
     dropdownCallbackMethods = [
         {
-            icon: "../../assets/program/edit.svg",
+            icon: "../../assets/edit.svg",
             label: "Rename",
             clickCallback: this.editProgram.bind(this),
             disabled: false,
         },
         {
-            icon: "../../assets/program/delete.svg",
+            icon: "../../assets/delete.svg",
             label: "Delete",
             clickCallback: this.deleteProgram.bind(this),
             disabled: false,

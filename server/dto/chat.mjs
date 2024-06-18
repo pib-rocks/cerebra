@@ -6,8 +6,8 @@ export class Chat {
         this.personalityId = personalityId;
     }
 
-    static getChat(camera) {
-        return new Chat(camera.chatId, camera.topic, camera.personalityId);
+    static getChat(chat) {
+        return new Chat(chat.chatId, chat.topic, chat.personalityId);
     }
 
     static newChat(topic, personalityId) {

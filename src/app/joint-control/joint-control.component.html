@@ -1,20 +1,32 @@
-<ul class="nav nav-tabs">
-    <li
-        *ngFor="let joint of joints"
-        class="nav-item"
-        routerLinkActive="navbar-btn-active">
-        <a
-            [id]="joint.jointPathName + '-nav'"
-            class="nav-link sidebar-btn"
-            [routerLink]="joint.jointPathName">
-            {{joint.label}}
-        </a>
-    </li>
-</ul>
-<div class="mt-3">
-    <div class="background-image">
-        <div class="pink-corner-frame p-3">
-            <router-outlet></router-outlet>
+<div class="pt-4 pl-2 pr-2">
+    <ul class="nav nav-tabs">
+        <li
+            *ngFor="let joint of joints"
+            class="nav-item"
+            routerLinkActive="navbar-btn-active">
+            <a
+                [id]="joint.jointPathName + '-nav'"
+                class="nav-link sidebar-btn"
+                [routerLink]="joint.jointPathName">
+                {{joint.label}}
+            </a>
+        </li>
+        <li
+            class="nav-item"
+            routerLinkActive="navbar-btn-active">
+            <a
+                id="poses-nav"
+                class="nav-link sidebar-btn"
+                routerLink="pose">
+                Poses
+            </a>
+        </li>
+    </ul>
+    <div class="mt-3">
+        <div class="background-image">
+            <div class="pink-corner-frame p-3">
+                <router-outlet></router-outlet>
+            </div>
         </div>
     </div>
 </div>

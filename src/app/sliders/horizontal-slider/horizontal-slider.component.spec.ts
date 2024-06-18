@@ -30,6 +30,7 @@ describe("HorizontalSliderComponent", () => {
         component.name = "test";
         component.thumbRadius = 12;
         component.numberOfThumbs = 2;
+        component.defaultValues = [0, 0];
         component.sliderWidth = 1000;
         component.sliderEvent = new EventEmitter<number[]>();
         component.ngOnInit();

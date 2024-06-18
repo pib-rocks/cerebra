@@ -24,7 +24,7 @@ export class JointControlCoreComponent implements OnInit {
             this.displayMotors = new Array();
             this.selectedMotor = undefined;
             this.displayMotors = this.joint.motors.filter(
-                (motor) => motor.displaySettings,
+                (motor) => !motor.isMultiMotor,
             );
         });
     }

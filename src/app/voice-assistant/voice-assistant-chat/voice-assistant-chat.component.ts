@@ -98,8 +98,8 @@ export class VoiceAssistantChatComponent implements OnInit {
         this.ngbModalRef = this.modalService.open(this.modalContent, {
             ariaLabelledBy: "modal-basic-title",
             size: "sm",
-            windowClass: "myCustomModalClass",
-            backdropClass: "myCustomBackdropClass",
+            windowClass: "cerebra-modal",
+            backdropClass: "cerebra-modal-backdrop",
         });
         return this.ngbModalRef;
     };
@@ -205,19 +205,19 @@ export class VoiceAssistantChatComponent implements OnInit {
 
     dropdownCallbackMethods = [
         {
-            icon: "../../assets/voice-assistant-svgs/chat/edit.svg",
+            icon: "../../assets/edit.svg",
             label: "Rename",
             clickCallback: this.openEditModal.bind(this),
             disabled: false,
         },
         {
-            icon: "../../assets/voice-assistant-svgs/chat/export.svg",
+            icon: "../../assets/export.svg",
             label: "Export chat",
             clickCallback: this.export.bind(this),
             disabled: true,
         },
         {
-            icon: "../../assets/voice-assistant-svgs/chat/delete.svg",
+            icon: "../../assets/delete.svg",
             label: "Delete chat",
             clickCallback: this.deleteChat.bind(this),
             disabled: false,
