@@ -5,6 +5,7 @@
 
 .stderr {
     color: #e10072;
+    font-weight: bold;
     font-family: Consolas, "Courier New", monospace;
 }
 

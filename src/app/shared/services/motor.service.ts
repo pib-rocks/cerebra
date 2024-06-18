@@ -7,7 +7,7 @@ import {
     fromMotorDTO,
     fromMotorSettingsMessage,
 } from "../types/motor-settings.class";
-import {fromMotorPosition} from "../ros-types/msg/joint-trajectory-message";
+import {fromMotorPositions} from "../ros-types/msg/joint-trajectory-message";
 import {DiagnosticStatus} from "../ros-types/msg/diagnostic-status.message";
 import {
     MotorSettingsMessage,
@@ -16,7 +16,7 @@ import {
 import {UrlConstants} from "./url.constants";
 import {MotorDTO} from "../types/motor-dto";
 import {MotorSettingsError} from "../error/motor-settings-error";
-import {fromJointTrajectory} from "../types/motor-position";
+import {MotorPosition, fromJointTrajectory} from "../types/motor-position";
 
 @Injectable({
     providedIn: "root",
@@ -174,7 +174,7 @@ export class MotorService {
 
     applySettings(motorName: string, settings: MotorSettings): void {
         this.rosService
-            .sendMotorSettingsMessage(fromMotorSettings(motorName, settings))
+            .applyMotorSettings(fromMotorSettings(motorName, settings))
             .subscribe({
                 error: (error) => {
                     if (
@@ -191,8 +191,12 @@ export class MotorService {
             });
     }
 
-    setPosition(motorName: string, position: number): void {
-        const message = fromMotorPosition(motorName, position);
-        this.rosService.sendJointTrajectoryMessage(message);
+    setPosition(motorName: string, position: number): Observable<void> {
+        return this.setPositions([{motorName, position}]);
+    }
+
+    setPositions(motorPositions: MotorPosition[]): Observable<void> {
+        const message = fromMotorPositions(motorPositions);
+        return this.rosService.applyJointTrajectory(message);
     }
 }

@@ -7,6 +7,7 @@ import {BehaviorSubject, Observable, Subject} from "rxjs";
 import {MotorDTO} from "../types/motor-dto";
 import {MotorSettings} from "../types/motor-settings.class";
 import {MotorSettingsMessage} from "../ros-types/msg/motor-settings-message";
+import {MotorPosition} from "../types/motor-position";
 
 describe("MotorService", () => {
     let service: MotorService;
@@ -32,7 +33,7 @@ describe("MotorService", () => {
     beforeEach(() => {
         const rosServiceSpy: jasmine.SpyObj<RosService> = jasmine.createSpyObj(
             "RosService",
-            ["sendMotorSettingsMessage", "sendJointTrajectoryMessage"],
+            ["applyMotorSettings", "applyJointTrajectory"],
             {
                 motorSettingsReceiver$: new Subject(),
                 jointTrajectoryReceiver$: new Subject(),
@@ -356,23 +357,47 @@ describe("MotorService", () => {
             visible: false,
             invert: false,
         };
-        rosService.sendMotorSettingsMessage.and.returnValue(new Observable());
+        rosService.applyMotorSettings.and.returnValue(new Observable());
         service.applySettings(motorName, settings);
-        expect(rosService.sendMotorSettingsMessage).toHaveBeenCalledOnceWith(
+        expect(rosService.applyMotorSettings).toHaveBeenCalledOnceWith(
             setttingsMessage,
         );
     });
 
-    it("should send a a joint-trajectory-message, when setting the position", () => {
+    it("should send a joint-trajectory-message, when setting the position", () => {
         const motorName = "test-motor";
         const position = 37;
         service.setPosition(motorName, position);
-        expect(rosService.sendJointTrajectoryMessage).toHaveBeenCalledOnceWith(
+        expect(rosService.applyJointTrajectory).toHaveBeenCalledOnceWith(
             jasmine.objectContaining({
                 joint_names: jasmine.arrayWithExactContents([motorName]),
                 points: jasmine.arrayWithExactContents([
                     jasmine.objectContaining({
                         positions: jasmine.arrayContaining([37]),
+                    }),
+                ]),
+            }),
+        );
+    });
+
+    it("should a joint-trajectory-messages, when setting the positions", () => {
+        const motorPositions: MotorPosition[] = [
+            {motorName: "test-motor-1", position: 1000},
+            {motorName: "test-motor-2", position: 2000},
+        ];
+        service.setPositions(motorPositions);
+        expect(rosService.applyJointTrajectory).toHaveBeenCalledOnceWith(
+            jasmine.objectContaining({
+                joint_names: jasmine.arrayWithExactContents([
+                    motorPositions[0].motorName,
+                    motorPositions[1].motorName,
+                ]),
+                points: jasmine.arrayWithExactContents([
+                    jasmine.objectContaining({
+                        positions: jasmine.arrayWithExactContents([1000]),
+                    }),
+                    jasmine.objectContaining({
+                        positions: jasmine.arrayWithExactContents([2000]),
                     }),
                 ]),
             }),
