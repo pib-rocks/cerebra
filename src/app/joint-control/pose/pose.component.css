@@ -63,34 +63,8 @@ button:disabled img {
     border-bottom-right-radius: 10px;
 }
 
-button:focus {
-    z-index: 1;
-}
-
-.selected button:focus:not(:focus-visible) {
-    outline: none;
-}
-
-.unselected button:focus:not(:focus-visible) {
-    outline: none;
-}
-
-.selected button:focus {
-    outline: 3px #ff67c6 solid;
-}
-
-.unselected button:focus {
-    outline: 3px #627f96 solid;
-}
-
-.pose-label:active:focus {
-    outline: none;
-}
-
 .pose-label {
-    text-align: left;
     user-select: none;
-    border: none;
     overflow: hidden;
     white-space: nowrap;
 }
