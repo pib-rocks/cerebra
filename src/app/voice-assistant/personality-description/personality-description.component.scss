@@ -15,7 +15,7 @@ textarea {
 }
 
 svg:hover path {
-    fill: var(--cerebra-pink);
+    fill: $pink-color;
     transition: fill 0.15s ease;
 }
 

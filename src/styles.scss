@@ -33,19 +33,12 @@ $blue-dark-5: #041939 !default;
     font-family: Titillium, sans-serif;
 }
 
-:root {
-    --cerebra-pink: $pink-color;
-    --cerebra-button-color: $blue-color;
-    --cerebra-text-color-default: $white-color;
-}
-
 .btn {
     border: 1px solid $white-color;
     color: $white-color;
 }
 
 .btn:hover {
-    border: 1px solid $white-color;
     background-color: $blue-color;
     color: $white-color;
 }
@@ -53,13 +46,13 @@ $blue-dark-5: #041939 !default;
 .btn-regular {
     border: none !important;
     color: $white-color;
-    background-color: var(--cerebra-button-color);
+    background-color: $blue-color;
 }
 
 .btn-regular:hover {
     border: none !important;
     color: $white-color;
-    background-color: var(--cerebra-pink);
+    background-color: $pink-color;
 }
 
 input::placeholder {
@@ -102,7 +95,7 @@ span {
     color: $white-color;
 }
 
-.myCustomModalClass {
+.cerebra-modal {
     z-index: 1060 !important;
     color: $white-color;
     font-weight: bold;
@@ -110,12 +103,12 @@ span {
     font-size: 1rem;
 }
 
-.myCustomModalClass .row {
+.cerebra-modal .row {
     margin-left: 0;
     margin-right: 0;
 }
 
-.myCustomModalClass .btn {
+.cerebra-modal .btn {
     border: none;
     padding-top: 0;
     padding-bottom: 0;
@@ -127,22 +120,16 @@ span {
     padding: 0;
 }
 
-button:disabled {
-    background-color: var(--cerebra-button-color-disabled) !important;
-    color: $blue-color !important;
-    border-color: $blue-color !important;
-}
-
-.myCustomModalClass .modal-header {
+.cerebra-modal .modal-header {
     z-index: 1060 !important;
     border-bottom: 1px solid $blue-color;
 }
 
-.myCustomModalClass .modal-footer {
+.cerebra-modal .modal-footer {
     border-top: 1px solid $blue-color;
 }
 
-.myCustomModalClass .modal-content {
+.cerebra-modal .modal-content {
     background:
         url("assets/ep-br.png") bottom right no-repeat,
         url("assets/ep-tr.png") top right no-repeat,
@@ -159,31 +146,10 @@ button:disabled {
     padding: 0.75rem 1.5rem;
 }
 
-.myCustomBackdropClass {
+.cerebra-modal-backdrop {
     z-index: 1040 !important;
     background-color: transparent !important;
 }
-
-/*.pink-corner-frame {*/
-/*    background:*/
-/*        url("assets/ep-br.png") bottom right no-repeat,*/
-/*        url("assets/ep-tr.png") top right no-repeat,*/
-/*        url("assets/ep-tl.png") top left no-repeat,*/
-/*        url("assets/ep-bl.png") bottom left no-repeat,*/
-/*        url("assets/bg-gesamt.png") center / cover scroll;*/
-/*}*/
-
-/*!* don't repeat bg-gesamt if parent container is exceeding its height *!*/
-/*@container (min-height: 800px) {*/
-/*    .pink-corner-frame {*/
-/*        background:*/
-/*            url("assets/ep-br.png") bottom right no-repeat,*/
-/*            url("assets/ep-tr.png") top right no-repeat,*/
-/*            url("assets/ep-tl.png") top left no-repeat,*/
-/*            url("assets/ep-bl.png") bottom left no-repeat,*/
-/*            url("assets/bg-gesamt.png") center / cover scroll;*/
-/*    }*/
-/*}*/
 
 input {
     color: $white-color;
@@ -209,10 +175,6 @@ input:focus {
     scrollbar-width: thin;
     width: 7px;
     height: 7px;
-}
-
-::-webkit-scrollbar:hover {
-    width: 7px;
 }
 
 ::-webkit-scrollbar-thumb {

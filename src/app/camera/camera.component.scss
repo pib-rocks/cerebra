@@ -46,31 +46,15 @@ video {
     transition: fill 0.15s ease;
 }
 
-.video-nav-element:hover svg path {
-    fill: $pink-color;
-    transition: fill 0.15s ease;
-}
-
 .video-nav-element:hover,
-.video-nav-element:hover span {
-    color: $pink-color;
-    background-color: transparent;
-}
-
-.show .video-nav-element svg path {
-    fill: $pink-color;
-}
-
-.show .video-nav-element {
-    color: $pink-color;
-    background-color: transparent;
-}
-
-.showPopover svg path {
-    fill: $pink-color !important;
-}
-
+.video-nav-element:hover span,
+.video-nav-element:hover svg path,
+.show .video-nav-element svg path,
+.show .video-nav-element,
+.showPopover svg path,
 .showPopover span {
     color: $pink-color !important;
     background-color: transparent;
+    fill: $pink-color !important;
+    transition: fill 0.15s ease;
 }

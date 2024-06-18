@@ -7,7 +7,9 @@ a {
     font-size: 16px;
 }
 
-.nav-link {
+.nav-link,
+.nav-tabs .nav-item:hover .nav-link,
+.nav-tabs .navbar-btn-active .nav-link {
     padding-top: 14px;
 }
 
@@ -62,20 +64,7 @@ a {
     padding-top: 14px;
 }
 
-.blue-corner-frame {
-    background:
-        url("../../assets/eb-br.png") bottom right no-repeat,
-        url("../../assets/eb-tr.png") top right no-repeat,
-        url("../../assets/eb-tl.png") top left no-repeat,
-        url("../../assets/eb-bl.png") bottom left no-repeat;
-    background-color: $black-transparent-2;
-}
-
 .background-image {
     background: url("../../assets/bg-gesamt.png") left no-repeat;
     background-size: cover;
-}
-
-.background-image {
-    max-width: 1000px;
 }

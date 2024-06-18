@@ -3,7 +3,7 @@ import {TestBed} from "@angular/core/testing";
 import {HttpClientTestingModule} from "@angular/common/http/testing";
 import {ApiService} from "./api.service";
 import {CameraService} from "./camera.service";
-import {CameraSetting} from "../types/camera-settings";
+import {CameraSettings} from "../types/camera-settings";
 import {BehaviorSubject} from "rxjs";
 import {HttpClient} from "@angular/common/http";
 import {RosService} from "./ros-service/ros.service";
@@ -13,8 +13,8 @@ describe("CameraService", () => {
     let apiService: ApiService;
     let rosService: RosService;
 
-    const updateCameraSettings = new CameraSetting("HD", 0.5, 50, 1280, 720);
-    const cameraSettings = new CameraSetting("SD", 0.1, 80, 640, 480);
+    const updateCameraSettings = new CameraSettings("HD", 0.5, 50, 1280, 720);
+    const cameraSettings = new CameraSettings("SD", 0.1, 80, 640, 480);
     const behaviorSubjectOfCameraSettings = new BehaviorSubject<any>(
         cameraSettings,
     );

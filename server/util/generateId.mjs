@@ -1,6 +1,4 @@
 export class GenertateId {
-    constructor() {}
-
     static genertateId() {
         return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
             /[xy]/g,

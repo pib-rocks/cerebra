@@ -4,7 +4,7 @@ import {ProgramSplitscreenComponent} from "./program-splitscreen.component";
 import {AngularSplitModule} from "angular-split";
 import {ActivatedRoute, Params} from "@angular/router";
 import {ProgramService} from "src/app/shared/services/program.service";
-import {BehaviorSubject, Observable, Subject} from "rxjs";
+import {BehaviorSubject, Subject} from "rxjs";
 import {ProgramWorkspaceComponent} from "./program-workspace/program-workspace.component";
 import {ExecutionState, ProgramState} from "src/app/shared/types/program-state";
 import {ProgramOutputLine} from "src/app/shared/types/program-output-line";
@@ -74,8 +74,7 @@ describe("ProgramSplitscreenComponent", () => {
         expect(
             programService.updateCodeByProgramNumber,
         ).toHaveBeenCalledOnceWith("program-number", {
-            visual: "visual-new",
-            python: "python",
+            codeVisual: "visual-new",
         });
         expect(component.codeVisualOld).toEqual("visual-new");
     });
@@ -94,8 +93,7 @@ describe("ProgramSplitscreenComponent", () => {
         expect(
             programService.updateCodeByProgramNumber,
         ).toHaveBeenCalledOnceWith("test-number", {
-            visual: "visual-new",
-            python: "python",
+            codeVisual: "visual-new",
         });
         expect(component.codeVisualOld).toEqual("visual-new");
     });
@@ -122,7 +120,7 @@ describe("ProgramSplitscreenComponent", () => {
 
     it("should get visual code from the route", () => {
         const codeVisual = '{"some": "json"}';
-        data.next({code: {visual: codeVisual}});
+        data.next({code: {codeVisual}});
         expect(component.codeVisualNew).toEqual(codeVisual);
         expect(component.codeVisualOld).toEqual(codeVisual);
     });

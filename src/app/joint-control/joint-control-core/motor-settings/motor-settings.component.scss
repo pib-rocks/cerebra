@@ -18,6 +18,7 @@
 }
 
 input[type="checkbox"] {
+    background: transparent;
     appearance: none;
     color: $white-color;
     width: 1.15em;
@@ -35,8 +36,8 @@ input[type="checkbox"] {
 
 input[type="checkbox"]::before {
     content: "";
-    width: 0.63em;
-    height: 0.63em;
+    width: 1vw;
+    height: 1vw;
     transform: scale(0);
     background-color: $pink-color;
 }
@@ -55,6 +56,15 @@ input[type="checkbox"]:checked::before {
     border: 0;
     width: auto;
     height: 30%;
+}
+
+.min-size-settings {
+    min-width: 15%;
+}
+
+.min-size-active {
+    min-height: 1.75vw;
+    min-width: 1.75vw;
 }
 
 .settings-icon:hover {

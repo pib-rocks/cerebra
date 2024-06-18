@@ -11,7 +11,8 @@
     border: 0;
 }
 
-.btn-active {
+.btn-active,
+.nav-pills .nav-link.sidebar-btn:hover {
     margin: 10px 10px 10px 8px;
     color: $black-color;
     border-bottom: $pink-color solid 4px;
@@ -19,7 +20,9 @@
 }
 
 .btn-active svg path,
-.btn-active .a {
+.btn-active .menu-is-opening .a,
+.nav-sidebar > .nav-item.menu-open > .nav-link,
+[class*="sidebar-light-"] .nav-sidebar > .nav-link > svg > path {
     fill: $pink-color;
     stroke: $pink-color;
 }
@@ -33,12 +36,8 @@
     background-color: $blue-dark-5;
 }
 
-.menu-is-opening svg path {
-    fill: $pink-color;
-    stroke: $pink-color;
-}
-
-.menu-open {
+.menu-open,
+.nav-link.sidebar-btn {
     color: $blue-color;
 }
 

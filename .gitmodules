@@ -1,0 +1,3 @@
+[submodule "pib-blockly"]
+	path = src/app/program/pib-blockly
+	url = https://github.com/pib-rocks/pib-blockly.git

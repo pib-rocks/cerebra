@@ -5,14 +5,17 @@ a {
     text-align: center;
     text-transform: uppercase;
     font-size: 16px;
+    text-overflow: ellipsis;
+    overflow: hidden;
 }
 
 .nav-link {
+    color: $blue-color;
     padding-top: 14px;
 }
 
 .nav-tabs {
-    border-bottom: 1px solid $white-color;
+    border-bottom: 1px solid $blue-color;
     margin-top: 20px;
 }
 
@@ -24,7 +27,7 @@ a {
 
 .nav-tabs .nav-item a {
     border: none;
-    color: $white-color;
+    color: $blue-color;
 }
 
 .nav-tabs .nav-item a:hover,
@@ -40,8 +43,8 @@ a {
 .nav-tabs .nav-item:hover,
 .nav-tabs .navbar-btn-active {
     background-image: linear-gradient(to top, $black-color, $blue-dark-2);
-    border-left: 1px solid $white-color;
-    border-right: 1px solid $white-color;
+    border-left: 1px solid $blue-color;
+    border-right: 1px solid $blue-color;
     box-sizing: border-box;
     position: relative;
 }

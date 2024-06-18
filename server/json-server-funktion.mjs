@@ -8,6 +8,10 @@ import Bricklet from "./dto/bricklet.mjs";
 import Motor from "./dto/motor.mjs";
 import MotorSettings from "./dto/motorsettings.mjs";
 import Program from "./dto/program.mjs";
+import AssistantModel from "./dto/assistantmodel.mjs";
+import Pose from "./dto/pose.mjs";
+import MotorPosition from "./dto/motor-position.mjs";
+
 const server = jsonServer.create();
 const router = jsonServer.router(mockData);
 const middlewares = jsonServer.defaults();
@@ -61,7 +65,7 @@ server.put("/voice-assistant/personality/:personalityId", (req, res, next) => {
                 .send(Personality.getPersonality(personality));
         }
     });
-    if (updated == false) {
+    if (!updated) {
         return res.status(404).send();
     }
 });
@@ -119,7 +123,7 @@ server.put("/voice-assistant/chat/:chatId", (req, res, next) => {
             return res.status(200).send(Chat.getChat(chat));
         }
     });
-    if (updated == false) {
+    if (!updated) {
         return res.status(404).send();
     }
 });
@@ -332,7 +336,7 @@ server.put("/motor/:motorName", (req, res, next) => {
             return res.status(200).send(Motor.getMotor(motor, bricklets));
         }
     });
-    if (updated == false) {
+    if (!updated) {
         return res.status(404).send();
     }
 });
@@ -369,9 +373,60 @@ server.put("/motor/:motorName/settings", (req, res, next) => {
             return res.status(200).send(MotorSettings.getMotorSettings(motor));
         }
     });
-    if (updated == false) {
+    if (!updated) {
         return res.status(404).send();
     }
+});
+
+//getAllPoses
+server.get("/pose", (req, res, next) => {
+    const poses = mockData.poses.map((pose) => Pose.getPose(pose));
+    return res.status(200).send({poses});
+});
+
+//createPose
+server.post("/pose", (req, res, next) => {
+    const pose = Pose.newPose(req.body.name, req.body.motorPositions);
+    mockData.poses.push(pose);
+    return res.status(201).send(pose);
+});
+
+//renamePose
+server.patch("/pose/:poseId", (req, res, next) => {
+    const pose = mockData.poses.find(
+        (pose) => pose.poseId == req.params.poseId,
+    );
+    if (!pose) {
+        return res.status(404).send();
+    }
+    pose.name = req.body.name;
+    return res.status(200).send(Pose.newPose(pose));
+});
+
+//deletePose
+server.delete("/pose/:poseId", (req, res, next) => {
+    const index = mockData.poses.findIndex(
+        (pose) => pose.poseId === req.params.poseId,
+    );
+    if (index === -1) {
+        return res.status(404).send();
+    }
+    mockData.poses.splice(index, 1);
+    return res.status(204).send();
+});
+
+//getMotorPositionsByPose
+server.get("/pose/:poseId/motor-positions", (req, res, next) => {
+    const pose = mockData.poses.find(
+        (pose) => pose.poseId == req.params.poseId,
+    );
+    if (!pose) {
+        return res.status(404).send();
+    }
+    const motorPositions = pose.motorPositions.map((mp) =>
+        MotorPosition.getMotorPosition(mp),
+    );
+    return res.status(200).send({motorPositions});
 });
 
 //getAllPrograms
@@ -411,7 +466,7 @@ server.put("/program/:programNumber", (req, res, next) => {
             return res.status(200).send(Program.getProgram(program));
         }
     });
-    if (updated == false) {
+    if (!updated) {
         return res.status(404).send();
     }
 });
@@ -450,9 +505,29 @@ server.put("/program/:programNumber/code", (req, res, next) => {
             return res.status(200).send(Program.getProgram(program));
         }
     });
-    if (updated == false) {
+    if (!updated) {
         return res.status(404).send();
     }
+});
+
+//getAssistantModel
+server.get("/assistant-model", (req, res, next) => {
+    let response = [];
+    mockData.assistantModel.forEach((model) => {
+        response.push(AssistantModel.getAssistantModel(model));
+    });
+    return res.status(200).send({voiceAssistantModels: response});
+});
+
+//getAssistantModelById
+server.get("/assistant-model/:id", (req, res, next) => {
+    let response = mockData.assistantModel.find(
+        (assistantModel) => assistantModel.id == req.params.id,
+    );
+    if (response == undefined) {
+        return res.status(404).send();
+    }
+    return res.status(200).send(response);
 });
 
 server.use(router);
