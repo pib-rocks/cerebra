@@ -72,6 +72,9 @@ export class VoiceAssistantComponent implements OnInit {
                 validators: [Validators.required],
             }),
         });
+        this.personalityForm.valueChanges.subscribe(() => {
+            this.updateButtonState();
+        });
         this.voiceAssistantService.uuidSubject.subscribe((uuid: string) => {
             this.openEditModal(uuid);
         });
@@ -180,4 +183,18 @@ export class VoiceAssistantComponent implements OnInit {
         }
         this.uuid = undefined;
     };
+
+    private updateButtonState() {
+        if (this.personalityForm.valid) {
+            this.optionCallbackMethods[0].disabled = false;
+        } else {
+            this.optionCallbackMethods[0].disabled = true;
+        }
+    }
+
+    optionCallbackMethods = [
+        {
+            disabled: false,
+        },
+    ];
 }

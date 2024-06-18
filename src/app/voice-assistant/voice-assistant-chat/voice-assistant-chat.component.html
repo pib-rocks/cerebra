@@ -108,10 +108,11 @@
         <div class="col-3 align-self-center">
             <button
                 type="button"
+                [disabled]="optionCallbackMethods[0].disabled"
                 class="btn btn-regular"
                 id="modal-save-button"
-                (keydown.enter)="this.saveChat()"
-                (click)="this.saveChat()">
+                (keydown.enter)="saveChat()"
+                (click)="saveChat()">
                 Save
             </button>
         </div>
@@ -120,7 +121,7 @@
                 type="button"
                 class="btn btn-regular"
                 id="modal-cancel-button"
-                (click)="this.closeModal()">
+                (click)="closeModal()">
                 Cancel
             </button>
         </div>

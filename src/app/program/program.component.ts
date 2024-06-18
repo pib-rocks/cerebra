@@ -43,6 +43,9 @@ export class ProgramComponent implements OnInit, AfterViewInit {
             Validators.minLength(2),
             Validators.maxLength(255),
         ]);
+        this.nameFormControl.valueChanges.subscribe(() => {
+            this.updateButtonState();
+        });
     }
 
     ngAfterViewInit() {
@@ -103,6 +106,14 @@ export class ProgramComponent implements OnInit, AfterViewInit {
         this.programService.deleteProgramByProgramNumber(uuid).subscribe(() => {
             this.selected.next(this.programService.programs[0]?.getUUID());
         });
+    }
+
+    private updateButtonState() {
+        if (this.nameFormControl.valid) {
+            this.optionCallbackMethods[0].disabled = false;
+        } else {
+            this.optionCallbackMethods[0].disabled = true;
+        }
     }
 
     optionCallbackMethods = [

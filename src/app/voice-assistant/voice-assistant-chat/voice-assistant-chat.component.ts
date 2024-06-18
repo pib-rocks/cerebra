@@ -11,6 +11,7 @@ import {Chat, ChatDto} from "src/app/shared/types/chat.class";
 import {VoiceAssistant} from "src/app/shared/types/voice-assistant";
 import {VoiceAssistantState} from "../../shared/types/voice-assistant-state";
 import {Location} from "@angular/common";
+import {ValueInput} from "blockly/core/inputs";
 
 @Component({
     selector: "app-voice-assistant-chat",
@@ -91,6 +92,9 @@ export class VoiceAssistantChatComponent implements OnInit {
                 Validators.minLength(2),
                 Validators.maxLength(255),
             ]);
+            this.topicFormControl.valueChanges.subscribe(() => {
+                this.updateButtonState();
+            });
         });
     }
 
@@ -191,6 +195,14 @@ export class VoiceAssistantChatComponent implements OnInit {
         );
         if (deleteChat) {
             deleteChat.disabled = this.turnedOn;
+        }
+    }
+
+    private updateButtonState() {
+        if (this.topicFormControl.valid) {
+            this.optionCallbackMethods[0].disabled = false;
+        } else {
+            this.optionCallbackMethods[0].disabled = true;
         }
     }
 
