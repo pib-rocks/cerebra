@@ -27,7 +27,7 @@ export class VoiceAssistantChatComponent implements OnInit {
     personality?: VoiceAssistant;
     personalityId?: string | null;
     uuid: string | undefined;
-
+    isButtonActive: boolean = false;
     selected: Subject<string> = new Subject();
     turnedOn: boolean = false;
     activeChatId: string = "";
@@ -92,9 +92,6 @@ export class VoiceAssistantChatComponent implements OnInit {
                 Validators.minLength(2),
                 Validators.maxLength(255),
             ]);
-            this.topicFormControl.valueChanges.subscribe(() => {
-                this.updateButtonState();
-            });
         });
     }
 
@@ -195,14 +192,6 @@ export class VoiceAssistantChatComponent implements OnInit {
         );
         if (deleteChat) {
             deleteChat.disabled = this.turnedOn;
-        }
-    }
-
-    private updateButtonState() {
-        if (this.topicFormControl.valid) {
-            this.optionCallbackMethods[0].disabled = false;
-        } else {
-            this.optionCallbackMethods[0].disabled = true;
         }
     }
 

@@ -21,7 +21,7 @@ export class VoiceAssistantComponent implements OnInit {
     imgSrc: string = "../../assets/toggle-switch-left.png";
     subject!: Observable<SidebarElement[]>;
     models!: AssistantModel[];
-
+    isButtonActive: boolean = false;
     button: {enabled: boolean; func: () => void} = {
         enabled: true,
         func: () => {
@@ -72,9 +72,7 @@ export class VoiceAssistantComponent implements OnInit {
                 validators: [Validators.required],
             }),
         });
-        this.personalityForm.valueChanges.subscribe(() => {
-            this.updateButtonState();
-        });
+
         this.voiceAssistantService.uuidSubject.subscribe((uuid: string) => {
             this.openEditModal(uuid);
         });
@@ -183,18 +181,4 @@ export class VoiceAssistantComponent implements OnInit {
         }
         this.uuid = undefined;
     };
-
-    private updateButtonState() {
-        if (this.personalityForm.valid) {
-            this.optionCallbackMethods[0].disabled = false;
-        } else {
-            this.optionCallbackMethods[0].disabled = true;
-        }
-    }
-
-    optionCallbackMethods = [
-        {
-            disabled: false,
-        },
-    ];
 }
