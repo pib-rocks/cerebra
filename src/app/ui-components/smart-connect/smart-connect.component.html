@@ -3,6 +3,7 @@
     <button
         class="smart-connect-btn"
         type="button"
+        [disabled]="isLoadingModal"
         (click)="onOpenModal(modalContent)">
         <img
             ngSrc="assets/smart-connect.svg"

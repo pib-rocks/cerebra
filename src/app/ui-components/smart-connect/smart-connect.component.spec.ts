@@ -95,6 +95,7 @@ describe("SmartConnectComponent", () => {
         expect(mockRosService.checkTokenExists).toHaveBeenCalled();
         expect(component.isTokenStored).toBeTrue();
         expect(component.isTokenActive).toBeTrue();
+        expect(component.isLoadingModal).toBeFalse();
     }));
 
     it("should handle encrypt token form submission", fakeAsync(() => {

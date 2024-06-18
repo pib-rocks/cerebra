@@ -14,6 +14,9 @@ import {RosService} from "../../shared/services/ros-service/ros.service";
     styleUrls: ["./smart-connect.component.css"],
 })
 export class SmartConnectComponent {
+    // prevent user from opening modal multiple times in case of delay
+    isLoadingModal: boolean = false;
+    // decide password input field types
     passwordTextType: boolean = true;
     isTokenStored: boolean = false;
     isTokenActive: boolean = false;
@@ -57,6 +60,7 @@ export class SmartConnectComponent {
     }
 
     onOpenModal(content: TemplateRef<any>) {
+        this.isLoadingModal = true;
         this.rosService.checkTokenExists().subscribe((response) => {
             this.isTokenStored = response.token_exists;
             this.isTokenActive = response.token_active;
@@ -73,6 +77,7 @@ export class SmartConnectComponent {
                     this.encryptTokenForm.reset();
                     this.decryptTokenForm.reset();
                 });
+            this.isLoadingModal = false;
         });
     }
 
