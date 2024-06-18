@@ -5,7 +5,6 @@
         type="button"
         (click)="onOpenModal(modalContent)">
         <img
-            class="smart-icon"
             ngSrc="assets/smart-connect.svg"
             alt="smart-connect button icon"
             height="16"
@@ -63,17 +62,19 @@
                     [ngClass]="{disabled: isTokenActive}"
                     >Password</label
                 >
-                <input
-                    id="password"
-                    class="input form-control"
-                    type="password"
-                    [type]="passwordTextType ? 'password' : 'text'"
-                    formControlName="confirmPassword" />
-                <span class="input-group-text input"
-                    ><i
-                        [ngClass]="{'bi bi-eye': passwordTextType, 'bi bi-eye-slash': !passwordTextType}"
-                        (click)="tooglePasswordTextType()"></i
-                ></span>
+                <div class="input-group">
+                    <input
+                        id="password"
+                        class="input form-control"
+                        type="password"
+                        [type]="passwordTextType ? 'password' : 'text'"
+                        formControlName="confirmPassword" />
+                    <span class="input-group-text input"
+                        ><i
+                            [ngClass]="{'bi bi-eye': passwordTextType, 'bi bi-eye-slash': !passwordTextType}"
+                            (click)="tooglePasswordTextType()"></i
+                    ></span>
+                </div>
                 <div class="mt-1">
                     <button
                         type="button"
@@ -108,9 +109,12 @@
 <ng-template #encryptToken>
     <div class="mt-4 mb-4 mr-5 ml-5">
         <p>
-            To connect to the smart API, enter the token you have received and
-            encrypt it with a password. Please note that if you forget the
-            password, an new token must be requested and encrypted.
+            <b
+                >To connect to the smart API, enter the token you have received
+                and encrypt it with a password.</b
+            >
+            Please note that if you forget the password, an new token must be
+            requested and encrypted.
         </p>
 
         <form

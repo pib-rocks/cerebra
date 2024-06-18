@@ -1,7 +1,6 @@
-.smart-icon {
-    color: white;
+p {
+    font-weight: normal;
 }
-
 .smart-connect-btn {
     border-radius: 10px;
     color: white;
@@ -50,8 +49,6 @@
     color: #007bff;
 
     -webkit-appearance: none;
-    /*color: #0056b3;*/
-    /*cursor: pointer;*/
 }
 
 .button-link:hover {
