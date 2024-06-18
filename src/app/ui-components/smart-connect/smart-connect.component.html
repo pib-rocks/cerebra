@@ -69,7 +69,7 @@
                         class="input form-control"
                         type="password"
                         [type]="passwordTextType ? 'password' : 'text'"
-                        formControlName="confirmPassword" />
+                        formControlName="password" />
                     <span class="input-group-text input"
                         ><i
                             [ngClass]="{'bi bi-eye': passwordTextType, 'bi bi-eye-slash': !passwordTextType}"
@@ -132,10 +132,10 @@
                 </div>
 
                 <div class="form-group w-100">
-                    <label for="decrypt-password">Password</label>
+                    <label for="encrypt-password">Password</label>
                     <div class="input-group">
                         <input
-                            id="decrypt-password"
+                            id="encrypt-password"
                             class="input form-control"
                             type="password"
                             [type]="passwordTextType ? 'password' : 'text'"
