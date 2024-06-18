@@ -1,3 +1,4 @@
+<script src="smart-connect.component.ts"></script>
 <div>
     <button
         class="smart-connect-btn"
@@ -7,6 +8,7 @@
     </button>
 </div>
 
+<!-- Modal Header -->
 <ng-template
     #modalContent
     let-modal
@@ -34,6 +36,7 @@
         </button>
     </div>
 
+    <!-- Decrypt Token Form -->
     <div
         *ngIf="isTokenStored; else encryptToken"
         class="mt-4 mb-4 mr-5 ml-5">
@@ -50,15 +53,21 @@
             (ngSubmit)="onSubmitDecryptToken()">
             <div class="form-group w-100">
                 <label
-                    for="encrypt-password"
+                    for="password"
                     [ngClass]="{disabled: isTokenActive}"
                     >Password</label
                 >
                 <input
-                    id="encrypt-password"
+                    id="password"
                     class="input form-control"
                     type="password"
-                    formControlName="password" />
+                    [type]="passwordTextType ? 'password' : 'text'"
+                    formControlName="confirmPassword" />
+                <span class="input-group-text input"
+                    ><i
+                        [ngClass]="{'bi bi-eye': passwordTextType, 'bi bi-eye-slash': !passwordTextType}"
+                        (click)="tooglePasswordTextType()"></i
+                ></span>
                 <div class="mt-1">
                     <button
                         type="button"
@@ -89,6 +98,7 @@
     </div>
 </ng-template>
 
+<!-- Encrypt Token Form -->
 <ng-template #encryptToken>
     <div class="mt-4 mb-4 mr-5 ml-5">
         <p>

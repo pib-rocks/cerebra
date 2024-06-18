@@ -1,4 +1,4 @@
-import {Component, OnInit, TemplateRef} from "@angular/core";
+import {Component, TemplateRef} from "@angular/core";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {
     AbstractControl,
@@ -44,7 +44,7 @@ export class SmartConnectComponent {
         const password = form.get("password")?.value;
         const confirmPassword = form.get("confirmPassword")?.value;
 
-        if (password !== confirmPassword) {
+        if (password !== confirmPassword && confirmPassword.length > 0) {
             form.get("confirmPassword")?.setErrors({mismatch: true});
         } else {
             form.get("confirmPassword")?.setErrors(null);

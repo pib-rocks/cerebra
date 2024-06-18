@@ -8,7 +8,6 @@ import {
     filter,
     from,
     map,
-    of,
 } from "rxjs";
 import {MotorSettingsMessage} from "../../ros-types/msg/motor-settings-message";
 import {DiagnosticStatus} from "../../ros-types/msg/diagnostic-status.message";
@@ -412,7 +411,7 @@ export class RosService implements IRosService {
         });
     }
 
-    checkTokenExists(): Subject<ExistTokenResponse> {
+    checkTokenExists(): Observable<ExistTokenResponse> {
         const failedResponse: ExistTokenResponse = {
             token_exists: false,
             token_active: false,
@@ -439,7 +438,7 @@ export class RosService implements IRosService {
         this.deleteTokenTopic.publish(message);
     }
 
-    encryptToken(token: string, password: string): Subject<boolean> {
+    encryptToken(token: string, password: string): Observable<boolean> {
         const subject: Subject<boolean> = new ReplaySubject();
         if (this.encryptTokenService === undefined) {
             subject.next(false);
@@ -466,7 +465,7 @@ export class RosService implements IRosService {
         return subject;
     }
 
-    decryptToken(password: string): Subject<boolean> {
+    decryptToken(password: string): Observable<boolean> {
         console.log("PASSWORD: ", password);
         const subject: Subject<boolean> = new ReplaySubject();
         if (this.decryptTokenService === undefined) {
