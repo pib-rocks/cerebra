@@ -84,7 +84,6 @@ export class SmartConnectComponent {
         if (!this.encryptTokenForm.valid) {
             return;
         }
-        console.log("CALL ROS SERVICE");
         // never null, because form needs to be valid
         this.rosService
             .encryptToken(
@@ -92,7 +91,6 @@ export class SmartConnectComponent {
                 this.encryptTokenForm.value.password!,
             )
             .subscribe((isSuccessful) => {
-                console.log("Is SUCCESSFUL: ", isSuccessful);
                 this.onErrorSubmit = !isSuccessful;
                 this.submitFormSuccessful(isSuccessful);
             });
@@ -107,7 +105,6 @@ export class SmartConnectComponent {
         this.rosService
             .decryptToken(this.decryptTokenForm.value.password!)
             .subscribe((isSuccessful) => {
-                console.log("Is SUCCESSFUL: ", isSuccessful);
                 this.onErrorSubmit = !isSuccessful;
                 this.submitFormSuccessful(isSuccessful);
             });

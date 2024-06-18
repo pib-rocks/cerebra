@@ -37,6 +37,7 @@ import {SaveConfirmationComponent} from "./program/save-confirmation/save-confir
 import {PythonCodeComponent} from "./program/program-splitscreen/python-code/python-code.component";
 import {ConsoleComponent} from "./program/program-splitscreen/console/console.component";
 import {SmartConnectComponent} from "./ui-components/smart-connect/smart-connect.component";
+import {NgOptimizedImage} from "@angular/common";
 
 @NgModule({
     declarations: [
@@ -79,6 +80,7 @@ import {SmartConnectComponent} from "./ui-components/smart-connect/smart-connect
         FormsModule,
         AngularSplitModule,
         HighlightModule,
+        NgOptimizedImage,
     ],
     providers: [
         {

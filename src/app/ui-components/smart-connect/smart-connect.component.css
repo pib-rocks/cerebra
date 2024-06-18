@@ -1,9 +1,32 @@
+.smart-icon {
+    color: white;
+}
+
 .smart-connect-btn {
     border-radius: 10px;
     color: white;
-    background: linear-gradient(to right, #009ee2, #951b81, #e5007e);
+    background-image: linear-gradient(
+        50deg,
+        hsl(198deg 100% 44%) 1%,
+        hsl(206deg 74% 52%) 30%,
+        hsl(215deg 65% 56%) 37%,
+        hsl(228deg 54% 58%) 42%,
+        hsl(249deg 43% 57%) 47%,
+        hsl(271deg 38% 50%) 52%,
+        hsl(292deg 46% 41%) 56%,
+        hsl(310deg 69% 35%) 60%,
+        hsl(314deg 74% 36%) 64%,
+        hsl(317deg 78% 38%) 68%,
+        hsl(319deg 83% 39%) 70%,
+        hsl(321deg 88% 41%) 73%,
+        hsl(323deg 94% 42%) 78%,
+        hsl(325deg 98% 43%) 85%,
+        hsl(327deg 100% 45%) 100%
+    );
     border: none;
-    padding: 5px 15px;
+    padding-right: 0.5em;
+    padding-bottom: 0.4em;
+    padding-top: 0.3em;
 }
 
 .modal-title {
