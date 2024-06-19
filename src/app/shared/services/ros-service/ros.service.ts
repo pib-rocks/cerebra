@@ -466,7 +466,6 @@ export class RosService implements IRosService {
     }
 
     decryptToken(password: string): Observable<boolean> {
-        console.log("PASSWORD: ", password);
         const subject: Subject<boolean> = new ReplaySubject();
         if (this.decryptTokenService === undefined) {
             subject.next(false);

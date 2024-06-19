@@ -55,7 +55,7 @@ export class SmartConnectComponent {
         return null;
     }
 
-    tooglePasswordTextType() {
+    togglePasswordTextType() {
         this.passwordTextType = !this.passwordTextType;
     }
 
@@ -105,7 +105,6 @@ export class SmartConnectComponent {
         if (!this.decryptTokenForm.valid) {
             return;
         }
-        console.log("FORM:", this.decryptTokenForm.value);
         // never null, because form needs to be valid
         this.rosService
             .decryptToken(this.decryptTokenForm.value.password!)

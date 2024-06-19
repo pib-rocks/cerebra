@@ -73,7 +73,7 @@ describe("SmartConnectComponent", () => {
 
     it("should toggle password text type", () => {
         const initialType = component.passwordTextType;
-        component.tooglePasswordTextType();
+        component.togglePasswordTextType();
         expect(component.passwordTextType).toBe(!initialType);
     });
 
