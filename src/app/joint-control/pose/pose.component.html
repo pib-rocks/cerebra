@@ -106,6 +106,7 @@
                 type="button"
                 class="btn btn-regular"
                 id="modal-save-button"
+                [disabled]="nameFormControl.invalid"
                 (keydown.enter)="modal.close('Save')"
                 (click)="modal.close('Save')">
                 Save
