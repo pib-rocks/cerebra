@@ -21,7 +21,6 @@ export class VoiceAssistantComponent implements OnInit {
     imgSrc: string = "../../assets/toggle-switch-left.png";
     subject!: Observable<SidebarElement[]>;
     models!: AssistantModel[];
-    isButtonActive: boolean = false;
     button: {enabled: boolean; func: () => void} = {
         enabled: true,
         func: () => {

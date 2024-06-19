@@ -108,7 +108,7 @@
         <div class="col-3 align-self-center">
             <button
                 type="button"
-                [disabled]="topicFormControl.invalid || isButtonActive"
+                [disabled]="topicFormControl.invalid"
                 class="btn btn-regular"
                 id="modal-save-button"
                 (keydown.enter)="saveChat()"

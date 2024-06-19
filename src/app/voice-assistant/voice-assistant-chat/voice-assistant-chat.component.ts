@@ -11,7 +11,6 @@ import {Chat, ChatDto} from "src/app/shared/types/chat.class";
 import {VoiceAssistant} from "src/app/shared/types/voice-assistant";
 import {VoiceAssistantState} from "../../shared/types/voice-assistant-state";
 import {Location} from "@angular/common";
-import {ValueInput} from "blockly/core/inputs";
 
 @Component({
     selector: "app-voice-assistant-chat",
@@ -27,7 +26,6 @@ export class VoiceAssistantChatComponent implements OnInit {
     personality?: VoiceAssistant;
     personalityId?: string | null;
     uuid: string | undefined;
-    isButtonActive: boolean = false;
     selected: Subject<string> = new Subject();
     turnedOn: boolean = false;
     activeChatId: string = "";
