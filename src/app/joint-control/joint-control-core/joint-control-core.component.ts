@@ -6,7 +6,7 @@ import {MotorConfiguration} from "src/app/shared/types/motor-configuration";
 @Component({
     selector: "app-joint-control-core",
     templateUrl: "./joint-control-core.component.html",
-    styleUrls: ["./joint-control-core.component.css"],
+    styleUrls: ["./joint-control-core.component.scss"],
 })
 export class JointControlCoreComponent implements OnInit {
     joint!: JointConfiguration;

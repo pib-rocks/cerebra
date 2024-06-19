@@ -21,7 +21,7 @@ import {SliderThumb} from "./slider-thumb";
 @Component({
     selector: "app-horizontal-slider",
     templateUrl: "./horizontal-slider.component.html",
-    styleUrls: ["./horizontal-slider.component.css"],
+    styleUrls: ["./horizontal-slider.component.scss"],
 })
 export class HorizontalSliderComponent
     implements OnInit, AfterViewInit, OnDestroy, OnChanges

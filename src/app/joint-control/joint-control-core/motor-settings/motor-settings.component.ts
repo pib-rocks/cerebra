@@ -9,7 +9,7 @@ import {MotorSettings} from "src/app/shared/types/motor-settings.class";
 @Component({
     selector: "app-motor-settings",
     templateUrl: "./motor-settings.component.html",
-    styleUrls: ["./motor-settings.component.css"],
+    styleUrls: ["./motor-settings.component.scss"],
 })
 export class MotorSettingsComponent {
     @Input() motor!: MotorConfiguration;

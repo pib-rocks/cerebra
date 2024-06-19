@@ -7,7 +7,7 @@ import {ActivatedRoute} from "@angular/router";
 @Component({
     selector: "app-motor-position",
     templateUrl: "./motor-position.component.html",
-    styleUrls: ["./motor-position.component.css"],
+    styleUrls: ["./motor-position.component.scss"],
 })
 export class MotorPositionComponent implements OnInit {
     motor!: MotorConfiguration;
