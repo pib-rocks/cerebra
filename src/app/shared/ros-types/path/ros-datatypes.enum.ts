@@ -23,7 +23,7 @@ export enum rosDataTypes {
     sendChatMessage = "datatypes/srv/SendChatMessage",
     getVoiceAssistantState = "datatypes/srv/GetVoiceAssistantState",
     getChatIsListening = "datatypes/srv/GetChatIsListening",
-    existToken = "datatypes/srv/ExistToken",
+    get_token_exists = "datatypes/srv/ExistToken",
     encryptToken = "datatypes/srv/EncryptToken",
     decryptToken = "datatypes/srv/DecryptToken",
     // action

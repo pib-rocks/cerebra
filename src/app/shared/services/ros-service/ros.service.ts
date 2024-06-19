@@ -260,8 +260,8 @@ export class RosService implements IRosService {
             rosDataTypes.getChatIsListening,
         );
         this.existTokenService = this.createRosService(
-            rosServices.existToken,
-            rosDataTypes.existToken,
+            rosServices.get_token_exists,
+            rosDataTypes.get_token_exists,
         );
         this.encryptTokenService = this.createRosService(
             rosServices.encryptToken,
