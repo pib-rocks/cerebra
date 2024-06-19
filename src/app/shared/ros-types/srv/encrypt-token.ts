@@ -4,5 +4,5 @@ export interface EncryptTokenRequest {
 }
 
 export interface EncryptTokenResponse {
-    is_successful: boolean;
+    successful: boolean;
 }

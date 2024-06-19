@@ -451,7 +451,7 @@ export class RosService implements IRosService {
         };
 
         const successCallback = (response: DecryptTokenResponse) => {
-            subject.next(response.is_successful);
+            subject.next(response.successful);
         };
         const errorCallback = (error: any) => {
             subject.next(false);
@@ -476,7 +476,7 @@ export class RosService implements IRosService {
         };
 
         const successCallback = (response: EncryptTokenResponse) => {
-            subject.next(response.is_successful);
+            subject.next(response.successful);
         };
         const errorCallback = (error: any) => {
             subject.next(false);

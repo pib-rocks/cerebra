@@ -3,5 +3,5 @@ export interface DecryptTokenRequest {
 }
 
 export interface DecryptTokenResponse {
-    is_successful: boolean;
+    successful: boolean;
 }
