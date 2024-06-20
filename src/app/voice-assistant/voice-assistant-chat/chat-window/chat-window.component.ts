@@ -56,6 +56,8 @@ export class ChatWindowComponent implements OnInit {
                 .pipe(map((messages) => messages.slice().reverse()))
                 .subscribe((messages) => (this.messages = messages));
 
+            // this.updateChatMessageSubscription = this.chatService.getUpdateForChatMessage(chatId, messageId)
+
             this.chat = this.chatService.getChat(chatId);
             if (this.chat) {
                 this.personalityName =

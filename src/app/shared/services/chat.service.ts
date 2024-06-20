@@ -38,6 +38,8 @@ export class ChatService implements SidebarService {
                     timestamp: rosChatMessage.timestamp,
                     isUser: rosChatMessage.is_user,
                     content: rosChatMessage.content,
+                    extend_previos_message:
+                        rosChatMessage.extend_previos_message,
                 });
                 subject.next(messages);
             }
@@ -191,6 +193,14 @@ export class ChatService implements SidebarService {
             this.messagesSubjectFromChatId.set(chatId, messageSubject);
             return messageSubject;
         }
+    }
+
+    getUpdateForChatMessage(
+        chatId: string, //: Obserfvable<ChatMessage[]>
+    ) {
+        // Überlegen wie man das hinzufügen an die zufor geschickten nachricht macht
+        const observable = this.messagesSubjectFromChatId.get(chatId);
+        return;
     }
 
     getIsListeningObservable(chatId: string): Observable<boolean> {
