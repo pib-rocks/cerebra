@@ -5,7 +5,9 @@ a {
     font-size: 16px;
 }
 
-.nav-link {
+.nav-link,
+.nav-tabs .nav-item:hover .nav-link,
+.nav-tabs .navbar-btn-active .nav-link {
     padding-top: 14px;
 }
 

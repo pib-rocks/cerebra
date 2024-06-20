@@ -161,37 +161,37 @@ describe("ProgramService", () => {
     });
 
     it("should get one code", () => {
-        programService.programNumberToCode.set("id-1", {visual: "1"});
-        programService.programNumberToCode.set("id-2", {visual: "2"});
+        programService.programNumberToCode.set("id-1", {codeVisual: "1"});
+        programService.programNumberToCode.set("id-2", {codeVisual: "2"});
         expect(programService["getCodeFromCache"]("id-1")).toEqual({
-            visual: "1",
+            codeVisual: "1",
         });
     });
 
     it("should not get one code", () => {
-        programService.programNumberToCode.set("id-1", {visual: "1"});
-        programService.programNumberToCode.set("id-2", {visual: "2"});
+        programService.programNumberToCode.set("id-1", {codeVisual: "1"});
+        programService.programNumberToCode.set("id-2", {codeVisual: "2"});
         expect(programService["getCodeFromCache"]("id-3")).toBeUndefined();
     });
 
     it("should update one code", () => {
-        programService.programNumberToCode.set("id-1", {visual: "1"});
-        programService.programNumberToCode.set("id-2", {visual: "2"});
-        programService["setCode"]("id-1", {visual: "3"});
+        programService.programNumberToCode.set("id-1", {codeVisual: "1"});
+        programService.programNumberToCode.set("id-2", {codeVisual: "2"});
+        programService["setCode"]("id-1", {codeVisual: "3"});
         expect([...programService.programNumberToCode.entries()]).toEqual([
-            ["id-1", {visual: "3"}],
-            ["id-2", {visual: "2"}],
+            ["id-1", {codeVisual: "3"}],
+            ["id-2", {codeVisual: "2"}],
         ]);
     });
 
     it("should add one code if it is not already in cache", () => {
-        programService.programNumberToCode.set("id-1", {visual: "1"});
-        programService.programNumberToCode.set("id-2", {visual: "2"});
-        programService["setCode"]("id-3", {visual: "3"});
+        programService.programNumberToCode.set("id-1", {codeVisual: "1"});
+        programService.programNumberToCode.set("id-2", {codeVisual: "2"});
+        programService["setCode"]("id-3", {codeVisual: "3"});
         expect([...programService.programNumberToCode.entries()]).toEqual([
-            ["id-1", {visual: "1"}],
-            ["id-2", {visual: "2"}],
-            ["id-3", {visual: "3"}],
+            ["id-1", {codeVisual: "1"}],
+            ["id-2", {codeVisual: "2"}],
+            ["id-3", {codeVisual: "3"}],
         ]);
     });
 
@@ -357,14 +357,10 @@ describe("ProgramService", () => {
 
     it("should update the code on db", async () => {
         const code = {
-            visual: "new-visual",
-            python: "new-python",
-        };
-        const codeVisualOnly = {
-            visual: "new-visual",
+            codeVisual: "new-visual",
         };
         const setCodeSpy = spyOn<any>(programService, "setCode");
-        apiService.put.and.returnValue(new BehaviorSubject(codeVisualOnly));
+        apiService.put.and.returnValue(new BehaviorSubject(code));
         const resultCode = await new Promise((resolve, _) => {
             programService
                 .updateCodeByProgramNumber("id-1", code)
@@ -374,8 +370,8 @@ describe("ProgramService", () => {
             "/program/id-1/code",
             code,
         );
-        expect(setCodeSpy).toHaveBeenCalledOnceWith("id-1", codeVisualOnly);
-        expect(resultCode).toEqual(codeVisualOnly);
+        expect(setCodeSpy).toHaveBeenCalledOnceWith("id-1", code);
+        expect(resultCode).toEqual(code);
     });
 
     it("should terminate a program", () => {
