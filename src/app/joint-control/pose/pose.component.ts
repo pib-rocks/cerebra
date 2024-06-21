@@ -56,7 +56,6 @@ export class PoseComponent implements OnInit {
     }
 
     renamePose(pose: Pose) {
-        this.blurRenameButtons();
         this.selectPose(pose);
         this.getNameInput("Rename pose", pose.name).subscribe((name) => {
             this.poseService.renamePose(pose.poseId, name);
@@ -98,11 +97,5 @@ export class PoseComponent implements OnInit {
                 return this.nameFormControl.value!;
             }),
         );
-    }
-
-    private blurRenameButtons() {
-        this.renameButtons?.forEach((button) => {
-            button.nativeElement.blur();
-        });
     }
 }
