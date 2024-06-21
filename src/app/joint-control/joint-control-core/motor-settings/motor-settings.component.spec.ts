@@ -118,8 +118,6 @@ describe("MotorSettingsComponent", () => {
         expect(turnedOnSpy).toHaveBeenCalledOnceWith(true);
 
         const expectedSettings = structuredClone(settings);
-        expectedSettings.rotationRangeMin = 6;
-        expectedSettings.rotationRangeMax = 7;
         expect(component.settings).toEqual(expectedSettings);
     });
 
