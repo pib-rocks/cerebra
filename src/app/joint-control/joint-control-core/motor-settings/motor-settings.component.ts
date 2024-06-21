@@ -38,18 +38,7 @@ export class MotorSettingsComponent {
     ngOnInit(): void {
         this.motorService
             .getSettingsObservable(this.motor.sourceMotorName)
-            .pipe(
-                map((settings) => {
-                    settings = structuredClone(settings);
-                    settings.rotationRangeMin = Math.floor(
-                        settings.rotationRangeMin / 100,
-                    );
-                    settings.rotationRangeMax = Math.floor(
-                        settings.rotationRangeMax / 100,
-                    );
-                    return settings;
-                }),
-            )
+            .pipe(map((settings) => structuredClone(settings)))
             .subscribe((settings) => {
                 this.settings = settings;
                 this.pulseWidthSubject$.next([
@@ -57,8 +46,8 @@ export class MotorSettingsComponent {
                     settings.pulseWidthMax,
                 ]);
                 this.degreeSubject$.next([
-                    settings.rotationRangeMin,
-                    settings.rotationRangeMax,
+                    Math.floor(settings.rotationRangeMin / 100),
+                    Math.floor(settings.rotationRangeMax / 100),
                 ]);
                 this.periodSubject$.next([settings.period]);
                 this.decelerationSubject$.next(settings.deceleration);
