@@ -44,7 +44,10 @@ export class PoseService {
             tap((pose) => {
                 this.poses.push(pose);
                 this.publishPoses();
-                this.poseIdToMotorPositions.set(pose.poseId, motorPositions);
+                this.poseIdToMotorPositions.set(
+                    pose.poseId,
+                    structuredClone(motorPositions),
+                );
             }),
         );
     }
