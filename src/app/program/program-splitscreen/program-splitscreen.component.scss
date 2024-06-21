@@ -1,0 +1,28 @@
+@import "src/styles";
+
+.workspaceButton {
+    background: transparent;
+    border: none;
+    pointer-events: auto;
+}
+
+.view-mode-icon {
+    width: 40px;
+    height: 40px;
+}
+
+.workspaceButton:disabled {
+    all: unset;
+    cursor: not-allowed;
+    border: none;
+    outline: none;
+    filter: grayscale(100%);
+    opacity: 0.7;
+    border-radius: 5px;
+}
+
+.split-screen-lower {
+    border-left: 1px solid $white-color;
+    border-bottom: 1px solid $white-color;
+    border-right: 1px solid $white-color;
+}

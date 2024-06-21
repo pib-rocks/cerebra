@@ -9,7 +9,7 @@ import {ExecutionState, ProgramState} from "src/app/shared/types/program-state";
 @Component({
     selector: "app-program-splitscreen",
     templateUrl: "./program-splitscreen.component.html",
-    styleUrls: ["./program-splitscreen.component.css"],
+    styleUrls: ["./program-splitscreen.component.scss"],
 })
 export class ProgramSplitscreenComponent implements OnInit {
     constructor(
@@ -42,7 +42,7 @@ export class ProgramSplitscreenComponent implements OnInit {
 
     ngOnInit(): void {
         this.activatedRoute.data.subscribe((data) => {
-            this.codeVisualOld = (data["code"] as ProgramCode).visual;
+            this.codeVisualOld = (data["code"] as ProgramCode).codeVisual;
             this.codeVisualNew = this.codeVisualOld;
         });
         this.activatedRoute.params.subscribe((params) => {
@@ -61,8 +61,7 @@ export class ProgramSplitscreenComponent implements OnInit {
 
     saveCode() {
         this.programService.updateCodeByProgramNumber(this.programNumber, {
-            visual: this.codeVisualNew,
-            python: this.codePython,
+            codeVisual: this.codeVisualNew,
         });
         this.codeVisualOld = this.codeVisualNew;
     }

@@ -1,0 +1,60 @@
+@import "src/styles";
+
+video {
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+}
+
+.qualityFactor {
+    transform: rotate(180deg);
+}
+
+.cameraIcon {
+    border: none !important;
+}
+
+.cameraIcon path {
+    fill: $white-color;
+    stroke: $white-color;
+}
+
+#cameraToggle {
+    padding-top: 8px;
+}
+
+#cameraColumn img {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.video-settings-label {
+    font-size: 1rem;
+}
+
+.video-nav-element span {
+    vertical-align: middle;
+    padding-left: 0.25rem;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.33px;
+}
+
+.video-nav-element svg path {
+    fill: $white-color;
+    transition: fill 0.15s ease;
+}
+
+.video-nav-element:hover,
+.video-nav-element:hover span,
+.video-nav-element:hover svg path,
+.show .video-nav-element svg path,
+.show .video-nav-element,
+.showPopover svg path,
+.showPopover span {
+    color: $pink-color !important;
+    background-color: transparent;
+    fill: $pink-color !important;
+    transition: fill 0.15s ease;
+}

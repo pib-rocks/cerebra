@@ -16,8 +16,8 @@ export class SaveConfirmationGuardService {
         declineMsg: string,
     ): Promise<SaveConfirmationOptions> {
         const modalRef = this.modalService.open(SaveConfirmationComponent, {
-            windowClass: "myCustomModalClass",
-            backdropClass: "myCustomBackdropClass",
+            windowClass: "cerebra-modal",
+            backdropClass: "cerebra-modal-backdrop",
             backdrop: "static",
         });
         modalRef.componentInstance.title = title;

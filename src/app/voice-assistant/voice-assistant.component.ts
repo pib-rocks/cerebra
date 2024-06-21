@@ -10,7 +10,7 @@ import {AssistantModel} from "../shared/types/assistantModel";
 @Component({
     selector: "app-voice-assistant",
     templateUrl: "./voice-assistant.component.html",
-    styleUrls: ["./voice-assistant.component.css"],
+    styleUrls: ["./voice-assistant.component.scss"],
 })
 export class VoiceAssistantComponent implements OnInit {
     personalityForm!: FormGroup;
@@ -81,8 +81,8 @@ export class VoiceAssistantComponent implements OnInit {
         this.ngbModalRef = this.modalService.open(this.modalContent, {
             ariaLabelledBy: "modal-basic-title",
             size: "sm",
-            windowClass: "myCustomModalClass",
-            backdropClass: "myCustomBackdropClass",
+            windowClass: "cerebra-modal",
+            backdropClass: "cerebra-modal-backdrop",
         });
         return this.ngbModalRef;
     };

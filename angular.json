@@ -1,121 +1,146 @@
 {
-  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
-  "version": 1,
-  "newProjectRoot": "projects",
-  "projects": {
-    "cerebra": {
-      "projectType": "application",
-      "schematics": {},
-      "root": "",
-      "sourceRoot": "src",
-      "prefix": "app",
-      "architect": {
-        "build": {
-          "builder": "@angular-devkit/build-angular:browser",
-          "options": {
-            "outputPath": "dist/cerebra",
-            "index": "src/index.html",
-            "main": "src/main.ts",
-            "polyfills": ["zone.js"],
-            "tsConfig": "tsconfig.app.json",
-            "assets": ["src/favicon.ico", "src/assets"],
-            "styles": [
-              "@angular/material/prebuilt-themes/indigo-pink.css",
-              "node_modules/bootstrap/dist/css/bootstrap.min.css",
-              "node_modules/admin-lte/dist/css/adminlte.min.css",
-              "node_modules/highlight.js/styles/atom-one-dark.css",
-              "src/styles.css"
-            ],
-            "scripts": [
-              "node_modules/jquery/dist/jquery.min.js",
-              "node_modules/bootstrap/dist/js/bootstrap.min.js",
-              "node_modules/admin-lte/dist/js/adminlte.min.js"
-            ]
-          },
-          "configurations": {
-            "production": {
-              "budgets": [
-                {
-                  "type": "initial",
-                  "maximumWarning": "4mb",
-                  "maximumError": "4mb"
-                },
-                {
-                  "type": "anyComponentStyle",
-                  "maximumWarning": "2kb",
-                  "maximumError": "4kb"
-                }
-              ],
-              "outputHashing": "all"
-            },
-            "development": {
-              "buildOptimizer": false,
-              "optimization": false,
-              "vendorChunk": true,
-              "extractLicenses": false,
-              "sourceMap": true,
-              "namedChunks": true
-            },
-            "rosmock": {
-              "fileReplacements": [
-                {
-                  "replace": "src/app/shared/services/ros-service/ros.service.ts",
-                  "with": "src/app/shared/services/ros-service/ros-mock.service.ts"
-                }
-              ]
-            }
-          },
-          "defaultConfiguration": "production"
-        },
-        "serve": {
-          "builder": "@angular-devkit/build-angular:dev-server",
-          "configurations": {
-            "production": {
-              "browserTarget": "cerebra:build:production"
-            },
-            "development": {
-              "browserTarget": "cerebra:build:development"
-            },
-            "rosmock": {
-              "browserTarget": "cerebra:build:rosmock"
-            }
-          },
-          "options": {
-            "proxyConfig": "proxy.config.ts"
-          },
-          "defaultConfiguration": "development"
-        },
-        "extract-i18n": {
-          "builder": "@angular-devkit/build-angular:extract-i18n",
-          "options": {
-            "browserTarget": "cerebra:build"
-          }
-        },
-        "test": {
-          "builder": "@angular-devkit/build-angular:karma",
-          "options": {
-            "polyfills": ["zone.js", "zone.js/testing"],
-            "tsConfig": "tsconfig.spec.json",
-            "assets": ["src/favicon.ico", "src/assets"],
-            "styles": [
-              "@angular/material/prebuilt-themes/indigo-pink.css",
-              "src/styles.css"
-            ],
-            "scripts": [],
-            "karmaConfig": "karma.conf.js"
-          }
-        },
-        "lint": {
-          "builder": "@angular-eslint/builder:lint",
-          "options": {
-            "lintFilePatterns": ["src/**/*.ts", "src/**/*.html"]
-          }
-        }
-      }
-    }
-  },
-  "cli": {
-    "analytics": false,
-    "schematicCollections": ["@angular-eslint/schematics"]
-  }
+	"$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+	"version": 1,
+	"newProjectRoot": "projects",
+	"projects": {
+		"cerebra": {
+			"projectType": "application",
+			"schematics": {
+				"@schematics/angular:component": {
+					"style": "scss"
+				}
+			},
+			"root": "",
+			"sourceRoot": "src",
+			"prefix": "app",
+			"architect": {
+				"build": {
+					"builder": "@angular-devkit/build-angular:browser",
+					"options": {
+						"outputPath": "dist/cerebra",
+						"index": "src/index.html",
+						"main": "src/main.ts",
+						"polyfills": [
+							"zone.js"
+						],
+						"tsConfig": "tsconfig.app.json",
+						"assets": [
+							"src/favicon.ico",
+							"src/assets"
+						],
+						"styles": [
+							"@angular/material/prebuilt-themes/indigo-pink.css",
+							"node_modules/bootstrap/dist/css/bootstrap.min.css",
+							"node_modules/admin-lte/dist/css/adminlte.min.css",
+							"node_modules/highlight.js/styles/atom-one-dark.css",
+							"src/styles.scss"
+						],
+						"scripts": [
+							"node_modules/jquery/dist/jquery.min.js",
+							"node_modules/bootstrap/dist/js/bootstrap.min.js",
+							"node_modules/admin-lte/dist/js/adminlte.min.js"
+						]
+					},
+					"configurations": {
+						"production": {
+							"budgets": [
+								{
+									"type": "initial",
+									"maximumWarning": "4mb",
+									"maximumError": "4mb"
+								},
+								{
+									"type": "anyComponentStyle",
+									"maximumWarning": "2kb",
+									"maximumError": "8kb"
+								}
+							],
+							"outputHashing": "all"
+						},
+						"development": {
+							"buildOptimizer": false,
+							"optimization": false,
+							"vendorChunk": true,
+							"extractLicenses": false,
+							"sourceMap": true,
+							"namedChunks": true
+						},
+						"rosmock": {
+							"fileReplacements": [
+								{
+									"replace": "src/app/shared/services/ros-service/ros.service.ts",
+									"with": "src/app/shared/services/ros-service/ros-mock.service.ts"
+								}
+							]
+						}
+					},
+					"defaultConfiguration": "production"
+				},
+				"serve": {
+					"builder": "@angular-devkit/build-angular:dev-server",
+					"configurations": {
+						"production": {
+							"browserTarget": "cerebra:build:production"
+						},
+						"development": {
+							"browserTarget": "cerebra:build:development"
+						},
+						"rosmock": {
+							"browserTarget": "cerebra:build:rosmock"
+						}
+					},
+					"options": {
+						"proxyConfig": "proxy.config.ts"
+					},
+					"defaultConfiguration": "development"
+				},
+				"extract-i18n": {
+					"builder": "@angular-devkit/build-angular:extract-i18n",
+					"options": {
+						"browserTarget": "cerebra:build"
+					}
+				},
+				"test": {
+					"builder": "@angular-devkit/build-angular:karma",
+					"options": {
+						"polyfills": [
+							"zone.js",
+							"zone.js/testing"
+						],
+						"tsConfig": "tsconfig.spec.json",
+						"assets": [
+							"src/favicon.ico",
+							"src/assets"
+						],
+						"styles": [
+							"@angular/material/prebuilt-themes/indigo-pink.css",
+							"src/styles.scss"
+						],
+						"scripts": [],
+						"karmaConfig": "karma.conf.js"
+					}
+				},
+				"lint": {
+					"builder": "@angular-eslint/builder:lint",
+					"options": {
+						"lintFilePatterns": [
+							"src/**/*.ts",
+							"src/**/*.html"
+						]
+					}
+				}
+			}
+		}
+	},
+	"schematics": {
+		"@schematics/angular:component": {
+			"style": "scss"
+		}
+	},
+	"cli": {
+		"analytics": false,
+		"schematicCollections": [
+			"@angular-eslint/schematics"
+		]
+	}
 }

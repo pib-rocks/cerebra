@@ -1,0 +1,87 @@
+@import "src/styles";
+
+* {
+    color: $white-color;
+}
+
+.sidebar-label {
+    color: $white-color;
+    font-weight: bolder;
+    font-size: 1.33vw;
+    text-align: center;
+}
+
+.touchpoint {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    height: 10%;
+    width: 8.86%;
+}
+
+.touchpoint-background {
+    width: 100%;
+    height: 100%;
+    content: url("../../../assets/joint-control/touchpoint/touchpoint_unselected.svg");
+}
+
+.active-touchpoint .touchpoint-background {
+    content: url("../../../assets/joint-control/touchpoint/touchpoint_selected.svg");
+}
+
+#joint-canvas {
+    height: 45%;
+    width: 45%;
+    position: relative;
+}
+
+.touch-area {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 75%;
+    height: 75%;
+    border-radius: 50%;
+    z-index: 0;
+}
+
+.touchpoint-link {
+    z-index: 1;
+}
+
+.joint-background {
+    width: 100%;
+    height: 100%;
+    top: 0px;
+    left: 0px;
+    z-index: 0;
+}
+
+.touchpoint-wrapper {
+    position: relative;
+    z-index: 1;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+}
+
+.head-line {
+    font-size: 1vw;
+}
+
+.cursor:hover {
+    cursor: pointer;
+}
+
+.background-selected {
+    background: rgb(0, 0, 0);
+    background: linear-gradient(
+        90deg,
+        rgba(0, 0, 0, 0) 0%,
+        rgba(2, 90, 138, 100) 40%,
+        rgba(2, 90, 138, 100) 50%,
+        rgba(2, 90, 138, 100) 60%,
+        rgba(0, 0, 0, 0) 100%
+    );
+}

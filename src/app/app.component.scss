@@ -1,0 +1,86 @@
+@import "src/styles";
+
+.a {
+    fill: none;
+    stroke: $blue-color;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.brand-link {
+    border: 0;
+}
+
+.btn-active,
+.nav-pills .nav-link.sidebar-btn:hover {
+    margin: 10px 10px 10px 8px;
+    color: $black-color;
+    border-bottom: $pink-color solid 4px;
+    padding-bottom: 4px;
+}
+
+.btn-active svg path,
+.btn-active .menu-is-opening .a,
+.nav-sidebar > .nav-item.menu-open > .nav-link,
+[class*="sidebar-light-"] .nav-sidebar > .nav-link > svg > path {
+    fill: $pink-color;
+    stroke: $pink-color;
+}
+
+.content-wrapper {
+    background: $black-color;
+    background-size: 100% auto;
+}
+
+.main-sidebar {
+    background-color: $blue-dark-5;
+}
+
+.menu-open,
+.nav-link.sidebar-btn {
+    color: $blue-color;
+}
+
+.nav-link.sidebar-btn {
+    margin: 10px 10px 10px 8px;
+    font-size: 16px;
+    font-weight: bold;
+    letter-spacing: 0.4px;
+    text-align: left;
+    color: $blue-color;
+    font-stretch: normal;
+    font-style: normal;
+    line-height: normal;
+    text-transform: uppercase;
+    border-radius: 0px;
+    display: flex;
+    align-items: center;
+}
+
+.nav-link.sidebar-btn.btn-active {
+    color: $white-color;
+}
+
+.nav-sidebar > .nav-item.menu-open > .nav-link,
+[class*="sidebar-light-"] .nav-sidebar > .nav-link {
+    color: $white-color;
+    border-bottom: $pink-color solid 4px;
+}
+
+.nav-sidebar > .nav-item.menu-open > .nav-link,
+[class*="sidebar-light-"] .nav-sidebar > .nav-link > svg > path {
+    fill: $pink-color;
+    stroke: $pink-color;
+}
+
+.nav-pills .nav-link.sidebar-btn:hover {
+    margin: 10px 10px 10px 8px;
+    color: $white-color;
+    border-bottom: $pink-color solid 4px;
+    padding-bottom: 4px;
+}
+
+svg path {
+    fill: $blue-color;
+    stroke: $blue-color;
+}

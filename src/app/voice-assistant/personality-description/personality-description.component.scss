@@ -1,0 +1,43 @@
+@import "src/styles";
+
+textarea {
+    height: 68vh;
+    border-radius: 0px;
+    background: transparent;
+    font-size: 16px;
+    font-weight: normal;
+    font-stretch: normal;
+    font-style: normal;
+    line-height: normal;
+    letter-spacing: 0.4px;
+    text-align: left;
+    color: $grey-dark-1;
+}
+
+svg:hover path {
+    fill: $pink-color;
+    transition: fill 0.15s ease;
+}
+
+svg {
+    height: 2.25rem;
+}
+
+textarea:focus {
+    border-radius: 0px;
+    background: linear-gradient(
+        to right,
+        $pink-color,
+        $pink-color var(--pos-relative),
+        $blue-dark-3 var(--pos-relative),
+        $blue-dark-3
+    );
+    font-size: 16px;
+    font-weight: normal;
+    font-stretch: normal;
+    font-style: normal;
+    line-height: normal;
+    letter-spacing: 0.4px;
+    text-align: left;
+    color: $grey-dark-1;
+}

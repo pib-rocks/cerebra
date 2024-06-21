@@ -37,7 +37,7 @@ export interface IRosService {
 
     sendChatMessage(chatId: string, content: string): Observable<void>;
 
-    sendMotorSettingsMessage: (
+    applyMotorSettings: (
         motorSettingsMessage: MotorSettingsMessage,
     ) => Observable<MotorSettingsMessage>;
 
@@ -45,9 +45,7 @@ export interface IRosService {
         programNumber: string,
     ) => Observable<GoalHandle<RunProgramFeedback, RunProgramResult>>;
 
-    sendJointTrajectoryMessage: (
-        jointTrajectoryMessage: JointTrajectoryMessage,
-    ) => void;
+    applyJointTrajectory: (jointTrajectory: JointTrajectoryMessage) => void;
 
     setTimerPeriod: (period: number) => void;
 

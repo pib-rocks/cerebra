@@ -1,0 +1,28 @@
+@import "src/styles";
+
+.stdout {
+    color: $white-color;
+    font-family: Consolas, "Courier New", monospace;
+}
+
+.stderr {
+    color: $pink-color;
+    font-weight: bold;
+    font-family: Consolas, "Courier New", monospace;
+}
+
+.info {
+    color: $blue-color;
+    font-family: Consolas, "Courier New", monospace;
+}
+
+.wrapper {
+    background-color: $blue-dark-4;
+    overflow-y: scroll;
+    height: 0px;
+    overflow-wrap: break-word;
+}
+
+.wrapper > :first-child {
+    margin-bottom: auto !important;
+}

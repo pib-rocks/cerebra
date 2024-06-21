@@ -14,7 +14,7 @@ import {Observable} from "rxjs";
 @Component({
     selector: "app-vertical-slider",
     templateUrl: "./vertical-slider.component.html",
-    styleUrls: ["./vertical-slider.component.css"],
+    styleUrls: ["./vertical-slider.component.scss"],
 })
 export class VerticalSliderComponent implements OnInit, AfterViewInit {
     @ViewChild("slider") slider?: ElementRef;
