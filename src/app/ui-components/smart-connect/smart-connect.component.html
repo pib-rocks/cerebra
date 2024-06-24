@@ -66,6 +66,7 @@
                 <div class="input-group">
                     <input
                         id="password"
+                        ngbAutofocus
                         class="input form-control"
                         type="password"
                         [type]="passwordTextType ? 'password' : 'text'"
@@ -126,9 +127,11 @@
                     <label for="token">Token</label>
                     <input
                         id="token"
+                        autocomplete="off"
                         class="input form-control"
                         type="text"
-                        formControlName="token" />
+                        formControlName="token"
+                        ngbAutofocus />
                 </div>
 
                 <div class="form-group w-100">
