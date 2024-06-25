@@ -93,8 +93,6 @@ export class RosService implements IRosService {
             chat_id: "",
         });
     chatMessageReceiver$: Subject<ChatMessage> = new Subject<ChatMessage>();
-    chatUpdateMessageReceiver$: Subject<ChatMessage> =
-        new Subject<ChatMessage>();
 
     private ros!: ROSLIB.Ros;
 
@@ -110,7 +108,6 @@ export class RosService implements IRosService {
     private proxyRunProgramResultTopic!: ROSLIB.Topic<ProxyRunProgramResult>;
     private proxyRunProgramStatusTopic!: ROSLIB.Topic<ProxyRunProgramStatus>;
     private chatMessageTopic!: ROSLIB.Topic<ChatMessage>;
-    private chatUpdateMessageTopic!: ROSLIB.Topic<ChatMessage>;
     private voiceAssistantStateTopic!: ROSLIB.Topic<VoiceAssistantState>;
     private chatIsListeningTopic!: ROSLIB.Topic<ChatIsListening>;
 
@@ -206,10 +203,6 @@ export class RosService implements IRosService {
             rosDataTypes.jointTrajectory,
         );
         this.chatMessageTopic = this.createRosTopic(
-            rosTopics.chatMessages,
-            rosDataTypes.chatMessage,
-        );
-        this.chatUpdateMessageTopic = this.createRosTopic(
             rosTopics.chatMessages,
             rosDataTypes.chatMessage,
         );
@@ -319,7 +312,6 @@ export class RosService implements IRosService {
         this.subscribeVoiceAssistantStateTopic();
         this.subscribeChatIsListeningTopic();
         this.subscribeChatMessageTopic();
-        this.subscribeChatUpdateMessageTopic();
         this.subscribeMotorSettingsTopic();
         this.subscribeMotorCurrentTopic();
         this.subscribeJointTrajectoryTopic();
@@ -411,11 +403,6 @@ export class RosService implements IRosService {
     private subscribeChatMessageTopic() {
         this.chatMessageTopic.subscribe((message: any) => {
             this.chatMessageReceiver$.next(message);
-        });
-    }
-    private subscribeChatUpdateMessageTopic() {
-        this.chatUpdateMessageTopic.subscribe((message: any) => {
-            this.chatUpdateMessageReceiver$.next(message);
         });
     }
     private subscribeChatIsListeningTopic() {

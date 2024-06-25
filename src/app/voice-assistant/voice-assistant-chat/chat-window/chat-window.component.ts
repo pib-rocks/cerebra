@@ -16,8 +16,10 @@ export class ChatWindowComponent implements OnInit {
     chat?: Chat;
     personalityName: string | undefined;
     messages?: ChatMessage[];
+    extendedMessages?: ChatMessage[];
 
     chatMessagesSubscription: Subscription | undefined;
+    chatMessagesUpdateSubscription: Subscription | undefined;
     textInputActiveSubscription: Subscription | undefined;
 
     chatMessageFormControl: FormControl<string> = new FormControl();
@@ -39,6 +41,7 @@ export class ChatWindowComponent implements OnInit {
     ngOnInit(): void {
         this.route.params.subscribe((params: Params) => {
             this.chatMessagesSubscription?.unsubscribe();
+            this.chatMessagesUpdateSubscription?.unsubscribe();
             this.textInputActiveSubscription?.unsubscribe();
 
             const chatId = params["chatUuid"];
@@ -53,10 +56,22 @@ export class ChatWindowComponent implements OnInit {
 
             this.chatMessagesSubscription = this.chatService
                 .getChatMessagesObservable(chatId)
-                .pipe(map((messages) => messages.slice().reverse()))
-                .subscribe((messages) => (this.messages = messages));
+                .pipe(map((messages) => messages))
+                .subscribe((messages) => (this.messages = messages.filter((message, index, messages) => {
+                    console.log(messages)
+                    if(index + 1 >= messages.length){
+                        console.log("length");
+                        return true;
+                    }
 
-            // this.updateChatMessageSubscription = this.chatService.getUpdateForChatMessage(chatId, messageId)
+                    console.log(message, index, message.messageId === messages[index + 1].messageId)
+                    if(message.messageId == messages[index + 1].messageId){
+                        console.log("TRUE")
+                        return false;
+                    }
+                    console.log("message")
+                    return true;
+                }).slice().reverse()));
 
             this.chat = this.chatService.getChat(chatId);
             if (this.chat) {

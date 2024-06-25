@@ -4,5 +4,4 @@ export interface ChatMessage {
     timestamp: string;
     is_user: boolean;
     content: string;
-    extend_previos_message: boolean;
 }
