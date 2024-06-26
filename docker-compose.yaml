@@ -15,6 +15,7 @@ services:
             - "8080:80"
         networks:
             - pib-network
+        restart: always
 
     sqlite-web:
         build:
@@ -26,6 +27,7 @@ services:
             -   SQLITE_DATABASE=pibdata.db
         ports:
             - "8000:8080"
+        restart: always
 
 volumes:
   db:
