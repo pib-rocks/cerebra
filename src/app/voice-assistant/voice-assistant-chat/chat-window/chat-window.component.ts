@@ -57,21 +57,24 @@ export class ChatWindowComponent implements OnInit {
             this.chatMessagesSubscription = this.chatService
                 .getChatMessagesObservable(chatId)
                 .pipe(map((messages) => messages))
-                .subscribe((messages) => (this.messages = messages.filter((message, index, messages) => {
-                    console.log(messages)
-                    if(index + 1 >= messages.length){
-                        console.log("length");
-                        return true;
-                    }
-
-                    console.log(message, index, message.messageId === messages[index + 1].messageId)
-                    if(message.messageId == messages[index + 1].messageId){
-                        console.log("TRUE")
-                        return false;
-                    }
-                    console.log("message")
-                    return true;
-                }).slice().reverse()));
+                .subscribe(
+                    (messages) =>
+                        (this.messages = messages
+                            .filter((message, index, messages) => {
+                                if (index + 1 >= messages.length) {
+                                    return true;
+                                }
+                                if (
+                                    message.messageId ==
+                                    messages[index + 1].messageId
+                                ) {
+                                    return false;
+                                }
+                                return true;
+                            })
+                            .slice()
+                            .reverse()),
+                );
 
             this.chat = this.chatService.getChat(chatId);
             if (this.chat) {
