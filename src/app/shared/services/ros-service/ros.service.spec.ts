@@ -542,7 +542,7 @@ describe("RosService", () => {
             rosService["encryptTokenService"],
             "callService",
         ).and.callFake((_request, successCallback, _errorCallback) => {
-            successCallback({is_successful: true});
+            successCallback({successful: true});
         });
 
         rosService.encryptToken(token, password).subscribe(subscriber);
@@ -583,7 +583,7 @@ describe("RosService", () => {
             rosService["decryptTokenService"],
             "callService",
         ).and.callFake((_request, successCallback, _errorCallback) => {
-            successCallback({is_successful: true});
+            successCallback({successful: true});
         });
 
         rosService.decryptToken(password).subscribe(subscriber);

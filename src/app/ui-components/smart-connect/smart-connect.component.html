@@ -66,6 +66,7 @@
                 <div class="input-group">
                     <input
                         id="password"
+                        ngbAutofocus
                         class="input form-control"
                         type="password"
                         [type]="passwordTextType ? 'password' : 'text'"
@@ -90,12 +91,14 @@
             </div>
             <div class="d-flex justify-content-around mt-3 mb-4">
                 <button
+                    id="decrypt-form-btn"
                     type="submit"
                     class="btn btn-primary btn-lg w-100 mr-2"
                     [disabled]="decryptTokenForm.invalid || isTokenActive">
                     Connect
                 </button>
                 <button
+                    id="decrypt-form-cancel-btn"
                     type="button"
                     class="btn btn-secondary btn-lg w-100 ml-2"
                     (click)="onCloseModal()">
@@ -126,9 +129,11 @@
                     <label for="token">Token</label>
                     <input
                         id="token"
+                        autocomplete="off"
                         class="input form-control"
                         type="text"
-                        formControlName="token" />
+                        formControlName="token"
+                        ngbAutofocus />
                 </div>
 
                 <div class="form-group w-100">
@@ -186,12 +191,14 @@
 
             <div class="d-flex justify-content-around mt-3 mb-4">
                 <button
+                    id="encrypt-form-btn"
                     type="submit"
                     class="btn btn-primary btn-lg w-100 mr-2"
                     [disabled]="encryptTokenForm.invalid">
                     Encrypt
                 </button>
                 <button
+                    id="encrypt-form-cancel-btn"
                     type="button"
                     class="btn btn-secondary btn-lg w-100 ml-2"
                     (click)="onCloseModal()">
