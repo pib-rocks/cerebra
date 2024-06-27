@@ -1,10 +1,12 @@
+@import "src/styles";
+
 .wrapper {
     height: 100%;
 }
 
 .active-check {
     width: auto;
-    background-color: rgba(0, 0, 0, 0);
+    background-color: $black-color;
     border: 0;
     cursor: pointer;
     display: grid;
@@ -12,15 +14,16 @@
 }
 
 .active-check:checked {
-    accent-color: rgba(0, 0, 0, 0.5);
+    accent-color: $black-transparent-1;
 }
 
 input[type="checkbox"] {
+    background: transparent;
     appearance: none;
-    color: currentColor;
+    color: $white-color;
     width: 1.15em;
     height: 1.15em;
-    border: 0.15em solid currentColor;
+    border: 0.15em solid $white-color;
     border-radius: 0.15em;
     transform: translateY(-0.075em);
     display: grid;
@@ -36,7 +39,7 @@ input[type="checkbox"]::before {
     width: 1vw;
     height: 1vw;
     transform: scale(0);
-    background-color: #e10072;
+    background-color: $pink-color;
 }
 
 input[type="checkbox"]:checked::before {
@@ -65,7 +68,7 @@ input[type="checkbox"]:checked::before {
 }
 
 .settings-icon:hover {
-    background-color: rgba(255, 255, 255, 0.3);
+    background-color: $grey-transparent;
     border-radius: 3px;
     cursor: pointer;
 }

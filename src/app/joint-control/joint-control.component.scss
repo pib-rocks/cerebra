@@ -1,3 +1,5 @@
+@import "src/styles";
+
 a {
     font-weight: bold;
     text-align: center;
@@ -12,24 +14,24 @@ a {
 }
 
 .nav-tabs {
-    border-bottom: 1px solid #0094df;
+    border-bottom: 1px solid $blue-color;
     margin-top: 20px;
 }
 
 .nav-tabs .nav-item {
     width: 160px;
     height: 50px;
-    background-image: linear-gradient(to top, #1e304d, #000);
+    background-image: linear-gradient(to top, $blue-dark-2, $black-color);
 }
 
 .nav-tabs .nav-item a {
     border: none;
-    color: #0094df;
+    color: $blue-color;
 }
 
 .nav-tabs .nav-item a:hover,
 .nav-tabs .navbar-btn-active a {
-    color: white;
+    color: $white-color;
 }
 
 .nav-tabs .navbar-btn-active {
@@ -39,9 +41,9 @@ a {
 
 .nav-tabs .nav-item:hover,
 .nav-tabs .navbar-btn-active {
-    background-image: linear-gradient(to top, #000, #1e304d);
-    border-left: 1px solid #0094df;
-    border-right: 1px solid #0094df;
+    background-image: linear-gradient(to top, $black-color, $blue-dark-2);
+    border-left: 1px solid $blue-color;
+    border-right: 1px solid $blue-color;
     box-sizing: border-box;
     position: relative;
 }
@@ -54,7 +56,7 @@ a {
     left: -1px;
     width: calc(100% + 2px);
     height: 4px;
-    background-color: #e10072;
+    background-color: $pink-color;
 }
 
 .nav-tabs .nav-item:hover .nav-link,

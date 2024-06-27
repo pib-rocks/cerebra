@@ -1,3 +1,5 @@
+@import "src/styles";
+
 .no-highlight {
     user-select: none;
 }
@@ -46,28 +48,33 @@ span {
     height: 24px;
     display: block;
     font-weight: normal;
-    color: #fff;
+    color: $white-color;
     font-size: 13px;
     min-width: 40px;
     width: fit-content;
 }
 
 .bubble-input {
-    border: 1px solid white;
+    border: 1px solid $white-color;
     z-index: 2;
     width: 40px;
-    background: #e10072;
+    background: $pink-color;
     transform: translate(-50%, 0);
 }
 
 .bubble-span {
     z-index: 1;
-    background: #e10072;
+    background: $pink-color;
     transform: translate(-50%, 0);
 }
 
+.bubble-span-left {
+    background: $blue-dark-1;
+    left: 0px;
+}
+
 .bubble-span-right {
-    background: #344a69;
+    background: $blue-dark-1;
     right: 0px;
 }
 
@@ -82,7 +89,7 @@ span {
     position: absolute;
     width: 0;
     height: 0;
-    border-top: 10px solid #e10072;
+    border-top: 10px solid $pink-color;
     border-left: 5px solid transparent;
     border-right: 5px solid transparent;
     top: 100%;

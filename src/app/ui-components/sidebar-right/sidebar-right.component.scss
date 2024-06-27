@@ -1,6 +1,8 @@
+@import "src/styles";
+
 .element-div {
     border-radius: 5px;
-    background-color: #344864;
+    background-color: $blue-dark-2;
     min-height: 30px;
 }
 
@@ -10,10 +12,10 @@ label {
 
 .element-div:hover,
 .element-div-active {
-    background-color: #951b81;
+    background-color: $violet-color;
 }
 .element {
-    color: #ffffff;
+    color: $white-color;
     font-weight: bold;
     font-size: 1rem;
     display: inline-block;
@@ -21,11 +23,11 @@ label {
 }
 
 .sidebar-right-wrapper {
-    background-color: #041939;
+    background-color: $blue-dark-5;
 }
 
 ::-webkit-scrollbar {
-    background-color: #041939;
+    background-color: $blue-dark-5;
     scrollbar-width: thin;
     width: 5px;
 }
@@ -35,14 +37,14 @@ label {
 }
 
 ::-webkit-scrollbar-thumb {
-    background-color: #cccccc;
+    background-color: $grey-color;
     padding: 10%;
 }
 .dot-menu {
     font-size: 1.4em;
 }
 .dot-menu:hover {
-    color: black;
+    color: $black-color;
 }
 
 .btn {
@@ -54,10 +56,10 @@ label {
 }
 
 .dropdown-menu {
-    background-color: #03142e;
+    background-color: $blue-dark-5;
     border: 1px;
     border-radius: 5px;
-    border-color: #314664;
+    border-color: $blue-dark-1;
 }
 
 .dropdown-toggle::after {

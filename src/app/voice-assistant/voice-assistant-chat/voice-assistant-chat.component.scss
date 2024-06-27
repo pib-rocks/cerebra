@@ -1,3 +1,5 @@
+@import "src/styles";
+
 @media (max-width: 768px) {
     .allContent {
         display: block;
@@ -18,7 +20,7 @@
     flex-direction: column;
     height: 427px;
     width: 100%;
-    border: 1px solid #ccc;
+    border: 1px solid $grey-color;
     padding: 1%;
     overflow: hidden;
 }
@@ -27,13 +29,13 @@
     flex-grow: 1;
     overflow-y: auto;
     padding: 1%;
-    color: #fff;
+    color: $white-color;
 }
 
 .message {
     display: inline-block;
     padding: 8px;
-    border: 1px solid white;
+    border: 1px solid $white-color;
     border-radius: 8px;
     margin-bottom: 10px;
 }
@@ -46,7 +48,7 @@
     line-height: normal;
     letter-spacing: 0.4px;
     text-align: left;
-    color: #fff;
+    color: $white-color;
 }
 
 .chat-input {
@@ -55,7 +57,7 @@
     width: 100%;
     border-radius: 10px;
     padding: 10px;
-    background-color: #1b2b44;
+    background-color: $blue-dark-4;
     font-size: medium;
     font-weight: normal;
 }
@@ -63,7 +65,7 @@
 input:focus {
     font-size: medium;
     font-weight: normal;
-    color: white;
+    color: $white-color;
 }
 
 #message-input {
@@ -73,23 +75,23 @@ input:focus {
     border: none;
     outline: none;
     font-size: 16px;
-    background-color: #1b2b44;
+    background-color: $blue-dark-4;
 }
 
 #chat-send-button {
     border: none;
     outline: none;
-    background-color: #1b2b44;
-    fill: white;
+    background-color: $blue-dark-4;
+    fill: $white-color;
 }
 
 #message-input::placeholder {
-    color: #ccc;
+    color: $grey-color;
 }
 
 .on {
-    background-color: #e10072;
+    background-color: $pink-color;
 }
 .off {
-    background-color: #0094df;
+    background-color: $blue-color;
 }

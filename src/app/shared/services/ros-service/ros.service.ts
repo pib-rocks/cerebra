@@ -24,9 +24,9 @@ import {VoiceAssistantState} from "../../ros-types/msg/voice-assistant-state";
 import {GetVoiceAssistantStateResponse} from "../../ros-types/srv/get-voice-assistant-state";
 import {MotorSettingsError} from "../../error/motor-settings-error";
 import {
-    MotorSettingsServiceRequest,
-    MotorSettingsServiceResponse,
-} from "../../ros-types/srv/motor-settings-service";
+    ApplyMotorSettingsRequest,
+    ApplyMotorSettingsResponse,
+} from "../../ros-types/srv/apply-motor-settings";
 import {
     RunProgramFeedback,
     RunProgramResult,
@@ -51,6 +51,10 @@ import {
     GetChatIsListeningRequest,
     GetChatIsListeningResponse,
 } from "../../ros-types/srv/get-chat-is-listening";
+import {
+    ApplyJointTrajectoryRequest,
+    ApplyJointTrajectoryResponse,
+} from "../../ros-types/srv/apply-joint-trajectory";
 import {
     EncryptTokenRequest,
     EncryptTokenResponse,
@@ -135,9 +139,9 @@ export class RosService implements IRosService {
         SendChatMessageRequest,
         SendChatMessageResponse
     >;
-    private motorSettingsService!: ROSLIB.Service<
-        MotorSettingsServiceRequest,
-        MotorSettingsServiceResponse
+    private applyMotorSettingsService!: ROSLIB.Service<
+        ApplyMotorSettingsRequest,
+        ApplyMotorSettingsResponse
     >;
     private proxyProgramStartService!: ROSLIB.Service<
         ProxyRunProgramStartRequest,
@@ -147,6 +151,11 @@ export class RosService implements IRosService {
         ProxyRunProgramStopRequest,
         Record<string, never>
     >;
+    private applyJointTrajectoryService!: ROSLIB.Service<
+        ApplyJointTrajectoryRequest,
+        ApplyJointTrajectoryResponse
+    >;
+
     private runProgramAction!: ROSLIB.ActionClient;
 
     constructor() {
@@ -235,9 +244,9 @@ export class RosService implements IRosService {
             rosDataTypes.empty,
         );
 
-        this.motorSettingsService = this.createRosService(
-            rosServices.motorSettingsServiceName,
-            rosDataTypes.motorSettingsSrv,
+        this.applyMotorSettingsService = this.createRosService(
+            rosServices.applyMotorSettings,
+            rosDataTypes.applyMotorSettings,
         );
         this.proxyProgramStartService = this.createRosService(
             rosServices.proxyRunProgramStart,
@@ -258,6 +267,10 @@ export class RosService implements IRosService {
         this.getChatIsListeningService = this.createRosService(
             rosServices.getChatIsListening,
             rosDataTypes.getChatIsListening,
+        );
+        this.applyJointTrajectoryService = this.createRosService(
+            rosServices.applyJointTrajectory,
+            rosDataTypes.applyJointTrajectory,
         );
         this.existTokenService = this.createRosService(
             rosServices.get_token_exists,
@@ -515,6 +528,31 @@ export class RosService implements IRosService {
         return subject;
     }
 
+    applyJointTrajectory(
+        jointTrajectory: JointTrajectoryMessage,
+    ): Observable<void> {
+        const subject: Subject<void> = new ReplaySubject();
+        const request: ApplyJointTrajectoryRequest = {
+            joint_trajectory: jointTrajectory,
+        };
+        const successCallback = (response: ApplyJointTrajectoryResponse) => {
+            if (response.successful) {
+                subject.next();
+            } else {
+                subject.error(new Error("failed to apply joint-trajectory."));
+            }
+        };
+        const errorCallback = (error: any) => {
+            subject.error(new Error(error));
+        };
+        this.applyJointTrajectoryService.callService(
+            request,
+            successCallback,
+            errorCallback,
+        );
+        return subject;
+    }
+
     sendChatMessage(chatId: string, content: string): Observable<void> {
         const subject: Subject<void> = new ReplaySubject();
         const request: SendChatMessageRequest = {
@@ -558,12 +596,12 @@ export class RosService implements IRosService {
         return subject;
     }
 
-    sendMotorSettingsMessage(
+    applyMotorSettings(
         motorSettingsMessage: MotorSettingsMessage,
     ): Observable<MotorSettingsMessage> {
         const subject: Subject<MotorSettingsMessage> = new ReplaySubject();
         try {
-            this.motorSettingsService.callService(
+            this.applyMotorSettingsService.callService(
                 {motor_settings: motorSettingsMessage},
                 (response) => {
                     if (response["settings_applied"]) {
@@ -651,11 +689,6 @@ export class RosService implements IRosService {
                 },
             ),
         );
-    }
-
-    sendJointTrajectoryMessage(jointTrajectoryMessage: JointTrajectoryMessage) {
-        const message = new ROSLIB.Message(jointTrajectoryMessage);
-        this.jointTrajectoryTopic.publish(message);
     }
 
     setTimerPeriod(period: number) {

@@ -1,16 +1,18 @@
+@import "src/styles";
+
 .chat-container {
     height: 68vh;
     display: flex;
     flex-direction: column;
-    border: 1px solid #ccc;
+    border: 1px solid $grey-color;
     overflow: hidden;
 }
 
 #chat-window-header {
     display: inline-block;
     font-size: 1rem;
-    border-bottom: 4px solid var(--cerebra-pink);
-    color: white;
+    border-bottom: 4px solid $pink-color;
+    color: $white-color;
 }
 
 #chat-window-header span {
@@ -22,20 +24,20 @@
 }
 
 .va-message .message-author {
-    color: #ffffff;
-    background-color: #344864;
+    color: $white-color;
+    background-color: $blue-dark-2;
     border-radius: 10px;
 }
 
 .user-message .message-author {
-    color: #344864;
-    background-color: #344864;
+    color: $blue-dark-2;
+    background-color: $blue-dark-2;
     border-radius: 10px;
 }
 
 .va-message .message-content {
-    color: #ffffff;
-    background-color: #344864;
+    color: $white-color;
+    background-color: $blue-dark-2;
     border-top-right-radius: 10px;
     border-bottom-left-radius: 10px;
     border-bottom-right-radius: 10px;
@@ -43,8 +45,8 @@
 }
 
 .user-message .message-content {
-    color: #ffffff;
-    background-color: #344864;
+    color: $white-color;
+    background-color: $blue-dark-2;
     border-top-left-radius: 10px;
     border-bottom-left-radius: 10px;
     border-bottom-right-radius: 10px;
@@ -53,7 +55,7 @@
 .messages {
     flex-grow: 1;
     overflow-y: auto;
-    color: #fff;
+    color: $white-color;
     height: 400px;
     scrollbar-width: 30px;
 }
@@ -61,7 +63,7 @@
 .message {
     display: inline-block;
     padding: 8px;
-    border: 1px solid white;
+    border: 1px solid $white-color;
     border-radius: 8px;
     margin-bottom: 10px;
 }
@@ -72,7 +74,7 @@
     width: 100%;
     border-radius: 10px;
     padding: 10px;
-    background-color: #344864;
+    background-color: $blue-dark-2;
     font-size: medium;
     font-weight: normal;
 }
@@ -99,14 +101,14 @@
     border: none;
     outline: none;
     font-size: 16px;
-    background-color: #344864;
+    background-color: $blue-dark-2;
 }
 
 #chat-send-button {
     border: none;
     outline: none;
     background-color: rgba(0, 0, 0, 0);
-    fill: white;
+    fill: $white-color;
 }
 
 #chat-send-button:disabled {

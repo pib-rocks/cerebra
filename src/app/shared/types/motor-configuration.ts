@@ -8,7 +8,7 @@ export interface MotorConfiguration {
     captionRight: string;
     touchPointCenterX: number;
     touchPointCenterY: number;
-    displaySettings: boolean;
+    isMultiMotor: boolean;
     sourceMotorName: string; // TODO: conversion between multi-motor and simple-motors should be handled in the backend
 }
 
@@ -54,7 +54,7 @@ export const motors: MotorConfiguration[] = [
         captionRight: "",
         touchPointCenterX: 0.5739329268292683,
         touchPointCenterY: 0.588793103448279,
-        displaySettings: true,
+        isMultiMotor: false,
         sourceMotorName: "tilt_forward_motor",
     },
     {
@@ -67,7 +67,7 @@ export const motors: MotorConfiguration[] = [
         captionRight: "",
         touchPointCenterX: 0.5884146341463414,
         touchPointCenterY: 0.6836206896551724,
-        displaySettings: true,
+        isMultiMotor: false,
         sourceMotorName: "turn_head_motor",
     },
     {
@@ -80,7 +80,7 @@ export const motors: MotorConfiguration[] = [
         captionRight: "",
         touchPointCenterX: 0.6051829268292683,
         touchPointCenterY: 0.16379310344827588,
-        displaySettings: true,
+        isMultiMotor: false,
         sourceMotorName: "thumb_right_stretch",
     },
     {
@@ -93,7 +93,7 @@ export const motors: MotorConfiguration[] = [
         captionRight: "",
         touchPointCenterX: 0.8048780487804879,
         touchPointCenterY: 0.4155172413793104,
-        displaySettings: true,
+        isMultiMotor: false,
         sourceMotorName: "thumb_right_opposition",
     },
     {
@@ -106,7 +106,7 @@ export const motors: MotorConfiguration[] = [
         captionRight: "",
         touchPointCenterX: 0.2423780487804878,
         touchPointCenterY: 0.3706896551724138,
-        displaySettings: true,
+        isMultiMotor: false,
         sourceMotorName: "index_right_stretch",
     },
     {
@@ -119,7 +119,7 @@ export const motors: MotorConfiguration[] = [
         captionRight: "",
         touchPointCenterX: 0.20198170731707318,
         touchPointCenterY: 0.5543103448275862,
-        displaySettings: true,
+        isMultiMotor: false,
         sourceMotorName: "middle_right_stretch",
     },
     {
@@ -132,7 +132,7 @@ export const motors: MotorConfiguration[] = [
         captionRight: "",
         touchPointCenterX: 0.2530487804878049,
         touchPointCenterY: 0.6853448275862069,
-        displaySettings: true,
+        isMultiMotor: false,
         sourceMotorName: "ring_right_stretch",
     },
     {
@@ -145,7 +145,7 @@ export const motors: MotorConfiguration[] = [
         captionRight: "",
         touchPointCenterX: 0.32698170731707316,
         touchPointCenterY: 0.8155172413793104,
-        displaySettings: true,
+        isMultiMotor: false,
         sourceMotorName: "pinky_right_stretch",
     },
     {
@@ -158,7 +158,7 @@ export const motors: MotorConfiguration[] = [
         captionRight: "",
         touchPointCenterX: 0.7545731707317073,
         touchPointCenterY: 0.5775862068965517,
-        displaySettings: false,
+        isMultiMotor: true,
         sourceMotorName: "index_right_stretch",
     },
     {
@@ -171,7 +171,7 @@ export const motors: MotorConfiguration[] = [
         captionRight: "",
         touchPointCenterX: 0.3978658536585366,
         touchPointCenterY: 0.1629310344827586,
-        displaySettings: true,
+        isMultiMotor: false,
         sourceMotorName: "thumb_left_stretch",
     },
     {
@@ -184,7 +184,7 @@ export const motors: MotorConfiguration[] = [
         captionRight: "",
         touchPointCenterX: 0.19588414634146342,
         touchPointCenterY: 0.41551724137931034,
-        displaySettings: true,
+        isMultiMotor: false,
         sourceMotorName: "thumb_left_opposition",
     },
     {
@@ -197,7 +197,7 @@ export const motors: MotorConfiguration[] = [
         captionRight: "",
         touchPointCenterX: 0.756859756097561,
         touchPointCenterY: 0.371551724137931,
-        displaySettings: true,
+        isMultiMotor: false,
         sourceMotorName: "index_left_stretch",
     },
     {
@@ -210,7 +210,7 @@ export const motors: MotorConfiguration[] = [
         captionRight: "",
         touchPointCenterX: 0.8224085365853658,
         touchPointCenterY: 0.5551724137931034,
-        displaySettings: true,
+        isMultiMotor: false,
         sourceMotorName: "middle_left_stretch",
     },
     {
@@ -223,7 +223,7 @@ export const motors: MotorConfiguration[] = [
         captionRight: "",
         touchPointCenterX: 0.7842987804878049,
         touchPointCenterY: 0.6844827586206896,
-        displaySettings: true,
+        isMultiMotor: false,
         sourceMotorName: "ring_left_stretch",
     },
     {
@@ -236,7 +236,7 @@ export const motors: MotorConfiguration[] = [
         captionRight: "",
         touchPointCenterX: 0.6875,
         touchPointCenterY: 0.8146551724137931,
-        displaySettings: true,
+        isMultiMotor: false,
         sourceMotorName: "pinky_left_stretch",
     },
     {
@@ -249,7 +249,7 @@ export const motors: MotorConfiguration[] = [
         captionRight: "",
         touchPointCenterX: 0.2454268292682927,
         touchPointCenterY: 0.5775862068965517,
-        displaySettings: false,
+        isMultiMotor: true,
         sourceMotorName: "index_left_stretch",
     },
     {
@@ -262,7 +262,7 @@ export const motors: MotorConfiguration[] = [
         captionRight: "",
         touchPointCenterX: 0.12195121951219512,
         touchPointCenterY: 0.15948275862068967,
-        displaySettings: true,
+        isMultiMotor: false,
         sourceMotorName: "shoulder_horizontal_left",
     },
     {
@@ -275,7 +275,7 @@ export const motors: MotorConfiguration[] = [
         captionRight: "",
         touchPointCenterX: 0.19207317073170732,
         touchPointCenterY: 0.20775862068965517,
-        displaySettings: true,
+        isMultiMotor: false,
         sourceMotorName: "shoulder_vertical_left",
     },
     {
@@ -288,7 +288,7 @@ export const motors: MotorConfiguration[] = [
         captionRight: "",
         touchPointCenterX: 0.22560975609756098,
         touchPointCenterY: 0.4224137931034483,
-        displaySettings: true,
+        isMultiMotor: false,
         sourceMotorName: "upper_arm_left_rotation",
     },
     {
@@ -301,7 +301,7 @@ export const motors: MotorConfiguration[] = [
         captionRight: "",
         touchPointCenterX: 0.19969512195121952,
         touchPointCenterY: 0.5551724137931034,
-        displaySettings: true,
+        isMultiMotor: false,
         sourceMotorName: "elbow_left",
     },
     {
@@ -314,7 +314,7 @@ export const motors: MotorConfiguration[] = [
         captionRight: "",
         touchPointCenterX: 0.3048780487804878,
         touchPointCenterY: 0.6387931034482759,
-        displaySettings: true,
+        isMultiMotor: false,
         sourceMotorName: "lower_arm_left_rotation",
     },
     {
@@ -327,7 +327,7 @@ export const motors: MotorConfiguration[] = [
         captionRight: "",
         touchPointCenterX: 0.3780487804878049,
         touchPointCenterY: 0.8181034482758621,
-        displaySettings: true,
+        isMultiMotor: false,
         sourceMotorName: "wrist_left",
     },
     {
@@ -340,7 +340,7 @@ export const motors: MotorConfiguration[] = [
         captionRight: "",
         touchPointCenterX: 0.8917682926829268,
         touchPointCenterY: 0.15948275862068967,
-        displaySettings: true,
+        isMultiMotor: false,
         sourceMotorName: "shoulder_horizontal_right",
     },
     {
@@ -353,7 +353,7 @@ export const motors: MotorConfiguration[] = [
         captionRight: "",
         touchPointCenterX: 0.8079268292682927,
         touchPointCenterY: 0.20775862068965517,
-        displaySettings: true,
+        isMultiMotor: false,
         sourceMotorName: "shoulder_vertical_right",
     },
     {
@@ -366,7 +366,7 @@ export const motors: MotorConfiguration[] = [
         captionRight: "",
         touchPointCenterX: 0.7515243902439024,
         touchPointCenterY: 0.4224137931034483,
-        displaySettings: true,
+        isMultiMotor: false,
         sourceMotorName: "upper_arm_right_rotation",
     },
     {
@@ -379,7 +379,7 @@ export const motors: MotorConfiguration[] = [
         captionRight: "",
         touchPointCenterX: 0.7530487804878049,
         touchPointCenterY: 0.5551724137931034,
-        displaySettings: true,
+        isMultiMotor: false,
         sourceMotorName: "elbow_right",
     },
     {
@@ -392,7 +392,7 @@ export const motors: MotorConfiguration[] = [
         captionRight: "",
         touchPointCenterX: 0.676829268292683,
         touchPointCenterY: 0.6586206896551724,
-        displaySettings: true,
+        isMultiMotor: false,
         sourceMotorName: "lower_arm_right_rotation",
     },
     {
@@ -405,7 +405,7 @@ export const motors: MotorConfiguration[] = [
         captionRight: "",
         touchPointCenterX: 0.6577743902439024,
         touchPointCenterY: 0.8181034482758621,
-        displaySettings: true,
+        isMultiMotor: false,
         sourceMotorName: "wrist_right",
     },
 ];

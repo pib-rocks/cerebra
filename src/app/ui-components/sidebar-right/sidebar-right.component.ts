@@ -6,7 +6,7 @@ import {SidebarElement} from "src/app/shared/interfaces/sidebar-element.interfac
 @Component({
     selector: "app-sidebar-right",
     templateUrl: "./sidebar-right.component.html",
-    styleUrls: ["./sidebar-right.component.css"],
+    styleUrls: ["./sidebar-right.component.scss"],
 })
 export class SideBarRightComponent implements OnInit, OnDestroy {
     @Input() optionCallbackMethods: {
