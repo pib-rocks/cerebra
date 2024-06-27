@@ -1,7 +1,14 @@
 import GenertateId from "../util/generateId.mjs";
 
 export class Personality {
-    constructor(personalityId, name, description, gender, pauseThreshold, assistantModelId) {
+    constructor(
+        personalityId,
+        name,
+        description,
+        gender,
+        pauseThreshold,
+        assistantModelId,
+    ) {
         this.personalityId = personalityId;
         this.name = name;
         this.description = description;

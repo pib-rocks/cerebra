@@ -156,7 +156,9 @@ server.get(
     "/voice-assistant/chat/:chatId/messages/:messageId",
     (req, res, next) => {
         const response = mockData.chatMessage.filter(
-            (message) => message.chatId == req.params.chatId && message.messageId == req.params.messageId,
+            (message) =>
+                message.chatId == req.params.chatId &&
+                message.messageId == req.params.messageId,
         );
         if (response[0] == undefined) {
             return res.status(404).send();
@@ -191,7 +193,12 @@ server.put(
 
 //postMessageByChatId
 server.post("/voice-assistant/chat/:chatId/messages", (req, res, next) => {
-    const newMessage = Message.newMessage(req.body.timestamp, req.body.isUser, req.body.content, req.params.chatId);
+    const newMessage = Message.newMessage(
+        req.body.timestamp,
+        req.body.isUser,
+        req.body.content,
+        req.params.chatId,
+    );
     mockData.chatMessage.push(newMessage);
     return res.status(201).send(newMessage);
 });
