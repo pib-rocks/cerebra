@@ -12,22 +12,7 @@ services:
             args:
                 NODE_ENV: production # or 'development' for dev build
         ports:
-            - "8080:80"
+            - "80:80"
         networks:
             - pib-network
         restart: always
-
-    sqlite-web:
-        build:
-            context: https://github.com/nmsger-isento/sqlite-web
-            dockerfile: docker/Dockerfile
-        volumes:
-            -   db:/data
-        environment:
-            -   SQLITE_DATABASE=pibdata.db
-        ports:
-            - "8000:8080"
-        restart: always
-
-volumes:
-  db:
