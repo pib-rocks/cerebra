@@ -600,4 +600,31 @@ describe("RosMockService", () => {
         expect(messageReceiverNextSpy).not.toHaveBeenCalled();
         expect(apiService.post).not.toHaveBeenCalled();
     }));
+
+    it("should return true for token exists", (done) => {
+        service.checkTokenExists().subscribe((response) => {
+            expect(response.token_exists).toBe(true);
+            expect(response.token_active).toBe(true);
+            done();
+        });
+    });
+
+    it("should encrypt token", (done) => {
+        const token = "testToken";
+        const password = "testPassword";
+
+        service.encryptToken(token, password).subscribe((result) => {
+            expect(result).toBe(true);
+            done();
+        });
+    });
+
+    it("should decrypt token", (done) => {
+        const password = "testPassword";
+
+        service.decryptToken(password).subscribe((result) => {
+            expect(result).toBe(true);
+            done();
+        });
+    });
 });

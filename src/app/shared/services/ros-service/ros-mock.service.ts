@@ -29,6 +29,7 @@ import {UrlConstants} from "../url.constants";
 import {MotorSettingsError} from "../../error/motor-settings-error";
 import {ChatIsListening} from "../../ros-types/msg/chat-is-listening";
 import {motors} from "../../types/motor-configuration";
+import {ExistTokenResponse} from "../../ros-types/srv/exist-token";
 
 @Injectable({
     providedIn: "root",
@@ -131,6 +132,24 @@ export class RosService implements IRosService {
         console.info(JSON.stringify({joint_trajectory: jointTrajectory}));
         this.jointTrajectoryReceiver$.next(structuredClone(jointTrajectory));
         return of(undefined);
+    }
+
+    checkTokenExists(): Observable<ExistTokenResponse> {
+        return new BehaviorSubject({token_exists: true, token_active: true});
+    }
+
+    deleteTokenMessage() {
+        return;
+    }
+
+    encryptToken(token: string, password: string): Observable<boolean> {
+        console.info(JSON.stringify({token: token, password: password}));
+        return new BehaviorSubject(true);
+    }
+
+    decryptToken(password: string): Observable<boolean> {
+        console.info(JSON.stringify({password: password}));
+        return new BehaviorSubject(true);
     }
 
     getChatIsListening(chatId: string): Observable<boolean> {
