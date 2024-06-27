@@ -148,6 +148,34 @@ server.get("/voice-assistant/chat/:chatId/messages", (req, res, next) => {
     return res.status(200).send(response);
 });
 
+//getMessageByChatIdAndMessageId
+server.get("/voice-assistant/chat/:chatId/messages/:messageId", (req, res, next) => {
+    let response = null;
+    mockData.chatMessage.forEach((message) => {
+        if (message.chatId == req.params.chatId && message.messageId == req.params.messageId) {
+            response.push(Message.getMessage(message));
+        }
+    });
+    return res.status(200).send(response);
+});
+
+//putMessageByChatId
+server.put("/voice-assistant/chat/:chatId/messages/:messageId", (req, res, next) => {
+    mockData.chatMessage.forEach((message) => {
+        if (message.messageId == req.params.messageId && message.chatId == req.params.chatId) {
+            message.timestamp = req.body.timestamp;
+            message.isUser = req.body.isUser;
+            message.content = req.body.content,
+            message.chatId = req.params.chatId,
+            updated = true;
+            return res.status(200).send(Message.getMessage(message));
+        }
+    });
+    if (!updated) {
+        return res.status(404).send();
+    }
+});
+
 //postMessageByChatId
 server.post("/voice-assistant/chat/:chatId/messages", (req, res, next) => {
     let response;
