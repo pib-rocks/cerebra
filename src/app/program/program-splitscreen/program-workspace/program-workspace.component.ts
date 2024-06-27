@@ -23,7 +23,7 @@ import {Subscription} from "rxjs";
 @Component({
     selector: "app-program-workspace",
     templateUrl: "./program-workspace.component.html",
-    styleUrls: ["./program-workspace.component.css"],
+    styleUrls: ["./program-workspace.component.scss"],
 })
 export class ProgramWorkspaceComponent
     implements OnInit, AfterViewInit, OnDestroy, OnChanges

@@ -6,6 +6,7 @@ import {
     ReplaySubject,
     throwError,
     tap,
+    of,
 } from "rxjs";
 import {MotorSettingsMessage} from "../../ros-types/msg/motor-settings-message";
 import {DiagnosticStatus} from "../../ros-types/msg/diagnostic-status.message";
@@ -125,6 +126,7 @@ export class RosService implements IRosService {
         }, 1000);
     }
 
+
     checkTokenExists(): Observable<ExistTokenResponse> {
         return new BehaviorSubject({token_exists: true, token_active: true});
     }
@@ -141,6 +143,13 @@ export class RosService implements IRosService {
     decryptToken(password: string): Observable<boolean> {
         console.info(JSON.stringify({password: password}));
         return new BehaviorSubject(true);
+
+    applyJointTrajectory(
+        jointTrajectory: JointTrajectoryMessage,
+    ): Observable<void> {
+        console.info(JSON.stringify({joint_trajectory: jointTrajectory}));
+        this.jointTrajectoryReceiver$.next(structuredClone(jointTrajectory));
+        return of(undefined);
     }
 
     getChatIsListening(chatId: string): Observable<boolean> {
@@ -276,7 +285,7 @@ export class RosService implements IRosService {
         return new BehaviorSubject({feedback, status, result, cancel});
     }
 
-    sendMotorSettingsMessage(
+    applyMotorSettings(
         motorSettingsMessage: MotorSettingsMessage,
     ): Observable<MotorSettingsMessage> {
         console.info(JSON.stringify(motorSettingsMessage));
@@ -312,15 +321,6 @@ export class RosService implements IRosService {
                     ),
             });
         return subject;
-    }
-
-    sendJointTrajectoryMessage(
-        jointTrajectoryMessage: JointTrajectoryMessage,
-    ): void {
-        console.info(JSON.stringify(jointTrajectoryMessage));
-        this.jointTrajectoryReceiver$.next(
-            structuredClone(jointTrajectoryMessage),
-        );
     }
 
     setTimerPeriod(period: number): void {

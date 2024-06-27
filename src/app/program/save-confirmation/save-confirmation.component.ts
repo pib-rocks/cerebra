@@ -5,7 +5,7 @@ import {SaveConfirmationOptions} from "../../shared/types/save-confirmation-opti
 @Component({
     selector: "app-confirm-leave",
     templateUrl: "./save-confirmation.component.html",
-    styleUrls: ["./save-confirmation.component.css"],
+    styleUrls: ["./save-confirmation.component.scss"],
 })
 export class SaveConfirmationComponent {
     @Input() title: string = "Warning";

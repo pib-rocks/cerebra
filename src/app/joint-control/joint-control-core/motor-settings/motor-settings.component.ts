@@ -1,7 +1,7 @@
 import {Component, Input, TemplateRef} from "@angular/core";
 import {FormControl} from "@angular/forms";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
-import {BehaviorSubject} from "rxjs";
+import {BehaviorSubject, map} from "rxjs";
 import {MotorService} from "src/app/shared/services/motor.service";
 import {MotorConfiguration} from "src/app/shared/types/motor-configuration";
 import {MotorSettings} from "src/app/shared/types/motor-settings.class";
@@ -9,7 +9,7 @@ import {MotorSettings} from "src/app/shared/types/motor-settings.class";
 @Component({
     selector: "app-motor-settings",
     templateUrl: "./motor-settings.component.html",
-    styleUrls: ["./motor-settings.component.css"],
+    styleUrls: ["./motor-settings.component.scss"],
 })
 export class MotorSettingsComponent {
     @Input() motor!: MotorConfiguration;
@@ -38,6 +38,7 @@ export class MotorSettingsComponent {
     ngOnInit(): void {
         this.motorService
             .getSettingsObservable(this.motor.sourceMotorName)
+            .pipe(map((settings) => structuredClone(settings)))
             .subscribe((settings) => {
                 this.settings = settings;
                 this.pulseWidthSubject$.next([
@@ -45,8 +46,8 @@ export class MotorSettingsComponent {
                     settings.pulseWidthMax,
                 ]);
                 this.degreeSubject$.next([
-                    settings.rotationRangeMin,
-                    settings.rotationRangeMax,
+                    Math.floor(settings.rotationRangeMin / 100),
+                    Math.floor(settings.rotationRangeMax / 100),
                 ]);
                 this.periodSubject$.next([settings.period]);
                 this.decelerationSubject$.next(settings.deceleration);
@@ -61,8 +62,8 @@ export class MotorSettingsComponent {
         this.modalService.open(content, {
             ariaLabelledBy: "modal-basic-title",
             size: "xl",
-            windowClass: "myCustomModalClass",
-            backdropClass: "myCustomBackdropClass",
+            windowClass: "cerebra-modal",
+            backdropClass: "cerebra-modal-backdrop",
         });
     }
 
@@ -73,8 +74,8 @@ export class MotorSettingsComponent {
     }
 
     setDegree(number: number[]) {
-        this.settings.rotationRangeMin = number[0];
-        this.settings.rotationRangeMax = number[1];
+        this.settings.rotationRangeMin = number[0] * 100;
+        this.settings.rotationRangeMax = number[1] * 100;
         this.motorService.applySettings(this.motor.motorName, this.settings);
     }
 

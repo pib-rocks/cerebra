@@ -14,7 +14,7 @@ import {MotorConfiguration} from "src/app/shared/types/motor-configuration";
 @Component({
     selector: "app-motor-current",
     templateUrl: "./motor-current.component.html",
-    styleUrls: ["./motor-current.component.css"],
+    styleUrls: ["./motor-current.component.scss"],
 })
 export class MotorCurrentComponent implements AfterViewInit, OnDestroy {
     @Input() motor!: MotorConfiguration;

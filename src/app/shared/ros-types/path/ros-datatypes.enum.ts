@@ -13,7 +13,7 @@ export enum rosDataTypes {
     jointTrajectory = "trajectory_msgs/msg/JointTrajectory",
     diagnosticStatus = "diagnostic_msgs/msg/DiagnosticStatus",
     // srv
-    motorSettingsSrv = "datatypes/srv/MotorSettingsSrv",
+    applyMotorSettings = "datatypes/srv/ApplyMotorSettings",
     proxyRunProgramStart = "datatypes/srv/ProxyStartProgram",
     proxyRunProgramStop = "datatypes/srv/ProxyStopProgram",
     proxyRunProgramFeedback = "datatypes/msg/ProxyRunProgramFeedback",
@@ -26,6 +26,7 @@ export enum rosDataTypes {
     get_token_exists = "datatypes/srv/GetTokenExists",
     encryptToken = "datatypes/srv/EncryptToken",
     decryptToken = "datatypes/srv/DecryptToken",
+    applyJointTrajectory = "datatypes/srv/ApplyJointTrajectory",
     // action
     runProgram = "datatypes/action/RunProgram",
 }

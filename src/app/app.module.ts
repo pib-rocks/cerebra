@@ -38,6 +38,7 @@ import {PythonCodeComponent} from "./program/program-splitscreen/python-code/pyt
 import {ConsoleComponent} from "./program/program-splitscreen/console/console.component";
 import {SmartConnectComponent} from "./ui-components/smart-connect/smart-connect.component";
 import {NgOptimizedImage} from "@angular/common";
+import {PoseComponent} from "./joint-control/pose/pose.component";
 
 @NgModule({
     declarations: [
@@ -66,6 +67,7 @@ import {NgOptimizedImage} from "@angular/common";
         ConsoleComponent,
         VoiceAssistantPersonalitySidebarRightComponent,
         SmartConnectComponent,
+        PoseComponent,
     ],
     imports: [
         BrowserModule,
