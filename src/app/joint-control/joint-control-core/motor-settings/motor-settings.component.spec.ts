@@ -38,13 +38,13 @@ describe("MotorSettingsComponent", () => {
 
         settings = {
             velocity: 0,
-            acceleration: 1,
-            deceleration: 2,
-            period: 3,
-            pulseWidthMin: 4,
-            pulseWidthMax: 5,
-            rotationRangeMin: 6,
-            rotationRangeMax: 7,
+            acceleration: 100,
+            deceleration: 200,
+            period: 300,
+            pulseWidthMin: 400,
+            pulseWidthMax: 500,
+            rotationRangeMin: 600,
+            rotationRangeMax: 700,
             turnedOn: true,
             visible: false,
             invert: false,
@@ -60,7 +60,7 @@ describe("MotorSettingsComponent", () => {
             captionRight: "right",
             touchPointCenterX: 0.2,
             touchPointCenterY: 0.3,
-            displaySettings: false,
+            isMultiMotor: true,
             sourceMotorName: "test_motor",
         };
 
@@ -109,23 +109,25 @@ describe("MotorSettingsComponent", () => {
 
         settingsSubject.next(settings);
 
-        expect(pulseWidthSpy).toHaveBeenCalledOnceWith([4, 5]);
+        expect(pulseWidthSpy).toHaveBeenCalledOnceWith([400, 500]);
         expect(degreeSpy).toHaveBeenCalledOnceWith([6, 7]);
-        expect(periodSpy).toHaveBeenCalledOnceWith([3]);
-        expect(decelerationSpy).toHaveBeenCalledOnceWith(2);
-        expect(accelerationSpy).toHaveBeenCalledOnceWith(1);
+        expect(periodSpy).toHaveBeenCalledOnceWith([300]);
+        expect(decelerationSpy).toHaveBeenCalledOnceWith(200);
+        expect(accelerationSpy).toHaveBeenCalledOnceWith(100);
         expect(velocitySpy).toHaveBeenCalledOnceWith(0);
         expect(turnedOnSpy).toHaveBeenCalledOnceWith(true);
-        expect(component.settings).toEqual(jasmine.objectContaining(settings));
+
+        const expectedSettings = structuredClone(settings);
+        expect(component.settings).toEqual(expectedSettings);
     });
 
     it("should set the pulse-width", () => {
         const settingsNew: MotorSettings = structuredClone(settings);
         component.settings = settings;
         component.motor = motor;
-        settingsNew.pulseWidthMin = 10;
-        settingsNew.pulseWidthMax = 11;
-        component.setPulseRanges([10, 11]);
+        settingsNew.pulseWidthMin = 1000;
+        settingsNew.pulseWidthMax = 1100;
+        component.setPulseRanges([1000, 1100]);
         expect(motorService.applySettings).toHaveBeenCalledOnceWith(
             "test_motor",
             settingsNew,
@@ -137,8 +139,8 @@ describe("MotorSettingsComponent", () => {
         const settingsNew: MotorSettings = structuredClone(settings);
         component.settings = settings;
         component.motor = motor;
-        settingsNew.rotationRangeMin = 10;
-        settingsNew.rotationRangeMax = 11;
+        settingsNew.rotationRangeMin = 1000;
+        settingsNew.rotationRangeMax = 1100;
         component.setDegree([10, 11]);
         expect(motorService.applySettings).toHaveBeenCalledOnceWith(
             "test_motor",
@@ -151,8 +153,8 @@ describe("MotorSettingsComponent", () => {
         const settingsNew: MotorSettings = structuredClone(settings);
         component.settings = settings;
         component.motor = motor;
-        settingsNew.period = 10;
-        component.setPeriod(10);
+        settingsNew.period = 1000;
+        component.setPeriod(1000);
         expect(motorService.applySettings).toHaveBeenCalledOnceWith(
             "test_motor",
             settingsNew,
@@ -164,8 +166,8 @@ describe("MotorSettingsComponent", () => {
         const settingsNew: MotorSettings = structuredClone(settings);
         component.settings = settings;
         component.motor = motor;
-        settingsNew.deceleration = 10;
-        component.setDeceleration(10);
+        settingsNew.deceleration = 1000;
+        component.setDeceleration(1000);
         expect(motorService.applySettings).toHaveBeenCalledOnceWith(
             "test_motor",
             settingsNew,
@@ -177,8 +179,8 @@ describe("MotorSettingsComponent", () => {
         const settingsNew: MotorSettings = structuredClone(settings);
         component.settings = settings;
         component.motor = motor;
-        settingsNew.acceleration = 10;
-        component.setAcceleration(10);
+        settingsNew.acceleration = 1000;
+        component.setAcceleration(1000);
         expect(motorService.applySettings).toHaveBeenCalledOnceWith(
             "test_motor",
             settingsNew,
@@ -190,8 +192,8 @@ describe("MotorSettingsComponent", () => {
         const settingsNew: MotorSettings = structuredClone(settings);
         component.settings = settings;
         component.motor = motor;
-        settingsNew.velocity = 10;
-        component.setVelocity(10);
+        settingsNew.velocity = 1000;
+        component.setVelocity(1000);
         expect(motorService.applySettings).toHaveBeenCalledOnceWith(
             "test_motor",
             settingsNew,
@@ -219,8 +221,8 @@ describe("MotorSettingsComponent", () => {
         expect(modalService.open).toHaveBeenCalledOnceWith(content, {
             ariaLabelledBy: "modal-basic-title",
             size: "xl",
-            windowClass: "myCustomModalClass",
-            backdropClass: "myCustomBackdropClass",
+            windowClass: "cerebra-modal",
+            backdropClass: "cerebra-modal-backdrop",
         });
     });
 });

@@ -405,10 +405,10 @@ describe("RosMockService", () => {
             joint_names: [],
             points: [],
         };
-        service.sendJointTrajectoryMessage(jt);
+        service.applyJointTrajectory(jt);
         expect(sendJointTrajectorySpy).toHaveBeenCalledOnceWith(jt);
         expect(consoleInfoSpy).toHaveBeenCalledOnceWith(
-            '{"header":{"stamp":{"sec":1,"nanosec":2},"frame_id":""},"joint_names":[],"points":[]}',
+            '{"joint_trajectory":{"header":{"stamp":{"sec":1,"nanosec":2},"frame_id":""},"joint_names":[],"points":[]}}',
         );
     });
 
@@ -446,7 +446,7 @@ describe("RosMockService", () => {
             visible: false,
         };
         apiService.put.and.returnValue(new BehaviorSubject(motorSettings));
-        service.sendMotorSettingsMessage(motorSettingsMessage);
+        service.applyMotorSettings(motorSettingsMessage);
         expect(sendMotorSettingsSpy).toHaveBeenCalledOnceWith(
             motorSettingsMessage,
         );

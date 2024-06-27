@@ -9,7 +9,7 @@ import {ExecutionState, ProgramState} from "src/app/shared/types/program-state";
 @Component({
     selector: "app-program-splitscreen",
     templateUrl: "./program-splitscreen.component.html",
-    styleUrls: ["./program-splitscreen.component.css"],
+    styleUrls: ["./program-splitscreen.component.scss"],
 })
 export class ProgramSplitscreenComponent implements OnInit {
     constructor(

@@ -6,7 +6,7 @@ import {ExecutionState, ProgramState} from "src/app/shared/types/program-state";
 @Component({
     selector: "app-console",
     templateUrl: "./console.component.html",
-    styleUrls: ["./console.component.css"],
+    styleUrls: ["./console.component.scss"],
 })
 export class ConsoleComponent {
     @Input() output$!: Observable<ProgramOutputLine[]>;
