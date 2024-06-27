@@ -60,6 +60,7 @@ import {
     DecryptTokenResponse,
 } from "../../ros-types/srv/decrypt-token";
 import {ExistTokenResponse} from "../../ros-types/srv/exist-token";
+import {
     ApplyJointTrajectoryRequest,
     ApplyJointTrajectoryResponse,
 } from "../../ros-types/srv/apply-joint-trajectory";
@@ -279,7 +280,7 @@ export class RosService implements IRosService {
         this.decryptTokenService = this.createRosService(
             rosServices.decryptToken,
             rosDataTypes.decryptToken,
-
+        );
         this.applyJointTrajectoryService = this.createRosService(
             rosServices.applyJointTrajectory,
             rosDataTypes.applyJointTrajectory,

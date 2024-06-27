@@ -126,7 +126,6 @@ export class RosService implements IRosService {
         }, 1000);
     }
 
-
     checkTokenExists(): Observable<ExistTokenResponse> {
         return new BehaviorSubject({token_exists: true, token_active: true});
     }
@@ -143,6 +142,7 @@ export class RosService implements IRosService {
     decryptToken(password: string): Observable<boolean> {
         console.info(JSON.stringify({password: password}));
         return new BehaviorSubject(true);
+    }
 
     applyJointTrajectory(
         jointTrajectory: JointTrajectoryMessage,
