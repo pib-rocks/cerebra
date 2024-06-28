@@ -21,7 +21,6 @@ export class VoiceAssistantComponent implements OnInit {
     imgSrc: string = "../../assets/toggle-switch-left.png";
     subject!: Observable<SidebarElement[]>;
     models!: AssistantModel[];
-
     button: {enabled: boolean; func: () => void} = {
         enabled: true,
         func: () => {
@@ -72,6 +71,7 @@ export class VoiceAssistantComponent implements OnInit {
                 validators: [Validators.required],
             }),
         });
+
         this.voiceAssistantService.uuidSubject.subscribe((uuid: string) => {
             this.openEditModal(uuid);
         });
