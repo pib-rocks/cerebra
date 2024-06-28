@@ -59,19 +59,8 @@ export class ChatWindowComponent implements OnInit {
                 .pipe(map((messages) => messages))
                 .subscribe(
                     (messages) =>
-                        (this.messages = messages
-                            .filter((message, index, messages) => {
-                                if (index + 1 >= messages.length) {
-                                    return true;
-                                }
-                                if (
-                                    message.messageId ==
-                                    messages[index + 1].messageId
-                                ) {
-                                    return false;
-                                }
-                                return true;
-                            })
+                        (this.messages = this.chatService
+                            .filterMessageUpdates(messages)
                             .slice()
                             .reverse()),
                 );
