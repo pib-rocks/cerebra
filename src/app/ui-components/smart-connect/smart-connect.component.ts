@@ -69,8 +69,8 @@ export class SmartConnectComponent {
                 .open(content, {
                     ariaLabelledBy: "modal-basic-title",
                     size: "md",
-                    windowClass: "myCustomModalClass",
-                    backdropClass: "myCustomBackdropClass",
+                    windowClass: "cerebra-modal",
+                    backdropClass: "cerebra-modal-backdrop",
                 })
                 .dismissed.subscribe(() => {
                     this.onErrorSubmit = false;
