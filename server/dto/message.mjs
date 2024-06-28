@@ -1,3 +1,4 @@
+import GenertateId from "../util/generateId.mjs";
 export class Message {
     constructor(messageId, timestamp, isUser, content, chatId) {
         this.messageId = messageId;

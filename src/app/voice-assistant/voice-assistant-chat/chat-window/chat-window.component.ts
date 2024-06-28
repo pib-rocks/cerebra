@@ -16,8 +16,10 @@ export class ChatWindowComponent implements OnInit {
     chat?: Chat;
     personalityName: string | undefined;
     messages?: ChatMessage[];
+    extendedMessages?: ChatMessage[];
 
     chatMessagesSubscription: Subscription | undefined;
+    chatMessagesUpdateSubscription: Subscription | undefined;
     textInputActiveSubscription: Subscription | undefined;
 
     chatMessageFormControl: FormControl<string> = new FormControl();
@@ -39,6 +41,7 @@ export class ChatWindowComponent implements OnInit {
     ngOnInit(): void {
         this.route.params.subscribe((params: Params) => {
             this.chatMessagesSubscription?.unsubscribe();
+            this.chatMessagesUpdateSubscription?.unsubscribe();
             this.textInputActiveSubscription?.unsubscribe();
 
             const chatId = params["chatUuid"];
@@ -53,8 +56,14 @@ export class ChatWindowComponent implements OnInit {
 
             this.chatMessagesSubscription = this.chatService
                 .getChatMessagesObservable(chatId)
-                .pipe(map((messages) => messages.slice().reverse()))
-                .subscribe((messages) => (this.messages = messages));
+                .pipe(map((messages) => messages))
+                .subscribe(
+                    (messages) =>
+                        (this.messages = this.chatService
+                            .filterMessageUpdates(messages)
+                            .slice()
+                            .reverse()),
+                );
 
             this.chat = this.chatService.getChat(chatId);
             if (this.chat) {
