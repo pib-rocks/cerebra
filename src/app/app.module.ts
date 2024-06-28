@@ -66,8 +66,8 @@ import {PoseComponent} from "./joint-control/pose/pose.component";
         PythonCodeComponent,
         ConsoleComponent,
         VoiceAssistantPersonalitySidebarRightComponent,
-        SmartConnectComponent,
         PoseComponent,
+        SmartConnectComponent,
     ],
     imports: [
         BrowserModule,

@@ -151,6 +151,14 @@ export class RosService implements IRosService {
         }, 1000);
     }
 
+    applyJointTrajectory(
+        jointTrajectory: JointTrajectoryMessage,
+    ): Observable<void> {
+        console.info(JSON.stringify({joint_trajectory: jointTrajectory}));
+        this.jointTrajectoryReceiver$.next(structuredClone(jointTrajectory));
+        return of(undefined);
+    }
+
     checkTokenExists(): Observable<ExistTokenResponse> {
         return new BehaviorSubject({token_exists: true, token_active: true});
     }
@@ -167,14 +175,6 @@ export class RosService implements IRosService {
     decryptToken(password: string): Observable<boolean> {
         console.info(JSON.stringify({password: password}));
         return new BehaviorSubject(true);
-    }
-
-    applyJointTrajectory(
-        jointTrajectory: JointTrajectoryMessage,
-    ): Observable<void> {
-        console.info(JSON.stringify({joint_trajectory: jointTrajectory}));
-        this.jointTrajectoryReceiver$.next(structuredClone(jointTrajectory));
-        return of(undefined);
     }
 
     getChatIsListening(chatId: string): Observable<boolean> {

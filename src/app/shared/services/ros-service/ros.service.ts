@@ -52,6 +52,10 @@ import {
     GetChatIsListeningResponse,
 } from "../../ros-types/srv/get-chat-is-listening";
 import {
+    ApplyJointTrajectoryRequest,
+    ApplyJointTrajectoryResponse,
+} from "../../ros-types/srv/apply-joint-trajectory";
+import {
     EncryptTokenRequest,
     EncryptTokenResponse,
 } from "../../ros-types/srv/encrypt-token";
@@ -60,10 +64,6 @@ import {
     DecryptTokenResponse,
 } from "../../ros-types/srv/decrypt-token";
 import {ExistTokenResponse} from "../../ros-types/srv/exist-token";
-import {
-    ApplyJointTrajectoryRequest,
-    ApplyJointTrajectoryResponse,
-} from "../../ros-types/srv/apply-joint-trajectory";
 
 @Injectable({
     providedIn: "root",
@@ -151,7 +151,6 @@ export class RosService implements IRosService {
         ProxyRunProgramStopRequest,
         Record<string, never>
     >;
-
     private applyJointTrajectoryService!: ROSLIB.Service<
         ApplyJointTrajectoryRequest,
         ApplyJointTrajectoryResponse
@@ -269,6 +268,10 @@ export class RosService implements IRosService {
             rosServices.getChatIsListening,
             rosDataTypes.getChatIsListening,
         );
+        this.applyJointTrajectoryService = this.createRosService(
+            rosServices.applyJointTrajectory,
+            rosDataTypes.applyJointTrajectory,
+        );
         this.existTokenService = this.createRosService(
             rosServices.get_token_exists,
             rosDataTypes.get_token_exists,
@@ -280,10 +283,6 @@ export class RosService implements IRosService {
         this.decryptTokenService = this.createRosService(
             rosServices.decryptToken,
             rosDataTypes.decryptToken,
-        );
-        this.applyJointTrajectoryService = this.createRosService(
-            rosServices.applyJointTrajectory,
-            rosDataTypes.applyJointTrajectory,
         );
     }
 
