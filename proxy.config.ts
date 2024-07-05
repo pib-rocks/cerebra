@@ -1,7 +1,7 @@
 const config = require("./src/app/global-conf.json");
 
 const proxyConfig = {
-    "/api/*": {
+    "/api": {
         target: config.protocol + config.ip + ":" + config.portTarget,
         secure: config.secure,
         changeOrigin: config.changeOrigin,
