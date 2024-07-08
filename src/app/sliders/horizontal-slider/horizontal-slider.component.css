@@ -98,7 +98,14 @@ span {
 
 .circle {
     r: clamp(12px, 1.5vw, 24px);
-    cy: 2.5vw;
+    cy: clamp(12px, 1.5vw, 24px);
+}
+
+@media screen and (max-width: 600px) {
+    .circle {
+        r: clamp(8px, 4vw, 16px);
+        cy: clamp(8px, 4vw, 16px);
+    }
 }
 
 @media screen and (min-width: 1900px) {
@@ -109,13 +116,20 @@ span {
     }
 
     .circle {
-        r: clamp(12px, 1.5vw, 24px);
-        cy: 1.5vw;
+        r: clamp(12px, 2vw, 24px);
+        cy: clamp(12px, 2vw, 24px);
     }
 
     p {
         font-size: 18px;
         font-weight: bold;
+    }
+}
+
+@media screen and (min-width: 830px) {
+    .circle {
+        r: clamp(7px, 2vw, 24px);
+        cy: clamp(7px, 2vw, 24px);
     }
 }
 
