@@ -80,13 +80,13 @@ describe("ChatWindowComponent", () => {
 
     it("should get the correct chat-message observable and obtain its messages from it", () => {
         const firstMessage: ChatMessage = {
-            messageId: "message-id",
+            messageId: "message-id0",
             timestamp: "yesterday",
             isUser: false,
             content: "hello world",
         };
         const secondMessage: ChatMessage = {
-            messageId: "message-id",
+            messageId: "message-id1",
             timestamp: "today",
             isUser: false,
             content: "hello world",
