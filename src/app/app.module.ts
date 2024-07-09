@@ -39,7 +39,6 @@ import {ConsoleComponent} from "./program/program-splitscreen/console/console.co
 import {SmartConnectComponent} from "./ui-components/smart-connect/smart-connect.component";
 import {NgOptimizedImage} from "@angular/common";
 import {PoseComponent} from "./joint-control/pose/pose.component";
-import {MarkdownModule} from "ngx-markdown";
 
 @NgModule({
     declarations: [
@@ -84,7 +83,6 @@ import {MarkdownModule} from "ngx-markdown";
         AngularSplitModule,
         HighlightModule,
         NgOptimizedImage,
-        MarkdownModule.forRoot(),
     ],
     providers: [
         {
