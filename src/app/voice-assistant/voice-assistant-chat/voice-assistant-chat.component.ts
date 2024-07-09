@@ -1,8 +1,14 @@
-import {Component, OnInit, TemplateRef, ViewChild} from "@angular/core";
+import {
+    Component,
+    OnDestroy,
+    OnInit,
+    TemplateRef,
+    ViewChild,
+} from "@angular/core";
 import {FormControl, Validators} from "@angular/forms";
 import {ActivatedRoute, Router} from "@angular/router";
 import {NgbModal, NgbModalRef} from "@ng-bootstrap/ng-bootstrap";
-import {Observable, Subject} from "rxjs";
+import {Observable, Subject, Subscription} from "rxjs";
 import {SidebarElement} from "src/app/shared/interfaces/sidebar-element.interface";
 import {ChatService} from "src/app/shared/services/chat.service";
 import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
@@ -17,7 +23,7 @@ import {Location} from "@angular/common";
     templateUrl: "./voice-assistant-chat.component.html",
     styleUrls: ["./voice-assistant-chat.component.scss"],
 })
-export class VoiceAssistantChatComponent implements OnInit {
+export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
     @ViewChild("modalContent") modalContent: TemplateRef<any> | undefined;
     ngbModalRef?: NgbModalRef;
     personalityIcon: string = "../../assets/voice-assistant-svgs/chat/chat.svg";
@@ -32,6 +38,7 @@ export class VoiceAssistantChatComponent implements OnInit {
     activePersonalityId: string = "";
     currentChatId: string | null = "";
     voiceAssistantActivationToggle = new FormControl(false);
+    chatSubjectSubscription!: Subscription;
 
     constructor(
         private modalService: NgbModal,
@@ -90,7 +97,14 @@ export class VoiceAssistantChatComponent implements OnInit {
                 Validators.minLength(2),
                 Validators.maxLength(255),
             ]);
+            this.toggleDeleteChat(this.chatService.chats);
         });
+
+        this.chatSubjectSubscription = this.chatService.chatSubject.subscribe(
+            (chats) => {
+                this.toggleDeleteChat(chats);
+            },
+        );
     }
 
     showModal = () => {
@@ -191,6 +205,23 @@ export class VoiceAssistantChatComponent implements OnInit {
         if (deleteChat) {
             deleteChat.disabled = this.turnedOn;
         }
+    }
+
+    toggleDeleteChat(chats: Chat[]) {
+        const filteredChats = chats.filter((chat) => {
+            return chat.personalityId === this.personalityId;
+        });
+        const numberOfChats = filteredChats.length;
+        const deleteChat = this.dropdownCallbackMethods.find(
+            (e) => e.label === "Delete chat",
+        );
+        if (deleteChat && !this.turnedOn) {
+            deleteChat.disabled = numberOfChats <= 1;
+        }
+    }
+
+    ngOnDestroy(): void {
+        this.chatSubjectSubscription.unsubscribe();
     }
 
     optionCallbackMethods = [
