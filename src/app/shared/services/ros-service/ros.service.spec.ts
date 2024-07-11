@@ -75,6 +75,10 @@ describe("RosService", () => {
         expect(rosService["setVoiceAssistantStateService"]).toBeTruthy();
         expect(rosService["chatMessageTopic"]).toBeTruthy();
         expect(rosService["chatIsListeningTopic"]).toBeTruthy();
+        expect(rosService["existTokenService"]).toBeTruthy();
+        expect(rosService["encryptTokenService"]).toBeTruthy();
+        expect(rosService["decryptTokenService"]).toBeTruthy();
+        expect(rosService["deleteTokenTopic"]).toBeTruthy();
     });
 
     it("should call the set_voice_assistant_state ros service", () => {
@@ -546,6 +550,105 @@ describe("RosService", () => {
         expect(subscriber.error).toHaveBeenCalledTimes(1);
         expect(callServiceSpy).toHaveBeenCalledOnceWith(
             {chat_id: chatId, content: chatMessageContent},
+            jasmine.any(Function),
+            jasmine.any(Function),
+        );
+    });
+
+    it("should check if token exists", () => {
+        const callServiceSpy = spyOn(
+            rosService["existTokenService"],
+            "callService",
+        ).and.callFake((_request, successCallback, _errorCallback) => {
+            successCallback({token_exists: false, token_active: false});
+        });
+
+        rosService.checkTokenExists().subscribe(subscriber);
+        expect(subscriber.next).toHaveBeenCalledTimes(1);
+        expect(callServiceSpy).toHaveBeenCalledOnceWith(
+            {},
+            jasmine.any(Function),
+            jasmine.any(Function),
+        );
+    });
+
+    it("should encrypt token", () => {
+        const token = "testToken";
+        const password = "testPassword";
+
+        const callServiceSpy = spyOn(
+            rosService["encryptTokenService"],
+            "callService",
+        ).and.callFake((_request, successCallback, _errorCallback) => {
+            successCallback({successful: true});
+        });
+
+        rosService.encryptToken(token, password).subscribe(subscriber);
+        expect(subscriber.next).toHaveBeenCalledTimes(1);
+        expect(subscriber.next).toHaveBeenCalledWith(true);
+        expect(callServiceSpy).toHaveBeenCalledOnceWith(
+            {token: token, password: password},
+            jasmine.any(Function),
+            jasmine.any(Function),
+        );
+    });
+
+    it("should return false on error encrypt token", () => {
+        const token = "testToken";
+        const password = "testPassword";
+
+        const callServiceSpy = spyOn(
+            rosService["encryptTokenService"],
+            "callService",
+        ).and.callFake((_request, _successCallback, errorCallback) => {
+            errorCallback?.("some error");
+        });
+
+        rosService.encryptToken(token, password).subscribe(subscriber);
+        expect(subscriber.next).toHaveBeenCalledTimes(1);
+        expect(subscriber.next).toHaveBeenCalledWith(false);
+        expect(callServiceSpy).toHaveBeenCalledOnceWith(
+            {token: token, password: password},
+            jasmine.any(Function),
+            jasmine.any(Function),
+        );
+    });
+
+    it("should decrypt token", () => {
+        const password = "testPassword";
+
+        const callServiceSpy = spyOn(
+            rosService["decryptTokenService"],
+            "callService",
+        ).and.callFake((_request, successCallback, _errorCallback) => {
+            successCallback({successful: true});
+        });
+
+        rosService.decryptToken(password).subscribe(subscriber);
+        expect(subscriber.next).toHaveBeenCalledTimes(1);
+        expect(subscriber.next).toHaveBeenCalledWith(true);
+        expect(callServiceSpy).toHaveBeenCalledOnceWith(
+            {password: password},
+            jasmine.any(Function),
+            jasmine.any(Function),
+        );
+    });
+
+    it("should return false on error decrypt token", () => {
+        const password = "testPassword";
+
+        const callServiceSpy = spyOn(
+            rosService["decryptTokenService"],
+            "callService",
+        ).and.callFake((_request, _successCallback, errorCallback) => {
+            errorCallback?.("some error");
+        });
+
+        rosService.decryptToken(password).subscribe(subscriber);
+        expect(subscriber.next).toHaveBeenCalledTimes(1);
+        expect(subscriber.next).toHaveBeenCalledWith(false);
+        expect(callServiceSpy).toHaveBeenCalledOnceWith(
+            {password: password},
             jasmine.any(Function),
             jasmine.any(Function),
         );

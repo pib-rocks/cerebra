@@ -206,4 +206,16 @@ export class ChatService implements SidebarService {
         }
         return subject;
     }
+
+    filterMessageUpdates(message: ChatMessage[]) {
+        return message.filter((message, index, messages) => {
+            if (index + 1 >= messages.length) {
+                return true;
+            }
+            if (message.messageId == messages[index + 1].messageId) {
+                return false;
+            }
+            return true;
+        });
+    }
 }

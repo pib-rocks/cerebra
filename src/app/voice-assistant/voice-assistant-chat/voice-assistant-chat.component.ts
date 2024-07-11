@@ -26,7 +26,6 @@ export class VoiceAssistantChatComponent implements OnInit {
     personality?: VoiceAssistant;
     personalityId?: string | null;
     uuid: string | undefined;
-
     selected: Subject<string> = new Subject();
     turnedOn: boolean = false;
     activeChatId: string = "";

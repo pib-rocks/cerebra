@@ -26,7 +26,6 @@ export class ProgramComponent implements OnInit, AfterViewInit {
     subject!: Observable<SidebarElement[]>;
     nameFormControl: FormControl = new FormControl("");
     program: Program | undefined;
-
     selected: Subject<string> = new Subject();
 
     constructor(
