@@ -12,6 +12,7 @@ services:
             args:
                 NODE_ENV: production # or 'development' for dev build
         ports:
-            - "8080:80"
+            - "80:80"
         networks:
             - pib-network
+        restart: always
