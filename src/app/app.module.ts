@@ -100,6 +100,5 @@ import {PoseComponent} from "./joint-control/pose/pose.component";
         },
     ],
     bootstrap: [AppComponent],
-    // entryComponents: [MatDialogModule],
 })
 export class AppModule {}
