@@ -91,48 +91,9 @@ span {
     transform: translate(-50%, 0px);
 }
 
-.rect {
-    y: 19px;
-    height: clamp(12px, 1.5vw, 24px);
-}
-
-.circle {
-    r: clamp(12px, 1.5vw, 24px);
-    cy: clamp(12px, 1.5vw, 24px);
-}
-
-@media screen and (max-width: 600px) {
-    .circle {
-        r: clamp(8px, 4vw, 16px);
-        cy: clamp(8px, 4vw, 16px);
-    }
-}
-
 @media screen and (min-width: 1900px) {
-    .bubble-row {
-        height: clamp(24px, 2.5vw, 4px);
-        position: relative;
-        margin-bottom: 14px;
-    }
-
-    .circle {
-        r: clamp(12px, 2vw, 24px);
-        cy: clamp(12px, 2vw, 24px);
-    }
-
     p {
         font-size: 18px;
         font-weight: bold;
     }
-}
-
-@media screen and (min-width: 830px) {
-    .circle {
-        r: clamp(7px, 2vw, 24px);
-        cy: clamp(7px, 2vw, 24px);
-    }
-}
-
-.slider-row {
-    min-height: 55px;
 }

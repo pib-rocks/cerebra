@@ -76,6 +76,7 @@
                 [leftValue]="0"
                 [rightValue]="65535"
                 [numberOfThumbs]="2"
+                [trackHeight]="16"
                 [step]="1"
                 [unitLong]="'μs'"
                 [name]="'Pulse width'"
@@ -93,6 +94,7 @@
                 [leftValue]="-90"
                 [rightValue]="90"
                 [numberOfThumbs]="2"
+                [trackHeight]="16"
                 [step]="1"
                 [unitShort]="'°'"
                 [unitLong]="'°/100'"
@@ -115,6 +117,7 @@
                 [numberOfThumbs]="1"
                 [unitLong]="'μs'"
                 [defaultValues]="[settings.period]"
+                [trackHeight]="16"
                 [step]="1"
                 [messageReceiver$]="periodSubject$"
                 (sliderEvent)="setPeriod($event[0])"></app-horizontal-slider>
