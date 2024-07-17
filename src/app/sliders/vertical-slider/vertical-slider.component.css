@@ -43,9 +43,9 @@ p span {
     --pos-relative: 0;
     -webkit-appearance: none;
     /* -webkit-appearance: slider-vertical; */
-    height: 12px;
+    height: clamp(12px, 1.2vw, 18px);
     width: 350px;
-    border-radius: 5px;
+    border-radius: clamp(5px, 1vw, 10px);
     background: linear-gradient(
         to right,
         #e10072,
@@ -59,8 +59,8 @@ p span {
 input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
     border: none;
-    height: 24px;
-    width: 24px;
+    height: clamp(12px, 1.5vw, 24px);
+    width: clamp(12px, 1.5vw, 24px);
     border-radius: 50%;
     background: #e10072;
 }
