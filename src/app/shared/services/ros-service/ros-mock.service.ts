@@ -229,6 +229,7 @@ export class RosService implements IRosService {
         const firstFeedbackTimer = setTimeout(
             () =>
                 feedback.next({
+                    mpid: 0,
                     output_lines: [
                         {
                             is_stderr: false,
@@ -241,6 +242,7 @@ export class RosService implements IRosService {
         const secondFeedbackTimer = setTimeout(
             () =>
                 feedback.next({
+                    mpid: 0,
                     output_lines: [
                         {
                             is_stderr: false,
@@ -352,5 +354,9 @@ export class RosService implements IRosService {
     unsubscribeCameraTopic(): void {
         clearInterval(this.cameraTimer);
         this.cameraTimer = undefined;
+    }
+
+    publishProgramInput(input: string, mpid: number) {
+        console.info(JSON.stringify({input, mpid}));
     }
 }

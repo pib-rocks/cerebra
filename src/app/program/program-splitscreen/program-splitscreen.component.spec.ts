@@ -7,7 +7,7 @@ import {ProgramService} from "src/app/shared/services/program.service";
 import {BehaviorSubject, Subject} from "rxjs";
 import {ProgramWorkspaceComponent} from "./program-workspace/program-workspace.component";
 import {ExecutionState, ProgramState} from "src/app/shared/types/program-state";
-import {ProgramOutputLine} from "src/app/shared/types/program-output-line";
+import {ProgramOutput} from "src/app/shared/types/program-output";
 
 describe("ProgramSplitscreenComponent", () => {
     let component: ProgramSplitscreenComponent;
@@ -129,7 +129,7 @@ describe("ProgramSplitscreenComponent", () => {
         const programNumber = "test-number";
         component.programNumber = programNumber;
 
-        const programOutput = new Subject<ProgramOutputLine[]>();
+        const programOutput = new Subject<ProgramOutput>();
         const programState = new Subject<ProgramState>();
         programService.getProgramOutput.and.returnValue(programOutput);
         programService.getProgramState.and.returnValue(programState);

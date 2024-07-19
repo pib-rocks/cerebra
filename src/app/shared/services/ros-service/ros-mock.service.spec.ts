@@ -109,6 +109,7 @@ describe("RosMockService", () => {
         tick(500);
         expect(feedbackSubscriber).toHaveBeenCalledTimes(1);
         expect(feedbackSubscriber).toHaveBeenCalledWith({
+            mpid: 0,
             output_lines: [
                 {
                     is_stderr: false,
@@ -119,6 +120,7 @@ describe("RosMockService", () => {
         tick(500);
         expect(feedbackSubscriber).toHaveBeenCalledTimes(2);
         expect(feedbackSubscriber).toHaveBeenCalledWith({
+            mpid: 0,
             output_lines: [
                 {
                     is_stderr: false,
@@ -626,5 +628,15 @@ describe("RosMockService", () => {
             expect(result).toBe(true);
             done();
         });
+    });
+
+    it("should publish the program input", () => {
+        const consoleInfoSpy = spyOn(console, "info");
+        const mpid = 0;
+        const input = "hello";
+        service.publishProgramInput(input, mpid);
+        expect(consoleInfoSpy).toHaveBeenCalledOnceWith(
+            `{"input":"${input}","mpid":${mpid}}`,
+        );
     });
 });

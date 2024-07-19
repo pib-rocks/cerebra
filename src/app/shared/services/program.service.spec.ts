@@ -13,6 +13,7 @@ import {
     RunProgramResult,
 } from "../ros-types/action/run-program";
 import {RosService} from "./ros-service/ros.service";
+import {ProgramOutput} from "../types/program-output";
 
 describe("ProgramService", () => {
     let programService: ProgramService;
@@ -74,7 +75,7 @@ describe("ProgramService", () => {
 
         const rosServiceSpy: jasmine.SpyObj<RosService> = jasmine.createSpyObj(
             RosService.name,
-            ["runProgram"],
+            ["runProgram", "publishProgramInput"],
         );
 
         TestBed.configureTestingModule({
@@ -487,12 +488,14 @@ describe("ProgramService", () => {
         const state: ProgramState = {
             executionState: ExecutionState.NOT_STARTED,
         };
-        const output: ProgramOutputLine[] = [
-            {
-                content: "goodbye",
-                isStderr: true,
-            },
-        ];
+        const output: ProgramOutput = {
+            lines: [
+                {
+                    content: "goodbye",
+                    isStderr: true,
+                },
+            ],
+        };
 
         const stateSubject = new BehaviorSubject(state);
         const outputSubject = new BehaviorSubject(output);
@@ -531,13 +534,14 @@ describe("ProgramService", () => {
         expect(stateNextSpy).toHaveBeenCalledWith({
             executionState: ExecutionState.RUNNING,
         });
-        expect(outputNextSpy).toHaveBeenCalledOnceWith([]);
+        expect(outputNextSpy).toHaveBeenCalledOnceWith({lines: []});
         expect(programNumberToCancelSetSpy).toHaveBeenCalledOnceWith(
             programnNumber,
             jasmine.any(Function),
         );
 
         feedbackSubject.next({
+            mpid: 0,
             output_lines: [
                 {
                     content: "hello",
@@ -549,20 +553,22 @@ describe("ProgramService", () => {
                 },
             ],
         });
-        expect(outputNextSpy).toHaveBeenCalledWith([
-            {
-                content: "goodbye",
-                isStderr: true,
-            },
-            {
-                content: "hello",
-                isStderr: false,
-            },
-            {
+        expect(outputNextSpy).toHaveBeenCalledWith({
+            lines: [
+                {
+                    content: "goodbye",
+                    isStderr: true,
+                },
+                {
+                    content: "hello",
+                    isStderr: false,
+                },
+            ],
+            lastLine: {
                 content: "world",
                 isStderr: true,
             },
-        ]);
+        });
 
         resultSubject.next({
             exit_code: 0,
@@ -590,5 +596,107 @@ describe("ProgramService", () => {
             executionState: ExecutionState.FINISHED_ERROR,
             exitCode: 2,
         });
+    });
+
+    it("should provide input to the program with last-line", () => {
+        const programNumber = "program-number";
+        const mpid = 0;
+        const input = "this is the input for the program";
+        const lines = [{isStderr: true, content: "first"}];
+        const lastLine = {isStderr: false, content: "last"};
+        programService.programNumberToMpid.set(programNumber, mpid);
+        const outputSubject = new BehaviorSubject<ProgramOutput>(
+            structuredClone({lines, lastLine}),
+        );
+        utilService.getFromMapOrDefault.and.returnValue(outputSubject);
+        programService.programNumberToOutput.set(programNumber, outputSubject);
+
+        const outputSubscriber = jasmine.createSpyObj("suscriber", [
+            "next",
+            "error",
+        ]);
+        outputSubject.subscribe(outputSubscriber);
+
+        programService.provideProgramInput(programNumber, input);
+
+        expect(rosService.publishProgramInput).toHaveBeenCalledOnceWith(
+            input,
+            mpid,
+        );
+        expect(outputSubscriber.error).not.toHaveBeenCalled();
+        expect(outputSubscriber.next).toHaveBeenCalledWith({
+            lines: [
+                ...lines,
+                {
+                    isStderr: lastLine.isStderr,
+                    content: lastLine.content + input,
+                },
+            ],
+            lastLine: undefined,
+        });
+    });
+
+    it("should provide input to the program without last-line", () => {
+        const programNumber = "program-number";
+        const mpid = 0;
+        const input = "this is the input for the program";
+        const lines = [{isStderr: true, content: "first"}];
+        const lastLine = undefined;
+        programService.programNumberToMpid.set(programNumber, mpid);
+        const outputSubject = new BehaviorSubject<ProgramOutput>(
+            structuredClone({lines, lastLine}),
+        );
+        utilService.getFromMapOrDefault.and.returnValue(outputSubject);
+        programService.programNumberToOutput.set(programNumber, outputSubject);
+
+        const outputSubscriber = jasmine.createSpyObj("suscriber", [
+            "next",
+            "error",
+        ]);
+        outputSubject.subscribe(outputSubscriber);
+
+        programService.provideProgramInput(programNumber, input);
+
+        expect(rosService.publishProgramInput).toHaveBeenCalledOnceWith(
+            input,
+            mpid,
+        );
+        expect(outputSubscriber.error).not.toHaveBeenCalled();
+        expect(outputSubscriber.next).toHaveBeenCalledWith({
+            lines: [
+                ...lines,
+                {
+                    isStderr: false,
+                    content: input,
+                },
+            ],
+            lastLine: undefined,
+        });
+    });
+
+    it("should not provide input to the program if no mpid is associated with it", () => {
+        const programNumber = "program-number";
+        const input = "this is the input for the program";
+        const lines = [{isStderr: true, content: "first"}];
+        const lastLine = undefined;
+        const outputSubject = new BehaviorSubject<ProgramOutput>(
+            structuredClone({lines, lastLine}),
+        );
+        utilService.getFromMapOrDefault.and.returnValue(outputSubject);
+        programService.programNumberToOutput.set(programNumber, outputSubject);
+
+        const outputSubscriber = jasmine.createSpyObj("suscriber", [
+            "next",
+            "error",
+        ]);
+        outputSubject.subscribe(outputSubscriber);
+
+        expect(() =>
+            programService.provideProgramInput(programNumber, input),
+        ).toThrow();
+
+        expect(rosService.publishProgramInput).not.toHaveBeenCalled();
+        expect(outputSubscriber.error).not.toHaveBeenCalled();
+        expect(outputSubscriber.next).not.toHaveBeenCalledWith();
     });
 });

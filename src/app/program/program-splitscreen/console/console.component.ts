@@ -73,7 +73,7 @@ export class ConsoleComponent implements AfterViewInit, OnChanges {
     }
 
     private get programInputAreaElement(): HTMLElement | undefined {
-        return this.programInputArea.nativeElement as HTMLElement;
+        return this.programInputArea?.nativeElement as HTMLElement;
     }
 
     private get lastLineContent(): string {
@@ -82,7 +82,7 @@ export class ConsoleComponent implements AfterViewInit, OnChanges {
 
     private resizeProgramInputArea() {
         const element = this.programInputAreaElement;
-        if (element) {
+        if (element?.style) {
             element.style.height = "auto";
             element.style.height = `${element.scrollHeight}px`;
         }
