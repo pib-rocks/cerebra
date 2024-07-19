@@ -177,10 +177,6 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
         }
     }
 
-    export() {
-        throw Error("not implemented");
-    }
-
     toggleVoiceAssistant() {
         const turnedOn = !this.voiceAssistantActivationToggle.value;
         const nextState: VoiceAssistantState = {turnedOn, chatId: ""};
@@ -239,12 +235,6 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
             label: "Rename",
             clickCallback: this.openEditModal.bind(this),
             disabled: false,
-        },
-        {
-            icon: "../../assets/export.svg",
-            label: "Export chat",
-            clickCallback: this.export.bind(this),
-            disabled: true,
         },
         {
             icon: "../../assets/delete.svg",
