@@ -15,7 +15,6 @@ export enum rosDataTypes {
     proxyRunProgramFeedback = "datatypes/msg/ProxyRunProgramFeedback",
     proxyRunProgramResult = "datatypes/msg/ProxyRunProgramResult",
     proxyRunProgramStatus = "datatypes/msg/ProxyRunProgramStatus",
-    programPrompt = "datatypes/msg/ProgramPrompt",
     programInput = "datatypes/msg/ProgramInput",
     // srv
     applyMotorSettings = "datatypes/srv/ApplyMotorSettings",

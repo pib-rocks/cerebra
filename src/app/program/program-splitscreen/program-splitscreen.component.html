@@ -66,8 +66,9 @@
                 </as-split-area>
                 <as-split-area [size]="50">
                     <app-console
-                        [output$]="output$"
-                        [state$]="state$"></app-console>
+                        [programOutput$]="programOutput$"
+                        (programInput)="onProgramInputReceived($event)"
+                        [programState$]="programState$"></app-console>
                 </as-split-area>
             </as-split>
         </as-split-area>

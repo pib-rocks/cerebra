@@ -1,10 +1,11 @@
 import {Component, OnInit} from "@angular/core";
 import {ActivatedRoute} from "@angular/router";
 import {Observable} from "rxjs";
-import {ProgramOutputLine} from "src/app/shared/types/program-output-line";
 import {ProgramService} from "src/app/shared/services/program.service";
 import {ProgramCode} from "src/app/shared/types/program-code";
 import {ExecutionState, ProgramState} from "src/app/shared/types/program-state";
+import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
+import {ProgramOutput} from "src/app/shared/types/program-output";
 
 @Component({
     selector: "app-program-splitscreen",
@@ -12,11 +13,6 @@ import {ExecutionState, ProgramState} from "src/app/shared/types/program-state";
     styleUrls: ["./program-splitscreen.component.scss"],
 })
 export class ProgramSplitscreenComponent implements OnInit {
-    constructor(
-        private programService: ProgramService,
-        private activatedRoute: ActivatedRoute,
-    ) {}
-
     ExecutionState = ExecutionState;
 
     codePython: string = "";
@@ -27,8 +23,8 @@ export class ProgramSplitscreenComponent implements OnInit {
 
     inSplitMode: boolean = false;
 
-    output$: Observable<ProgramOutputLine[]> = new Observable();
-    state$: Observable<ProgramState> = new Observable();
+    programOutput$: Observable<ProgramOutput> = new Observable();
+    programState$: Observable<ProgramState> = new Observable();
     executionState: ExecutionState = ExecutionState.NOT_STARTED;
 
     readonly PLAY = "../../assets/program/button-run-play.svg";
@@ -40,6 +36,11 @@ export class ProgramSplitscreenComponent implements OnInit {
     readonly FULL_SCREEN = "../../../../assets/program/icon-full-screen.svg";
     readonly SPLIT_SCREEN = "../../../../assets/program/icon-split-screen.svg";
 
+    constructor(
+        private programService: ProgramService,
+        private activatedRoute: ActivatedRoute,
+    ) {}
+
     ngOnInit(): void {
         this.activatedRoute.data.subscribe((data) => {
             this.codeVisualOld = (data["code"] as ProgramCode).codeVisual;
@@ -47,13 +48,13 @@ export class ProgramSplitscreenComponent implements OnInit {
         });
         this.activatedRoute.params.subscribe((params) => {
             this.programNumber = params["program-number"];
-            this.output$ = this.programService.getProgramOutput(
+            this.programOutput$ = this.programService.getProgramOutput(
                 this.programNumber,
             );
-            this.state$ = this.programService.getProgramState(
+            this.programState$ = this.programService.getProgramState(
                 this.programNumber,
             );
-            this.state$.subscribe(
+            this.programState$.subscribe(
                 (state) => (this.executionState = state.executionState),
             );
         });
@@ -76,5 +77,9 @@ export class ProgramSplitscreenComponent implements OnInit {
         } else {
             this.programService.runProgram(this.programNumber);
         }
+    }
+
+    onProgramInputReceived(input: string) {
+        this.programService.provideProgramInput(this.programNumber, input);
     }
 }

@@ -1,19 +1,18 @@
 import {Injectable} from "@angular/core";
 import {ApiService} from "./api.service";
 import {Program} from "../types/program";
-import {BehaviorSubject, Observable, filter, first} from "rxjs";
+import {BehaviorSubject, Observable, first, map, throwError} from "rxjs";
 import {UrlConstants} from "./url.constants";
 import {ProgramCode} from "../types/program-code";
 import {UtilService} from "./util.service";
 import {RosService} from "./ros-service/ros.service";
-import {ProgramOutputLine} from "../types/program-output-line";
 import {ExecutionState, ProgramState} from "../types/program-state";
 import {GoalHandle} from "../ros-types/action/goal-handle";
 import {
     RunProgramFeedback,
     RunProgramResult,
 } from "../ros-types/action/run-program";
-import {ProgramPrompt} from "../ros-types/msg/program-prompt";
+import {ProgramOutput} from "../types/program-output";
 
 @Injectable({
     providedIn: "root",
@@ -24,11 +23,9 @@ export class ProgramService {
     programNumberToCode: Map<string, ProgramCode> = new Map();
     programNumberToState: Map<string, BehaviorSubject<ProgramState>> =
         new Map();
-    programNumberToOutput: Map<string, BehaviorSubject<ProgramOutputLine[]>> =
+    programNumberToOutput: Map<string, BehaviorSubject<ProgramOutput>> =
         new Map();
     programNumberToCancel: Map<string, () => void> = new Map();
-    programNumberToPrompt: Map<string, BehaviorSubject<string | undefined>> =
-        new Map();
     programNumberToMpid: Map<string, number> = new Map();
 
     programsSubject: BehaviorSubject<Program[]> = new BehaviorSubject<
@@ -141,10 +138,6 @@ export class ProgramService {
     }
 
     runProgram(programNumber: string) {
-        if (!this.programNumberToPrompt.get(programNumber)) {
-            const subject = new BehaviorSubject<string | undefined>(undefined);
-            this.programNumberToPrompt.set(programNumber, subject);
-        }
         const programState: BehaviorSubject<ProgramState> =
             this.getProgramState(
                 programNumber,
@@ -155,7 +148,8 @@ export class ProgramService {
             currentExecutionState !== ExecutionState.STARTING
         ) {
             programState.next({executionState: ExecutionState.STARTING});
-            this.rosService.runProgram(programNumber).subscribe((handle) => {
+            const observable = this.rosService.runProgram(programNumber);
+            observable.subscribe((handle) => {
                 this.onRunProgramGoalReceive(programNumber, handle);
             });
         }
@@ -169,11 +163,11 @@ export class ProgramService {
         state.next({executionState: ExecutionState.INTERRUPTED});
     }
 
-    getProgramOutput(programNumber: string): Observable<ProgramOutputLine[]> {
+    getProgramOutput(programNumber: string): Observable<ProgramOutput> {
         return this.utilService.getFromMapOrDefault(
             this.programNumberToOutput,
             programNumber,
-            () => new BehaviorSubject<ProgramOutputLine[]>([]),
+            () => new BehaviorSubject<ProgramOutput>({lines: []}),
         );
     }
 
@@ -188,35 +182,26 @@ export class ProgramService {
         );
     }
 
-    getProgramPrompt(programNumber: string): Observable<string> {
-        const subject = this.utilService.getFromMapOrDefault(
-            this.programNumberToPrompt,
-            programNumber,
-            () => new BehaviorSubject<string | undefined>(undefined),
-        );
-        return subject.pipe(
-            filter((prompt) => prompt !== undefined),
-        ) as Observable<string>;
-    }
-
     provideProgramInput(programNumber: string, input: string) {
-        const mpid = this.programNumberToMpid.get(programNumber);
-        if (!mpid) {
+        let mpid = this.programNumberToMpid.get(programNumber);
+        if (mpid === undefined) {
             throw new Error(
                 `no mpid associated with program '${programNumber}'`,
             );
         }
-        this.rosService.publishProgramInput(input, mpid, true);
-    }
-
-    declineProgramInput(programNumber: string) {
-        const mpid = this.programNumberToMpid.get(programNumber);
-        if (!mpid) {
-            throw new Error(
-                `no mpid associated with program '${programNumber}'`,
-            );
+        this.rosService.publishProgramInput(input, mpid);
+        const outputSubject = this.getProgramOutput(
+            programNumber,
+        ) as BehaviorSubject<ProgramOutput>;
+        const output = outputSubject.value;
+        if (output.lastLine !== undefined) {
+            output.lastLine.content = output.lastLine.content + input;
+            output.lines.push(output.lastLine);
+            output.lastLine = undefined;
+        } else {
+            output.lines.push({content: input, isStderr: false});
         }
-        this.rosService.publishProgramInput("", mpid, false);
+        outputSubject.next(output);
     }
 
     private updateProgram(updateProgram: Program) {
@@ -257,29 +242,12 @@ export class ProgramService {
         programNumber: string,
         handle: GoalHandle<RunProgramFeedback, RunProgramResult>,
     ) {
-        // it is theoretically possible, that we receive the first
-        // prompt before we receive the mpid of the newly created process,
-        // so we should buffer all incoming prompts inbetween
-        const promptBuffer: ProgramPrompt[] = [];
-        let promptSubscription =
-            this.rosService.programPromptReceiver$.subscribe((prompt) =>
-                promptBuffer.push(prompt),
-            );
-        const promptSubject = this.programNumberToPrompt.get(programNumber)!;
-        // wait for the first feedback, to receive the mpid of the newly
-        // created process, then
-        handle.feedback.pipe(first()).subscribe((output) => {
-            const mpid = output.mpid;
-            this.programNumberToMpid.set(programNumber, mpid);
-            promptSubscription.unsubscribe();
-            const initialPrompt = promptBuffer.find(
-                (prompt) => prompt.mpid === mpid,
-            );
-            promptSubject.next(initialPrompt?.prompt);
-            promptSubscription = this.rosService.programPromptReceiver$
-                .pipe(filter((prompt) => prompt.mpid === mpid))
-                .subscribe((prompt) => promptSubject.next(prompt.prompt));
-        });
+        handle.feedback
+            .pipe(map((output) => output.mpid))
+            .pipe(first())
+            .subscribe((mpid) => {
+                this.programNumberToMpid.set(programNumber, mpid);
+            });
 
         const programState: BehaviorSubject<ProgramState> =
             this.getProgramState(
@@ -287,24 +255,27 @@ export class ProgramService {
             ) as BehaviorSubject<ProgramState>;
         programState.next({executionState: ExecutionState.RUNNING});
 
-        const programOutput: BehaviorSubject<ProgramOutputLine[]> =
-            this.getProgramOutput(programNumber) as BehaviorSubject<
-                ProgramOutputLine[]
-            >;
-        programOutput.next([]);
+        const programOutput: BehaviorSubject<ProgramOutput> =
+            this.getProgramOutput(
+                programNumber,
+            ) as BehaviorSubject<ProgramOutput>;
+        programOutput.next({lines: []});
         handle.feedback.subscribe((feedback) => {
-            const lines: ProgramOutputLine[] = feedback.output_lines.map(
-                (lineRos) => ({
+            const output = programOutput.value;
+            if (output.lastLine) {
+                output.lines.push(output.lastLine);
+            }
+            output.lines.push(
+                ...feedback.output_lines.map((lineRos) => ({
                     content: lineRos.content,
                     isStderr: lineRos.is_stderr,
-                }),
+                })),
             );
-            programOutput.next(programOutput.getValue().concat(lines));
+            output.lastLine = output.lines.pop();
+            programOutput.next(output);
         });
 
         const resultSubscription = handle.result.subscribe((result) => {
-            promptSubscription.unsubscribe();
-            promptSubject.next(undefined);
             const resultExecutionState =
                 result.exit_code == 0
                     ? ExecutionState.FINISHED_SUCCESSFUL
@@ -316,7 +287,6 @@ export class ProgramService {
         });
 
         this.programNumberToCancel.set(programNumber, () => {
-            promptSubscription.unsubscribe();
             resultSubscription.unsubscribe();
             handle.cancel();
         });

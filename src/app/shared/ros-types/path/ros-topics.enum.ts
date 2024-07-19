@@ -12,7 +12,6 @@ export enum rosTopics {
     proxyRunProgramFeedback = "/proxy_run_program_feedback",
     proxyRunProgramResult = "/proxy_run_program_result",
     proxyRunProgramStatus = "/proxy_run_program_status",
-    programPrompt = "/pprogram_prompt",
     programInput = "/program_input",
     deleteTokenTopic = "/delete_token",
 }

@@ -143,8 +143,8 @@ describe("ProgramSplitscreenComponent", () => {
             programNumber,
         );
 
-        expect(component.output$).toBe(programOutput);
-        expect(component.state$).toBe(programState);
+        expect(component.programOutput$).toBe(programOutput);
+        expect(component.programState$).toBe(programState);
 
         component.executionState = ExecutionState.RUNNING;
         programState.next({executionState: ExecutionState.FINISHED_ERROR});

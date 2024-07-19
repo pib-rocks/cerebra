@@ -64,7 +64,6 @@ import {
     DecryptTokenResponse,
 } from "../../ros-types/srv/decrypt-token";
 import {ExistTokenResponse} from "../../ros-types/srv/exist-token";
-import {ProgramPrompt} from "../../ros-types/msg/program-prompt";
 import {ProgramInput} from "../../ros-types/msg/program-input";
 
 @Injectable({
@@ -99,8 +98,6 @@ export class RosService implements IRosService {
             chat_id: "",
         });
     chatMessageReceiver$: Subject<ChatMessage> = new Subject<ChatMessage>();
-    programPromptReceiver$: Subject<ProgramPrompt> =
-        new Subject<ProgramPrompt>();
 
     private ros!: ROSLIB.Ros;
 
@@ -115,7 +112,6 @@ export class RosService implements IRosService {
     private proxyRunProgramFeedbackTopic!: ROSLIB.Topic<ProxyRunProgramFeedback>;
     private proxyRunProgramResultTopic!: ROSLIB.Topic<ProxyRunProgramResult>;
     private proxyRunProgramStatusTopic!: ROSLIB.Topic<ProxyRunProgramStatus>;
-    private programPromptTopic!: ROSLIB.Topic<ProgramPrompt>;
     private programInputTopic!: ROSLIB.Topic<ProgramInput>;
     private chatMessageTopic!: ROSLIB.Topic<ChatMessage>;
     private voiceAssistantStateTopic!: ROSLIB.Topic<VoiceAssistantState>;
@@ -240,10 +236,6 @@ export class RosService implements IRosService {
         this.proxyRunProgramResultTopic = this.createRosTopic(
             rosTopics.proxyRunProgramResult,
             rosDataTypes.proxyRunProgramResult,
-        );
-        this.programPromptTopic = this.createRosTopic(
-            rosTopics.programPrompt,
-            rosDataTypes.programPrompt,
         );
         this.programInputTopic = this.createRosTopic(
             rosTopics.programInput,
@@ -732,11 +724,7 @@ export class RosService implements IRosService {
         this.cameraQualityFactorTopic.publish(message);
     }
 
-    publishProgramInput(input: string, mpid: number, isPresent: boolean) {
-        this.programInputTopic.publish({
-            input,
-            mpid,
-            is_present: isPresent,
-        });
+    publishProgramInput(input: string, mpid: number) {
+        this.programInputTopic.publish({input, mpid});
     }
 }
