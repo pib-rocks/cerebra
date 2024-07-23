@@ -4,8 +4,7 @@ import {Observable} from "rxjs";
 import {ProgramService} from "src/app/shared/services/program.service";
 import {ProgramCode} from "src/app/shared/types/program-code";
 import {ExecutionState, ProgramState} from "src/app/shared/types/program-state";
-import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
-import {ProgramOutput} from "src/app/shared/types/program-output";
+import {ProgramLogLine} from "src/app/shared/types/program-log-line";
 
 @Component({
     selector: "app-program-splitscreen",
@@ -23,7 +22,7 @@ export class ProgramSplitscreenComponent implements OnInit {
 
     inSplitMode: boolean = false;
 
-    programOutput$: Observable<ProgramOutput> = new Observable();
+    programOutput$: Observable<ProgramLogLine[]> = new Observable();
     programState$: Observable<ProgramState> = new Observable();
     executionState: ExecutionState = ExecutionState.NOT_STARTED;
 

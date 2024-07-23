@@ -1,7 +1,7 @@
 import {Injectable} from "@angular/core";
 import {ApiService} from "./api.service";
 import {Program} from "../types/program";
-import {BehaviorSubject, Observable, first, map, throwError} from "rxjs";
+import {BehaviorSubject, Observable, first, map} from "rxjs";
 import {UrlConstants} from "./url.constants";
 import {ProgramCode} from "../types/program-code";
 import {UtilService} from "./util.service";
@@ -12,7 +12,7 @@ import {
     RunProgramFeedback,
     RunProgramResult,
 } from "../ros-types/action/run-program";
-import {ProgramOutput} from "../types/program-output";
+import {ProgramLogLine} from "../types/program-log-line";
 
 @Injectable({
     providedIn: "root",
@@ -23,7 +23,7 @@ export class ProgramService {
     programNumberToCode: Map<string, ProgramCode> = new Map();
     programNumberToState: Map<string, BehaviorSubject<ProgramState>> =
         new Map();
-    programNumberToOutput: Map<string, BehaviorSubject<ProgramOutput>> =
+    programNumberToOutput: Map<string, BehaviorSubject<ProgramLogLine[]>> =
         new Map();
     programNumberToCancel: Map<string, () => void> = new Map();
     programNumberToMpid: Map<string, number> = new Map();
@@ -163,11 +163,11 @@ export class ProgramService {
         state.next({executionState: ExecutionState.INTERRUPTED});
     }
 
-    getProgramOutput(programNumber: string): Observable<ProgramOutput> {
+    getProgramOutput(programNumber: string): Observable<ProgramLogLine[]> {
         return this.utilService.getFromMapOrDefault(
             this.programNumberToOutput,
             programNumber,
-            () => new BehaviorSubject<ProgramOutput>({lines: []}),
+            () => new BehaviorSubject<ProgramLogLine[]>([]),
         );
     }
 
@@ -192,14 +192,18 @@ export class ProgramService {
         this.rosService.publishProgramInput(input, mpid);
         const outputSubject = this.getProgramOutput(
             programNumber,
-        ) as BehaviorSubject<ProgramOutput>;
+        ) as BehaviorSubject<ProgramLogLine[]>;
         const output = outputSubject.value;
-        if (output.lastLine !== undefined) {
-            output.lastLine.content = output.lastLine.content + input;
-            output.lines.push(output.lastLine);
-            output.lastLine = undefined;
+        const lastLine = output[output.length - 1];
+        if (lastLine && !lastLine.hasInput) {
+            lastLine.hasInput = true;
+            lastLine.content = lastLine.content + input;
         } else {
-            output.lines.push({content: input, isStderr: false});
+            output.push({
+                content: input,
+                isError: false,
+                hasInput: true,
+            });
         }
         outputSubject.next(output);
     }
@@ -255,23 +259,20 @@ export class ProgramService {
             ) as BehaviorSubject<ProgramState>;
         programState.next({executionState: ExecutionState.RUNNING});
 
-        const programOutput: BehaviorSubject<ProgramOutput> =
-            this.getProgramOutput(
-                programNumber,
-            ) as BehaviorSubject<ProgramOutput>;
-        programOutput.next({lines: []});
+        const programOutput: BehaviorSubject<ProgramLogLine[]> =
+            this.getProgramOutput(programNumber) as BehaviorSubject<
+                ProgramLogLine[]
+            >;
+        programOutput.next([]);
         handle.feedback.subscribe((feedback) => {
             const output = programOutput.value;
-            if (output.lastLine) {
-                output.lines.push(output.lastLine);
-            }
-            output.lines.push(
-                ...feedback.output_lines.map((lineRos) => ({
-                    content: lineRos.content,
-                    isStderr: lineRos.is_stderr,
+            output.push(
+                ...feedback.output_lines.map((outputLine) => ({
+                    content: outputLine.content,
+                    isError: outputLine.is_stderr,
+                    hasInput: false,
                 })),
             );
-            output.lastLine = output.lines.pop();
             programOutput.next(output);
         });
 

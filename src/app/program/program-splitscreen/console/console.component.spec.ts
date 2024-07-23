@@ -1,15 +1,10 @@
-import {
-    ComponentFixture,
-    fakeAsync,
-    TestBed,
-    tick,
-} from "@angular/core/testing";
+import {ComponentFixture, TestBed} from "@angular/core/testing";
 
 import {ConsoleComponent} from "./console.component";
 import {Subject} from "rxjs";
-import {ProgramOutput} from "src/app/shared/types/program-output";
 import {SimpleChange} from "@angular/core";
 import {ExecutionState, ProgramState} from "src/app/shared/types/program-state";
+import {ProgramLogLine} from "src/app/shared/types/program-log-line";
 
 describe("ConsoleComponent", () => {
     let component: ConsoleComponent;
@@ -30,8 +25,8 @@ describe("ConsoleComponent", () => {
         expect(component).toBeTruthy();
     });
 
-    it("should  hui", () => {
-        const programOutput$ = new Subject<ProgramOutput>();
+    it("should get the lines from the program-service", () => {
+        const programOutput$ = new Subject<ProgramLogLine[]>();
         component.ngOnChanges({
             programOutput$: {
                 currentValue: programOutput$,
@@ -42,20 +37,29 @@ describe("ConsoleComponent", () => {
                 focus: jasmine.createSpy("focus"),
             },
         };
-        const firstLine = {isStderr: true, content: "first"};
-        const secondLine = {isStderr: false, content: "second"};
-        const lastLine = {isStderr: true, content: "last"};
-        programOutput$.next({lines: [firstLine, secondLine], lastLine});
+        const firstLine = {isError: true, content: "first", hasInput: false};
+        const secondLine = {isError: false, content: "second", hasInput: false};
+        const lastLine = {isError: true, content: "last", hasInput: false};
+        programOutput$.next([firstLine, secondLine, lastLine]);
 
         expect(component.lines).toEqual([secondLine, firstLine]);
-        expect(component.lastLine).toEqual(lastLine);
+        expect(component.lastLineIfInput).toEqual(lastLine);
         expect(
             component.programInputArea.nativeElement.focus,
         ).toHaveBeenCalled();
         expect(component.programInputForm.value).toEqual(lastLine.content);
+
+        lastLine.hasInput = true;
+        programOutput$.next([firstLine, secondLine, lastLine]);
+        expect(component.lines).toEqual([lastLine, secondLine, firstLine]);
+        expect(component.lastLineIfInput).toEqual(undefined);
+
+        programOutput$.next([]);
+        expect(component.lines).toEqual([]);
+        expect(component.lastLineIfInput).toEqual(undefined);
     });
 
-    it("should  hui2", () => {
+    it("should  get the state from the program-service", () => {
         const programState$ = new Subject<ProgramState>();
         component.ngOnChanges({
             programState$: {

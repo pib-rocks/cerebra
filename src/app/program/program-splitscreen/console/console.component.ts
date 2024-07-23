@@ -11,8 +11,7 @@ import {
 } from "@angular/core";
 import {FormControl} from "@angular/forms";
 import {Observable, Subscription} from "rxjs";
-import {ProgramOutput} from "src/app/shared/types/program-output";
-import {ProgramOutputLine} from "src/app/shared/types/program-output-line";
+import {ProgramLogLine} from "src/app/shared/types/program-log-line";
 import {ExecutionState, ProgramState} from "src/app/shared/types/program-state";
 
 @Component({
@@ -21,7 +20,7 @@ import {ExecutionState, ProgramState} from "src/app/shared/types/program-state";
     styleUrls: ["./console.component.scss"],
 })
 export class ConsoleComponent implements AfterViewInit, OnChanges {
-    @Input() programOutput$!: Observable<ProgramOutput>;
+    @Input() programOutput$!: Observable<ProgramLogLine[]>;
     @Input() programState$!: Observable<ProgramState>;
     @Output() programInput = new EventEmitter<string>();
 
@@ -31,8 +30,8 @@ export class ConsoleComponent implements AfterViewInit, OnChanges {
 
     ExecutionState = ExecutionState;
 
-    lines: ProgramOutputLine[] = [];
-    lastLine: ProgramOutputLine | undefined = undefined;
+    lines: ProgramLogLine[] = [];
+    lastLineIfInput: ProgramLogLine | undefined = undefined;
 
     state: ProgramState = {executionState: ExecutionState.NOT_STARTED};
 
@@ -47,7 +46,7 @@ export class ConsoleComponent implements AfterViewInit, OnChanges {
         if ("programOutput$" in changes) {
             this.outputSubscription?.unsubscribe();
             const outputNext = changes["programOutput$"]
-                .currentValue as Observable<ProgramOutput>;
+                .currentValue as Observable<ProgramLogLine[]>;
             this.outputSubscription = outputNext.subscribe(
                 this.onOutputReceived.bind(this),
             );
@@ -76,8 +75,8 @@ export class ConsoleComponent implements AfterViewInit, OnChanges {
         return this.programInputArea?.nativeElement as HTMLElement;
     }
 
-    private get lastLineContent(): string {
-        return this.lastLine?.content ?? "";
+    private get lastLineIfInputContent(): string {
+        return this.lastLineIfInput?.content ?? "";
     }
 
     private resizeProgramInputArea() {
@@ -91,10 +90,10 @@ export class ConsoleComponent implements AfterViewInit, OnChanges {
     private onInputValueChanged() {
         this.resizeProgramInputArea();
         let input = this.programInputForm.value ?? "";
-        if (!input.startsWith(this.lastLineContent)) {
-            this.programInputForm.setValue(this.lastLineContent);
+        if (!input.startsWith(this.lastLineIfInputContent)) {
+            this.programInputForm.setValue(this.lastLineIfInputContent);
         } else {
-            input = input.substring(this.lastLineContent.length);
+            input = input.substring(this.lastLineIfInputContent.length);
             if (input.endsWith("\n")) {
                 input = input.substring(0, input.length - 1);
                 this.programInput.emit(input);
@@ -102,10 +101,15 @@ export class ConsoleComponent implements AfterViewInit, OnChanges {
         }
     }
 
-    private onOutputReceived({lines, lastLine}: ProgramOutput) {
-        this.lines = [...lines].reverse();
-        this.lastLine = lastLine;
-        this.programInputForm.setValue(this.lastLineContent);
+    private onOutputReceived(lines: ProgramLogLine[]) {
+        this.lines = [...lines];
+        this.lastLineIfInput = this.lines.pop();
+        if (this.lastLineIfInput?.hasInput) {
+            this.lines.push(this.lastLineIfInput);
+            this.lastLineIfInput = undefined;
+        }
+        this.lines.reverse();
+        this.programInputForm.setValue(this.lastLineIfInputContent);
         this.programInputAreaElement?.focus();
     }
 

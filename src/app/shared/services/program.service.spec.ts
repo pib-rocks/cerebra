@@ -6,14 +6,13 @@ import {BehaviorSubject, Observable, Subject} from "rxjs";
 import {Program} from "../types/program";
 import {UtilService} from "./util.service";
 import {ExecutionState, ProgramState} from "../types/program-state";
-import {ProgramOutputLine} from "../types/program-output-line";
 import {GoalHandle} from "../ros-types/action/goal-handle";
 import {
     RunProgramFeedback,
     RunProgramResult,
 } from "../ros-types/action/run-program";
 import {RosService} from "./ros-service/ros.service";
-import {ProgramOutput} from "../types/program-output";
+import {ProgramLogLine} from "../types/program-log-line";
 
 describe("ProgramService", () => {
     let programService: ProgramService;
@@ -423,7 +422,7 @@ describe("ProgramService", () => {
 
     it("should get the program-output", () => {
         const programNumber = "test-number";
-        const expectedObservable: Observable<ProgramOutputLine[]> =
+        const expectedObservable: Observable<ProgramLogLine[]> =
             new Observable();
         utilService.getFromMapOrDefault.and.returnValue(expectedObservable);
         expect(programService.getProgramOutput(programNumber)).toBe(
@@ -488,14 +487,13 @@ describe("ProgramService", () => {
         const state: ProgramState = {
             executionState: ExecutionState.NOT_STARTED,
         };
-        const output: ProgramOutput = {
-            lines: [
-                {
-                    content: "goodbye",
-                    isStderr: true,
-                },
-            ],
-        };
+        const output: ProgramLogLine[] = [
+            {
+                content: "goodbye",
+                isError: true,
+                hasInput: false,
+            },
+        ];
 
         const stateSubject = new BehaviorSubject(state);
         const outputSubject = new BehaviorSubject(output);
@@ -534,7 +532,7 @@ describe("ProgramService", () => {
         expect(stateNextSpy).toHaveBeenCalledWith({
             executionState: ExecutionState.RUNNING,
         });
-        expect(outputNextSpy).toHaveBeenCalledOnceWith({lines: []});
+        expect(outputNextSpy).toHaveBeenCalledOnceWith([]);
         expect(programNumberToCancelSetSpy).toHaveBeenCalledOnceWith(
             programnNumber,
             jasmine.any(Function),
@@ -553,22 +551,23 @@ describe("ProgramService", () => {
                 },
             ],
         });
-        expect(outputNextSpy).toHaveBeenCalledWith({
-            lines: [
-                {
-                    content: "goodbye",
-                    isStderr: true,
-                },
-                {
-                    content: "hello",
-                    isStderr: false,
-                },
-            ],
-            lastLine: {
-                content: "world",
-                isStderr: true,
+        expect(outputNextSpy).toHaveBeenCalledWith([
+            {
+                content: "goodbye",
+                isError: true,
+                hasInput: false,
             },
-        });
+            {
+                content: "hello",
+                isError: false,
+                hasInput: false,
+            },
+            {
+                content: "world",
+                isError: true,
+                hasInput: false,
+            },
+        ]);
 
         resultSubject.next({
             exit_code: 0,
@@ -598,15 +597,15 @@ describe("ProgramService", () => {
         });
     });
 
-    it("should provide input to the program with last-line", () => {
+    it("should provide input to the program with non-input last-line", () => {
         const programNumber = "program-number";
         const mpid = 0;
         const input = "this is the input for the program";
-        const lines = [{isStderr: true, content: "first"}];
-        const lastLine = {isStderr: false, content: "last"};
+        const firstLine = {isError: false, content: "first", hasInput: false};
+        const lastLine = {isError: true, content: "last", hasInput: false};
         programService.programNumberToMpid.set(programNumber, mpid);
-        const outputSubject = new BehaviorSubject<ProgramOutput>(
-            structuredClone({lines, lastLine}),
+        const outputSubject = new BehaviorSubject<ProgramLogLine[]>(
+            structuredClone([firstLine, lastLine]),
         );
         utilService.getFromMapOrDefault.and.returnValue(outputSubject);
         programService.programNumberToOutput.set(programNumber, outputSubject);
@@ -624,27 +623,25 @@ describe("ProgramService", () => {
             mpid,
         );
         expect(outputSubscriber.error).not.toHaveBeenCalled();
-        expect(outputSubscriber.next).toHaveBeenCalledWith({
-            lines: [
-                ...lines,
-                {
-                    isStderr: lastLine.isStderr,
-                    content: lastLine.content + input,
-                },
-            ],
-            lastLine: undefined,
-        });
+        expect(outputSubscriber.next).toHaveBeenCalledWith([
+            firstLine,
+            {
+                isError: lastLine.isError,
+                content: lastLine.content + input,
+                hasInput: true,
+            },
+        ]);
     });
 
-    it("should provide input to the program without last-line", () => {
+    it("should provide input to the program with input last-line", () => {
         const programNumber = "program-number";
         const mpid = 0;
         const input = "this is the input for the program";
-        const lines = [{isStderr: true, content: "first"}];
-        const lastLine = undefined;
+        const firstLine = {isError: false, content: "first", hasInput: false};
+        const lastLine = {isError: true, content: "last", hasInput: true};
         programService.programNumberToMpid.set(programNumber, mpid);
-        const outputSubject = new BehaviorSubject<ProgramOutput>(
-            structuredClone({lines, lastLine}),
+        const outputSubject = new BehaviorSubject<ProgramLogLine[]>(
+            structuredClone([firstLine, lastLine]),
         );
         utilService.getFromMapOrDefault.and.returnValue(outputSubject);
         programService.programNumberToOutput.set(programNumber, outputSubject);
@@ -662,25 +659,54 @@ describe("ProgramService", () => {
             mpid,
         );
         expect(outputSubscriber.error).not.toHaveBeenCalled();
-        expect(outputSubscriber.next).toHaveBeenCalledWith({
-            lines: [
-                ...lines,
-                {
-                    isStderr: false,
-                    content: input,
-                },
-            ],
-            lastLine: undefined,
-        });
+        expect(outputSubscriber.next).toHaveBeenCalledWith([
+            firstLine,
+            lastLine,
+            {
+                isError: false,
+                content: input,
+                hasInput: true,
+            },
+        ]);
+    });
+
+    it("should provide input to the program with no lines", () => {
+        const programNumber = "program-number";
+        const mpid = 0;
+        const input = "this is the input for the program";
+        programService.programNumberToMpid.set(programNumber, mpid);
+        const outputSubject = new BehaviorSubject<ProgramLogLine[]>([]);
+        utilService.getFromMapOrDefault.and.returnValue(outputSubject);
+        programService.programNumberToOutput.set(programNumber, outputSubject);
+
+        const outputSubscriber = jasmine.createSpyObj("suscriber", [
+            "next",
+            "error",
+        ]);
+        outputSubject.subscribe(outputSubscriber);
+
+        programService.provideProgramInput(programNumber, input);
+
+        expect(rosService.publishProgramInput).toHaveBeenCalledOnceWith(
+            input,
+            mpid,
+        );
+        expect(outputSubscriber.error).not.toHaveBeenCalled();
+        expect(outputSubscriber.next).toHaveBeenCalledWith([
+            {
+                isError: false,
+                content: input,
+                hasInput: true,
+            },
+        ]);
     });
 
     it("should not provide input to the program if no mpid is associated with it", () => {
         const programNumber = "program-number";
         const input = "this is the input for the program";
-        const lines = [{isStderr: true, content: "first"}];
-        const lastLine = undefined;
-        const outputSubject = new BehaviorSubject<ProgramOutput>(
-            structuredClone({lines, lastLine}),
+        const lines = [{isError: true, content: "first", hasInput: false}];
+        const outputSubject = new BehaviorSubject<ProgramLogLine[]>(
+            structuredClone(lines),
         );
         utilService.getFromMapOrDefault.and.returnValue(outputSubject);
         programService.programNumberToOutput.set(programNumber, outputSubject);
