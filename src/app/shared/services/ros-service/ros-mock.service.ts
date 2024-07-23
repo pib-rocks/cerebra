@@ -56,9 +56,33 @@ export class RosService implements IRosService {
             .post(`${UrlConstants.CHAT}/${chatId}/messages`, {content, isUser})
             .pipe(
                 tap((chatMessage) => {
+                    this.lastChatMessageId = chatMessage.messageId;
                     this.chatMessageReceiver$.next({
                         chat_id: chatId,
                         message_id: chatMessage.messageId,
+                        timestamp: chatMessage.timestamp,
+                        is_user: chatMessage.isUser,
+                        content: chatMessage.content,
+                    });
+                }),
+            );
+    }
+
+    private updateMessage(
+        chatId: string,
+        content: string,
+        isUser: boolean,
+    ): Observable<any> {
+        return this.apiService
+            .put(
+                `${UrlConstants.CHAT}/${chatId}/messages/${this.lastChatMessageId}`,
+                {content, isUser},
+            )
+            .pipe(
+                tap((chatMessage) => {
+                    this.chatMessageReceiver$.next({
+                        chat_id: chatId,
+                        message_id: this.lastChatMessageId,
                         timestamp: chatMessage.timestamp,
                         is_user: chatMessage.isUser,
                         content: chatMessage.content,
@@ -74,6 +98,7 @@ export class RosService implements IRosService {
     uuidCounter: number = 0;
     userMessageTimeout: any;
     vaMessageTimeout: any;
+    lastChatMessageId: string = "";
 
     currentReceiver$: Subject<DiagnosticStatus> =
         new Subject<DiagnosticStatus>();
@@ -170,6 +195,18 @@ export class RosService implements IRosService {
                 this.setIsListening(chatId, true);
             });
         }, 2000);
+        if (content.toLocaleLowerCase() == "update") {
+            setTimeout(async () => {
+                await this.sleep(1500);
+                this.updateMessage(
+                    chatId,
+                    `this is the response to your input "${content}". Second line for "${content}".`,
+                    false,
+                ).subscribe((_) => {
+                    this.setIsListening(chatId, true);
+                });
+            }, 2000);
+        }
         return new BehaviorSubject<void>(undefined);
     }
 
@@ -358,5 +395,9 @@ export class RosService implements IRosService {
 
     publishProgramInput(input: string, mpid: number) {
         console.info(JSON.stringify({input, mpid}));
+    }
+
+    sleep(ms: number) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
     }
 }
