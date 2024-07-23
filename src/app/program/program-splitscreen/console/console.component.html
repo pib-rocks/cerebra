@@ -6,7 +6,7 @@
         *ngIf="state.executionState === ExecutionState.RUNNING"
         class="flex-shrink-0"
         id="program-input-area"
-        [ngClass]="lastLineIfInput?.isError ? 'stderr' : 'stdout'"
+        [ngClass]="lastLogLineIfInput?.isError ? 'stderr' : 'stdout'"
         #programInputArea
         [formControl]="programInputForm">
     </textarea>
@@ -26,9 +26,9 @@
         Program execution has been interrupted by the user.
     </div>
     <div
-        *ngIf="lastLineIfInput && (state.executionState === ExecutionState.FINISHED_SUCCESSFUL || state.executionState === ExecutionState.INTERRUPTED || state.executionState === ExecutionState.FINISHED_ERROR)"
-        [ngClass]="lastLineIfInput.isError ? 'stderr' : 'stdout'">
-        {{lastLineIfInput.content}}
+        *ngIf="lastLogLineIfInput && (state.executionState === ExecutionState.FINISHED_SUCCESSFUL || state.executionState === ExecutionState.INTERRUPTED || state.executionState === ExecutionState.FINISHED_ERROR)"
+        [ngClass]="lastLogLineIfInput.isError ? 'stderr' : 'stdout'">
+        {{lastLogLineIfInput.content}}
     </div>
     <div
         *ngFor="let line of logs"

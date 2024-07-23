@@ -31,7 +31,7 @@ export class ConsoleComponent implements AfterViewInit, OnChanges {
     ExecutionState = ExecutionState;
 
     logs: ProgramLogLine[] = [];
-    lastLineIfInput: ProgramLogLine | undefined = undefined;
+    lastLogLineIfInput: ProgramLogLine | undefined = undefined;
 
     state: ProgramState = {executionState: ExecutionState.NOT_STARTED};
 
@@ -76,8 +76,8 @@ export class ConsoleComponent implements AfterViewInit, OnChanges {
         return this.programInputArea?.nativeElement as HTMLElement;
     }
 
-    private get lastLineIfInputContent(): string {
-        return this.lastLineIfInput?.content ?? "";
+    private get lastLogLineIfInputContent(): string {
+        return this.lastLogLineIfInput?.content ?? "";
     }
 
     private resizeProgramInputArea() {
@@ -91,10 +91,10 @@ export class ConsoleComponent implements AfterViewInit, OnChanges {
     private onInputValueChanged() {
         this.resizeProgramInputArea();
         let input = this.programInputForm.value ?? "";
-        if (!input.startsWith(this.lastLineIfInputContent)) {
-            this.programInputForm.setValue(this.lastLineIfInputContent);
+        if (!input.startsWith(this.lastLogLineIfInputContent)) {
+            this.programInputForm.setValue(this.lastLogLineIfInputContent);
         } else {
-            input = input.substring(this.lastLineIfInputContent.length);
+            input = input.substring(this.lastLogLineIfInputContent.length);
             if (input.endsWith("\n")) {
                 input = input.substring(0, input.length - 1);
                 this.programInput.emit(input);
@@ -104,13 +104,13 @@ export class ConsoleComponent implements AfterViewInit, OnChanges {
 
     private onLogsReceived(logs: ProgramLogLine[]) {
         this.logs = [...logs];
-        this.lastLineIfInput = this.logs.pop();
-        if (this.lastLineIfInput?.hasInput) {
-            this.logs.push(this.lastLineIfInput);
-            this.lastLineIfInput = undefined;
+        this.lastLogLineIfInput = this.logs.pop();
+        if (this.lastLogLineIfInput?.hasInput) {
+            this.logs.push(this.lastLogLineIfInput);
+            this.lastLogLineIfInput = undefined;
         }
         this.logs.reverse();
-        this.programInputForm.setValue(this.lastLineIfInputContent);
+        this.programInputForm.setValue(this.lastLogLineIfInputContent);
         this.programInputAreaElement?.focus();
     }
 

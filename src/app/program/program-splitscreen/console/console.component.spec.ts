@@ -43,7 +43,7 @@ describe("ConsoleComponent", () => {
         programLogs$.next([firstLine, secondLine, lastLine]);
 
         expect(component.logs).toEqual([secondLine, firstLine]);
-        expect(component.lastLineIfInput).toEqual(lastLine);
+        expect(component.lastLogLineIfInput).toEqual(lastLine);
         expect(
             component.programInputArea.nativeElement.focus,
         ).toHaveBeenCalled();
@@ -52,11 +52,11 @@ describe("ConsoleComponent", () => {
         lastLine.hasInput = true;
         programLogs$.next([firstLine, secondLine, lastLine]);
         expect(component.logs).toEqual([lastLine, secondLine, firstLine]);
-        expect(component.lastLineIfInput).toEqual(undefined);
+        expect(component.lastLogLineIfInput).toEqual(undefined);
 
         programLogs$.next([]);
         expect(component.logs).toEqual([]);
-        expect(component.lastLineIfInput).toEqual(undefined);
+        expect(component.lastLogLineIfInput).toEqual(undefined);
     });
 
     it("should  get the state from the program-service", () => {
