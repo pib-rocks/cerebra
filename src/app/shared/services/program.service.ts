@@ -23,7 +23,7 @@ export class ProgramService {
     programNumberToCode: Map<string, ProgramCode> = new Map();
     programNumberToState: Map<string, BehaviorSubject<ProgramState>> =
         new Map();
-    programNumberToOutput: Map<string, BehaviorSubject<ProgramLogLine[]>> =
+    programNumberToLogs: Map<string, BehaviorSubject<ProgramLogLine[]>> =
         new Map();
     programNumberToCancel: Map<string, () => void> = new Map();
     programNumberToMpid: Map<string, number> = new Map();
@@ -163,9 +163,9 @@ export class ProgramService {
         state.next({executionState: ExecutionState.INTERRUPTED});
     }
 
-    getProgramOutput(programNumber: string): Observable<ProgramLogLine[]> {
+    getProgramLogs(programNumber: string): Observable<ProgramLogLine[]> {
         return this.utilService.getFromMapOrDefault(
-            this.programNumberToOutput,
+            this.programNumberToLogs,
             programNumber,
             () => new BehaviorSubject<ProgramLogLine[]>([]),
         );
@@ -190,22 +190,22 @@ export class ProgramService {
             );
         }
         this.rosService.publishProgramInput(input, mpid);
-        const outputSubject = this.getProgramOutput(
+        const logsSubject = this.getProgramLogs(
             programNumber,
         ) as BehaviorSubject<ProgramLogLine[]>;
-        const output = outputSubject.value;
-        const lastLine = output[output.length - 1];
+        const logs = logsSubject.value;
+        const lastLine = logs[logs.length - 1];
         if (lastLine && !lastLine.hasInput) {
             lastLine.hasInput = true;
             lastLine.content = lastLine.content + input;
         } else {
-            output.push({
+            logs.push({
                 content: input,
                 isError: false,
                 hasInput: true,
             });
         }
-        outputSubject.next(output);
+        logsSubject.next(logs);
     }
 
     private updateProgram(updateProgram: Program) {
@@ -247,7 +247,7 @@ export class ProgramService {
         handle: GoalHandle<RunProgramFeedback, RunProgramResult>,
     ) {
         handle.feedback
-            .pipe(map((output) => output.mpid))
+            .pipe(map((feedback) => feedback.mpid))
             .pipe(first())
             .subscribe((mpid) => {
                 this.programNumberToMpid.set(programNumber, mpid);
@@ -259,21 +259,21 @@ export class ProgramService {
             ) as BehaviorSubject<ProgramState>;
         programState.next({executionState: ExecutionState.RUNNING});
 
-        const programOutput: BehaviorSubject<ProgramLogLine[]> =
-            this.getProgramOutput(programNumber) as BehaviorSubject<
+        const programLogs: BehaviorSubject<ProgramLogLine[]> =
+            this.getProgramLogs(programNumber) as BehaviorSubject<
                 ProgramLogLine[]
             >;
-        programOutput.next([]);
+        programLogs.next([]);
         handle.feedback.subscribe((feedback) => {
-            const output = programOutput.value;
-            output.push(
+            const logs = programLogs.value;
+            logs.push(
                 ...feedback.output_lines.map((outputLine) => ({
                     content: outputLine.content,
                     isError: outputLine.is_stderr,
                     hasInput: false,
                 })),
             );
-            programOutput.next(output);
+            programLogs.next(logs);
         });
 
         const resultSubscription = handle.result.subscribe((result) => {

@@ -25,11 +25,11 @@ describe("ConsoleComponent", () => {
         expect(component).toBeTruthy();
     });
 
-    it("should get the lines from the program-service", () => {
-        const programOutput$ = new Subject<ProgramLogLine[]>();
+    it("should get the logs from the program-service", () => {
+        const programLogs$ = new Subject<ProgramLogLine[]>();
         component.ngOnChanges({
-            programOutput$: {
-                currentValue: programOutput$,
+            programLogs$: {
+                currentValue: programLogs$,
             } as SimpleChange,
         });
         component.programInputArea = {
@@ -40,9 +40,9 @@ describe("ConsoleComponent", () => {
         const firstLine = {isError: true, content: "first", hasInput: false};
         const secondLine = {isError: false, content: "second", hasInput: false};
         const lastLine = {isError: true, content: "last", hasInput: false};
-        programOutput$.next([firstLine, secondLine, lastLine]);
+        programLogs$.next([firstLine, secondLine, lastLine]);
 
-        expect(component.lines).toEqual([secondLine, firstLine]);
+        expect(component.logs).toEqual([secondLine, firstLine]);
         expect(component.lastLineIfInput).toEqual(lastLine);
         expect(
             component.programInputArea.nativeElement.focus,
@@ -50,12 +50,12 @@ describe("ConsoleComponent", () => {
         expect(component.programInputForm.value).toEqual(lastLine.content);
 
         lastLine.hasInput = true;
-        programOutput$.next([firstLine, secondLine, lastLine]);
-        expect(component.lines).toEqual([lastLine, secondLine, firstLine]);
+        programLogs$.next([firstLine, secondLine, lastLine]);
+        expect(component.logs).toEqual([lastLine, secondLine, firstLine]);
         expect(component.lastLineIfInput).toEqual(undefined);
 
-        programOutput$.next([]);
-        expect(component.lines).toEqual([]);
+        programLogs$.next([]);
+        expect(component.logs).toEqual([]);
         expect(component.lastLineIfInput).toEqual(undefined);
     });
 

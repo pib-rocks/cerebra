@@ -26,6 +26,7 @@ describe("ChatWindowComponent", () => {
 
         const chatServiceSpy: jasmine.SpyObj<ChatService> =
             jasmine.createSpyObj("ChatService", [
+                "filterMessageUpdates",
                 "getChatMessagesObservable",
                 "sendChatMessage",
                 "getChat",

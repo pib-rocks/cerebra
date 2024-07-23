@@ -29,7 +29,7 @@ describe("ProgramSplitscreenComponent", () => {
                 "updateCodeByProgramNumber",
                 "runProgram",
                 "terminateProgram",
-                "getProgramOutput",
+                "getProgramLogs",
                 "getProgramState",
             ]);
 
@@ -129,21 +129,21 @@ describe("ProgramSplitscreenComponent", () => {
         const programNumber = "test-number";
         component.programNumber = programNumber;
 
-        const programOutput = new Subject<ProgramLogLine[]>();
+        const programLogs = new Subject<ProgramLogLine[]>();
         const programState = new Subject<ProgramState>();
-        programService.getProgramOutput.and.returnValue(programOutput);
+        programService.getProgramLogs.and.returnValue(programLogs);
         programService.getProgramState.and.returnValue(programState);
 
         params.next({"program-number": programNumber});
 
-        expect(programService.getProgramOutput).toHaveBeenCalledWith(
+        expect(programService.getProgramLogs).toHaveBeenCalledWith(
             programNumber,
         );
         expect(programService.getProgramState).toHaveBeenCalledWith(
             programNumber,
         );
 
-        expect(component.programOutput$).toBe(programOutput);
+        expect(component.programLogs$).toBe(programLogs);
         expect(component.programState$).toBe(programState);
 
         component.executionState = ExecutionState.RUNNING;

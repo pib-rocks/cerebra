@@ -20,7 +20,7 @@ import {ExecutionState, ProgramState} from "src/app/shared/types/program-state";
     styleUrls: ["./console.component.scss"],
 })
 export class ConsoleComponent implements AfterViewInit, OnChanges {
-    @Input() programOutput$!: Observable<ProgramLogLine[]>;
+    @Input() programLogs$!: Observable<ProgramLogLine[]>;
     @Input() programState$!: Observable<ProgramState>;
     @Output() programInput = new EventEmitter<string>();
 
@@ -30,12 +30,12 @@ export class ConsoleComponent implements AfterViewInit, OnChanges {
 
     ExecutionState = ExecutionState;
 
-    lines: ProgramLogLine[] = [];
+    logs: ProgramLogLine[] = [];
     lastLineIfInput: ProgramLogLine | undefined = undefined;
 
     state: ProgramState = {executionState: ExecutionState.NOT_STARTED};
 
-    outputSubscription?: Subscription;
+    logsSubscription?: Subscription;
     stateSubscription?: Subscription;
 
     ngOnChanges(changes: SimpleChanges): void {
@@ -43,12 +43,13 @@ export class ConsoleComponent implements AfterViewInit, OnChanges {
             this.onInputValueChanged.bind(this),
         );
 
-        if ("programOutput$" in changes) {
-            this.outputSubscription?.unsubscribe();
-            const outputNext = changes["programOutput$"]
-                .currentValue as Observable<ProgramLogLine[]>;
-            this.outputSubscription = outputNext.subscribe(
-                this.onOutputReceived.bind(this),
+        if ("programLogs$" in changes) {
+            this.logsSubscription?.unsubscribe();
+            const logsNext = changes["programLogs$"].currentValue as Observable<
+                ProgramLogLine[]
+            >;
+            this.logsSubscription = logsNext.subscribe(
+                this.onLogsReceived.bind(this),
             );
         }
 
@@ -101,14 +102,14 @@ export class ConsoleComponent implements AfterViewInit, OnChanges {
         }
     }
 
-    private onOutputReceived(lines: ProgramLogLine[]) {
-        this.lines = [...lines];
-        this.lastLineIfInput = this.lines.pop();
+    private onLogsReceived(logs: ProgramLogLine[]) {
+        this.logs = [...logs];
+        this.lastLineIfInput = this.logs.pop();
         if (this.lastLineIfInput?.hasInput) {
-            this.lines.push(this.lastLineIfInput);
+            this.logs.push(this.lastLineIfInput);
             this.lastLineIfInput = undefined;
         }
-        this.lines.reverse();
+        this.logs.reverse();
         this.programInputForm.setValue(this.lastLineIfInputContent);
         this.programInputAreaElement?.focus();
     }

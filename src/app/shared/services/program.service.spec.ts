@@ -420,16 +420,16 @@ describe("ProgramService", () => {
         expect(cancelSpy).not.toHaveBeenCalled();
     });
 
-    it("should get the program-output", () => {
+    it("should get the program-logs", () => {
         const programNumber = "test-number";
         const expectedObservable: Observable<ProgramLogLine[]> =
             new Observable();
         utilService.getFromMapOrDefault.and.returnValue(expectedObservable);
-        expect(programService.getProgramOutput(programNumber)).toBe(
+        expect(programService.getProgramLogs(programNumber)).toBe(
             expectedObservable,
         );
         expect(utilService.getFromMapOrDefault).toHaveBeenCalledOnceWith(
-            programService.programNumberToOutput,
+            programService.programNumberToLogs,
             programNumber,
             jasmine.any(Function),
         );
@@ -439,7 +439,7 @@ describe("ProgramService", () => {
         const programNumber = "test-number";
         const expectedObservable: Observable<ProgramState> = new Observable();
         utilService.getFromMapOrDefault.and.returnValue(expectedObservable);
-        expect(programService.getProgramOutput(programNumber)).toBe(
+        expect(programService.getProgramLogs(programNumber)).toBe(
             expectedObservable,
         );
         expect(utilService.getFromMapOrDefault).toHaveBeenCalledOnceWith(
@@ -487,7 +487,7 @@ describe("ProgramService", () => {
         const state: ProgramState = {
             executionState: ExecutionState.NOT_STARTED,
         };
-        const output: ProgramLogLine[] = [
+        const logs: ProgramLogLine[] = [
             {
                 content: "goodbye",
                 isError: true,
@@ -496,7 +496,7 @@ describe("ProgramService", () => {
         ];
 
         const stateSubject = new BehaviorSubject(state);
-        const outputSubject = new BehaviorSubject(output);
+        const logsSubject = new BehaviorSubject(logs);
 
         const feedbackSubject: Subject<RunProgramFeedback> = new Subject();
         const resultSubject: Subject<RunProgramResult> = new Subject();
@@ -511,12 +511,10 @@ describe("ProgramService", () => {
         const programnNumber = "test-number";
 
         spyOn(programService, "getProgramState").and.returnValue(stateSubject);
-        spyOn(programService, "getProgramOutput").and.returnValue(
-            outputSubject,
-        );
+        spyOn(programService, "getProgramLogs").and.returnValue(logsSubject);
 
         const stateNextSpy = spyOn(stateSubject, "next");
-        const outputNextSpy = spyOn(outputSubject, "next");
+        const logsNextSpy = spyOn(logsSubject, "next");
 
         let cancelCallback: () => void = () => undefined;
         const programNumberToCancelSetSpy = spyOn(
@@ -532,7 +530,7 @@ describe("ProgramService", () => {
         expect(stateNextSpy).toHaveBeenCalledWith({
             executionState: ExecutionState.RUNNING,
         });
-        expect(outputNextSpy).toHaveBeenCalledOnceWith([]);
+        expect(logsNextSpy).toHaveBeenCalledOnceWith([]);
         expect(programNumberToCancelSetSpy).toHaveBeenCalledOnceWith(
             programnNumber,
             jasmine.any(Function),
@@ -551,7 +549,7 @@ describe("ProgramService", () => {
                 },
             ],
         });
-        expect(outputNextSpy).toHaveBeenCalledWith([
+        expect(logsNextSpy).toHaveBeenCalledWith([
             {
                 content: "goodbye",
                 isError: true,
@@ -604,17 +602,17 @@ describe("ProgramService", () => {
         const firstLine = {isError: false, content: "first", hasInput: false};
         const lastLine = {isError: true, content: "last", hasInput: false};
         programService.programNumberToMpid.set(programNumber, mpid);
-        const outputSubject = new BehaviorSubject<ProgramLogLine[]>(
+        const logsSubject = new BehaviorSubject<ProgramLogLine[]>(
             structuredClone([firstLine, lastLine]),
         );
-        utilService.getFromMapOrDefault.and.returnValue(outputSubject);
-        programService.programNumberToOutput.set(programNumber, outputSubject);
+        utilService.getFromMapOrDefault.and.returnValue(logsSubject);
+        programService.programNumberToLogs.set(programNumber, logsSubject);
 
-        const outputSubscriber = jasmine.createSpyObj("suscriber", [
+        const logsSubscriber = jasmine.createSpyObj("suscriber", [
             "next",
             "error",
         ]);
-        outputSubject.subscribe(outputSubscriber);
+        logsSubject.subscribe(logsSubscriber);
 
         programService.provideProgramInput(programNumber, input);
 
@@ -622,8 +620,8 @@ describe("ProgramService", () => {
             input,
             mpid,
         );
-        expect(outputSubscriber.error).not.toHaveBeenCalled();
-        expect(outputSubscriber.next).toHaveBeenCalledWith([
+        expect(logsSubscriber.error).not.toHaveBeenCalled();
+        expect(logsSubscriber.next).toHaveBeenCalledWith([
             firstLine,
             {
                 isError: lastLine.isError,
@@ -640,17 +638,17 @@ describe("ProgramService", () => {
         const firstLine = {isError: false, content: "first", hasInput: false};
         const lastLine = {isError: true, content: "last", hasInput: true};
         programService.programNumberToMpid.set(programNumber, mpid);
-        const outputSubject = new BehaviorSubject<ProgramLogLine[]>(
+        const logsSubject = new BehaviorSubject<ProgramLogLine[]>(
             structuredClone([firstLine, lastLine]),
         );
-        utilService.getFromMapOrDefault.and.returnValue(outputSubject);
-        programService.programNumberToOutput.set(programNumber, outputSubject);
+        utilService.getFromMapOrDefault.and.returnValue(logsSubject);
+        programService.programNumberToLogs.set(programNumber, logsSubject);
 
-        const outputSubscriber = jasmine.createSpyObj("suscriber", [
+        const logsSubscriber = jasmine.createSpyObj("suscriber", [
             "next",
             "error",
         ]);
-        outputSubject.subscribe(outputSubscriber);
+        logsSubject.subscribe(logsSubscriber);
 
         programService.provideProgramInput(programNumber, input);
 
@@ -658,8 +656,8 @@ describe("ProgramService", () => {
             input,
             mpid,
         );
-        expect(outputSubscriber.error).not.toHaveBeenCalled();
-        expect(outputSubscriber.next).toHaveBeenCalledWith([
+        expect(logsSubscriber.error).not.toHaveBeenCalled();
+        expect(logsSubscriber.next).toHaveBeenCalledWith([
             firstLine,
             lastLine,
             {
@@ -675,15 +673,15 @@ describe("ProgramService", () => {
         const mpid = 0;
         const input = "this is the input for the program";
         programService.programNumberToMpid.set(programNumber, mpid);
-        const outputSubject = new BehaviorSubject<ProgramLogLine[]>([]);
-        utilService.getFromMapOrDefault.and.returnValue(outputSubject);
-        programService.programNumberToOutput.set(programNumber, outputSubject);
+        const logsSubject = new BehaviorSubject<ProgramLogLine[]>([]);
+        utilService.getFromMapOrDefault.and.returnValue(logsSubject);
+        programService.programNumberToLogs.set(programNumber, logsSubject);
 
-        const outputSubscriber = jasmine.createSpyObj("suscriber", [
+        const logsSubscriber = jasmine.createSpyObj("suscriber", [
             "next",
             "error",
         ]);
-        outputSubject.subscribe(outputSubscriber);
+        logsSubject.subscribe(logsSubscriber);
 
         programService.provideProgramInput(programNumber, input);
 
@@ -691,8 +689,8 @@ describe("ProgramService", () => {
             input,
             mpid,
         );
-        expect(outputSubscriber.error).not.toHaveBeenCalled();
-        expect(outputSubscriber.next).toHaveBeenCalledWith([
+        expect(logsSubscriber.error).not.toHaveBeenCalled();
+        expect(logsSubscriber.next).toHaveBeenCalledWith([
             {
                 isError: false,
                 content: input,
@@ -705,24 +703,24 @@ describe("ProgramService", () => {
         const programNumber = "program-number";
         const input = "this is the input for the program";
         const lines = [{isError: true, content: "first", hasInput: false}];
-        const outputSubject = new BehaviorSubject<ProgramLogLine[]>(
+        const logsSubject = new BehaviorSubject<ProgramLogLine[]>(
             structuredClone(lines),
         );
-        utilService.getFromMapOrDefault.and.returnValue(outputSubject);
-        programService.programNumberToOutput.set(programNumber, outputSubject);
+        utilService.getFromMapOrDefault.and.returnValue(logsSubject);
+        programService.programNumberToLogs.set(programNumber, logsSubject);
 
-        const outputSubscriber = jasmine.createSpyObj("suscriber", [
+        const logsSubscriber = jasmine.createSpyObj("suscriber", [
             "next",
             "error",
         ]);
-        outputSubject.subscribe(outputSubscriber);
+        logsSubject.subscribe(logsSubscriber);
 
         expect(() =>
             programService.provideProgramInput(programNumber, input),
         ).toThrow();
 
         expect(rosService.publishProgramInput).not.toHaveBeenCalled();
-        expect(outputSubscriber.error).not.toHaveBeenCalled();
-        expect(outputSubscriber.next).not.toHaveBeenCalledWith();
+        expect(logsSubscriber.error).not.toHaveBeenCalled();
+        expect(logsSubscriber.next).not.toHaveBeenCalledWith();
     });
 });

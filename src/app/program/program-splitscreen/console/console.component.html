@@ -31,7 +31,7 @@
         {{lastLineIfInput.content}}
     </div>
     <div
-        *ngFor="let line of lines"
+        *ngFor="let line of logs"
         [ngClass]="line.isError ? 'stderr' : 'stdout'">
         {{line.content}}
     </div>

@@ -22,7 +22,7 @@ export class ProgramSplitscreenComponent implements OnInit {
 
     inSplitMode: boolean = false;
 
-    programOutput$: Observable<ProgramLogLine[]> = new Observable();
+    programLogs$: Observable<ProgramLogLine[]> = new Observable();
     programState$: Observable<ProgramState> = new Observable();
     executionState: ExecutionState = ExecutionState.NOT_STARTED;
 
@@ -47,7 +47,7 @@ export class ProgramSplitscreenComponent implements OnInit {
         });
         this.activatedRoute.params.subscribe((params) => {
             this.programNumber = params["program-number"];
-            this.programOutput$ = this.programService.getProgramOutput(
+            this.programLogs$ = this.programService.getProgramLogs(
                 this.programNumber,
             );
             this.programState$ = this.programService.getProgramState(
