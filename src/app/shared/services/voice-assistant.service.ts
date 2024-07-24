@@ -19,6 +19,7 @@ import {SidebarElement} from "../interfaces/sidebar-element.interface";
 import {RosService} from "./ros-service/ros.service";
 import {VoiceAssistantState} from "../types/voice-assistant-state";
 import {AssistantModel, AssistantModelDto} from "../types/assistantModel";
+import {ChatService} from "./chat.service";
 
 @Injectable({
     providedIn: "root",
@@ -38,6 +39,7 @@ export class VoiceAssistantService implements SidebarService {
     constructor(
         private apiService: ApiService,
         private rosService: RosService,
+        private chatService: ChatService,
     ) {
         this.getAllPersonalities();
         this.getAllAssistantModels();
@@ -163,6 +165,10 @@ export class VoiceAssistantService implements SidebarService {
                 this.addPersonality(
                     parseDtoToVoiceAssistant(response as VoiceAssistant),
                 );
+                this.chatService.createChat({
+                    topic: "Initial conversation",
+                    personalityId: response.personalityId,
+                });
             });
     }
 
