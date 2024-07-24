@@ -31,7 +31,6 @@ describe("ChatWindowComponent", () => {
                 "sendChatMessage",
                 "getChat",
                 "getIsListeningObservable",
-                "filterMessageUpdates",
             ]);
         await TestBed.configureTestingModule({
             declarations: [ChatWindowComponent],
