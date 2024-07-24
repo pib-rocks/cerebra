@@ -10,30 +10,34 @@
                 class="pt-4 text-center"
                 style="background-color: #041939">
                 <label class="p-1 text-break">Voice interaction</label>
-                <div class="col">
-                    <div class="row pt-1 mb-3">
-                        <div class="col-11 ml-sm-2 ml-xl-3">
-                            <div class="row">
-                                <button
-                                    type="button"
-                                    [ngClass]="turnedOn ? 'on' : 'off'"
-                                    class="col btn border-0 text-truncate element text-center p-3"
-                                    id="sidebar-right-toggle-voice-assistant"
-                                    (click)="toggleVoiceAssistant()"
-                                    title="Toggle for turning Voice Assistant on and off"
-                                    value="{{turnedOn}}">
-                                    <label class="mb-0"
-                                        >{{ turnedOn ? 'ON' : 'OFF' }}</label
-                                    >
-                                </button>
-                                <a
-                                    *ngIf="turnedOn && (activeChatId != currentChatId)"
-                                    [routerLink]="['/', 'voice-assistant', activePersonalityId, 'chat', activeChatId]"
-                                    >Jump to active chat</a
-                                >
-                            </div>
-                        </div>
+                <div class="row">
+                    <div class="col text-right">
+                        <img
+                            class="microphone-icon align-middle"
+                            src="../../assets/voice-assistant-svgs/chat/voice_interaction_off.svg" />
                     </div>
+                    <div class="col pr-0 pl-0">
+                        <button
+                            class="btn border-0 p-0"
+                            id="sidebar-right-toggle-voice-assistant"
+                            type="button"
+                            value="{{turnedOn}}"
+                            (click)="toggleVoiceAssistant()">
+                            <img
+                                [src]="turnedOn ? '../../assets/toggle-switch-right.png' : '../../assets/toggle-switch-left.png' "
+                                alt="Toggle for turning the Voice Assistant on and off" />
+                        </button>
+                    </div>
+                    <div class="col text-left">
+                        <img
+                            class="microphone-icon align-middle"
+                            src="../../assets/voice-assistant-svgs/chat/voice_interaction_on.svg" />
+                    </div>
+                    <a
+                        *ngIf="turnedOn && (activeChatId != currentChatId)"
+                        [routerLink]="['/', 'voice-assistant', activePersonalityId, 'chat', activeChatId]"
+                        >Jump to active chat
+                    </a>
                 </div>
             </div>
             <div>
