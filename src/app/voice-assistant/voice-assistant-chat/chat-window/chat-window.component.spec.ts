@@ -30,7 +30,6 @@ describe("ChatWindowComponent", () => {
                 "sendChatMessage",
                 "getChat",
                 "getIsListeningObservable",
-                "filterMessageUpdates",
             ]);
         await TestBed.configureTestingModule({
             declarations: [ChatWindowComponent],
@@ -69,20 +68,6 @@ describe("ChatWindowComponent", () => {
         chatService.getIsListeningObservable.and.returnValue(
             isListeningSubject,
         );
-        chatService.filterMessageUpdates.and.returnValue([
-            {
-                messageId: "message-id-1",
-                timestamp: "yesterday",
-                isUser: false,
-                content: "hello world",
-            },
-            {
-                messageId: "message-id-2",
-                timestamp: "today",
-                isUser: false,
-                content: "hello world",
-            },
-        ]);
 
         fixture = TestBed.createComponent(ChatWindowComponent);
         component = fixture.componentInstance;
