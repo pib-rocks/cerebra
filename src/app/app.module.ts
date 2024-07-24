@@ -36,6 +36,8 @@ import {MotorPositionComponent} from "./joint-control/joint-control-core/motor-p
 import {SaveConfirmationComponent} from "./program/save-confirmation/save-confirmation.component";
 import {PythonCodeComponent} from "./program/program-splitscreen/python-code/python-code.component";
 import {ConsoleComponent} from "./program/program-splitscreen/console/console.component";
+import {SmartConnectComponent} from "./ui-components/smart-connect/smart-connect.component";
+import {NgOptimizedImage} from "@angular/common";
 import {PoseComponent} from "./joint-control/pose/pose.component";
 
 @NgModule({
@@ -65,6 +67,7 @@ import {PoseComponent} from "./joint-control/pose/pose.component";
         ConsoleComponent,
         VoiceAssistantPersonalitySidebarRightComponent,
         PoseComponent,
+        SmartConnectComponent,
     ],
     imports: [
         BrowserModule,
@@ -79,6 +82,7 @@ import {PoseComponent} from "./joint-control/pose/pose.component";
         FormsModule,
         AngularSplitModule,
         HighlightModule,
+        NgOptimizedImage,
     ],
     providers: [
         {
@@ -96,6 +100,5 @@ import {PoseComponent} from "./joint-control/pose/pose.component";
         },
     ],
     bootstrap: [AppComponent],
-    entryComponents: [MatDialogModule],
 })
 export class AppModule {}
