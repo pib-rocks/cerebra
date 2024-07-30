@@ -59,7 +59,7 @@ describe("ConsoleComponent", () => {
         expect(component.lastLogLineIfInput).toEqual(undefined);
     });
 
-    it("should  get the state from the program-service", () => {
+    it("should get the state from the program-service", () => {
         const programState$ = new Subject<ProgramState>();
         component.ngOnChanges({
             programState$: {

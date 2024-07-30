@@ -10,7 +10,7 @@
     "sonar": "sonar-scanner",
     "lint": "ng lint",
     "prepare": "husky install",
-    "json-server": "node .\\server\\json-server-funktion.mjs",
+    "json-server": "concurrently \"node .\\server\\json-server-funktion.mjs\" \"ng serve\"",
     "cerebra-mock-backend": "concurrently \"node .\\server\\json-server-funktion.mjs\" \"ng serve --configuration development,rosmock\""
   },
   "private": true,
