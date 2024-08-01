@@ -19,6 +19,10 @@ p span {
     min-width: 140px;
 }
 
+.min-h {
+    height: inherit;
+    --test: height;
+}
 .sliderRange {
     font-size: 0.8125rem;
     margin: 0;
@@ -43,8 +47,8 @@ p span {
     --pos-relative: 0;
     -webkit-appearance: none;
     /* -webkit-appearance: slider-vertical; */
-    height: clamp(12px, 1.2vw, 18px);
-    width: 350px;
+    height: 100%;
+    width: calc(height);
     border-radius: clamp(5px, 1vw, 10px);
     background: linear-gradient(
         to right,
@@ -59,8 +63,8 @@ p span {
 input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
     border: none;
-    height: clamp(12px, 1.5vw, 24px);
-    width: clamp(12px, 1.5vw, 24px);
+    height: clamp(20px, 1.5vw, 28px);
+    width: clamp(20px, 1.5vw, 28px);
     border-radius: 50%;
     background: #e10072;
 }

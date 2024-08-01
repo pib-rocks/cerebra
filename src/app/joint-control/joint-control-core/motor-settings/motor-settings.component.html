@@ -144,8 +144,9 @@
     </div>
     <div
         *ngIf="!displayExtended"
-        class="row modal-body h-100 d-flex align-items-start justify-content-center">
-        <div class="col-3 ml-2 mr-2 ">
+        class="row modal-body d-flex align-items-start justify-content-center"
+        style="height: 500px;">
+        <div class="col-3 h-100 ml-2 mr-2 ">
             <app-vertical-slider
                 name="Velocity"
                 [messageReceiver$]="velocitySubject$"
@@ -155,7 +156,7 @@
                 [maxValue]="500000"
                 [defaultValue]="settings.velocity"></app-vertical-slider>
         </div>
-        <div class="col-3 ml-2 mr-2">
+        <div class="col-3 h-100 ml-2 mr-2">
             <app-vertical-slider
                 name="Acceleration"
                 [messageReceiver$]="accelerationSubject$"
@@ -164,7 +165,7 @@
                 [maxValue]="500000"
                 [defaultValue]="settings.acceleration"></app-vertical-slider>
         </div>
-        <div class="col-3 ml-2 mr-2">
+        <div class="col-3 h-100 ml-2 mr-2">
             <app-vertical-slider
                 name="Deceleration"
                 [messageReceiver$]="decelerationSubject$"

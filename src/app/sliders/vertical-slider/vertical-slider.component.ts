@@ -7,8 +7,10 @@ import {
     AfterViewInit,
     EventEmitter,
     Output,
+    Renderer2
 } from "@angular/core";
 import {FormControl} from "@angular/forms";
+import { Svg } from "blockly/core/utils";
 import {Observable} from "rxjs";
 
 @Component({
@@ -18,6 +20,7 @@ import {Observable} from "rxjs";
 })
 export class VerticalSliderComponent implements OnInit, AfterViewInit {
     @ViewChild("slider") slider?: ElementRef;
+    @ViewChild("sliderticks") sliderTicks?: ElementRef;
     @Input() step: number = 1;
 
     @Input() defaultValue: number = 0;
@@ -36,6 +39,9 @@ export class VerticalSliderComponent implements OnInit, AfterViewInit {
     timer: any;
     rangeFormControl: FormControl = new FormControl();
     valueSanitized: boolean = false;
+    constructor(
+        private renderer: Renderer2
+      ) {}
 
     ngOnInit(): void {
         this.rangeFormControl.setValue(this.defaultValue);
@@ -68,6 +74,9 @@ export class VerticalSliderComponent implements OnInit, AfterViewInit {
             }
         });
         this.rangeFormControl.setValue(this.rangeFormControl.value);
+        console.log(this.sliderTicks?.nativeElement.height.baseVal.value);
+        this.renderer.setStyle(this.slider!.nativeElement, 'width', `${this.sliderTicks?.nativeElement.height.baseVal.value}px`);
+        // console.log(this.slider?.nativeElement
     }
 
     sanitizedSliderValue(value: any): number {
