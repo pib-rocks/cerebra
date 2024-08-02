@@ -39,6 +39,7 @@ describe("PoseService", () => {
             jasmine.createSpyObj("MotorService", [
                 "getPositionObservable",
                 "setPositions",
+                "applyPose",
             ]);
 
         const poses: PoseDTO[] = [
@@ -151,51 +152,38 @@ describe("PoseService", () => {
 
         poseService.applyPose(unknownPoseId);
 
-        expect(motorService.setPositions).not.toHaveBeenCalled();
+        expect(motorService.applyPose).not.toHaveBeenCalled();
     });
 
     it("should apply the pose", fakeAsync(() => {
         const pose1Deactivated = new Pose(pose1.name, pose1.poseId);
         pose1Deactivated.active = false;
 
-        apiService.get.and.returnValue(of({motorPositions}));
-
         poseService.applyPose(pose1.poseId);
 
-        expect(apiService.get).toHaveBeenCalledWith(
-            `/pose/${pose1.poseId}/motor-positions`,
-        );
-        expect(motorService.setPositions.calls.argsFor(0)).toEqual([
-            motorPositions,
-        ]);
-        expect(posesSubscriber.calls.argsFor(1)).toEqual([
+        expect(motorService.applyPose.calls.argsFor(0)).toEqual([pose1.poseId]);
+        expect(posesSubscriber.calls.argsFor(0)).toEqual([
             [pose1Deactivated, pose2],
         ]);
 
         tick(500); // pose1 should not have been reactivated yet
 
         poseService.applyPose(pose1.poseId);
-        // motor-positions should now be cached locally and api-service should not have been
-        // called again
-        expect(apiService.get).toHaveBeenCalledTimes(1);
-        // 'setPositions' should not have been called again, because the pose is not active
-        expect(motorService.setPositions).toHaveBeenCalledTimes(1);
+
+        // 'applyPose' should not have been called again, because the pose is not active
+        expect(motorService.applyPose).toHaveBeenCalledTimes(1);
         // new poses should not have been published yet
-        expect(posesSubscriber).toHaveBeenCalledTimes(2);
+        expect(posesSubscriber).toHaveBeenCalledTimes(1);
 
         tick(500); // now, pose1 should be active again
 
         // the reactivated pose1 should have been published
-        expect(posesSubscriber.calls.argsFor(2)).toEqual([[pose1, pose2]]);
+        expect(posesSubscriber.calls.argsFor(1)).toEqual([[pose1, pose2]]);
 
         poseService.applyPose(pose1.poseId);
-        // motor-positions should now be cached locally and api-service should not have been
-        // called again
-        expect(apiService.get).toHaveBeenCalledTimes(1);
+
         // now, 'setPositions' should not have been called again, because the pose is active again
-        expect(motorService.setPositions.calls.argsFor(1)).toEqual([
-            motorPositions,
-        ]);
+        expect(motorService.applyPose.calls.argsFor(1)).toEqual([pose1.poseId]);
 
         flush();
     }));
