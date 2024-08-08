@@ -1,5 +1,5 @@
 import {Component, OnInit} from "@angular/core";
-import {Subject} from "rxjs";
+import {BehaviorSubject} from "rxjs";
 import {MotorService} from "src/app/shared/services/motor.service";
 import {MotorConfiguration} from "../../../shared/types/motor-configuration";
 import {ActivatedRoute} from "@angular/router";
@@ -7,12 +7,12 @@ import {ActivatedRoute} from "@angular/router";
 @Component({
     selector: "app-motor-position",
     templateUrl: "./motor-position.component.html",
-    styleUrls: ["./motor-position.component.css"],
+    styleUrls: ["./motor-position.component.scss"],
 })
 export class MotorPositionComponent implements OnInit {
     motor!: MotorConfiguration;
 
-    positionReceiver$: Subject<[number]> = new Subject();
+    positionReceiver$: BehaviorSubject<[number]> = new BehaviorSubject([0]);
 
     rotationRangeMin: number = -90;
     rotationRangeMax: number = +90;
@@ -30,19 +30,23 @@ export class MotorPositionComponent implements OnInit {
             this.motorService
                 .getPositionObservable(this.motor.sourceMotorName)
                 .subscribe((position) => {
-                    this.positionReceiver$.next([position]);
+                    this.positionReceiver$.next([Math.floor(position / 100)]);
                 });
             this.motorService
                 .getSettingsObservable(this.motor.sourceMotorName)
                 .subscribe((settings) => {
                     this.turnedOn = settings.turnedOn;
-                    this.rotationRangeMin = settings.rotationRangeMin;
-                    this.rotationRangeMax = settings.rotationRangeMax;
+                    this.rotationRangeMin = Math.floor(
+                        settings.rotationRangeMin / 100,
+                    );
+                    this.rotationRangeMax = Math.floor(
+                        settings.rotationRangeMax / 100,
+                    );
                 });
         });
     }
 
     setPosition(position: number) {
-        this.motorService.setPosition(this.motor.motorName, position);
+        this.motorService.setPosition(this.motor.motorName, position * 100);
     }
 }

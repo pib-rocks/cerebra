@@ -5,11 +5,14 @@ import {VoiceAssistant} from "../types/voice-assistant";
 import {ApiService} from "./api.service";
 import {BehaviorSubject} from "rxjs";
 import {RosService} from "./ros-service/ros.service";
+import {AssistantModel} from "../types/assistantModel";
+import {ChatService} from "./chat.service";
 
 describe("VoiceAssistantService", () => {
     let service: VoiceAssistantService;
     let apiService: jasmine.SpyObj<ApiService>;
     let rosService: jasmine.SpyObj<RosService>;
+    let chatService: jasmine.SpyObj<ChatService>;
     const eva = {
         personalityId: "8f73b580-927e-41c2-98ac-e5df070e7288",
         name: "Eva",
@@ -37,6 +40,15 @@ describe("VoiceAssistantService", () => {
     const observableOfTwo = new BehaviorSubject<{
         voiceAssistantPersonalities: VoiceAssistant[];
     }>(res);
+    const models = {
+        assistantModels: [
+            new AssistantModel(1, "gpt-3.5-turbo", "GPT-3.5 Turbo", false),
+            new AssistantModel(2, "claude-3-sonnet", "Claude 3 Sonnet", true),
+        ],
+    };
+    const observableModels = new BehaviorSubject<{
+        assistantModels: AssistantModel[];
+    }>(models);
 
     beforeEach(() => {
         const rosServiceSpy: jasmine.SpyObj<RosService> = jasmine.createSpyObj(
@@ -53,9 +65,14 @@ describe("VoiceAssistantService", () => {
             "ApiService",
             ["get", "delete", "put", "post"],
         );
+
         apiServiceSpy.get.and.returnValue(
             new BehaviorSubject({voiceAssistantPersonalities: []}),
         );
+
+        const chatServiceSpy: jasmine.SpyObj<ChatService> =
+            jasmine.createSpyObj("ChatService", ["createChat"]);
+
         TestBed.configureTestingModule({
             providers: [
                 VoiceAssistantService,
@@ -67,12 +84,16 @@ describe("VoiceAssistantService", () => {
                     provide: ApiService,
                     useValue: apiServiceSpy,
                 },
+                {provide: ChatService, useValue: chatServiceSpy},
             ],
             imports: [HttpClientTestingModule],
         });
         service = TestBed.inject(VoiceAssistantService);
         apiService = TestBed.inject(ApiService) as jasmine.SpyObj<ApiService>;
         rosService = TestBed.inject(RosService) as jasmine.SpyObj<RosService>;
+        chatService = TestBed.inject(
+            ChatService,
+        ) as jasmine.SpyObj<ChatService>;
         apiService.get = jasmine.createSpy();
     });
 
@@ -88,7 +109,7 @@ describe("VoiceAssistantService", () => {
         expect(service.personalities.length).toBe(2);
     });
 
-    it("should return a created personality form db", () => {
+    it("should return a created personality from db", () => {
         apiService.post.and.returnValue(observableOfKlaus);
         service.createPersonality(klaus);
         const index = service.personalities.findIndex(
@@ -105,9 +126,10 @@ describe("VoiceAssistantService", () => {
         expect(service.personalities[index].personalityId).toBe(
             klaus.personalityId,
         );
+        expect(chatService.createChat).toHaveBeenCalled();
     });
 
-    it("should return an updated personality form db", () => {
+    it("should return an updated personality from db", () => {
         const evaUpdate = eva;
         evaUpdate.description = "asdasdadasd";
         const observableOfUpdatedEva = new BehaviorSubject<VoiceAssistant>(
@@ -147,5 +169,12 @@ describe("VoiceAssistantService", () => {
             chat_id: "next-chat-id",
         });
         expect(state).toEqual(jasmine.objectContaining(expectedState));
+    }));
+
+    it("should save a behavior subject to a local var", waitForAsync(() => {
+        apiService.get.and.returnValue(observableModels);
+        service.getAllAssistantModels();
+        expect(apiService.get).toHaveBeenCalled();
+        expect(service.assistantModelsSubject.getValue().length).toBe(2);
     }));
 });

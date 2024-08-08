@@ -6,6 +6,7 @@ import {
     ReplaySubject,
     throwError,
     tap,
+    of,
 } from "rxjs";
 import {MotorSettingsMessage} from "../../ros-types/msg/motor-settings-message";
 import {DiagnosticStatus} from "../../ros-types/msg/diagnostic-status.message";
@@ -27,6 +28,8 @@ import {ApiService} from "../api.service";
 import {UrlConstants} from "../url.constants";
 import {MotorSettingsError} from "../../error/motor-settings-error";
 import {ChatIsListening} from "../../ros-types/msg/chat-is-listening";
+import {motors} from "../../types/motor-configuration";
+import {ExistTokenResponse} from "../../ros-types/srv/exist-token";
 
 @Injectable({
     providedIn: "root",
@@ -53,9 +56,33 @@ export class RosService implements IRosService {
             .post(`${UrlConstants.CHAT}/${chatId}/messages`, {content, isUser})
             .pipe(
                 tap((chatMessage) => {
+                    this.lastChatMessageId = chatMessage.messageId;
                     this.chatMessageReceiver$.next({
                         chat_id: chatId,
                         message_id: chatMessage.messageId,
+                        timestamp: chatMessage.timestamp,
+                        is_user: chatMessage.isUser,
+                        content: chatMessage.content,
+                    });
+                }),
+            );
+    }
+
+    private updateMessage(
+        chatId: string,
+        content: string,
+        isUser: boolean,
+    ): Observable<any> {
+        return this.apiService
+            .put(
+                `${UrlConstants.CHAT}/${chatId}/messages/${this.lastChatMessageId}`,
+                {content, isUser},
+            )
+            .pipe(
+                tap((chatMessage) => {
+                    this.chatMessageReceiver$.next({
+                        chat_id: chatId,
+                        message_id: this.lastChatMessageId,
                         timestamp: chatMessage.timestamp,
                         is_user: chatMessage.isUser,
                         content: chatMessage.content,
@@ -71,6 +98,7 @@ export class RosService implements IRosService {
     uuidCounter: number = 0;
     userMessageTimeout: any;
     vaMessageTimeout: any;
+    lastChatMessageId: string = "";
 
     currentReceiver$: Subject<DiagnosticStatus> =
         new Subject<DiagnosticStatus>();
@@ -103,37 +131,7 @@ export class RosService implements IRosService {
 
     cameraTimer: any;
 
-    private motorNames = [
-        "thumb_left_opposition",
-        "thumb_left_stretch",
-        "index_left_stretch",
-        "middle_left_stretch",
-        "ring_left_stretch",
-        "pinky_left_stretch",
-        "all_fingers_left",
-        "thumb_right_opposition",
-        "thumb_right_stretch",
-        "index_right_stretch",
-        "middle_right_stretch",
-        "ring_right_stretch",
-        "pinky_right_stretch",
-        "all_fingers_right",
-        "upper_arm_left_rotation",
-        "elbow_left",
-        "lower_arm_left_rotation",
-        "wrist_left",
-        "shoulder_vertical_left",
-        "shoulder_horizontal_left",
-        "upper_arm_right_rotation",
-        "elbow_right",
-        "lower_arm_right_rotation",
-        "wrist_right",
-        "shoulder_vertical_right",
-        "shoulder_horizontal_right",
-        "tilt_forward_motor",
-        "tilt_sideways_motor",
-        "turn_head_motor",
-    ];
+    private motorNames = motors.map((motor) => motor.motorName);
 
     private isListeningFromChatId: Map<string, boolean> = new Map();
 
@@ -151,6 +149,32 @@ export class RosService implements IRosService {
                 });
             }
         }, 1000);
+    }
+
+    applyJointTrajectory(
+        jointTrajectory: JointTrajectoryMessage,
+    ): Observable<void> {
+        console.info(JSON.stringify({joint_trajectory: jointTrajectory}));
+        this.jointTrajectoryReceiver$.next(structuredClone(jointTrajectory));
+        return of(undefined);
+    }
+
+    checkTokenExists(): Observable<ExistTokenResponse> {
+        return new BehaviorSubject({token_exists: true, token_active: true});
+    }
+
+    deleteTokenMessage() {
+        return;
+    }
+
+    encryptToken(token: string, password: string): Observable<boolean> {
+        console.info(JSON.stringify({token: token, password: password}));
+        return new BehaviorSubject(true);
+    }
+
+    decryptToken(password: string): Observable<boolean> {
+        console.info(JSON.stringify({password: password}));
+        return new BehaviorSubject(true);
     }
 
     getChatIsListening(chatId: string): Observable<boolean> {
@@ -171,6 +195,18 @@ export class RosService implements IRosService {
                 this.setIsListening(chatId, true);
             });
         }, 2000);
+        if (content.toLocaleLowerCase() == "update") {
+            setTimeout(async () => {
+                await this.sleep(1500);
+                this.updateMessage(
+                    chatId,
+                    `this is the response to your input "${content}". Second line for "${content}".`,
+                    false,
+                ).subscribe((_) => {
+                    this.setIsListening(chatId, true);
+                });
+            }, 2000);
+        }
         return new BehaviorSubject<void>(undefined);
     }
 
@@ -230,6 +266,7 @@ export class RosService implements IRosService {
         const firstFeedbackTimer = setTimeout(
             () =>
                 feedback.next({
+                    mpid: 0,
                     output_lines: [
                         {
                             is_stderr: false,
@@ -242,6 +279,7 @@ export class RosService implements IRosService {
         const secondFeedbackTimer = setTimeout(
             () =>
                 feedback.next({
+                    mpid: 0,
                     output_lines: [
                         {
                             is_stderr: false,
@@ -286,7 +324,7 @@ export class RosService implements IRosService {
         return new BehaviorSubject({feedback, status, result, cancel});
     }
 
-    sendMotorSettingsMessage(
+    applyMotorSettings(
         motorSettingsMessage: MotorSettingsMessage,
     ): Observable<MotorSettingsMessage> {
         console.info(JSON.stringify(motorSettingsMessage));
@@ -324,15 +362,6 @@ export class RosService implements IRosService {
         return subject;
     }
 
-    sendJointTrajectoryMessage(
-        jointTrajectoryMessage: JointTrajectoryMessage,
-    ): void {
-        console.info(JSON.stringify(jointTrajectoryMessage));
-        this.jointTrajectoryReceiver$.next(
-            structuredClone(jointTrajectoryMessage),
-        );
-    }
-
     setTimerPeriod(period: number): void {
         console.info(JSON.stringify({data: period}));
         this.cameraTimerPeriodReceiver$.next(period);
@@ -362,5 +391,13 @@ export class RosService implements IRosService {
     unsubscribeCameraTopic(): void {
         clearInterval(this.cameraTimer);
         this.cameraTimer = undefined;
+    }
+
+    publishProgramInput(input: string, mpid: number) {
+        console.info(JSON.stringify({input, mpid}));
+    }
+
+    sleep(ms: number) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
     }
 }

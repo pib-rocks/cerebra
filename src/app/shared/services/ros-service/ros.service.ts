@@ -15,7 +15,6 @@ import {JointTrajectoryMessage} from "../../ros-types/msg/joint-trajectory-messa
 import {rosDataTypes} from "../../ros-types/path/ros-datatypes.enum";
 import {rosTopics} from "../../ros-types/path/ros-topics.enum";
 import {rosServices} from "../../ros-types/path/ros-services.enum";
-import {rosActions} from "../../ros-types/path/ros-actions.enum";
 import {
     SetVoiceAssistantStateRequest,
     SetVoiceAssistantStateResponse,
@@ -25,9 +24,9 @@ import {VoiceAssistantState} from "../../ros-types/msg/voice-assistant-state";
 import {GetVoiceAssistantStateResponse} from "../../ros-types/srv/get-voice-assistant-state";
 import {MotorSettingsError} from "../../error/motor-settings-error";
 import {
-    MotorSettingsServiceRequest,
-    MotorSettingsServiceResponse,
-} from "../../ros-types/srv/motor-settings-service";
+    ApplyMotorSettingsRequest,
+    ApplyMotorSettingsResponse,
+} from "../../ros-types/srv/apply-motor-settings";
 import {
     RunProgramFeedback,
     RunProgramResult,
@@ -42,7 +41,6 @@ import {ProxyRunProgramFeedback} from "../../ros-types/msg/proxy-run-program-fee
 import {ProxyRunProgramResult} from "../../ros-types/msg/proxy-run-program-result";
 import {ProxyRunProgramStatus} from "../../ros-types/msg/proxy-run-program-status";
 import {IRosService} from "./i-ros-service";
-// import {ip, portWebsocket} from "../../../global-conf.json"
 import config from "../../../global-conf.json";
 import {
     SendChatMessageRequest,
@@ -53,6 +51,20 @@ import {
     GetChatIsListeningRequest,
     GetChatIsListeningResponse,
 } from "../../ros-types/srv/get-chat-is-listening";
+import {
+    ApplyJointTrajectoryRequest,
+    ApplyJointTrajectoryResponse,
+} from "../../ros-types/srv/apply-joint-trajectory";
+import {
+    EncryptTokenRequest,
+    EncryptTokenResponse,
+} from "../../ros-types/srv/encrypt-token";
+import {
+    DecryptTokenRequest,
+    DecryptTokenResponse,
+} from "../../ros-types/srv/decrypt-token";
+import {ExistTokenResponse} from "../../ros-types/srv/exist-token";
+import {ProgramInput} from "../../ros-types/msg/program-input";
 
 @Injectable({
     providedIn: "root",
@@ -96,13 +108,27 @@ export class RosService implements IRosService {
     private cameraQualityFactorTopic!: ROSLIB.Topic;
     private jointTrajectoryTopic!: ROSLIB.Topic;
     private motorSettingsTopic!: ROSLIB.Topic;
+    private deleteTokenTopic!: ROSLIB.Topic;
     private proxyRunProgramFeedbackTopic!: ROSLIB.Topic<ProxyRunProgramFeedback>;
     private proxyRunProgramResultTopic!: ROSLIB.Topic<ProxyRunProgramResult>;
     private proxyRunProgramStatusTopic!: ROSLIB.Topic<ProxyRunProgramStatus>;
+    private programInputTopic!: ROSLIB.Topic<ProgramInput>;
     private chatMessageTopic!: ROSLIB.Topic<ChatMessage>;
     private voiceAssistantStateTopic!: ROSLIB.Topic<VoiceAssistantState>;
     private chatIsListeningTopic!: ROSLIB.Topic<ChatIsListening>;
 
+    private existTokenService!: ROSLIB.Service<
+        Record<string, never>,
+        ExistTokenResponse
+    >;
+    private encryptTokenService!: ROSLIB.Service<
+        EncryptTokenRequest,
+        EncryptTokenResponse
+    >;
+    private decryptTokenService!: ROSLIB.Service<
+        DecryptTokenRequest,
+        DecryptTokenResponse
+    >;
     private setVoiceAssistantStateService!: ROSLIB.Service<
         SetVoiceAssistantStateRequest,
         SetVoiceAssistantStateResponse
@@ -115,9 +141,9 @@ export class RosService implements IRosService {
         SendChatMessageRequest,
         SendChatMessageResponse
     >;
-    private motorSettingsService!: ROSLIB.Service<
-        MotorSettingsServiceRequest,
-        MotorSettingsServiceResponse
+    private applyMotorSettingsService!: ROSLIB.Service<
+        ApplyMotorSettingsRequest,
+        ApplyMotorSettingsResponse
     >;
     private proxyProgramStartService!: ROSLIB.Service<
         ProxyRunProgramStartRequest,
@@ -126,6 +152,10 @@ export class RosService implements IRosService {
     private proxyProgramStopService!: ROSLIB.Service<
         ProxyRunProgramStopRequest,
         Record<string, never>
+    >;
+    private applyJointTrajectoryService!: ROSLIB.Service<
+        ApplyJointTrajectoryRequest,
+        ApplyJointTrajectoryResponse
     >;
 
     private runProgramAction!: ROSLIB.ActionClient;
@@ -156,10 +186,6 @@ export class RosService implements IRosService {
         return new ROSLIB.Ros({
             url: `ws://${rosUrl}:${config.portWebsocket}`,
         });
-    }
-
-    private get Ros(): ROSLIB.Ros {
-        return this.ros;
     }
 
     private initTopicsAndServices() {
@@ -211,14 +237,22 @@ export class RosService implements IRosService {
             rosTopics.proxyRunProgramResult,
             rosDataTypes.proxyRunProgramResult,
         );
+        this.programInputTopic = this.createRosTopic(
+            rosTopics.programInput,
+            rosDataTypes.programInput,
+        );
         this.proxyRunProgramStatusTopic = this.createRosTopic(
             rosTopics.proxyRunProgramStatus,
             rosDataTypes.proxyRunProgramStatus,
         );
+        this.deleteTokenTopic = this.createRosTopic(
+            rosTopics.deleteTokenTopic,
+            rosDataTypes.empty,
+        );
 
-        this.motorSettingsService = this.createRosService(
-            rosServices.motorSettingsServiceName,
-            rosDataTypes.motorSettingsSrv,
+        this.applyMotorSettingsService = this.createRosService(
+            rosServices.applyMotorSettings,
+            rosDataTypes.applyMotorSettings,
         );
         this.proxyProgramStartService = this.createRosService(
             rosServices.proxyRunProgramStart,
@@ -240,10 +274,21 @@ export class RosService implements IRosService {
             rosServices.getChatIsListening,
             rosDataTypes.getChatIsListening,
         );
-
-        this.runProgramAction = this.createActionClient(
-            rosActions.runProgramName,
-            rosDataTypes.runProgram,
+        this.applyJointTrajectoryService = this.createRosService(
+            rosServices.applyJointTrajectory,
+            rosDataTypes.applyJointTrajectory,
+        );
+        this.existTokenService = this.createRosService(
+            rosServices.get_token_exists,
+            rosDataTypes.get_token_exists,
+        );
+        this.encryptTokenService = this.createRosService(
+            rosServices.encryptToken,
+            rosDataTypes.encryptToken,
+        );
+        this.decryptTokenService = this.createRosService(
+            rosServices.decryptToken,
+            rosDataTypes.decryptToken,
         );
     }
 
@@ -266,14 +311,6 @@ export class RosService implements IRosService {
             ros: this.ros,
             name: topicName,
             messageType: topicMessageType,
-        });
-    }
-
-    private createActionClient(actionName: string, actionType: string) {
-        return new ROSLIB.ActionClient({
-            ros: this.ros,
-            serverName: actionName,
-            actionName: actionType,
         });
     }
 
@@ -393,6 +430,85 @@ export class RosService implements IRosService {
         });
     }
 
+    checkTokenExists(): Observable<ExistTokenResponse> {
+        const failedResponse: ExistTokenResponse = {
+            token_exists: false,
+            token_active: false,
+        };
+        const subject: Subject<ExistTokenResponse> = new ReplaySubject();
+        if (this.existTokenService === undefined) {
+            subject.next(failedResponse);
+            return subject;
+        }
+
+        const successCallback = (response: ExistTokenResponse) => {
+            subject.next(response);
+        };
+        const errorCallback = (error: any) => {
+            subject.next(failedResponse);
+        };
+        this.existTokenService.callService({}, successCallback, errorCallback);
+
+        return subject;
+    }
+
+    deleteTokenMessage() {
+        const message = new ROSLIB.Message({});
+        this.deleteTokenTopic.publish(message);
+    }
+
+    encryptToken(token: string, password: string): Observable<boolean> {
+        const subject: Subject<boolean> = new ReplaySubject();
+        if (this.encryptTokenService === undefined) {
+            subject.next(false);
+            return subject;
+        }
+
+        const request: EncryptTokenRequest = {
+            token: token,
+            password: password,
+        };
+
+        const successCallback = (response: DecryptTokenResponse) => {
+            subject.next(response.successful);
+        };
+        const errorCallback = (error: any) => {
+            subject.next(false);
+        };
+
+        this.encryptTokenService.callService(
+            request,
+            successCallback,
+            errorCallback,
+        );
+        return subject;
+    }
+
+    decryptToken(password: string): Observable<boolean> {
+        const subject: Subject<boolean> = new ReplaySubject();
+        if (this.decryptTokenService === undefined) {
+            subject.next(false);
+            return subject;
+        }
+        const request: DecryptTokenRequest = {
+            password: password,
+        };
+
+        const successCallback = (response: EncryptTokenResponse) => {
+            subject.next(response.successful);
+        };
+        const errorCallback = (error: any) => {
+            subject.next(false);
+        };
+
+        this.decryptTokenService.callService(
+            request,
+            successCallback,
+            errorCallback,
+        );
+        return subject;
+    }
+
     setVoiceAssistantState(
         voiceAssistantState: VoiceAssistantState,
     ): Observable<void> {
@@ -411,6 +527,31 @@ export class RosService implements IRosService {
             subject.error(new Error(error));
         };
         this.setVoiceAssistantStateService.callService(
+            request,
+            successCallback,
+            errorCallback,
+        );
+        return subject;
+    }
+
+    applyJointTrajectory(
+        jointTrajectory: JointTrajectoryMessage,
+    ): Observable<void> {
+        const subject: Subject<void> = new ReplaySubject();
+        const request: ApplyJointTrajectoryRequest = {
+            joint_trajectory: jointTrajectory,
+        };
+        const successCallback = (response: ApplyJointTrajectoryResponse) => {
+            if (response.successful) {
+                subject.next();
+            } else {
+                subject.error(new Error("failed to apply joint-trajectory."));
+            }
+        };
+        const errorCallback = (error: any) => {
+            subject.error(new Error(error));
+        };
+        this.applyJointTrajectoryService.callService(
             request,
             successCallback,
             errorCallback,
@@ -461,12 +602,12 @@ export class RosService implements IRosService {
         return subject;
     }
 
-    sendMotorSettingsMessage(
+    applyMotorSettings(
         motorSettingsMessage: MotorSettingsMessage,
     ): Observable<MotorSettingsMessage> {
         const subject: Subject<MotorSettingsMessage> = new ReplaySubject();
         try {
-            this.motorSettingsService.callService(
+            this.applyMotorSettingsService.callService(
                 {motor_settings: motorSettingsMessage},
                 (response) => {
                     if (response["settings_applied"]) {
@@ -556,11 +697,6 @@ export class RosService implements IRosService {
         );
     }
 
-    sendJointTrajectoryMessage(jointTrajectoryMessage: JointTrajectoryMessage) {
-        const message = new ROSLIB.Message(jointTrajectoryMessage);
-        this.jointTrajectoryTopic.publish(message);
-    }
-
     setTimerPeriod(period: number) {
         if (!this.cameraTimerPeriodTopic) {
             console.error("ROS is not connected.");
@@ -586,5 +722,9 @@ export class RosService implements IRosService {
         }
         const message = new ROSLIB.Message({data: factor});
         this.cameraQualityFactorTopic.publish(message);
+    }
+
+    publishProgramInput(input: string, mpid: number) {
+        this.programInputTopic.publish({input, mpid});
     }
 }

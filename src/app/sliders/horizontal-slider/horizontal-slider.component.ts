@@ -21,7 +21,7 @@ import {SliderThumb} from "./slider-thumb";
 @Component({
     selector: "app-horizontal-slider",
     templateUrl: "./horizontal-slider.component.html",
-    styleUrls: ["./horizontal-slider.component.css"],
+    styleUrls: ["./horizontal-slider.component.scss"],
 })
 export class HorizontalSliderComponent
     implements OnInit, AfterViewInit, OnDestroy, OnChanges
@@ -129,9 +129,10 @@ export class HorizontalSliderComponent
                 inputVisible: false,
             });
         }
+        this.setAllThumbValues(this.defaultValues);
         this.messageReceiver$?.subscribe((values: number[] | number) => {
             this.setAllThumbValues(
-                typeof values == "number" ? [values] : values,
+                typeof values === "number" ? [values] : values,
             );
         });
         this.ref.detectChanges();
@@ -140,9 +141,6 @@ export class HorizontalSliderComponent
     ngAfterViewInit() {
         this.bubbleInputElems.forEach(
             (elem, idx) => (this.thumbs[idx].bubbleInputElem = elem),
-        );
-        asyncScheduler.schedule(() =>
-            this.setAllThumbValues(this.defaultValues),
         );
         this.sliderResizeObserver.observe(this.slider.nativeElement);
         this.calculateStaticPositionalProperties();

@@ -5,19 +5,21 @@ import {ChatService} from "src/app/shared/services/chat.service";
 import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
 import {ChatMessage} from "src/app/shared/types/chat-message";
 import {Chat} from "src/app/shared/types/chat.class";
-import {Observable, Subscription, combineLatest} from "rxjs";
+import {Subscription, combineLatest, map} from "rxjs";
 
 @Component({
     selector: "app-chat-window",
     templateUrl: "./chat-window.component.html",
-    styleUrls: ["./chat-window.component.css"],
+    styleUrls: ["./chat-window.component.scss"],
 })
 export class ChatWindowComponent implements OnInit {
     chat?: Chat;
     personalityName: string | undefined;
     messages?: ChatMessage[];
+    extendedMessages?: ChatMessage[];
 
     chatMessagesSubscription: Subscription | undefined;
+    chatMessagesUpdateSubscription: Subscription | undefined;
     textInputActiveSubscription: Subscription | undefined;
 
     chatMessageFormControl: FormControl<string> = new FormControl();
@@ -37,12 +39,9 @@ export class ChatWindowComponent implements OnInit {
     ) {}
 
     ngOnInit(): void {
-        // TODO: can this be removed
-        // this.chat = this.route.snapshot.data["chat"];
-        // localStorage.setItem("chat", this.chat?.chatId ?? "");
-
         this.route.params.subscribe((params: Params) => {
             this.chatMessagesSubscription?.unsubscribe();
+            this.chatMessagesUpdateSubscription?.unsubscribe();
             this.textInputActiveSubscription?.unsubscribe();
 
             const chatId = params["chatUuid"];
@@ -57,10 +56,16 @@ export class ChatWindowComponent implements OnInit {
 
             this.chatMessagesSubscription = this.chatService
                 .getChatMessagesObservable(chatId)
-                .subscribe((messages) => (this.messages = messages));
+                .pipe(map((messages) => messages))
+                .subscribe(
+                    (messages) =>
+                        (this.messages = this.chatService
+                            .filterMessageUpdates(messages)
+                            .slice()
+                            .reverse()),
+                );
 
             this.chat = this.chatService.getChat(chatId);
-            localStorage.setItem("chat", this.chat?.chatId ?? "");
             if (this.chat) {
                 this.personalityName =
                     this.voiceAssistantService.getPersonality(

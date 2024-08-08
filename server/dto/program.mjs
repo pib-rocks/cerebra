@@ -11,11 +11,11 @@ export class Program {
     }
 
     static newProgram(name, visual) {
-        return new Program(name, visual, GenertateId.genertateId(), "");
+        return new Program(name, visual, GenertateId.genertateId());
     }
 
     static returnCode(program) {
-        return {visual: program.visual};
+        return {codeVisual: program.visual};
     }
 }
 export default Program;

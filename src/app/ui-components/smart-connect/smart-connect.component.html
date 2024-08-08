@@ -1,0 +1,210 @@
+<script src="smart-connect.component.ts"></script>
+<div>
+    <button
+        class="smart-connect-btn"
+        type="button"
+        [disabled]="isLoadingModal"
+        (click)="onOpenModal(modalContent)">
+        <img
+            ngSrc="assets/smart-connect.svg"
+            alt="smart-connect button icon"
+            height="16"
+            width="32" />
+        <span>Smart connect</span>
+    </button>
+</div>
+
+<!-- Modal Header -->
+<ng-template
+    #modalContent
+    let-modal
+    id="smart-connect-modal">
+    <div class="modal-header">
+        <span class="modal-title ml-4">Smart Connect</span>
+        <button
+            id="modal-close-button"
+            type="button"
+            (click)="onCloseModal()"
+            class="btn">
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="10"
+                height="16">
+                <text
+                    font-family="Titillium"
+                    fill="#FFF"
+                    font-weight="bold"
+                    font-size="16"
+                    y="12">
+                    X
+                </text>
+            </svg>
+        </button>
+    </div>
+
+    <!-- Decrypt Token Form -->
+    <div
+        *ngIf="isTokenStored; else encryptToken"
+        class="mt-4 mb-4 mr-5 ml-5">
+        <div
+            *ngIf="isTokenActive"
+            class="d-flex justify-content-center mb-3">
+            <span class="text-success">Token already decrypted.</span>
+        </div>
+        <p [ngClass]="{disabled: isTokenActive}">
+            Enter your password to connect to Smart API.
+        </p>
+        <form
+            [formGroup]="decryptTokenForm"
+            (ngSubmit)="onSubmitDecryptToken()">
+            <div class="form-group w-100">
+                <label
+                    for="password"
+                    [ngClass]="{disabled: isTokenActive}"
+                    >Password</label
+                >
+                <div class="input-group">
+                    <input
+                        id="password"
+                        ngbAutofocus
+                        class="input form-control"
+                        type="password"
+                        [type]="passwordTextType ? 'password' : 'text'"
+                        formControlName="password" />
+                    <span class="input-group-text input"
+                        ><i
+                            [ngClass]="{'bi bi-eye': passwordTextType, 'bi bi-eye-slash': !passwordTextType}"
+                            (click)="togglePasswordTextType()"></i
+                    ></span>
+                </div>
+                <div class="mt-1">
+                    <button
+                        type="button"
+                        class="button-link"
+                        (click)="onDeleteToken()">
+                        Delete Token
+                    </button>
+                </div>
+            </div>
+            <div *ngIf="onErrorSubmit">
+                <span class="text-danger">Failed to decrypt token.</span>
+            </div>
+            <div class="d-flex justify-content-around mt-3 mb-4">
+                <button
+                    id="decrypt-form-btn"
+                    type="submit"
+                    class="btn btn-primary btn-lg w-100 mr-2"
+                    [disabled]="decryptTokenForm.invalid || isTokenActive">
+                    Connect
+                </button>
+                <button
+                    id="decrypt-form-cancel-btn"
+                    type="button"
+                    class="btn btn-secondary btn-lg w-100 ml-2"
+                    (click)="onCloseModal()">
+                    Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+</ng-template>
+
+<!-- Encrypt Token Form -->
+<ng-template #encryptToken>
+    <div class="mt-4 mb-4 mr-5 ml-5">
+        <p>
+            <b
+                >To connect to the smart API, enter the token you have received
+                and encrypt it with a password.</b
+            >
+            Please note that if you forget the password, an new token must be
+            requested and encrypted.
+        </p>
+
+        <form
+            [formGroup]="encryptTokenForm"
+            (ngSubmit)="onSubmitEncryptToken()">
+            <div class="input-group w-100">
+                <div class="form-group w-100">
+                    <label for="token">Token</label>
+                    <input
+                        id="token"
+                        autocomplete="off"
+                        class="input form-control"
+                        type="text"
+                        formControlName="token"
+                        ngbAutofocus />
+                </div>
+
+                <div class="form-group w-100">
+                    <label for="encrypt-password">Password</label>
+                    <div class="input-group">
+                        <input
+                            id="encrypt-password"
+                            class="input form-control"
+                            type="password"
+                            [type]="passwordTextType ? 'password' : 'text'"
+                            formControlName="password" />
+                        <span class="input-group-text input"
+                            ><i
+                                [ngClass]="{'bi bi-eye': passwordTextType, 'bi bi-eye-slash': !passwordTextType}"
+                                (click)="togglePasswordTextType()"></i
+                        ></span>
+                    </div>
+
+                    <div
+                        *ngIf="encryptTokenForm.get('password')?.errors?.['minlength'] && (encryptTokenForm.touched || encryptTokenForm.dirty)">
+                        <span class="text-danger"
+                            >Password needs to be at least 8 characters
+                            long.</span
+                        >
+                    </div>
+                </div>
+
+                <div class="form-group w-100">
+                    <label for="confirmPassword">Confirm password</label>
+                    <div class="input-group">
+                        <input
+                            id="confirmPassword"
+                            class="input form-control"
+                            type="password"
+                            [type]="passwordTextType ? 'password' : 'text'"
+                            formControlName="confirmPassword" />
+                        <span class="input-group-text input"
+                            ><i
+                                [ngClass]="{'bi bi-eye': passwordTextType, 'bi bi-eye-slash': !passwordTextType}"
+                                (click)="togglePasswordTextType()"></i
+                        ></span>
+                    </div>
+                    <div
+                        *ngIf="encryptTokenForm.get('confirmPassword')?.errors?.['mismatch'] && (encryptTokenForm.touched || encryptTokenForm.dirty)">
+                        <span class="text-danger">Passwords do not match.</span>
+                    </div>
+                </div>
+                <div *ngIf="onErrorSubmit">
+                    <span class="text-danger"
+                        >Failed to encrypt token. Please check your network
+                        connection and try again.</span
+                    >
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-around mt-3 mb-4">
+                <button
+                    id="encrypt-form-btn"
+                    type="submit"
+                    class="btn btn-primary btn-lg w-100 mr-2"
+                    [disabled]="encryptTokenForm.invalid">
+                    Encrypt
+                </button>
+                <button
+                    id="encrypt-form-cancel-btn"
+                    type="button"
+                    class="btn btn-secondary btn-lg w-100 ml-2"
+                    (click)="onCloseModal()">
+                    Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+</ng-template>

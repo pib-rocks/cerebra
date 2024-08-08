@@ -7,7 +7,7 @@ import {CerebraRegex} from "src/app/shared/types/cerebra-regex";
 @Component({
     selector: "app-voice-assistant-nav",
     templateUrl: "./voice-assistant-nav.component.html",
-    styleUrls: ["./voice-assistant-nav.component.css"],
+    styleUrls: ["./voice-assistant-nav.component.scss"],
 })
 export class VoiceAssistantNavComponent implements OnInit {
     sidebarElements?: SidebarElement[];

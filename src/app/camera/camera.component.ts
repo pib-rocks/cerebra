@@ -7,13 +7,13 @@ import {
 } from "@angular/core";
 import {FormControl} from "@angular/forms";
 import {Observable, map} from "rxjs";
-import {CameraSetting} from "../shared/types/camera-settings";
+import {CameraSettings} from "../shared/types/camera-settings";
 import {CameraService} from "../shared/services/camera.service";
 
 @Component({
     selector: "app-camera",
     templateUrl: "./camera.component.html",
-    styleUrls: ["./camera.component.css"],
+    styleUrls: ["./camera.component.scss"],
 })
 export class CameraComponent implements OnInit, OnDestroy {
     @ViewChild("videobox") videoBox?: ElementRef;
@@ -28,7 +28,7 @@ export class CameraComponent implements OnInit, OnDestroy {
     cameraActiveIcon =
         "M880-275 720-435v111L244-800h416q24 0 42 18t18 42v215l160-160v410ZM848-27 39-836l42-42L890-69l-42 42ZM159-800l561 561v19q0 24-18 42t-42 18H140q-24 0-42-18t-18-42v-520q0-24 18-42t42-18h19Z";
 
-    cameraSettings: CameraSetting | undefined;
+    cameraSettings: CameraSettings | undefined;
 
     constructor(private cameraService: CameraService) {
         this.subscribeCameraSettings();
@@ -81,14 +81,6 @@ export class CameraComponent implements OnInit, OnDestroy {
             }, 1500);
         }
         this.publishCameraSettings(this.cameraSettings!);
-    }
-
-    arraysEqual(a: number[], b: number[]) {
-        if (a.length !== b.length) return false;
-        for (let i = 0; i < a.length; i++) {
-            if (a[i] !== b[i]) return false;
-        }
-        return true;
     }
 
     startCamera() {
@@ -145,13 +137,13 @@ export class CameraComponent implements OnInit, OnDestroy {
 
     subscribeCameraSettings() {
         this.cameraService.cameraSettings.subscribe(
-            (message: CameraSetting) => {
+            (message: CameraSettings) => {
                 this.cameraSettings = message;
             },
         );
     }
 
-    publishCameraSettings(cameraSettings: CameraSetting) {
+    publishCameraSettings(cameraSettings: CameraSettings) {
         this.cameraService.publishCameraSettings(cameraSettings);
     }
 

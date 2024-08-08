@@ -1,6 +1,6 @@
 import {Injectable} from "@angular/core";
 import {Chat, ChatDto} from "../types/chat.class";
-import {BehaviorSubject, Observable, catchError, map, throwError} from "rxjs";
+import {BehaviorSubject, Observable, map} from "rxjs";
 import {ApiService} from "./api.service";
 import {UrlConstants} from "./url.constants";
 import {SidebarService} from "../interfaces/sidebar-service.interface";
@@ -33,7 +33,7 @@ export class ChatService implements SidebarService {
             );
             if (subject) {
                 const messages = subject.getValue();
-                messages.unshift({
+                messages.push({
                     messageId: rosChatMessage.message_id,
                     timestamp: rosChatMessage.timestamp,
                     isUser: rosChatMessage.is_user,
@@ -205,5 +205,17 @@ export class ChatService implements SidebarService {
                 });
         }
         return subject;
+    }
+
+    filterMessageUpdates(message: ChatMessage[]) {
+        return message.filter((message, index, messages) => {
+            if (index + 1 >= messages.length) {
+                return true;
+            }
+            if (message.messageId == messages[index + 1].messageId) {
+                return false;
+            }
+            return true;
+        });
     }
 }

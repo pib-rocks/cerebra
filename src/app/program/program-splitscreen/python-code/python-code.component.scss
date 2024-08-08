@@ -1,0 +1,11 @@
+@import "src/styles";
+
+.hljs {
+    background-color: transparent;
+}
+
+.wrapper {
+    background-color: $black-light-1;
+    overflow-y: scroll;
+    height: 0px;
+}

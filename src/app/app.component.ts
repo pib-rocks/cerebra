@@ -1,13 +1,10 @@
-import {Component, OnInit, OnChanges, SimpleChanges} from "@angular/core";
+import {Component, OnInit} from "@angular/core";
 import {NavigationEnd, Router} from "@angular/router";
-import {MotorService} from "./shared/services/motor.service";
-import {VoiceAssistantService} from "./shared/services/voice-assistant.service";
-import {ChatService} from "./shared/services/chat.service";
 
 @Component({
     selector: "app-root",
     templateUrl: "./app.component.html",
-    styleUrls: ["./app.component.css"],
+    styleUrls: ["./app.component.scss"],
 })
 export class AppComponent implements OnInit {
     currentRoute: string = "";
@@ -21,12 +18,7 @@ export class AppComponent implements OnInit {
         "/joint-control/right-arm",
     ];
 
-    constructor(
-        private router: Router,
-        private motorService: MotorService,
-        private voiceAssistantService: VoiceAssistantService,
-        private chatService: ChatService,
-    ) {}
+    constructor(private router: Router) {}
 
     ngOnInit(): void {
         this.router.events.subscribe((event) => {

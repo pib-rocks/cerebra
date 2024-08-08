@@ -109,6 +109,7 @@ describe("RosMockService", () => {
         tick(500);
         expect(feedbackSubscriber).toHaveBeenCalledTimes(1);
         expect(feedbackSubscriber).toHaveBeenCalledWith({
+            mpid: 0,
             output_lines: [
                 {
                     is_stderr: false,
@@ -119,6 +120,7 @@ describe("RosMockService", () => {
         tick(500);
         expect(feedbackSubscriber).toHaveBeenCalledTimes(2);
         expect(feedbackSubscriber).toHaveBeenCalledWith({
+            mpid: 0,
             output_lines: [
                 {
                     is_stderr: false,
@@ -405,10 +407,10 @@ describe("RosMockService", () => {
             joint_names: [],
             points: [],
         };
-        service.sendJointTrajectoryMessage(jt);
+        service.applyJointTrajectory(jt);
         expect(sendJointTrajectorySpy).toHaveBeenCalledOnceWith(jt);
         expect(consoleInfoSpy).toHaveBeenCalledOnceWith(
-            '{"header":{"stamp":{"sec":1,"nanosec":2},"frame_id":""},"joint_names":[],"points":[]}',
+            '{"joint_trajectory":{"header":{"stamp":{"sec":1,"nanosec":2},"frame_id":""},"joint_names":[],"points":[]}}',
         );
     });
 
@@ -446,7 +448,7 @@ describe("RosMockService", () => {
             visible: false,
         };
         apiService.put.and.returnValue(new BehaviorSubject(motorSettings));
-        service.sendMotorSettingsMessage(motorSettingsMessage);
+        service.applyMotorSettings(motorSettingsMessage);
         expect(sendMotorSettingsSpy).toHaveBeenCalledOnceWith(
             motorSettingsMessage,
         );
@@ -600,4 +602,41 @@ describe("RosMockService", () => {
         expect(messageReceiverNextSpy).not.toHaveBeenCalled();
         expect(apiService.post).not.toHaveBeenCalled();
     }));
+
+    it("should return true for token exists", (done) => {
+        service.checkTokenExists().subscribe((response) => {
+            expect(response.token_exists).toBe(true);
+            expect(response.token_active).toBe(true);
+            done();
+        });
+    });
+
+    it("should encrypt token", (done) => {
+        const token = "testToken";
+        const password = "testPassword";
+
+        service.encryptToken(token, password).subscribe((result) => {
+            expect(result).toBe(true);
+            done();
+        });
+    });
+
+    it("should decrypt token", (done) => {
+        const password = "testPassword";
+
+        service.decryptToken(password).subscribe((result) => {
+            expect(result).toBe(true);
+            done();
+        });
+    });
+
+    it("should publish the program input", () => {
+        const consoleInfoSpy = spyOn(console, "info");
+        const mpid = 0;
+        const input = "hello";
+        service.publishProgramInput(input, mpid);
+        expect(consoleInfoSpy).toHaveBeenCalledOnceWith(
+            `{"input":"${input}","mpid":${mpid}}`,
+        );
+    });
 });

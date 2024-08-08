@@ -1,0 +1,112 @@
+* {
+    color: white;
+}
+
+.pose-item {
+    border: none;
+    height: 40px;
+    line-height: 40px;
+}
+
+.apply-button {
+    width: 80px;
+    height: 40px;
+    border-top-left-radius: 10px;
+    border-bottom-left-radius: 10px;
+    border: 2px solid;
+    background-color: #041939;
+    display: flex;
+}
+
+.apply-button:hover {
+    cursor: pointer;
+}
+
+.apply-pose {
+    display: block;
+    margin: auto;
+    width: 15px;
+    height: 15px;
+}
+
+.rename-icon,
+.delete-icon {
+    color: white;
+    position: absolute;
+    transform: translate(-50%, -50%);
+}
+
+.rename-icon {
+    width: 21px;
+    height: 21px;
+}
+
+.delete-icon {
+    width: 22px;
+    height: 22px;
+}
+
+button:disabled img {
+    opacity: 0.5;
+}
+
+.delete-button,
+.rename-button {
+    border: none;
+    background-color: black;
+    width: 40px;
+    height: 40px;
+}
+
+.delete-button {
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
+}
+
+button:focus {
+    z-index: 1;
+}
+
+.selected button:focus:not(:focus-visible) {
+    outline: none;
+}
+
+.unselected button:focus:not(:focus-visible) {
+    outline: none;
+}
+
+.selected button:focus {
+    outline: 3px #ff67c6 solid;
+}
+
+.unselected button:focus {
+    outline: 3px #627f96 solid;
+}
+
+.pose-label:active:focus {
+    outline: none;
+}
+
+.pose-label {
+    text-align: left;
+    user-select: none;
+    border: none;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.selected .apply-button {
+    border-color: #e10072;
+}
+
+.unselected .apply-button {
+    border-color: #344864;
+}
+
+.selected :is(.pose-label, .delete-button, .rename-button) {
+    background-color: #e10072;
+}
+
+.unselected :is(.pose-label, .delete-button, .rename-button) {
+    background-color: #344864;
+}

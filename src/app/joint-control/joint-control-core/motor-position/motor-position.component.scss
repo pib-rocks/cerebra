@@ -1,0 +1,27 @@
+@import "src/styles";
+
+.right-icon-label {
+    color: $white-color;
+    text-align: left;
+    font-size: 18px;
+}
+
+.left-icon-label {
+    color: $white-color;
+    text-align: right;
+    font-size: 18px;
+}
+
+.slider-icon {
+    width: 3vw;
+    height: auto;
+}
+
+.slider-container {
+    height: 80px;
+}
+
+.motor-label {
+    font-weight: bolder;
+    font-size: clamp(14px, 1.3vw, 36px);
+}

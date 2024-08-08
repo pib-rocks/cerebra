@@ -1,3 +1,5 @@
+import {MotorSettings} from "../../types/motor-settings.class";
+
 export interface MotorSettingsMessage {
     motor_name: string;
     turned_on: boolean;
@@ -11,4 +13,24 @@ export interface MotorSettingsMessage {
     period: number;
     visible: boolean;
     invert: boolean;
+}
+
+export function fromMotorSettings(
+    motorName: string,
+    motorSettings: MotorSettings,
+): MotorSettingsMessage {
+    return {
+        motor_name: motorName,
+        turned_on: motorSettings.turnedOn,
+        pulse_width_min: motorSettings.pulseWidthMin,
+        pulse_width_max: motorSettings.pulseWidthMax,
+        rotation_range_min: motorSettings.rotationRangeMin,
+        rotation_range_max: motorSettings.rotationRangeMax,
+        velocity: motorSettings.velocity,
+        acceleration: motorSettings.acceleration,
+        deceleration: motorSettings.deceleration,
+        period: motorSettings.period,
+        visible: motorSettings.visible,
+        invert: motorSettings.invert,
+    };
 }

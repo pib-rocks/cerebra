@@ -14,18 +14,21 @@ import {
 import * as Blockly from "blockly";
 import {toolbox} from "../../blockly";
 import {ITheme} from "blockly/core/theme";
-import {pythonGenerator} from "../../program-generators/custom-generators";
-import {customBlockDefinition} from "../../program-blocks/custom-blocks";
+import {pythonGenerator} from "../../pib-blockly/program-generators/custom-generators";
+import {customBlockDefinition} from "../../pib-blockly/program-blocks/custom-blocks";
 import {Abstract} from "blockly/core/events/events_abstract";
+import {GuardsCheckStart, Router} from "@angular/router";
+import {Subscription} from "rxjs";
 
 @Component({
     selector: "app-program-workspace",
     templateUrl: "./program-workspace.component.html",
-    styleUrls: ["./program-workspace.component.css"],
+    styleUrls: ["./program-workspace.component.scss"],
 })
 export class ProgramWorkspaceComponent
     implements OnInit, AfterViewInit, OnDestroy, OnChanges
 {
+    routerEventSubscription!: Subscription;
     observer!: ResizeObserver;
     @ViewChild("blocklyDiv") blocklyDiv!: ElementRef<HTMLDivElement>;
 
@@ -55,11 +58,14 @@ export class ProgramWorkspaceComponent
         },
     });
 
+    constructor(private router: Router) {}
+
     get workspaceContent(): string {
         return JSON.stringify(
             Blockly.serialization.workspaces.save(this.workspace),
         );
     }
+
     set workspaceContent(content: string | undefined) {
         Blockly.serialization.workspaces.load(
             JSON.parse(content ?? "{}"),
@@ -80,6 +86,13 @@ export class ProgramWorkspaceComponent
     }
 
     ngOnInit() {
+        this.routerEventSubscription = this.router.events.subscribe((event) => {
+            if (event instanceof GuardsCheckStart) {
+                this.codeVisualChange.emit(this.workspaceContent);
+                Blockly.hideChaff();
+            }
+        });
+
         this.workspace = Blockly.inject("blocklyDiv", {
             toolbox: this.toolbox,
             theme: this.customTheme,
@@ -106,6 +119,29 @@ export class ProgramWorkspaceComponent
             this.codePythonChange.emit(this.codePython);
             this.codeVisualChange.emit(this.workspaceContent);
         });
+
+        this.workspace.registerButtonCallback("CREATE_VARIABLE_ARRAY", () => {
+            Blockly.Variables.createVariableButtonHandler(
+                this.workspace,
+                undefined,
+                "Array",
+            );
+        });
+
+        const variableCallback =
+            this.workspace.getToolboxCategoryCallback("VARIABLE_DYNAMIC");
+        this.workspace.removeToolboxCategoryCallback("VARIABLE_DYNAMIC");
+        this.workspace.registerToolboxCategoryCallback(
+            "VARIABLE_DYNAMIC",
+            (workspaceSvg) => {
+                const items = variableCallback?.(workspaceSvg) as HTMLElement[];
+                const stringButton = items[0];
+                const listButton = stringButton.cloneNode(true) as HTMLElement;
+                listButton.setAttribute("text", "Create list variable...");
+                listButton.setAttribute("callbackKey", "CREATE_VARIABLE_ARRAY");
+                return [listButton, ...items];
+            },
+        );
     }
 
     ngAfterViewInit() {
@@ -116,6 +152,7 @@ export class ProgramWorkspaceComponent
     ngOnDestroy(): void {
         this.observer.unobserve(this.blocklyDiv.nativeElement);
         Blockly.registry.unregister("theme", "customtheme");
+        this.routerEventSubscription.unsubscribe();
     }
 
     resizeBlockly() {

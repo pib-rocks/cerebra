@@ -6,13 +6,13 @@ import {BehaviorSubject, Observable, Subject} from "rxjs";
 import {Program} from "../types/program";
 import {UtilService} from "./util.service";
 import {ExecutionState, ProgramState} from "../types/program-state";
-import {ProgramOutputLine} from "../types/program-output-line";
 import {GoalHandle} from "../ros-types/action/goal-handle";
 import {
     RunProgramFeedback,
     RunProgramResult,
 } from "../ros-types/action/run-program";
 import {RosService} from "./ros-service/ros.service";
+import {ProgramLogLine} from "../types/program-log-line";
 
 describe("ProgramService", () => {
     let programService: ProgramService;
@@ -74,7 +74,7 @@ describe("ProgramService", () => {
 
         const rosServiceSpy: jasmine.SpyObj<RosService> = jasmine.createSpyObj(
             RosService.name,
-            ["runProgram"],
+            ["runProgram", "publishProgramInput"],
         );
 
         TestBed.configureTestingModule({
@@ -161,37 +161,37 @@ describe("ProgramService", () => {
     });
 
     it("should get one code", () => {
-        programService.programNumberToCode.set("id-1", {visual: "1"});
-        programService.programNumberToCode.set("id-2", {visual: "2"});
+        programService.programNumberToCode.set("id-1", {codeVisual: "1"});
+        programService.programNumberToCode.set("id-2", {codeVisual: "2"});
         expect(programService["getCodeFromCache"]("id-1")).toEqual({
-            visual: "1",
+            codeVisual: "1",
         });
     });
 
     it("should not get one code", () => {
-        programService.programNumberToCode.set("id-1", {visual: "1"});
-        programService.programNumberToCode.set("id-2", {visual: "2"});
+        programService.programNumberToCode.set("id-1", {codeVisual: "1"});
+        programService.programNumberToCode.set("id-2", {codeVisual: "2"});
         expect(programService["getCodeFromCache"]("id-3")).toBeUndefined();
     });
 
     it("should update one code", () => {
-        programService.programNumberToCode.set("id-1", {visual: "1"});
-        programService.programNumberToCode.set("id-2", {visual: "2"});
-        programService["setCode"]("id-1", {visual: "3"});
+        programService.programNumberToCode.set("id-1", {codeVisual: "1"});
+        programService.programNumberToCode.set("id-2", {codeVisual: "2"});
+        programService["setCode"]("id-1", {codeVisual: "3"});
         expect([...programService.programNumberToCode.entries()]).toEqual([
-            ["id-1", {visual: "3"}],
-            ["id-2", {visual: "2"}],
+            ["id-1", {codeVisual: "3"}],
+            ["id-2", {codeVisual: "2"}],
         ]);
     });
 
     it("should add one code if it is not already in cache", () => {
-        programService.programNumberToCode.set("id-1", {visual: "1"});
-        programService.programNumberToCode.set("id-2", {visual: "2"});
-        programService["setCode"]("id-3", {visual: "3"});
+        programService.programNumberToCode.set("id-1", {codeVisual: "1"});
+        programService.programNumberToCode.set("id-2", {codeVisual: "2"});
+        programService["setCode"]("id-3", {codeVisual: "3"});
         expect([...programService.programNumberToCode.entries()]).toEqual([
-            ["id-1", {visual: "1"}],
-            ["id-2", {visual: "2"}],
-            ["id-3", {visual: "3"}],
+            ["id-1", {codeVisual: "1"}],
+            ["id-2", {codeVisual: "2"}],
+            ["id-3", {codeVisual: "3"}],
         ]);
     });
 
@@ -357,14 +357,10 @@ describe("ProgramService", () => {
 
     it("should update the code on db", async () => {
         const code = {
-            visual: "new-visual",
-            python: "new-python",
-        };
-        const codeVisualOnly = {
-            visual: "new-visual",
+            codeVisual: "new-visual",
         };
         const setCodeSpy = spyOn<any>(programService, "setCode");
-        apiService.put.and.returnValue(new BehaviorSubject(codeVisualOnly));
+        apiService.put.and.returnValue(new BehaviorSubject(code));
         const resultCode = await new Promise((resolve, _) => {
             programService
                 .updateCodeByProgramNumber("id-1", code)
@@ -374,8 +370,8 @@ describe("ProgramService", () => {
             "/program/id-1/code",
             code,
         );
-        expect(setCodeSpy).toHaveBeenCalledOnceWith("id-1", codeVisualOnly);
-        expect(resultCode).toEqual(codeVisualOnly);
+        expect(setCodeSpy).toHaveBeenCalledOnceWith("id-1", code);
+        expect(resultCode).toEqual(code);
     });
 
     it("should terminate a program", () => {
@@ -424,16 +420,16 @@ describe("ProgramService", () => {
         expect(cancelSpy).not.toHaveBeenCalled();
     });
 
-    it("should get the program-output", () => {
+    it("should get the program-logs", () => {
         const programNumber = "test-number";
-        const expectedObservable: Observable<ProgramOutputLine[]> =
+        const expectedObservable: Observable<ProgramLogLine[]> =
             new Observable();
         utilService.getFromMapOrDefault.and.returnValue(expectedObservable);
-        expect(programService.getProgramOutput(programNumber)).toBe(
+        expect(programService.getProgramLogs(programNumber)).toBe(
             expectedObservable,
         );
         expect(utilService.getFromMapOrDefault).toHaveBeenCalledOnceWith(
-            programService.programNumberToOutput,
+            programService.programNumberToLogs,
             programNumber,
             jasmine.any(Function),
         );
@@ -443,7 +439,7 @@ describe("ProgramService", () => {
         const programNumber = "test-number";
         const expectedObservable: Observable<ProgramState> = new Observable();
         utilService.getFromMapOrDefault.and.returnValue(expectedObservable);
-        expect(programService.getProgramOutput(programNumber)).toBe(
+        expect(programService.getProgramLogs(programNumber)).toBe(
             expectedObservable,
         );
         expect(utilService.getFromMapOrDefault).toHaveBeenCalledOnceWith(
@@ -491,15 +487,16 @@ describe("ProgramService", () => {
         const state: ProgramState = {
             executionState: ExecutionState.NOT_STARTED,
         };
-        const output: ProgramOutputLine[] = [
+        const logs: ProgramLogLine[] = [
             {
                 content: "goodbye",
-                isStderr: true,
+                isError: true,
+                hasInput: false,
             },
         ];
 
         const stateSubject = new BehaviorSubject(state);
-        const outputSubject = new BehaviorSubject(output);
+        const logsSubject = new BehaviorSubject(logs);
 
         const feedbackSubject: Subject<RunProgramFeedback> = new Subject();
         const resultSubject: Subject<RunProgramResult> = new Subject();
@@ -514,12 +511,10 @@ describe("ProgramService", () => {
         const programnNumber = "test-number";
 
         spyOn(programService, "getProgramState").and.returnValue(stateSubject);
-        spyOn(programService, "getProgramOutput").and.returnValue(
-            outputSubject,
-        );
+        spyOn(programService, "getProgramLogs").and.returnValue(logsSubject);
 
         const stateNextSpy = spyOn(stateSubject, "next");
-        const outputNextSpy = spyOn(outputSubject, "next");
+        const logsNextSpy = spyOn(logsSubject, "next");
 
         let cancelCallback: () => void = () => undefined;
         const programNumberToCancelSetSpy = spyOn(
@@ -535,13 +530,14 @@ describe("ProgramService", () => {
         expect(stateNextSpy).toHaveBeenCalledWith({
             executionState: ExecutionState.RUNNING,
         });
-        expect(outputNextSpy).toHaveBeenCalledOnceWith([]);
+        expect(logsNextSpy).toHaveBeenCalledOnceWith([]);
         expect(programNumberToCancelSetSpy).toHaveBeenCalledOnceWith(
             programnNumber,
             jasmine.any(Function),
         );
 
         feedbackSubject.next({
+            mpid: 0,
             output_lines: [
                 {
                     content: "hello",
@@ -553,18 +549,21 @@ describe("ProgramService", () => {
                 },
             ],
         });
-        expect(outputNextSpy).toHaveBeenCalledWith([
+        expect(logsNextSpy).toHaveBeenCalledWith([
             {
                 content: "goodbye",
-                isStderr: true,
+                isError: true,
+                hasInput: false,
             },
             {
                 content: "hello",
-                isStderr: false,
+                isError: false,
+                hasInput: false,
             },
             {
                 content: "world",
-                isStderr: true,
+                isError: true,
+                hasInput: false,
             },
         ]);
 
@@ -594,5 +593,134 @@ describe("ProgramService", () => {
             executionState: ExecutionState.FINISHED_ERROR,
             exitCode: 2,
         });
+    });
+
+    it("should provide input to the program with non-input last-line", () => {
+        const programNumber = "program-number";
+        const mpid = 0;
+        const input = "this is the input for the program";
+        const firstLine = {isError: false, content: "first", hasInput: false};
+        const lastLine = {isError: true, content: "last", hasInput: false};
+        programService.programNumberToMpid.set(programNumber, mpid);
+        const logsSubject = new BehaviorSubject<ProgramLogLine[]>(
+            structuredClone([firstLine, lastLine]),
+        );
+        utilService.getFromMapOrDefault.and.returnValue(logsSubject);
+        programService.programNumberToLogs.set(programNumber, logsSubject);
+
+        const logsSubscriber = jasmine.createSpyObj("suscriber", [
+            "next",
+            "error",
+        ]);
+        logsSubject.subscribe(logsSubscriber);
+
+        programService.provideProgramInput(programNumber, input);
+
+        expect(rosService.publishProgramInput).toHaveBeenCalledOnceWith(
+            input,
+            mpid,
+        );
+        expect(logsSubscriber.error).not.toHaveBeenCalled();
+        expect(logsSubscriber.next).toHaveBeenCalledWith([
+            firstLine,
+            {
+                isError: lastLine.isError,
+                content: lastLine.content + input,
+                hasInput: true,
+            },
+        ]);
+    });
+
+    it("should provide input to the program with input last-line", () => {
+        const programNumber = "program-number";
+        const mpid = 0;
+        const input = "this is the input for the program";
+        const firstLine = {isError: false, content: "first", hasInput: false};
+        const lastLine = {isError: true, content: "last", hasInput: true};
+        programService.programNumberToMpid.set(programNumber, mpid);
+        const logsSubject = new BehaviorSubject<ProgramLogLine[]>(
+            structuredClone([firstLine, lastLine]),
+        );
+        utilService.getFromMapOrDefault.and.returnValue(logsSubject);
+        programService.programNumberToLogs.set(programNumber, logsSubject);
+
+        const logsSubscriber = jasmine.createSpyObj("suscriber", [
+            "next",
+            "error",
+        ]);
+        logsSubject.subscribe(logsSubscriber);
+
+        programService.provideProgramInput(programNumber, input);
+
+        expect(rosService.publishProgramInput).toHaveBeenCalledOnceWith(
+            input,
+            mpid,
+        );
+        expect(logsSubscriber.error).not.toHaveBeenCalled();
+        expect(logsSubscriber.next).toHaveBeenCalledWith([
+            firstLine,
+            lastLine,
+            {
+                isError: false,
+                content: input,
+                hasInput: true,
+            },
+        ]);
+    });
+
+    it("should provide input to the program with no lines", () => {
+        const programNumber = "program-number";
+        const mpid = 0;
+        const input = "this is the input for the program";
+        programService.programNumberToMpid.set(programNumber, mpid);
+        const logsSubject = new BehaviorSubject<ProgramLogLine[]>([]);
+        utilService.getFromMapOrDefault.and.returnValue(logsSubject);
+        programService.programNumberToLogs.set(programNumber, logsSubject);
+
+        const logsSubscriber = jasmine.createSpyObj("suscriber", [
+            "next",
+            "error",
+        ]);
+        logsSubject.subscribe(logsSubscriber);
+
+        programService.provideProgramInput(programNumber, input);
+
+        expect(rosService.publishProgramInput).toHaveBeenCalledOnceWith(
+            input,
+            mpid,
+        );
+        expect(logsSubscriber.error).not.toHaveBeenCalled();
+        expect(logsSubscriber.next).toHaveBeenCalledWith([
+            {
+                isError: false,
+                content: input,
+                hasInput: true,
+            },
+        ]);
+    });
+
+    it("should not provide input to the program if no mpid is associated with it", () => {
+        const programNumber = "program-number";
+        const input = "this is the input for the program";
+        const lines = [{isError: true, content: "first", hasInput: false}];
+        const logsSubject = new BehaviorSubject<ProgramLogLine[]>(
+            structuredClone(lines),
+        );
+        utilService.getFromMapOrDefault.and.returnValue(logsSubject);
+        programService.programNumberToLogs.set(programNumber, logsSubject);
+
+        const logsSubscriber = jasmine.createSpyObj("suscriber", [
+            "next",
+            "error",
+        ]);
+        logsSubject.subscribe(logsSubscriber);
+
+        expect(() =>
+            programService.provideProgramInput(programNumber, input),
+        ).toThrow();
+
+        expect(rosService.publishProgramInput).not.toHaveBeenCalled();
+        expect(logsSubscriber.error).not.toHaveBeenCalled();
+        expect(logsSubscriber.next).not.toHaveBeenCalledWith();
     });
 });

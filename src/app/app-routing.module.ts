@@ -19,12 +19,17 @@ import {motorGuard} from "./security/motor-guard";
 import {SaveConfirmationGuard} from "./security/save-confirmation.guard";
 import {ProgramSplitscreenComponent} from "./program/program-splitscreen/program-splitscreen.component";
 import {programCodeResolver} from "./program/program-splitscreen/resolver/program-code.resolver";
+import {PoseComponent} from "./joint-control/pose/pose.component";
 
 const routes: Routes = [
     {
         path: "joint-control",
         component: JointControlComponent,
         children: [
+            {
+                path: "pose",
+                component: PoseComponent,
+            },
             {
                 path: ":joint-name",
                 component: JointControlCoreComponent,

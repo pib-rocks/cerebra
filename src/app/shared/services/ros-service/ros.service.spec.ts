@@ -1,9 +1,12 @@
 import {TestBed, waitForAsync} from "@angular/core/testing";
 import * as ROSLIB from "roslib";
 import {RosService} from "./ros.service";
-import {createEmptyJointTrajectoryMessage} from "../../ros-types/msg/joint-trajectory-message";
+import {
+    JointTrajectoryMessage,
+    createEmptyJointTrajectoryMessage,
+} from "../../ros-types/msg/joint-trajectory-message";
 import {MotorSettingsMessage} from "../../ros-types/msg/motor-settings-message";
-import {MotorSettingsServiceResponse} from "../../ros-types/srv/motor-settings-service";
+import {ApplyMotorSettingsResponse} from "../../ros-types/srv/apply-motor-settings";
 import {ProxyRunProgramFeedback} from "../../ros-types/msg/proxy-run-program-feedback";
 import {ProxyRunProgramStopRequest} from "../../ros-types/srv/proxy-run-program-stop";
 import {ProxyRunProgramResult} from "../../ros-types/msg/proxy-run-program-result";
@@ -58,7 +61,6 @@ describe("RosService", () => {
     it("should establish ros in the constructor", () => {
         rosService["setUpRos"]();
         expect(spyOnSetupRos).toHaveBeenCalled();
-        expect(rosService["Ros"]).toBeTruthy();
     });
 
     it("should create all ROSLIB topics and services", () => {
@@ -68,11 +70,15 @@ describe("RosService", () => {
         expect(rosService["cameraTimerPeriodTopic"]).toBeTruthy();
         expect(rosService["cameraQualityFactorTopic"]).toBeTruthy();
         expect(rosService["cameraPreviewSizeTopic"]).toBeTruthy();
-        expect(rosService["motorSettingsService"]).toBeTruthy();
+        expect(rosService["applyMotorSettingsService"]).toBeTruthy();
         expect(rosService["voiceAssistantStateTopic"]).toBeTruthy();
         expect(rosService["setVoiceAssistantStateService"]).toBeTruthy();
         expect(rosService["chatMessageTopic"]).toBeTruthy();
         expect(rosService["chatIsListeningTopic"]).toBeTruthy();
+        expect(rosService["existTokenService"]).toBeTruthy();
+        expect(rosService["encryptTokenService"]).toBeTruthy();
+        expect(rosService["decryptTokenService"]).toBeTruthy();
+        expect(rosService["deleteTokenTopic"]).toBeTruthy();
     });
 
     it("should call the set_voice_assistant_state ros service", () => {
@@ -207,51 +213,86 @@ describe("RosService", () => {
         ).toHaveBeenCalledTimes(1);
     });
 
-    it("should publish the JointTrajectoryMessage on calling sendJointTrajectoryMessage", () => {
-        const spySendJointTrajectoryMessage = spyOn(
-            rosService,
-            "sendJointTrajectoryMessage",
-        ).and.callThrough();
-        const spyJointTrajectoryTopicPublish = spyOn(
-            rosService["jointTrajectoryTopic"],
-            "publish",
-        );
-        const jtMessage = createEmptyJointTrajectoryMessage();
-        rosService.sendJointTrajectoryMessage(jtMessage);
-        expect(spySendJointTrajectoryMessage).toHaveBeenCalled();
-        expect(spyJointTrajectoryTopicPublish).toHaveBeenCalledWith(
-            new ROSLIB.Message(jtMessage),
-        );
+    it("should notify, that the jt was applied, by publihsing to the observable", () => {
+        const jt = {} as JointTrajectoryMessage;
+        spyOn(
+            rosService["applyJointTrajectoryService"],
+            "callService",
+        ).and.callFake((_jt, resolve, _reject) => {
+            resolve({successful: true});
+        });
+        const subscriberSpy = jasmine.createSpyObj("subscriber-spy", [
+            "next",
+            "error",
+        ]);
+        rosService.applyJointTrajectory(jt).subscribe(subscriberSpy);
+        expect(subscriberSpy.next).toHaveBeenCalled();
+        expect(subscriberSpy.error).not.toHaveBeenCalled();
     });
 
-    it("should call the service with the MotorSettingsMessage on calling sendMotorSettingsMessage", () => {
+    it("should return an error, if communication with ros was not successful", () => {
+        const jt = {} as JointTrajectoryMessage;
+        spyOn(
+            rosService["applyJointTrajectoryService"],
+            "callService",
+        ).and.callFake((_jt, _resolve, reject) => {
+            reject?.("error");
+        });
+        const subscriberSpy = jasmine.createSpyObj("subscriber-spy", [
+            "next",
+            "error",
+        ]);
+        rosService.applyJointTrajectory(jt).subscribe(subscriberSpy);
+        expect(subscriberSpy.next).not.toHaveBeenCalled();
+        expect(subscriberSpy.error).toHaveBeenCalled();
+    });
+
+    it("should return an error, if communication with ros was successful, but jt could not be applied", () => {
+        const jt = {} as JointTrajectoryMessage;
+        spyOn(
+            rosService["applyJointTrajectoryService"],
+            "callService",
+        ).and.callFake((_jt, resolve, _reject) => {
+            resolve({successful: false});
+        });
+        const subscriberSpy = jasmine.createSpyObj("subscriber-spy", [
+            "next",
+            "error",
+        ]);
+        rosService.applyJointTrajectory(jt).subscribe(subscriberSpy);
+        expect(subscriberSpy.next).not.toHaveBeenCalled();
+        expect(subscriberSpy.error).toHaveBeenCalled();
+    });
+
+    it("should call the service with the MotorSettingsMessage on calling applyMotorSettings", () => {
         const spyOnSendMotorSettingsMessage = spyOn(
             rosService,
-            "sendMotorSettingsMessage",
+            "applyMotorSettings",
         ).and.callThrough();
         const spyMotorSettingsServiceCall = spyOn(
-            rosService["motorSettingsService"],
+            rosService["applyMotorSettingsService"],
             "callService",
         );
-        rosService.sendMotorSettingsMessage(motorSettingsMessage);
+        rosService.applyMotorSettings(motorSettingsMessage);
         expect(spyOnSendMotorSettingsMessage).toHaveBeenCalled();
         expect(spyMotorSettingsServiceCall).toHaveBeenCalled();
     });
 
-    it("should handle the case correctly, where, after calling sendMotorSettingsMessage(), the motorSettingsService calls the success-callback with a message that indicates, that both application as well as persistence were successul", () => {
-        spyOn(rosService["motorSettingsService"], "callService").and.callFake(
-            (_msg, callback) => {
-                const res: MotorSettingsServiceResponse = {
-                    settings_applied: true,
-                    settings_persisted: true,
-                };
-                callback(res);
-            },
-        );
+    it("should handle the case correctly, where, after calling applyMotorSettings(), the applyMotorSettingsService calls the success-callback with a message that indicates, that both application as well as persistence were successul", () => {
+        spyOn(
+            rosService["applyMotorSettingsService"],
+            "callService",
+        ).and.callFake((_msg, callback) => {
+            const res: ApplyMotorSettingsResponse = {
+                settings_applied: true,
+                settings_persisted: true,
+            };
+            callback(res);
+        });
         spyOn(rosService.motorSettingsReceiver$, "next");
 
         const obs: Observable<MotorSettingsMessage> =
-            rosService.sendMotorSettingsMessage(motorSettingsMessage);
+            rosService.applyMotorSettings(motorSettingsMessage);
         const subscribeCallBackSpy = jasmine.createSpyObj("subscriber", [
             "next",
             "error",
@@ -261,7 +302,7 @@ describe("RosService", () => {
         expect(subscribeCallBackSpy.next).toHaveBeenCalledOnceWith(
             motorSettingsMessage,
         );
-        rosService.sendMotorSettingsMessage(motorSettingsMessage);
+        rosService.applyMotorSettings(motorSettingsMessage);
     });
 
     it("should publish the preview size on calling setPreviewsize", () => {
@@ -345,6 +386,7 @@ describe("RosService", () => {
             handle.status.subscribe(statusSubscriber);
 
             feedbackSubject.next({
+                mpid: 0,
                 proxy_goal_id: "test-proxy-goal-id",
                 output_lines: [{is_stderr: true, content: "test 1"}],
             });
@@ -354,6 +396,7 @@ describe("RosService", () => {
             });
 
             feedbackSubject.next({
+                mpid: 1,
                 proxy_goal_id: "other-proxy-goal-id",
                 output_lines: [{is_stderr: true, content: "test 2"}],
             });
@@ -367,6 +410,7 @@ describe("RosService", () => {
             });
 
             feedbackSubject.next({
+                mpid: 0,
                 proxy_goal_id: "test-proxy-goal-id",
                 output_lines: [{is_stderr: true, content: "test 3"}],
             });
@@ -509,6 +553,105 @@ describe("RosService", () => {
         expect(subscriber.error).toHaveBeenCalledTimes(1);
         expect(callServiceSpy).toHaveBeenCalledOnceWith(
             {chat_id: chatId, content: chatMessageContent},
+            jasmine.any(Function),
+            jasmine.any(Function),
+        );
+    });
+
+    it("should check if token exists", () => {
+        const callServiceSpy = spyOn(
+            rosService["existTokenService"],
+            "callService",
+        ).and.callFake((_request, successCallback, _errorCallback) => {
+            successCallback({token_exists: false, token_active: false});
+        });
+
+        rosService.checkTokenExists().subscribe(subscriber);
+        expect(subscriber.next).toHaveBeenCalledTimes(1);
+        expect(callServiceSpy).toHaveBeenCalledOnceWith(
+            {},
+            jasmine.any(Function),
+            jasmine.any(Function),
+        );
+    });
+
+    it("should encrypt token", () => {
+        const token = "testToken";
+        const password = "testPassword";
+
+        const callServiceSpy = spyOn(
+            rosService["encryptTokenService"],
+            "callService",
+        ).and.callFake((_request, successCallback, _errorCallback) => {
+            successCallback({successful: true});
+        });
+
+        rosService.encryptToken(token, password).subscribe(subscriber);
+        expect(subscriber.next).toHaveBeenCalledTimes(1);
+        expect(subscriber.next).toHaveBeenCalledWith(true);
+        expect(callServiceSpy).toHaveBeenCalledOnceWith(
+            {token: token, password: password},
+            jasmine.any(Function),
+            jasmine.any(Function),
+        );
+    });
+
+    it("should return false on error encrypt token", () => {
+        const token = "testToken";
+        const password = "testPassword";
+
+        const callServiceSpy = spyOn(
+            rosService["encryptTokenService"],
+            "callService",
+        ).and.callFake((_request, _successCallback, errorCallback) => {
+            errorCallback?.("some error");
+        });
+
+        rosService.encryptToken(token, password).subscribe(subscriber);
+        expect(subscriber.next).toHaveBeenCalledTimes(1);
+        expect(subscriber.next).toHaveBeenCalledWith(false);
+        expect(callServiceSpy).toHaveBeenCalledOnceWith(
+            {token: token, password: password},
+            jasmine.any(Function),
+            jasmine.any(Function),
+        );
+    });
+
+    it("should decrypt token", () => {
+        const password = "testPassword";
+
+        const callServiceSpy = spyOn(
+            rosService["decryptTokenService"],
+            "callService",
+        ).and.callFake((_request, successCallback, _errorCallback) => {
+            successCallback({successful: true});
+        });
+
+        rosService.decryptToken(password).subscribe(subscriber);
+        expect(subscriber.next).toHaveBeenCalledTimes(1);
+        expect(subscriber.next).toHaveBeenCalledWith(true);
+        expect(callServiceSpy).toHaveBeenCalledOnceWith(
+            {password: password},
+            jasmine.any(Function),
+            jasmine.any(Function),
+        );
+    });
+
+    it("should return false on error decrypt token", () => {
+        const password = "testPassword";
+
+        const callServiceSpy = spyOn(
+            rosService["decryptTokenService"],
+            "callService",
+        ).and.callFake((_request, _successCallback, errorCallback) => {
+            errorCallback?.("some error");
+        });
+
+        rosService.decryptToken(password).subscribe(subscriber);
+        expect(subscriber.next).toHaveBeenCalledTimes(1);
+        expect(subscriber.next).toHaveBeenCalledWith(false);
+        expect(callServiceSpy).toHaveBeenCalledOnceWith(
+            {password: password},
             jasmine.any(Function),
             jasmine.any(Function),
         );

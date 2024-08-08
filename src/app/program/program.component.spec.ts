@@ -15,8 +15,6 @@ describe("ProgramComponent", () => {
     let programService: jasmine.SpyObj<ProgramService>;
     let router: {url: string};
 
-    let modalService: jasmine.SpyObj<NgbModal>;
-
     beforeEach(async () => {
         const modalServiceSpy: jasmine.SpyObj<NgbModal> = jasmine.createSpyObj(
             NgbModal,

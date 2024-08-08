@@ -1,0 +1,115 @@
+@import "src/styles";
+
+/* Vertical Slider Modal */
+.rotateRange {
+    transform: translate(-45%, -150%) rotate(-90deg);
+}
+
+p {
+    max-width: 120px;
+    overflow-x: hidden;
+    overflow-y: hidden;
+    font-weight: normal;
+}
+p span {
+    overflow-x: hidden;
+    overflow-y: hidden;
+    text-overflow: hidden;
+}
+
+.min-w {
+    min-width: 140px;
+}
+
+.min-h {
+    height: inherit;
+    --test: height;
+}
+.sliderRange {
+    font-size: 0.8125rem;
+    margin: 0;
+}
+
+.text-input {
+    width: 120px;
+    height: 30px;
+    background-color: $blue-dark-1;
+    color: $white-color;
+    text-align: right;
+    -moz-appearance: textfield;
+    border: none;
+}
+
+.text-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.range-slider .input-range {
+    --pos-relative: 0;
+    -webkit-appearance: none;
+    /* -webkit-appearance: slider-vertical; */
+    height: 100%;
+    width: calc(height);
+    border-radius: clamp(5px, 1vw, 10px);
+    background: linear-gradient(
+        to right,
+        $pink-color,
+        $pink-color var(--pos-relative),
+        $blue-dark-3 var(--pos-relative),
+        $blue-dark-3
+    );
+    cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    border: none;
+    height: clamp(20px, 1.5vw, 28px);
+    width: clamp(20px, 1.5vw, 28px);
+    border-radius: 50%;
+    background: $pink-color;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+    -webkit-appearance: none;
+    border-radius: 3px;
+}
+
+.input-range::-ms-fill-lower {
+    background-color: $pink-color;
+}
+.input-range::-ms-fill-upper {
+    background-color: $blue-dark-3;
+}
+
+/* Mozilla Input Type Range Track Rules */
+.input-range::-moz-range-progress {
+    width: 12px;
+    height: 12px;
+    background-color: $pink-color;
+    border-radius: 0.25em;
+}
+.input-range::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+    background-color: $pink-color;
+    border: none;
+    border-radius: 2em;
+}
+
+.input-range::-moz-range-track {
+    border-radius: 0.25em;
+    width: 12px;
+    background-color: $blue-dark-3;
+}
+
+svg .range__point {
+    font-weight: normal;
+    font-size: 13px;
+    fill: $white-color;
+}
+
+svg .range__tick {
+    fill: #58667c;
+}

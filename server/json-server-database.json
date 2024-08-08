@@ -6,7 +6,8 @@
       "name": "Eva",
       "description": "You are a helpful assistant.",
       "gender": "Female",
-      "pauseThreshold": 0.8
+      "pauseThreshold": 0.8,
+      "assistantModelId": 2
     },
     {
       "id": 2,
@@ -14,7 +15,28 @@
       "name": "Tom",
       "description": "You are a helpful assistant.",
       "gender": "Male",
-      "pauseThreshold": 0.8
+      "pauseThreshold": 0.8,
+      "assistantModelId": 1
+    }
+  ],
+  "assistantModel": [
+    {
+      "id": 1,
+      "apiName": "gpt-3.5-turbo",
+      "hasImageSupport": false,
+      "visualName": "GPT-3.5 Turbo"
+    },
+    {
+      "id": 2,
+      "apiName": "claude-3-sonnet",
+      "hasImageSupport": true,
+      "visualName": "Claude 3 Sonnet"
+    },
+    {
+      "id": 3,
+      "apiName": "gpt-4.0-turbo",
+      "hasImageSupport": false,
+      "visualName": "GPT-4.0 Turbo"
     }
   ],
   "chats": [
@@ -22,13 +44,13 @@
       "id": 1,
       "chatId": "ee3e80f9-c8f7-48c2-9f15-449ba9bbe4ab",
       "topic": "Short Stories",
-      "personalityId": 1
+      "personalityId": "66ed525d-42bb-41a2-8a52-f2c1b6e989ad"
     },
     {
       "id": 2,
       "chatId": "b4f01552-0c09-401c-8fde-fda753fb0261",
       "topic": "Technical Support",
-      "personalityId": 2
+      "personalityId": "2cb257e4-d173-44a6-869c-6488c98e8edb"
     }
   ],
   "chatMessage" : [
@@ -668,5 +690,6 @@
       "pin": 6,
       "invert" : 0
     }
-  ]
+  ],
+  "poses": []
 }

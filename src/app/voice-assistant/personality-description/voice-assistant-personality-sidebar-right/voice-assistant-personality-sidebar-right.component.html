@@ -1,7 +1,7 @@
 <link
     rel="stylesheet"
-    href="voice-assistant-personality-sidebar-right.component.css" />
-<div class="sidebar-right-wrapper bg-sidebar h-100 pl-4">
+    href="voice-assistant-personality-sidebar-right.component.scss" />
+<div class="sidebar-right-wrapper bg-sidebar h-100 pl-xl-4 pl-sm-3">
     <form
         (keydown.enter)="$event.preventDefault()"
         [formGroup]="personalityFormSidebar"
@@ -22,9 +22,25 @@
                 [value]="personalityClone.name"
                 id="personality-sidebar-persona-name-input" />
         </div>
+        <div class="row mt-sm-3 mt-xl-4">
+            <div class="col-11 pl-0">
+                <label id="model">Assistant Model</label>
+                <select
+                    formControlName="assistantModel"
+                    id="voice-assistant-model-select-right-sidebar"
+                    class="form-select"
+                    aria-label="Voice-assistant language model">
+                    <option
+                        *ngFor="let model of models"
+                        [value]="model.id">
+                        {{ model.visualName }}
+                    </option>
+                </select>
+            </div>
+        </div>
         <div class="row pl-1 mt-sm-3 mt-xl-4">
             <label id="personality-sidebar-label-name">Voice gender</label>
-            <div class="row pl-2">
+            <div class="col-sm-6 col-xl-12 pl-0">
                 <div
                     class="col-4"
                     id="personality-sidebar-radio-button-female">
@@ -41,7 +57,7 @@
                     >
                 </div>
             </div>
-            <div class="row pl-2">
+            <div class="col-sm-6 col-xl-12 pl-0">
                 <div
                     class="col-4"
                     id="personality-sidebar-radio-button-male">
@@ -66,7 +82,7 @@
                 for="personality-sidebar-pause-threshold-input"
                 class="row pr-3"
                 id="personality-sidebar-label-pause-threshold"
-                >Pause threshold (in s)</label
+                >Pause threshold<br />(in s)</label
             >
             <div class="row pl-0">
                 <div class="col pl-0 number-input">

@@ -1,0 +1,92 @@
+@import "src/styles";
+
+.element-div {
+    border-radius: 5px;
+    background-color: $blue-dark-2;
+    min-height: 30px;
+}
+
+label {
+    cursor: pointer;
+}
+
+.element-div:hover,
+.element-div-active {
+    background-color: $violet-color;
+}
+.element {
+    color: $white-color;
+    font-weight: bold;
+    font-size: 1rem;
+    display: inline-block;
+    padding-top: 5px;
+}
+
+.sidebar-right-wrapper {
+    background-color: $blue-dark-5;
+}
+
+::-webkit-scrollbar {
+    background-color: $blue-dark-5;
+    scrollbar-width: thin;
+    width: 5px;
+}
+
+::-webkit-scrollbar:hover {
+    width: 7px;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: $grey-color;
+    padding: 10%;
+}
+.dot-menu {
+    font-size: 1.4em;
+}
+.dot-menu:hover {
+    color: $black-color;
+}
+
+.btn {
+    border: 0;
+}
+
+.btn:hover {
+    background-color: transparent;
+}
+
+.dropdown-menu {
+    background-color: $blue-dark-5;
+    border: 1px;
+    border-radius: 5px;
+    border-color: $blue-dark-1;
+}
+
+.dropdown-toggle::after {
+    content: none;
+}
+
+.dropdown-item {
+    background-color: transparent;
+}
+
+.item {
+    max-height: 24px;
+}
+
+.dropdown-item:hover label,
+.dropdown-item:hover .item {
+    filter: invert(80%) sepia(50%) saturate(2000%) hue-rotate(300deg)
+        brightness(142%) contrast(110%)
+        drop-shadow(0px 0px 10px rgba(149, 27, 129, 1));
+}
+
+.text-center-vertical {
+    padding-top: 10px;
+}
+
+.dropdown-item:disabled label,
+.dropdown-item:disabled .item {
+    filter: invert(20%) sepia(0%) saturate(1000%) hue-rotate(500deg)
+        brightness(10%) contrast(10%) drop-shadow(0px 0px 10px rgb(0, 0, 0));
+}

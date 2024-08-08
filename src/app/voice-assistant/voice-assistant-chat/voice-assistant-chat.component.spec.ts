@@ -3,7 +3,7 @@ import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {VoiceAssistantChatComponent} from "./voice-assistant-chat.component";
 import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {HttpClientTestingModule} from "@angular/common/http/testing";
-import {BehaviorSubject, Observable, of} from "rxjs";
+import {BehaviorSubject, of} from "rxjs";
 import {Chat} from "src/app/shared/types/chat.class";
 import {ChatService} from "src/app/shared/services/chat.service";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
@@ -179,5 +179,46 @@ describe("VoiceAssistantChatComponent", () => {
         component.saveChat();
         expect(spyOnEditChat).toHaveBeenCalled();
         expect(spyOnSaveChat).toHaveBeenCalled();
+    });
+
+    it("should disable deleteChat when only one chat exists per personality", () => {
+        component.personalityId = "1234";
+        const chats = [
+            new Chat("Test1", "1234", "1234"),
+            new Chat("Test2", "123", "1234"),
+        ];
+        const deleteChat = component.dropdownCallbackMethods.find(
+            (e) => e.label === "Delete chat",
+        );
+        component.toggleDeleteChat(chats);
+        expect(deleteChat!.disabled).toBeTrue();
+    });
+
+    it("should not disable deleteChat when more than one chat exists per personality", () => {
+        component.personalityId = "1234";
+        component.turnedOn = false;
+        const chats = [
+            new Chat("Test1", "1234", "1234"),
+            new Chat("Test2", "1234", "1234"),
+        ];
+        const deleteChat = component.dropdownCallbackMethods.find(
+            (e) => e.label === "Delete chat",
+        );
+        component.toggleDeleteChat(chats);
+        expect(deleteChat!.disabled).toBeFalse();
+    });
+
+    it("should disable deleteChat when voice assistant is active", () => {
+        component.personalityId = "1234";
+        component.turnedOn = true;
+        const chats = [
+            new Chat("Test1", "1234", "1234"),
+            new Chat("Test2", "1234", "1234"),
+        ];
+        const deleteChat = component.dropdownCallbackMethods.find(
+            (e) => e.label === "Delete chat",
+        );
+        component.toggleDeleteChat(chats);
+        expect(deleteChat!.disabled).toBeTrue();
     });
 });

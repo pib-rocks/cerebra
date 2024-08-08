@@ -1,0 +1,194 @@
+$pink-color: #e10072 !default;
+$blue-color: #0094df !default;
+$red-color: #ff0000 !default;
+$violet-color: #951b81 !default;
+$white-color: #fff !default;
+$black-color: #000 !default;
+$black-light-1: #192021 !default;
+$black-transparent-1: rgba(0, 0, 0, 0.5) !default;
+$black-transparent-2: rgba(255, 255, 255, 0.05) !default;
+$grey-color: #ccc !default;
+$grey-transparent: rgba(255, 255, 255, 0.3) !default;
+$grey-dark-1: #828282 !default;
+$grey-dark-2: #646464 !default;
+$blue-dark-1: #344a69 !default;
+$blue-dark-2: #344864 !default;
+$blue-dark-3: #324c71 !default;
+$blue-dark-4: #1b2b44 !default;
+$blue-dark-5: #041939 !default;
+
+@font-face {
+    font-family: "Titillium";
+    src: url("/assets/Titillium_Web/TitilliumWeb-Regular.ttf");
+    font-weight: normal;
+}
+
+@font-face {
+    font-family: "Titillium";
+    src: url("/assets/Titillium_Web/TitilliumWeb-Bold.ttf");
+    font-weight: bold;
+}
+
+* {
+    font-family: Titillium, sans-serif;
+}
+
+.btn {
+    color: $white-color;
+}
+
+.btn:hover {
+    background-color: $blue-color;
+    color: $white-color;
+}
+
+.btn-regular {
+    border: none !important;
+    color: $white-color;
+    background-color: $blue-color;
+}
+
+.btn-regular:hover {
+    border: none !important;
+    color: $white-color;
+    background-color: $pink-color;
+}
+
+input::placeholder {
+    color: $grey-color;
+}
+
+.custom-switch.custom-switch-pib .custom-control-label::before {
+    background-color: transparent;
+    border-color: $white-color;
+}
+
+.custom-switch.custom-switch-pib
+    .custom-control-input:checked
+    ~ .custom-control-label::after {
+    background-color: $pink-color;
+}
+
+.custom-switch.custom-switch-pib
+    .custom-control-input
+    ~ .custom-control-label::after {
+    background-color: $grey-color;
+}
+
+.custom-control-label {
+    color: $white-color;
+
+    font-weight: normal !important;
+    font-size: 16px;
+}
+
+.custom-switch {
+    display: inline-block;
+}
+
+label {
+    color: $white-color;
+}
+
+span {
+    color: $white-color;
+}
+
+.cerebra-modal {
+    z-index: 1060 !important;
+    color: $white-color;
+    font-weight: bold;
+    vertical-align: middle;
+    font-size: 1rem;
+}
+
+.cerebra-modal .row {
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.cerebra-modal .btn {
+    border: none;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.toggle-button {
+    border: none;
+    border-radius: 0.25em;
+    padding: 0;
+}
+
+.cerebra-modal .modal-header {
+    z-index: 1060 !important;
+    border-bottom: 1px solid $blue-color;
+}
+
+.cerebra-modal .modal-footer {
+    border-top: 1px solid $blue-color;
+}
+
+.cerebra-modal .modal-content {
+    background:
+        url("assets/ep-br.png") bottom right no-repeat,
+        url("assets/ep-tr.png") top right no-repeat,
+        url("assets/ep-tl.png") top left no-repeat,
+        url("assets/ep-bl.png") bottom left no-repeat;
+    background-color: $blue-dark-5;
+    border-radius: 0;
+}
+
+.videoSettingsPopOver .popover-body {
+    border: solid 1px $white-color;
+    background-color: $blue-dark-5;
+    min-width: 300px;
+    padding: 0.75rem 1.5rem;
+}
+
+.cerebra-modal-backdrop {
+    z-index: 1040 !important;
+    background-color: transparent !important;
+}
+
+input {
+    color: $white-color;
+    background-color: $blue-dark-2;
+    border-radius: 5px;
+    border: none;
+}
+
+input:focus {
+    outline: none;
+    color: $white-color;
+}
+
+.transparent-button {
+    background: transparent;
+    border: none;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+::-webkit-scrollbar {
+    background-color: transparent;
+    scrollbar-width: thin;
+    width: 7px;
+    height: 7px;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: $grey-color;
+    padding: 10%;
+}
+
+.pink-corner-frame {
+    --s: 7px; /* the size on the corner */
+
+    padding: 0px; /* the gap between the border and image */
+    border: 1px solid $pink-color; /* the thickness and color */
+    -webkit-mask:
+        conic-gradient(at var(--s) var(--s), #0000 75%, #000 0) 0 0 /
+            calc(100% - var(--s)) calc(100% - var(--s)),
+        linear-gradient(#000 0 0) content-box;
+    background: url("assets/bg-gesamt.png") center / cover scroll;
+}

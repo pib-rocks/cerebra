@@ -15,12 +15,17 @@ import {
 } from "@angular/forms";
 import {VoiceAssistant} from "src/app/shared/types/voice-assistant";
 import {VoiceAssistantService} from "../../../shared/services/voice-assistant.service";
+import {AssistantModel} from "src/app/shared/types/assistantModel";
 
 describe("VoiceAssistantPersonalitySidebarRightComponent", () => {
     let component: VoiceAssistantPersonalitySidebarRightComponent;
     let fixture: ComponentFixture<VoiceAssistantPersonalitySidebarRightComponent>;
     let voiceAssistantService: jasmine.SpyObj<VoiceAssistantService>;
     let paramsSubject: Subject<{chatUuid: string}>;
+    const models = [
+        new AssistantModel(1, "gpt-3", "GPT-3", false),
+        new AssistantModel(1, "gpt-4", "GPT-4", true),
+    ];
 
     beforeEach(async () => {
         paramsSubject = new BehaviorSubject<{chatUuid: string}>({chatUuid: ""});
@@ -31,13 +36,10 @@ describe("VoiceAssistantPersonalitySidebarRightComponent", () => {
                 "deletePersonalityById",
                 "getAllPersonalities",
                 "updatePersonalityById",
+                ,
+                "getAllAssistantModels",
             ]);
 
-        // const chatServiceSpy: jasmine.SpyObj<ChatService> =
-        //     jasmine.createSpyObj(ChatService, [
-        //         "getChatMessagesObservable",
-        //         "getChat",
-        //     ]);
         await TestBed.configureTestingModule({
             declarations: [VoiceAssistantPersonalitySidebarRightComponent],
             imports: [
@@ -65,6 +67,8 @@ describe("VoiceAssistantPersonalitySidebarRightComponent", () => {
             ],
         }).compileComponents();
 
+        voiceAssistantServiceSpy.getAllAssistantModels.and.callFake(() => {});
+
         voiceAssistantService = TestBed.inject(
             VoiceAssistantService,
         ) as jasmine.SpyObj<VoiceAssistantService>;
@@ -79,6 +83,7 @@ describe("VoiceAssistantPersonalitySidebarRightComponent", () => {
             "male",
             0.8,
             "You are a test roboter",
+            1,
         );
         component.personalityFormSidebar = new FormGroup({
             "persona-name": new FormControl(component.personalityClone.name, {
@@ -104,8 +109,15 @@ describe("VoiceAssistantPersonalitySidebarRightComponent", () => {
                     ],
                 },
             ),
+            assistantModel: new FormControl(1, {
+                nonNullable: true,
+                validators: [Validators.required],
+            }),
         });
         voiceAssistantService.personalities = [component.personalityClone];
+        voiceAssistantService.assistantModelsSubject = new BehaviorSubject<
+            AssistantModel[]
+        >(models);
         fixture.detectChanges();
     });
 
@@ -113,18 +125,17 @@ describe("VoiceAssistantPersonalitySidebarRightComponent", () => {
         expect(component).toBeTruthy();
     });
 
-    //adjustThreshold
     it("should test if adjustThreshold sets the pausethreshold correctly", () => {
         component.thresholdString = "0.7";
         component.adjustThreshold();
         expect(component.personalityClone.pauseThreshold).toBe(0.7);
     });
-    //deletePersonality
+
     it("should delete personality", () => {
         component.deletePersonality();
         expect(voiceAssistantService.deletePersonalityById).toHaveBeenCalled();
     });
-    //updatePersonality
+
     it("should update personality", () => {
         component.updatePersonality();
         expect(voiceAssistantService.updatePersonalityById).toHaveBeenCalled();

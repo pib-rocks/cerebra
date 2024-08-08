@@ -1,8 +1,14 @@
-import {Component, OnInit, TemplateRef, ViewChild} from "@angular/core";
+import {
+    Component,
+    OnDestroy,
+    OnInit,
+    TemplateRef,
+    ViewChild,
+} from "@angular/core";
 import {FormControl, Validators} from "@angular/forms";
-import {ActivatedRoute, Route, Router} from "@angular/router";
+import {ActivatedRoute, Router} from "@angular/router";
 import {NgbModal, NgbModalRef} from "@ng-bootstrap/ng-bootstrap";
-import {Observable, Subject} from "rxjs";
+import {Observable, Subject, Subscription} from "rxjs";
 import {SidebarElement} from "src/app/shared/interfaces/sidebar-element.interface";
 import {ChatService} from "src/app/shared/services/chat.service";
 import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
@@ -15,9 +21,9 @@ import {Location} from "@angular/common";
 @Component({
     selector: "app-voice-assistant-chat",
     templateUrl: "./voice-assistant-chat.component.html",
-    styleUrls: ["./voice-assistant-chat.component.css"],
+    styleUrls: ["./voice-assistant-chat.component.scss"],
 })
-export class VoiceAssistantChatComponent implements OnInit {
+export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
     @ViewChild("modalContent") modalContent: TemplateRef<any> | undefined;
     ngbModalRef?: NgbModalRef;
     personalityIcon: string = "../../assets/voice-assistant-svgs/chat/chat.svg";
@@ -26,13 +32,13 @@ export class VoiceAssistantChatComponent implements OnInit {
     personality?: VoiceAssistant;
     personalityId?: string | null;
     uuid: string | undefined;
-
     selected: Subject<string> = new Subject();
     turnedOn: boolean = false;
     activeChatId: string = "";
     activePersonalityId: string = "";
     currentChatId: string | null = "";
     voiceAssistantActivationToggle = new FormControl(false);
+    chatSubjectSubscription!: Subscription;
 
     constructor(
         private modalService: NgbModal,
@@ -40,9 +46,9 @@ export class VoiceAssistantChatComponent implements OnInit {
         private chatService: ChatService,
         private voiceAssistantService: VoiceAssistantService,
         private route: ActivatedRoute,
-        private location: Location,
+        location: Location,
     ) {
-        location.onUrlChange((url, state) => {
+        location.onUrlChange((url, _state) => {
             let urlArray: string[] = url.split("/");
             this.currentChatId = urlArray[urlArray.length - 1];
         });
@@ -66,7 +72,7 @@ export class VoiceAssistantChatComponent implements OnInit {
             },
         );
 
-        this.route.paramMap.subscribe((params) => {
+        this.route.paramMap.subscribe((_params) => {
             const routeParts: string[] = this.router.url.split("/");
             this.currentChatId = routeParts[routeParts.length - 1];
 
@@ -91,11 +97,12 @@ export class VoiceAssistantChatComponent implements OnInit {
                 Validators.minLength(2),
                 Validators.maxLength(255),
             ]);
+            this.toggleDeleteChat(this.chatService.chats);
         });
 
-        this.voiceAssistantService.voiceAssistantStateObservable.subscribe(
-            (state: VoiceAssistantState) => {
-                this.voiceAssistantActivationToggle.setValue(state.turnedOn);
+        this.chatSubjectSubscription = this.chatService.chatSubject.subscribe(
+            (chats) => {
+                this.toggleDeleteChat(chats);
             },
         );
     }
@@ -104,8 +111,8 @@ export class VoiceAssistantChatComponent implements OnInit {
         this.ngbModalRef = this.modalService.open(this.modalContent, {
             ariaLabelledBy: "modal-basic-title",
             size: "sm",
-            windowClass: "myCustomModalClass",
-            backdropClass: "myCustomBackdropClass",
+            windowClass: "cerebra-modal",
+            backdropClass: "cerebra-modal-backdrop",
         });
         return this.ngbModalRef;
     };
@@ -170,10 +177,6 @@ export class VoiceAssistantChatComponent implements OnInit {
         }
     }
 
-    export() {
-        throw Error("not implemented");
-    }
-
     toggleVoiceAssistant() {
         const turnedOn = !this.voiceAssistantActivationToggle.value;
         const nextState: VoiceAssistantState = {turnedOn, chatId: ""};
@@ -200,6 +203,23 @@ export class VoiceAssistantChatComponent implements OnInit {
         }
     }
 
+    toggleDeleteChat(chats: Chat[]) {
+        const filteredChats = chats.filter((chat) => {
+            return chat.personalityId === this.personalityId;
+        });
+        const numberOfChats = filteredChats.length;
+        const deleteChat = this.dropdownCallbackMethods.find(
+            (e) => e.label === "Delete chat",
+        );
+        if (deleteChat && !this.turnedOn) {
+            deleteChat.disabled = numberOfChats <= 1;
+        }
+    }
+
+    ngOnDestroy(): void {
+        this.chatSubjectSubscription.unsubscribe();
+    }
+
     optionCallbackMethods = [
         {
             icon: "",
@@ -211,19 +231,13 @@ export class VoiceAssistantChatComponent implements OnInit {
 
     dropdownCallbackMethods = [
         {
-            icon: "../../assets/voice-assistant-svgs/chat/edit.svg",
+            icon: "../../assets/edit.svg",
             label: "Rename",
             clickCallback: this.openEditModal.bind(this),
             disabled: false,
         },
         {
-            icon: "../../assets/voice-assistant-svgs/chat/export.svg",
-            label: "Export chat",
-            clickCallback: this.export.bind(this),
-            disabled: true,
-        },
-        {
-            icon: "../../assets/voice-assistant-svgs/chat/delete.svg",
+            icon: "../../assets/delete.svg",
             label: "Delete chat",
             clickCallback: this.deleteChat.bind(this),
             disabled: false,

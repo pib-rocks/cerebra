@@ -1,22 +1,17 @@
 import {Component, OnInit} from "@angular/core";
 import {ActivatedRoute} from "@angular/router";
 import {Observable} from "rxjs";
-import {ProgramOutputLine} from "src/app/shared/types/program-output-line";
 import {ProgramService} from "src/app/shared/services/program.service";
 import {ProgramCode} from "src/app/shared/types/program-code";
 import {ExecutionState, ProgramState} from "src/app/shared/types/program-state";
+import {ProgramLogLine} from "src/app/shared/types/program-log-line";
 
 @Component({
     selector: "app-program-splitscreen",
     templateUrl: "./program-splitscreen.component.html",
-    styleUrls: ["./program-splitscreen.component.css"],
+    styleUrls: ["./program-splitscreen.component.scss"],
 })
 export class ProgramSplitscreenComponent implements OnInit {
-    constructor(
-        private programService: ProgramService,
-        private activatedRoute: ActivatedRoute,
-    ) {}
-
     ExecutionState = ExecutionState;
 
     codePython: string = "";
@@ -27,8 +22,8 @@ export class ProgramSplitscreenComponent implements OnInit {
 
     inSplitMode: boolean = false;
 
-    output$: Observable<ProgramOutputLine[]> = new Observable();
-    state$: Observable<ProgramState> = new Observable();
+    programLogs$: Observable<ProgramLogLine[]> = new Observable();
+    programState$: Observable<ProgramState> = new Observable();
     executionState: ExecutionState = ExecutionState.NOT_STARTED;
 
     readonly PLAY = "../../assets/program/button-run-play.svg";
@@ -40,20 +35,25 @@ export class ProgramSplitscreenComponent implements OnInit {
     readonly FULL_SCREEN = "../../../../assets/program/icon-full-screen.svg";
     readonly SPLIT_SCREEN = "../../../../assets/program/icon-split-screen.svg";
 
+    constructor(
+        private programService: ProgramService,
+        private activatedRoute: ActivatedRoute,
+    ) {}
+
     ngOnInit(): void {
         this.activatedRoute.data.subscribe((data) => {
-            this.codeVisualOld = (data["code"] as ProgramCode).visual;
+            this.codeVisualOld = (data["code"] as ProgramCode).codeVisual;
             this.codeVisualNew = this.codeVisualOld;
         });
         this.activatedRoute.params.subscribe((params) => {
             this.programNumber = params["program-number"];
-            this.output$ = this.programService.getProgramOutput(
+            this.programLogs$ = this.programService.getProgramLogs(
                 this.programNumber,
             );
-            this.state$ = this.programService.getProgramState(
+            this.programState$ = this.programService.getProgramState(
                 this.programNumber,
             );
-            this.state$.subscribe(
+            this.programState$.subscribe(
                 (state) => (this.executionState = state.executionState),
             );
         });
@@ -61,8 +61,7 @@ export class ProgramSplitscreenComponent implements OnInit {
 
     saveCode() {
         this.programService.updateCodeByProgramNumber(this.programNumber, {
-            visual: this.codeVisualNew,
-            python: this.codePython,
+            codeVisual: this.codeVisualNew,
         });
         this.codeVisualOld = this.codeVisualNew;
     }
@@ -77,5 +76,9 @@ export class ProgramSplitscreenComponent implements OnInit {
         } else {
             this.programService.runProgram(this.programNumber);
         }
+    }
+
+    onProgramInputReceived(input: string) {
+        this.programService.provideProgramInput(this.programNumber, input);
     }
 }
