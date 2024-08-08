@@ -64,6 +64,7 @@ import {
     DecryptTokenResponse,
 } from "../../ros-types/srv/decrypt-token";
 import {ExistTokenResponse} from "../../ros-types/srv/exist-token";
+import {ProgramInput} from "../../ros-types/msg/program-input";
 
 @Injectable({
     providedIn: "root",
@@ -111,6 +112,7 @@ export class RosService implements IRosService {
     private proxyRunProgramFeedbackTopic!: ROSLIB.Topic<ProxyRunProgramFeedback>;
     private proxyRunProgramResultTopic!: ROSLIB.Topic<ProxyRunProgramResult>;
     private proxyRunProgramStatusTopic!: ROSLIB.Topic<ProxyRunProgramStatus>;
+    private programInputTopic!: ROSLIB.Topic<ProgramInput>;
     private chatMessageTopic!: ROSLIB.Topic<ChatMessage>;
     private voiceAssistantStateTopic!: ROSLIB.Topic<VoiceAssistantState>;
     private chatIsListeningTopic!: ROSLIB.Topic<ChatIsListening>;
@@ -234,6 +236,10 @@ export class RosService implements IRosService {
         this.proxyRunProgramResultTopic = this.createRosTopic(
             rosTopics.proxyRunProgramResult,
             rosDataTypes.proxyRunProgramResult,
+        );
+        this.programInputTopic = this.createRosTopic(
+            rosTopics.programInput,
+            rosDataTypes.programInput,
         );
         this.proxyRunProgramStatusTopic = this.createRosTopic(
             rosTopics.proxyRunProgramStatus,
@@ -716,5 +722,9 @@ export class RosService implements IRosService {
         }
         const message = new ROSLIB.Message({data: factor});
         this.cameraQualityFactorTopic.publish(message);
+    }
+
+    publishProgramInput(input: string, mpid: number) {
+        this.programInputTopic.publish({input, mpid});
     }
 }
