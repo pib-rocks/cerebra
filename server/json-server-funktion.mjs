@@ -167,27 +167,18 @@ server.get(
     },
 );
 
-//putMessageByChatId
-server.put(
+//patchMessageByChatId
+server.patch(
     "/voice-assistant/chat/:chatId/messages/:messageId",
     (req, res, next) => {
-        let updated = false;
-        mockData.chatMessage.forEach((message) => {
-            if (
-                message.messageId == req.params.messageId &&
-                message.chatId == req.params.chatId
-            ) {
-                message.timestamp = req.body.timestamp;
-                message.isUser = req.body.isUser;
-                message.content = req.body.content;
-                message.chatId = req.params.chatId;
-                updated = true;
-                return res.status(200).send(Message.getMessage(message));
-            }
-        });
-        if (!updated) {
+        const message = mockData.chatMessage.find(
+            (message) => message.messageId == req.params.messageId,
+        );
+        if (!message) {
             return res.status(404).send();
         }
+        message.content = message.content + req.body.delta;
+        return res.status(200).send(Message.getMessage(message));
     },
 );
 
