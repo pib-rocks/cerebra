@@ -9,5 +9,6 @@ export interface RunProgramResult {
 }
 
 export interface RunProgramFeedback {
+    mpid: number;
     output_lines: ProgramOutputLine[];
 }

@@ -56,4 +56,6 @@ export interface IRosService {
     subscribeCameraTopic: () => void;
 
     unsubscribeCameraTopic: () => void;
+
+    publishProgramInput: (input: string, mpid: number) => void;
 }
