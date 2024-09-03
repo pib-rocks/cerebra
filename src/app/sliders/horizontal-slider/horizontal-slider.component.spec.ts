@@ -103,8 +103,8 @@ describe("HorizontalSliderComponent", () => {
             0,
             -200,
             200,
-            12,
-            987,
+            17,
+            982,
         );
         component.setThumbPosition(component.thumbs[0]);
         expect(component.thumbs[0].position).toEqual(300);
@@ -205,8 +205,8 @@ describe("HorizontalSliderComponent", () => {
         component.moveSelectedSlider(50);
         expect(linearTransformSpy).toHaveBeenCalledOnceWith(
             50,
-            -8,
-            7,
+            -3,
+            2,
             -200,
             200,
         );
