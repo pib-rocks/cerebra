@@ -386,6 +386,7 @@ describe("RosService", () => {
             handle.status.subscribe(statusSubscriber);
 
             feedbackSubject.next({
+                mpid: 0,
                 proxy_goal_id: "test-proxy-goal-id",
                 output_lines: [{is_stderr: true, content: "test 1"}],
             });
@@ -395,6 +396,7 @@ describe("RosService", () => {
             });
 
             feedbackSubject.next({
+                mpid: 1,
                 proxy_goal_id: "other-proxy-goal-id",
                 output_lines: [{is_stderr: true, content: "test 2"}],
             });
@@ -408,6 +410,7 @@ describe("RosService", () => {
             });
 
             feedbackSubject.next({
+                mpid: 0,
                 proxy_goal_id: "test-proxy-goal-id",
                 output_lines: [{is_stderr: true, content: "test 3"}],
             });

@@ -65,6 +65,7 @@ export class ProgramWorkspaceComponent
             Blockly.serialization.workspaces.save(this.workspace),
         );
     }
+
     set workspaceContent(content: string | undefined) {
         Blockly.serialization.workspaces.load(
             JSON.parse(content ?? "{}"),
@@ -118,6 +119,29 @@ export class ProgramWorkspaceComponent
             this.codePythonChange.emit(this.codePython);
             this.codeVisualChange.emit(this.workspaceContent);
         });
+
+        this.workspace.registerButtonCallback("CREATE_VARIABLE_ARRAY", () => {
+            Blockly.Variables.createVariableButtonHandler(
+                this.workspace,
+                undefined,
+                "Array",
+            );
+        });
+
+        const variableCallback =
+            this.workspace.getToolboxCategoryCallback("VARIABLE_DYNAMIC");
+        this.workspace.removeToolboxCategoryCallback("VARIABLE_DYNAMIC");
+        this.workspace.registerToolboxCategoryCallback(
+            "VARIABLE_DYNAMIC",
+            (workspaceSvg) => {
+                const items = variableCallback?.(workspaceSvg) as HTMLElement[];
+                const stringButton = items[0];
+                const listButton = stringButton.cloneNode(true) as HTMLElement;
+                listButton.setAttribute("text", "Create list variable...");
+                listButton.setAttribute("callbackKey", "CREATE_VARIABLE_ARRAY");
+                return [listButton, ...items];
+            },
+        );
     }
 
     ngAfterViewInit() {

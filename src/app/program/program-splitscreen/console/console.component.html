@@ -1,6 +1,15 @@
 <div
     class="wrapper p-4 d-flex flex-column-reverse"
+    (click)="onClick()"
     id="console-area">
+    <textarea
+        *ngIf="state.executionState === ExecutionState.RUNNING"
+        class="flex-shrink-0"
+        id="program-input-area"
+        [ngClass]="lastLogLineIfInput?.isError ? 'stderr' : 'stdout'"
+        #programInputArea
+        [formControl]="programInputForm">
+    </textarea>
     <div
         *ngIf="state.executionState === ExecutionState.FINISHED_SUCCESSFUL"
         class="info">
@@ -17,8 +26,13 @@
         Program execution has been interrupted by the user.
     </div>
     <div
-        *ngFor="let line of output"
-        [ngClass]="line.isStderr ? 'stderr' : 'stdout'">
+        *ngIf="lastLogLineIfInput && (state.executionState === ExecutionState.FINISHED_SUCCESSFUL || state.executionState === ExecutionState.INTERRUPTED || state.executionState === ExecutionState.FINISHED_ERROR)"
+        [ngClass]="lastLogLineIfInput.isError ? 'stderr' : 'stdout'">
+        {{lastLogLineIfInput.content}}
+    </div>
+    <div
+        *ngFor="let line of logs"
+        [ngClass]="line.isError ? 'stderr' : 'stdout'">
         {{line.content}}
     </div>
     <div
