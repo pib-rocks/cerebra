@@ -157,9 +157,10 @@ export class HorizontalSliderComponent
         this.trackHeight =
             this.trackHeightSave *
             ((this.screenHeight + this.screenWidth) / 10000 + 1);
-        this.thumbRadius =
+        this.thumbRadius = Math.trunc(
             this.thumbRadiusSave *
-            ((this.screenHeight + this.screenWidth) / 10000 + 1);
+                ((this.screenHeight + this.screenWidth) / 10000 + 1),
+        );
         if (this.screenHeight + this.screenWidth >= 2900) {
             this.trackHeight = this.trackHeight * 1.3;
             this.thumbRadius = this.thumbRadius * 1.3;
