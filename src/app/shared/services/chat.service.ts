@@ -33,6 +33,10 @@ export class ChatService implements SidebarService {
             );
             if (subject) {
                 const messages = subject.getValue();
+                const lastMessage = messages[messages.length - 1];
+                if (lastMessage?.messageId === rosChatMessage.message_id) {
+                    messages.pop();
+                }
                 messages.push({
                     messageId: rosChatMessage.message_id,
                     timestamp: rosChatMessage.timestamp,
@@ -205,17 +209,5 @@ export class ChatService implements SidebarService {
                 });
         }
         return subject;
-    }
-
-    filterMessageUpdates(message: ChatMessage[]) {
-        return message.filter((message, index, messages) => {
-            if (index + 1 >= messages.length) {
-                return true;
-            }
-            if (message.messageId == messages[index + 1].messageId) {
-                return false;
-            }
-            return true;
-        });
     }
 }

@@ -191,6 +191,21 @@ server.put(
     },
 );
 
+//patchMessageByChatId
+server.patch(
+    "/voice-assistant/chat/:chatId/messages/:messageId",
+    (req, res, next) => {
+        const message = mockData.chatMessage.find(
+            (message) => message.messageId == req.params.messageId,
+        );
+        if (!message) {
+            return res.status(404).send();
+        }
+        message.content = message.content + req.body.delta;
+        return res.status(200).send(Message.getMessage(message));
+    },
+);
+
 //postMessageByChatId
 server.post("/voice-assistant/chat/:chatId/messages", (req, res, next) => {
     const newMessage = Message.newMessage(
