@@ -533,7 +533,7 @@ describe("RosService", () => {
         );
     });
 
-    it("should handle unsuccessful applying of pose correctly ??", () => {
+    it("should handle unsuccessful applying of pose correctly", () => {
         const poseId = "12345";
         const callServiceSpy = spyOn(
             rosService["applyPoseService"],
