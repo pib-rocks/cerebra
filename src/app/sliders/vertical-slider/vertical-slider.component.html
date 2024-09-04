@@ -1,4 +1,4 @@
-<div class="d-flex flex-column align-items-center min-w">
+<div class="d-flex h-100 flex-column align-items-center min-w min-h">
     <p *ngIf="showPrompt">
         {{name}}<span *ngIf="unitLong">{{ " " + unitLong }}</span>
     </p>
@@ -14,97 +14,93 @@
         [formControl]="rangeFormControl"
         (input)="sendEvent()" />
     <div
-        class="range-slider mt-2 d-flex flex-column align-items-center"
-        style="position:relative;width:120px; height:400px">
-        <div style="position:absolute; top:30px; left: 0px; z-index: 1650;">
+        class="range-slider mt-3 h-100 d-flex flex-column align-items-center"
+        style="position:relative;width:120px;">
+        <div
+            style="position:absolute; top:54px; left: 0px; z-index: 1650;"
+            class="h-75">
             <svg
                 width="50px"
-                height="330px"
+                height="100%"
                 xmlns="http://www.w3.org/2000/svg">
                 <rect
                     class="range__tick"
                     x="35"
-                    y="0%"
+                    y="6%"
                     width="15"
                     height="2"></rect>
                 <rect
                     class="range__tick"
                     x="35"
-                    y="10%"
+                    y="16%"
                     width="15"
                     height="2"></rect>
                 <rect
                     class="range__tick"
                     x="35"
-                    y="20%"
+                    y="26%"
                     width="15"
                     height="2"></rect>
                 <rect
                     class="range__tick"
                     x="35"
-                    y="30%"
+                    y="36%"
                     width="15"
                     height="2"></rect>
                 <rect
                     class="range__tick"
                     x="35"
-                    y="40%"
+                    y="46%"
                     width="15"
                     height="2"></rect>
                 <rect
                     class="range__tick"
                     x="35"
-                    y="50%"
+                    y="56%"
                     width="15"
                     height="2"></rect>
                 <rect
                     class="range__tick"
                     x="35"
-                    y="60%"
+                    y="66%"
                     width="15"
                     height="2"></rect>
                 <rect
                     class="range__tick"
                     x="35"
-                    y="70%"
+                    y="76%"
                     width="15"
                     height="2"></rect>
                 <rect
                     class="range__tick"
                     x="35"
-                    y="80%"
+                    y="86%"
                     width="15"
                     height="2"></rect>
                 <rect
                     class="range__tick"
                     x="35"
-                    y="90%"
-                    width="15"
-                    height="2"></rect>
-                <rect
-                    class="range__tick"
-                    x="35"
-                    y="99%"
+                    y="95%"
                     width="15"
                     height="2"></rect>
                 <text
                     class="range__point"
                     x="17"
-                    y="21.75%"
+                    y="18%"
                     text-anchor="middle">
                     400k
                 </text>
                 <text
                     class="range__point"
                     x="17"
-                    y="51.75%"
+                    y="48%"
                     text-anchor="middle">
                     250k
                 </text>
                 <text
                     class="range__point"
                     x="17"
-                    y="81.75%"
+                    y="78%"
                     text-anchor="middle">
                     100k
                 </text>
@@ -113,7 +109,7 @@
         <div style="position:absolute; top:0px; left: 35px; z-index: 1650;">
             <svg
                 width="50px"
-                height="400px"
+                height="100%"
                 xmlns="http://www.w3.org/2000/svg">
                 <text
                     class="range__point"
@@ -133,7 +129,7 @@
         </div>
         <div
             class="rotateRange"
-            style="position:absolute; left:43px; top:216px; z-index: 1660;">
+            style="position:absolute; top:225px; left:48px; z-index: 1660;">
             <input
                 class="input-range"
                 [id]="name + 'Slider'"
@@ -146,75 +142,72 @@
                 (input)="sendEvent();"
                 #slider />
         </div>
-        <div style="position:absolute; top:30px;left:70.8px; z-index: 1650;">
+        <div
+            style="position:absolute; top:54px;left:70.8px; z-index: 1650;"
+            class="h-75">
             <svg
                 width="50px"
-                height="330px"
-                xmlns="http://www.w3.org/2000/svg">
+                height="100%"
+                xmlns="http://www.w3.org/2000/svg"
+                #sliderticks>
                 <rect
                     class="range__tick"
                     x="0"
-                    y="0%"
+                    y="6%"
                     width="15"
                     height="2"></rect>
                 <rect
                     class="range__tick"
                     x="0"
-                    y="10%"
+                    y="16%"
                     width="15"
                     height="2"></rect>
                 <rect
                     class="range__tick"
                     x="0"
-                    y="20%"
+                    y="26%"
                     width="15"
                     height="2"></rect>
                 <rect
                     class="range__tick"
                     x="0"
-                    y="30%"
+                    y="36%"
                     width="15"
                     height="2"></rect>
                 <rect
                     class="range__tick"
                     x="0"
-                    y="40%"
+                    y="46%"
                     width="15"
                     height="2"></rect>
                 <rect
                     class="range__tick"
                     x="0"
-                    y="50%"
+                    y="56%"
                     width="15"
                     height="2"></rect>
                 <rect
                     class="range__tick"
                     x="0"
-                    y="60%"
+                    y="66%"
                     width="15"
                     height="2"></rect>
                 <rect
                     class="range__tick"
                     x="0"
-                    y="70%"
+                    y="76%"
                     width="15"
                     height="2"></rect>
                 <rect
                     class="range__tick"
                     x="0"
-                    y="80%"
+                    y="86%"
                     width="15"
                     height="2"></rect>
                 <rect
                     class="range__tick"
                     x="0"
-                    y="90%"
-                    width="15"
-                    height="2"></rect>
-                <rect
-                    class="range__tick"
-                    x="0"
-                    y="99%"
+                    y="95%"
                     width="15"
                     height="2"></rect>
             </svg>

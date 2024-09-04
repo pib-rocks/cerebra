@@ -29,8 +29,8 @@
 }
 
 #joint-canvas {
-    height: 45%;
-    width: 45%;
+    height: 40%;
+    width: 40%;
     position: relative;
 }
 
@@ -67,7 +67,11 @@
 }
 
 .head-line {
-    font-size: 1vw;
+    font-size: 1.3vw;
+}
+
+.motor-position {
+    padding-bottom: 10px;
 }
 
 .cursor:hover {

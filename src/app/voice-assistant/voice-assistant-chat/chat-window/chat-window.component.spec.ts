@@ -26,6 +26,7 @@ describe("ChatWindowComponent", () => {
 
         const chatServiceSpy: jasmine.SpyObj<ChatService> =
             jasmine.createSpyObj("ChatService", [
+                "filterMessageUpdates",
                 "getChatMessagesObservable",
                 "sendChatMessage",
                 "getChat",
@@ -68,6 +69,20 @@ describe("ChatWindowComponent", () => {
         chatService.getIsListeningObservable.and.returnValue(
             isListeningSubject,
         );
+        chatService.filterMessageUpdates.and.returnValue([
+            {
+                messageId: "message-id-1",
+                timestamp: "yesterday",
+                isUser: false,
+                content: "hello world",
+            },
+            {
+                messageId: "message-id-2",
+                timestamp: "today",
+                isUser: false,
+                content: "hello world",
+            },
+        ]);
 
         fixture = TestBed.createComponent(ChatWindowComponent);
         component = fixture.componentInstance;

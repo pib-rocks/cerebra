@@ -5,6 +5,6 @@
     "portTarget" : "5000",
     "secure" : false,
     "changeOrigin" : true,
-    "pathRewrite" : {"/api" : ""},
+    "pathRewrite" : {"^/api" : ""},
     "logLevel" : "debug"
 }

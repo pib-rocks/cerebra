@@ -7,7 +7,7 @@ import {ProgramService} from "src/app/shared/services/program.service";
 import {BehaviorSubject, Subject} from "rxjs";
 import {ProgramWorkspaceComponent} from "./program-workspace/program-workspace.component";
 import {ExecutionState, ProgramState} from "src/app/shared/types/program-state";
-import {ProgramOutputLine} from "src/app/shared/types/program-output-line";
+import {ProgramLogLine} from "src/app/shared/types/program-log-line";
 import {HttpClientModule} from "@angular/common/http";
 
 describe("ProgramSplitscreenComponent", () => {
@@ -30,7 +30,7 @@ describe("ProgramSplitscreenComponent", () => {
                 "updateCodeByProgramNumber",
                 "runProgram",
                 "terminateProgram",
-                "getProgramOutput",
+                "getProgramLogs",
                 "getProgramState",
             ]);
 
@@ -130,22 +130,22 @@ describe("ProgramSplitscreenComponent", () => {
         const programNumber = "test-number";
         component.programNumber = programNumber;
 
-        const programOutput = new Subject<ProgramOutputLine[]>();
+        const programLogs = new Subject<ProgramLogLine[]>();
         const programState = new Subject<ProgramState>();
-        programService.getProgramOutput.and.returnValue(programOutput);
+        programService.getProgramLogs.and.returnValue(programLogs);
         programService.getProgramState.and.returnValue(programState);
 
         params.next({"program-number": programNumber});
 
-        expect(programService.getProgramOutput).toHaveBeenCalledWith(
+        expect(programService.getProgramLogs).toHaveBeenCalledWith(
             programNumber,
         );
         expect(programService.getProgramState).toHaveBeenCalledWith(
             programNumber,
         );
 
-        expect(component.output$).toBe(programOutput);
-        expect(component.state$).toBe(programState);
+        expect(component.programLogs$).toBe(programLogs);
+        expect(component.programState$).toBe(programState);
 
         component.executionState = ExecutionState.RUNNING;
         programState.next({executionState: ExecutionState.FINISHED_ERROR});

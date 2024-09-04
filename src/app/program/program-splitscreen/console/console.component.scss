@@ -2,11 +2,13 @@
 
 .stdout {
     color: $white-color;
+    caret-color: $white-color;
     font-family: Consolas, "Courier New", monospace;
 }
 
 .stderr {
     color: $pink-color;
+    caret-color: $pink-color;
     font-weight: bold;
     font-family: Consolas, "Courier New", monospace;
 }
@@ -21,8 +23,22 @@
     overflow-y: scroll;
     height: 0px;
     overflow-wrap: break-word;
+
+    > :first-child {
+        margin-bottom: auto !important;
+    }
 }
 
-.wrapper > :first-child {
-    margin-bottom: auto !important;
+textarea {
+    display: flex;
+    background: transparent;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    height: 100px;
+    outline: none;
+    resize: none;
+    color: white;
+    font-family: Consolas, "Courier New", monospace;
+    overflow: hidden;
 }

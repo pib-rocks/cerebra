@@ -116,3 +116,17 @@
     outline: none;
     opacity: 0.3;
 }
+
+:host ::ng-deep {
+    code {
+        color: #d3cccc;
+    }
+
+    blockquote {
+        background-color: $blue-dark-2;
+    }
+}
+
+markdown {
+    padding-bottom: 0 !important;
+}

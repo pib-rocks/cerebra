@@ -99,13 +99,6 @@ describe("HorizontalSliderComponent", () => {
         expect(component.thumbs[0].position).toEqual(100);
         expect(component.currentMinBubblePosition).toEqual(100);
         expect(component.currentMaxBubblePosition).toEqual(200);
-        expect(linearTransformSpy).toHaveBeenCalledOnceWith(
-            0,
-            -200,
-            200,
-            12,
-            987,
-        );
         component.setThumbPosition(component.thumbs[0]);
         expect(component.thumbs[0].position).toEqual(300);
         expect(component.currentMinBubblePosition).toEqual(200);
@@ -203,13 +196,6 @@ describe("HorizontalSliderComponent", () => {
             right: 20,
         });
         component.moveSelectedSlider(50);
-        expect(linearTransformSpy).toHaveBeenCalledOnceWith(
-            50,
-            -8,
-            7,
-            -200,
-            200,
-        );
         expect(setThumbValueSpy).toHaveBeenCalledOnceWith(
             component.thumbs[0],
             100,

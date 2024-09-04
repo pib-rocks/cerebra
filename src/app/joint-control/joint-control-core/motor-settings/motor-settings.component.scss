@@ -36,8 +36,8 @@ input[type="checkbox"] {
 
 input[type="checkbox"]::before {
     content: "";
-    width: 1vw;
-    height: 1vw;
+    width: clamp(12px, 1vw, 34px);
+    height: clamp(12px, 1vw, 34px);
     transform: scale(0);
     background-color: $pink-color;
 }
@@ -63,12 +63,28 @@ input[type="checkbox"]:checked::before {
 }
 
 .min-size-active {
-    min-height: 1.75vw;
-    min-width: 1.75vw;
+    min-height: clamp(14px, 1.75vw, 36px);
+    min-width: clamp(14px, 1.75vw, 36px);
 }
 
 .settings-icon:hover {
     background-color: $grey-transparent;
     border-radius: 3px;
     cursor: pointer;
+}
+
+span {
+    font-size: clamp(16px, 1vw, 30px);
+}
+
+@media only screen and (max-width: 1050px) {
+    text {
+        y: 0.5vw;
+    }
+}
+
+@media screen and (min-width: 1900px) {
+    label {
+        font-size: 18px;
+    }
 }

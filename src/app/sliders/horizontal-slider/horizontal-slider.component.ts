@@ -15,7 +15,7 @@ import {
     SimpleChanges,
 } from "@angular/core";
 import {FormControl} from "@angular/forms";
-import {Observable, asyncScheduler} from "rxjs";
+import {Observable, asyncScheduler, fromEvent} from "rxjs";
 import {SliderThumb} from "./slider-thumb";
 
 @Component({
@@ -42,6 +42,14 @@ export class HorizontalSliderComponent
     @Input() thumbRadius: number = 12;
     @Input() trackHeight: number = 12;
     @Input() active: boolean = true;
+
+    resizeObservable$ = fromEvent(window, "resize");
+
+    screenHeight = window.innerHeight;
+    screenWidth = window.innerWidth;
+
+    trackHeightSave = this.trackHeight;
+    thumbRadiusSave = this.thumbRadius;
 
     minValue!: number;
     maxValue!: number;
@@ -102,6 +110,13 @@ export class HorizontalSliderComponent
     }
 
     ngOnInit(): void {
+        this.trackHeightSave = this.trackHeight;
+        this.thumbRadiusSave = this.thumbRadius;
+        this.resizeSliderAndThumbRaduis();
+        this.resizeObservable$.subscribe((evt) => {
+            this.resizeSliderAndThumbRaduis();
+        });
+
         this.generateBaseId();
         this.unitLong = this.unitLong || this.unitShort;
         this.thumbs = [];
@@ -134,6 +149,22 @@ export class HorizontalSliderComponent
 
     ngOnDestroy() {
         this.sliderResizeObserver.disconnect();
+    }
+
+    resizeSliderAndThumbRaduis() {
+        this.screenHeight = window.innerHeight;
+        this.screenWidth = window.innerWidth;
+        this.trackHeight =
+            this.trackHeightSave *
+            ((this.screenHeight + this.screenWidth) / 10000 + 1);
+        this.thumbRadius = Math.trunc(
+            this.thumbRadiusSave *
+                ((this.screenHeight + this.screenWidth) / 10000 + 1),
+        );
+        if (this.screenHeight + this.screenWidth >= 2900) {
+            this.trackHeight = this.trackHeight * 1.3;
+            this.thumbRadius = this.thumbRadius * 1.3;
+        }
     }
 
     linearTransform(
