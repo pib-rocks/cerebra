@@ -38,7 +38,6 @@ describe("PoseService", () => {
         const motorServiceSpy: jasmine.SpyObj<MotorService> =
             jasmine.createSpyObj("MotorService", [
                 "getPositionObservable",
-                "setPositions",
                 "applyPose",
             ]);
 

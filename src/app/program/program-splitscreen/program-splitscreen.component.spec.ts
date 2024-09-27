@@ -7,8 +7,8 @@ import {ProgramService} from "src/app/shared/services/program.service";
 import {BehaviorSubject, Subject} from "rxjs";
 import {ProgramWorkspaceComponent} from "./program-workspace/program-workspace.component";
 import {ExecutionState, ProgramState} from "src/app/shared/types/program-state";
-import {HttpClientModule} from "@angular/common/http";
 import {ProgramLogLine} from "src/app/shared/types/program-log-line";
+import {HttpClientModule} from "@angular/common/http";
 
 describe("ProgramSplitscreenComponent", () => {
     let component: ProgramSplitscreenComponent;
