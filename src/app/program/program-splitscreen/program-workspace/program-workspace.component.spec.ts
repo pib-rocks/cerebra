@@ -2,17 +2,39 @@ import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {ProgramWorkspaceComponent} from "./program-workspace.component";
 import * as Blockly from "blockly";
 import {SimpleChange} from "@angular/core";
+import {PoseService} from "src/app/shared/services/pose.service";
+import {Subject} from "rxjs";
+import {Pose} from "src/app/shared/types/pose";
 
 describe("ProgramWorkspaceComponent", () => {
     let component: ProgramWorkspaceComponent;
+    let poseService: jasmine.SpyObj<PoseService>;
     let fixture: ComponentFixture<ProgramWorkspaceComponent>;
+    let poseSubject = new Subject<Pose[]>();
+
     beforeEach(async () => {
+        const poseServiceSpy: jasmine.SpyObj<PoseService> =
+            jasmine.createSpyObj("PoseService", [
+                "getPosesObservable",
+                "applyPose",
+            ]);
+
         await TestBed.configureTestingModule({
             declarations: [ProgramWorkspaceComponent],
+            providers: [
+                {
+                    provide: PoseService,
+                    useValue: poseServiceSpy,
+                },
+            ],
         }).compileComponents();
 
         fixture = TestBed.createComponent(ProgramWorkspaceComponent);
         component = fixture.componentInstance;
+        poseService = TestBed.inject(
+            PoseService,
+        ) as jasmine.SpyObj<PoseService>;
+        poseService.getPosesObservable.and.returnValue(poseSubject);
         Blockly.registry.unregister("theme", "customtheme");
         fixture.detectChanges();
     });

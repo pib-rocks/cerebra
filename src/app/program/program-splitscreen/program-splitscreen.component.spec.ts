@@ -8,6 +8,7 @@ import {BehaviorSubject, Subject} from "rxjs";
 import {ProgramWorkspaceComponent} from "./program-workspace/program-workspace.component";
 import {ExecutionState, ProgramState} from "src/app/shared/types/program-state";
 import {ProgramLogLine} from "src/app/shared/types/program-log-line";
+import {HttpClientModule} from "@angular/common/http";
 
 describe("ProgramSplitscreenComponent", () => {
     let component: ProgramSplitscreenComponent;
@@ -51,7 +52,7 @@ describe("ProgramSplitscreenComponent", () => {
                     useValue: {params, data},
                 },
             ],
-            imports: [AngularSplitModule],
+            imports: [AngularSplitModule, HttpClientModule],
         }).compileComponents();
         programService = TestBed.inject(
             ProgramService,
