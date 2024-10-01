@@ -6,7 +6,8 @@
       "name": "Eva",
       "description": "You are a helpful assistant.",
       "gender": "Female",
-      "pauseThreshold": 0.8,
+      "pauseThreshold": 0.5,
+      "messageHistory": 15,
       "assistantModelId": 2
     },
     {
@@ -15,7 +16,8 @@
       "name": "Tom",
       "description": "You are a helpful assistant.",
       "gender": "Male",
-      "pauseThreshold": 0.8,
+      "pauseThreshold": 0.9,
+      "messageHistory": 5,
       "assistantModelId": 1
     }
   ],

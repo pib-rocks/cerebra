@@ -17,7 +17,7 @@ describe("SideBarRightComponent", () => {
     let component: SideBarRightComponent;
     let fixture: ComponentFixture<SideBarRightComponent>;
     const testSubject = new BehaviorSubject<SidebarElement[]>([
-        new VoiceAssistant("123", "Test", "Male", 0.8, ""),
+        new VoiceAssistant("123", "Test", "Male", 0.8, "", 10),
     ]);
     beforeEach(async () => {
         await TestBed.configureTestingModule({
