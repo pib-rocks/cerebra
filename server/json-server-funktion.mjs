@@ -45,6 +45,7 @@ server.post("/voice-assistant/personality", (req, res, next) => {
         req.body.name,
         req.body.gender,
         req.body.pauseThreshold,
+        req.body.messageHistory,
     );
     mockData.personality.push(newPersonality);
     return res.status(201).send(newPersonality);
@@ -59,6 +60,7 @@ server.put("/voice-assistant/personality/:personalityId", (req, res, next) => {
             personality.gender = req.body.gender;
             personality.pauseThreshold = req.body.pauseThreshold;
             personality.description = req.body.description;
+            personality.messageHistory = req.body.messageHistory;
             updated = true;
             return res
                 .status(200)

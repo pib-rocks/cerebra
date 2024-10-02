@@ -16,6 +16,7 @@ export class VoiceAssistantComponent implements OnInit {
     personalityForm!: FormGroup;
     uuid: string | undefined;
     thresholdString: string | undefined;
+    messageHistory: number | undefined;
     @ViewChild("modalContent") modalContent: TemplateRef<any> | undefined;
     ngbModalRef?: NgbModalRef;
     imgSrc: string = "../../assets/toggle-switch-left.png";
@@ -64,6 +65,14 @@ export class VoiceAssistantComponent implements OnInit {
                     Validators.required,
                     Validators.min(0.1),
                     Validators.max(3),
+                ],
+            }),
+            messageHistory: new FormControl(10, {
+                nonNullable: true,
+                validators: [
+                    Validators.required,
+                    Validators.min(0),
+                    Validators.max(20),
                 ],
             }),
             assistantModel: new FormControl(1, {
@@ -126,10 +135,33 @@ export class VoiceAssistantComponent implements OnInit {
             "s";
     }
 
+    adjustHistory(step: string) {
+        const newValue =
+            this.personalityForm.controls["messageHistory"].value +
+            Number(step);
+        this.personalityForm.patchValue({
+            messageHistory: newValue,
+        });
+        if (this.personalityForm.controls["messageHistory"].hasError("min")) {
+            this.personalityForm.patchValue({
+                messageHistory: 0,
+            });
+        }
+        if (this.personalityForm.controls["messageHistory"].hasError("max")) {
+            this.personalityForm.patchValue({
+                messageHistory: 20,
+            });
+        }
+        this.messageHistory =
+            this.personalityForm.controls["messageHistory"].value;
+    }
+
     openAddModal = () => {
         this.personalityForm.reset();
         this.thresholdString =
             this.personalityForm.controls["pausethreshold"].value + "s";
+        this.messageHistory =
+            this.personalityForm.controls["messageHistory"].value;
         this.showModal();
     };
 
@@ -146,6 +178,8 @@ export class VoiceAssistantComponent implements OnInit {
             });
             this.thresholdString =
                 this.personalityForm.controls["pausethreshold"].value + "s";
+            this.messageHistory =
+                this.personalityForm.controls["messageHistory"].value;
             this.showModal();
         }
     };
@@ -160,6 +194,7 @@ export class VoiceAssistantComponent implements OnInit {
                     this.personalityForm.controls["pausethreshold"].value,
                     "",
                     this.personalityForm.controls["assistantModel"].value,
+                    this.personalityForm.controls["messageHistory"].value,
                 ),
             );
         }
@@ -177,6 +212,8 @@ export class VoiceAssistantComponent implements OnInit {
             updatePersonality.pauseThreshold =
                 this.personalityForm.controls["pausethreshold"].value;
             this.voiceAssistantService.updatePersonalityById(updatePersonality);
+            updatePersonality.messageHistory =
+                this.personalityForm.controls["messageHistory"].value;
         }
         this.uuid = undefined;
     };

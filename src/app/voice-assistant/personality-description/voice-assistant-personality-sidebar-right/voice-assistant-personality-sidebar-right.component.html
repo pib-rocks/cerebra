@@ -114,7 +114,45 @@
             </div>
         </div>
         <div
-            class="row position-absolute bottom-0 start-50 translate-middle-x mb-4">
+            class="row m-1 mt-sm-3 mt-xl-4"
+            id="personality-sidebar-row-message-history">
+            <label
+                for="personality-sidebar-message-history-input"
+                class="row pr-3"
+                id="personality-sidebar-label-message-history"
+                >Message history<br />(in messages)</label
+            >
+            <div class="row pl-0">
+                <div class="col pl-0 number-input">
+                    <input
+                        readonly
+                        type="text"
+                        class="input w-50 pl-2"
+                        id="personality-sidebar-message-history-input"
+                        step="0.1"
+                        alt="The number of messages which were send to LLM for better answers"
+                        [(ngModel)]="messageHistoryNumber"
+                        [ngModelOptions]="{standalone: true}"
+                        (ngModelChange)="adjustHistory()" />
+                    <button
+                        type="button"
+                        id="personality-sidebar-up-2"
+                        class="h-auto w-25 ml-1"
+                        (click)="adjustHistoryViaButton(true)">
+                        &#9650;
+                    </button>
+                    <button
+                        type="button"
+                        id="personality-sidebar-down-2"
+                        class="h-auto w-25 ml-1"
+                        (click)="adjustHistoryViaButton(false)">
+                        &#9660;
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div
+            class="row position-relative bottom-0 start-50 translate-middle-x mb-4 mt-3 mr-3">
             <button
                 id="personality-sidebar-delete-persona-button"
                 class="btn btn-regular delete p-sm-1 p-xl-3"
