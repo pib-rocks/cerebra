@@ -14,7 +14,7 @@ export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
     pauseThresholdMin = 0.1;
     pauseThresholdMax = 3.0;
     messageHistoryMin = 0;
-    messageHistoryMax = 12;
+    messageHistoryMax = 20;
     nameMinLength = 2;
     nameMaxLength = 255;
     personalityClone!: VoiceAssistant;
