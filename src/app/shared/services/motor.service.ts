@@ -199,4 +199,8 @@ export class MotorService {
         const message = fromMotorPositions(motorPositions);
         return this.rosService.applyJointTrajectory(message);
     }
+
+    applyPose(poseId: string): Observable<void> {
+        return this.rosService.applyPose(poseId);
+    }
 }

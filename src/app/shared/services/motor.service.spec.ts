@@ -33,7 +33,7 @@ describe("MotorService", () => {
     beforeEach(() => {
         const rosServiceSpy: jasmine.SpyObj<RosService> = jasmine.createSpyObj(
             "RosService",
-            ["applyMotorSettings", "applyJointTrajectory"],
+            ["applyMotorSettings", "applyJointTrajectory", "applyPose"],
             {
                 motorSettingsReceiver$: new Subject(),
                 jointTrajectoryReceiver$: new Subject(),
@@ -401,6 +401,14 @@ describe("MotorService", () => {
                     }),
                 ]),
             }),
+        );
+    });
+
+    it("should send a pose-id when applying a pose", () => {
+        const poseId = "12345";
+        service.applyPose(poseId);
+        expect(rosService.applyPose).toHaveBeenCalledOnceWith(
+            jasmine.stringContaining("12345"),
         );
     });
 });
