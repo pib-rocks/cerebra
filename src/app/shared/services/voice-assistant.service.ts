@@ -80,6 +80,7 @@ export class VoiceAssistantService implements SidebarService {
                     m.pauseThreshold,
                     m.description,
                     m.assistantModelId,
+                    m.messageHistory,
                 ),
             );
         });
@@ -173,6 +174,7 @@ export class VoiceAssistantService implements SidebarService {
     }
 
     updatePersonalityById(personality: VoiceAssistant) {
+        console.log(personality);
         this.apiService
             .put(
                 UrlConstants.PERSONALITY + `/${personality.personalityId}`,

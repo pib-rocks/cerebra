@@ -8,6 +8,7 @@ export class Personality {
         gender,
         pauseThreshold,
         assistantModelId,
+        messageHistory,
     ) {
         this.personalityId = personalityId;
         this.name = name;
@@ -15,6 +16,7 @@ export class Personality {
         this.gender = gender;
         this.pauseThreshold = pauseThreshold;
         this.assistantModelId = assistantModelId;
+        this.messageHistory = messageHistory;
     }
 
     static getPersonality(personality) {
@@ -25,16 +27,18 @@ export class Personality {
             personality.gender,
             personality.pauseThreshold,
             personality.assistantModelId,
+            personality.messageHistory,
         );
     }
 
-    static newPersonality(name, gender, pauseThreshold) {
+    static newPersonality(name, gender, pauseThreshold, messageHistory) {
         return new Personality(
             GenertateId.genertateId(),
             name,
             "",
             gender,
             pauseThreshold,
+            messageHistory,
         );
     }
 }
