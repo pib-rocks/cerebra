@@ -30,7 +30,7 @@ export class ChatWindowComponent implements OnInit {
         "../../../../assets/voice-assistant-svgs/chat/user.svg";
     readonly VA_ICON =
         "../../../../assets/voice-assistant-svgs/chat/pib-icon-speaking.png";
-    readonly arrow = "../../../../assets/voice-assistant-svgs/chat/arrow.svg";
+    readonly ARROW = "../../../../assets/voice-assistant-svgs/chat/arrow.svg";
 
     constructor(
         private chatService: ChatService,
@@ -56,14 +56,8 @@ export class ChatWindowComponent implements OnInit {
 
             this.chatMessagesSubscription = this.chatService
                 .getChatMessagesObservable(chatId)
-                .pipe(map((messages) => messages))
-                .subscribe(
-                    (messages) =>
-                        (this.messages = this.chatService
-                            .filterMessageUpdates(messages)
-                            .slice()
-                            .reverse()),
-                );
+                .pipe(map((messages) => messages.slice().reverse()))
+                .subscribe((messages) => (this.messages = messages));
 
             this.chat = this.chatService.getChat(chatId);
             if (this.chat) {
