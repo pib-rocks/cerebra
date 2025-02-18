@@ -19,6 +19,8 @@ import {customBlockDefinition} from "../../pib-blockly/program-blocks/custom-blo
 import {Abstract} from "blockly/core/events/events_abstract";
 import {GuardsCheckStart, Router} from "@angular/router";
 import {Subscription} from "rxjs";
+import {PoseService} from "src/app/shared/services/pose.service";
+import {Pose} from "src/app/shared/types/pose";
 
 @Component({
     selector: "app-program-workspace",
@@ -58,7 +60,10 @@ export class ProgramWorkspaceComponent
         },
     });
 
-    constructor(private router: Router) {}
+    constructor(
+        private router: Router,
+        private poseService: PoseService,
+    ) {}
 
     get workspaceContent(): string {
         return JSON.stringify(
@@ -91,6 +96,14 @@ export class ProgramWorkspaceComponent
                 this.codeVisualChange.emit(this.workspaceContent);
                 Blockly.hideChaff();
             }
+        });
+
+        this.poseService.getPosesObservable().subscribe((poses) => {
+            poses.length > 0
+                ? this.updatePoseBlockDropdown(poses)
+                : this.updatePoseBlockDropdown([
+                      new Pose("no pose available", "NO POSE"),
+                  ]);
         });
 
         this.workspace = Blockly.inject("blocklyDiv", {
@@ -166,4 +179,12 @@ export class ProgramWorkspaceComponent
             : 0;
         this.trashcanFlyoutChange.emit(flyoutWidth);
     };
+
+    updatePoseBlockDropdown(poses: Pose[]): void {
+        const poseOptions = poses.map((pose) => [pose.name, pose.poseId]);
+        Blockly.Blocks["move_to_pose"].getPoses = () => poseOptions;
+        if (this.workspace) {
+            this.workspaceContent = this.codeVisual;
+        }
+    }
 }
