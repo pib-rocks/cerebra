@@ -74,6 +74,7 @@ export function parseVoiceAssistantToDto(
         gender: voiceAssistant.gender,
         pauseThreshold: voiceAssistant.pauseThreshold,
         assistantModelId: voiceAssistant.assistantModelId,
+        messageHistory: voiceAssistant.messageHistory,
     } as VoiceAssistantDto;
 }
 
@@ -87,5 +88,6 @@ export function parseDtoToVoiceAssistant(
         dummyVoiceAssistant.pauseThreshold,
         dummyVoiceAssistant.description,
         dummyVoiceAssistant.assistantModelId,
+        dummyVoiceAssistant.messageHistory,
     );
 }
