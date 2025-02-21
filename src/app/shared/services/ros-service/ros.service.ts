@@ -56,10 +56,6 @@ import {
     ApplyJointTrajectoryResponse,
 } from "../../ros-types/srv/apply-joint-trajectory";
 import {
-    ApplyPoseRequest,
-    ApplyPoseResponse,
-} from "../../ros-types/srv/apply-pose";
-import {
     EncryptTokenRequest,
     EncryptTokenResponse,
 } from "../../ros-types/srv/encrypt-token";
@@ -160,11 +156,6 @@ export class RosService implements IRosService {
     private applyJointTrajectoryService!: ROSLIB.Service<
         ApplyJointTrajectoryRequest,
         ApplyJointTrajectoryResponse
-    >;
-
-    private applyPoseService!: ROSLIB.Service<
-        ApplyPoseRequest,
-        ApplyPoseResponse
     >;
 
     private runProgramAction!: ROSLIB.ActionClient;
@@ -298,10 +289,6 @@ export class RosService implements IRosService {
         this.decryptTokenService = this.createRosService(
             rosServices.decryptToken,
             rosDataTypes.decryptToken,
-        );
-        this.applyPoseService = this.createRosService(
-            rosServices.applyPose,
-            rosDataTypes.applyPose,
         );
     }
 
@@ -565,29 +552,6 @@ export class RosService implements IRosService {
             subject.error(new Error(error));
         };
         this.applyJointTrajectoryService.callService(
-            request,
-            successCallback,
-            errorCallback,
-        );
-        return subject;
-    }
-
-    applyPose(poseId: string): Observable<void> {
-        const subject: Subject<void> = new ReplaySubject();
-        const request: ApplyPoseRequest = {
-            pose_id: poseId,
-        };
-        const successCallback = (response: ApplyPoseResponse) => {
-            if (response.successful) {
-                subject.next();
-            } else {
-                subject.error(new Error("failed to apply pose."));
-            }
-        };
-        const errorCallback = (error: any) => {
-            subject.error(new Error(error));
-        };
-        this.applyPoseService.callService(
             request,
             successCallback,
             errorCallback,

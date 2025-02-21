@@ -72,14 +72,29 @@ export class PoseService {
     public applyPose(poseId: string) {
         const pose = this.getCachedPoseOfId(poseId);
         if (!pose?.active) return;
-        this.motorService.applyPose(poseId);
-        pose.active = false;
-        setTimeout(() => {
-            pose.active = true;
+        const motorPositions = this.poseIdToMotorPositions.get(poseId);
+        const positionsObservable: Observable<MotorPosition[]> = motorPositions
+            ? of(motorPositions)
+            : this.getMotorPositionsOfPoseFromDb(poseId).pipe(
+                  tap((mp) => this.poseIdToMotorPositions.set(poseId, mp)),
+              );
+        positionsObservable.subscribe((motorPositions) => {
+            this.motorService.setPositions(motorPositions);
+            pose.active = false;
             this.publishPoses();
-        }, 1000);
+            setTimeout(() => {
+                pose.active = true;
+                this.publishPoses();
+            }, 1000);
+        });
     }
-
+    private getMotorPositionsOfPoseFromDb(
+        poseId: string,
+    ): Observable<MotorPosition[]> {
+        return this.apiService
+            .get(`${UrlConstants.POSE}/${poseId}/motor-positions`)
+            .pipe(map((dto) => dto["motorPositions"]));
+    }
     private getAllPosesFromDb(): Observable<Pose[]> {
         return this.apiService.get(UrlConstants.POSE).pipe(
             map((posesDto) => {
