@@ -174,7 +174,6 @@ export class VoiceAssistantService implements SidebarService {
     }
 
     updatePersonalityById(personality: VoiceAssistant) {
-        console.log(personality);
         this.apiService
             .put(
                 UrlConstants.PERSONALITY + `/${personality.personalityId}`,
