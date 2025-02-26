@@ -28,7 +28,6 @@ export enum rosDataTypes {
     get_token_exists = "datatypes/srv/GetTokenExists",
     encryptToken = "datatypes/srv/EncryptToken",
     decryptToken = "datatypes/srv/DecryptToken",
-    applyPose = "datatypes/srv/ApplyPose",
     // action
     runProgram = "datatypes/action/RunProgram",
 }
