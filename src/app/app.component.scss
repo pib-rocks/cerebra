@@ -20,6 +20,7 @@
 }
 
 .btn-active svg path,
+.btn-active svg circle,
 .btn-active .menu-is-opening .a,
 .nav-sidebar > .nav-item.menu-open > .nav-link,
 [class*="sidebar-light-"] .nav-sidebar > .nav-link > svg > path {
@@ -80,7 +81,8 @@
     padding-bottom: 4px;
 }
 
-svg path {
+svg path,
+svg circle {
     fill: $blue-color;
     stroke: $blue-color;
 }

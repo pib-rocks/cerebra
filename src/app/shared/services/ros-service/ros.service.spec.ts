@@ -76,7 +76,6 @@ describe("RosService", () => {
         expect(rosService["encryptTokenService"]).toBeTruthy();
         expect(rosService["decryptTokenService"]).toBeTruthy();
         expect(rosService["deleteTokenTopic"]).toBeTruthy();
-        expect(rosService["applyPoseService"]).toBeTruthy();
     });
 
     it("should call the set_voice_assistant_state ros service", () => {
@@ -513,42 +512,6 @@ describe("RosService", () => {
         expect(subscriber.error).not.toHaveBeenCalled();
         expect(callServiceSpy).toHaveBeenCalledOnceWith(
             {chat_id: chatId, content: chatMessageContent},
-            jasmine.any(Function),
-            jasmine.any(Function),
-        );
-    });
-
-    it("should apply a pose", () => {
-        const poseId = "12345";
-        const callServiceSpy = spyOn(
-            rosService["applyPoseService"],
-            "callService",
-        ).and.callFake((_request, successCallback, _errorCallback) => {
-            successCallback({successful: true});
-        });
-        rosService.applyPose(poseId).subscribe(subscriber);
-        expect(subscriber.next).toHaveBeenCalledOnceWith(undefined);
-        expect(subscriber.error).not.toHaveBeenCalled();
-        expect(callServiceSpy).toHaveBeenCalledOnceWith(
-            {pose_id: poseId},
-            jasmine.any(Function),
-            jasmine.any(Function),
-        );
-    });
-
-    it("should handle unsuccessful applying of pose correctly", () => {
-        const poseId = "12345";
-        const callServiceSpy = spyOn(
-            rosService["applyPoseService"],
-            "callService",
-        ).and.callFake((_request, successCallback, _errorCallback) => {
-            successCallback({successful: false});
-        });
-        rosService.applyPose(poseId).subscribe(subscriber);
-        expect(subscriber.next).not.toHaveBeenCalled();
-        expect(subscriber.error).toHaveBeenCalledTimes(1);
-        expect(callServiceSpy).toHaveBeenCalledOnceWith(
-            {pose_id: poseId},
             jasmine.any(Function),
             jasmine.any(Function),
         );

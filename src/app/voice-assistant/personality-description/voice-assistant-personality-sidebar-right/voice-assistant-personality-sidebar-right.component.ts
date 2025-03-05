@@ -13,10 +13,13 @@ import {Observable} from "rxjs";
 export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
     pauseThresholdMin = 0.1;
     pauseThresholdMax = 3.0;
+    messageHistoryMin = 0;
+    messageHistoryMax = 20;
     nameMinLength = 2;
     nameMaxLength = 255;
     personalityClone!: VoiceAssistant;
     thresholdString: string = "";
+    messageHistoryNumber: number = 10;
     personalityFormSidebar!: FormGroup;
     models!: AssistantModel[];
 
@@ -67,6 +70,17 @@ export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
                     ],
                 },
             ),
+            messageHistory: new FormControl(
+                this.personalityClone.messageHistory,
+                {
+                    nonNullable: true,
+                    validators: [
+                        Validators.required,
+                        Validators.min(this.messageHistoryMin),
+                        Validators.max(this.messageHistoryMax),
+                    ],
+                },
+            ),
             assistantModel: new FormControl(
                 this.personalityClone?.assistantModelId ?? this.models[0].id,
                 {
@@ -76,6 +90,7 @@ export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
             ),
         });
         this.thresholdString = this.personalityClone.pauseThreshold.toFixed(1);
+        this.messageHistoryNumber = this.personalityClone.messageHistory;
     }
 
     adjustThreshold() {
@@ -105,6 +120,51 @@ export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
         this.personalityClone.pauseThreshold = parseFloat(
             this.personalityFormSidebar.controls["pausethreshold"].value,
         );
+    }
+
+    adjustHistory() {
+        this.personalityFormSidebar.patchValue({
+            messageHistory: this.messageHistoryNumber,
+        });
+        if (
+            this.personalityFormSidebar.controls["messageHistory"].hasError(
+                "min",
+            )
+        ) {
+            this.personalityFormSidebar.patchValue({
+                messageHistory: this.messageHistoryMin,
+            });
+            this.messageHistoryNumber = this.messageHistoryMin;
+        }
+        if (
+            this.personalityFormSidebar.controls["messageHistory"].hasError(
+                "max",
+            )
+        ) {
+            this.personalityFormSidebar.patchValue({
+                messageHistory: this.messageHistoryMax,
+            });
+            this.messageHistoryNumber = this.messageHistoryMax;
+        }
+        this.personalityClone.messageHistory = parseFloat(
+            this.personalityFormSidebar.controls["messageHistory"].value,
+        );
+    }
+
+    adjustHistoryViaButton(up: boolean) {
+        let history = this.messageHistoryNumber;
+        if (isNaN(history)) {
+            return;
+        }
+
+        if (up) {
+            history += 1;
+        } else {
+            history -= 1;
+        }
+        this.messageHistoryNumber = history;
+        this.adjustHistory();
+        this.updatePersonality();
     }
 
     adjustThresholdViaButton(up: boolean) {
