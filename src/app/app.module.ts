@@ -40,6 +40,7 @@ import {SmartConnectComponent} from "./ui-components/smart-connect/smart-connect
 import {NgOptimizedImage} from "@angular/common";
 import {PoseComponent} from "./joint-control/pose/pose.component";
 import {MarkdownModule} from "ngx-markdown";
+import {HardwareIdComponent} from "./joint-control/hardware-id/hardware-id.component";
 
 @NgModule({
     declarations: [
@@ -69,6 +70,7 @@ import {MarkdownModule} from "ngx-markdown";
         VoiceAssistantPersonalitySidebarRightComponent,
         PoseComponent,
         SmartConnectComponent,
+        HardwareIdComponent,
     ],
     imports: [
         BrowserModule,

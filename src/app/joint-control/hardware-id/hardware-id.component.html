@@ -1,0 +1,63 @@
+<div class="row">
+    <legend class="mb-3 pl-4">Hardware</legend>
+    <form
+        [formGroup]="brickletUidForm"
+        (ngSubmit)="updateIds()">
+        <div
+            *ngFor="let bricklet of bricklets | async"
+            class="bricklet-item row m-2 pl-2">
+            <div class="bricklet-label">
+                Servo-bricklet {{bricklet.brickletNumber}}:
+                <input
+                    type="text"
+                    id="bricklet-uid-input"
+                    [formControlName]="bricklet.brickletNumber" />
+            </div>
+        </div>
+        <div class="relay-item row m-2 pl-2">
+            <div class="bricklet-label">
+                Solid state relay:
+                <input
+                    type="text"
+                    id="bricklet-uid-input" />
+            </div>
+        </div>
+        <div class="mt-3 pl-4">
+            <button
+                type="submit"
+                id="update-bricklet-uids-button"
+                class="btn btn-regular"
+                [disabled]="brickletUidForm.invalid">
+                Update
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- <div class="container">
+    <h2 class="row mb-5">Hardware</h2>
+    <div class="col-auto" *ngFor="let bricklet of bricklets |async">
+        <form class="form-group">
+            <div class="row align-items-center">
+                <div class="col-auto">
+                    <label class="form-label mb-0" for="input-bricklet-uid">Servo-bricklet {{bricklet.brickletNumber}}:</label>
+                </div>
+                <div class="col-auto">
+                    <input type="text" class="col-lg-auto form-control" id="input-bricklet-uid" [value]="bricklet.uid">
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="col-auto">
+        <form class="form-group">
+            <div class="row align-items-center">
+                <div class="col-auto pl-0 pr-0">
+                    <label class="col-lg-auto form-label" for="relay">Solid state relay:</label>
+                </div>
+                <div class="col-auto">
+                    <input type="text" class="col-lg-auto form-control">
+                </div>
+            </div>
+        </form>
+    </div>
+</div> -->
