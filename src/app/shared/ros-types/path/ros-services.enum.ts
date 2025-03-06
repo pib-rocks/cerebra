@@ -10,5 +10,4 @@ export enum rosServices {
     encryptToken = "/encrypt_token",
     decryptToken = "/decrypt_token",
     applyJointTrajectory = "/apply_joint_trajectory",
-    applyPose = "/apply_pose",
 }
