@@ -1,11 +1,11 @@
 <div class="row">
-    <legend class="mb-3 pl-4">Hardware</legend>
+    <div class="mb-1 pl-4 head-line">Hardware</div>
     <form
         [formGroup]="brickletUidForm"
         (ngSubmit)="updateIds()">
         <div
             *ngFor="let bricklet of bricklets | async"
-            class="bricklet-item row m-2 pl-2">
+            class="bricklet-item row m-2 mb-2 ml-3 pl-2 font-size-class">
             <div class="bricklet-label">
                 Servo-bricklet {{bricklet.brickletNumber}}:
                 <input
@@ -14,7 +14,7 @@
                     [formControlName]="bricklet.brickletNumber" />
             </div>
         </div>
-        <div class="relay-item row m-2 pl-2">
+        <div class="relay-item row m-2 mb-2 ml-3 pl-2 font-size-class">
             <div class="bricklet-label">
                 Solid state relay:
                 <input
@@ -22,11 +22,11 @@
                     id="bricklet-uid-input" />
             </div>
         </div>
-        <div class="mt-3 pl-4">
+        <div class="mt-4 ml-4 mb-3 pl-2">
             <button
                 type="submit"
                 id="update-bricklet-uids-button"
-                class="btn btn-regular"
+                class=" hardware-button-class btn btn-regular"
                 [disabled]="brickletUidForm.invalid">
                 Update
             </button>
