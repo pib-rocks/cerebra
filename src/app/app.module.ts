@@ -7,6 +7,7 @@ import {AppRoutingModule} from "./app-routing.module";
 import {AppComponent} from "./app.component";
 import {CameraComponent} from "./camera/camera.component";
 import {MatDialogModule} from "@angular/material/dialog";
+import {MatTooltipModule} from "@angular/material/tooltip";
 import {NgbModule, NgbDropdownModule} from "@ng-bootstrap/ng-bootstrap";
 import {MatSliderModule} from "@angular/material/slider";
 import {ProgramComponent} from "./program/program.component";
@@ -78,6 +79,7 @@ import {HardwareIdComponent} from "./joint-control/hardware-id/hardware-id.compo
         ReactiveFormsModule,
         HttpClientModule,
         MatDialogModule,
+        MatTooltipModule,
         NgbModule,
         MatSliderModule,
         BrowserAnimationsModule,

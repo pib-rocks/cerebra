@@ -1,3 +1,4 @@
+@import "src/styles";
 * {
     color: white;
 }
@@ -10,12 +11,17 @@
     font-size: 1.3vw;
 }
 
-.font-size-class {
+.font-size {
     font-size: 1.33vw;
     font-weight: bolder;
 }
 
-.hardware-button-class {
+.hardware-button {
     font-size: 1.11vw;
     font-weight: bold;
+}
+
+.invalid-validation {
+    color: $pink-color;
+    font-size: 1.3vw;
 }
