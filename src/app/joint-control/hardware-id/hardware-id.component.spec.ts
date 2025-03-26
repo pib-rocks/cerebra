@@ -6,7 +6,7 @@ import {of} from "rxjs";
 import {Bricklet} from "src/app/shared/types/bricklet";
 import {AbstractControl, ReactiveFormsModule} from "@angular/forms";
 
-fdescribe("HardwareIdComponent", () => {
+describe("HardwareIdComponent", () => {
     let component: HardwareIdComponent;
     let fixture: ComponentFixture<HardwareIdComponent>;
 
