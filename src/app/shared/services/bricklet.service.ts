@@ -62,6 +62,7 @@ export class BrickletService {
                         duration: 3000,
                     },
                 );
+                this.brickletSubject.next(bricklets);
             },
             (error) => {
                 this.matSnackBarService.open("Error!", "", {
