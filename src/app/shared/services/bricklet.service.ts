@@ -1,5 +1,5 @@
 import {Injectable} from "@angular/core";
-import {Bricklet, BrickletDTO} from "../types/bricklet";
+import {Bricklet} from "../types/bricklet";
 import {
     BehaviorSubject,
     catchError,
@@ -10,7 +10,6 @@ import {
 } from "rxjs";
 import {ApiService} from "./api.service";
 import {UrlConstants} from "./url.constants";
-import {UtilService} from "./util.service";
 import {MatSnackBar} from "@angular/material/snack-bar";
 
 @Injectable({
@@ -37,7 +36,7 @@ export class BrickletService {
     }
 
     public renameBrickletUid(bricklets: Bricklet[]) {
-        const source = bricklets.map((bricklet) => {
+        const updateRequests = bricklets.map((bricklet) => {
             return this.apiService.put(
                 UrlConstants.BRICKLET + `/${bricklet.brickletNumber}`,
                 {
@@ -46,14 +45,14 @@ export class BrickletService {
             );
         });
 
-        const fork = forkJoin(source).pipe(
+        const fork = forkJoin(updateRequests).pipe(
             catchError((err) => {
                 return err;
             }),
         );
 
-        fork.subscribe(
-            (response) => {
+        fork.subscribe({
+            next: () => {
                 this.matSnackBarService.open(
                     "Hardware-IDs successfully set!",
                     "",
@@ -64,45 +63,27 @@ export class BrickletService {
                 );
                 this.brickletSubject.next(bricklets);
             },
-            (error) => {
-                this.matSnackBarService.open("Error!", "", {
-                    panelClass: "cerebra-toast",
-                    duration: 3000,
-                });
+            error: () => {
+                this.matSnackBarService.open(
+                    "Error! IDs could not be set.",
+                    "",
+                    {
+                        panelClass: "cerebra-toast",
+                        duration: 3000,
+                    },
+                );
             },
-        );
+        });
     }
 
     private getAllBrickletsFromDb(): Observable<Bricklet[]> {
         return this.apiService.get(UrlConstants.BRICKLET).pipe(
             map((brickletsDto) => {
-                const brickletDtos: BrickletDTO[] = brickletsDto["bricklets"];
-                return brickletDtos.map(
-                    (dto) => new Bricklet(dto.uid, dto.brickletNumber),
+                const brickletDtos = brickletsDto["bricklets"];
+                return brickletDtos.map((brickletDto: Bricklet) =>
+                    Bricklet.fromDTO(brickletDto),
                 );
             }),
-        );
-    }
-
-    private renameBrickletUidInDb(
-        brickletUid: string,
-        brickletNumber: number,
-    ): Observable<any> {
-        return UtilService.createResultObservable(
-            this.apiService.put(UrlConstants.BRICKLET + `/${brickletNumber}`, {
-                uid: brickletUid,
-            }),
-            (response) => {
-                return response;
-            },
-        );
-    }
-
-    private getCachedBrickletOfNumber(
-        brickletNumber: number,
-    ): Bricklet | undefined {
-        return this.bricklets.find(
-            (bricklet) => bricklet.brickletNumber === brickletNumber,
         );
     }
 }
