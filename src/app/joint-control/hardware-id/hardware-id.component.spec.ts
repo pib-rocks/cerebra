@@ -80,7 +80,7 @@ describe("HardwareIdComponent", () => {
 
     it("should not call renameBrickletUid if the form is invalid", () => {
         component.brickletUidForm.setValue({
-            "1": "1234567", // UID to long
+            "1": "1234567", // UID too long
             "2": "NEW2",
             "3": "NEW3",
         });
