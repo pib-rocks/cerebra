@@ -7,6 +7,8 @@ import {
     map,
     Observable,
     Subject,
+    tap,
+    throwError,
 } from "rxjs";
 import {ApiService} from "./api.service";
 import {UrlConstants} from "./url.constants";
@@ -36,6 +38,29 @@ export class BrickletService {
     }
 
     public renameBrickletUid(bricklets: Bricklet[]) {
+        const dummyBricklets = bricklets.map((bricklet) => ({
+            ...bricklet,
+            uid: `temp${bricklet.brickletNumber}`,
+        }));
+
+        this.updateBrickletUidsInDb(dummyBricklets, false).subscribe({
+            next: () => {
+                this.updateBrickletUidsInDb(bricklets, true).subscribe();
+            },
+            error: () => {
+                this.matSnackBarService.open(
+                    "Error! Temporary IDs could not be set.",
+                    "",
+                    {panelClass: "cerebra-toast", duration: 3000},
+                );
+            },
+        });
+    }
+
+    private updateBrickletUidsInDb(
+        bricklets: Bricklet[],
+        showSnackbar: boolean,
+    ): Observable<Bricklet[]> {
         const updateRequests = bricklets.map((bricklet) => {
             return this.apiService.put(
                 UrlConstants.BRICKLET + `/${bricklet.brickletNumber}`,
@@ -45,35 +70,28 @@ export class BrickletService {
             );
         });
 
-        const fork = forkJoin(updateRequests).pipe(
+        return forkJoin(updateRequests).pipe(
             catchError((err) => {
-                return err;
+                if (showSnackbar) {
+                    this.matSnackBarService.open(
+                        "Error! IDs could not be set.",
+                        "",
+                        {panelClass: "cerebra-toast", duration: 3000},
+                    );
+                }
+                return throwError(() => err);
+            }),
+            tap(() => {
+                if (showSnackbar) {
+                    this.matSnackBarService.open(
+                        "Hardware-IDs successfully set!",
+                        "",
+                        {panelClass: "cerebra-toast", duration: 3000},
+                    );
+                    this.brickletSubject.next(bricklets);
+                }
             }),
         );
-
-        fork.subscribe({
-            next: () => {
-                this.matSnackBarService.open(
-                    "Hardware-IDs successfully set!",
-                    "",
-                    {
-                        panelClass: "cerebra-toast",
-                        duration: 3000,
-                    },
-                );
-                this.brickletSubject.next(bricklets);
-            },
-            error: () => {
-                this.matSnackBarService.open(
-                    "Error! IDs could not be set.",
-                    "",
-                    {
-                        panelClass: "cerebra-toast",
-                        duration: 3000,
-                    },
-                );
-            },
-        });
     }
 
     private getAllBrickletsFromDb(): Observable<Bricklet[]> {
