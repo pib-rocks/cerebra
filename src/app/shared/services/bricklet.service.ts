@@ -6,6 +6,7 @@ import {
     forkJoin,
     map,
     Observable,
+    of,
     Subject,
     tap,
     throwError,
@@ -45,11 +46,19 @@ export class BrickletService {
 
         this.updateBrickletUidsInDb(dummyBricklets, false).subscribe({
             next: () => {
-                this.updateBrickletUidsInDb(bricklets, true).subscribe();
+                this.updateBrickletUidsInDb(bricklets, true).subscribe({
+                    error: () => {
+                        this.matSnackBarService.open(
+                            "Error! IDs could not be set.",
+                            "",
+                            {panelClass: "cerebra-toast", duration: 3000},
+                        );
+                    },
+                });
             },
             error: () => {
                 this.matSnackBarService.open(
-                    "Error! Temporary IDs could not be set.",
+                    "Error! Temporary IDs could not be set. Please try again.",
                     "",
                     {panelClass: "cerebra-toast", duration: 3000},
                 );
@@ -72,13 +81,6 @@ export class BrickletService {
 
         return forkJoin(updateRequests).pipe(
             catchError((err) => {
-                if (showSnackbar) {
-                    this.matSnackBarService.open(
-                        "Error! IDs could not be set.",
-                        "",
-                        {panelClass: "cerebra-toast", duration: 3000},
-                    );
-                }
                 return throwError(() => err);
             }),
             tap(() => {
