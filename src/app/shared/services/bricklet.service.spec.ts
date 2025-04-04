@@ -14,9 +14,9 @@ describe("BrickletService", () => {
     let matSnackBarService: jasmine.SpyObj<MatSnackBar>;
 
     let brickletSubscriber: jasmine.Spy;
-    const bricklet1 = new Bricklet("AAA", 1);
-    const bricklet2 = new Bricklet("BBB", 2);
-    const bricklet3 = new Bricklet("CCC", 3);
+    const bricklet1 = new Bricklet("brick1", 1);
+    const bricklet2 = new Bricklet("brick2", 2);
+    const bricklet3 = new Bricklet("brick3", 3);
     const bricklets: Bricklet[] = [bricklet1, bricklet2, bricklet3];
 
     beforeEach(() => {
@@ -81,7 +81,19 @@ describe("BrickletService", () => {
 
         brickletService.renameBrickletUid(updatedBricklets);
 
-        expect(apiService.put).toHaveBeenCalledTimes(3);
+        expect(apiService.put).toHaveBeenCalledTimes(6);
+        expect(apiService.put).toHaveBeenCalledWith(
+            "/bricklet/" + updatedBricklet1.brickletNumber,
+            {uid: "temp1"},
+        );
+        expect(apiService.put).toHaveBeenCalledWith(
+            "/bricklet/" + bricklet2.brickletNumber,
+            {uid: "temp2"},
+        );
+        expect(apiService.put).toHaveBeenCalledWith(
+            "/bricklet/" + bricklet3.brickletNumber,
+            {uid: "temp3"},
+        );
         expect(apiService.put).toHaveBeenCalledWith(
             "/bricklet/" + updatedBricklet1.brickletNumber,
             {uid},
@@ -119,11 +131,44 @@ describe("BrickletService", () => {
         );
     });
 
-    it("should open an error snackbar when renaming fails", () => {
+    it("should show correct error snackbar if dummy-uid update fails", () => {
         apiService.put.and.returnValue(throwError(() => new Error("Error")));
 
         brickletService.renameBrickletUid(bricklets);
 
+        expect(apiService.put).toHaveBeenCalledTimes(3);
+        expect(matSnackBarService.open).toHaveBeenCalledOnceWith(
+            "Error! Temporary IDs could not be set. Please try again.",
+            "",
+            {
+                panelClass: "cerebra-toast",
+                duration: 3000,
+            },
+        );
+    });
+
+    it("should show correct error snackbar if real uid-update fails", () => {
+        apiService.put
+            .withArgs(
+                jasmine.any(String),
+                jasmine.objectContaining({
+                    uid: jasmine.stringMatching(/^temp/),
+                }),
+            )
+            .and.returnValue(of(null));
+
+        apiService.put
+            .withArgs(
+                jasmine.any(String),
+                jasmine.objectContaining({
+                    uid: jasmine.stringMatching(/^brick/),
+                }),
+            )
+            .and.returnValue(throwError(() => new Error("Error")));
+
+        brickletService.renameBrickletUid(bricklets);
+
+        expect(apiService.put).toHaveBeenCalledTimes(6);
         expect(matSnackBarService.open).toHaveBeenCalledOnceWith(
             "Error! IDs could not be set.",
             "",
