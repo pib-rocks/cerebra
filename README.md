@@ -22,3 +22,7 @@ To have a fully working Cerebra website without having to deploy an actual backe
 1. Clone this repository and open the directory in a new terminal window.
 2. Run `npm run cerebra-mock-backend`.
 3. It will be available on `localhost:4200`.
+
+### Contributing to pib
+
+For the development process, external developers are requested to refer to the following explanation: tbd.
