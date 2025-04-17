@@ -1,0 +1,47 @@
+<div class="row">
+    <div class="mb-1 pl-4 head-line">Hardware</div>
+    <form
+        [formGroup]="brickletUidForm"
+        (ngSubmit)="updateIds()">
+        <div
+            *ngFor="let bricklet of bricklets | async"
+            class="bricklet-item row m-2 mb-2 ml-3 pl-2 font-size">
+            <div class="bricklet-label">
+                Servo-bricklet {{bricklet.brickletNumber}}:
+                <input
+                    class="m-2 pl-2"
+                    type="text"
+                    id="bricklet-uid-input"
+                    [formControlName]="bricklet.brickletNumber" />
+            </div>
+        </div>
+        <div class="relay-item row m-2 mb-2 ml-3 pl-2 font-size">
+            <div class="bricklet-label">
+                Solid state relay:
+                <input
+                    class="m-2 pl-2"
+                    type="text"
+                    id="bricklet-uid-input"
+                    disabled />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-auto mt-4 ml-4 mb-3 pl-2">
+                <button
+                    id="update-bricklet-uids-button"
+                    class="hardware-button btn btn-regular"
+                    [disabled]="brickletUidForm.invalid">
+                    Update
+                </button>
+            </div>
+            <div
+                class="col-auto mt-4 ml-4 mb-3 pl-2 align-self-center"
+                *ngIf="brickletUidForm.invalid">
+                <span class="invalid-validation"
+                    >IDs must be unique, up to 6 characters long, and contain
+                    only letters and numbers.</span
+                >
+            </div>
+        </div>
+    </form>
+</div>
