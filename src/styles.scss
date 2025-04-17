@@ -192,3 +192,16 @@ input:focus {
         linear-gradient(#000 0 0) content-box;
     background: url("assets/bg-gesamt.png") center / cover scroll;
 }
+
+.mat-mdc-snack-bar-container.cerebra-toast {
+    background:
+        url("assets/ep-br.png") bottom right no-repeat,
+        url("assets/ep-tr.png") top right no-repeat,
+        url("assets/ep-tl.png") top left no-repeat,
+        url("assets/ep-bl.png") bottom left no-repeat;
+    background-color: $blue-dark-5;
+    --mdc-snackbar-container-color: $blue-dark-5;
+    margin-bottom: 5vh;
+    z-index: 1000;
+    text-align: center;
+}

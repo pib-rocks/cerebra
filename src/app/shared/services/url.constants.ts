@@ -7,4 +7,5 @@ export enum UrlConstants {
     CODE = "code",
     ASSISTANT_MODEL = "/assistant-model",
     POSE = "/pose",
+    BRICKLET = "/bricklet",
 }

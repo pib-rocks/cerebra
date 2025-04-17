@@ -7,6 +7,7 @@ import {AppRoutingModule} from "./app-routing.module";
 import {AppComponent} from "./app.component";
 import {CameraComponent} from "./camera/camera.component";
 import {MatDialogModule} from "@angular/material/dialog";
+import {MatTooltipModule} from "@angular/material/tooltip";
 import {NgbModule, NgbDropdownModule} from "@ng-bootstrap/ng-bootstrap";
 import {MatSliderModule} from "@angular/material/slider";
 import {ProgramComponent} from "./program/program.component";
@@ -40,6 +41,7 @@ import {SmartConnectComponent} from "./ui-components/smart-connect/smart-connect
 import {NgOptimizedImage} from "@angular/common";
 import {PoseComponent} from "./pose/pose.component";
 import {MarkdownModule} from "ngx-markdown";
+import {HardwareIdComponent} from "./joint-control/hardware-id/hardware-id.component";
 
 @NgModule({
     declarations: [
@@ -69,6 +71,7 @@ import {MarkdownModule} from "ngx-markdown";
         VoiceAssistantPersonalitySidebarRightComponent,
         PoseComponent,
         SmartConnectComponent,
+        HardwareIdComponent,
     ],
     imports: [
         BrowserModule,
@@ -76,6 +79,7 @@ import {MarkdownModule} from "ngx-markdown";
         ReactiveFormsModule,
         HttpClientModule,
         MatDialogModule,
+        MatTooltipModule,
         NgbModule,
         MatSliderModule,
         BrowserAnimationsModule,

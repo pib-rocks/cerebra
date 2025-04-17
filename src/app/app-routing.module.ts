@@ -20,12 +20,17 @@ import {SaveConfirmationGuard} from "./security/save-confirmation.guard";
 import {ProgramSplitscreenComponent} from "./program/program-splitscreen/program-splitscreen.component";
 import {programCodeResolver} from "./program/program-splitscreen/resolver/program-code.resolver";
 import {PoseComponent} from "./pose/pose.component";
+import {HardwareIdComponent} from "./joint-control/hardware-id/hardware-id.component";
 
 const routes: Routes = [
     {
         path: "joint-control",
         component: JointControlComponent,
         children: [
+            {
+                path: "hardware-ids",
+                component: HardwareIdComponent,
+            },
             {
                 path: ":joint-name",
                 component: JointControlCoreComponent,
