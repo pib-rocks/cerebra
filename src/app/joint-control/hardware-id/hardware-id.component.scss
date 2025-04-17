@@ -3,8 +3,8 @@
     color: white;
 }
 
-#input-bricklet-uid {
-    color: black;
+#bricklet-uid-input:disabled {
+    opacity: 0.4;
 }
 
 .head-line {
