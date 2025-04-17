@@ -73,7 +73,7 @@ export class BrickletService {
             return this.apiService.put(
                 UrlConstants.BRICKLET + `/${bricklet.brickletNumber}`,
                 {
-                    uid: bricklet.uid,
+                    uid: bricklet.uid ? bricklet.uid : null,
                 },
             );
         });

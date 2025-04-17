@@ -12,9 +12,13 @@ export function patternOrOptionalValidator(): ValidatorFn {
 
 export function uniqueValuesValidator(): ValidatorFn {
     return (formGroup: AbstractControl): ValidationErrors | null => {
-        const values = Object.values(formGroup.value);
+        const values = Object.values(formGroup.value).filter(
+            (value) => value !== null && value !== "",
+        );
         const uniqueValues = new Set(values);
 
-        return values.length === uniqueValues.size ? null : {nonUnique: true};
+        return values.length === uniqueValues.size || values.length === 0
+            ? null
+            : {nonUnique: true};
     };
 }

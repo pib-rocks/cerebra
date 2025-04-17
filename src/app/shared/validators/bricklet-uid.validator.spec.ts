@@ -32,18 +32,18 @@ describe("uniqueValuesValidator", () => {
         expect(errors).toEqual({nonUnique: true});
     });
 
-    it("should return an error if multiple values are empty", () => {
+    it("should return no errors if multiple values are empty", () => {
         formGroup.setValue({field1: "", field2: "", field3: ""});
 
         const errors: ValidationErrors | null = formGroup.errors;
-        expect(errors).toEqual({nonUnique: true});
+        expect(errors).toBeNull();
     });
 
     it("should allow null as input", () => {
         formGroup.setValue({field1: null, field2: null, field3: null});
 
         const errors: ValidationErrors | null = formGroup.errors;
-        expect(errors).toEqual({nonUnique: true});
+        expect(errors).toBeNull();
     });
 });
 
