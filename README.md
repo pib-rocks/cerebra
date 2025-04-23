@@ -11,7 +11,7 @@ It is automatically installed when using our setup script, which can be found at
 
 (The frontend is developed using Angular)
 
-1. Clone this repository and open the directory in a new terminal window.
+1. Clone this repository including submodules and open the directory in a new terminal window. <br/>`git clone --recurse-submodules -j8 https://github.com/pib-rocks/cerebra.git`
 2. Run `npm install`.
 3. Start the application in development mode with `ng serve`. It will be available on `localhost:4200`.
 
