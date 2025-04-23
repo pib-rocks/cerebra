@@ -24,21 +24,21 @@
   "assistantModel": [
     {
       "id": 1,
-      "apiName": "gpt-3.5-turbo",
+      "apiName": "o4-mini",
       "hasImageSupport": false,
-      "visualName": "GPT-3.5 Turbo"
+      "visualName": "o4-mini"
     },
     {
       "id": 2,
-      "apiName": "claude-3-sonnet",
+      "apiName": "claude-3-7-sonnet-latest",
       "hasImageSupport": true,
-      "visualName": "Claude 3 Sonnet"
+      "visualName": "Claude 3.7 Sonnet"
     },
     {
       "id": 3,
-      "apiName": "gpt-4.0-turbo",
-      "hasImageSupport": false,
-      "visualName": "GPT-4.0 Turbo"
+      "apiName": "gpt-4.1",
+      "hasImageSupport": true,
+      "visualName": "gpt-4.1"
     }
   ],
   "chats": [
