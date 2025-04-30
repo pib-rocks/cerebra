@@ -1,0 +1,27 @@
+@import "src/styles";
+* {
+    color: white;
+}
+
+#bricklet-uid-input:disabled {
+    opacity: 0.4;
+}
+
+.head-line {
+    font-size: 1.3vw;
+}
+
+.font-size {
+    font-size: 1.33vw;
+    font-weight: bolder;
+}
+
+.hardware-button {
+    font-size: 1.11vw;
+    font-weight: bold;
+}
+
+.invalid-validation {
+    color: $pink-color;
+    font-size: 1.3vw;
+}
