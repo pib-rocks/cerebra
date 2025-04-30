@@ -9,7 +9,7 @@ import {ChatService} from "src/app/shared/services/chat.service";
 import {ChatMessage} from "src/app/shared/types/chat-message";
 import {ReactiveFormsModule} from "@angular/forms";
 import {Chat} from "src/app/shared/types/chat.class";
-import {ChatIsListening} from "src/app/shared/ros-types/msg/chat-is-listening";
+import {TokenService} from "src/app/shared/services/token.service";
 
 describe("ChatWindowComponent", () => {
     let component: ChatWindowComponent;
@@ -18,11 +18,16 @@ describe("ChatWindowComponent", () => {
     let paramsSubject: Subject<{chatUuid: string}>;
     let messagesSubject: Subject<ChatMessage[]>;
     let isListeningSubject: Subject<boolean>;
+    let tokenStatusSubject: Subject<{
+        tokenExists: boolean;
+        tokenActive: boolean;
+    }>;
 
     const chatId = "chat-id";
 
     beforeEach(async () => {
         paramsSubject = new Subject<{chatUuid: string}>();
+        tokenStatusSubject = new Subject();
 
         const chatServiceSpy: jasmine.SpyObj<ChatService> =
             jasmine.createSpyObj("ChatService", [
@@ -32,6 +37,11 @@ describe("ChatWindowComponent", () => {
                 "getChat",
                 "getIsListeningObservable",
             ]);
+
+        const tokenServiceSpy = jasmine.createSpyObj("TokenService", [], {
+            tokenStatus$: tokenStatusSubject.asObservable(),
+        });
+
         await TestBed.configureTestingModule({
             declarations: [ChatWindowComponent],
             imports: [
@@ -55,6 +65,10 @@ describe("ChatWindowComponent", () => {
                 {
                     provide: ChatService,
                     useValue: chatServiceSpy,
+                },
+                {
+                    provide: TokenService,
+                    useValue: tokenServiceSpy,
                 },
             ],
         }).compileComponents();
@@ -178,5 +192,15 @@ describe("ChatWindowComponent", () => {
 
         expect(chatService.sendChatMessage).not.toHaveBeenCalled();
         expect(component.chatMessageFormControl.value).toBe(messageContent);
+    });
+
+    it("should enable or disable the chat-input field based on token status", () => {
+        paramsSubject.next({chatUuid: chatId});
+
+        tokenStatusSubject.next({tokenExists: true, tokenActive: true});
+        expect(component.chatMessageFormControl.disabled).toBeFalse();
+
+        tokenStatusSubject.next({tokenExists: false, tokenActive: false});
+        expect(component.chatMessageFormControl.disabled).toBeTrue();
     });
 });

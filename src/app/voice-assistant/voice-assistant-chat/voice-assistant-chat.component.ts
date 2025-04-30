@@ -17,6 +17,7 @@ import {Chat, ChatDto} from "src/app/shared/types/chat.class";
 import {VoiceAssistant} from "src/app/shared/types/voice-assistant";
 import {VoiceAssistantState} from "../../shared/types/voice-assistant-state";
 import {Location} from "@angular/common";
+import {TokenService} from "src/app/shared/services/token.service";
 
 @Component({
     selector: "app-voice-assistant-chat",
@@ -39,6 +40,7 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
     currentChatId: string | null = "";
     voiceAssistantActivationToggle = new FormControl(false);
     chatSubjectSubscription!: Subscription;
+    smartConnectActive = false;
 
     constructor(
         private modalService: NgbModal,
@@ -46,6 +48,7 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
         private chatService: ChatService,
         private voiceAssistantService: VoiceAssistantService,
         private route: ActivatedRoute,
+        private tokenService: TokenService,
         location: Location,
     ) {
         location.onUrlChange((url, _state) => {
@@ -71,7 +74,10 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
                 });
             },
         );
-
+        this.tokenService.checkTokenExists();
+        this.tokenService.tokenStatus$.subscribe((response) => {
+            this.smartConnectActive = response.tokenActive;
+        });
         this.route.paramMap.subscribe((_params) => {
             const routeParts: string[] = this.router.url.split("/");
             this.currentChatId = routeParts[routeParts.length - 1];
