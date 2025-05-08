@@ -42,11 +42,10 @@ export class HardwareIdComponent implements OnInit {
 
             const newBricklets: Bricklet[] = Object.entries(
                 newBrickletInput,
-            ).map(([key, value]) => ({
-                uid: value,
-                brickletNumber: Number(key),
-            }));
-
+            ).map(([key, value]) => {
+                const bricklet = this.brickletService.getBricklet(Number(key));
+                return new Bricklet(value, Number(key), bricklet?.type || "");
+            });
             this.brickletService.renameBrickletUid(newBricklets);
         }
     }

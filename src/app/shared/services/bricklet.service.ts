@@ -105,4 +105,8 @@ export class BrickletService {
             }),
         );
     }
+
+    public getBricklet(brickletNumber: number): Bricklet | undefined {
+        return this.bricklets.find((b) => b.brickletNumber === brickletNumber);
+    }
 }
