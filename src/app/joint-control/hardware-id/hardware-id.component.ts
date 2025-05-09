@@ -40,13 +40,25 @@ export class HardwareIdComponent implements OnInit {
             const newBrickletInput: Record<number, string> =
                 this.brickletUidForm.getRawValue();
 
-            const newBricklets: Bricklet[] = Object.entries(
+            const changedBricklets: Bricklet[] = Object.entries(
                 newBrickletInput,
-            ).map(([key, value]) => {
-                const bricklet = this.brickletService.getBricklet(Number(key));
-                return new Bricklet(value, Number(key), bricklet?.type || "");
-            });
-            this.brickletService.renameBrickletUid(newBricklets);
+            )
+                .map(([key, value]) => {
+                    const brickletNumber = Number(key);
+                    const existingBricklet =
+                        this.brickletService.getBricklet(brickletNumber);
+                    if (existingBricklet && existingBricklet.uid !== value) {
+                        return new Bricklet(
+                            value,
+                            Number(key),
+                            existingBricklet.type,
+                        );
+                    }
+                    return null;
+                })
+                .filter((bricklet) => bricklet !== null) as Bricklet[];
+
+            this.brickletService.renameBrickletUid(changedBricklets);
         }
     }
 }
