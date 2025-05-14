@@ -6,6 +6,7 @@ networks:
 
 services:
     angular-app:
+        image: snfeld/angular-app
         build:
             context: .
             dockerfile: Dockerfile
