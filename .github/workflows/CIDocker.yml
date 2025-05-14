@@ -24,7 +24,7 @@ jobs:
     - name: Build and push
       uses: docker/bake-action@v6
       with:
-        push: false
+        push: true
         set: |
           *.platform=linux/amd64      
           *.platform+=linux/arm64
