@@ -10,6 +10,7 @@
                 {{bricklet.type}} {{bricklet.type === "Solid State Relay Bricklet" ? "" : bricklet.brickletNumber}}:
                 <input
                     class="m-2 pl-2"
+                    [ngClass]="{'solid-state-relay-input': bricklet.type === 'Solid State Relay Bricklet'}"
                     type="text"
                     id="bricklet-uid-input"
                     [formControlName]="bricklet.brickletNumber" />
