@@ -5,7 +5,7 @@ import {RosService} from "./ros-service/ros.service";
 import {of} from "rxjs";
 
 describe("TokenServiceService", () => {
-    let service: TokenService;
+    let tokenService: TokenService;
     let rosService: jasmine.SpyObj<RosService>;
 
     beforeEach(() => {
@@ -21,21 +21,21 @@ describe("TokenServiceService", () => {
                 },
             ],
         });
-        service = TestBed.inject(TokenService);
+        tokenService = TestBed.inject(TokenService);
         rosService = TestBed.inject(RosService) as jasmine.SpyObj<RosService>;
     });
 
     it("should be created", () => {
-        expect(service).toBeTruthy();
+        expect(tokenService).toBeTruthy();
     });
 
     it("should call rosService.checkTokenExists and update tokenStatus$", () => {
         const tokenResponse = {token_exists: true, token_active: true};
         rosService.checkTokenExists.and.returnValue(of(tokenResponse));
 
-        service.checkTokenExists();
+        tokenService.checkTokenExists();
 
-        service.tokenStatus$.subscribe((status) => {
+        tokenService.tokenStatus$.subscribe((status) => {
             expect(status).toEqual({tokenExists: true, tokenActive: true});
             expect(rosService.checkTokenExists).toHaveBeenCalled();
         });

@@ -43,12 +43,12 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
     smartConnectActive = false;
 
     constructor(
-        private modalService: NgbModal,
-        private router: Router,
-        private chatService: ChatService,
-        private voiceAssistantService: VoiceAssistantService,
-        private route: ActivatedRoute,
-        private tokenService: TokenService,
+        private readonly modalService: NgbModal,
+        private readonly router: Router,
+        private readonly chatService: ChatService,
+        private readonly voiceAssistantService: VoiceAssistantService,
+        private readonly route: ActivatedRoute,
+        private readonly tokenService: TokenService,
         location: Location,
     ) {
         location.onUrlChange((url, _state) => {

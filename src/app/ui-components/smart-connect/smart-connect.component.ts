@@ -40,9 +40,9 @@ export class SmartConnectComponent implements OnInit {
     });
 
     constructor(
-        private rosService: RosService,
-        private modalService: NgbModal,
-        private tokenService: TokenService,
+        private readonly rosService: RosService,
+        private readonly modalService: NgbModal,
+        private readonly tokenService: TokenService,
     ) {}
 
     ngOnInit(): void {

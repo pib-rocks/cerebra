@@ -6,7 +6,7 @@ import {RosService} from "./ros-service/ros.service";
     providedIn: "root",
 })
 export class TokenService {
-    private tokenStatusSubject = new BehaviorSubject<{
+    private readonly tokenStatusSubject = new BehaviorSubject<{
         tokenExists: boolean;
         tokenActive: boolean;
     }>({
@@ -15,7 +15,7 @@ export class TokenService {
     });
     tokenStatus$ = this.tokenStatusSubject.asObservable();
 
-    constructor(private rosService: RosService) {}
+    constructor(private readonly rosService: RosService) {}
 
     checkTokenExists() {
         this.rosService.checkTokenExists().subscribe((response) => {

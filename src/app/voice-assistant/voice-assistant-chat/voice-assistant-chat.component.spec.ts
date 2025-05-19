@@ -119,9 +119,11 @@ describe("VoiceAssistantChatComponent", () => {
         expect(component).toBeTruthy();
     });
 
-    it("should set a localStorage value after init", () => {
+    it("should initialize component correctly on ngOnInit", () => {
         component.ngOnInit();
+
         expect(localStorage.getItem("voice-assistant-tab")).toBe("chat");
+        expect(tokenService.checkTokenExists).toHaveBeenCalled();
     });
 
     it("should show a modal when calling showModal", () => {

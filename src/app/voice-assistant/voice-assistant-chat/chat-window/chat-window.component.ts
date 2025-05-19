@@ -34,10 +34,10 @@ export class ChatWindowComponent implements OnInit {
     readonly arrow = "../../../../assets/voice-assistant-svgs/chat/arrow.svg";
 
     constructor(
-        private chatService: ChatService,
-        private voiceAssistantService: VoiceAssistantService,
-        private route: ActivatedRoute,
-        private tokenService: TokenService,
+        private readonly chatService: ChatService,
+        private readonly voiceAssistantService: VoiceAssistantService,
+        private readonly route: ActivatedRoute,
+        private readonly tokenService: TokenService,
     ) {}
 
     ngOnInit(): void {
