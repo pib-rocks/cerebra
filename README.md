@@ -1,9 +1,5 @@
 # Cerebra
 
-## Health
-
-[![CIDocker](https://github.com/snfeld/cerebra/actions/workflows/CIDocker.yml/badge.svg)](https://github.com/snfeld/cerebra/actions/workflows/CIDocker.yml)
-
 ## Frontend Setup
 
 This repository contains Cerebra, the frontend website to be used with a pib robot.  
