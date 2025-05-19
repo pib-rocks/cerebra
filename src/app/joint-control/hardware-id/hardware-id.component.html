@@ -7,9 +7,11 @@
             *ngFor="let bricklet of bricklets | async"
             class="bricklet-item row m-2 mb-2 ml-3 pl-2 font-size">
             <div class="bricklet-label">
-                {{bricklet.type}} {{bricklet.type === "Solid State Relay Bricklet" ? "" : bricklet.brickletNumber}}:
+                {{bricklet.type}} {{bricklet.type === "Solid State Relay
+                Bricklet" ? "" : bricklet.brickletNumber}}:
                 <input
                     class="m-2 pl-2"
+                    [ngClass]="{'solid-state-relay-input': bricklet.type === 'Solid State Relay Bricklet'}"
                     type="text"
                     id="bricklet-uid-input"
                     [formControlName]="bricklet.brickletNumber" />

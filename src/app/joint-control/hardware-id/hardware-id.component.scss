@@ -3,10 +3,6 @@
     color: white;
 }
 
-#bricklet-uid-input:disabled {
-    opacity: 0.4;
-}
-
 .head-line {
     font-size: 1.3vw;
 }
@@ -24,4 +20,8 @@
 .invalid-validation {
     color: $pink-color;
     font-size: 1.3vw;
+}
+
+.solid-state-relay-input {
+    width: 8.1vw;
 }
