@@ -6,7 +6,7 @@ networks:
 
 services:
     angular-app:
-        image: pibrocks/angular-app
+        image: ghcr.io/snfeld/cerebra
         build:
             context: .
             dockerfile: Dockerfile
