@@ -6,6 +6,7 @@ networks:
 
 services:
     angular-app:
+        image: ghcr.io/pib-rocks/cerebra
         build:
             context: .
             dockerfile: Dockerfile
