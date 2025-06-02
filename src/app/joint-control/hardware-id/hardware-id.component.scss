@@ -26,6 +26,9 @@
     font-size: 1.3vw;
 }
 
-.solid-state-relay-input {
-    width: 8.1vw;
+input.form-control:focus {
+    color: $white-color;
+    background-color: $blue-dark-2;
+    border-radius: 5px;
+    border: none;
 }
