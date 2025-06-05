@@ -47,7 +47,7 @@
                     id="message-input"
                     (keyup.enter)="sendChatMessage()"
                     [formControl]="chatMessageFormControl"
-                    placeholder="Send a message" />
+                    [placeholder]="chatMessageFormControl.disabled ? 'Enable SmartConnect to start the Voice-Assistant' : 'Enter a message'" />
                 <button
                     id="chat-send-button"
                     [disabled]="!textInputActive"
