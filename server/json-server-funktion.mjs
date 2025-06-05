@@ -285,7 +285,7 @@ server.put("/bricklet/:brickletNumber", (req, res, next) => {
     return res.status(200).send(response);
 });
 
-//getAllMotrs
+//getAllMotors
 server.get("/motor", (req, res, next) => {
     let response = [];
     mockData.motors.forEach((motor) => {

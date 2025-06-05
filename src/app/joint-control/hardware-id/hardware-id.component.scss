@@ -3,10 +3,6 @@
     color: white;
 }
 
-#bricklet-uid-input:disabled {
-    opacity: 0.4;
-}
-
 .head-line {
     font-size: 1.3vw;
 }
@@ -24,4 +20,11 @@
 .invalid-validation {
     color: $pink-color;
     font-size: 1.3vw;
+}
+
+input.form-control:focus {
+    color: $white-color;
+    background-color: $blue-dark-2;
+    border-radius: 5px;
+    border: none;
 }

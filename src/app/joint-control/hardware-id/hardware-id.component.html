@@ -1,28 +1,38 @@
 <div class="row">
-    <div class="mb-1 pl-4 head-line">Hardware</div>
+    <div class="mb-3 pl-2 head-line">Please input your bricklet uids.</div>
     <form
         [formGroup]="brickletUidForm"
         (ngSubmit)="updateIds()">
-        <div
-            *ngFor="let bricklet of bricklets | async"
-            class="bricklet-item row m-2 mb-2 ml-3 pl-2 font-size">
-            <div class="bricklet-label">
-                Servo-bricklet {{bricklet.brickletNumber}}:
-                <input
-                    class="m-2 pl-2"
-                    type="text"
-                    id="bricklet-uid-input"
-                    [formControlName]="bricklet.brickletNumber" />
+        <div class="row font-size align-items-start">
+            <div class="col-sm-6">
+                <ng-container *ngFor="let bricklet of bricklets | async">
+                    <div
+                        *ngIf="bricklet.type !== 'Solid State Relay Bricklet'"
+                        class="d-flex align-items-center mb-2">
+                        <label class="me-3 p-0 col-auto flex-shrink-0">
+                            {{ bricklet.type }} {{ bricklet.brickletNumber }}:
+                        </label>
+                        <input
+                            type="text"
+                            class="form-control"
+                            [formControlName]="bricklet.brickletNumber" />
+                    </div>
+                </ng-container>
             </div>
-        </div>
-        <div class="relay-item row m-2 mb-2 ml-3 pl-2 font-size">
-            <div class="bricklet-label">
-                Solid state relay:
-                <input
-                    class="m-2 pl-2"
-                    type="text"
-                    id="bricklet-uid-input"
-                    disabled />
+            <div class="col-sm-6 d-flex">
+                <ng-container *ngFor="let bricklet of bricklets | async">
+                    <div
+                        *ngIf="bricklet.type === 'Solid State Relay Bricklet'"
+                        class="d-flex align-items-center w-100">
+                        <label class="me-3 flex-shrink-0">
+                            {{ bricklet.type }}:
+                        </label>
+                        <input
+                            type="text"
+                            class="form-control"
+                            [formControlName]="bricklet.brickletNumber" />
+                    </div>
+                </ng-container>
             </div>
         </div>
         <div class="row">

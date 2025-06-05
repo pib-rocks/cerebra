@@ -1,6 +1,6 @@
 {
     "protocol": "http://",
-    "ip" : "127.0.0.1",
+    "ip" : "localhost",
     "portWebsocket" : "9090",
     "portTarget" : "5000",
     "secure" : false,
