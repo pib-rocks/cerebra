@@ -95,17 +95,26 @@
     {
       "id" : 1,
       "uid" : "AAA",
-      "brickletNumber" : 1
+      "brickletNumber" : 1,
+      "type": "Servo Bricklet"
     },
     {
       "id" : 2,
       "uid" : "BBB",
-      "brickletNumber" : 2
+      "brickletNumber" : 2,
+      "type": "Servo Bricklet"
     },
     {
       "id" : 3,
       "uid" : "CCC",
-      "brickletNumber" : 3
+      "brickletNumber" : 3,
+      "type": "Servo Bricklet"
+    },
+    {
+      "id" : 4,
+      "uid" : "DDD",
+      "brickletNumber" : 4,
+      "type": "Solid State Relay Bricklet"
     }
   ],
   "motors": [
