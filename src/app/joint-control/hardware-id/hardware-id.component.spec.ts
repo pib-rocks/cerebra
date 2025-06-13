@@ -110,4 +110,31 @@ describe("HardwareIdComponent", () => {
 
         expect(brickletServiceSpy.renameBrickletUid).not.toHaveBeenCalled();
     });
+
+    it("should not call renameBrickletUid when no uids have changed", () => {
+        // no uid change
+        component.updateIds();
+
+        expect(brickletServiceSpy.renameBrickletUid).not.toHaveBeenCalled();
+    });
+
+    it("should call renameBrickletUid with only the changed bricklets", () => {
+        component.brickletUidForm.setValue({
+            "1": "AAA",
+            "2": "NEW",
+            "3": "CCC",
+        });
+
+        component.updateIds();
+
+        expect(brickletServiceSpy.renameBrickletUid).toHaveBeenCalledOnceWith(
+            jasmine.arrayWithExactContents([
+                jasmine.objectContaining({
+                    brickletNumber: 2,
+                    uid: "NEW",
+                    type: "Servo Bricklet",
+                }),
+            ]),
+        );
+    });
 });
