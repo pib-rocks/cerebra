@@ -89,7 +89,17 @@ export class BrickletService {
                         "",
                         {panelClass: "cerebra-toast", duration: 3000},
                     );
-                    this.brickletSubject.next(bricklets);
+                    bricklets.forEach((changedBricklet) => {
+                        const index = this.bricklets.findIndex(
+                            (b) =>
+                                b.brickletNumber ===
+                                changedBricklet.brickletNumber,
+                        );
+                        if (index !== -1) {
+                            this.bricklets[index] = changedBricklet;
+                        }
+                    });
+                    this.brickletSubject.next(this.bricklets);
                 }
             }),
         );
@@ -104,5 +114,9 @@ export class BrickletService {
                 );
             }),
         );
+    }
+
+    public getBricklet(brickletNumber: number): Bricklet | undefined {
+        return this.bricklets.find((b) => b.brickletNumber === brickletNumber);
     }
 }

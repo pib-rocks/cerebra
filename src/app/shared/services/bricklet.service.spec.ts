@@ -14,9 +14,9 @@ describe("BrickletService", () => {
     let matSnackBarService: jasmine.SpyObj<MatSnackBar>;
 
     let brickletSubscriber: jasmine.Spy;
-    const bricklet1 = new Bricklet("brick1", 1);
-    const bricklet2 = new Bricklet("brick2", 2);
-    const bricklet3 = new Bricklet("brick3", 3);
+    const bricklet1 = new Bricklet("brick1", 1, "Servo Bricklet");
+    const bricklet2 = new Bricklet("brick2", 2, "Servo Bricklet");
+    const bricklet3 = new Bricklet("brick3", 3, "Solid State Relay Bricklet");
     const bricklets: Bricklet[] = [bricklet1, bricklet2, bricklet3];
 
     beforeEach(() => {
@@ -71,7 +71,11 @@ describe("BrickletService", () => {
 
     it("should rename the bricklet-uid", () => {
         const uid = "newUid";
-        const updatedBricklet1 = new Bricklet(uid, bricklet1.brickletNumber);
+        const updatedBricklet1 = new Bricklet(
+            uid,
+            bricklet1.brickletNumber,
+            "Servo Bricklet",
+        );
         const updatedBricklets: Bricklet[] = [
             updatedBricklet1,
             bricklet2,
@@ -111,7 +115,11 @@ describe("BrickletService", () => {
 
     it("should open a success snackbar on successful bricklet-uid change", () => {
         const uid = "newUid";
-        const updatedBricklet1 = new Bricklet(uid, bricklet1.brickletNumber);
+        const updatedBricklet1 = new Bricklet(
+            uid,
+            bricklet1.brickletNumber,
+            "Servo Bricklet",
+        );
         const updatedBricklets: Bricklet[] = [
             updatedBricklet1,
             bricklet2,
@@ -177,5 +185,15 @@ describe("BrickletService", () => {
                 duration: 3000,
             },
         );
+    });
+
+    it("should return the correct bricklet by number", () => {
+        const result = brickletService.getBricklet(1);
+        expect(result).toEqual(bricklet1);
+    });
+
+    it("should return undefined if bricklet number does not exist", () => {
+        const result = brickletService.getBricklet(666);
+        expect(result).toBeUndefined();
     });
 });
