@@ -12,19 +12,26 @@ describe("HardwareIdComponent", () => {
 
     let brickletServiceSpy: jasmine.SpyObj<BrickletService>;
 
-    const bricklet1 = new Bricklet("AAA", 1);
-    const bricklet2 = new Bricklet("BBB", 2);
-    const bricklet3 = new Bricklet("CCC", 3);
+    const bricklet1 = new Bricklet("AAA", 1, "Servo Bricklet");
+    const bricklet2 = new Bricklet("BBB", 2, "Servo Bricklet");
+    const bricklet3 = new Bricklet("CCC", 3, "Solid State Relay Bricklet");
 
     beforeEach(async () => {
         brickletServiceSpy = jasmine.createSpyObj("BrickletService", [
             "getBrickletObservable",
             "renameBrickletUid",
+            "getBricklet",
         ]);
 
         brickletServiceSpy.getBrickletObservable.and.returnValue(
             of([bricklet1, bricklet2, bricklet3]),
         );
+
+        brickletServiceSpy.getBricklet.and.callFake((number: number) => {
+            return [bricklet1, bricklet2, bricklet3].find(
+                (b) => b.brickletNumber === number,
+            );
+        });
 
         await TestBed.configureTestingModule({
             imports: [ReactiveFormsModule],
@@ -71,11 +78,25 @@ describe("HardwareIdComponent", () => {
 
         component.updateIds();
 
-        expect(brickletServiceSpy.renameBrickletUid).toHaveBeenCalledWith([
-            {brickletNumber: 1, uid: "NEW1"},
-            {brickletNumber: 2, uid: "NEW2"},
-            {brickletNumber: 3, uid: "NEW3"},
-        ]);
+        expect(brickletServiceSpy.renameBrickletUid).toHaveBeenCalledOnceWith(
+            jasmine.arrayWithExactContents([
+                jasmine.objectContaining({
+                    brickletNumber: 1,
+                    uid: "NEW1",
+                    type: "Servo Bricklet",
+                }),
+                jasmine.objectContaining({
+                    brickletNumber: 2,
+                    uid: "NEW2",
+                    type: "Servo Bricklet",
+                }),
+                jasmine.objectContaining({
+                    brickletNumber: 3,
+                    uid: "NEW3",
+                    type: "Solid State Relay Bricklet",
+                }),
+            ]),
+        );
     });
 
     it("should not call renameBrickletUid if the form is invalid", () => {
@@ -88,5 +109,32 @@ describe("HardwareIdComponent", () => {
         component.updateIds();
 
         expect(brickletServiceSpy.renameBrickletUid).not.toHaveBeenCalled();
+    });
+
+    it("should not call renameBrickletUid when no uids have changed", () => {
+        // no uid change
+        component.updateIds();
+
+        expect(brickletServiceSpy.renameBrickletUid).not.toHaveBeenCalled();
+    });
+
+    it("should call renameBrickletUid with only the changed bricklets", () => {
+        component.brickletUidForm.setValue({
+            "1": "AAA",
+            "2": "NEW",
+            "3": "CCC",
+        });
+
+        component.updateIds();
+
+        expect(brickletServiceSpy.renameBrickletUid).toHaveBeenCalledOnceWith(
+            jasmine.arrayWithExactContents([
+                jasmine.objectContaining({
+                    brickletNumber: 2,
+                    uid: "NEW",
+                    type: "Servo Bricklet",
+                }),
+            ]),
+        );
     });
 });
