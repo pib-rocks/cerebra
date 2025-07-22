@@ -1,5 +1,6 @@
 import {Component, OnInit} from "@angular/core";
 import {NavigationEnd, Router} from "@angular/router";
+import {IpService} from "./shared/services/ip.service";
 
 @Component({
     selector: "app-root",
@@ -17,8 +18,12 @@ export class AppComponent implements OnInit {
         "/joint-control/left-arm",
         "/joint-control/right-arm",
     ];
+    hostIp: string = "";
 
-    constructor(private router: Router) {}
+    constructor(
+        private router: Router,
+        private ipService: IpService,
+    ) {}
 
     ngOnInit(): void {
         this.router.events.subscribe((event) => {
@@ -26,6 +31,10 @@ export class AppComponent implements OnInit {
                 this.isActiveRoute =
                     event.urlAfterRedirects.includes("joint-control");
             }
+        });
+
+        this.ipService.getHostIp().subscribe((ip) => {
+            this.hostIp = ip;
         });
     }
 }

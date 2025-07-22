@@ -23,6 +23,15 @@
                                 class="nav-item"
                                 role="presentation">
                                 <a
+                                    class="ip-nav"
+                                    id="ip-nav"
+                                    >IP Address: {{ hostIp || 'Loading...' }}</a
+                                >
+                            </li>
+                            <li
+                                class="nav-item"
+                                role="presentation">
+                                <a
                                     class="nav-link sidebar-btn"
                                     id="joint-nav"
                                     [class.btn-active]="isActiveRoute"
