@@ -23,15 +23,6 @@
                                 class="nav-item"
                                 role="presentation">
                                 <a
-                                    class="ip-nav"
-                                    id="ip-nav"
-                                    >IP Address: {{ hostIp || 'Loading...' }}</a
-                                >
-                            </li>
-                            <li
-                                class="nav-item"
-                                role="presentation">
-                                <a
                                     class="nav-link sidebar-btn"
                                     id="joint-nav"
                                     [class.btn-active]="isActiveRoute"
@@ -162,6 +153,15 @@
                 class="d-flex flex-column align-items-center justify-content-end mt-5 mb-5">
                 <app-smart-connect></app-smart-connect>
             </div>
+            <li
+                class="nav-item"
+                role="presentation">
+                <a
+                    class="ip-nav ml-5"
+                    id="ip-nav"
+                    >IP: {{ hostIp || 'No connection' }}</a
+                >
+            </li>
         </aside>
     </div>
     <div class="content-wrapper">

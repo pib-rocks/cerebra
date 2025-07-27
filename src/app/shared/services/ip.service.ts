@@ -1,19 +1,17 @@
-import {HttpClient} from "@angular/common/http";
 import {Injectable} from "@angular/core";
 import {UrlConstants} from "./url.constants";
-import {Observable} from "rxjs";
+import {map, Observable} from "rxjs";
+import {ApiService} from "./api.service";
 
 @Injectable({
     providedIn: "root",
 })
 export class IpService {
-    constructor(private http: HttpClient) {}
+    constructor(private apiService: ApiService) {}
 
     getHostIp(): Observable<string> {
-        return this.http.get<string>(UrlConstants.HOST_IP);
-    }
-
-    setHostIp(ip: string): Observable<void> {
-        return this.http.post<void>(UrlConstants.HOST_IP, {ip});
+        return this.apiService
+            .get(UrlConstants.HOST_IP)
+            .pipe(map((response: any) => response.host_ip));
     }
 }
