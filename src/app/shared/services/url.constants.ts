@@ -8,5 +8,5 @@ export enum UrlConstants {
     ASSISTANT_MODEL = "/assistant-model",
     POSE = "/pose",
     BRICKLET = "/bricklet",
-    HOST_IP = "/api/host-ip",
+    HOST_IP = "/host-ip",
 }
