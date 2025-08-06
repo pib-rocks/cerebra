@@ -2,15 +2,18 @@ import {ComponentFixture, TestBed, fakeAsync} from "@angular/core/testing";
 import {SmartConnectComponent} from "./smart-connect.component";
 import {ReactiveFormsModule} from "@angular/forms";
 import {NgbModal, NgbModalRef} from "@ng-bootstrap/ng-bootstrap";
-import {of} from "rxjs";
+import {of, Subject} from "rxjs";
 import {RosService} from "../../shared/services/ros-service/ros.service";
 import {TemplateRef} from "@angular/core";
+import {TokenService} from "src/app/shared/services/token.service";
 
 describe("SmartConnectComponent", () => {
     let component: SmartConnectComponent;
     let fixture: ComponentFixture<SmartConnectComponent>;
     let mockRosService: jasmine.SpyObj<RosService>;
+    let mockTokenService: jasmine.SpyObj<TokenService>;
     let mockNgbModal: jasmine.SpyObj<NgbModal>;
+    let tokenStatus$: Subject<any>;
 
     beforeEach(async () => {
         mockRosService = jasmine.createSpyObj("RosService", [
@@ -19,6 +22,16 @@ describe("SmartConnectComponent", () => {
             "decryptToken",
             "deleteTokenMessage",
         ]);
+
+        tokenStatus$ = new Subject<any>();
+        mockTokenService = jasmine.createSpyObj(
+            "TokenService",
+            ["checkTokenExists"],
+            {
+                tokenStatus$: tokenStatus$.asObservable(),
+            },
+        );
+
         mockNgbModal = jasmine.createSpyObj("NgbModal", ["open", "dismissAll"]);
 
         await TestBed.configureTestingModule({
@@ -26,6 +39,7 @@ describe("SmartConnectComponent", () => {
             imports: [ReactiveFormsModule],
             providers: [
                 {provide: RosService, useValue: mockRosService},
+                {provide: TokenService, useValue: mockTokenService},
                 {provide: NgbModal, useValue: mockNgbModal},
             ],
         }).compileComponents();
@@ -81,18 +95,15 @@ describe("SmartConnectComponent", () => {
         const modalRef = {
             dismissed: of(null),
         } as NgbModalRef;
-        mockRosService.checkTokenExists.and.returnValue(
-            of({
-                token_exists: true,
-                token_active: true,
-            }),
-        );
+
         mockNgbModal.open.and.returnValue(modalRef);
 
         const content: TemplateRef<any> = {} as TemplateRef<any>;
         component.onOpenModal(content);
 
-        expect(mockRosService.checkTokenExists).toHaveBeenCalled();
+        tokenStatus$.next({tokenExists: true, tokenActive: true});
+
+        expect(mockTokenService.checkTokenExists).toHaveBeenCalled();
         expect(component.isTokenStored).toBeTrue();
         expect(component.isTokenActive).toBeTrue();
         expect(component.isLoadingModal).toBeFalse();
@@ -134,7 +145,14 @@ describe("SmartConnectComponent", () => {
     it("should delete token", () => {
         component.onDeleteToken();
         expect(mockRosService.deleteTokenMessage).toHaveBeenCalled();
+        expect(mockTokenService.checkTokenExists).toHaveBeenCalled();
         expect(component.isTokenStored).toBeFalse();
+        expect(component.isTokenActive).toBeFalse();
+    });
+
+    it("should update state on tokenStatus$ subscription", () => {
+        tokenStatus$.next({tokenExists: true, tokenActive: false});
+        expect(component.isTokenStored).toBeTrue();
         expect(component.isTokenActive).toBeFalse();
     });
 });

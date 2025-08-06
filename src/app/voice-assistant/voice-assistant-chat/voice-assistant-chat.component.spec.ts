@@ -3,7 +3,7 @@ import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {VoiceAssistantChatComponent} from "./voice-assistant-chat.component";
 import {FormsModule, ReactiveFormsModule} from "@angular/forms";
 import {HttpClientTestingModule} from "@angular/common/http/testing";
-import {BehaviorSubject, of} from "rxjs";
+import {BehaviorSubject, of, Subject} from "rxjs";
 import {Chat} from "src/app/shared/types/chat.class";
 import {ChatService} from "src/app/shared/services/chat.service";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
@@ -16,6 +16,7 @@ import {
 import {VoiceAssistant} from "src/app/shared/types/voice-assistant";
 import {RouterTestingModule} from "@angular/router/testing";
 import {SideBarRightComponent} from "src/app/ui-components/sidebar-right/sidebar-right.component";
+import {TokenService} from "src/app/shared/services/token.service";
 export class MockNgbModalRef {
     componentInstance = {
         prompt: undefined,
@@ -28,11 +29,22 @@ describe("VoiceAssistantChatComponent", () => {
     let fixture: ComponentFixture<VoiceAssistantChatComponent>;
     let chatService: ChatService;
     let modalService: NgbModal;
+    let tokenService: TokenService;
+    let tokenStatusSubject: Subject<{
+        tokenExists: boolean;
+        tokenActive: boolean;
+    }>;
 
     beforeEach(async () => {
         const modalServiceSpy: jasmine.SpyObj<NgbModal> = jasmine.createSpyObj(
             NgbModal,
             ["open"],
+        );
+        tokenStatusSubject = new Subject();
+        const tokenServiceMock = jasmine.createSpyObj(
+            "TokenService",
+            ["checkTokenExists"],
+            {tokenStatus$: tokenStatusSubject.asObservable()},
         );
         await TestBed.configureTestingModule({
             declarations: [VoiceAssistantChatComponent, SideBarRightComponent],
@@ -76,6 +88,10 @@ describe("VoiceAssistantChatComponent", () => {
                         },
                     },
                 },
+                {
+                    provide: TokenService,
+                    useValue: tokenServiceMock,
+                },
             ],
             imports: [
                 RouterTestingModule,
@@ -86,6 +102,7 @@ describe("VoiceAssistantChatComponent", () => {
         }).compileComponents();
         chatService = TestBed.inject(ChatService);
         modalService = TestBed.inject(NgbModal);
+        tokenService = TestBed.inject(TokenService);
         chatService.chatSubject = new BehaviorSubject<Chat[]>([
             new Chat("Testtopic0", "123", "123"),
         ]);
@@ -102,9 +119,11 @@ describe("VoiceAssistantChatComponent", () => {
         expect(component).toBeTruthy();
     });
 
-    it("should set a localStorage value after init", () => {
+    it("should initialize component correctly on ngOnInit", () => {
         component.ngOnInit();
+
         expect(localStorage.getItem("voice-assistant-tab")).toBe("chat");
+        expect(tokenService.checkTokenExists).toHaveBeenCalled();
     });
 
     it("should show a modal when calling showModal", () => {
@@ -220,5 +239,25 @@ describe("VoiceAssistantChatComponent", () => {
         );
         component.toggleDeleteChat(chats);
         expect(deleteChat!.disabled).toBeTrue();
+    });
+
+    it("should call checkTokenExists on init", () => {
+        component.ngOnInit();
+
+        expect(tokenService.checkTokenExists).toHaveBeenCalled();
+    });
+
+    it("should set smartConnectActive to true when token is active", () => {
+        tokenStatusSubject.next({
+            tokenExists: true,
+            tokenActive: true,
+        });
+        expect(component.smartConnectActive).toBeTrue();
+    });
+
+    it("should set smartConnectActive to false when token is inactive", () => {
+        tokenStatusSubject.next({tokenExists: true, tokenActive: false});
+
+        expect(component.smartConnectActive).toBeFalse();
     });
 });

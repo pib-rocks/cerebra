@@ -6,6 +6,7 @@ import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.ser
 import {ChatMessage} from "src/app/shared/types/chat-message";
 import {Chat} from "src/app/shared/types/chat.class";
 import {Subscription, combineLatest, map} from "rxjs";
+import {TokenService} from "src/app/shared/services/token.service";
 
 @Component({
     selector: "app-chat-window",
@@ -33,9 +34,10 @@ export class ChatWindowComponent implements OnInit {
     readonly arrow = "../../../../assets/voice-assistant-svgs/chat/arrow.svg";
 
     constructor(
-        private chatService: ChatService,
-        private voiceAssistantService: VoiceAssistantService,
-        private route: ActivatedRoute,
+        private readonly chatService: ChatService,
+        private readonly voiceAssistantService: VoiceAssistantService,
+        private readonly route: ActivatedRoute,
+        private readonly tokenService: TokenService,
     ) {}
 
     ngOnInit(): void {
@@ -64,6 +66,14 @@ export class ChatWindowComponent implements OnInit {
                             .slice()
                             .reverse()),
                 );
+
+            this.tokenService.tokenStatus$.subscribe((response) => {
+                if (response.tokenExists && response.tokenActive) {
+                    this.chatMessageFormControl.enable();
+                } else {
+                    this.chatMessageFormControl.disable();
+                }
+            });
 
             this.chat = this.chatService.getChat(chatId);
             if (this.chat) {
