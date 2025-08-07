@@ -1,7 +1,7 @@
 import {SolidStateRelayState} from "../msg/solid-state-relay-state";
 
 export interface SetSolidStateRelayStateRequest {
-    solidStateRelayState: SolidStateRelayState;
+    solid_state_relay_state: SolidStateRelayState;
 }
 
 export interface SetSolidStateRelayStateResponse {

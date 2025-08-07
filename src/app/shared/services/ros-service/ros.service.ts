@@ -103,10 +103,9 @@ export class RosService implements IRosService {
             chat_id: "",
         });
     chatMessageReceiver$: Subject<ChatMessage> = new Subject<ChatMessage>();
-    solidStateRelayStateReceiver$: BehaviorSubject<SolidStateRelayState> =
-        new BehaviorSubject<SolidStateRelayState>({
-            turned_on: false,
-        });
+    solidStateRelayStateReceiver$: BehaviorSubject<
+        SolidStateRelayState | undefined
+    > = new BehaviorSubject<SolidStateRelayState | undefined>(undefined);
 
     private ros!: ROSLIB.Ros;
 
@@ -570,7 +569,7 @@ export class RosService implements IRosService {
     ): Observable<void> {
         const subject: Subject<void> = new ReplaySubject();
         const request: SetSolidStateRelayStateRequest = {
-            solidStateRelayState: solidStateRelayState,
+            solid_state_relay_state: solidStateRelayState,
         };
         const successCallback = (response: SetSolidStateRelayStateResponse) => {
             if (response.successful) {
