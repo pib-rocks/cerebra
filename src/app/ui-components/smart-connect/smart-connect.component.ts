@@ -1,4 +1,4 @@
-import {Component, TemplateRef} from "@angular/core";
+import {Component, OnInit, TemplateRef} from "@angular/core";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {
     AbstractControl,
@@ -7,13 +7,14 @@ import {
     Validators,
 } from "@angular/forms";
 import {RosService} from "../../shared/services/ros-service/ros.service";
+import {TokenService} from "src/app/shared/services/token.service";
 
 @Component({
     selector: "app-smart-connect",
     templateUrl: "./smart-connect.component.html",
     styleUrls: ["./smart-connect.component.css"],
 })
-export class SmartConnectComponent {
+export class SmartConnectComponent implements OnInit {
     // prevent user from opening modal multiple times in case of delay
     isLoadingModal: boolean = false;
     // decide password input field types
@@ -39,9 +40,17 @@ export class SmartConnectComponent {
     });
 
     constructor(
-        private rosService: RosService,
-        private modalService: NgbModal,
+        private readonly rosService: RosService,
+        private readonly modalService: NgbModal,
+        private readonly tokenService: TokenService,
     ) {}
+
+    ngOnInit(): void {
+        this.tokenService.tokenStatus$.subscribe((response) => {
+            this.isTokenStored = response.tokenExists;
+            this.isTokenActive = response.tokenActive;
+        });
+    }
 
     passwordMatchValidator(form: AbstractControl): null {
         const password = form.get("password")?.value;
@@ -61,24 +70,21 @@ export class SmartConnectComponent {
 
     onOpenModal(content: TemplateRef<any>) {
         this.isLoadingModal = true;
-        this.rosService.checkTokenExists().subscribe((response) => {
-            this.isTokenStored = response.token_exists;
-            this.isTokenActive = response.token_active;
-            this.updatePasswordControlState();
-            this.modalService
-                .open(content, {
-                    ariaLabelledBy: "modal-basic-title",
-                    size: "md",
-                    windowClass: "cerebra-modal",
-                    backdropClass: "cerebra-modal-backdrop",
-                })
-                .dismissed.subscribe(() => {
-                    this.onErrorSubmit = false;
-                    this.encryptTokenForm.reset();
-                    this.decryptTokenForm.reset();
-                });
-            this.isLoadingModal = false;
-        });
+        this.tokenService.checkTokenExists();
+        this.updatePasswordControlState();
+        this.modalService
+            .open(content, {
+                ariaLabelledBy: "modal-basic-title",
+                size: "md",
+                windowClass: "cerebra-modal",
+                backdropClass: "cerebra-modal-backdrop",
+            })
+            .dismissed.subscribe(() => {
+                this.onErrorSubmit = false;
+                this.encryptTokenForm.reset();
+                this.decryptTokenForm.reset();
+            });
+        this.isLoadingModal = false;
     }
 
     onCloseModal() {
@@ -96,7 +102,6 @@ export class SmartConnectComponent {
                 this.encryptTokenForm.value.password!,
             )
             .subscribe((isSuccessful) => {
-                this.onErrorSubmit = !isSuccessful;
                 this.submitFormSuccessful(isSuccessful);
             });
     }
@@ -109,7 +114,6 @@ export class SmartConnectComponent {
         this.rosService
             .decryptToken(this.decryptTokenForm.value.password!)
             .subscribe((isSuccessful) => {
-                this.onErrorSubmit = !isSuccessful;
                 this.submitFormSuccessful(isSuccessful);
             });
     }
@@ -117,12 +121,13 @@ export class SmartConnectComponent {
     onDeleteToken() {
         this.rosService.deleteTokenMessage();
         this.decryptTokenForm.controls["password"].enable();
-        this.isTokenActive = false;
-        this.isTokenStored = false;
+        this.tokenService.checkTokenExists();
     }
 
     private submitFormSuccessful(isSuccessful: boolean) {
+        this.onErrorSubmit = !isSuccessful;
         if (isSuccessful) {
+            this.tokenService.checkTokenExists();
             this.onCloseModal();
         }
     }
