@@ -1,7 +1,7 @@
 import {Component, OnInit} from "@angular/core";
 import {RosService} from "src/app/shared/services/ros-service/ros.service";
 import {MatSnackBar} from "@angular/material/snack-bar";
-import {catchError, throwError, timeout} from "rxjs";
+import {finalize} from "rxjs";
 
 @Component({
     selector: "app-relay-control",
@@ -11,6 +11,7 @@ import {catchError, throwError, timeout} from "rxjs";
 export class RelayControlComponent implements OnInit {
     turnedOn = false;
     isRelayAvailable = false;
+    isLoading = false;
 
     constructor(
         private rosService: RosService,
@@ -32,23 +33,24 @@ export class RelayControlComponent implements OnInit {
     }
 
     toggleSSR() {
-        if (!this.isRelayAvailable) return;
+        if (!this.isRelayAvailable || this.isLoading) return;
+        this.isLoading = true;
 
-        const newState = !this.turnedOn;
-        this.turnedOn = newState;
+        const previousState = this.turnedOn;
+        this.turnedOn = !previousState;
         this.rosService
-            .setSolidStateRelayState({turned_on: newState})
-            .pipe(
-                timeout(3000),
-                catchError((err) => {
+            .setSolidStateRelayState({turned_on: this.turnedOn})
+            .pipe(finalize(() => (this.isLoading = false)))
+            .subscribe({
+                error: (error) => {
+                    console.error("Failed to set SSR state:", error);
+                    this.turnedOn = previousState;
                     this.matSnackBarService.open(
-                        "Could not set status of Solid State Relay.",
+                        "Error! SSR could not be set.",
                         "",
                         {panelClass: "cerebra-toast", duration: 3000},
                     );
-                    return throwError(() => err);
-                }),
-            )
-            .subscribe();
+                },
+            });
     }
 }

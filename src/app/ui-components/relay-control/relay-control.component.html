@@ -13,7 +13,7 @@
                 class="btn border-0 p-0"
                 id="sidebar-right-toggle-solid-state-relay"
                 type="button"
-                [disabled]="!isRelayAvailable"
+                [disabled]="!isRelayAvailable || isLoading"
                 (click)="toggleSSR()">
                 <img
                     [src]="turnedOn ? '../../assets/toggle-switch-right.png' : '../../assets/toggle-switch-left.png' "
