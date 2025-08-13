@@ -96,7 +96,7 @@ export class RosService implements IRosService {
         turned_on: false,
         chat_id: "",
     };
-    private solidStateRelayState = {
+    private solidStateRelayState: SolidStateRelayState = {
         turned_on: false,
     };
     uuidCounter: number = 0;
@@ -261,12 +261,13 @@ export class RosService implements IRosService {
     }
 
     setSolidStateRelayState(state: SolidStateRelayState): Observable<void> {
-        console.info(JSON.stringify({state: state}));
+        console.info(JSON.stringify({state}));
         const subject = new ReplaySubject<void>();
         if (this.solidStateRelayState.turned_on == state.turned_on) {
             subject.error("could not apply state of solid state relay...");
         } else {
             subject.next();
+            subject.complete();
             this.solidStateRelayState = structuredClone({
                 turned_on: state.turned_on,
             });
