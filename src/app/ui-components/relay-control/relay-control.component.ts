@@ -34,14 +34,16 @@ export class RelayControlComponent implements OnInit {
 
     toggleSSR() {
         if (!this.isRelayAvailable || this.isLoading) return;
-        this.isLoading = true;
 
+        this.isLoading = true;
         const previousState = this.turnedOn;
         this.turnedOn = !previousState;
         this.rosService
             .setSolidStateRelayState({turned_on: this.turnedOn})
-            .pipe(finalize(() => (this.isLoading = false)))
             .subscribe({
+                next: () => {
+                    this.isLoading = false;
+                },
                 error: (error) => {
                     console.error("Failed to set SSR state:", error);
                     this.turnedOn = previousState;
@@ -50,6 +52,7 @@ export class RelayControlComponent implements OnInit {
                         "",
                         {panelClass: "cerebra-toast", duration: 3000},
                     );
+                    this.isLoading = false;
                 },
             });
     }
