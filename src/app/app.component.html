@@ -152,15 +152,7 @@
             <div
                 class="d-flex flex-column align-items-center justify-content-end ">
                 <app-smart-connect></app-smart-connect>
-                <div
-                    class="nav-item"
-                    role="presentation">
-                    <a
-                        class="ip-nav"
-                        id="ip-nav"
-                        >IP: {{ hostIp || 'Unable to determine address' }}</a
-                    >
-                </div>
+                <app-ip-retriever [hostIp]="hostIp"></app-ip-retriever>
             </div>
         </aside>
     </div>
