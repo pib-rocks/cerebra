@@ -36,7 +36,7 @@ jobs:
 
     # Set env variable for new version
     - name: Set VERSION env
-      run: echo "VERSION=${{ steps.bump.outputs.newVersion }}" >> $GITHUB_ENV
+      run: echo "VERSION=${{ steps.bump.outputs.newTag }}" >> $GITHUB_ENV
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
