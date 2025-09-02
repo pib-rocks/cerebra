@@ -192,6 +192,7 @@ export class MotorService {
     }
 
     setPosition(motorName: string, position: number): Observable<void> {
+        console.log("Test");
         return this.setPositions([{motorName, position}]);
     }
 
