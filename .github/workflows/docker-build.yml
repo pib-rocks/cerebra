@@ -7,15 +7,15 @@ on:
   workflow_dispatch:
 
 jobs:
-  
-  version-and-build:
+  build-and-version:
+    # Skip this job if the commit message contains '[skip ci]'
     if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
-
     name: Version Bump & Build Docker Image
     runs-on: ubuntu-latest
 
     permissions:
-      contents: write 
+      contents: write
+      packages: write
 
     steps:
 
@@ -23,20 +23,6 @@ jobs:
       uses: actions/checkout@v3
       with:
         fetch-depth: 0  # Fetch all history for tags
-
-      # Bump version based on conventional commits messages
-    - name: Automated version bump
-      id: bump
-      uses:  phips28/gh-action-bump-version@v11.0.7
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag-prefix: ''
-        commit-message: "ci: bump version to {{version}} [skip ci]"
-
-    # Set env variable for new version
-    - name: Set VERSION env
-      run: echo "VERSION=${{ steps.bump.outputs.newVersion }}" >> $GITHUB_ENV
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
@@ -48,11 +34,33 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Build and push
+    - name: Build Docker
+      uses: docker/bake-action@v6
+      with:
+        push: false
+        set: |
+          *.platform=linux/arm64
+          *.cache-from=type=registry,ref=ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}-cache:buildcache
+          *.cache-to=type=registry,ref=ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}-cache:buildcache,mode=max
+
+    - name: Create tag based on conventional commits
+      id: tag_version
+      if: success()
+      uses: mathieudutour/github-tag-action@v6.2
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        tag_prefix: ''
+        release_branches: main
+        default_bump: false
+
+    - name: Build and push Docker with tags
+      if: steps.tag_version.outputs.new_tag != ''
       uses: docker/bake-action@v6
       with:
         push: true
         set: |
           *.platform=linux/arm64
+          *.cache-from=type=registry,ref=ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}-cache:buildcache
+          *.cache-to=type=registry,ref=ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}-cache:buildcache,mode=max
           *.tags=ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:latest
-          *.tags+=ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:${{ env.VERSION }}
+          *.tags+=ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:${{ steps.tag_version.outputs.new_tag }}

@@ -9,8 +9,8 @@ on:
 jobs:
 
   CI-Checks:
-    # ignores [skip ci] commits and avoids duplicate runs on open PRs
-    if: ${{ !contains(github.event.head_commit.message, '[skip ci]') && (github.event_name != 'push' || github.event.pull_request == null) }}
+    # ignores [skip ci] commits
+    if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
 
     name: Cerebra CI-Pipeline
     runs-on: ubuntu-latest
