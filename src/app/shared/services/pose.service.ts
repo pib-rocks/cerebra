@@ -99,7 +99,9 @@ export class PoseService {
         return this.apiService.get(UrlConstants.POSE).pipe(
             map((posesDto) => {
                 const poseDtos: PoseDTO[] = posesDto["poses"];
-                return poseDtos.map((dto) => new Pose(dto.name, dto.poseId));
+                return poseDtos.map(
+                    (dto) => new Pose(dto.name, dto.poseId, dto.deletable),
+                );
             }),
         );
     }
@@ -114,7 +116,12 @@ export class PoseService {
     ): Observable<Pose> {
         return this.apiService
             .post(UrlConstants.POSE, {name, motorPositions})
-            .pipe(map((dto: PoseDTO) => new Pose(dto.name, dto.poseId)));
+            .pipe(
+                map(
+                    (dto: PoseDTO) =>
+                        new Pose(dto.name, dto.poseId, dto.deletable),
+                ),
+            );
     }
 
     private deletePoseFromDb(poseId: string): Observable<any> {

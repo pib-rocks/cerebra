@@ -29,6 +29,7 @@
             {{pose.name}}
         </button>
         <button
+            [disabled]="!pose.deletable"
             #renameButton
             class="rename-button flex-shrink-0"
             (click)="renamePose(pose)">
@@ -38,6 +39,7 @@
                 alt="rename-pose-image" />
         </button>
         <button
+            [disabled]="!pose.deletable"
             class="delete-button flex-shrink-0"
             (click)="deletePose(pose)">
             <img
