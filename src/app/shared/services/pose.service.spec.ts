@@ -45,10 +45,12 @@ describe("PoseService", () => {
             {
                 name: pose1.name,
                 poseId: pose1.poseId,
+                deletable: pose1.deletable,
             },
             {
                 name: pose2.name,
                 poseId: pose2.poseId,
+                deletable: pose2.deletable,
             },
         ];
 
@@ -122,7 +124,11 @@ describe("PoseService", () => {
 
     it("should rename the pose", () => {
         const name = "updated-name";
-        const updatedPose1Dto: PoseDTO = {name, poseId: pose1.poseId};
+        const updatedPose1Dto: PoseDTO = {
+            name,
+            poseId: pose1.poseId,
+            deletable: true,
+        };
         const updatedPose1 = new Pose(name, pose1.poseId);
         apiService.patch.and.returnValue(of(updatedPose1Dto));
 
