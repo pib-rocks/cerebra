@@ -1,7 +1,6 @@
 import {Component, OnInit} from "@angular/core";
 import {RosService} from "src/app/shared/services/ros-service/ros.service";
 import {MatSnackBar} from "@angular/material/snack-bar";
-import {finalize} from "rxjs";
 
 @Component({
     selector: "app-relay-control",
@@ -32,7 +31,7 @@ export class RelayControlComponent implements OnInit {
         });
     }
 
-    toggleSSR() {
+    toggleSolidStateRelay() {
         if (!this.isRelayAvailable || this.isLoading) return;
 
         this.isLoading = true;

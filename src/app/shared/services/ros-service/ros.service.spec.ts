@@ -96,7 +96,6 @@ describe("RosService", () => {
         };
         rosService.setVoiceAssistantState(state).subscribe(subscriber);
         expect(subscriber.next).toHaveBeenCalledTimes(1);
-        expect(subscriber.next).toHaveBeenCalledTimes(1);
         expect(subscriber.error).not.toHaveBeenCalled();
         expect(setVoiceAssistantStateSpy).toHaveBeenCalledOnceWith(
             jasmine.objectContaining({
@@ -692,9 +691,6 @@ describe("RosService", () => {
         expect(subscriber.error).toHaveBeenCalledTimes(1);
         expect(subscriber.error.calls.mostRecent().args[0]).toEqual(
             new Error("could not apply solid state relay state..."),
-        );
-        expect(subscriber.error.calls.mostRecent().args[0]).toEqual(
-            jasmine.any(Error),
         );
         expect(setSolidStateRelayStateSpy).toHaveBeenCalledOnceWith(
             jasmine.objectContaining({

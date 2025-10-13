@@ -63,7 +63,7 @@ describe("RelayControlComponent", () => {
     it("should toggle SSR state and send request when relay is available", () => {
         rosServiceMock.setSolidStateRelayState.and.returnValue(of(void 0));
 
-        component.toggleSSR();
+        component.toggleSolidStateRelay();
 
         expect(component.isLoading).toBeFalse();
         expect(component.turnedOn).toBeTrue();
@@ -75,7 +75,7 @@ describe("RelayControlComponent", () => {
     it("should not toggle SSR if relay is not available", () => {
         component.isRelayAvailable = false;
 
-        component.toggleSSR();
+        component.toggleSolidStateRelay();
 
         expect(rosServiceMock.setSolidStateRelayState).not.toHaveBeenCalled();
     });
@@ -85,7 +85,7 @@ describe("RelayControlComponent", () => {
             throwError(() => new Error("Test error")),
         );
 
-        component.toggleSSR();
+        component.toggleSolidStateRelay();
 
         expect(component.turnedOn).toBeFalse();
         expect(matSnackBarServiceMock.open).toHaveBeenCalledWith(
@@ -101,7 +101,7 @@ describe("RelayControlComponent", () => {
     it("should ignore toggle if loadingSSR is true", () => {
         component.isLoading = true;
 
-        component.toggleSSR();
+        component.toggleSolidStateRelay();
 
         expect(rosServiceMock.setSolidStateRelayState).not.toHaveBeenCalled();
     });
