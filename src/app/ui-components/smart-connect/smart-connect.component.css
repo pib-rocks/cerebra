@@ -68,7 +68,7 @@ p {
     content: "";
     position: absolute;
     inset: -1.5px;
-    border-radius: 17px;
+    border-radius: 17.5px;
     padding: 1.5px;
     background: linear-gradient(
         50deg,
