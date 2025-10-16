@@ -57,3 +57,36 @@ p {
 .disabled {
     color: #a7afba;
 }
+
+.decrypted-frame {
+    position: relative;
+    border-radius: 16px;
+    padding: 0.255em;
+}
+
+.decrypted-frame::before {
+    content: "";
+    position: absolute;
+    inset: -1.5px;
+    border-radius: 17px;
+    padding: 1.5px;
+    background: linear-gradient(
+        50deg,
+        hsl(162deg 100% 36%) 1%,
+        hsl(160deg 100% 37%) 30%,
+        hsl(158deg 100% 38%) 37%,
+        hsl(156deg 100% 39%) 42%,
+        hsl(154deg 100% 40%) 47%,
+        hsl(152deg 100% 41%) 52%,
+        hsl(150deg 99% 42%) 56%,
+        hsl(148deg 96% 43%) 60%,
+        hsl(146deg 93% 44%) 64%,
+        hsl(144deg 90% 45%) 68%,
+        hsl(142deg 87% 43%) 70%,
+        hsl(140deg 84% 41%) 73%,
+        hsl(138deg 81% 39%) 78%,
+        hsl(136deg 78% 37%) 85%,
+        hsl(134deg 75% 35%) 100%
+    );
+    z-index: -1;
+}
