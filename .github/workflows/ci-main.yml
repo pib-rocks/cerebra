@@ -1,13 +1,18 @@
+name: CI Pipeline
+
 on:
   push:
   pull_request:
-    types: [opened, reopened]
+    types: [opened, reopened, synchronize]
   workflow_dispatch:
 
 jobs:
 
-  Pipeline:
-    name: Cerebra CI/CD-Pipeline
+  CI-Checks:
+    # ignores [skip ci] commits
+    if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
+
+    name: Cerebra CI-Pipeline
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -51,7 +56,7 @@ jobs:
     name: Analyze with SonarCloud
     uses: ./.github/workflows/sonarcloud.yml
     secrets: inherit
-    needs: Pipeline
+    needs: CI-Checks
     if: github.event_name == 'pull_request'
         
   CodeQL-Analysis:
