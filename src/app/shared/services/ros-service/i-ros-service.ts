@@ -13,6 +13,7 @@ import {ProxyRunProgramFeedback} from "../../ros-types/msg/proxy-run-program-fee
 import {ProxyRunProgramStatus} from "../../ros-types/msg/proxy-run-program-status";
 import {ChatMessage} from "../../ros-types/msg/chat-message";
 import {ChatIsListening} from "../../ros-types/msg/chat-is-listening";
+import {SolidStateRelayState} from "../../ros-types/msg/solid-state-relay-state";
 
 export interface IRosService {
     currentReceiver$: Subject<DiagnosticStatus>;
@@ -28,6 +29,9 @@ export interface IRosService {
     voiceAssistantStateReceiver$: BehaviorSubject<VoiceAssistantState>;
     chatMessageReceiver$: Subject<ChatMessage>;
     chatIsListeningReceiver$: Subject<ChatIsListening>;
+    solidStateRelayStateReceiver$: BehaviorSubject<
+        SolidStateRelayState | undefined
+    >;
 
     setVoiceAssistantState: (
         voiceAssistantState: VoiceAssistantState,
@@ -58,4 +62,6 @@ export interface IRosService {
     unsubscribeCameraTopic: () => void;
 
     publishProgramInput: (input: string, mpid: number) => void;
+
+    setSolidStateRelayState(state: SolidStateRelayState): Observable<void>;
 }

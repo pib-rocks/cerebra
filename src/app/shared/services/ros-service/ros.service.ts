@@ -65,6 +65,11 @@ import {
 } from "../../ros-types/srv/decrypt-token";
 import {ExistTokenResponse} from "../../ros-types/srv/exist-token";
 import {ProgramInput} from "../../ros-types/msg/program-input";
+import {SolidStateRelayState} from "../../ros-types/msg/solid-state-relay-state";
+import {
+    SetSolidStateRelayStateRequest,
+    SetSolidStateRelayStateResponse,
+} from "../../ros-types/srv/set-solid-state-relay-state";
 
 @Injectable({
     providedIn: "root",
@@ -98,6 +103,9 @@ export class RosService implements IRosService {
             chat_id: "",
         });
     chatMessageReceiver$: Subject<ChatMessage> = new Subject<ChatMessage>();
+    solidStateRelayStateReceiver$: BehaviorSubject<
+        SolidStateRelayState | undefined
+    > = new BehaviorSubject<SolidStateRelayState | undefined>(undefined);
 
     private ros!: ROSLIB.Ros;
 
@@ -116,6 +124,7 @@ export class RosService implements IRosService {
     private chatMessageTopic!: ROSLIB.Topic<ChatMessage>;
     private voiceAssistantStateTopic!: ROSLIB.Topic<VoiceAssistantState>;
     private chatIsListeningTopic!: ROSLIB.Topic<ChatIsListening>;
+    private solidStateRelayStateTopic!: ROSLIB.Topic<SolidStateRelayState>;
 
     private existTokenService!: ROSLIB.Service<
         Record<string, never>,
@@ -156,6 +165,11 @@ export class RosService implements IRosService {
     private applyJointTrajectoryService!: ROSLIB.Service<
         ApplyJointTrajectoryRequest,
         ApplyJointTrajectoryResponse
+    >;
+
+    private setSolidStateRelayStateService!: ROSLIB.Service<
+        SetSolidStateRelayStateRequest,
+        SetSolidStateRelayStateResponse
     >;
 
     private runProgramAction!: ROSLIB.ActionClient;
@@ -249,6 +263,10 @@ export class RosService implements IRosService {
             rosTopics.deleteTokenTopic,
             rosDataTypes.empty,
         );
+        this.solidStateRelayStateTopic = this.createRosTopic(
+            rosTopics.solidStateRelayState,
+            rosDataTypes.solidStateRelayState,
+        );
 
         this.applyMotorSettingsService = this.createRosService(
             rosServices.applyMotorSettings,
@@ -289,6 +307,10 @@ export class RosService implements IRosService {
         this.decryptTokenService = this.createRosService(
             rosServices.decryptToken,
             rosDataTypes.decryptToken,
+        );
+        this.setSolidStateRelayStateService = this.createRosService(
+            rosServices.setSolidStateRelayState,
+            rosDataTypes.setSolidStateRelayState,
         );
     }
 
@@ -337,6 +359,7 @@ export class RosService implements IRosService {
         this.subscribeProxyRunProgramFeedbackTopic();
         this.subscribeProxyRunProgramResultTopic();
         this.subscribeProxyRunProgramStatusTopic();
+        this.subscribeSolidStateRelayStateTopic();
     }
 
     private subscribeDefaultRosMessageTopic(
@@ -428,6 +451,13 @@ export class RosService implements IRosService {
         this.chatIsListeningTopic.subscribe((message: ChatIsListening) => {
             this.chatIsListeningReceiver$.next(message);
         });
+    }
+    private subscribeSolidStateRelayStateTopic() {
+        this.solidStateRelayStateTopic.subscribe(
+            (message: SolidStateRelayState) => {
+                this.solidStateRelayStateReceiver$.next(message);
+            },
+        );
     }
 
     checkTokenExists(): Observable<ExistTokenResponse> {
@@ -527,6 +557,33 @@ export class RosService implements IRosService {
             subject.error(new Error(error));
         };
         this.setVoiceAssistantStateService.callService(
+            request,
+            successCallback,
+            errorCallback,
+        );
+        return subject;
+    }
+
+    setSolidStateRelayState(
+        solidStateRelayState: SolidStateRelayState,
+    ): Observable<void> {
+        const subject: Subject<void> = new ReplaySubject();
+        const request: SetSolidStateRelayStateRequest = {
+            solid_state_relay_state: solidStateRelayState,
+        };
+        const successCallback = (response: SetSolidStateRelayStateResponse) => {
+            if (response.successful) {
+                subject.next();
+            } else {
+                subject.error(
+                    new Error("could not apply solid state relay state..."),
+                );
+            }
+        };
+        const errorCallback = (error: any) => {
+            subject.error(new Error(error));
+        };
+        this.setSolidStateRelayStateService.callService(
             request,
             successCallback,
             errorCallback,
