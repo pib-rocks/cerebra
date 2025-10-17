@@ -30,6 +30,7 @@ import {MotorSettingsError} from "../../error/motor-settings-error";
 import {ChatIsListening} from "../../ros-types/msg/chat-is-listening";
 import {motors} from "../../types/motor-configuration";
 import {ExistTokenResponse} from "../../ros-types/srv/exist-token";
+import {SolidStateRelayState} from "../../ros-types/msg/solid-state-relay-state";
 
 @Injectable({
     providedIn: "root",
@@ -95,6 +96,9 @@ export class RosService implements IRosService {
         turned_on: false,
         chat_id: "",
     };
+    private solidStateRelayState: SolidStateRelayState = {
+        turned_on: false,
+    };
     uuidCounter: number = 0;
     userMessageTimeout: any;
     vaMessageTimeout: any;
@@ -128,7 +132,10 @@ export class RosService implements IRosService {
     chatIsListeningReceiver$: Subject<ChatIsListening> =
         new Subject<ChatIsListening>();
     chatMessageReceiver$: Subject<ChatMessage> = new Subject<ChatMessage>();
-
+    solidStateRelayStateReceiver$: BehaviorSubject<any> =
+        new BehaviorSubject<any>({
+            turned_on: false,
+        });
     cameraTimer: any;
 
     private motorNames = motors.map((motor) => motor.motorName);
@@ -249,6 +256,24 @@ export class RosService implements IRosService {
         }
         this.voiceAssistantStateReceiver$.next(
             structuredClone(this.voiceAssistantState),
+        );
+        return subject;
+    }
+
+    setSolidStateRelayState(state: SolidStateRelayState): Observable<void> {
+        console.info(JSON.stringify({state}));
+        const subject = new ReplaySubject<void>();
+        if (this.solidStateRelayState.turned_on == state.turned_on) {
+            subject.error("could not apply state of solid state relay...");
+        } else {
+            subject.next();
+            subject.complete();
+            this.solidStateRelayState = structuredClone({
+                turned_on: state.turned_on,
+            });
+        }
+        this.solidStateRelayStateReceiver$.next(
+            structuredClone(this.solidStateRelayState),
         );
         return subject;
     }

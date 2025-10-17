@@ -1,0 +1,31 @@
+<div class="d-flex flex-column align-items-center justify-content-end mb-4">
+    <label class="p-1 text-break">Motor current</label>
+    <div class="row">
+        <div class="col text-right">
+            <img
+                width="30px"
+                height="30px"
+                class="microphone-icon align-middle"
+                src="../../assets/motor_current_off.svg" />
+        </div>
+        <div class="col pr-0 pl-0">
+            <button
+                class="btn border-0 p-0"
+                id="sidebar-right-toggle-solid-state-relay"
+                type="button"
+                [disabled]="!isRelayAvailable || isLoading"
+                (click)="toggleSolidStateRelay()">
+                <img
+                    [src]="turnedOn ? '../../assets/toggle-switch-right.png' : '../../assets/toggle-switch-left.png' "
+                    alt="Toggle for turning the solid state relay on and off" />
+            </button>
+        </div>
+        <div class="col text-left">
+            <img
+                width="30px"
+                height="30px"
+                class="microphone-icon align-middle"
+                src="../../assets/motor_current_on.svg" />
+        </div>
+    </div>
+</div>
