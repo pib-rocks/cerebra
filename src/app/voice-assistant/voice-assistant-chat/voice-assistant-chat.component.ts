@@ -74,7 +74,6 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
                 });
             },
         );
-        this.tokenService.checkTokenExists();
         this.tokenService.tokenStatus$.subscribe((response) => {
             this.smartConnectActive = response.tokenActive;
         });

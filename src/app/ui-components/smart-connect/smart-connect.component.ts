@@ -49,6 +49,7 @@ export class SmartConnectComponent implements OnInit {
         this.tokenService.tokenStatus$.subscribe((response) => {
             this.isTokenStored = response.tokenExists;
             this.isTokenActive = response.tokenActive;
+            this.updatePasswordControlState();
         });
     }
 
