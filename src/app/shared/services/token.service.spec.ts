@@ -2,16 +2,21 @@ import {TestBed} from "@angular/core/testing";
 
 import {TokenService} from "./token.service";
 import {RosService} from "./ros-service/ros.service";
-import {of} from "rxjs";
+import {BehaviorSubject, of} from "rxjs";
 
 describe("TokenServiceService", () => {
     let tokenService: TokenService;
     let rosService: jasmine.SpyObj<RosService>;
 
     beforeEach(() => {
-        const rosServiceSpy = jasmine.createSpyObj("RosService", [
-            "checkTokenExists",
-        ]);
+        const connectionStatusSubject = new BehaviorSubject<boolean>(false);
+        const rosServiceSpy = jasmine.createSpyObj(
+            "RosService",
+            ["checkTokenExists"],
+            {
+                connectionStatus$: connectionStatusSubject.asObservable(),
+            },
+        );
 
         TestBed.configureTestingModule({
             providers: [
@@ -23,6 +28,7 @@ describe("TokenServiceService", () => {
         });
         tokenService = TestBed.inject(TokenService);
         rosService = TestBed.inject(RosService) as jasmine.SpyObj<RosService>;
+        rosService["connectionStatusSubject"] = connectionStatusSubject;
     });
 
     it("should be created", () => {
@@ -39,5 +45,13 @@ describe("TokenServiceService", () => {
             expect(status).toEqual({tokenExists: true, tokenActive: true});
             expect(rosService.checkTokenExists).toHaveBeenCalled();
         });
+    });
+
+    it("should check token status when ROS connects", () => {
+        spyOn(tokenService, "checkTokenExists");
+
+        rosService["connectionStatusSubject"].next(true);
+
+        expect(tokenService.checkTokenExists).toHaveBeenCalled();
     });
 });

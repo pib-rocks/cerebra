@@ -653,4 +653,30 @@ describe("RosService", () => {
             jasmine.any(Function),
         );
     });
+
+    it("should initialize connectionStatus$ observable with false value", () => {
+        expect(rosService["connectionStatusSubject"].value).toBeFalse();
+        expect(rosService.connectionStatus$).toBeTruthy();
+    });
+
+    it("should update connectionStatus based on ROS events", () => {
+        const mockRos = jasmine.createSpyObj("ros", ["on"]);
+        spyOn<any>(rosService, "setUpRos").and.returnValue(mockRos);
+
+        let connectionCallback: Function | undefined;
+        let errorCallback: Function | undefined;
+
+        mockRos.on.and.callFake((event: string, callback: Function) => {
+            if (event === "connection") connectionCallback = callback;
+            if (event === "error") errorCallback = callback;
+        });
+
+        rosService = new RosService();
+
+        connectionCallback?.();
+        expect(rosService["connectionStatusSubject"].value).toBeTrue();
+
+        errorCallback?.("Connection error");
+        expect(rosService["connectionStatusSubject"].value).toBeFalse();
+    });
 });
