@@ -660,23 +660,40 @@ describe("RosService", () => {
     });
 
     it("should update connectionStatus based on ROS events", () => {
-        const mockRos = jasmine.createSpyObj("ros", ["on"]);
-        spyOn<any>(rosService, "setUpRos").and.returnValue(mockRos);
+        let connectionCallback: Function = () => {};
+        let errorCallback: Function = () => {};
+        let closeCallback: Function = () => {};
 
-        let connectionCallback: Function | undefined;
-        let errorCallback: Function | undefined;
-
+        const mockRos = jasmine.createSpyObj("ros", [
+            "on",
+            "callOnConnection",
+            "once",
+        ]);
         mockRos.on.and.callFake((event: string, callback: Function) => {
             if (event === "connection") connectionCallback = callback;
             if (event === "error") errorCallback = callback;
+            if (event === "close") closeCallback = callback;
         });
+        mockRos.callOnConnection.and.callFake(() => {});
 
-        rosService = new RosService();
+        spyOn<any>(RosService.prototype, "setUpRos").and.returnValue(mockRos);
 
-        connectionCallback?.();
-        expect(rosService["connectionStatusSubject"].value).toBeTrue();
+        const service = new RosService();
 
-        errorCallback?.("Connection error");
-        expect(rosService["connectionStatusSubject"].value).toBeFalse();
+        expect(mockRos.on).toHaveBeenCalledWith(
+            "connection",
+            jasmine.any(Function),
+        );
+        expect(mockRos.on).toHaveBeenCalledWith("error", jasmine.any(Function));
+        expect(mockRos.on).toHaveBeenCalledWith("close", jasmine.any(Function));
+
+        connectionCallback();
+        expect(service["connectionStatusSubject"].value).toBeTrue();
+
+        errorCallback("error");
+        expect(service["connectionStatusSubject"].value).toBeFalse();
+
+        closeCallback();
+        expect(service["connectionStatusSubject"].value).toBeFalse();
     });
 });

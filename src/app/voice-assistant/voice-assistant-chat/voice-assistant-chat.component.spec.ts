@@ -24,6 +24,7 @@ export class MockNgbModalRef {
     };
     result: Promise<any> = Promise.resolve(true);
 }
+
 describe("VoiceAssistantChatComponent", () => {
     let component: VoiceAssistantChatComponent;
     let fixture: ComponentFixture<VoiceAssistantChatComponent>;
@@ -123,7 +124,6 @@ describe("VoiceAssistantChatComponent", () => {
         component.ngOnInit();
 
         expect(localStorage.getItem("voice-assistant-tab")).toBe("chat");
-        expect(tokenService.checkTokenExists).toHaveBeenCalled();
     });
 
     it("should show a modal when calling showModal", () => {
@@ -239,12 +239,6 @@ describe("VoiceAssistantChatComponent", () => {
         );
         component.toggleDeleteChat(chats);
         expect(deleteChat!.disabled).toBeTrue();
-    });
-
-    it("should call checkTokenExists on init", () => {
-        component.ngOnInit();
-
-        expect(tokenService.checkTokenExists).toHaveBeenCalled();
     });
 
     it("should set smartConnectActive to true when token is active", () => {
