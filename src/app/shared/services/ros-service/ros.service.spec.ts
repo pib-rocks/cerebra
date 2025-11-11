@@ -654,12 +654,14 @@ describe("RosService", () => {
         );
     });
 
-    it("should initialize connectionStatus$ observable with false value", () => {
-        expect(rosService["connectionStatusSubject"].value).toBeFalse();
-        expect(rosService.connectionStatus$).toBeTruthy();
+    it("should initialize connectionStatus$ with an initial value of false", (done) => {
+        rosService.connectionStatus$.subscribe((status) => {
+            expect(status).toBeFalse();
+            done();
+        });
     });
 
-    it("should update connectionStatus based on ROS events", () => {
+    it("should update connectionStatus based on ROS events", (done) => {
         let connectionCallback: Function = () => {};
         let errorCallback: Function = () => {};
         let closeCallback: Function = () => {};
@@ -675,6 +677,7 @@ describe("RosService", () => {
             if (event === "close") closeCallback = callback;
         });
         mockRos.callOnConnection.and.callFake(() => {});
+        mockRos.once.and.callFake(() => {});
 
         spyOn<any>(RosService.prototype, "setUpRos").and.returnValue(mockRos);
 
@@ -687,13 +690,18 @@ describe("RosService", () => {
         expect(mockRos.on).toHaveBeenCalledWith("error", jasmine.any(Function));
         expect(mockRos.on).toHaveBeenCalledWith("close", jasmine.any(Function));
 
+        const emittedStatuses: boolean[] = [];
+        const subscription = service.connectionStatus$.subscribe((status) => {
+            emittedStatuses.push(status);
+        });
+
         connectionCallback();
-        expect(service["connectionStatusSubject"].value).toBeTrue();
-
         errorCallback("error");
-        expect(service["connectionStatusSubject"].value).toBeFalse();
-
         closeCallback();
-        expect(service["connectionStatusSubject"].value).toBeFalse();
+
+        expect(emittedStatuses).toEqual([false, true, false, false]);
+
+        subscription.unsubscribe();
+        done();
     });
 });
