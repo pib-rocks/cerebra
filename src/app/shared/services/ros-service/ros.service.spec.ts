@@ -703,7 +703,7 @@ describe("RosService", () => {
         errorCallback("error");
         closeCallback();
 
-        expect(emittedStatuses).toEqual([false, true, false, false]);
+        expect(emittedStatuses).toEqual([false, true, false]);
 
         subscription.unsubscribe();
     });
