@@ -30,7 +30,6 @@ describe("VoiceAssistantChatComponent", () => {
     let fixture: ComponentFixture<VoiceAssistantChatComponent>;
     let chatService: ChatService;
     let modalService: NgbModal;
-    let tokenService: TokenService;
     let tokenStatusSubject: Subject<{
         tokenExists: boolean;
         tokenActive: boolean;
@@ -103,7 +102,6 @@ describe("VoiceAssistantChatComponent", () => {
         }).compileComponents();
         chatService = TestBed.inject(ChatService);
         modalService = TestBed.inject(NgbModal);
-        tokenService = TestBed.inject(TokenService);
         chatService.chatSubject = new BehaviorSubject<Chat[]>([
             new Chat("Testtopic0", "123", "123"),
         ]);

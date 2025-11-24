@@ -7,9 +7,10 @@ import {BehaviorSubject, of} from "rxjs";
 describe("TokenServiceService", () => {
     let tokenService: TokenService;
     let rosService: jasmine.SpyObj<RosService>;
+    let connectionStatusSubject: BehaviorSubject<boolean>;
 
     beforeEach(() => {
-        const connectionStatusSubject = new BehaviorSubject<boolean>(false);
+        connectionStatusSubject = new BehaviorSubject<boolean>(false);
         const rosServiceSpy = jasmine.createSpyObj(
             "RosService",
             ["checkTokenExists"],
@@ -28,7 +29,6 @@ describe("TokenServiceService", () => {
         });
         tokenService = TestBed.inject(TokenService);
         rosService = TestBed.inject(RosService) as jasmine.SpyObj<RosService>;
-        rosService["connectionStatusSubject"] = connectionStatusSubject;
     });
 
     it("should be created", () => {
@@ -50,7 +50,7 @@ describe("TokenServiceService", () => {
     it("should check token status when ROS connects", () => {
         spyOn(tokenService, "checkTokenExists");
 
-        rosService["connectionStatusSubject"].next(true);
+        connectionStatusSubject.next(true);
 
         expect(tokenService.checkTokenExists).toHaveBeenCalled();
     });

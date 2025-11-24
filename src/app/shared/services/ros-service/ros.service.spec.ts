@@ -654,28 +654,32 @@ describe("RosService", () => {
         );
     });
 
-    it("should initialize connectionStatus$ with an initial value of false", (done) => {
+    it("should initialize connectionStatus$ with an initial value of false", () => {
         rosService.connectionStatus$.subscribe((status) => {
             expect(status).toBeFalse();
-            done();
         });
     });
 
-    it("should update connectionStatus based on ROS events", (done) => {
-        let connectionCallback: Function = () => {};
-        let errorCallback: Function = () => {};
-        let closeCallback: Function = () => {};
+    it("should update connectionStatus based on ROS events", () => {
+        let connectionCallback: () => void = () => {};
+        let errorCallback: (error: string) => void = () => {};
+        let closeCallback: () => void = () => {};
 
         const mockRos = jasmine.createSpyObj("ros", [
             "on",
             "callOnConnection",
             "once",
         ]);
-        mockRos.on.and.callFake((event: string, callback: Function) => {
-            if (event === "connection") connectionCallback = callback;
-            if (event === "error") errorCallback = callback;
-            if (event === "close") closeCallback = callback;
-        });
+        mockRos.on.and.callFake(
+            (
+                event: string,
+                callback: () => void | ((error: string) => void),
+            ) => {
+                if (event === "connection") connectionCallback = callback;
+                if (event === "error") errorCallback = callback;
+                if (event === "close") closeCallback = callback;
+            },
+        );
         mockRos.callOnConnection.and.callFake(() => {});
         mockRos.once.and.callFake(() => {});
 
@@ -702,6 +706,5 @@ describe("RosService", () => {
         expect(emittedStatuses).toEqual([false, true, false, false]);
 
         subscription.unsubscribe();
-        done();
     });
 });
