@@ -23,9 +23,6 @@ export class TokenService {
                 take(1),
             )
             .subscribe(() => {
-                console.log(
-                    "TokenService: ROS is connected, now checking token status.",
-                );
                 this.checkTokenExists();
             });
     }
