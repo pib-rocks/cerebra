@@ -16,6 +16,7 @@ export enum rosDataTypes {
     proxyRunProgramResult = "datatypes/msg/ProxyRunProgramResult",
     proxyRunProgramStatus = "datatypes/msg/ProxyRunProgramStatus",
     programInput = "datatypes/msg/ProgramInput",
+    solidStateRelayState = "datatypes/msg/SolidStateRelayState",
     // srv
     applyMotorSettings = "datatypes/srv/ApplyMotorSettings",
     proxyRunProgramStart = "datatypes/srv/ProxyStartProgram",
@@ -28,6 +29,7 @@ export enum rosDataTypes {
     get_token_exists = "datatypes/srv/GetTokenExists",
     encryptToken = "datatypes/srv/EncryptToken",
     decryptToken = "datatypes/srv/DecryptToken",
+    setSolidStateRelayState = "datatypes/srv/SetSolidStateRelayState",
     // action
     runProgram = "datatypes/action/RunProgram",
 }
