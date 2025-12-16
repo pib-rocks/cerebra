@@ -42,6 +42,8 @@ import {NgOptimizedImage} from "@angular/common";
 import {PoseComponent} from "./pose/pose.component";
 import {MarkdownModule} from "ngx-markdown";
 import {HardwareIdComponent} from "./joint-control/hardware-id/hardware-id.component";
+import {RelayControlComponent} from "./ui-components/relay-control/relay-control.component";
+import {IpRetrieverComponent} from "./ui-components/ip-retriever/ip-retriever.component";
 
 @NgModule({
     declarations: [
@@ -72,6 +74,8 @@ import {HardwareIdComponent} from "./joint-control/hardware-id/hardware-id.compo
         PoseComponent,
         SmartConnectComponent,
         HardwareIdComponent,
+        RelayControlComponent,
+        IpRetrieverComponent,
     ],
     imports: [
         BrowserModule,
