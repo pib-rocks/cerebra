@@ -33,6 +33,7 @@
             id="close-button">
             <button
                 id="modal-close-button"
+                data-test="BTN_close"
                 type="button"
                 (click)="modal.dismiss('Cross click')"
                 class="btn">
@@ -70,11 +71,13 @@
                 class="col-9"
                 type="text"
                 formControlName="name-input"
-                id="name-input" />
+                id="name-input"
+                data-test="TXT_name"/>
         </div>
         <div class="row ml-3 m-2 mt-3 pr-2">
             <select
                 id="voice-assistant-model-select"
+                data-test="DDN_select_model"
                 formControlName="assistantModel"
                 class="form-select"
                 aria-label="Voice-assistant language model">
@@ -93,7 +96,8 @@
                     value="Female"
                     formControlName="gender"
                     type="radio"
-                    id="new-radio-female" />
+                    id="new-radio-female"
+                    data-test="RBN_female"/>
                 <label
                     for="new-radio-female"
                     id="new-label-radio-female"
@@ -107,7 +111,8 @@
                     value="Male"
                     formControlName="gender"
                     type="radio"
-                    id="new-radio-male" />
+                    id="new-radio-male"
+                    data-test="RBN_male"/>
                 <label
                     for="new-radio-male"
                     id="new-label-radio-male"
@@ -131,6 +136,7 @@
                         <input
                             type="text"
                             id="pause-threshold-input"
+                            data-test="TXT_pause_threshold"
                             [(ngModel)]="thresholdString"
                             [ngModelOptions]="{standalone: true}"
                             readonly />
@@ -139,6 +145,7 @@
                         <div class="row mt-1 p-0">
                             <button
                                 id="up"
+                                data-test="BTN_threshold_up"
                                 type="button"
                                 (click)="adjustThreshold('0.1')">
                                 &#9650;
@@ -147,6 +154,7 @@
                         <div class="row p-0">
                             <button
                                 id="down"
+                                data-test="BTN_threshold_down"
                                 type="button"
                                 (click)="adjustThreshold('-0.1')">
                                 &#9660;
@@ -172,6 +180,7 @@
                         <input
                             type="text"
                             id="message-history-input"
+                            data-test="TXT_message_history"
                             [(ngModel)]="messageHistory"
                             [ngModelOptions]="{standalone: true}"
                             readonly />
@@ -180,17 +189,19 @@
                         <div class="row mt-1 p-0">
                             <button
                                 id="up"
+                                data-test="BTN_message_history_up"
                                 type="button"
                                 (click)="adjustHistory('1')">
                                 &#9650;
                             </button>
                         </div>
                         <div class="row p-0">
-                            <button
-                                id="down"
-                                type="button"
-                                (click)="adjustHistory('-1')">
-                                &#9660;
+                            <button 
+                                 id="down"
+                                 data-test="BTN_message_history_down"
+                                 type="button"
+                                 (click)="adjustHistory('-1')">
+                                 &#9660;
                             </button>
                         </div>
                     </div>
@@ -204,6 +215,7 @@
                     [disabled]="personalityForm.invalid"
                     class="btn btn-regular"
                     id="modal-save-button"
+                    data-test="BTN_save"
                     (keydown.enter)="savePersonality()"
                     (click)="savePersonality()">
                     Save
@@ -214,6 +226,7 @@
                     type="button"
                     class="btn btn-regular"
                     id="modal-cancel-button"
+                    data-test="BTN_cancel"
                     (click)="closeModal()">
                     Cancel
                 </button>

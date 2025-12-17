@@ -9,6 +9,7 @@
                     <a
                         class="toggle-button"
                         id="personality-description-toggle-voice-assistant"
+                        data-test="LNK_chat"
                         [routerLink]="['chat']">
                         <img
                             [src]="'../../assets/toggle-switch-right.png'"
@@ -25,6 +26,7 @@
                         id="textarea-personality"
                         class="form-control p-3 mb-4"
                         rows="16"
+                        data-test="TXT_personality_text"
                         placeholder="Describe personality with a prompt..."
                         [(ngModel)]="textAreaContent"
                         (input)="updateDescription()">

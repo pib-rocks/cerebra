@@ -20,7 +20,8 @@
                 type="text"
                 formControlName="persona-name"
                 [value]="personalityClone.name"
-                id="personality-sidebar-persona-name-input" />
+                id="personality-sidebar-persona-name-input"
+                data-test="TXT_persona_name"/>
         </div>
         <div class="row mt-sm-3 mt-xl-4">
             <div class="col-11 pl-0">
@@ -29,6 +30,7 @@
                     formControlName="assistantModel"
                     id="voice-assistant-model-select-right-sidebar"
                     class="form-select"
+                    data-test="DDN_persona_model"
                     aria-label="Voice-assistant language model">
                     <option
                         *ngFor="let model of models"
@@ -48,6 +50,7 @@
                         value="Female"
                         formControlName="gender"
                         type="radio"
+                        data-test="RBN_persona_female"
                         id="personality-sidebar-radio-female" />
                     <label
                         class="pl-4 radioHover marginFemale"
@@ -65,6 +68,7 @@
                         value="Male"
                         formControlName="gender"
                         type="radio"
+                        data-test="RBN_persona_male"
                         id="personality-sidebar-radio-male" />
                     <label
                         class="pl-4 radioHover marginMale"
@@ -91,6 +95,7 @@
                         type="text"
                         class="input w-50 pl-2"
                         id="personality-sidebar-pause-threshold-input"
+                        data-test="TXT_persona_threshold"
                         step="0.1"
                         alt="The waiting period of not receiving any voice input before voice assistants starts to answer"
                         [(ngModel)]="thresholdString"
@@ -99,6 +104,7 @@
                     <button
                         type="button"
                         id="personality-sidebar-up"
+                        data-test="BTN_persona_threshold_up"
                         class="h-auto w-25 ml-1"
                         (click)="adjustThresholdViaButton(true)">
                         &#9650;
@@ -106,6 +112,7 @@
                     <button
                         type="button"
                         id="personality-sidebar-down"
+                        data-test="BTN_persona_threshold_down"
                         class="h-auto w-25 ml-1"
                         (click)="adjustThresholdViaButton(false)">
                         &#9660;
@@ -129,6 +136,7 @@
                         type="text"
                         class="input w-50 pl-2"
                         id="personality-sidebar-message-history-input"
+                        data-test="TXT_persona_history"
                         step="0.1"
                         alt="The number of messages which were send to LLM for better answers"
                         [(ngModel)]="messageHistoryNumber"
@@ -137,6 +145,7 @@
                     <button
                         type="button"
                         id="personality-sidebar-up-2"
+                        data-test="BTN_persona_history_up"
                         class="h-auto w-25 ml-1"
                         (click)="adjustHistoryViaButton(true)">
                         &#9650;
@@ -144,6 +153,7 @@
                     <button
                         type="button"
                         id="personality-sidebar-down-2"
+                        data-test="BTN_persona_history_down"
                         class="h-auto w-25 ml-1"
                         (click)="adjustHistoryViaButton(false)">
                         &#9660;
@@ -155,6 +165,7 @@
             class="row position-relative bottom-0 start-50 translate-middle-x mb-4 mt-3 mr-3">
             <button
                 id="personality-sidebar-delete-persona-button"
+                data-test="BTN_delete_persona"
                 class="btn btn-regular delete p-sm-1 p-xl-3"
                 (click)="deletePersonality()">
                 Delete persona

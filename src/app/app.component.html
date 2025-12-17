@@ -3,11 +3,12 @@
         <aside
             class="main-sidebar elevation-4 sidebar justify-content-between d-flex flex-column">
             <div class="d-flex flex-column align-items-center">
-                <a class="brand-link">
+                <a class="brand-link" data-test="LNK_home">
                     <img
                         src="../assets/pib-Logo.png"
                         routerLink="head"
                         alt="cerebra logo"
+                        data-test="IMG_pib_logo"
                         class="img-fluid d-inline-block my-2"
                         style="cursor: pointer"
                         title="Cerebra" />
@@ -25,6 +26,7 @@
                                 <a
                                     class="nav-link sidebar-btn"
                                     id="joint-nav"
+                                    data-test="LNK_joint_control_nav"
                                     [class.btn-active]="isActiveRoute"
                                     [routerLink]="['/joint-control', 'head']">
                                     <svg
@@ -44,6 +46,7 @@
                                 role="presentation">
                                 <a
                                     id="pose-nav"
+                                    data-test="LNK_pose_nav"
                                     class="nav-link sidebar-btn"
                                     routerLinkActive="btn-active"
                                     routerLink="pose">
@@ -67,6 +70,7 @@
                                 role="presentation">
                                 <a
                                     id="camera-nav"
+                                    data-test="LNK_camera_nav"
                                     class="nav-link sidebar-btn"
                                     routerLinkActive="btn-active"
                                     routerLink="camera">
@@ -88,6 +92,7 @@
                                 role="presentation">
                                 <a
                                     id="voice-assistant-nav"
+                                    data-test="LNK_voice_assistant_nav"
                                     class="nav-link sidebar-btn"
                                     routerLinkActive="btn-active"
                                     routerLink="voice-assistant">
@@ -130,6 +135,7 @@
                                 role="presentation">
                                 <a
                                     id="program-nav"
+                                    data-test="LNK_program_nav"
                                     class="nav-link sidebar-btn"
                                     routerLinkActive="btn-active"
                                     routerLink="program">
@@ -164,6 +170,7 @@
                     <button
                         id="hamburger-button"
                         class="btn bi bi-list"
+                        data-test="BTN_menue_hide"
                         data-widget="pushmenu"></button>
                 </div>
                 <div class="flex-shrink-1 flex-grow-1 overflow-hidden">

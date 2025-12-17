@@ -24,6 +24,7 @@
                             <button
                                 class="btn border-0 p-0"
                                 id="sidebar-right-toggle-voice-assistant"
+                                data-test="TGL_microphone"
                                 type="button"
                                 value="{{turnedOn}}"
                                 (click)="toggleVoiceAssistant()"
@@ -41,6 +42,7 @@
                     </div>
                     <a
                         *ngIf="turnedOn && (activeChatId != currentChatId)"
+                        data-test="LNK_active_chat"
                         [routerLink]="['/', 'voice-assistant', activePersonalityId, 'chat', activeChatId]"
                         >Jump to active chat
                     </a>
@@ -78,6 +80,7 @@
             <button
                 id="modal-close-button"
                 type="button"
+                data-test="BTN_new_chat_close"
                 (click)="modal.dismiss('Cross click')"
                 class="btn">
                 <svg
@@ -112,7 +115,8 @@
             type="text"
             (keydown)="($event).key ==='Enter' ? this.saveChat(): ''"
             name="name-input"
-            id="name-input" />
+            id="name-input"
+            data-test="TXT_new_chat_name" />
     </div>
     <div class="row justify-content-center mt-2 mb-3">
         <div class="col-3 align-self-center">
@@ -121,6 +125,7 @@
                 [disabled]="topicFormControl.invalid"
                 class="btn btn-regular"
                 id="modal-save-button"
+                data-test="BTN_new_chat_save"
                 (keydown.enter)="saveChat()"
                 (click)="saveChat()">
                 Save
@@ -131,6 +136,7 @@
                 type="button"
                 class="btn btn-regular"
                 id="modal-cancel-button"
+                data-test="BTN_new_chat_cancel"
                 (click)="closeModal()">
                 Cancel
             </button>

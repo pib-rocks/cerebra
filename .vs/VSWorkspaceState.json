@@ -1,0 +1,15 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\src",
+    "\\src\\app",
+    "\\src\\app\\shared",
+    "\\src\\app\\ui-components",
+    "\\src\\app\\ui-components\\sidebar-right",
+    "\\src\\app\\voice-assistant",
+    "\\src\\app\\voice-assistant\\voice-assistant-chat",
+    "\\src\\app\\voice-assistant\\voice-assistant-chat\\chat-window"
+  ],
+  "SelectedNode": "\\src\\app\\voice-assistant\\voice-assistant-chat\\chat-window\\chat-window.component.html",
+  "PreviewInSolutionExplorer": false
+}

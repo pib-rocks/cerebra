@@ -10,6 +10,7 @@
                     <div class="d-flex justify-content-between">
                         <a
                             [routerLink]="sidebarElement.getUUID()"
+                            [data-test]="'LNK_chat_' + 'sidebarElement.getName()'"
                             class="element text-truncate col-9 pl-sm-1 pl-xl-3 pr-2 pb-2 text-center-vertical">
                             {{ sidebarElement.getName() }}
                         </a>
@@ -19,6 +20,7 @@
                                 class="btn pl-sm-0"
                                 id="dropdownbutton-{{sidebarElement.getName()}}"
                                 title="Edit"
+                                [data-test]="'BTN_chat_' + 'sidebarElement.getName()' + '_edit'"
                                 ngbDropdownToggle>
                                 <i class="bi bi-three-dots dot-menu"></i>
                             </button>
