@@ -11,7 +11,7 @@
     </div>
     <div
         *ngFor="let pose of poses | async"
-        class="pose-item d-flex flex-row mt-1 mb-2 pl-1 pr-1"
+        class="pose-item d-flex flex-row mt-1 mb-2"
         [ngClass]="pose.poseId === selectedPoseId ? 'selected' : 'unselected'">
         <button
             class="apply-button flex-shrink-0"
@@ -29,7 +29,7 @@
             {{pose.name}}
         </button>
         <button
-            [disabled]="!pose.deletable"
+            *ngIf="pose.deletable"
             #renameButton
             class="rename-button flex-shrink-0"
             (click)="renamePose(pose)">
@@ -39,7 +39,7 @@
                 alt="rename-pose-image" />
         </button>
         <button
-            [disabled]="!pose.deletable"
+            *ngIf="pose.deletable"
             class="delete-button flex-shrink-0"
             (click)="deletePose(pose)">
             <img
