@@ -174,19 +174,25 @@ export class RosService implements IRosService {
 
     private runProgramAction!: ROSLIB.ActionClient;
 
+    private connectionStatusSubject = new BehaviorSubject<boolean>(false);
+    public connectionStatus$ = this.connectionStatusSubject.asObservable();
+
     constructor() {
         this.ros = this.setUpRos();
         this.ros.on("connection", () => {
             console.log("Connected to ROS");
             this.initTopicsAndServices();
             this.initSubscribers();
+            this.connectionStatusSubject.next(true);
         });
         this.ros.on("error", (error: string) => {
             console.log("Error connecting to ROSBridge server:", error);
+            this.connectionStatusSubject.next(false);
         });
 
         this.ros.on("close", () => {
             console.log("Disconnected from ROSBridge server.");
+            this.connectionStatusSubject.next(false);
         });
     }
 

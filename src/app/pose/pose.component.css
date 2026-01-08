@@ -6,6 +6,16 @@
     border: none;
     height: 40px;
     line-height: 40px;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.selected.pose-item {
+    background-color: #e10072;
+}
+
+.unselected.pose-item {
+    background-color: #344864;
 }
 
 .apply-button {
@@ -53,14 +63,14 @@ button:disabled img {
 .delete-button,
 .rename-button {
     border: none;
-    background-color: black;
     width: 40px;
     height: 40px;
 }
 
+.pose-label,
+.rename-button,
 .delete-button {
-    border-top-right-radius: 10px;
-    border-bottom-right-radius: 10px;
+    background-color: transparent;
 }
 
 button:focus {
@@ -101,12 +111,4 @@ button:focus {
 
 .unselected .apply-button {
     border-color: #344864;
-}
-
-.selected :is(.pose-label, .delete-button, .rename-button) {
-    background-color: #e10072;
-}
-
-.unselected :is(.pose-label, .delete-button, .rename-button) {
-    background-color: #344864;
 }

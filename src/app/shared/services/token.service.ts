@@ -1,5 +1,6 @@
 import {Injectable} from "@angular/core";
 import {BehaviorSubject} from "rxjs";
+import {filter, take} from "rxjs/operators";
 import {RosService} from "./ros-service/ros.service";
 
 @Injectable({
@@ -15,7 +16,16 @@ export class TokenService {
     });
     tokenStatus$ = this.tokenStatusSubject.asObservable();
 
-    constructor(private readonly rosService: RosService) {}
+    constructor(private readonly rosService: RosService) {
+        this.rosService.connectionStatus$
+            .pipe(
+                filter((isConnected) => isConnected),
+                take(1),
+            )
+            .subscribe(() => {
+                this.checkTokenExists();
+            });
+    }
 
     checkTokenExists() {
         this.rosService.checkTokenExists().subscribe((response) => {

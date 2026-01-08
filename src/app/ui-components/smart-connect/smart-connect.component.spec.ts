@@ -155,4 +155,14 @@ describe("SmartConnectComponent", () => {
         expect(component.isTokenStored).toBeTrue();
         expect(component.isTokenActive).toBeFalse();
     });
+
+    it("should toggle password control based on tokenActive", () => {
+        const passwordControl = component.decryptTokenForm.controls["password"];
+
+        tokenStatus$.next({tokenExists: true, tokenActive: false});
+        expect(passwordControl.disabled).toBeFalse();
+
+        tokenStatus$.next({tokenExists: true, tokenActive: true});
+        expect(passwordControl.disabled).toBeTrue();
+    });
 });

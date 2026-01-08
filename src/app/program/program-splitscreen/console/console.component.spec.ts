@@ -1,10 +1,10 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-
 import {ConsoleComponent} from "./console.component";
 import {Subject} from "rxjs";
 import {SimpleChange} from "@angular/core";
 import {ExecutionState, ProgramState} from "src/app/shared/types/program-state";
 import {ProgramLogLine} from "src/app/shared/types/program-log-line";
+import {ReactiveFormsModule} from "@angular/forms";
 
 describe("ConsoleComponent", () => {
     let component: ConsoleComponent;
@@ -13,11 +13,11 @@ describe("ConsoleComponent", () => {
     beforeEach(async () => {
         await TestBed.configureTestingModule({
             declarations: [ConsoleComponent],
+            imports: [ReactiveFormsModule],
         }).compileComponents();
 
         fixture = TestBed.createComponent(ConsoleComponent);
         component = fixture.componentInstance;
-        component.programInputArea = {nativeElement: undefined};
         fixture.detectChanges();
     });
 

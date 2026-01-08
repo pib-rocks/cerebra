@@ -625,6 +625,60 @@ describe("RosService", () => {
         );
     });
 
+    it("should initialize connectionStatus$ with an initial value of false", () => {
+        rosService.connectionStatus$.subscribe((status) => {
+            expect(status).toBeFalse();
+        });
+    });
+
+    it("should update connectionStatus based on ROS events", () => {
+        let connectionCallback: () => void = () => {};
+        let errorCallback: (error: string) => void = () => {};
+        let closeCallback: () => void = () => {};
+
+        const mockRos = jasmine.createSpyObj("ros", [
+            "on",
+            "callOnConnection",
+            "once",
+        ]);
+        mockRos.on.and.callFake(
+            (
+                event: string,
+                callback: () => void | ((error: string) => void),
+            ) => {
+                if (event === "connection") connectionCallback = callback;
+                if (event === "error") errorCallback = callback;
+                if (event === "close") closeCallback = callback;
+            },
+        );
+        mockRos.callOnConnection.and.callFake(() => {});
+        mockRos.once.and.callFake(() => {});
+
+        spyOn<any>(RosService.prototype, "setUpRos").and.returnValue(mockRos);
+
+        const service = new RosService();
+
+        expect(mockRos.on).toHaveBeenCalledWith(
+            "connection",
+            jasmine.any(Function),
+        );
+        expect(mockRos.on).toHaveBeenCalledWith("error", jasmine.any(Function));
+        expect(mockRos.on).toHaveBeenCalledWith("close", jasmine.any(Function));
+
+        const emittedStatuses: boolean[] = [];
+        const subscription = service.connectionStatus$.subscribe((status) => {
+            emittedStatuses.push(status);
+        });
+
+        connectionCallback();
+        errorCallback("error");
+        closeCallback();
+
+        expect(emittedStatuses).toEqual([false, true, false]);
+
+        subscription.unsubscribe();
+    });
+
     it("should subscribe to the solid-state-relay-topic and receive the correct state", () => {
         const state: SolidStateRelayState = {
             turned_on: true,
