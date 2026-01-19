@@ -88,6 +88,19 @@ export class PoseService {
             }, 1000);
         });
     }
+
+    public updatePose(poseId: string) {
+        const motorPositions = this.currentMotorPositions;
+        this.updatePoseMotorPositionsInDb(poseId, motorPositions).subscribe(
+            () => {
+                this.poseIdToMotorPositions.set(
+                    poseId,
+                    structuredClone(motorPositions),
+                );
+            },
+        );
+    }
+
     private getMotorPositionsOfPoseFromDb(
         poseId: string,
     ): Observable<MotorPosition[]> {
@@ -126,6 +139,16 @@ export class PoseService {
 
     private deletePoseFromDb(poseId: string): Observable<any> {
         return this.apiService.delete(`${UrlConstants.POSE}/${poseId}`);
+    }
+
+    private updatePoseMotorPositionsInDb(
+        poseId: string,
+        motorPositions: MotorPosition[],
+    ): Observable<any> {
+        return this.apiService.patch(
+            `${UrlConstants.POSE}/${poseId}/motor-positions`,
+            {motorPositions},
+        );
     }
 
     private publishPoses() {

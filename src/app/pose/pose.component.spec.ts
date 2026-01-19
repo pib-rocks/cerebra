@@ -28,6 +28,7 @@ describe("PoseComponent", () => {
             "renamePose",
             "deletePose",
             "applyPose",
+            "updatePose",
         ]);
 
         let modalServiceSpy = jasmine.createSpyObj("ModalService", ["open"]);
@@ -145,5 +146,13 @@ describe("PoseComponent", () => {
     it("should select the pose", () => {
         component.selectPose(pose3);
         expect(component.selectedPoseId).toEqual(pose3.poseId);
+    });
+
+    it("should update the selected pose", () => {
+        component.selectedPoseId = pose1.poseId;
+
+        component.updatePose();
+
+        expect(poseService.updatePose).toHaveBeenCalledOnceWith(pose1.poseId);
     });
 });

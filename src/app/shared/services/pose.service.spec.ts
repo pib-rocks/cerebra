@@ -205,4 +205,15 @@ describe("PoseService", () => {
 
         flush();
     }));
+
+    it("should update the pose", () => {
+        apiService.patch.and.returnValue(of(undefined));
+
+        poseService.updatePose(pose2.poseId);
+
+        expect(apiService.patch).toHaveBeenCalledOnceWith(
+            `/pose/${pose2.poseId}/motor-positions`,
+            jasmine.objectContaining({motorPositions: jasmine.any(Array)}),
+        );
+    });
 });

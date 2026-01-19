@@ -75,6 +75,12 @@ export class PoseComponent implements OnInit {
         this.selectedPoseId = pose.poseId;
     }
 
+    updatePose() {
+        if (this.selectedPoseId) {
+            this.poseService.updatePose(this.selectedPoseId);
+        }
+    }
+
     private getNameInput(
         modalTitle: string,
         defaultValue: string,

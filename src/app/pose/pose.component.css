@@ -40,10 +40,12 @@
 }
 
 .rename-icon,
-.delete-icon {
+.delete-icon,
+.update-icon {
     color: white;
     position: absolute;
     transform: translate(-50%, -50%);
+    filter: brightness(0) invert(1);
 }
 
 .rename-icon {
@@ -51,7 +53,8 @@
     height: 21px;
 }
 
-.delete-icon {
+.delete-icon,
+.update-icon {
     width: 22px;
     height: 22px;
 }
@@ -61,7 +64,8 @@ button:disabled img {
 }
 
 .delete-button,
-.rename-button {
+.rename-button,
+.update-button {
     border: none;
     width: 40px;
     height: 40px;
@@ -69,7 +73,8 @@ button:disabled img {
 
 .pose-label,
 .rename-button,
-.delete-button {
+.delete-button,
+.update-button {
     background-color: transparent;
 }
 
