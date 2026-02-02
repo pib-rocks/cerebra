@@ -18,6 +18,7 @@
             <input
                 class="row input col-11 ml-0"
                 type="text"
+                data-test="TXT_Persona_Name"
                 formControlName="persona-name"
                 [value]="personalityClone.name"
                 id="personality-sidebar-persona-name-input" />
@@ -28,6 +29,7 @@
                 <select
                     formControlName="assistantModel"
                     id="voice-assistant-model-select-right-sidebar"
+                    data-test="DDN_Voice_Assistant_Model"
                     class="form-select"
                     aria-label="Voice-assistant language model">
                     <option
@@ -48,6 +50,7 @@
                         value="Female"
                         formControlName="gender"
                         type="radio"
+                        data-test="RBN_Female"
                         id="personality-sidebar-radio-female" />
                     <label
                         class="pl-4 radioHover marginFemale"
@@ -65,6 +68,7 @@
                         value="Male"
                         formControlName="gender"
                         type="radio"
+                        data-test="RBN_Male"
                         id="personality-sidebar-radio-male" />
                     <label
                         class="pl-4 radioHover marginMale"
@@ -91,6 +95,7 @@
                         type="text"
                         class="input w-50 pl-2"
                         id="personality-sidebar-pause-threshold-input"
+                        data-test="TXT_Threshold"
                         step="0.1"
                         alt="The waiting period of not receiving any voice input before voice assistants starts to answer"
                         [(ngModel)]="thresholdString"
@@ -99,6 +104,7 @@
                     <button
                         type="button"
                         id="personality-sidebar-up"
+                        data-test="BTN_Threshold_up"
                         class="h-auto w-25 ml-1"
                         (click)="adjustThresholdViaButton(true)">
                         &#9650;
@@ -106,6 +112,7 @@
                     <button
                         type="button"
                         id="personality-sidebar-down"
+                        data-test="BTN_Threshold_down"
                         class="h-auto w-25 ml-1"
                         (click)="adjustThresholdViaButton(false)">
                         &#9660;
@@ -129,6 +136,7 @@
                         type="text"
                         class="input w-50 pl-2"
                         id="personality-sidebar-message-history-input"
+                        data-test="TXT_Message_history"
                         step="0.1"
                         alt="The number of messages which were send to LLM for better answers"
                         [(ngModel)]="messageHistoryNumber"
@@ -137,6 +145,7 @@
                     <button
                         type="button"
                         id="personality-sidebar-up-2"
+                        data-test="BTN_History_up"
                         class="h-auto w-25 ml-1"
                         (click)="adjustHistoryViaButton(true)">
                         &#9650;
@@ -144,6 +153,7 @@
                     <button
                         type="button"
                         id="personality-sidebar-down-2"
+                        data-test="BTN_History_down"
                         class="h-auto w-25 ml-1"
                         (click)="adjustHistoryViaButton(false)">
                         &#9660;
@@ -155,6 +165,7 @@
             class="row position-relative bottom-0 start-50 translate-middle-x mb-4 mt-3 mr-3">
             <button
                 id="personality-sidebar-delete-persona-button"
+                data-test="BTN_Delete_Persona"
                 class="btn btn-regular delete p-sm-1 p-xl-3"
                 (click)="deletePersonality()">
                 Delete persona

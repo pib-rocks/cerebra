@@ -13,6 +13,7 @@
         <input
             class="active-check min-size-active"
             id="active-check-{{ motor.motorPathName }}"
+            [attr.data-test]="'CHK_Motor_Active_' + motor.motorPathName"
             type="checkbox"
             name="checkbox"
             [formControl]="turnedOnFormControl"
@@ -30,6 +31,7 @@
         <div class="col text-right">
             <button
                 id="modal-close-button"
+                data-test="BTN_Motor_Settings_Close"
                 type="button"
                 (click)="modal.dismiss('Cross click')"
                 class="btn">
@@ -57,7 +59,8 @@
                 <button
                     class="btn pr-0 pl-0 "
                     (click)="displayExtended = !displayExtended"
-                    id="toggle-settings">
+                    id="toggle-settings"
+                    data-test="BTN_Motor_Settings_Toggle_Extended">
                     <img
                         [src]="'../../assets/toggle-switch-' + (displayExtended ? 'right' : 'left') + '.png'"
                         alt="Toggle for switching between speed settings and extended values" />
@@ -80,6 +83,7 @@
                 [step]="1"
                 [unitLong]="'μs'"
                 [name]="'Pulse width'"
+                [attr.data-test]="'SLD_Motor_Settings_Pulse_Width'"
                 [displayName]="true"
                 [defaultValues]="[settings.pulseWidthMin, settings.pulseWidthMax]"
                 [messageReceiver$]="pulseWidthSubject$"
@@ -99,6 +103,7 @@
                 [unitShort]="'°'"
                 [unitLong]="'°/100'"
                 [name]="'Degree'"
+                [attr.data-test]="'SLD_Motor_Settings_Degree_Range'"
                 [displayName]="true"
                 [defaultValues]="[settings.rotationRangeMin, settings.rotationRangeMax]"
                 [messageReceiver$]="degreeSubject$"
@@ -111,6 +116,7 @@
         <div class="col-9">
             <app-horizontal-slider
                 [name]="'Period'"
+                [attr.data-test]="'SLD_Motor_Settings_Period'"
                 [displayName]="true"
                 [leftValue]="0"
                 [rightValue]="100000"
@@ -133,6 +139,7 @@
                     [formControl]="invertFormControl"
                     class="active-check mr-2 mt-1"
                     id="invertMotor"
+                    data-test="CHK_Motor_Settings_Invert_Motor"
                     (click)="setInvert()" />
                 <label
                     class="form-check-label"
@@ -149,6 +156,7 @@
         <div class="col-3 h-100 ml-2 mr-2 ">
             <app-vertical-slider
                 name="Velocity"
+                data-test="SLD_Motor_Settings_Velocity"
                 [messageReceiver$]="velocitySubject$"
                 (sliderEvent)="setVelocity($event)"
                 [unitLong]="'(°/100s)'"
@@ -159,6 +167,7 @@
         <div class="col-3 h-100 ml-2 mr-2">
             <app-vertical-slider
                 name="Acceleration"
+                data-test="SLD_Motor_Settings_Acceleration"
                 [messageReceiver$]="accelerationSubject$"
                 (sliderEvent)="setAcceleration($event)"
                 [minValue]="0"
@@ -168,6 +177,7 @@
         <div class="col-3 h-100 ml-2 mr-2">
             <app-vertical-slider
                 name="Deceleration"
+                data-test="SLD_Motor_Settings_Deceleration"
                 [messageReceiver$]="decelerationSubject$"
                 (sliderEvent)="setDeceleration($event)"
                 [minValue]="0"
