@@ -45,7 +45,6 @@
     color: white;
     position: absolute;
     transform: translate(-50%, -50%);
-    filter: brightness(0) invert(1);
 }
 
 .rename-icon {
