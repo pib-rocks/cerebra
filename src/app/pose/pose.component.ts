@@ -12,6 +12,7 @@ import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {Observable, from, map} from "rxjs";
 import {PoseService} from "src/app/shared/services/pose.service";
 import {Pose} from "src/app/shared/types/pose";
+import {MatSnackBar} from "@angular/material/snack-bar";
 
 @Component({
     selector: "app-pose",
@@ -41,6 +42,7 @@ export class PoseComponent implements OnInit {
     constructor(
         private poseService: PoseService,
         private modalService: NgbModal,
+        private matSnackBarService: MatSnackBar,
     ) {}
 
     ngOnInit(): void {
@@ -78,10 +80,13 @@ export class PoseComponent implements OnInit {
         this.selectedPoseId = pose.poseId;
     }
 
-    updatePose() {
-        if (this.selectedPoseId) {
-            this.poseService.updatePose(this.selectedPoseId);
-        }
+    updatePose(pose: Pose) {
+        this.selectPose(pose);
+        this.poseService.updatePose(pose.poseId);
+        this.matSnackBarService.open("Pose updated successfully", "", {
+            panelClass: "cerebra-toast",
+            duration: 3000,
+        });
     }
 
     private getNameInput(
