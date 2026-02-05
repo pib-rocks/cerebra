@@ -5,7 +5,7 @@
             type="button"
             id="save-pose-button"
             class="btn btn-regular"
-            data-test="BTN_save_pose"
+            data-test="BTN_Save_pose"
             (click)="savePose()">
             Save current pose
         </button>
@@ -17,7 +17,7 @@
         <button
             class="apply-button flex-shrink-0"
             [disabled]="!pose.active"
-            data-test="BTN_apply_pose"
+            data-test="BTN_Apply_pose"
             (click)="applyPose(pose)">
             <img
                 class="apply-pose"
@@ -34,7 +34,7 @@
             *ngIf="pose.deletable"
             #updateButton
             class="update-button flex-shrink-0"
-            data-test="BTN_update_pose"
+            data-test="BTN_Update_pose"
             title="Update pose"
             (click)="updatePose(pose)">
             <img
@@ -46,7 +46,7 @@
             *ngIf="pose.deletable"
             #renameButton
             class="rename-button flex-shrink-0"
-            data-test="BTN_rename_pose"
+            data-test="BTN_Rename_pose"
             (click)="renamePose(pose)">
             <img
                 class="rename-icon"
@@ -56,7 +56,7 @@
         <button
             *ngIf="pose.deletable"
             class="delete-button flex-shrink-0"
-            data-test="BTN_delete_pose"
+            data-test="BTN_Delete_pose"
             (click)="deletePose(pose)">
             <img
                 class="delete-icon"
