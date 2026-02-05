@@ -56,6 +56,9 @@ export class PoseComponent implements OnInit {
     }
 
     renamePose(pose: Pose) {
+        if (!pose.deletable) {
+            return;
+        }
         this.selectPose(pose);
         this.getNameInput("Rename pose", pose.name).subscribe((name) => {
             this.poseService.renamePose(pose.poseId, name);
