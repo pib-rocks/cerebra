@@ -30,7 +30,7 @@ describe("PoseComponent", () => {
             "renamePose",
             "deletePose",
             "applyPose",
-            "updatePose",
+            "updatePoseMotorPositions",
         ]);
 
         let modalServiceSpy = jasmine.createSpyObj("ModalService", ["open"]);
@@ -160,10 +160,14 @@ describe("PoseComponent", () => {
         expect(component.selectedPoseId).toEqual(pose3.poseId);
     });
 
-    it("should update the selected pose", () => {
-        component.updatePose(pose1);
+    it("should update motor positions of the selected pose", () => {
+        poseService.updatePoseMotorPositions.and.returnValue(of(undefined));
 
-        expect(poseService.updatePose).toHaveBeenCalledOnceWith(pose1.poseId);
+        component.updatePoseMotorPositions(pose1);
+
+        expect(poseService.updatePoseMotorPositions).toHaveBeenCalledOnceWith(
+            pose1.poseId,
+        );
         expect(component.selectedPoseId).toEqual(pose1.poseId);
         expect(matSnackBarService.open).toHaveBeenCalledOnceWith(
             "Pose updated successfully",

@@ -31,12 +31,12 @@
             {{pose.name}}
         </button>
         <button
-            *ngIf="pose.deletable"
+            *ngIf="pose.deletable || pose.name === 'Calibration'"
             #updateButton
             class="update-button flex-shrink-0"
             data-test="BTN_Update_pose"
             title="Update pose"
-            (click)="updatePose(pose)">
+            (click)="updatePoseMotorPositions(pose)">
             <img
                 class="update-icon"
                 src="../../../assets/joint-control/other/update-pose.svg"

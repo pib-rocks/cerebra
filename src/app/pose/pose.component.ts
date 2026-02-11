@@ -80,12 +80,16 @@ export class PoseComponent implements OnInit {
         this.selectedPoseId = pose.poseId;
     }
 
-    updatePose(pose: Pose) {
+    updatePoseMotorPositions(pose: Pose) {
+        if (!pose.deletable && pose.name !== "Calibration") {
+            return;
+        }
         this.selectPose(pose);
-        this.poseService.updatePose(pose.poseId);
-        this.matSnackBarService.open("Pose updated successfully", "", {
-            panelClass: "cerebra-toast",
-            duration: 3000,
+        this.poseService.updatePoseMotorPositions(pose.poseId).subscribe(() => {
+            this.matSnackBarService.open("Pose updated successfully", "", {
+                panelClass: "cerebra-toast",
+                duration: 3000,
+            });
         });
     }
 

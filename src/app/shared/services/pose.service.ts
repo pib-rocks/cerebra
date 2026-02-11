@@ -89,15 +89,15 @@ export class PoseService {
         });
     }
 
-    public updatePose(poseId: string) {
+    public updatePoseMotorPositions(poseId: string): Observable<void> {
         const motorPositions = this.currentMotorPositions;
-        this.updatePoseMotorPositionsInDb(poseId, motorPositions).subscribe(
-            () => {
+        return this.updatePoseMotorPositionsInDb(poseId, motorPositions).pipe(
+            tap(() => {
                 this.poseIdToMotorPositions.set(
                     poseId,
                     structuredClone(motorPositions),
                 );
-            },
+            }),
         );
     }
 
@@ -144,7 +144,7 @@ export class PoseService {
     private updatePoseMotorPositionsInDb(
         poseId: string,
         motorPositions: MotorPosition[],
-    ): Observable<any> {
+    ): Observable<void> {
         return this.apiService.patch(
             `${UrlConstants.POSE}/${poseId}/motor-positions`,
             {motorPositions},
