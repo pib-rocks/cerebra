@@ -33,6 +33,7 @@
             id="close-button">
             <button
                 id="modal-close-button"
+                data-test="BTN_Close"
                 type="button"
                 (click)="modal.dismiss('Cross click')"
                 class="btn">
@@ -69,6 +70,7 @@
                 ngbAutofocus
                 class="col-9"
                 type="text"
+                data-test="TXT_Name"
                 formControlName="name-input"
                 id="name-input" />
         </div>
@@ -77,6 +79,7 @@
                 id="voice-assistant-model-select"
                 formControlName="assistantModel"
                 class="form-select"
+                data-test="DDN_Voice_Assistant_Model"
                 aria-label="Voice-assistant language model">
                 <option
                     *ngFor="let model of models"
@@ -91,6 +94,7 @@
                 id="new-radio-button-female">
                 <input
                     value="Female"
+                    data-test="RBN_Female"
                     formControlName="gender"
                     type="radio"
                     id="new-radio-female" />
@@ -105,6 +109,7 @@
                 id="new-radio-button-male">
                 <input
                     value="Male"
+                    data-test="RBN_Male"
                     formControlName="gender"
                     type="radio"
                     id="new-radio-male" />
@@ -131,6 +136,7 @@
                         <input
                             type="text"
                             id="pause-threshold-input"
+                            data-test="TXT_Threshold"
                             [(ngModel)]="thresholdString"
                             [ngModelOptions]="{standalone: true}"
                             readonly />
@@ -139,6 +145,7 @@
                         <div class="row mt-1 p-0">
                             <button
                                 id="up"
+                                data-test="BTN_Threshold_up"
                                 type="button"
                                 (click)="adjustThreshold('0.1')">
                                 &#9650;
@@ -147,6 +154,7 @@
                         <div class="row p-0">
                             <button
                                 id="down"
+                                data-test="BTN_Threshold_down"
                                 type="button"
                                 (click)="adjustThreshold('-0.1')">
                                 &#9660;
@@ -172,6 +180,7 @@
                         <input
                             type="text"
                             id="message-history-input"
+                            data-test="TXT_Message_history"
                             [(ngModel)]="messageHistory"
                             [ngModelOptions]="{standalone: true}"
                             readonly />
@@ -180,6 +189,7 @@
                         <div class="row mt-1 p-0">
                             <button
                                 id="up"
+                                data-test="BTN_History_up"
                                 type="button"
                                 (click)="adjustHistory('1')">
                                 &#9650;
@@ -188,6 +198,7 @@
                         <div class="row p-0">
                             <button
                                 id="down"
+                                data-test="BTN_History_down"
                                 type="button"
                                 (click)="adjustHistory('-1')">
                                 &#9660;
@@ -204,6 +215,7 @@
                     [disabled]="personalityForm.invalid"
                     class="btn btn-regular"
                     id="modal-save-button"
+                    data-test="BTN_Save"
                     (keydown.enter)="savePersonality()"
                     (click)="savePersonality()">
                     Save
@@ -214,6 +226,7 @@
                     type="button"
                     class="btn btn-regular"
                     id="modal-cancel-button"
+                    data-test="BTN_Cancel"
                     (click)="closeModal()">
                     Cancel
                 </button>

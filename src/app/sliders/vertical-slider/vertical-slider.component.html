@@ -5,6 +5,7 @@
     <input
         *ngIf="showTextInput"
         [id]="name + 'Input'"
+        data-test="TXT_Vertical_Slider_Input"
         class="form-control text-input"
         type="number"
         [min]="minValue"
@@ -133,6 +134,7 @@
             <input
                 class="input-range"
                 [id]="name + 'Slider'"
+                data-test="TXT_Vertical_Slider_Input"
                 type="range"
                 min="0"
                 max="500000"

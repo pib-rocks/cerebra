@@ -32,6 +32,7 @@ export interface IRosService {
     solidStateRelayStateReceiver$: BehaviorSubject<
         SolidStateRelayState | undefined
     >;
+    connectionStatus$: Observable<boolean>;
 
     setVoiceAssistantState: (
         voiceAssistantState: VoiceAssistantState,
