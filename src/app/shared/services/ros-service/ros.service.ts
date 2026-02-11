@@ -671,12 +671,19 @@ export class RosService implements IRosService {
         solidStateRelayState: SolidStateRelayState,
     ): Observable<void> {
         const subject: Subject<void> = new ReplaySubject();
+
+        if (!this.connected) {
+            subject.error(new Error("ROS not connected"));
+            return subject;
+        }
+
         const request: SetSolidStateRelayStateRequest = {
             solid_state_relay_state: solidStateRelayState,
         };
         const successCallback = (response: SetSolidStateRelayStateResponse) => {
             if (response.successful) {
                 subject.next();
+                subject.complete();
             } else {
                 subject.error(
                     new Error("could not apply solid state relay state..."),
