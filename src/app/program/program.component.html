@@ -33,6 +33,7 @@
             id="close-button">
             <button
                 id="modal-close-button"
+                data-test="BTN_Close"
                 type="button"
                 (click)="modal.dismiss('Cross')"
                 class="btn">
@@ -65,6 +66,7 @@
             ngbAutofocus
             class="col-9"
             [formControl]="nameFormControl"
+            data-test="TXT_Name"
             type="text"
             (keydown)="($event).key ==='Enter' ? modal.close('Save'): ''"
             name="name-input"
@@ -77,6 +79,7 @@
                 [disabled]="nameFormControl.invalid"
                 class="btn btn-regular"
                 id="modal-save-button"
+                data-test="BTN_Save"
                 (keydown.enter)="modal.close('Save')"
                 (click)="modal.close('Save')">
                 Save
@@ -87,6 +90,7 @@
                 type="button"
                 class="btn btn-regular"
                 id="modal-cancel-button"
+                data-test="BTN_Cancel"
                 (click)="modal.dismiss('Cancel')">
                 Cancel
             </button>

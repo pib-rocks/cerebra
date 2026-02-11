@@ -4,6 +4,7 @@
         [style]="'transform: translate(' + -flyoutWidth + 'px, 0);'">
         <button
             id="save-btn"
+            data-test="BTN_Program_Save"
             type="button"
             (click)="saveCode()"
             [disabled]="codeVisualNew === codeVisualOld"
@@ -15,6 +16,7 @@
         </button>
         <button
             id="run-btn"
+            data-test="BTN_Program_Run_Stop"
             type="button"
             (click)="runProgram()"
             class="workspaceButton">
@@ -31,6 +33,7 @@
         </div>
         <button
             id="toggle-btn"
+            data-test="TGL_Split_Screen"
             class="workspaceButton"
             (click)="inSplitMode = !inSplitMode">
             <img

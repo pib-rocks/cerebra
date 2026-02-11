@@ -3,6 +3,7 @@
     <button
         class="smart-connect-btn"
         type="button"
+        data-test="BTN_Smart_Connect"
         [disabled]="isLoadingModal"
         (click)="onOpenModal(modalContent)">
         <img
@@ -23,6 +24,7 @@
         <span class="modal-title ml-4">Smart Connect</span>
         <button
             id="modal-close-button"
+            data-test="BTN_Close"
             type="button"
             (click)="onCloseModal()"
             class="btn">
@@ -66,6 +68,7 @@
                 <div class="input-group">
                     <input
                         id="password"
+                        data-test="TXT_Password"
                         ngbAutofocus
                         class="input form-control"
                         type="password"
@@ -80,6 +83,7 @@
                 <div class="mt-1">
                     <button
                         type="button"
+                        data-test="BTN_Delete"
                         class="button-link"
                         (click)="onDeleteToken()">
                         Delete Token
@@ -92,6 +96,7 @@
             <div class="d-flex justify-content-around mt-3 mb-4">
                 <button
                     id="decrypt-form-btn"
+                    data-test="BTN_Connect"
                     type="submit"
                     class="btn btn-primary btn-lg w-100 mr-2"
                     [disabled]="decryptTokenForm.invalid || isTokenActive">
@@ -99,6 +104,7 @@
                 </button>
                 <button
                     id="decrypt-form-ok-btn"
+                    data-test="BTN_OK"
                     type="button"
                     class="btn btn-secondary btn-lg w-100 ml-2"
                     (click)="onCloseModal()">
@@ -129,6 +135,7 @@
                     <label for="token">Token</label>
                     <input
                         id="token"
+                        data-test="TXT_Token"
                         autocomplete="off"
                         class="input form-control"
                         type="text"
@@ -141,6 +148,7 @@
                     <div class="input-group">
                         <input
                             id="encrypt-password"
+                            data="TXT_Password"
                             class="input form-control"
                             type="password"
                             [type]="passwordTextType ? 'password' : 'text'"
@@ -166,6 +174,7 @@
                     <div class="input-group">
                         <input
                             id="confirmPassword"
+                            data-test="TXT_Password_confirm"
                             class="input form-control"
                             type="password"
                             [type]="passwordTextType ? 'password' : 'text'"
@@ -192,6 +201,7 @@
             <div class="d-flex justify-content-around mt-3 mb-4">
                 <button
                     id="encrypt-form-btn"
+                    data-test="BTN_Encrypt"
                     type="submit"
                     class="btn btn-primary btn-lg w-100 mr-2"
                     [disabled]="encryptTokenForm.invalid">
@@ -199,6 +209,7 @@
                 </button>
                 <button
                     id="encrypt-form-cancel-btn"
+                    data-test="BTN_Cancel"
                     type="button"
                     class="btn btn-secondary btn-lg w-100 ml-2"
                     (click)="onCloseModal()">

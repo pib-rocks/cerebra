@@ -1,5 +1,5 @@
 import jsonServer from "json-server";
-import mockData from "./json-server-database.json" assert {type: "json"};
+import mockData from "./json-server-database.json" with {type: "json"};
 import Personality from "./dto/personality.mjs";
 import CameraSettings from "./dto/camera-settings.mjs";
 import Chat from "./dto/chat.mjs";
