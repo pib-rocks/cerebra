@@ -8,6 +8,10 @@ import {
     filter,
     from,
     map,
+    take,
+    timeout,
+    throwError,
+    switchMap,
 } from "rxjs";
 import {MotorSettingsMessage} from "../../ros-types/msg/motor-settings-message";
 import {DiagnosticStatus} from "../../ros-types/msg/diagnostic-status.message";
@@ -177,22 +181,67 @@ export class RosService implements IRosService {
     private connectionStatusSubject = new BehaviorSubject<boolean>(false);
     public connectionStatus$ = this.connectionStatusSubject.asObservable();
 
+    private reconnectInterval = 5000; // 5 seconds
+    private connected = false;
+
     constructor() {
+        this.connect();
+    }
+
+    private connect() {
         this.ros = this.setUpRos();
         this.ros.on("connection", () => {
             console.log("Connected to ROS");
+
+            this.connected = true;
+            this.connectionStatusSubject.next(true);
+
             this.initTopicsAndServices();
             this.initSubscribers();
-            this.connectionStatusSubject.next(true);
-        });
-        this.ros.on("error", (error: string) => {
-            console.log("Error connecting to ROSBridge server:", error);
-            this.connectionStatusSubject.next(false);
         });
 
         this.ros.on("close", () => {
             console.log("Disconnected from ROSBridge server.");
+            this.connected = false;
             this.connectionStatusSubject.next(false);
+            this.cleanup();
+            setTimeout(() => {
+                console.log("Attempting to reconnect to ROSBridge server...");
+                this.connect();
+            }, this.reconnectInterval);
+        });
+
+        this.ros.on("error", (error: string) => {
+            console.log("Error connecting to ROSBridge server:", error);
+            this.connected = false;
+            this.connectionStatusSubject.next(false);
+        });
+    }
+
+    private cleanup() {
+        // Unsubscribe from all topics
+        const topics = [
+            this.cameraTopic,
+            this.cameraTimerPeriodTopic,
+            this.cameraPreviewSizeTopic,
+            this.cameraQualityFactorTopic,
+            this.jointTrajectoryTopic,
+            this.motorSettingsTopic,
+            this.motorCurrentTopic,
+            this.proxyRunProgramFeedbackTopic,
+            this.proxyRunProgramResultTopic,
+            this.proxyRunProgramStatusTopic,
+            this.chatMessageTopic,
+            this.voiceAssistantStateTopic,
+            this.chatIsListeningTopic,
+            this.solidStateRelayStateTopic,
+            this.programInputTopic,
+        ];
+
+        topics.forEach((topic) => {
+            if (topic) {
+                topic.unsubscribe();
+            }
         });
     }
 
@@ -377,6 +426,15 @@ export class RosService implements IRosService {
         });
     }
 
+    private ensureConnected<T>(
+        serviceCall: () => Observable<T>,
+    ): Observable<T> {
+        if (!this.connected) {
+            return throwError(() => new Error("ROS not connected"));
+        }
+        return serviceCall();
+    }
+
     //Has its own method to make it accessible by the camera components "startCamera" method
     subscribeCameraTopic() {
         this.subscribeDefaultRosMessageTopic(
@@ -545,29 +603,68 @@ export class RosService implements IRosService {
         return subject;
     }
 
+    private setVoiceAssistantStateCall(
+        voiceAssistantState: VoiceAssistantState,
+    ): Observable<void> {
+        return new Observable((observer) => {
+            this.setVoiceAssistantStateService.callService(
+                {voice_assistant_state: voiceAssistantState},
+                (response) => {
+                    if (response.successful) {
+                        observer.next();
+                        observer.complete();
+                    } else {
+                        observer.error(
+                            new Error("Could not apply voice assistant state"),
+                        );
+                    }
+                },
+                (error) => observer.error(new Error(error)),
+            );
+        });
+    }
+
+    private getChatIsListeningCall(chatId: string): Observable<boolean> {
+        return new Observable((observer) => {
+            this.getChatIsListeningService.callService(
+                {chat_id: chatId},
+                (response) => {
+                    observer.next(response.listening);
+                    observer.complete();
+                },
+                (error) => observer.error(new Error(error)),
+            );
+        });
+    }
+
+    private sendChatMessageCall(
+        chatId: string,
+        content: string,
+    ): Observable<void> {
+        return new Observable((observer) => {
+            this.sendChatMessageService.callService(
+                {chat_id: chatId, content: content},
+                (response) => {
+                    if (response.successful) {
+                        observer.next();
+                        observer.complete();
+                    } else {
+                        observer.error(
+                            new Error("Failed to send chat message"),
+                        );
+                    }
+                },
+                (error) => observer.error(new Error(error)),
+            );
+        });
+    }
+
     setVoiceAssistantState(
         voiceAssistantState: VoiceAssistantState,
     ): Observable<void> {
-        const subject: Subject<void> = new ReplaySubject();
-        const request: SetVoiceAssistantStateRequest = {
-            voice_assistant_state: voiceAssistantState,
-        };
-        const successCallback = (response: SetVoiceAssistantStateResponse) => {
-            if (response.successful) {
-                subject.next();
-            } else {
-                subject.error(new Error("could not apply state..."));
-            }
-        };
-        const errorCallback = (error: any) => {
-            subject.error(new Error(error));
-        };
-        this.setVoiceAssistantStateService.callService(
-            request,
-            successCallback,
-            errorCallback,
+        return this.ensureConnected(() =>
+            this.setVoiceAssistantStateCall(voiceAssistantState),
         );
-        return subject;
     }
 
     setSolidStateRelayState(
@@ -623,52 +720,25 @@ export class RosService implements IRosService {
     }
 
     sendChatMessage(chatId: string, content: string): Observable<void> {
-        const subject: Subject<void> = new ReplaySubject();
-        const request: SendChatMessageRequest = {
-            chat_id: chatId,
-            content: content,
-        };
-        const successCallback = (response: SendChatMessageResponse) => {
-            if (response.successful) {
-                subject.next();
-            } else {
-                subject.error(new Error("failed to send message"));
-            }
-        };
-        const errorCallback = (error: any) => {
-            subject.error(new Error(error));
-        };
-        this.sendChatMessageService.callService(
-            request,
-            successCallback,
-            errorCallback,
+        return this.ensureConnected(() =>
+            this.sendChatMessageCall(chatId, content),
         );
-        return subject;
     }
 
     getChatIsListening(chatId: string): Observable<boolean> {
-        const subject: Subject<boolean> = new ReplaySubject();
-        const request: GetChatIsListeningRequest = {
-            chat_id: chatId,
-        };
-        const successCallback = (response: GetChatIsListeningResponse) => {
-            subject.next(response.listening);
-        };
-        const errorCallback = (error: any) => {
-            subject.error(new Error(error));
-        };
-        this.getChatIsListeningService.callService(
-            request,
-            successCallback,
-            errorCallback,
-        );
-        return subject;
+        return this.ensureConnected(() => this.getChatIsListeningCall(chatId));
     }
 
     applyMotorSettings(
         motorSettingsMessage: MotorSettingsMessage,
     ): Observable<MotorSettingsMessage> {
         const subject: Subject<MotorSettingsMessage> = new ReplaySubject();
+
+        if (!this.connected) {
+            subject.error(new Error("ROS not connected"));
+            return subject;
+        }
+
         try {
             this.applyMotorSettingsService.callService(
                 {motor_settings: motorSettingsMessage},
