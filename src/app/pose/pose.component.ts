@@ -81,7 +81,7 @@ export class PoseComponent implements OnInit {
     }
 
     updatePoseMotorPositions(pose: Pose) {
-        if (!pose.deletable && pose.name !== "Calibration") {
+        if (pose.name === "Calibration") {
             return;
         }
         this.selectPose(pose);
