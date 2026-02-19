@@ -32,6 +32,7 @@
             *ngFor="let thumb of thumbs; index as i"
             #bubbleInput
             id="slider-bubbleinput-{{baseId}}-{{i}}"
+            data-test="TXT_Slider_BubbleInput"
             class="bubble-input overlay"
             [ngClass]="thumb.inputVisible ? '' : 'invisible'"
             [attr.style]="'left: ' + thumb.position + 'px; z-index: ' + (10-i) + ';'"

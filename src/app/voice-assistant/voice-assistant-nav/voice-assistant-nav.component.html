@@ -6,6 +6,7 @@
         <a
             class="nav-link"
             id="personality-{{sidebarElement.getUUID()}}"
+            [attr.data-test]="'LNK_' + sidebarElement.getName()"
             [routerLink]="[sidebarElement.getUUID(), 'chat']"
             [ngClass]="{'navbar-ref-active': isRouteActive(sidebarElement.getUUID())}">
             {{sidebarElement.getName()}}
@@ -16,6 +17,7 @@
         *ngIf="button?.enabled ?? false">
         <button
             id="add-personality-button"
+            data-test="BTN_Add_Personality"
             type="button"
             class="nav-link"
             (click)="button?.func()">

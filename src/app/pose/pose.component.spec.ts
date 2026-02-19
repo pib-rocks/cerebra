@@ -5,6 +5,7 @@ import {NgbModal, NgbModalRef} from "@ng-bootstrap/ng-bootstrap";
 import {PoseService} from "src/app/shared/services/pose.service";
 import {Subject, of} from "rxjs";
 import {Pose} from "src/app/shared/types/pose";
+import {MatSnackBar} from "@angular/material/snack-bar";
 
 describe("PoseComponent", () => {
     let component: PoseComponent;
@@ -12,6 +13,7 @@ describe("PoseComponent", () => {
 
     let poseService: jasmine.SpyObj<PoseService>;
     let modalService: jasmine.SpyObj<NgbModal>;
+    let matSnackBarService: jasmine.SpyObj<MatSnackBar>;
 
     let posesSubject = new Subject();
 
@@ -28,9 +30,13 @@ describe("PoseComponent", () => {
             "renamePose",
             "deletePose",
             "applyPose",
+            "updatePoseMotorPositions",
         ]);
 
         let modalServiceSpy = jasmine.createSpyObj("ModalService", ["open"]);
+        let matSnackBarServiceSpy = jasmine.createSpyObj("MatSnackBar", [
+            "open",
+        ]);
 
         poseServiceSpy.getPosesObservable.and.returnValue(posesSubject);
 
@@ -45,6 +51,10 @@ describe("PoseComponent", () => {
                     provide: NgbModal,
                     useValue: modalServiceSpy,
                 },
+                {
+                    provide: MatSnackBar,
+                    useValue: matSnackBarServiceSpy,
+                },
             ],
         }).compileComponents();
 
@@ -52,6 +62,9 @@ describe("PoseComponent", () => {
             PoseService,
         ) as jasmine.SpyObj<PoseService>;
         modalService = TestBed.inject(NgbModal) as jasmine.SpyObj<NgbModal>;
+        matSnackBarService = TestBed.inject(
+            MatSnackBar,
+        ) as jasmine.SpyObj<MatSnackBar>;
 
         posesSubscriber = jasmine.createSpy();
 
@@ -145,5 +158,41 @@ describe("PoseComponent", () => {
     it("should select the pose", () => {
         component.selectPose(pose3);
         expect(component.selectedPoseId).toEqual(pose3.poseId);
+    });
+
+    it("should update motor positions of the selected pose", () => {
+        poseService.updatePoseMotorPositions.and.returnValue(of(undefined));
+
+        component.updatePoseMotorPositions(pose1);
+
+        expect(poseService.updatePoseMotorPositions).toHaveBeenCalledOnceWith(
+            pose1.poseId,
+        );
+        expect(component.selectedPoseId).toEqual(pose1.poseId);
+        expect(matSnackBarService.open).toHaveBeenCalledOnceWith(
+            "Pose updated successfully",
+            "",
+            {panelClass: "cerebra-toast", duration: 3000},
+        );
+    });
+
+    it("should not rename a non-deletable pose", () => {
+        const nonDeletablePose = new Pose(
+            "Calibration",
+            "id-calibration",
+            false,
+        );
+        component.renamePose(nonDeletablePose);
+        expect(poseService.renamePose).not.toHaveBeenCalled();
+    });
+
+    it("should not update motor positions for a non-deletable, non-Startup/Resting pose", () => {
+        const nonDeletablePose = new Pose(
+            "Calibration",
+            "id-calibration",
+            false,
+        );
+        component.updatePoseMotorPositions(nonDeletablePose);
+        expect(poseService.updatePoseMotorPositions).not.toHaveBeenCalled();
     });
 });

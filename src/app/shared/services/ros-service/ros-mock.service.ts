@@ -142,6 +142,9 @@ export class RosService implements IRosService {
 
     private isListeningFromChatId: Map<string, boolean> = new Map();
 
+    private connectionStatusSubject = new BehaviorSubject<boolean>(true);
+    public connectionStatus$ = this.connectionStatusSubject.asObservable();
+
     constructor(private apiService: ApiService) {
         let currentToggle: boolean = true;
         setInterval(() => {

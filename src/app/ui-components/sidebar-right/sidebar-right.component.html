@@ -17,6 +17,7 @@
                             <button
                                 type="button"
                                 class="btn pl-sm-0"
+                                data-test="DDN_sidebarElement.getName()"
                                 id="dropdownbutton-{{sidebarElement.getName()}}"
                                 title="Edit"
                                 ngbDropdownToggle>
@@ -31,6 +32,7 @@
                                         ngbDropdownItem
                                         [disabled]="callback.disabled"
                                         id="sidebar-right-{{toLowerCaseAndRemoveSpace(callback.label)}}-{{sidebarElement.getName()}}"
+                                        data-test="DDN_sidebarElement.getName()"
                                         (click)="callback.clickCallback(sidebarElement.getUUID())">
                                         <img
                                             *ngIf="callback.icon !== ''"
@@ -53,6 +55,7 @@
                             type="button"
                             class="col btn pl-3 p-3 text-truncate element text-center"
                             id="sidebar-right-{{option.label}}"
+                            data-test="BTN_option.label"
                             (click)="option.clickCallback('')">
                             <label class="mb-0">{{option.label}}</label>
                         </button>

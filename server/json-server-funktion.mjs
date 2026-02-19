@@ -1,5 +1,5 @@
 import jsonServer from "json-server";
-import mockData from "./json-server-database.json" assert {type: "json"};
+import mockData from "./json-server-database.json" with {type: "json"};
 import Personality from "./dto/personality.mjs";
 import CameraSettings from "./dto/camera-settings.mjs";
 import Chat from "./dto/chat.mjs";
@@ -461,6 +461,18 @@ server.get("/pose/:poseId/motor-positions", (req, res, next) => {
         MotorPosition.getMotorPosition(mp),
     );
     return res.status(200).send({motorPositions});
+});
+
+//updatePoseMotorPositions
+server.patch("/pose/:poseId/motor-positions", (req, res, next) => {
+    const pose = mockData.poses.find(
+        (pose) => pose.poseId == req.params.poseId,
+    );
+    if (!pose) {
+        return res.status(404).send();
+    }
+    pose.motorPositions = req.body.motorPositions;
+    return res.status(200).send(Pose.getPose(pose));
 });
 
 //getAllPrograms
