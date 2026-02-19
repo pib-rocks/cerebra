@@ -175,4 +175,24 @@ describe("PoseComponent", () => {
             {panelClass: "cerebra-toast", duration: 3000},
         );
     });
+
+    it("should not rename a non-deletable pose", () => {
+        const nonDeletablePose = new Pose(
+            "Calibration",
+            "id-calibration",
+            false,
+        );
+        component.renamePose(nonDeletablePose);
+        expect(poseService.renamePose).not.toHaveBeenCalled();
+    });
+
+    it("should not update motor positions for a non-deletable, non-Startup/Resting pose", () => {
+        const nonDeletablePose = new Pose(
+            "Calibration",
+            "id-calibration",
+            false,
+        );
+        component.updatePoseMotorPositions(nonDeletablePose);
+        expect(poseService.updatePoseMotorPositions).not.toHaveBeenCalled();
+    });
 });
