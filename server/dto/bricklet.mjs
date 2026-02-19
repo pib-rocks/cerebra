@@ -4,7 +4,7 @@ export class Bricklet {
         this.brickletNumber = brickletNumber;
         this.type = type;
     }
- 
+
     static getBricklet(brick) {
         return new Bricklet(brick.uid, brick.brickletNumber, brick.type);
     }

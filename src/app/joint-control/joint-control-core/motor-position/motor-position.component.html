@@ -11,6 +11,7 @@
             <app-horizontal-slider
                 class="m-0 p-0"
                 [name]="motor.label"
+                [attr.data-test]="'SLD_Motor_Position_' + motor.label"
                 [leftValue]="rotationRangeMin"
                 [rightValue]="rotationRangeMax"
                 [trackHeight]="20"

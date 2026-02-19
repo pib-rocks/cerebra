@@ -6,6 +6,7 @@
             routerLinkActive="navbar-btn-active">
             <a
                 [id]="joint.jointPathName + '-nav'"
+                [attr.data-test]="'LNK_Joint_' + joint.jointPathName"
                 class="nav-link sidebar-btn"
                 [routerLink]="joint.jointPathName">
                 {{joint.label}}
@@ -16,6 +17,7 @@
             routerLinkActive="navbar-btn-active">
             <a
                 id="hardware-nav"
+                data-test="LNK_Hardware_IDs"
                 class="nav-link sidebar-btn"
                 routerLink="hardware-ids">
                 Hardware-IDs

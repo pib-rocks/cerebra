@@ -6,6 +6,7 @@
         *ngIf="state.executionState === ExecutionState.RUNNING"
         class="flex-shrink-0"
         id="program-input-area"
+        data-test="TXT_Program_Input"
         [ngClass]="lastLogLineIfInput?.isError ? 'stderr' : 'stdout'"
         #programInputArea
         [formControl]="programInputForm">

@@ -14,6 +14,7 @@
                         </label>
                         <input
                             type="text"
+                            [attr.data-test]="'TXT_Bricklet_UID_' + bricklet.brickletNumber"
                             class="form-control"
                             [formControlName]="bricklet.brickletNumber" />
                     </div>
@@ -29,6 +30,7 @@
                         </label>
                         <input
                             type="text"
+                            [attr.data-test]="'TXT_Bricklet_UID_' + bricklet.brickletNumber"
                             class="form-control"
                             [formControlName]="bricklet.brickletNumber" />
                     </div>
@@ -39,6 +41,7 @@
             <div class="col-auto mt-4 ml-4 mb-3 pl-2">
                 <button
                     id="update-bricklet-uids-button"
+                    data-test="BTN_Update_bricklet_UIDs"
                     class="hardware-button btn btn-regular"
                     [disabled]="brickletUidForm.invalid">
                     Update
