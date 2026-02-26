@@ -21,6 +21,7 @@ import {ProgramSplitscreenComponent} from "./program/program-splitscreen/program
 import {programCodeResolver} from "./program/program-splitscreen/resolver/program-code.resolver";
 import {PoseComponent} from "./pose/pose.component";
 import {HardwareIdComponent} from "./joint-control/hardware-id/hardware-id.component";
+import {OpenclawComponent} from "./openclaw/openclaw.component";
 
 const routes: Routes = [
     {
@@ -100,6 +101,7 @@ const routes: Routes = [
             },
         ],
     },
+    {path: "openclaw", component: OpenclawComponent},
     {path: "", redirectTo: "joint-control/head", pathMatch: "full"},
     {path: "**", redirectTo: "joint-control/head"},
 ];
