@@ -82,7 +82,9 @@ export class OpenclawService {
     getInstanceStatus(instanceId: string): Observable<OpenClawInstance> {
         return new Observable((observer) => {
             this.http
-                .get<OpenClawInstanceDto>(`${this.baseUrl}/${instanceId}/status`)
+                .get<OpenClawInstanceDto>(
+                    `${this.baseUrl}/${instanceId}/status`,
+                )
                 .pipe(catchError((err) => this.handleError(err)))
                 .subscribe((dto) => {
                     const instance = this.parseDto(dto);
@@ -165,9 +167,9 @@ export class OpenclawService {
         lines = 100,
     ): Observable<{logs: string[]}> {
         return this.http
-            .get<{logs: string[]}>(
-                `${this.baseUrl}/${instanceId}/logs?lines=${lines}`,
-            )
+            .get<{
+                logs: string[];
+            }>(`${this.baseUrl}/${instanceId}/logs?lines=${lines}`)
             .pipe(catchError((err) => this.handleError(err)));
     }
 
