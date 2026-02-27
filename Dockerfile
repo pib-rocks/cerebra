@@ -1,4 +1,4 @@
-FROM node:18 AS builder
+FROM node:24 AS builder
 
 WORKDIR /app
 
@@ -10,14 +10,15 @@ COPY . .
 
 ARG NODE_ENV=production
 RUN if [ "$NODE_ENV" = "production" ]; then \
-      npm run build --prod; \
+      npm run build -- --configuration=production; \
     else \
       npm run build; \
     fi
 
 FROM nginx:1.25.4
 
-COPY --from=builder /app/dist/ /usr/share/nginx/html
+# Angular 18+ builds to dist/cerebra/browser/
+COPY --from=builder /app/dist/cerebra/browser/ /usr/share/nginx/html
 
 COPY nginx.conf /etc/nginx/nginx.conf
 
