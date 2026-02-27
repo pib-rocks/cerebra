@@ -7,6 +7,7 @@ import {ExecutionState, ProgramState} from "src/app/shared/types/program-state";
 import {ProgramLogLine} from "src/app/shared/types/program-log-line";
 
 @Component({
+    standalone: false,
     selector: "app-program-splitscreen",
     templateUrl: "./program-splitscreen.component.html",
     styleUrls: ["./program-splitscreen.component.scss"],

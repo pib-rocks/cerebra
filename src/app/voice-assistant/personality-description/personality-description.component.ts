@@ -5,6 +5,7 @@ import {CerebraRegex} from "src/app/shared/types/cerebra-regex";
 import {VoiceAssistant} from "src/app/shared/types/voice-assistant";
 
 @Component({
+    standalone: false,
     selector: "app-personality-description",
     templateUrl: "./personality-description.component.html",
     styleUrls: ["./personality-description.component.scss"],

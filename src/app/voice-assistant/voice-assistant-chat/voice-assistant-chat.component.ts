@@ -20,6 +20,7 @@ import {Location} from "@angular/common";
 import {TokenService} from "src/app/shared/services/token.service";
 
 @Component({
+    standalone: false,
     selector: "app-voice-assistant-chat",
     templateUrl: "./voice-assistant-chat.component.html",
     styleUrls: ["./voice-assistant-chat.component.scss"],
@@ -85,9 +86,9 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
                 .split("/")
                 .find((segment) => RegExp(CerebraRegex.UUID).test(segment));
             this.personality = this.personalityId
-                ? this.voiceAssistantService.getPersonality(
+                ? (this.voiceAssistantService.getPersonality(
                       this.personalityId,
-                  ) ?? this.route.snapshot.params["personality"]
+                  ) ?? this.route.snapshot.params["personality"])
                 : this.route.snapshot.params["personality"];
             if (this.personality) {
                 this.subject = this.chatService.getSubject(

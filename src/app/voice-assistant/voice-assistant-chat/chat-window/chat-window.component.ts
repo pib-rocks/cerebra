@@ -9,6 +9,7 @@ import {Subscription, combineLatest, map} from "rxjs";
 import {TokenService} from "src/app/shared/services/token.service";
 
 @Component({
+    standalone: false,
     selector: "app-chat-window",
     templateUrl: "./chat-window.component.html",
     styleUrls: ["./chat-window.component.scss"],

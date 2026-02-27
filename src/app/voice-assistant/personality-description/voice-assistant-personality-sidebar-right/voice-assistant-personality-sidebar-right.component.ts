@@ -6,6 +6,7 @@ import {FormControl, FormGroup, Validators} from "@angular/forms";
 import {AssistantModel} from "src/app/shared/types/assistantModel";
 import {Observable} from "rxjs";
 @Component({
+    standalone: false,
     selector: "app-va-personality-sidebar-right",
     templateUrl: "./voice-assistant-personality-sidebar-right.component.html",
     styleUrls: ["./voice-assistant-personality-sidebar-right.component.scss"],

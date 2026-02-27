@@ -9,6 +9,7 @@ import {
 } from "src/app/shared/validators/bricklet-uid.validator";
 
 @Component({
+    standalone: false,
     selector: "app-hardware-id",
     templateUrl: "./hardware-id.component.html",
     styleUrl: "./hardware-id.component.scss",

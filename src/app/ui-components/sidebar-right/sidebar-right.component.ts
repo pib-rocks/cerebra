@@ -4,6 +4,7 @@ import {Observable, Subscription} from "rxjs";
 import {SidebarElement} from "src/app/shared/interfaces/sidebar-element.interface";
 
 @Component({
+    standalone: false,
     selector: "app-sidebar-right",
     templateUrl: "./sidebar-right.component.html",
     styleUrls: ["./sidebar-right.component.scss"],

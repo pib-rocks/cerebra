@@ -3,6 +3,7 @@ import {ApiService} from "src/app/shared/services/api.service";
 import {UrlConstants} from "src/app/shared/services/url.constants";
 
 @Component({
+    standalone: false,
     selector: "app-ip-retriever",
     templateUrl: "./ip-retriever.component.html",
     styleUrls: ["./ip-retriever.component.scss"],

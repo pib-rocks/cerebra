@@ -10,6 +10,7 @@ import {RosService} from "../../shared/services/ros-service/ros.service";
 import {TokenService} from "src/app/shared/services/token.service";
 
 @Component({
+    standalone: false,
     selector: "app-smart-connect",
     templateUrl: "./smart-connect.component.html",
     styleUrls: ["./smart-connect.component.css"],

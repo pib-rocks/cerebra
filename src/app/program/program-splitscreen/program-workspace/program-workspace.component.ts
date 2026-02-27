@@ -23,6 +23,7 @@ import {PoseService} from "src/app/shared/services/pose.service";
 import {Pose} from "src/app/shared/types/pose";
 
 @Component({
+    standalone: false,
     selector: "app-program-workspace",
     templateUrl: "./program-workspace.component.html",
     styleUrls: ["./program-workspace.component.scss"],
@@ -175,7 +176,7 @@ export class ProgramWorkspaceComponent
     flyoutChangeCallback = () => {
         const contentOpen = this.workspace.trashcan?.contentsIsOpen();
         const flyoutWidth = contentOpen
-            ? this.workspace.trashcan?.flyout?.getWidth() ?? 0
+            ? (this.workspace.trashcan?.flyout?.getWidth() ?? 0)
             : 0;
         this.trashcanFlyoutChange.emit(flyoutWidth);
     };

@@ -5,6 +5,7 @@ import {SidebarElement} from "src/app/shared/interfaces/sidebar-element.interfac
 import {CerebraRegex} from "src/app/shared/types/cerebra-regex";
 
 @Component({
+    standalone: false,
     selector: "app-voice-assistant-nav",
     templateUrl: "./voice-assistant-nav.component.html",
     styleUrls: ["./voice-assistant-nav.component.scss"],

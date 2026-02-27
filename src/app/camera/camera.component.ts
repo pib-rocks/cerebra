@@ -11,6 +11,7 @@ import {CameraSettings} from "../shared/types/camera-settings";
 import {CameraService} from "../shared/services/camera.service";
 
 @Component({
+    standalone: false,
     selector: "app-camera",
     templateUrl: "./camera.component.html",
     styleUrls: ["./camera.component.scss"],

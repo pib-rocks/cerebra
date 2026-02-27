@@ -15,6 +15,7 @@ import {Pose} from "src/app/shared/types/pose";
 import {MatSnackBar} from "@angular/material/snack-bar";
 
 @Component({
+    standalone: false,
     selector: "app-pose",
     templateUrl: "./pose.component.html",
     styleUrls: ["./pose.component.css"],

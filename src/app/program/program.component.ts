@@ -15,6 +15,7 @@ import {SidebarElement} from "../shared/interfaces/sidebar-element.interface";
 import {ProgramService} from "../shared/services/program.service";
 
 @Component({
+    standalone: false,
     selector: "app-program",
     templateUrl: "./program.component.html",
     styleUrls: ["./program.component.scss"],

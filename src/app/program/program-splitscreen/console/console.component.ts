@@ -15,6 +15,7 @@ import {ProgramLogLine} from "src/app/shared/types/program-log-line";
 import {ExecutionState, ProgramState} from "src/app/shared/types/program-state";
 
 @Component({
+    standalone: false,
     selector: "app-console",
     templateUrl: "./console.component.html",
     styleUrls: ["./console.component.scss"],

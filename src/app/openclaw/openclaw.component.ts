@@ -7,6 +7,7 @@ import {
 } from "../shared/services/openclaw.service";
 
 @Component({
+    standalone: false,
     selector: "app-openclaw",
     templateUrl: "./openclaw.component.html",
     styleUrls: ["./openclaw.component.scss"],

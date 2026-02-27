@@ -12,6 +12,7 @@ import {MotorService} from "src/app/shared/services/motor.service";
 import {MotorConfiguration} from "src/app/shared/types/motor-configuration";
 
 @Component({
+    standalone: false,
     selector: "app-motor-current",
     templateUrl: "./motor-current.component.html",
     styleUrls: ["./motor-current.component.scss"],

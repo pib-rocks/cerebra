@@ -5,6 +5,7 @@ import {MotorConfiguration} from "../../../shared/types/motor-configuration";
 import {ActivatedRoute} from "@angular/router";
 
 @Component({
+    standalone: false,
     selector: "app-motor-position",
     templateUrl: "./motor-position.component.html",
     styleUrls: ["./motor-position.component.scss"],

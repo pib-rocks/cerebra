@@ -4,6 +4,7 @@ import {ActivatedRoute, Router} from "@angular/router";
 import {MotorConfiguration} from "src/app/shared/types/motor-configuration";
 
 @Component({
+    standalone: false,
     selector: "app-joint-control-core",
     templateUrl: "./joint-control-core.component.html",
     styleUrls: ["./joint-control-core.component.scss"],

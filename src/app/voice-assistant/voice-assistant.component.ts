@@ -8,6 +8,7 @@ import {VoiceAssistant} from "../shared/types/voice-assistant";
 import {AssistantModel} from "../shared/types/assistantModel";
 
 @Component({
+    standalone: false,
     selector: "app-voice-assistant",
     templateUrl: "./voice-assistant.component.html",
     styleUrls: ["./voice-assistant.component.scss"],

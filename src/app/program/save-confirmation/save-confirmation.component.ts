@@ -3,6 +3,7 @@ import {NgbActiveModal} from "@ng-bootstrap/ng-bootstrap";
 import {SaveConfirmationOptions} from "../../shared/types/save-confirmation-options.enum";
 
 @Component({
+    standalone: false,
     selector: "app-confirm-leave",
     templateUrl: "./save-confirmation.component.html",
     styleUrls: ["./save-confirmation.component.scss"],

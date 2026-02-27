@@ -13,6 +13,7 @@ import {FormControl} from "@angular/forms";
 import {Observable} from "rxjs";
 
 @Component({
+    standalone: false,
     selector: "app-vertical-slider",
     templateUrl: "./vertical-slider.component.html",
     styleUrls: ["./vertical-slider.component.scss"],

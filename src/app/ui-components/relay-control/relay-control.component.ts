@@ -3,6 +3,7 @@ import {RosService} from "src/app/shared/services/ros-service/ros.service";
 import {MatSnackBar} from "@angular/material/snack-bar";
 
 @Component({
+    standalone: false,
     selector: "app-relay-control",
     templateUrl: "./relay-control.component.html",
     styleUrls: ["./relay-control.component.scss"],

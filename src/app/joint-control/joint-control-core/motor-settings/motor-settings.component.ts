@@ -7,6 +7,7 @@ import {MotorConfiguration} from "src/app/shared/types/motor-configuration";
 import {MotorSettings} from "src/app/shared/types/motor-settings.class";
 
 @Component({
+    standalone: false,
     selector: "app-motor-settings",
     templateUrl: "./motor-settings.component.html",
     styleUrls: ["./motor-settings.component.scss"],

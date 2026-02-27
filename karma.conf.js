@@ -31,6 +31,9 @@ module.exports = function (config) {
         },
         reporters: ["progress", "kjhtml"],
         browsers: ["Chrome"],
+        browserDisconnectTimeout: 10000,
+        browserDisconnectTolerance: 3,
+        browserNoActivityTimeout: 60000,
         customLaunchers: {
             NoSandbox: {
                 base: "ChromeHeadless",
