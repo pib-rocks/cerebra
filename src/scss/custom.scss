@@ -14,4 +14,4 @@ $theme-colors: (
     "primary": $pib-pink,
 );
 
-@import "../../node_modules/bootstrap/scss/bootstrap";
+@use "../../node_modules/bootstrap/scss/bootstrap";
