@@ -6,10 +6,11 @@
         <a
             class="toggle-button"
             id="chat-window-toggle-voice-assistant"
+            data-test="TGL_Personality"
             [routerLink]="this.chat ? ['../../'] : ['../']">
             <img
                 [src]="'../../assets/toggle-switch-left.png'"
-                alt="Toggle for turning the Voice Assistant on and off" />
+                alt="Toggle for turning to personality settings" />
         </a>
     </div>
     <div class="col text-left">
@@ -45,11 +46,13 @@
                 <input
                     type="text"
                     id="message-input"
+                    data-test="TXT_Chat_Message"
                     (keyup.enter)="sendChatMessage()"
                     [formControl]="chatMessageFormControl"
                     [placeholder]="chatMessageFormControl.disabled ? 'Enable SmartConnect to start the Voice-Assistant' : 'Enter a message'" />
                 <button
                     id="chat-send-button"
+                    data-test="BTN_Chat_Send"
                     [disabled]="!textInputActive"
                     (click)="sendChatMessage()">
                     <img
