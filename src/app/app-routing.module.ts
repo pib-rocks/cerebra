@@ -21,6 +21,8 @@ import {ProgramSplitscreenComponent} from "./program/program-splitscreen/program
 import {programCodeResolver} from "./program/program-splitscreen/resolver/program-code.resolver";
 import {PoseComponent} from "./pose/pose.component";
 import {HardwareIdComponent} from "./joint-control/hardware-id/hardware-id.component";
+import {RgbLedButtonComponent} from "./program/rgb-led-button/rgb-led-button.component";
+import {ProgramOverviewComponent} from "./program/program-overview/program-overview.component";
 
 const routes: Routes = [
     {
@@ -90,13 +92,23 @@ const routes: Routes = [
     },
     {
         path: "program",
-        component: ProgramComponent,
+        component: ProgramOverviewComponent,
         children: [
             {
-                path: ":program-number",
-                component: ProgramSplitscreenComponent,
-                canDeactivate: [SaveConfirmationGuard],
-                resolve: {code: programCodeResolver},
+                path: "rgb-led-button",
+                component: RgbLedButtonComponent,
+            },
+            {
+                path: "",
+                component: ProgramComponent,
+                children: [
+                    {
+                        path: ":program-number",
+                        component: ProgramSplitscreenComponent,
+                        canDeactivate: [SaveConfirmationGuard],
+                        resolve: {code: programCodeResolver},
+                    },
+                ],
             },
         ],
     },

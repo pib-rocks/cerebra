@@ -1,0 +1,32 @@
+<div class="pt-2 pl-2 pr-2">
+    <ul class="nav nav-tabs">
+        <li
+            class="nav-item"
+            routerLinkActive="navbar-btn-active"
+            [routerLinkActiveOptions]="{ exact: false }">
+            <a
+                id="program-nav"
+                class="nav-link sidebar-btn"
+                [routerLink]="['/program', (selected$ | async)]">
+                Programs
+            </a>
+        </li>
+
+        <li
+            class="nav-item"
+            routerLinkActive="navbar-btn-active"
+            [routerLinkActiveOptions]="{ exact: true }">
+            <a
+                id="led-buttons-nav"
+                class="nav-link sidebar-btn"
+                routerLink="/program/rgb-led-button">
+                Assign Button
+            </a>
+        </li>
+    </ul>
+</div>
+<div class="m-2 pt-2">
+    <div class="pink-corner-frame">
+        <router-outlet></router-outlet>
+    </div>
+</div>

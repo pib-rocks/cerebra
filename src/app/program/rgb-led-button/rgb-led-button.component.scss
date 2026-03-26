@@ -1,0 +1,33 @@
+@import "src/styles";
+* {
+    color: white;
+}
+
+.head-line {
+    font-size: 1.3vw;
+}
+
+.font-size {
+    font-size: 1.33vw;
+    font-weight: bolder;
+}
+
+.hardware-button {
+    font-size: 1.11vw;
+    font-weight: bold;
+}
+
+.invalid-validation {
+    color: $pink-color;
+    font-size: 1.3vw;
+}
+select {
+    background-color: $blue-dark-2;
+}
+
+select.form-control:focus {
+    color: $white-color;
+    background-color: $blue-dark-2;
+    border-radius: 5px;
+    border: none;
+}

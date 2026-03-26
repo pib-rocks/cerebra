@@ -44,6 +44,8 @@ import {MarkdownModule} from "ngx-markdown";
 import {HardwareIdComponent} from "./joint-control/hardware-id/hardware-id.component";
 import {RelayControlComponent} from "./ui-components/relay-control/relay-control.component";
 import {IpRetrieverComponent} from "./ui-components/ip-retriever/ip-retriever.component";
+import {RgbLedButtonComponent} from "./program/rgb-led-button/rgb-led-button.component";
+import {ProgramOverviewComponent} from "./program/program-overview/program-overview.component";
 
 @NgModule({
     declarations: [
@@ -76,6 +78,8 @@ import {IpRetrieverComponent} from "./ui-components/ip-retriever/ip-retriever.co
         HardwareIdComponent,
         RelayControlComponent,
         IpRetrieverComponent,
+        RgbLedButtonComponent,
+        ProgramOverviewComponent,
     ],
     imports: [
         BrowserModule,
