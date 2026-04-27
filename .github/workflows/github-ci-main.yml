@@ -58,3 +58,9 @@ jobs:
     name: Analyze with CodeQl
     uses: ./.github/workflows/codeql.yml
 
+  System-Tests:
+    name: Run System Tests
+    uses: ./.github/workflows/system-tests.yml
+    secrets: inherit
+    needs: Pipeline
+

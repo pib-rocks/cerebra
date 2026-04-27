@@ -1,0 +1,62 @@
+name: "System Test"
+
+on:
+  workflow_call:
+    inputs:
+      repo_owner:
+        required: true
+        type: string
+      test_repo_branch:
+        required: false
+        type: string
+        default: main
+      repo_branch:
+        required: false
+        type: string
+        default: main
+
+jobs:
+
+  Pipeline:
+    name: System Test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20.19.0]
+        
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install dependencies   
+        run: npm ci
+      
+      - name: Start Cerebra backend
+        run: |
+          nohup npm run cerebra-mock-backend > cerebra.log 2>&1 &
+
+      - name: Wait for backend
+        run: npx wait-on http://localhost:4200
+        
+      - name: Checkout Testframework
+        run: 
+          git clone https://${{ secrets.GITLAB_USER }}:${{ secrets.GITLAB_TOKEN }}@gitlab.isento.net/isento-testengineers/systemtest-pib
+          git checkout ${{ env.TESTREPO_BRANCH }}
+
+      - name: Generate Reporter
+        run:
+          cd ./systemtest-pib
+          node -r ts-node/register create-listener-config.ts
+
+      - name: Run Tests
+        run: 
+          node -r ts-node/register testfile-generator.ts
+
+#      - name: Upload Screenshots bei Fehlern
+#        if: failure()
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: screenshots-on-failure
+#          path: ./test-results/screenshots/
