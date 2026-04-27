@@ -78,6 +78,7 @@
             <circle
                 *ngFor="let thumb of thumbs; index as i"
                 id="slider-{{baseId}}-thumb-{{i}}"
+                [attr.data-test]="'CIR_Slider_Thumb_' + baseId"
                 [attr.cx]="thumb.position"
                 [attr.cy]="thumbRadius"
                 [attr.r]="thumbRadius"

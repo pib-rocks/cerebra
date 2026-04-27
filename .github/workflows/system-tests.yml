@@ -13,7 +13,20 @@ on:
       repo_branch:
         required: false
         type: string
+        default: develop
+  workflow_dispatch:
+    inputs:
+      repo_owner:
+        required: false
+        type: string
+      test_repo_branch:
+        required: false
+        type: string
         default: main
+      repo_branch:
+        required: false
+        type: string
+        default: develop
 
 jobs:
 
@@ -28,35 +41,95 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v4
         with:
+          ref: ${{ inputs.repo_branch }}
           submodules: recursive
 
+      - name: Install Chrome
+        uses: browser-actions/setup-chrome@v1
+
       - name: Install dependencies   
-        run: npm ci
+        run: |
+          npm ci
       
       - name: Start Cerebra backend
         run: |
           nohup npm run cerebra-mock-backend > cerebra.log 2>&1 &
 
       - name: Wait for backend
-        run: npx wait-on http://localhost:4200
+        run: |
+          npx wait-on http://localhost:4200
         
       - name: Checkout Testframework
-        run: 
-          git clone https://${{ secrets.GITLAB_USER }}:${{ secrets.GITLAB_TOKEN }}@gitlab.isento.net/isento-testengineers/systemtest-pib
-          git checkout ${{ env.TEST_REPO_BRANCH }}
+        run: |
+          git clone https://oauth2:${{ secrets.GITLAB_TOKEN }}@gitlab.isento.net/isento-testengineers/systemtest-pib
+          cd ./systemtest-pib
+          git checkout ${{ inputs.test_repo_branch }}
+
+      - name: Install dependencies   
+        run: | 
+          cd ./systemtest-pib      
+          npm ci
+          pip install robotframework
+          python -m pip install --upgrade pip
+          pip install robotframework-browser
+          pip install robotframework-seleniumlibrary
+
+      - name: Install Playwright dependencies
+        run: |
+          cd ./systemtest-pib
+          npx playwright install --with-deps
+
+      - name : Setup WebDriver for Chrome
+        uses: nanasess/setup-chromedriver@v2
+
+      - name: Initialize WebDriver
+        run: |
+          cd ./systemtest-pib
+          pip install webdriver-manager
+          rfbrowser init
 
       - name: Generate Reporter
-        run:
+        run: |
           cd ./systemtest-pib
+          echo "QASE_PROJECT_ID: ${{ vars.QASE_PROJECT_ID }}"
+          echo "QASE_API_TOKEN: ${{ secrets.QASE_API_TOKEN }}"
+          export QASE_API_TOKEN=${{ secrets.QASE_API_TOKEN }}
+          export QASE_PROJECT_ID="${{ vars.QASE_PROJECT_ID }}"
           node -r ts-node/register create-listener-config.ts
 
-      - name: Run Tests
-        run: 
+      - name: Pull current testcases and generate testfiles
+        run: |
+          cd ./systemtest-pib
+          export QASE_API_TOKEN=${{ secrets.QASE_API_TOKEN }}
+          export QASE_PROJECT_ID="${{ vars.QASE_PROJECT_ID }}"         
           node -r ts-node/register testfile-generator.ts
+        
+      - name: Run tests
+        run: |
+          cd ./systemtest-pib
+          export QASE_API_TOKEN=${{ secrets.QASE_API_TOKEN }}
+          export QASE_PROJECT_ID="${{ vars.QASE_PROJECT_ID }}"
+          xvfb-run robot ./testcases
 
-#      - name: Upload Screenshots bei Fehlern
-#        if: failure()
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: screenshots-on-failure
-#          path: ./test-results/screenshots/
+      - name: Upload bei Fehlern
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Logfiles if test fails
+          path: |
+            /home/runner/work/cerebra/cerebra/systemtest-pib/output.xml
+            /home/runner/work/cerebra/cerebra/systemtest-pib/log.html
+            /home/runner/work/cerebra/cerebra/systemtest-pib/report.html
+            /home/runner/work/cerebra/cerebra/cerebra.log
+          retention-days: 5
+
+      - name: Upload bei Erfolg
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Test results if test succeeds
+          path: |
+            /home/runner/work/cerebra/cerebra/systemtest-pib/output.xml
+            /home/runner/work/cerebra/cerebra/systemtest-pib/log.html
+            /home/runner/work/cerebra/cerebra/systemtest-pib/report.html
+          retention-days: 5
