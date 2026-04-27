@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       repo_owner:
-        required: true
+        required: false
         type: string
       test_repo_branch:
         required: false
@@ -43,7 +43,7 @@ jobs:
       - name: Checkout Testframework
         run: 
           git clone https://${{ secrets.GITLAB_USER }}:${{ secrets.GITLAB_TOKEN }}@gitlab.isento.net/isento-testengineers/systemtest-pib
-          git checkout ${{ env.TESTREPO_BRANCH }}
+          git checkout ${{ env.TEST_REPO_BRANCH }}
 
       - name: Generate Reporter
         run:
