@@ -7,16 +7,16 @@
         (ngSubmit)="updateConfig()">
         <div class="row font-size align-items-start">
             <div class="col-sm-6">
-                <ng-container *ngFor="let button of buttons">
+                <ng-container *ngFor="let button of buttons; index as i">
                     <div class="d-flex align-items-center mb-2">
                         <label class="me-3 p-0 col-auto flex-shrink-0">
-                            {{ button.type }} {{ button.brickletNumber }}:
+                            {{ button.type }} {{ i + 1 }}:
                         </label>
                         <select
-                            [attr.data-test]="'TXT_button_program_' + button.brickletNumber"
+                            [attr.data-test]="'TXT_Button_Program_' + button.brickletNumber"
                             class="form-control"
                             [formControlName]="button.brickletNumber">
-                            <option value="">None</option>
+                            <option value=""></option>
                             <ng-container
                                 *ngFor="let program of programs | async">
                                 <option [value]="program.programNumber">
@@ -32,7 +32,7 @@
             <div class="col-auto mt-4 ml-4 mb-3 pl-2">
                 <button
                     id="update-button-programs"
-                    data-test="BTN_Update_button_programs"
+                    data-test="BTN_Update_Button_Programs"
                     class="hardware-button btn btn-regular"
                     [disabled]="ledConfigForm.pristine">
                     Update

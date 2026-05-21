@@ -1,5 +1,5 @@
 import {Injectable} from "@angular/core";
-import {Program} from "../types/program";
+import {ButtonProgram} from "../types/button-program";
 import {Observable} from "rxjs";
 import {UtilService} from "./util.service";
 import {UrlConstants} from "./url.constants";
@@ -9,26 +9,26 @@ import {ApiService} from "./api.service";
     providedIn: "root",
 })
 export class RgbLedButtonService {
-    buttonPrograms: any[] = [];
-
     constructor(private apiService: ApiService) {}
 
-    getButtonPrograms(): Observable<any[]> {
+    getButtonPrograms(): Observable<ButtonProgram[]> {
         return UtilService.createResultObservable(
             this.apiService.get(UrlConstants.RGB_BUTTON),
             (response) => {
-                this.buttonPrograms = response;
-                return response;
+                return response.buttonPrograms;
             },
         );
     }
 
-    updateButtonPrograms(buttonPrograms: any): Observable<any> {
+    updateButtonPrograms(
+        buttonPrograms: ButtonProgram[],
+    ): Observable<ButtonProgram[]> {
         return UtilService.createResultObservable(
-            this.apiService.put(UrlConstants.RGB_BUTTON, buttonPrograms),
+            this.apiService.put(UrlConstants.RGB_BUTTON, {
+                buttonProgramUpdates: buttonPrograms,
+            }),
             (response) => {
-                this.buttonPrograms = response;
-                return response;
+                return response.buttonPrograms;
             },
         );
     }

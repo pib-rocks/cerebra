@@ -10,9 +10,10 @@ import {Observable, Subject} from "rxjs";
 import {NgbModal, NgbModalRef} from "@ng-bootstrap/ng-bootstrap";
 import {FormControl, Validators} from "@angular/forms";
 import {ActivatedRoute, Router} from "@angular/router";
-import {Program} from "../shared/types/program";
-import {SidebarElement} from "../shared/interfaces/sidebar-element.interface";
-import {ProgramService} from "../shared/services/program.service";
+import {Program} from "../../../shared/types/program";
+import {SidebarElement} from "../../../shared/interfaces/sidebar-element.interface";
+import {ProgramService} from "../../../shared/services/program.service";
+import {map, take} from "rxjs/operators";
 
 @Component({
     selector: "app-program",

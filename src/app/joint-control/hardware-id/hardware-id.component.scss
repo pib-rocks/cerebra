@@ -3,11 +3,11 @@
     color: white;
 }
 
-.head-line {
+.form-headline {
     font-size: 1.3vw;
 }
 
-.font-size {
+.form-content {
     font-size: 1.33vw;
     font-weight: bolder;
 }
@@ -17,7 +17,7 @@
     font-weight: bold;
 }
 
-.invalid-validation {
+.validation-error {
     color: $pink-color;
     font-size: 1.3vw;
 }
@@ -27,4 +27,14 @@ input.form-control:focus {
     background-color: $blue-dark-2;
     border-radius: 5px;
     border: none;
+}
+
+.bricklet-grid {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    grid-auto-rows: 2.5rem;
+    gap: 1.5rem 1.5rem;
+    align-items: center;
+    padding-left: 0.5rem;
+    width: 100%;
 }

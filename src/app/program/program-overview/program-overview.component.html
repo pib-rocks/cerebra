@@ -1,4 +1,4 @@
-<div class="pt-2 pl-2 pr-2">
+<div class="pt-4 pl-2 pr-2">
     <ul class="nav nav-tabs">
         <li
             class="nav-item"
@@ -6,21 +6,22 @@
             [routerLinkActiveOptions]="{ exact: false }">
             <a
                 id="program-nav"
+                data-test="LNK_Programs"
                 class="nav-link sidebar-btn"
                 [routerLink]="['/program', (selected$ | async)]">
                 Programs
             </a>
         </li>
-
         <li
             class="nav-item"
             routerLinkActive="navbar-btn-active"
             [routerLinkActiveOptions]="{ exact: true }">
             <a
                 id="led-buttons-nav"
+                data-test="LNK_RGB_Buttons"
                 class="nav-link sidebar-btn"
-                routerLink="/program/rgb-led-button">
-                Assign Button
+                routerLink="rgb-led-button">
+                Assign Buttons
             </a>
         </li>
     </ul>
