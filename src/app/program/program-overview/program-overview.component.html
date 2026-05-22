@@ -2,26 +2,22 @@
     <ul class="nav nav-tabs">
         <li
             class="nav-item"
-            routerLinkActive="navbar-btn-active"
-            [routerLinkActiveOptions]="{ exact: false }">
+            [class.navbar-btn-active]="isProgramTabActive">
             <a
                 id="program-nav"
                 data-test="LNK_Programs"
                 class="nav-link sidebar-btn"
-                [routerLink]="['/program', (selected$ | async)]">
+                routerLink="/program">
                 Programs
             </a>
         </li>
         <li
             class="nav-item"
-            routerLinkActive="navbar-btn-active"
-            [routerLinkActiveOptions]="{ exact: true }">
+            routerLinkActive="navbar-btn-active">
             <a
-                id="led-buttons-nav"
-                data-test="LNK_RGB_Buttons"
                 class="nav-link sidebar-btn"
-                routerLink="rgb-led-button">
-                Assign Buttons
+                routerLink="/program/rgb-led-button">
+                RGB LED Button
             </a>
         </li>
     </ul>

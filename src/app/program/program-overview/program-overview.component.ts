@@ -1,4 +1,5 @@
-import {Component} from "@angular/core";
+import {Component, OnInit} from "@angular/core";
+import {Router} from "@angular/router";
 import {map, Observable} from "rxjs";
 import {ProgramService} from "src/app/shared/services/program.service";
 
@@ -7,10 +8,17 @@ import {ProgramService} from "src/app/shared/services/program.service";
     templateUrl: "./program-overview.component.html",
     styleUrl: "./program-overview.component.scss",
 })
-export class ProgramOverviewComponent {
+export class ProgramOverviewComponent implements OnInit {
     selected$!: Observable<string>;
 
-    constructor(private programService: ProgramService) {}
+    constructor(
+        private programService: ProgramService,
+        private router: Router,
+    ) {}
+
+    get isProgramTabActive(): boolean {
+        return !this.router.url.includes("rgb-led-button");
+    }
 
     ngOnInit(): void {
         this.selected$ = this.programService.programsSubject.pipe(
