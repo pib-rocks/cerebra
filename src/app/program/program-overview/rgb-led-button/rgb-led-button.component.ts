@@ -19,9 +19,7 @@ export class RgbLedButtonComponent implements OnInit {
     buttons: Bricklet[] = [];
     programs!: Observable<Program[]>;
 
-    ledConfigForm = new FormGroup<Record<string, FormControl<string | null>>>(
-        {},
-    );
+    ledConfigForm = new FormGroup({});
 
     constructor(
         private programService: ProgramService,
@@ -65,13 +63,12 @@ export class RgbLedButtonComponent implements OnInit {
     }
 
     updateConfig() {
-        const buttonProgramValues: Record<string, string | null | undefined> =
-            this.ledConfigForm.value;
         const buttonPrograms: ButtonProgram[] = Object.keys(
-            buttonProgramValues,
+            this.ledConfigForm.controls,
         ).map((brickletNumber) => ({
             brickletNumber: Number(brickletNumber),
-            programNumber: buttonProgramValues[brickletNumber] || null,
+            programNumber:
+                this.ledConfigForm.get(brickletNumber)?.value || null,
         }));
         this.rgbLedButtonService
             .updateButtonPrograms(buttonPrograms)

@@ -13,14 +13,13 @@ import {ActivatedRoute, Router} from "@angular/router";
 import {Program} from "../../../shared/types/program";
 import {SidebarElement} from "../../../shared/interfaces/sidebar-element.interface";
 import {ProgramService} from "../../../shared/services/program.service";
-import {map, take} from "rxjs/operators";
 
 @Component({
-    selector: "app-program",
-    templateUrl: "./program.component.html",
-    styleUrls: ["./program.component.scss"],
+    selector: "app-program-manager",
+    templateUrl: "./program-manager.component.html",
+    styleUrls: ["./program-manager.component.scss"],
 })
-export class ProgramComponent implements OnInit, AfterViewInit {
+export class ProgramManagerComponent implements OnInit, AfterViewInit {
     @ViewChild("modalContent") modalContent: TemplateRef<any> | undefined;
     closeResult!: string;
     ngbModalRef?: NgbModalRef;

@@ -2,7 +2,7 @@ import {ComponentFixture, TestBed} from "@angular/core/testing";
 
 import {ProgramOverviewComponent} from "./program-overview.component";
 import {ProgramService} from "src/app/shared/services/program.service";
-import {BehaviorSubject, of} from "rxjs";
+import {BehaviorSubject} from "rxjs";
 import {RouterTestingModule} from "@angular/router/testing";
 import {Program} from "src/app/shared/types/program";
 

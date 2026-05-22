@@ -11,14 +11,14 @@ import {chatResolver} from "./voice-assistant/voice-assistant-resolver/chat.reso
 import {PersonalityWrapperComponent} from "./voice-assistant/personality-wrapper/personality-wrapper.component";
 import {JointControlComponent} from "./joint-control/joint-control.component";
 import {JointControlCoreComponent} from "./joint-control/joint-control-core/joint-control-core.component";
-import {ProgramComponent} from "./program/program-overview/program/program.component";
+import {ProgramManagerComponent} from "./program/program-overview/program-manager/program-manager.component";
 import {jointResolver} from "./joint-control/joint-resolver/joint-resolver";
 import {MotorPositionComponent} from "./joint-control/joint-control-core/motor-position/motor-position.component";
 import {motorResolver} from "./joint-control/joint-control-core/motor-position/motor-resolver/motor.resolver";
 import {motorGuard} from "./security/motor-guard";
 import {SaveConfirmationGuard} from "./security/save-confirmation.guard";
-import {ProgramSplitscreenComponent} from "./program/program-overview/program/program-splitscreen/program-splitscreen.component";
-import {programCodeResolver} from "./program/program-overview/program/program-splitscreen/resolver/program-code.resolver";
+import {ProgramSplitscreenComponent} from "./program/program-overview/program-manager/program-splitscreen/program-splitscreen.component";
+import {programCodeResolver} from "./program/program-overview/program-manager/program-splitscreen/resolver/program-code.resolver";
 import {PoseComponent} from "./pose/pose.component";
 import {HardwareIdComponent} from "./joint-control/hardware-id/hardware-id.component";
 import {RgbLedButtonComponent} from "./program/program-overview/rgb-led-button/rgb-led-button.component";
@@ -100,7 +100,7 @@ const routes: Routes = [
             },
             {
                 path: "",
-                component: ProgramComponent,
+                component: ProgramManagerComponent,
                 children: [
                     {
                         path: ":program-number",

@@ -5,7 +5,7 @@ import {ProgramService} from "src/app/shared/services/program.service";
 import {RgbLedButtonService} from "src/app/shared/services/rgb-led-button.service";
 import {BrickletService} from "src/app/shared/services/bricklet.service";
 import {MatSnackBar} from "@angular/material/snack-bar";
-import {FormControl, FormGroup, ReactiveFormsModule} from "@angular/forms";
+import {ReactiveFormsModule} from "@angular/forms";
 import {of} from "rxjs";
 import {Bricklet} from "src/app/shared/types/bricklet";
 
@@ -94,22 +94,12 @@ describe("RgbLedButtonComponent", () => {
         expect(rgbLedButtonServiceSpy.getButtonPrograms).toHaveBeenCalled();
         expect(component.ledConfigForm.contains("1")).toBeTrue();
         expect(component.ledConfigForm.contains("2")).toBeTrue();
-        expect(
-            (
-                component.ledConfigForm.controls as Record<
-                    string,
-                    FormControl<string | null>
-                >
-            )["1"].value,
-        ).toBe("uuid1");
-        expect(
-            (
-                component.ledConfigForm.controls as Record<
-                    string,
-                    FormControl<string | null>
-                >
-            )["2"].value,
-        ).toBeNull();
+        const formValue = component.ledConfigForm.value as Record<
+            string,
+            string | null
+        >;
+        expect(formValue["1"]).toBe("uuid1");
+        expect(formValue["2"]).toBeNull();
     });
 
     it("should update button programs", () => {
@@ -121,18 +111,10 @@ describe("RgbLedButtonComponent", () => {
             of(mockBricklets),
         );
         component.ngOnInit();
-        (
-            component.ledConfigForm.controls as Record<
-                string,
-                FormControl<string | null>
-            >
-        )["1"].setValue("new-uuid1");
-        (
-            component.ledConfigForm.controls as Record<
-                string,
-                FormControl<string | null>
-            >
-        )["2"].setValue("new-uuid2");
+        component.ledConfigForm.patchValue({
+            "1": "new-uuid1",
+            "2": "new-uuid2",
+        } as Record<string, string | null>);
         component.updateConfig();
         expect(
             rgbLedButtonServiceSpy.updateButtonPrograms,

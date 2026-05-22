@@ -10,7 +10,7 @@ import {MatDialogModule} from "@angular/material/dialog";
 import {MatTooltipModule} from "@angular/material/tooltip";
 import {NgbModule, NgbDropdownModule} from "@ng-bootstrap/ng-bootstrap";
 import {MatSliderModule} from "@angular/material/slider";
-import {ProgramComponent} from "./program/program-overview/program/program.component";
+import {ProgramManagerComponent} from "./program/program-overview/program-manager/program-manager.component";
 import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
 
 import {VoiceAssistantNavComponent} from "./voice-assistant/voice-assistant-nav/voice-assistant-nav.component";
@@ -23,8 +23,8 @@ import {HorizontalSliderComponent} from "./sliders/horizontal-slider/horizontal-
 import {VoiceAssistantComponent} from "./voice-assistant/voice-assistant.component";
 import {PersonalityDescriptionComponent} from "./voice-assistant/personality-description/personality-description.component";
 import {ChatWindowComponent} from "./voice-assistant/voice-assistant-chat/chat-window/chat-window.component";
-import {ProgramWorkspaceComponent} from "./program/program-overview/program/program-splitscreen/program-workspace/program-workspace.component";
-import {ProgramSplitscreenComponent} from "./program/program-overview/program/program-splitscreen/program-splitscreen.component";
+import {ProgramWorkspaceComponent} from "./program/program-overview/program-manager/program-splitscreen/program-workspace/program-workspace.component";
+import {ProgramSplitscreenComponent} from "./program/program-overview/program-manager/program-splitscreen/program-splitscreen.component";
 import {AngularSplitModule} from "angular-split";
 import {HIGHLIGHT_OPTIONS, HighlightModule} from "ngx-highlightjs";
 import {CerebraErrorHandler} from "./global-error-handler/service/cerebra-error-handler.service";
@@ -34,9 +34,9 @@ import {JointControlCoreComponent} from "./joint-control/joint-control-core/join
 import {MotorSettingsComponent} from "./joint-control/joint-control-core/motor-settings/motor-settings.component";
 import {MotorCurrentComponent} from "./joint-control/joint-control-core/motor-current/motor-current.component";
 import {MotorPositionComponent} from "./joint-control/joint-control-core/motor-position/motor-position.component";
-import {SaveConfirmationComponent} from "./program/program-overview/program/save-confirmation/save-confirmation.component";
-import {PythonCodeComponent} from "./program/program-overview/program/program-splitscreen/python-code/python-code.component";
-import {ConsoleComponent} from "./program/program-overview/program/program-splitscreen/console/console.component";
+import {SaveConfirmationComponent} from "./program/program-overview/program-manager/save-confirmation/save-confirmation.component";
+import {PythonCodeComponent} from "./program/program-overview/program-manager/program-splitscreen/python-code/python-code.component";
+import {ConsoleComponent} from "./program/program-overview/program-manager/program-splitscreen/console/console.component";
 import {SmartConnectComponent} from "./ui-components/smart-connect/smart-connect.component";
 import {NgOptimizedImage} from "@angular/common";
 import {PoseComponent} from "./pose/pose.component";
@@ -56,7 +56,7 @@ import {ProgramOverviewComponent} from "./program/program-overview/program-overv
         MotorSettingsComponent,
         MotorCurrentComponent,
         MotorPositionComponent,
-        ProgramComponent,
+        ProgramManagerComponent,
         VoiceAssistantNavComponent,
         VoiceAssistantChatComponent,
         SideBarRightComponent,
