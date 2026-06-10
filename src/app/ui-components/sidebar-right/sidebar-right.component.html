@@ -10,7 +10,8 @@
                     <div class="d-flex justify-content-between">
                         <a
                             [routerLink]="sidebarElement.getUUID()"
-                            class="element text-truncate col-9 pl-sm-1 pl-xl-3 pr-2 pb-2 text-center-vertical">
+                            class="element text-truncate col-9 pl-sm-1 pl-xl-3 pr-2 pb-2 text-center-vertical"
+                            [attr.data-test]="'BTN_' + sidebarElement.getName()">
                             {{ sidebarElement.getName() }}
                         </a>
                         <div ngbDropdown>
@@ -55,7 +56,7 @@
                             type="button"
                             class="col btn pl-3 p-3 text-truncate element text-center"
                             id="sidebar-right-{{option.label}}"
-                            data-test="BTN_option.label"
+                            [attr.data-test]="'BTN_' + option.label"
                             (click)="option.clickCallback('')">
                             <label class="mb-0">{{option.label}}</label>
                         </button>

@@ -5,7 +5,8 @@
             [id]="'settings-' + motor.motorPathName"
             src="../../../../assets/joint-control/other/settings-icon.svg"
             (click)="openPopup(content)"
-            alt="settings-icon" />
+            alt="settings-icon"
+            [attr.data-test]="'BTN_Motor_Settings_' + motor.motorPathName" />
     </div>
     <div
         class="col p-0 d-flex align-items-center justify-content-center"

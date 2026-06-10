@@ -17,7 +17,7 @@
         [ngClass]="pose.poseId === selectedPoseId ? 'selected' : 'unselected'">
         <button
             class="apply-button flex-shrink-0"
-            [attr.data-test]="'BTN_Pose_Apply_' + pose.poseId"
+            [attr.data-test]="'BTN_Pose_Apply_' + pose.name"
             [disabled]="!pose.active"
             data-test="BTN_Apply_pose"
             (click)="applyPose(pose)">
@@ -28,7 +28,7 @@
         </button>
         <button
             class="pose-label flex-grow-1 flex-shrink-1 pl-3"
-            [attr.data-test]="'BTN_Pose_Select_' + pose.poseId"
+            [attr.data-test]="'BTN_Pose_Select_' + pose.name"
             (click)="selectPose(pose)"
             (dblclick)="renamePose(pose)">
             {{pose.name}}
@@ -47,7 +47,7 @@
         </button>
         <button
             *ngIf="pose.deletable"
-            [attr.data-test]="'BTN_Pose_Rename_' + pose.poseId"
+            [attr.data-test]="'BTN_Pose_Rename_' + pose.name"
             #renameButton
             class="rename-button flex-shrink-0"
             data-test="BTN_Rename_pose"
@@ -59,7 +59,7 @@
         </button>
         <button
             *ngIf="pose.deletable"
-            [attr.data-test]="'BTN_Pose_Delete_' + pose.poseId"
+            [attr.data-test]="'BTN_Pose_Delete_' + pose.name"
             class="delete-button flex-shrink-0"
             data-test="BTN_Delete_pose"
             (click)="deletePose(pose)">
