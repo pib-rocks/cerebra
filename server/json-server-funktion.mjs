@@ -583,13 +583,13 @@ server.get("/button-programs", (req, res, next) => {
     mockData.buttonProgram.forEach((buttonProgram) => {
         response.push(ButtonProgram.getButtonProgram(buttonProgram));
     });
-    return res.status(200).send(response);
+    return res.status(200).send({buttonPrograms: response});
 });
 
 //updateButtonPrograms
 server.put("/button-programs", (req, res, next) => {
     let updatedButtonPrograms = [];
-    req.body.forEach((buttonProgram) => {
+    req.body.buttonProgramUpdates.forEach((buttonProgram) => {
         let updated = false;
         mockData.buttonProgram.forEach((bp) => {
             if (bp.brickletNumber == buttonProgram.brickletNumber) {
@@ -602,7 +602,7 @@ server.put("/button-programs", (req, res, next) => {
             return res.status(404).send();
         }
     });
-    return res.status(200).send(updatedButtonPrograms);
+    return res.status(200).send({buttonPrograms: updatedButtonPrograms});
 });
 
 server.use(router);
