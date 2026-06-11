@@ -16,7 +16,7 @@
         <div
             *ngFor="let motor of displayMotors"
             class="row m-0 p-0"
-            [ngClass]="[joint.reversed ? 'flex-row-reverse' : 'flex-row', motor == selectedMotor || selectedMotor?.isMultiMotor ? 'background-selected' : '']"
+            [ngClass]="[joint.reversed ? 'flex-row-reverse' : 'flex-row', motor === selectedMotor || selectedMotor?.isMultiMotor ? 'background-selected' : '']"
             [style]="'height: ' + (joint.segmentHeight*100) + '%;'">
             <app-motor-settings
                 [reversed]="joint.reversed"
@@ -37,7 +37,7 @@
             *ngFor="let motor of joint.motors"
             (click)="selectMotor(motor)"
             [id]="'touchpoint-' + motor.motorPathName"
-            [ngClass]="selectedMotor?.motorName == motor.motorName ? 'active-touchpoint' : ''"
+            [ngClass]="selectedMotor?.motorName === motor.motorName ? 'active-touchpoint' : ''"
             [style]="'left: ' + (motor.touchPointCenterX*100) + '%; top: ' + (motor.touchPointCenterY*100) + '%;'"
             class="touchpoint touchpoint-link m-0 p-0 pe-none cursor">
             <div class="touchpoint-wrapper">
@@ -46,6 +46,7 @@
                     alt="backgorund for touchpoint"></div>
                 <div
                     [id]="'touch-area-' + motor.motorPathName"
+                    [attr.data-test]="'BTN_Touchpoint_' + motor.motorPathName"
                     class="m-0 p-0 touch-area pe-auto"
                     alt="touch-area of touchpoint"></div>
             </div>
