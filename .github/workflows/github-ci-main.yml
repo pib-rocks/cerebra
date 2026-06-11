@@ -58,3 +58,11 @@ jobs:
     name: Analyze with CodeQl
     uses: ./.github/workflows/codeql.yml
 
+  System-Tests:
+    name: Run System Tests
+    uses: ./.github/workflows/system-tests.yml
+    secrets: inherit
+    needs: Pipeline
+    if: github.event_name == 'pull_request' &&
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.base.ref == 'develop'
