@@ -108,6 +108,10 @@ describe("ProgramService", () => {
         rosService = TestBed.inject(RosService) as jasmine.SpyObj<RosService>;
     });
 
+    afterEach(() => {
+        TestBed.resetTestingModule();
+    });
+
     it("should be created", () => {
         expect(programService).toBeTruthy();
     });
