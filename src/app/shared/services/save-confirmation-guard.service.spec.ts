@@ -1,7 +1,7 @@
 import {TestBed} from "@angular/core/testing";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {SaveConfirmationGuardService} from "./save-confirmation-guard.service";
-import {SaveConfirmationComponent} from "src/app/program/save-confirmation/save-confirmation.component";
+import {SaveConfirmationComponent} from "src/app/program/program-overview/program-manager/save-confirmation/save-confirmation.component";
 import {SaveConfirmationOptions} from "../types/save-confirmation-options.enum";
 
 describe("SaveConfirmationGuardService", () => {

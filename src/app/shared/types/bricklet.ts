@@ -1,4 +1,7 @@
-export type BrickletType = "Servo Bricklet" | "Solid State Relay Bricklet";
+export type BrickletType =
+    | "Servo Bricklet"
+    | "Solid State Relay Bricklet"
+    | "RGB LED Button Bricklet";
 export class Bricklet {
     uid: string;
     brickletNumber: number;

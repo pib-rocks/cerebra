@@ -1,6 +1,6 @@
 import {Component, Input} from "@angular/core";
 import {NgbActiveModal} from "@ng-bootstrap/ng-bootstrap";
-import {SaveConfirmationOptions} from "../../shared/types/save-confirmation-options.enum";
+import {SaveConfirmationOptions} from "../../../../shared/types/save-confirmation-options.enum";
 
 @Component({
     selector: "app-confirm-leave",

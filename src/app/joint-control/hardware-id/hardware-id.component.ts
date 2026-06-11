@@ -14,15 +14,25 @@ import {
     styleUrl: "./hardware-id.component.scss",
 })
 export class HardwareIdComponent implements OnInit {
-    bricklets!: Observable<Bricklet[]>;
-
+    servoBricklets: Bricklet[] = [];
+    relayBricklets: Bricklet[] = [];
+    rgbBricklets: Bricklet[] = [];
     brickletUidForm = new FormGroup({}, {validators: uniqueValuesValidator()});
 
     constructor(private brickletService: BrickletService) {}
 
     ngOnInit(): void {
-        this.bricklets = this.brickletService.getBrickletObservable();
-        this.bricklets.subscribe((bricklets) => {
+        this.brickletService.getBrickletObservable().subscribe((bricklets) => {
+            this.servoBricklets = bricklets.filter(
+                (b) => b.type == "Servo Bricklet",
+            );
+            this.relayBricklets = bricklets.filter(
+                (b) => b.type === "Solid State Relay Bricklet",
+            );
+            this.rgbBricklets = bricklets.filter(
+                (b) => b.type === "RGB LED Button Bricklet",
+            );
+
             bricklets.forEach((bricklet) => {
                 this.brickletUidForm.addControl(
                     bricklet.brickletNumber.toString(),

@@ -1,6 +1,8 @@
 <div
     class="wrapper p-4 d-flex flex-column-reverse"
     (click)="onClick()"
+    (keydown)="onClick()"
+    tabindex="0"
     id="console-area">
     <textarea
         *ngIf="state.executionState === ExecutionState.RUNNING"
