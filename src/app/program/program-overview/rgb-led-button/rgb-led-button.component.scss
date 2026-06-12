@@ -1,0 +1,38 @@
+@import "src/styles";
+* {
+    color: white;
+}
+
+.head-line {
+    font-size: 1.3vw;
+}
+
+.font-size {
+    font-size: 1.33vw;
+    font-weight: bolder;
+}
+
+.hardware-button {
+    font-size: 1.11vw;
+    font-weight: bold;
+}
+
+.invalid-validation {
+    color: $pink-color;
+    font-size: 1.3vw;
+}
+select {
+    background-color: $blue-dark-2;
+}
+
+select.form-select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+    color: $white-color;
+    border: 0;
+}
+
+select.form-select:focus {
+    color: $white-color;
+    border-radius: 5px;
+    border: 0;
+}

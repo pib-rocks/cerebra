@@ -115,6 +115,24 @@
       "uid" : "DDD",
       "brickletNumber" : 4,
       "type": "Solid State Relay Bricklet"
+    },
+        {
+      "id" : 5,
+      "uid" : "EEE",
+      "brickletNumber" : 5,
+      "type": "RGB LED Button Bricklet"
+    },
+        {
+      "id" : 6,
+      "uid" : "FFF",
+      "brickletNumber" : 6,
+      "type": "RGB LED Button Bricklet"
+    },
+    {
+      "id" : 7,
+      "uid" : "GGG",
+      "brickletNumber" : 7,
+      "type": "RGB LED Button Bricklet"
     }
   ],
   "motors": [
@@ -702,5 +720,20 @@
       "invert" : 0
     }
   ],
-  "poses": []
+  "poses": [],
+  "buttonProgram": [
+    {
+      "brickletNumber": 5,
+      "programNumber": "e1d46e2a-935e-4e2b-b2f9-0856af4257c5"
+    },
+    {
+      "brickletNumber": 6,
+      "programNumber": null
+    },
+    {
+      "brickletNumber": 7,
+      "programNumber": null
+    }
+  ]
+
 }

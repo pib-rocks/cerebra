@@ -1,18 +1,16 @@
-<div class="m-2">
-    <div class="row full-height pink-corner-frame">
-        <div class="main col-sm-9 col-xl-10">
-            <router-outlet></router-outlet>
-        </div>
-        <div class="col-sm-3 col-xl-2 p-0">
-            <app-sidebar-right
-                [optionCallbackMethods]="optionCallbackMethods"
-                [dropdownCallbackMethods]="dropdownCallbackMethods"
-                [subject]="subject"
-                [rerouteOnRefresh]="false"
-                [selectedObservable]="selected"
-                [lStorage]="'program'">
-            </app-sidebar-right>
-        </div>
+<div class="row full-height mx-0">
+    <div class="main col-sm-9 col-xl-10">
+        <router-outlet></router-outlet>
+    </div>
+    <div class="col-sm-3 col-xl-2 p-0">
+        <app-sidebar-right
+            [optionCallbackMethods]="optionCallbackMethods"
+            [dropdownCallbackMethods]="dropdownCallbackMethods"
+            [subject]="subject"
+            [rerouteOnRefresh]="false"
+            [selectedObservable]="selected"
+            [lStorage]="'program'">
+        </app-sidebar-right>
     </div>
 </div>
 

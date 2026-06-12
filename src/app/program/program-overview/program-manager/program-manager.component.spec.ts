@@ -1,17 +1,17 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {ProgramComponent} from "./program.component";
-import {ProgramService} from "../shared/services/program.service";
+import {ProgramManagerComponent} from "./program-manager.component";
+import {ProgramService} from "../../../shared/services/program.service";
 import {ActivatedRoute, Router, UrlSegment} from "@angular/router";
 import {ReactiveFormsModule} from "@angular/forms";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {RouterTestingModule} from "@angular/router/testing";
 import {HttpClientTestingModule} from "@angular/common/http/testing";
-import {Program} from "../shared/types/program";
+import {Program} from "../../../shared/types/program";
 import {BehaviorSubject, Observable, of} from "rxjs";
 
-describe("ProgramComponent", () => {
-    let component: ProgramComponent;
-    let fixture: ComponentFixture<ProgramComponent>;
+describe("ProgramManagerComponent", () => {
+    let component: ProgramManagerComponent;
+    let fixture: ComponentFixture<ProgramManagerComponent>;
     let programService: jasmine.SpyObj<ProgramService>;
     let router: {url: string};
 
@@ -65,7 +65,7 @@ describe("ProgramComponent", () => {
             ProgramService,
         ) as jasmine.SpyObj<ProgramService>;
 
-        fixture = TestBed.createComponent(ProgramComponent);
+        fixture = TestBed.createComponent(ProgramManagerComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
     });

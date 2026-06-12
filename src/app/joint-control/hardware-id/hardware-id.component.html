@@ -1,44 +1,45 @@
-<div class="row">
-    <div class="mb-3 pl-2 head-line">Please input your bricklet uids.</div>
+<div>
+    <div class="mb-3 pl-2 form-headline">Please input your bricklet uids.</div>
     <form
         [formGroup]="brickletUidForm"
         (ngSubmit)="updateIds()">
-        <div class="row font-size align-items-start">
-            <div class="col-sm-6">
-                <ng-container *ngFor="let bricklet of bricklets | async">
-                    <div
-                        *ngIf="bricklet.type !== 'Solid State Relay Bricklet'"
-                        class="d-flex align-items-center mb-2">
-                        <label class="me-3 p-0 col-auto flex-shrink-0">
-                            {{ bricklet.type }} {{ bricklet.brickletNumber }}:
-                        </label>
-                        <input
-                            type="text"
-                            [attr.data-test]="'TXT_Bricklet_UID_' + bricklet.brickletNumber"
-                            class="form-control"
-                            [formControlName]="bricklet.brickletNumber" />
-                    </div>
+        <div class="d-flex gap-4 align-items-start">
+            <div class="bricklet-grid form-content">
+                <ng-container *ngFor="let bricklet of servoBricklets">
+                    <label
+                        >{{ bricklet.type }} {{ bricklet.brickletNumber
+                        }}:</label
+                    >
+                    <input
+                        type="text"
+                        [attr.data-test]="'TXT_Bricklet_UID_' + bricklet.brickletNumber"
+                        class="form-control"
+                        [formControlName]="bricklet.brickletNumber" />
                 </ng-container>
             </div>
-            <div class="col-sm-6 d-flex">
-                <ng-container *ngFor="let bricklet of bricklets | async">
-                    <div
-                        *ngIf="bricklet.type === 'Solid State Relay Bricklet'"
-                        class="d-flex align-items-center w-100">
-                        <label class="me-3 flex-shrink-0">
-                            {{ bricklet.type }}:
-                        </label>
-                        <input
-                            type="text"
-                            [attr.data-test]="'TXT_Bricklet_UID_' + bricklet.brickletNumber"
-                            class="form-control"
-                            [formControlName]="bricklet.brickletNumber" />
-                    </div>
+
+            <div class="bricklet-grid form-content">
+                <ng-container *ngFor="let bricklet of relayBricklets">
+                    <label>{{ bricklet.type }}:</label>
+                    <input
+                        type="text"
+                        [attr.data-test]="'TXT_Bricklet_UID_' + bricklet.brickletNumber"
+                        class="form-control"
+                        [formControlName]="bricklet.brickletNumber" />
+                </ng-container>
+
+                <ng-container *ngFor="let bricklet of rgbBricklets; index as i">
+                    <label>{{ bricklet.type }} {{ i + 1 }}:</label>
+                    <input
+                        type="text"
+                        [attr.data-test]="'TXT_Bricklet_UID_' + bricklet.brickletNumber"
+                        class="form-control"
+                        [formControlName]="bricklet.brickletNumber" />
                 </ng-container>
             </div>
         </div>
         <div class="row">
-            <div class="col-auto mt-4 ml-4 mb-3 pl-2">
+            <div class="col-auto mt-4 mb-3 pl-2">
                 <button
                     id="update-bricklet-uids-button"
                     data-test="BTN_Update_bricklet_UIDs"
@@ -50,7 +51,7 @@
             <div
                 class="col-auto mt-4 ml-4 mb-3 pl-2 align-self-center"
                 *ngIf="brickletUidForm.invalid">
-                <span class="invalid-validation"
+                <span class="validation-error"
                     >IDs must be unique, up to 6 characters long, and contain
                     only letters and numbers.</span
                 >

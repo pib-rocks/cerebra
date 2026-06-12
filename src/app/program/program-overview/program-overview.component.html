@@ -1,0 +1,29 @@
+<div class="pt-4 pl-2 pr-2">
+    <ul class="nav nav-tabs">
+        <li
+            class="nav-item"
+            [class.navbar-btn-active]="isProgramTabActive">
+            <a
+                id="program-nav"
+                data-test="LNK_Programs"
+                class="nav-link sidebar-btn"
+                routerLink="/program">
+                Programs
+            </a>
+        </li>
+        <li
+            class="nav-item"
+            routerLinkActive="navbar-btn-active">
+            <a
+                class="nav-link sidebar-btn"
+                routerLink="/program/rgb-led-button">
+                Assign Buttons
+            </a>
+        </li>
+    </ul>
+</div>
+<div class="m-2 pt-2">
+    <div class="pink-corner-frame">
+        <router-outlet></router-outlet>
+    </div>
+</div>
