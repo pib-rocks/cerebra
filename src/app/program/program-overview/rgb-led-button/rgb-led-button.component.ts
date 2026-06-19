@@ -6,6 +6,7 @@ import {take, switchMap, filter} from "rxjs/operators";
 import {BrickletService} from "src/app/shared/services/bricklet.service";
 import {ProgramService} from "src/app/shared/services/program.service";
 import {RgbLedButtonService} from "src/app/shared/services/rgb-led-button.service";
+import {RosService} from "src/app/shared/services/ros-service/ros.service";
 import {Bricklet} from "src/app/shared/types/bricklet";
 import {ButtonProgram} from "src/app/shared/types/button-program";
 import {Program} from "src/app/shared/types/program";
@@ -26,6 +27,7 @@ export class RgbLedButtonComponent implements OnInit {
         private rgbLedButtonService: RgbLedButtonService,
         private brickletService: BrickletService,
         private snackBar: MatSnackBar,
+        private rosService: RosService,
     ) {}
 
     ngOnInit(): void {
@@ -90,5 +92,8 @@ export class RgbLedButtonComponent implements OnInit {
                         duration: 3000,
                     }),
             });
+    }
+    changeButtonColor(uid: string) {
+        this.rosService.setButtonColor(uid, 0, 0, 255);
     }
 }

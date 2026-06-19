@@ -70,6 +70,10 @@ import {
     SetSolidStateRelayStateRequest,
     SetSolidStateRelayStateResponse,
 } from "../../ros-types/srv/set-solid-state-relay-state";
+import {
+    SetButtonColorRequest,
+    SetButtonColorResponse,
+} from "../../ros-types/srv/set-button-color";
 
 @Injectable({
     providedIn: "root",
@@ -170,6 +174,10 @@ export class RosService implements IRosService {
     private setSolidStateRelayStateService!: ROSLIB.Service<
         SetSolidStateRelayStateRequest,
         SetSolidStateRelayStateResponse
+    >;
+    private setButtonColorService!: ROSLIB.Service<
+        SetButtonColorRequest,
+        SetButtonColorResponse
     >;
 
     private runProgramAction!: ROSLIB.ActionClient;
@@ -317,6 +325,10 @@ export class RosService implements IRosService {
         this.setSolidStateRelayStateService = this.createRosService(
             rosServices.setSolidStateRelayState,
             rosDataTypes.setSolidStateRelayState,
+        );
+        this.setButtonColorService = this.createRosService(
+            rosServices.setButtonColor,
+            rosDataTypes.setButtonColor,
         );
     }
 
@@ -590,6 +602,32 @@ export class RosService implements IRosService {
             subject.error(new Error(error));
         };
         this.setSolidStateRelayStateService.callService(
+            request,
+            successCallback,
+            errorCallback,
+        );
+        return subject;
+    }
+
+    setButtonColor(uid: string, r: number, g: number, b: number) {
+        const subject: Subject<void> = new ReplaySubject();
+        const request: SetButtonColorRequest = {
+            uid: uid,
+            r: r,
+            g: g,
+            b: b,
+        };
+        const successCallback = (response: SetButtonColorResponse) => {
+            if (response.successful) {
+                subject.next();
+            } else {
+                subject.error(new Error("could not set button color..."));
+            }
+        };
+        const errorCallback = (error: any) => {
+            subject.error(new Error(error));
+        };
+        this.setButtonColorService.callService(
             request,
             successCallback,
             errorCallback,

@@ -11,4 +11,5 @@ export enum rosServices {
     decryptToken = "/decrypt_token",
     applyJointTrajectory = "/apply_joint_trajectory",
     setSolidStateRelayState = "/set_solid_state_relay_state",
+    setButtonColor = "/set_button_color",
 }

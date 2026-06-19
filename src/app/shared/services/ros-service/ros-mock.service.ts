@@ -425,6 +425,16 @@ export class RosService implements IRosService {
         console.info(JSON.stringify({input, mpid}));
     }
 
+    setButtonColor(
+        uid: string,
+        r: number,
+        g: number,
+        b: number,
+    ): Observable<void> {
+        console.info(JSON.stringify({uid, r, g, b}));
+        return of(undefined);
+    }
+
     sleep(ms: number) {
         return new Promise((resolve) => setTimeout(resolve, ms));
     }
