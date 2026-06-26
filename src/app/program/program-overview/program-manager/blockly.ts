@@ -359,6 +359,9 @@ export const toolbox: string = `<xml xmlns="http://www.w3.org/1999/xhtml" id="to
 <sep></sep>
 <category name="Variables" colour="310" custom="VARIABLE_DYNAMIC"></category>
 <category name="Functions" colour="290" custom="PROCEDURE"></category>
+<category name="System" colour="45">
+    <block type="run_script"></block>
+</category>
 <sep></sep>
 <category name="Motoric skills" colour="355">
     <block type="move_motor"></block>
