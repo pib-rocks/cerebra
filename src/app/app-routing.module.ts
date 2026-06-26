@@ -20,19 +20,18 @@ import {SaveConfirmationGuard} from "./security/save-confirmation.guard";
 import {ProgramSplitscreenComponent} from "./program/program-overview/program-manager/program-splitscreen/program-splitscreen.component";
 import {programCodeResolver} from "./program/program-overview/program-manager/program-splitscreen/resolver/program-code.resolver";
 import {PoseComponent} from "./pose/pose.component";
-import {HardwareIdComponent} from "./joint-control/hardware-id/hardware-id.component";
+import {HardwareIdComponent} from "./system/hardware-id/hardware-id.component";
 import {RgbLedButtonComponent} from "./program/program-overview/rgb-led-button/rgb-led-button.component";
 import {ProgramOverviewComponent} from "./program/program-overview/program-overview.component";
+import {SystemComponent} from "./system/system.component";
+import {DiagnoseComponent} from "./system/diagnose/diagnose.component";
+import {LogsComponent} from "./system/logs/logs.component";
 
 const routes: Routes = [
     {
         path: "joint-control",
         component: JointControlComponent,
         children: [
-            {
-                path: "hardware-ids",
-                component: HardwareIdComponent,
-            },
             {
                 path: ":joint-name",
                 component: JointControlCoreComponent,
@@ -47,6 +46,25 @@ const routes: Routes = [
                     },
                 ],
             },
+        ],
+    },
+    {
+        path: "system",
+        component: SystemComponent,
+        children: [
+            {
+                path: "diagnose",
+                component: DiagnoseComponent,
+            },
+            {
+                path: "logs",
+                component: LogsComponent,
+            },
+            {
+                path: "hardware-ids",
+                component: HardwareIdComponent,
+            },
+            {path: "", redirectTo: "diagnose", pathMatch: "full"},
         ],
     },
     {

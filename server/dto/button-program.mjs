@@ -4,12 +4,12 @@ export class ButtonProgram {
         this.programNumber = programNumber;
         this.brickletUid = brickletUid;
     }
-    
+
     static getButtonProgram(buttonProgram, brickletUid = null) {
         return new ButtonProgram(
-            buttonProgram.brickletNumber, 
-            buttonProgram.programNumber, 
-            brickletUid || buttonProgram.brickletUid
+            buttonProgram.brickletNumber,
+            buttonProgram.programNumber,
+            brickletUid || buttonProgram.brickletUid,
         );
     }
 }

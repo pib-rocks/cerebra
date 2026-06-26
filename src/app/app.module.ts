@@ -41,11 +41,14 @@ import {SmartConnectComponent} from "./ui-components/smart-connect/smart-connect
 import {NgOptimizedImage} from "@angular/common";
 import {PoseComponent} from "./pose/pose.component";
 import {MarkdownModule} from "ngx-markdown";
-import {HardwareIdComponent} from "./joint-control/hardware-id/hardware-id.component";
+import {HardwareIdComponent} from "./system/hardware-id/hardware-id.component";
 import {RelayControlComponent} from "./ui-components/relay-control/relay-control.component";
 import {IpRetrieverComponent} from "./ui-components/ip-retriever/ip-retriever.component";
 import {RgbLedButtonComponent} from "./program/program-overview/rgb-led-button/rgb-led-button.component";
 import {ProgramOverviewComponent} from "./program/program-overview/program-overview.component";
+import {SystemComponent} from "./system/system.component";
+import {DiagnoseComponent} from "./system/diagnose/diagnose.component";
+import {LogsComponent} from "./system/logs/logs.component";
 
 @NgModule({
     declarations: [
@@ -80,6 +83,9 @@ import {ProgramOverviewComponent} from "./program/program-overview/program-overv
         IpRetrieverComponent,
         RgbLedButtonComponent,
         ProgramOverviewComponent,
+        SystemComponent,
+        DiagnoseComponent,
+        LogsComponent,
     ],
     imports: [
         BrowserModule,
