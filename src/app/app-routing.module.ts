@@ -24,8 +24,6 @@ import {HardwareIdComponent} from "./system/hardware-id/hardware-id.component";
 import {RgbLedButtonComponent} from "./program/program-overview/rgb-led-button/rgb-led-button.component";
 import {ProgramOverviewComponent} from "./program/program-overview/program-overview.component";
 import {SystemComponent} from "./system/system.component";
-import {DiagnoseComponent} from "./system/diagnose/diagnose.component";
-import {LogsComponent} from "./system/logs/logs.component";
 
 const routes: Routes = [
     {
@@ -53,18 +51,10 @@ const routes: Routes = [
         component: SystemComponent,
         children: [
             {
-                path: "diagnose",
-                component: DiagnoseComponent,
-            },
-            {
-                path: "logs",
-                component: LogsComponent,
-            },
-            {
                 path: "hardware-ids",
                 component: HardwareIdComponent,
             },
-            {path: "", redirectTo: "diagnose", pathMatch: "full"},
+            {path: "", redirectTo: "hardware-ids", pathMatch: "full"},
         ],
     },
     {

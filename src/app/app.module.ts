@@ -47,8 +47,6 @@ import {IpRetrieverComponent} from "./ui-components/ip-retriever/ip-retriever.co
 import {RgbLedButtonComponent} from "./program/program-overview/rgb-led-button/rgb-led-button.component";
 import {ProgramOverviewComponent} from "./program/program-overview/program-overview.component";
 import {SystemComponent} from "./system/system.component";
-import {DiagnoseComponent} from "./system/diagnose/diagnose.component";
-import {LogsComponent} from "./system/logs/logs.component";
 
 @NgModule({
     declarations: [
@@ -84,8 +82,6 @@ import {LogsComponent} from "./system/logs/logs.component";
         RgbLedButtonComponent,
         ProgramOverviewComponent,
         SystemComponent,
-        DiagnoseComponent,
-        LogsComponent,
     ],
     imports: [
         BrowserModule,
