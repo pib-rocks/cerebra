@@ -1,6 +1,24 @@
 <div class="background-image pink-corner-frame mt-5">
     <div class="d-flex flex-row m-3 pb-2 bt-0 pl-1 pr-1">
         <div class="flex-grow-1 pl-2">Poses</div>
+
+        <input
+            #poseImportInput
+            type="file"
+            accept="application/json,.json"
+            hidden
+            data-test="INP_Pose_Import"
+            (change)="onPoseImportFileSelected($event)" />
+
+        <button
+            type="button"
+            id="import-pose-button"
+            data-test="BTN_Pose_Import"
+            class="btn btn-regular mr-2"
+            (click)="openPoseImportFileDialog()">
+            Import pose
+        </button>
+
         <button
             type="button"
             id="save-pose-button"
@@ -11,63 +29,126 @@
             Save current pose
         </button>
     </div>
+
     <div
-        *ngFor="let pose of poses | async"
-        class="pose-item d-flex flex-row mt-1 mb-2"
-        [ngClass]="pose.poseId === selectedPoseId ? 'selected' : 'unselected'">
-        <button
-            class="apply-button flex-shrink-0"
-            [attr.data-test]="'BTN_Pose_Apply_' + pose.name"
-            [disabled]="!pose.active"
-            data-test="BTN_Apply_pose"
-            (click)="applyPose(pose)">
-            <img
-                class="apply-pose"
-                src="../../../assets/joint-control/other/apply-pose.svg"
-                alt="apply-pose" />
-        </button>
-        <button
-            class="pose-label flex-grow-1 flex-shrink-1 pl-3"
-            [attr.data-test]="'BTN_Pose_Select_' + pose.name"
-            (click)="selectPose(pose)"
-            (dblclick)="renamePose(pose)">
-            {{pose.name}}
-        </button>
-        <button
-            *ngIf="pose.deletable || pose.name === 'Startup/Resting'"
-            #updateButton
-            class="update-button flex-shrink-0"
-            data-test="BTN_Update_pose"
-            title="Update pose"
-            (click)="updatePoseMotorPositions(pose)">
-            <img
-                class="update-icon"
-                src="../../../assets/joint-control/other/update-pose.svg"
-                alt="update-pose" />
-        </button>
-        <button
-            *ngIf="pose.deletable"
-            [attr.data-test]="'BTN_Pose_Rename_' + pose.name"
-            #renameButton
-            class="rename-button flex-shrink-0"
-            data-test="BTN_Rename_pose"
-            (click)="renamePose(pose)">
-            <img
-                class="rename-icon"
-                src="../../../assets/edit.svg"
-                alt="rename-pose" />
-        </button>
-        <button
-            *ngIf="pose.deletable"
-            [attr.data-test]="'BTN_Pose_Delete_' + pose.name"
-            class="delete-button flex-shrink-0"
-            data-test="BTN_Delete_pose"
-            (click)="deletePose(pose)">
-            <img
-                class="delete-icon"
-                src="../../../assets/delete.svg"
-                alt="delete-pose" />
-        </button>
+        *ngIf="importErrors.length > 0"
+        class="pose-import-message pose-import-error m-3">
+        <div><strong>Import failed</strong></div>
+        <ul class="mb-0">
+            <li *ngFor="let error of importErrors">{{error}}</li>
+        </ul>
+    </div>
+
+    <div
+        *ngIf="importWarnings.length > 0"
+        class="pose-import-message pose-import-warning m-3">
+        <div><strong>Import warnings</strong></div>
+        <ul class="mb-0">
+            <li *ngFor="let warning of importWarnings">{{warning}}</li>
+        </ul>
+    </div>
+
+    <div
+        *ngIf="importPreview"
+        class="pose-import-preview m-3">
+        <div class="mb-2">
+            <strong>Import pose?</strong>
+        </div>
+
+        <div>
+            Name:
+            <strong>{{importPreview.name}}</strong>
+        </div>
+
+        <div>
+            Motor positions:
+            <strong>{{importPreview.motorPositions.length}}</strong>
+        </div>
+
+        <div class="d-flex flex-row mt-3">
+            <button
+                type="button"
+                class="btn btn-regular mr-2"
+                data-test="BTN_Pose_Import_Confirm"
+                (click)="confirmPoseImport()">
+                Confirm import
+            </button>
+
+            <button
+                type="button"
+                class="btn btn-regular"
+                data-test="BTN_Pose_Import_Cancel"
+                (click)="cancelPoseImport()">
+                Cancel
+            </button>
+        </div>
+    </div>
+
+    <div class="pose-list-scroll">
+        <div
+            *ngFor="let pose of poses | async"
+            class="pose-item d-flex flex-row mt-1 mb-2"
+            [ngClass]="pose.poseId === selectedPoseId ? 'selected' : 'unselected'">
+            <button
+                class="apply-button flex-shrink-0"
+                [attr.data-test]="'BTN_Pose_Apply_' + pose.name"
+                [disabled]="!pose.active"
+                data-test="BTN_Apply_pose"
+                (click)="applyPose(pose)">
+                <img
+                    class="apply-pose"
+                    src="../../../assets/joint-control/other/apply-pose.svg"
+                    alt="apply-pose" />
+            </button>
+            <button
+                class="pose-label flex-grow-1 flex-shrink-1 pl-3"
+                [attr.data-test]="'BTN_Pose_Select_' + pose.name"
+                (click)="selectPose(pose)"
+                (dblclick)="renamePose(pose)">
+                {{pose.name}}
+            </button>
+            <button
+                *ngIf="pose.deletable || pose.name === 'Startup/Resting'"
+                #updateButton
+                class="update-button flex-shrink-0"
+                data-test="BTN_Update_pose"
+                title="Update pose"
+                (click)="updatePoseMotorPositions(pose)">
+                <img
+                    class="update-icon"
+                    src="../../../assets/joint-control/other/update-pose.svg"
+                    alt="update-pose" />
+            </button>
+            <button
+                *ngIf="pose.deletable"
+                [attr.data-test]="'BTN_Pose_Rename_' + pose.name"
+                #renameButton
+                class="rename-button flex-shrink-0"
+                data-test="BTN_Rename_pose"
+                (click)="renamePose(pose)">
+                <img
+                    class="rename-icon"
+                    src="../../../assets/edit.svg"
+                    alt="rename-pose" />
+            </button>
+            <button
+                *ngIf="pose.deletable"
+                [attr.data-test]="'BTN_Pose_Delete_' + pose.name"
+                class="delete-button flex-shrink-0"
+                data-test="BTN_Delete_pose"
+                (click)="deletePose(pose)">
+                <img
+                    class="delete-icon"
+                    src="../../../assets/delete.svg"
+                    alt="delete-pose" />
+            </button>
+            <button
+                class="pose-export-button flex-shrink-0"
+                title="Export pose"
+                (click)="exportPose(pose)">
+                Export
+            </button>
+        </div>
     </div>
 
     <ng-template

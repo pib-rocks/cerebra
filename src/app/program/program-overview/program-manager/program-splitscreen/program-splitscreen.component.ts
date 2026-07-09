@@ -32,6 +32,7 @@ export class ProgramSplitscreenComponent implements OnInit {
     readonly TOGGLE_RIGHT = "../../assets/toggle-switch-right.png";
     readonly SAVE_ACTIVE = "../../assets/program/button-save-active.svg";
     readonly SAVE_INACTIVE = "../../assets/program/button-save-inactive.svg";
+    readonly EXPORT = "../../assets/program/button-export.svg";
     readonly FULL_SCREEN = "../../../../assets/program/icon-full-screen.svg";
     readonly SPLIT_SCREEN = "../../../../assets/program/icon-split-screen.svg";
 
@@ -64,6 +65,28 @@ export class ProgramSplitscreenComponent implements OnInit {
             codeVisual: this.codeVisualNew,
         });
         this.codeVisualOld = this.codeVisualNew;
+    }
+
+    exportCode() {
+        const exportData = {
+            version: 1,
+            type: "pib-blockly-program",
+            codeVisual: this.codeVisualNew,
+            exportedAt: new Date().toISOString(),
+        };
+
+        const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+            type: "application/json",
+        });
+
+        const url = URL.createObjectURL(blob);
+
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `program-${this.programNumber}.json`;
+        link.click();
+
+        URL.revokeObjectURL(url);
     }
 
     runProgram() {

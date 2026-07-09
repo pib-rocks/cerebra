@@ -1,6 +1,7 @@
 import {Injectable} from "@angular/core";
 import {BehaviorSubject, Observable, Subject, map, of, tap} from "rxjs";
 import {Pose, PoseDTO} from "../types/pose";
+import {PoseTransfer} from "../types/pose-transfer";
 import {ApiService} from "./api.service";
 import {UrlConstants} from "./url.constants";
 import {MotorPosition} from "../types/motor-position";
@@ -98,6 +99,48 @@ export class PoseService {
                     structuredClone(motorPositions),
                 );
             }),
+        );
+    }
+
+    public importPose(poseTransfer: PoseTransfer): Observable<Pose> {
+        const motorPositions = structuredClone(poseTransfer.motorPositions);
+
+        return this.createPoseInDb(poseTransfer.name, motorPositions).pipe(
+            tap((pose) => {
+                this.poses.push(pose);
+                this.poseIdToMotorPositions.set(pose.poseId, motorPositions);
+                this.publishPoses();
+            }),
+        );
+    }
+
+    public exportPose(poseId: string): Observable<PoseTransfer> {
+        const pose = this.getCachedPoseOfId(poseId);
+
+        if (!pose) {
+            throw new Error(
+                `Pose mit ID ${poseId} wurde nicht im lokalen Cache gefunden.`,
+            );
+        }
+
+        const cachedMotorPositions = this.poseIdToMotorPositions.get(poseId);
+        const motorPositionsObservable: Observable<MotorPosition[]> =
+            cachedMotorPositions
+                ? of(cachedMotorPositions)
+                : this.getMotorPositionsOfPoseFromDb(poseId).pipe(
+                      tap((motorPositions) =>
+                          this.poseIdToMotorPositions.set(
+                              poseId,
+                              motorPositions,
+                          ),
+                      ),
+                  );
+
+        return motorPositionsObservable.pipe(
+            map((motorPositions) => ({
+                name: pose.name,
+                motorPositions: structuredClone(motorPositions),
+            })),
         );
     }
 
