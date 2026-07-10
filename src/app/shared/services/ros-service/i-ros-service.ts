@@ -52,6 +52,8 @@ export interface IRosService {
 
     applyJointTrajectory: (jointTrajectory: JointTrajectoryMessage) => void;
 
+    resetMotorZero: (motorName: string) => Observable<void>;
+
     setTimerPeriod: (period: number) => void;
 
     setPreviewSize: (width: number, height: number) => void;

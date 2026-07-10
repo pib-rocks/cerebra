@@ -70,6 +70,10 @@ import {
     SetSolidStateRelayStateRequest,
     SetSolidStateRelayStateResponse,
 } from "../../ros-types/srv/set-solid-state-relay-state";
+import {
+    ResetMotorZeroRequest,
+    ResetMotorZeroResponse,
+} from "../../ros-types/srv/reset-motor-zero";
 
 @Injectable({
     providedIn: "root",
@@ -165,6 +169,10 @@ export class RosService implements IRosService {
     private applyJointTrajectoryService!: ROSLIB.Service<
         ApplyJointTrajectoryRequest,
         ApplyJointTrajectoryResponse
+    >;
+    private resetMotorZeroService!: ROSLIB.Service<
+        ResetMotorZeroRequest,
+        ResetMotorZeroResponse
     >;
 
     private setSolidStateRelayStateService!: ROSLIB.Service<
@@ -301,6 +309,10 @@ export class RosService implements IRosService {
         this.applyJointTrajectoryService = this.createRosService(
             rosServices.applyJointTrajectory,
             rosDataTypes.applyJointTrajectory,
+        );
+        this.resetMotorZeroService = this.createRosService(
+            rosServices.resetMotorZero,
+            rosDataTypes.resetMotorZero,
         );
         this.existTokenService = this.createRosService(
             rosServices.get_token_exists,
@@ -615,6 +627,29 @@ export class RosService implements IRosService {
             subject.error(new Error(error));
         };
         this.applyJointTrajectoryService.callService(
+            request,
+            successCallback,
+            errorCallback,
+        );
+        return subject;
+    }
+
+    resetMotorZero(motorName: string): Observable<void> {
+        const subject: Subject<void> = new ReplaySubject();
+        const request: ResetMotorZeroRequest = {
+            motor_name: motorName,
+        };
+        const successCallback = (response: ResetMotorZeroResponse) => {
+            if (response.successful) {
+                subject.next();
+            } else {
+                subject.error(new Error(response.message));
+            }
+        };
+        const errorCallback = (error: any) => {
+            subject.error(new Error(error));
+        };
+        this.resetMotorZeroService.callService(
             request,
             successCallback,
             errorCallback,

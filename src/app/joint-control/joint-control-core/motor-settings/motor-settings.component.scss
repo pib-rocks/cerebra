@@ -73,6 +73,27 @@ input[type="checkbox"]:checked::before {
     cursor: pointer;
 }
 
+.zero-reset-button {
+    color: $white-color;
+    border: 1px solid $white-color;
+    border-radius: 3px;
+    background: transparent;
+}
+
+.zero-reset-button:hover {
+    background-color: $grey-transparent;
+}
+
+.zero-reset-button:disabled {
+    opacity: 0.5;
+}
+
+.zero-reset-message {
+    color: $white-color;
+    font-size: 14px;
+    margin-top: 8px;
+}
+
 span {
     font-size: clamp(16px, 1vw, 30px);
 }

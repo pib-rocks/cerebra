@@ -29,6 +29,23 @@ export class MotorSettingsComponent {
     settings!: MotorSettings;
 
     displayExtended: boolean = false;
+    zeroResetMessage: string = "";
+    zeroResetInProgress: boolean = false;
+
+    private readonly zeroResetMotorNames = new Set([
+        "thumb_left_opposition",
+        "thumb_left_stretch",
+        "index_left_stretch",
+        "middle_left_stretch",
+        "ring_left_stretch",
+        "pinky_left_stretch",
+        "thumb_right_opposition",
+        "thumb_right_stretch",
+        "index_right_stretch",
+        "middle_right_stretch",
+        "ring_right_stretch",
+        "pinky_right_stretch",
+    ]);
 
     constructor(
         private motorService: MotorService,
@@ -107,5 +124,29 @@ export class MotorSettingsComponent {
     setInvert() {
         this.settings.invert = !this.invertFormControl.value;
         this.motorService.applySettings(this.motor.motorName, this.settings);
+    }
+
+    canResetZeroPosition(): boolean {
+        return (
+            !this.motor.isMultiMotor &&
+            this.zeroResetMotorNames.has(this.motor.motorName)
+        );
+    }
+
+    resetZeroPosition() {
+        if (!this.canResetZeroPosition() || this.zeroResetInProgress) return;
+
+        this.zeroResetInProgress = true;
+        this.zeroResetMessage = "";
+        this.motorService.resetZeroPosition(this.motor.motorName).subscribe({
+            next: () => {
+                this.zeroResetMessage = "Zero position reset";
+                this.zeroResetInProgress = false;
+            },
+            error: (error) => {
+                this.zeroResetMessage = error?.message ?? "Zero reset failed";
+                this.zeroResetInProgress = false;
+            },
+        });
     }
 }

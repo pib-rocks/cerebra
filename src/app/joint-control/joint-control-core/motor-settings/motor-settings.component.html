@@ -151,6 +151,25 @@
         </div>
     </div>
     <div
+        *ngIf="displayExtended && canResetZeroPosition()"
+        class="row display-flex justify-content-center">
+        <div class="col-9">
+            <button
+                type="button"
+                class="btn zero-reset-button"
+                data-test="BTN_Motor_Settings_Reset_Zero"
+                [disabled]="zeroResetInProgress"
+                (click)="resetZeroPosition()">
+                {{ zeroResetInProgress ? "Resetting zero..." : "Reset zero position" }}
+            </button>
+            <div
+                *ngIf="zeroResetMessage"
+                class="zero-reset-message">
+                {{ zeroResetMessage }}
+            </div>
+        </div>
+    </div>
+    <div
         *ngIf="!displayExtended"
         class="row modal-body d-flex align-items-start justify-content-center"
         style="height: 500px;">

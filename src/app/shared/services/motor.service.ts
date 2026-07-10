@@ -1,7 +1,7 @@
 import {Injectable} from "@angular/core";
 import {RosService} from "./ros-service/ros.service";
 import {ApiService} from "./api.service";
-import {BehaviorSubject, Observable, map} from "rxjs";
+import {BehaviorSubject, Observable, map, tap} from "rxjs";
 import {
     MotorSettings,
     fromMotorDTO,
@@ -198,5 +198,17 @@ export class MotorService {
     setPositions(motorPositions: MotorPosition[]): Observable<void> {
         const message = fromMotorPositions(motorPositions);
         return this.rosService.applyJointTrajectory(message);
+    }
+
+    resetZeroPosition(motorName: string): Observable<void> {
+        return this.rosService.resetMotorZero(motorName).pipe(
+            tap(() => {
+                this.publishToSubject(
+                    motorName,
+                    this.motorNameToPositionSubject,
+                    0,
+                );
+            }),
+        );
     }
 }

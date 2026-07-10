@@ -10,5 +10,6 @@ export enum rosServices {
     encryptToken = "/encrypt_token",
     decryptToken = "/decrypt_token",
     applyJointTrajectory = "/apply_joint_trajectory",
+    resetMotorZero = "/reset_motor_zero",
     setSolidStateRelayState = "/set_solid_state_relay_state",
 }

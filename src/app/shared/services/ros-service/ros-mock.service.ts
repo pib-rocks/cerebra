@@ -169,6 +169,11 @@ export class RosService implements IRosService {
         return of(undefined);
     }
 
+    resetMotorZero(motorName: string): Observable<void> {
+        console.info(JSON.stringify({motor_name: motorName}));
+        return of(undefined);
+    }
+
     checkTokenExists(): Observable<ExistTokenResponse> {
         return new BehaviorSubject({token_exists: true, token_active: true});
     }
