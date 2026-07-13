@@ -5,6 +5,7 @@ function pibDisplayRuntime() {
     return `
 import time
 import rclpy
+from rclpy.qos import DurabilityPolicy, HistoryPolicy, QoSProfile, ReliabilityPolicy
 from std_msgs.msg import String
 
 if not rclpy.ok():
@@ -16,6 +17,25 @@ except NameError:
     _pib_display_node = rclpy.create_node("blockly_display_node")
     _pib_expression_pub = _pib_display_node.create_publisher(String, "/pib/expression", 10)
     _pib_display_text_pub = _pib_display_node.create_publisher(String, "/pib/display_text", 10)
+    _pib_display_ready = False
+
+    def _pib_on_display_ready(msg):
+        global _pib_display_ready
+        if msg.data == "ready":
+            _pib_display_ready = True
+
+    _pib_ready_qos = QoSProfile(
+        reliability=ReliabilityPolicy.RELIABLE,
+        durability=DurabilityPolicy.TRANSIENT_LOCAL,
+        history=HistoryPolicy.KEEP_LAST,
+        depth=1,
+    )
+    _pib_display_node.create_subscription(String, "/pib/display_ready", _pib_on_display_ready, _pib_ready_qos)
+
+try:
+    _pib_display_ready
+except NameError:
+    _pib_display_ready = False
 
 def _pib_wait_for_subscriber(pub, label="display handler", timeout_sec=3.0):
     print(f"waiting for {label} to become available...")
@@ -25,7 +45,7 @@ def _pib_wait_for_subscriber(pub, label="display handler", timeout_sec=3.0):
         if pub.get_subscription_count() > 0:
             print(f"{label} available.")
             return True
-        time.sleep(0.02)
+        time.sleep(0.01)
     print(f"warning: {label} was not detected before timeout, trying anyway.")
     return False
 
@@ -45,11 +65,10 @@ def _pib_publish_string(pub, value, label="display"):
     pub.publish(_msg)
     print(f"now displaying {label}: {value}")
 
-    # Keep the process alive briefly so DDS can deliver reliably.
     deadline = time.time() + 0.25
     while time.time() < deadline:
         rclpy.spin_once(_pib_display_node, timeout_sec=0.02)
-        time.sleep(0.02)
+        time.sleep(0.01)
 `;
 }
 

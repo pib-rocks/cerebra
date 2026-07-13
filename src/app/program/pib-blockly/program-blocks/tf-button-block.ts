@@ -17,7 +17,7 @@ export const tfButton = Blockly.common.createBlockDefinitionsFromJsonArray([
             {
                 type: "field_colour",
                 name: "COLOR",
-                colour: "#0000ff",
+                colour: "#00ff",
             },
         ],
         previousStatement: null,
@@ -28,7 +28,7 @@ export const tfButton = Blockly.common.createBlockDefinitionsFromJsonArray([
     },
     {
         type: "tf_button_taster_to_variable",
-        message0: "button %1 as pushbutton | color %2 write state to %3",
+        message0: "button %1 as pushbutton |  color %2 write state to %3",
         args0: [
             {
                 type: "field_dropdown",
