@@ -134,8 +134,14 @@ export class ProgramManagerComponent implements OnInit, AfterViewInit {
                     return;
                 }
 
+                const importedName =
+                    typeof importData.name === "string" &&
+                    importData.name.trim().length >= 2
+                        ? importData.name.trim()
+                        : "Imported program";
+
                 this.programService
-                    .createProgram(new Program("Imported program"))
+                    .createProgram(new Program(importedName))
                     .subscribe((program) => {
                         this.programService
                             .updateCodeByProgramNumber(program.programNumber, {
