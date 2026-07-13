@@ -7,7 +7,7 @@
     height: 40px;
     line-height: 40px;
     border-radius: 10px;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .selected.pose-item {
@@ -43,8 +43,10 @@
 .delete-icon,
 .update-icon {
     color: white;
-    position: absolute;
-    transform: translate(-50%, -50%);
+    position: static;
+    transform: none;
+    display: block;
+    margin: auto;
 }
 
 .rename-icon {
@@ -68,6 +70,9 @@ button:disabled img {
     border: none;
     width: 40px;
     height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .pose-label,
