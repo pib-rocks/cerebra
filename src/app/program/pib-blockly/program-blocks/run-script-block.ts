@@ -148,7 +148,7 @@ export const runScriptBlocks =
             nextStatement: null,
             colour: 45,
             tooltip:
-                "Connects via SSH to a host and runs the given script. Use the gear to edit host/user/password/port.",
+                "Connects via SSH to a host and runs the given script. Default host localhost reaches this machine; in Docker it is resolved automatically via SSH_HOST. Use the gear to edit host/user/password/port.",
             helpUrl: "",
             mutator: "run_script_connection_mutator",
         },

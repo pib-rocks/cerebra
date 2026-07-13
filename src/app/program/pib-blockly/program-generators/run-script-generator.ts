@@ -3,6 +3,7 @@ import {Order, pythonGenerator} from "blockly/python";
 import {
     CONFIGURE_LOGGING,
     IMPORT_LOGGING,
+    IMPORT_OS,
     IMPORT_PARAMIKO,
     IMPORT_SYS,
 } from "./util/definitions";
@@ -19,6 +20,7 @@ export function run_script(block: Block, generator: typeof pythonGenerator) {
     // add definitions to generator
     Object.assign(generator.definitions_, {
         IMPORT_SYS,
+        IMPORT_OS,
         IMPORT_LOGGING,
         IMPORT_PARAMIKO,
         CONFIGURE_LOGGING,

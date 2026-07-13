@@ -6,6 +6,7 @@ export const IMPORT_CV2 = "import cv2";
 export const IMPORT_DEPTHAI = "import depthai as dai";
 export const IMPORT_BLOBCONVERTER = "import blobconverter";
 export const IMPORT_SYS = "import sys";
+export const IMPORT_OS = "import os";
 export const IMPORT_TIME = "import time";
 export const IMPORT_LOGGING = "import logging";
 export const IMPORT_PARAMIKO = "import paramiko";
