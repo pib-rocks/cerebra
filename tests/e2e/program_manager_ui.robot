@@ -1,7 +1,7 @@
 *** Settings ***
 Documentation    UC-PROG-* program manager scenarios from frontend_use_cases.md
 Resource         resources/cerebra_resources.robot
-Suite Setup      Open Cerebra Application
+Suite Setup      Open Browser Session
 Suite Teardown   Close Cerebra Application
 Test Tags        program    e2e
 
@@ -33,24 +33,7 @@ UC-PROG-004 Save Button Disabled When No Changes
 
 UC-RGB-001 RGB LED Button Page Loads
     [Documentation]    Given /program/rgb-led-button Then button program form is shown.
-    Mock Api Route With Body String    GET    **/api/button-programs    200
-    ...    {"buttonPrograms":[{"brickletNumber":1,"programNumber":"1"}]}
-    Mock Api Route With Body String    GET    **/api/bricklet    200
-    ...    {"bricklets":[{"brickletNumber":1,"uid":"abc","type":"RGB LED Button Bricklet"}]}
+    Mock Button Programs And Bricklets
     Navigate To Route    ${RGB_BUTTON_ROUTE}
     Location Should Be Route    ${RGB_BUTTON_ROUTE}
     Element By Data Test Should Be Visible    BTN_Update_Button_Programs
-
-*** Keywords ***
-Location Should Be Route
-    [Arguments]    ${expected_path}
-    ${url}=    Get Url
-    Should Contain    ${url}    ${expected_path}
-
-Element By Data Test Should Be Disabled
-    [Arguments]    ${data_test_value}
-    Get Element States    css=[data-test="${data_test_value}"]    contains    disabled
-
-Element By Data Test Should Be Visible
-    [Arguments]    ${data_test_value}
-    Wait For Elements State    css=[data-test="${data_test_value}"]    visible    timeout=${DEFAULT_TIMEOUT}

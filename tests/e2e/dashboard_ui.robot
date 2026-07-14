@@ -1,7 +1,7 @@
 *** Settings ***
 Documentation    UC-MOTOR-001 joint control UI scenarios from frontend_use_cases.md
 Resource         resources/cerebra_resources.robot
-Suite Setup      Open Cerebra Application
+Suite Setup      Open Browser Session
 Suite Teardown   Close Cerebra Application
 Test Tags        dashboard    joint-control    e2e
 
@@ -22,9 +22,3 @@ UC-PROG-001 Program Navigation Link Visible
     Navigate To Route    ${JOINT_CONTROL_HEAD_URL}
     Click Element By Data Test    LNK_Program
     Location Should Be Route    ${PROGRAM_ROUTE}
-
-*** Keywords ***
-Location Should Be Route
-    [Arguments]    ${expected_path}
-    ${url}=    Get Url
-    Should Contain    ${url}    ${expected_path}

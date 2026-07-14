@@ -10,12 +10,13 @@
     "test:unit": "jest --config tests/jest.config.cjs",
     "test:unit:watch": "jest --config tests/jest.config.cjs --watch",
     "test:e2e": "robot --outputdir tests/e2e/results tests/e2e",
+    "test:e2e:local": "robot --variable BASE_URL:http://127.0.0.1:4200 --outputdir tests/e2e/results tests/e2e",
     "test:e2e:init": "rfbrowser init",
     "sonar": "sonar-scanner",
     "lint": "ng lint",
     "prepare": "husky install",
     "json-server": "concurrently \"node ./server/json-server-funktion.mjs\" \"ng serve\"",
-    "cerebra-mock-backend": "concurrently \"node ./server/json-server-funktion.mjs\" \"ng serve --configuration development,rosmock\""
+    "cerebra-mock-backend": "concurrently \"node ./server/json-server-funktion.mjs\" \"ng serve --host=127.0.0.1 --configuration development,rosmock\""
   },
   "private": true,
   "dependencies": {

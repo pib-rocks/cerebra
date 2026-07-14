@@ -1,3 +1,4 @@
 robotframework>=7.0
-robotframework-browser>=18.0.0
+robotframework-browser>=18.0.0,<21.0.0
 robotframework-assertion-engine>=3.0.0
+# mockUrl.js (tests/e2e/resources/) requires npm + rfbrowser init for Browser library Node runtime

@@ -1,7 +1,7 @@
 *** Settings ***
 Documentation    UC-BLY-* Blockly editor E2E scenarios from frontend_use_cases.md
 Resource         resources/cerebra_resources.robot
-Suite Setup      Open Cerebra Application
+Suite Setup      Open Browser Session
 Suite Teardown   Close Cerebra Application
 Test Tags        blockly    e2e
 
@@ -35,7 +35,6 @@ UC-BLY-006 Run Program Opens Split Mode
     Navigate To Route    /program/${PROGRAM_NUMBER}
     Wait For Blockly Workspace
     Click Run Program Button
-    Click Split Screen Toggle
     Python Code Area Should Be Visible
     Console Area Should Be Visible
 
@@ -52,21 +51,19 @@ UC-BLY-004 Save Program After Blockly Edit
     Click Save Program Button
 
 UC-BLY-011 Program Console Input Visible In Split Mode
-    [Documentation]    Console stdin textarea is available when split mode is active.
+    [Documentation]    Console stdin textarea is available when program is running in split mode.
     Mock Programs List
     Mock Program Code    ${PROGRAM_NUMBER}    {}
+    Mock Program Code Put    ${PROGRAM_NUMBER}
     Navigate To Route    /program/${PROGRAM_NUMBER}
     Wait For Blockly Workspace
-    Click Split Screen Toggle
+    Click Run Program Button
     Program Input Area Should Be Visible
 
 *** Keywords ***
 Add First Flyout Block To Workspace
     [Documentation]    Drag the first block from the open Blockly flyout into the workspace.
-    Wait For Elements State    css=.blocklyFlyout    visible    timeout=${DEFAULT_TIMEOUT}
-    ${flyout_block}=    Get Element    css=.blocklyFlyout .blocklyDraggable >> nth=0
-    ${workspace}=    Get Element    css=#blocklyDiv .blocklyBlockCanvas
-    Drag And Drop    ${flyout_block}    ${workspace}
+    Drag Blockly Block From Flyout    move_motor
     Sleep    500ms
 
 Get Element Count
@@ -74,12 +71,3 @@ Get Element Count
     ${elements}=    Get Elements    ${selector}
     ${count}=    Get Length    ${elements}
     RETURN    ${count}
-
-Location Should Be Route
-    [Arguments]    ${expected_path}
-    ${url}=    Get Url
-    Should Contain    ${url}    ${expected_path}
-
-Element By Data Test Should Be Visible
-    [Arguments]    ${data_test_value}
-    Wait For Elements State    css=[data-test="${data_test_value}"]    visible    timeout=${DEFAULT_TIMEOUT}

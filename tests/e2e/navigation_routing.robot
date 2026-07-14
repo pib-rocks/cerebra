@@ -1,7 +1,7 @@
 *** Settings ***
 Documentation    UC-NAV-* navigation and routing scenarios from frontend_use_cases.md
 Resource         resources/cerebra_resources.robot
-Suite Setup      Open Cerebra Application
+Suite Setup      Open Browser Session
 Suite Teardown   Close Cerebra Application
 Test Tags        navigation    e2e
 
@@ -33,9 +33,3 @@ UC-NAV-003 Navigate To Camera Page
 UC-NAV-003 Navigate To Hardware IDs
     Navigate To Route    ${HARDWARE_IDS_ROUTE}
     Location Should Be Route    ${HARDWARE_IDS_ROUTE}
-
-*** Keywords ***
-Location Should Be Route
-    [Arguments]    ${expected_path}
-    ${url}=    Get Url
-    Should Contain    ${url}    ${expected_path}

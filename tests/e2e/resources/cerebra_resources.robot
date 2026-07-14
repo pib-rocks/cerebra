@@ -1,15 +1,14 @@
 *** Settings ***
 Documentation    Shared keywords and variables for Cerebra frontend E2E tests.
-Library          Browser
+Library          Browser    jsextension=${CURDIR}/mockUrl.js
 Resource         cerebra_variables.robot
 
 *** Keywords ***
-Open Cerebra Application
-    [Documentation]    Launch browser and navigate to the Cerebra base URL.
+Open Browser Session
+    [Documentation]    Launch browser with blank page so mocks can be registered before navigation.
     New Browser    ${BROWSER}    headless=${HEADLESS}
     New Context    viewport={'width': 1920, 'height': 1080}
-    New Page    ${BASE_URL}
-    Wait For Load State    networkidle    timeout=${DEFAULT_TIMEOUT}
+    New Page    about:blank
 
 Close Cerebra Application
     [Documentation]    Close browser and reset session state.
@@ -46,27 +45,74 @@ Get Element By Id Should Be Visible
 
 Mock Api Route With Body String
     [Arguments]    ${method}    ${url_pattern}    ${status}    ${body_string}
-    [Documentation]    Register a Playwright route mock returning a JSON body string.
-    Route    ${url_pattern}    ${method}    {"status": ${status}, "body": ${body_string}}
+    [Documentation]    Register mockUrl response for a URL pattern (method ignored by mockUrl).
+    &{mock}=    Create Dictionary
+    ...    url=${url_pattern}
+    ...    statusCode=${status}
+    ...    contentType=application/json
+    ...    body=${body_string}
+    mockUrl    ${mock}
 
 Mock Api Http 500
     [Arguments]    ${method}    ${url_pattern}
-    Route    ${url_pattern}    ${method}    {"status": 500, "body": {"error": "Internal Server Error"}}
+    [Documentation]    Mock HTTP 500 for a URL pattern (method ignored by mockUrl).
+    &{mock}=    Create Dictionary
+    ...    url=${url_pattern}
+    ...    statusCode=500
+    ...    contentType=application/json
+    ...    body={"error":"Internal Server Error"}
+    mockUrl    ${mock}
 
 Mock Programs List
     [Documentation]    Mock GET /api/program with a deterministic program list.
-    Route    **/api/program    GET    {"status": 200, "body": {"programs": [{"name": "Test Program", "programNumber": "1"}]}}
+    mockUrl    ${MOCK_PROGRAMS_LIST}
 
 Mock Program Code
     [Arguments]    ${program_number}    ${code_visual}={}
-    Route    **/api/program/${program_number}/code    GET    {"status": 200, "body": {"codeVisual": "${code_visual}"}}
+    [Documentation]    Mock GET /api/program/{n}/code.
+    &{mock}=    Create Dictionary
+    ...    url=**/api/program/${program_number}/code
+    ...    statusCode=200
+    ...    contentType=application/json
+    ...    body={"codeVisual":"${code_visual}"}
+    mockUrl    ${mock}
 
 Mock Program Code Put
     [Arguments]    ${program_number}
-    Route    **/api/program/${program_number}/code    PUT    {"status": 200, "body": {"codeVisual": "{}"}}
+    [Documentation]    Mock PUT /api/program/{n}/code.
+    &{mock}=    Create Dictionary
+    ...    url=**/api/program/${program_number}/code
+    ...    statusCode=200
+    ...    contentType=application/json
+    ...    body={"codeVisual":"{}"}
+    mockUrl    ${mock}
 
 Mock Pose List
-    Route    **/api/pose    GET    {"status": 200, "body": {"poses": [{"name": "Test Pose", "poseId": "pose-1", "deletable": true, "active": true}]}}
+    [Documentation]    Mock GET /api/pose with a deterministic pose list.
+    mockUrl    ${MOCK_POSE_LIST}
+
+Mock Camera Settings
+    [Documentation]    Mock GET /api/camera-settings with default inactive camera.
+    mockUrl    ${MOCK_CAMERA_SETTINGS}
+
+Mock Button Programs And Bricklets
+    [Documentation]    Mock GET /api/button-programs and /api/bricklet for RGB LED page.
+    mockUrl    ${MOCK_BUTTON_PROGRAMS}
+    mockUrl    ${MOCK_BRICKLETS_RGB}
+
+Mock Bricklets For Hardware Id
+    [Documentation]    Mock GET /api/bricklet for hardware ID page.
+    mockUrl    ${MOCK_BRICKLETS_HARDWARE}
+
+Mock Bricklet Put Http 500
+    [Documentation]    Mock bricklet PUT: temp-uid pass succeeds, final pass returns HTTP 500.
+    mockBrickletUidPutFinalFails
+
+Snackbar Should Contain Text
+    [Arguments]    ${text}
+    Wait For Elements State    css=.mat-mdc-snack-bar-container    visible    timeout=${DEFAULT_TIMEOUT}
+    ${snackbar_text}=    Get Text    css=.mat-mdc-snack-bar-container
+    Should Contain    ${snackbar_text}    ${text}
 
 Wait For Blockly Workspace
     [Documentation]    Wait until Blockly workspace SVG is rendered in #blocklyDiv.
@@ -75,13 +121,17 @@ Wait For Blockly Workspace
 Open Blockly Toolbox Category
     [Arguments]    ${category_label}
     [Documentation]    Click a Blockly toolbox category by its visible label text.
-    Click    css=.blocklyTreeRow >> text=${category_label}
+    Click    css=#blocklyDiv >> .blocklyTreeRow:has-text("${category_label}")
 
 Drag Blockly Block From Flyout
     [Arguments]    ${block_type}
     [Documentation]    Drag a block type from the open flyout into the workspace.
-    ${flyout_block}=    Get Element    css=.blocklyFlyout .blocklyDraggable[data-id]:has(.blocklyText)
-    Drag And Drop    ${flyout_block}    css=#blocklyDiv .blocklyBlockCanvas
+    Wait For Elements State    css=.blocklyFlyout[data-cached-width]    visible    timeout=${DEFAULT_TIMEOUT}
+    ${flyout_block}=    Get Element    css=.blocklyFlyout[data-cached-width] .blocklyDraggable >> nth=0
+    Set Strict Mode    False
+    ${workspace}=    Get Element    css=#blocklyDiv .blocklyBlockCanvas
+    Set Strict Mode    True
+    Drag And Drop    ${flyout_block}    ${workspace}
 
 Click Run Program Button
     [Documentation]    Click the program run/stop toolbar button.
