@@ -104,11 +104,70 @@ export class ProgramManagerComponent implements OnInit, AfterViewInit {
         });
     }
 
+    importProgram() {
+        const input = document.createElement("input");
+        input.type = "file";
+        input.accept = ".json";
+
+        input.onchange = () => {
+            const file = input.files?.[0];
+
+            if (!file) {
+                return;
+            }
+
+            file.text().then((text) => {
+                let importData: any;
+
+                try {
+                    importData = JSON.parse(text);
+                } catch {
+                    alert("Import failed: invalid JSON file.");
+                    return;
+                }
+
+                if (
+                    importData.type !== "pib-blockly-program" ||
+                    typeof importData.codeVisual !== "string"
+                ) {
+                    alert("Import failed: invalid pib Blockly program file.");
+                    return;
+                }
+
+                const importedName =
+                    typeof importData.name === "string" &&
+                    importData.name.trim().length >= 2
+                        ? importData.name.trim()
+                        : "Imported program";
+
+                this.programService
+                    .createProgram(new Program(importedName))
+                    .subscribe((program) => {
+                        this.programService
+                            .updateCodeByProgramNumber(program.programNumber, {
+                                codeVisual: importData.codeVisual,
+                            })
+                            .subscribe(() => {
+                                this.selected.next(program.programNumber);
+                            });
+                    });
+            });
+        };
+
+        input.click();
+    }
+
     optionCallbackMethods = [
         {
             icon: "",
             label: "New program",
             clickCallback: this.addProgram.bind(this),
+            disabled: false,
+        },
+        {
+            icon: "",
+            label: "Import program",
+            clickCallback: this.importProgram.bind(this),
             disabled: false,
         },
     ];

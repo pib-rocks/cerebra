@@ -3,6 +3,17 @@
         class="d-flex flex-row-reverse hstack gap-3 position-absolute z-2 top-0 end-0 pt-4 pb-4 pr-5 pe-none"
         [style]="'transform: translate(' + -flyoutWidth + 'px, 0);'">
         <button
+            id="export-btn"
+            data-test="BTN_Program_Export"
+            type="button"
+            (click)="exportCode()"
+            class="workspaceButton p-0">
+            <img
+                [src]="EXPORT"
+                width="75px"
+                alt="Program export button" />
+        </button>
+        <button
             id="save-btn"
             data-test="BTN_Program_Save"
             type="button"

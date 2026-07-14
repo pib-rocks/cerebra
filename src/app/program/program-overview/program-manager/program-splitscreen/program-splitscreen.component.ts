@@ -18,6 +18,7 @@ export class ProgramSplitscreenComponent implements OnInit {
     codeVisualOld: string = "{}";
     codeVisualNew: string = "{}";
     programNumber: string = "";
+    programName: string = "";
     flyoutWidth: number = 0;
 
     inSplitMode: boolean = false;
@@ -32,6 +33,7 @@ export class ProgramSplitscreenComponent implements OnInit {
     readonly TOGGLE_RIGHT = "../../assets/toggle-switch-right.png";
     readonly SAVE_ACTIVE = "../../assets/program/button-save-active.svg";
     readonly SAVE_INACTIVE = "../../assets/program/button-save-inactive.svg";
+    readonly EXPORT = "../../assets/program/button-export.svg";
     readonly FULL_SCREEN = "../../../../assets/program/icon-full-screen.svg";
     readonly SPLIT_SCREEN = "../../../../assets/program/icon-split-screen.svg";
 
@@ -47,6 +49,7 @@ export class ProgramSplitscreenComponent implements OnInit {
         });
         this.activatedRoute.params.subscribe((params) => {
             this.programNumber = params["program-number"];
+            this.resolveProgramName(this.programNumber);
             this.programLogs$ = this.programService.getProgramLogs(
                 this.programNumber,
             );
@@ -64,6 +67,53 @@ export class ProgramSplitscreenComponent implements OnInit {
             codeVisual: this.codeVisualNew,
         });
         this.codeVisualOld = this.codeVisualNew;
+    }
+
+    exportCode() {
+        const rawName = this.programName || `program-${this.programNumber}`;
+        const safeName = this.toSafeFileName(rawName);
+        const filenameBase = safeName || `program_${this.programNumber}`;
+
+        const exportData = {
+            version: 1,
+            type: "pib-blockly-program",
+            name: rawName,
+            codeVisual: this.codeVisualNew,
+            exportedAt: new Date().toISOString(),
+        };
+
+        const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+            type: "application/json",
+        });
+
+        const url = URL.createObjectURL(blob);
+
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `${filenameBase}_pib-blockly-program.json`;
+        link.click();
+
+        URL.revokeObjectURL(url);
+    }
+
+    private resolveProgramName(programNumber: string) {
+        const cached = this.programService.getProgramFromCache(programNumber);
+        if (cached) {
+            this.programName = cached.name;
+            return;
+        }
+
+        this.programService.getProgramByProgramNumber(programNumber).subscribe({
+            next: (program) => (this.programName = program.name),
+        });
+    }
+
+    private toSafeFileName(value: string): string {
+        return value
+            .trim()
+            .replace(/[^a-zA-Z0-9-_]+/g, "_")
+            .replace(/^_+|_+$/g, "")
+            .toLowerCase();
     }
 
     runProgram() {

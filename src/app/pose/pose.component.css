@@ -7,7 +7,7 @@
     height: 40px;
     line-height: 40px;
     border-radius: 10px;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .selected.pose-item {
@@ -43,8 +43,10 @@
 .delete-icon,
 .update-icon {
     color: white;
-    position: absolute;
-    transform: translate(-50%, -50%);
+    position: static;
+    transform: none;
+    display: block;
+    margin: auto;
 }
 
 .rename-icon {
@@ -68,6 +70,9 @@ button:disabled img {
     border: none;
     width: 40px;
     height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .pose-label,
@@ -115,4 +120,46 @@ button:focus {
 
 .unselected .apply-button {
     border-color: #344864;
+}
+
+.pose-list-scroll {
+    max-height: calc(100vh - 260px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+.pose-list-scroll .pose-item {
+    width: 100%;
+    min-width: 0;
+}
+
+.pose-import-preview {
+    margin-bottom: 0.5rem;
+}
+
+.pose-export-button {
+    border: none;
+    width: 70px;
+    height: 40px;
+    background-color: #2b6cb0;
+    color: white;
+    cursor: pointer;
+}
+
+.pose-export-button:hover {
+    background-color: #1e4f85;
+}
+
+.pose-export-button:active {
+    transform: scale(0.97);
+}
+
+.selected .pose-export-button:focus {
+    outline: 3px #ff67c6 solid;
+}
+
+.unselected .pose-export-button:focus {
+    outline: 3px #627f96 solid;
 }

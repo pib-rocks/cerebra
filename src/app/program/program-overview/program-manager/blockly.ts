@@ -369,11 +369,25 @@ export const toolbox: string = `<xml xmlns="http://www.w3.org/1999/xhtml" id="to
     <block type="move_motor"></block>
     <block type="move_to_pose"></block>
 </category>
-<category name="Language skills" colour="260">
+<category name="Audio skills" colour="260">
     <block type="play_audio_from_speech"></block>
+    <block type="play_wav"></block>
 </category>
 <category name="Visual Skills" colour="200">
     <block type="face_detector_start_stop"></block>
     <block type="face_detector_running"></block>
+    <block type="vision_object_detected"></block>
+    <block type="vision_object_count"></block>
+    <block type="vision_objects_different"></block>
+    <block type="vision_describe_image"></block>
+</category>
+<category name="Expressions" colour="180">
+    <block type="set_face_expression"></block>
+    <block type="show_face_text"></block>
+</category>
+<category name="Buttons" colour="20">
+    <block type="tf_button_taster_to_variable"></block>
+    <block type="tf_button_switch_to_variable"></block>
+    <block type="tf_button_set_color"></block>
 </category>
 </xml>`;
