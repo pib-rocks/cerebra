@@ -1,0 +1,3 @@
+robotframework>=7.0
+robotframework-browser>=18.0.0
+robotframework-assertion-engine>=3.0.0
