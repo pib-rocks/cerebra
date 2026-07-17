@@ -185,7 +185,7 @@ export class RosService implements IRosService {
             this.initSubscribers();
             this.connectionStatusSubject.next(true);
         });
-        this.ros.on("error", (error: string) => {
+        this.ros.on("error", (error: unknown) => {
             console.log("Error connecting to ROSBridge server:", error);
             this.connectionStatusSubject.next(false);
         });
@@ -323,7 +323,7 @@ export class RosService implements IRosService {
     private createRosService(
         serviceName: string,
         serviceType: string,
-    ): ROSLIB.Service {
+    ): any {
         return new ROSLIB.Service({
             ros: this.ros,
             name: serviceName,
@@ -489,7 +489,7 @@ export class RosService implements IRosService {
     }
 
     deleteTokenMessage() {
-        const message = new ROSLIB.Message({});
+        const message = {};
         this.deleteTokenTopic.publish(message);
     }
 
@@ -765,7 +765,7 @@ export class RosService implements IRosService {
             console.error("ROS is not connected.");
             return;
         }
-        const message = new ROSLIB.Message({data: period});
+        const message = {data: period};
         this.cameraTimerPeriodTopic.publish(message);
     }
 
@@ -774,7 +774,7 @@ export class RosService implements IRosService {
             console.error("ROS is not connected.");
             return;
         }
-        const message = new ROSLIB.Message({data: [width, height]});
+        const message = {data: [width, height]};
         this.cameraPreviewSizeTopic.publish(message);
     }
 
@@ -783,7 +783,7 @@ export class RosService implements IRosService {
             console.error("ROS is not connected.");
             return;
         }
-        const message = new ROSLIB.Message({data: factor});
+        const message = {data: factor};
         this.cameraQualityFactorTopic.publish(message);
     }
 
