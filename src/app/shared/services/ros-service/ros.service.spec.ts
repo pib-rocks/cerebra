@@ -88,7 +88,7 @@ describe("RosService", () => {
             "callService",
         ).and.callFake((_msg, callback) => {
             const res: SetVoiceAssistantStateResponse = {successful: true};
-            callback(res);
+            callback!(res);
         });
         const state: VoiceAssistantState = {
             turned_on: true,
@@ -112,7 +112,7 @@ describe("RosService", () => {
             "callService",
         ).and.callFake((_msg, callback) => {
             const res: SetVoiceAssistantStateResponse = {successful: false};
-            callback(res);
+            callback!(res);
         });
         const state: VoiceAssistantState = {
             turned_on: true,
@@ -206,7 +206,7 @@ describe("RosService", () => {
             rosService["applyJointTrajectoryService"],
             "callService",
         ).and.callFake((_jt, resolve, _reject) => {
-            resolve({successful: true});
+            resolve!({successful: true});
         });
         rosService.applyJointTrajectory(jt).subscribe(subscriber);
         expect(subscriber.next).toHaveBeenCalled();
@@ -232,7 +232,7 @@ describe("RosService", () => {
             rosService["applyJointTrajectoryService"],
             "callService",
         ).and.callFake((_jt, resolve, _reject) => {
-            resolve({successful: false});
+            resolve!({successful: false});
         });
         rosService.applyJointTrajectory(jt).subscribe(subscriber);
         expect(subscriber.next).not.toHaveBeenCalled();
@@ -262,7 +262,7 @@ describe("RosService", () => {
                 settings_applied: true,
                 settings_persisted: true,
             };
-            callback(res);
+            callback!(res);
         });
         spyOn(rosService.motorSettingsReceiver$, "next");
 
@@ -339,7 +339,7 @@ describe("RosService", () => {
         rosService["proxyProgramStopService"] = stoptSpy;
 
         startSpy.callService.and.callFake((_request, callback) => {
-            callback({proxy_goal_id: "test-proxy-goal-id"});
+            callback!({proxy_goal_id: "test-proxy-goal-id"});
         });
 
         const programNumber = "test-uuid";
@@ -436,7 +436,7 @@ describe("RosService", () => {
             rosService["getChatIsListeningService"],
             "callService",
         ).and.callFake((_request, successCallback, _errorCallback) => {
-            successCallback(isListeningResponse);
+            successCallback!(isListeningResponse);
         });
         rosService.getChatIsListening(chatId).subscribe(subscriber);
         expect(subscriber.next).toHaveBeenCalledOnceWith(
@@ -474,7 +474,7 @@ describe("RosService", () => {
             rosService["sendChatMessageService"],
             "callService",
         ).and.callFake((_request, successCallback, _errorCallback) => {
-            successCallback({successful: true});
+            successCallback!({successful: true});
         });
         rosService
             .sendChatMessage(chatId, chatMessageContent)
@@ -493,7 +493,7 @@ describe("RosService", () => {
             rosService["sendChatMessageService"],
             "callService",
         ).and.callFake((_request, successCallback, _errorCallback) => {
-            successCallback({successful: false});
+            successCallback!({successful: false});
         });
         rosService
             .sendChatMessage(chatId, chatMessageContent)
@@ -531,7 +531,7 @@ describe("RosService", () => {
             rosService["existTokenService"],
             "callService",
         ).and.callFake((_request, successCallback, _errorCallback) => {
-            successCallback({token_exists: false, token_active: false});
+            successCallback!({token_exists: false, token_active: false});
         });
 
         rosService.checkTokenExists().subscribe(subscriber);
@@ -551,7 +551,7 @@ describe("RosService", () => {
             rosService["encryptTokenService"],
             "callService",
         ).and.callFake((_request, successCallback, _errorCallback) => {
-            successCallback({successful: true});
+            successCallback!({successful: true});
         });
 
         rosService.encryptToken(token, password).subscribe(subscriber);
@@ -592,7 +592,7 @@ describe("RosService", () => {
             rosService["decryptTokenService"],
             "callService",
         ).and.callFake((_request, successCallback, _errorCallback) => {
-            successCallback({successful: true});
+            successCallback!({successful: true});
         });
 
         rosService.decryptToken(password).subscribe(subscriber);
@@ -633,7 +633,7 @@ describe("RosService", () => {
 
     it("should update connectionStatus based on ROS events", () => {
         let connectionCallback: () => void = () => {};
-        let errorCallback: (error: string) => void = () => {};
+        let errorCallback: (error: unknown) => void = () => {};
         let closeCallback: () => void = () => {};
 
         const mockRos = jasmine.createSpyObj("ros", [
@@ -644,7 +644,7 @@ describe("RosService", () => {
         mockRos.on.and.callFake(
             (
                 event: string,
-                callback: () => void | ((error: string) => void),
+                callback: () => void | ((error: unknown) => void),
             ) => {
                 if (event === "connection") connectionCallback = callback;
                 if (event === "error") errorCallback = callback;
@@ -708,7 +708,7 @@ describe("RosService", () => {
             "callService",
         ).and.callFake((_msg, successCallback) => {
             const res: SetSolidStateRelayStateResponse = {successful: true};
-            successCallback(res);
+            successCallback!(res);
         });
         const state: SolidStateRelayState = {
             turned_on: true,
@@ -733,7 +733,7 @@ describe("RosService", () => {
             "callService",
         ).and.callFake((_msg, callback) => {
             const res: SetSolidStateRelayStateResponse = {successful: false};
-            callback(res);
+            callback!(res);
         });
         const state: SolidStateRelayState = {
             turned_on: true,
