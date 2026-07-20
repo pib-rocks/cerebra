@@ -1,0 +1,30 @@
+changelog:
+  exclude:
+    labels:
+      - duplicate
+      - wontfix
+      - question
+  categories:
+    - title: 🚀 Features
+      labels:
+        - feature
+        - enhancement
+    - title: 🧪 Testing
+      labels:
+        - testing
+    - title: 🐛 Bug Fixes
+      labels:
+        - bug
+        - fix
+    - title: 📚 Documentation
+      labels:
+        - documentation
+    - title: 🔧 Refactoring & Maintenance
+      labels:
+        - refactor
+        - maintenance
+        - dependencies
+template: |
+  ## What's Changed
+
+  $CHANGES
