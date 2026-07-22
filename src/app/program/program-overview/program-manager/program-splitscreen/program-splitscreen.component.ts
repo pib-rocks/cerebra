@@ -1,4 +1,4 @@
-import {Component, OnInit} from "@angular/core";
+import {Component, OnInit, ChangeDetectionStrategy} from "@angular/core";
 import {ActivatedRoute} from "@angular/router";
 import {Observable} from "rxjs";
 import {ProgramService} from "src/app/shared/services/program.service";
@@ -10,6 +10,8 @@ import {ProgramLogLine} from "src/app/shared/types/program-log-line";
     selector: "app-program-splitscreen",
     templateUrl: "./program-splitscreen.component.html",
     styleUrls: ["./program-splitscreen.component.scss"],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false,
 })
 export class ProgramSplitscreenComponent implements OnInit {
     ExecutionState = ExecutionState;

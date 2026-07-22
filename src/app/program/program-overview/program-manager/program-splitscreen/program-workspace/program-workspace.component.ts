@@ -10,6 +10,7 @@ import {
     Output,
     SimpleChanges,
     ViewChild,
+    ChangeDetectionStrategy,
 } from "@angular/core";
 import * as Blockly from "blockly";
 import {toolbox} from "../../blockly";
@@ -26,6 +27,8 @@ import {Pose} from "src/app/shared/types/pose";
     selector: "app-program-workspace",
     templateUrl: "./program-workspace.component.html",
     styleUrls: ["./program-workspace.component.scss"],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false,
 })
 export class ProgramWorkspaceComponent
     implements OnInit, AfterViewInit, OnDestroy, OnChanges

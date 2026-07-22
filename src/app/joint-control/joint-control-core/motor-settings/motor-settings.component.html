@@ -72,9 +72,8 @@
             </div>
         </div>
     </div>
-    <div
-        *ngIf="displayExtended"
-        class="row justify-content-center">
+    @if (displayExtended) {
+    <div class="row justify-content-center">
         <div class="col-9">
             <app-horizontal-slider
                 [leftValue]="0"
@@ -91,9 +90,8 @@
                 (sliderEvent)="setPulseRanges($event)"></app-horizontal-slider>
         </div>
     </div>
-    <div
-        *ngIf="displayExtended"
-        class="row display-flex justify-content-center">
+    } @if (displayExtended) {
+    <div class="row display-flex justify-content-center">
         <div class="col-9">
             <app-horizontal-slider
                 [leftValue]="-90"
@@ -111,9 +109,8 @@
                 (sliderEvent)="setDegree($event)"></app-horizontal-slider>
         </div>
     </div>
-    <div
-        *ngIf="displayExtended"
-        class="row display-flex justify-content-center">
+    } @if (displayExtended) {
+    <div class="row display-flex justify-content-center">
         <div class="col-9">
             <app-horizontal-slider
                 [name]="'Period'"
@@ -130,9 +127,8 @@
                 (sliderEvent)="setPeriod($event[0])"></app-horizontal-slider>
         </div>
     </div>
-    <div
-        *ngIf="displayExtended"
-        class="row display-flex justify-content-center">
+    } @if (displayExtended) {
+    <div class="row display-flex justify-content-center">
         <div class="col-9">
             <div class="d-flex mb-3 ml-1">
                 <input
@@ -150,8 +146,8 @@
             </div>
         </div>
     </div>
+    } @if (!displayExtended) {
     <div
-        *ngIf="!displayExtended"
         class="row modal-body d-flex align-items-start justify-content-center"
         style="height: 500px;">
         <div class="col-3 h-100 ml-2 mr-2 ">
@@ -186,4 +182,5 @@
                 [defaultValue]="settings.deceleration"></app-vertical-slider>
         </div>
     </div>
+    }
 </ng-template>

@@ -4,6 +4,7 @@ import {
     ViewChild,
     TemplateRef,
     AfterViewInit,
+    ChangeDetectionStrategy,
 } from "@angular/core";
 
 import {Observable, Subject} from "rxjs";
@@ -18,6 +19,8 @@ import {ProgramService} from "../../../shared/services/program.service";
     selector: "app-program-manager",
     templateUrl: "./program-manager.component.html",
     styleUrls: ["./program-manager.component.scss"],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false,
 })
 export class ProgramManagerComponent implements OnInit, AfterViewInit {
     @ViewChild("modalContent") modalContent: TemplateRef<any> | undefined;

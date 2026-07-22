@@ -3,6 +3,7 @@ import {TestBed} from "@angular/core/testing";
 import {ProgramService} from "./program.service";
 import {ApiService} from "./api.service";
 import {BehaviorSubject, Observable, Subject} from "rxjs";
+import {take} from "rxjs/operators";
 import {Program} from "../types/program";
 import {UtilService} from "./util.service";
 import {ExecutionState, ProgramState} from "../types/program-state";
@@ -334,6 +335,7 @@ describe("ProgramService", () => {
         const resultCode = await new Promise((resolve, _) => {
             programService
                 .getCodeByProgramNumber("id-1")
+                .pipe(take(1))
                 .subscribe((val) => resolve(val));
         });
         expect(apiService.get).toHaveBeenCalledOnceWith("/program/id-1/code");
@@ -352,6 +354,7 @@ describe("ProgramService", () => {
         const resultCode = await new Promise((resolve, _) => {
             programService
                 .getCodeByProgramNumber("id-1")
+                .pipe(take(1))
                 .subscribe((val) => resolve(val));
         });
         expect(apiService.get).not.toHaveBeenCalled();

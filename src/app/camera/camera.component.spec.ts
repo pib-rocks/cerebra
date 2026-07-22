@@ -76,7 +76,7 @@ describe("CameraComponent", () => {
     }));
 
     it("should change the running state of the camera when clicking camera icon", () => {
-        const spyOnToggleCamera = spyOn(component, "toggleCameraState");
+        const spyOnToggleCamera = spyOn(component, "toggleCameraState").and.stub();
         const toggleBtn = fixture.debugElement.query(By.css("#toggleCamera"));
         const cameraActiveState = component.cameraSettings?.isActive;
         toggleBtn.nativeElement.click();

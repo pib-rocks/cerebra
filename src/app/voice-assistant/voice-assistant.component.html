@@ -81,11 +81,9 @@
                 class="form-select"
                 data-test="DDN_Voice_Assistant_Model"
                 aria-label="Voice-assistant language model">
-                <option
-                    *ngFor="let model of models"
-                    [value]="model.id ">
-                    {{model.visualName}}
-                </option>
+                @for (model of models; track model) {
+                <option [value]="model.id ">{{model.visualName}}</option>
+                }
             </select>
         </div>
         <div class="row mt-3 m-2 ml-3">

@@ -13,6 +13,7 @@ import {
     OnDestroy,
     OnChanges,
     SimpleChanges,
+    ChangeDetectionStrategy,
 } from "@angular/core";
 import {FormControl} from "@angular/forms";
 import {Observable, asyncScheduler, fromEvent} from "rxjs";
@@ -22,6 +23,8 @@ import {SliderThumb} from "./slider-thumb";
     selector: "app-horizontal-slider",
     templateUrl: "./horizontal-slider.component.html",
     styleUrls: ["./horizontal-slider.component.scss"],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false,
 })
 export class HorizontalSliderComponent
     implements OnInit, AfterViewInit, OnDestroy, OnChanges

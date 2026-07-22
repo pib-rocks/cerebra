@@ -1,4 +1,4 @@
-import {Component, OnInit} from "@angular/core";
+import {Component, OnInit, ChangeDetectionStrategy} from "@angular/core";
 import {FormControl} from "@angular/forms";
 import {ActivatedRoute, Params} from "@angular/router";
 import {ChatService} from "src/app/shared/services/chat.service";
@@ -12,6 +12,8 @@ import {TokenService} from "src/app/shared/services/token.service";
     selector: "app-chat-window",
     templateUrl: "./chat-window.component.html",
     styleUrls: ["./chat-window.component.scss"],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false,
 })
 export class ChatWindowComponent implements OnInit {
     chat?: Chat;

@@ -1,4 +1,4 @@
-import {Component, OnInit} from "@angular/core";
+import {Component, OnInit, ChangeDetectionStrategy} from "@angular/core";
 import {FormControl, FormGroup} from "@angular/forms";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {Observable} from "rxjs";
@@ -14,6 +14,8 @@ import {Program} from "src/app/shared/types/program";
     selector: "app-rgb-led-button",
     templateUrl: "./rgb-led-button.component.html",
     styleUrl: "./rgb-led-button.component.scss",
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false,
 })
 export class RgbLedButtonComponent implements OnInit {
     buttons: Bricklet[] = [];

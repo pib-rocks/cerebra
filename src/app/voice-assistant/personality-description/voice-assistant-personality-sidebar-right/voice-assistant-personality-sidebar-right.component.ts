@@ -1,4 +1,4 @@
-import {Component, Input, OnInit} from "@angular/core";
+import {Component, Input, OnInit, ChangeDetectionStrategy} from "@angular/core";
 import {VoiceAssistant} from "src/app/shared/types/voice-assistant";
 import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
 import {ActivatedRoute, Params} from "@angular/router";
@@ -9,6 +9,8 @@ import {Observable} from "rxjs";
     selector: "app-va-personality-sidebar-right",
     templateUrl: "./voice-assistant-personality-sidebar-right.component.html",
     styleUrls: ["./voice-assistant-personality-sidebar-right.component.scss"],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false,
 })
 export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
     pauseThresholdMin = 0.1;

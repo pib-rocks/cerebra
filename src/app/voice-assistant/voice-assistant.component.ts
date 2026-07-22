@@ -1,4 +1,10 @@
-import {Component, OnInit, TemplateRef, ViewChild} from "@angular/core";
+import {
+    Component,
+    OnInit,
+    TemplateRef,
+    ViewChild,
+    ChangeDetectionStrategy,
+} from "@angular/core";
 import {SidebarElement} from "../shared/interfaces/sidebar-element.interface";
 import {Observable} from "rxjs";
 import {VoiceAssistantService} from "../shared/services/voice-assistant.service";
@@ -11,6 +17,8 @@ import {AssistantModel} from "../shared/types/assistantModel";
     selector: "app-voice-assistant",
     templateUrl: "./voice-assistant.component.html",
     styleUrls: ["./voice-assistant.component.scss"],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false,
 })
 export class VoiceAssistantComponent implements OnInit {
     personalityForm!: FormGroup;

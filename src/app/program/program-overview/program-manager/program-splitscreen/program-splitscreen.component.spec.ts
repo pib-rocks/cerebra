@@ -134,6 +134,9 @@ describe("ProgramSplitscreenComponent", () => {
         const programState = new Subject<ProgramState>();
         programService.getProgramLogs.and.returnValue(programLogs);
         programService.getProgramState.and.returnValue(programState);
+        programService.getProgramByProgramNumber.and.returnValue(
+            new Subject<any>(),
+        );
 
         params.next({"program-number": programNumber});
 

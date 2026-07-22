@@ -1,4 +1,4 @@
-import {Component, OnInit} from "@angular/core";
+import {Component, OnInit, ChangeDetectionStrategy} from "@angular/core";
 import {RosService} from "src/app/shared/services/ros-service/ros.service";
 import {MatSnackBar} from "@angular/material/snack-bar";
 
@@ -6,6 +6,8 @@ import {MatSnackBar} from "@angular/material/snack-bar";
     selector: "app-relay-control",
     templateUrl: "./relay-control.component.html",
     styleUrls: ["./relay-control.component.scss"],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false,
 })
 export class RelayControlComponent implements OnInit {
     turnedOn = false;

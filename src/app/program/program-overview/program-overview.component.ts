@@ -1,4 +1,4 @@
-import {Component, OnInit} from "@angular/core";
+import {Component, OnInit, ChangeDetectionStrategy} from "@angular/core";
 import {Router} from "@angular/router";
 import {map, Observable} from "rxjs";
 import {ProgramService} from "src/app/shared/services/program.service";
@@ -7,6 +7,8 @@ import {ProgramService} from "src/app/shared/services/program.service";
     selector: "app-program-overview",
     templateUrl: "./program-overview.component.html",
     styleUrl: "./program-overview.component.scss",
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false,
 })
 export class ProgramOverviewComponent implements OnInit {
     selected$!: Observable<string>;

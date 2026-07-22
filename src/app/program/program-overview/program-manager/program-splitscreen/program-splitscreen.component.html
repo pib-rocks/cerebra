@@ -68,8 +68,8 @@
                 (codeVisualChange)="codeVisualNew = $event"
                 (trashcanFlyoutChange)="flyoutWidth = $event"></app-program-workspace>
         </as-split-area>
+        @if (inSplitMode) {
         <as-split-area
-            *ngIf="inSplitMode"
             [size]="50"
             class="split-screen-lower">
             <as-split direction="horizontal">
@@ -86,5 +86,6 @@
                 </as-split-area>
             </as-split>
         </as-split-area>
+        }
     </as-split>
 </div>

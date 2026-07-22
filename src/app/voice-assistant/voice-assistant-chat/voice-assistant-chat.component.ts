@@ -4,6 +4,7 @@ import {
     OnInit,
     TemplateRef,
     ViewChild,
+    ChangeDetectionStrategy,
 } from "@angular/core";
 import {FormControl, Validators} from "@angular/forms";
 import {ActivatedRoute, Router} from "@angular/router";
@@ -23,6 +24,8 @@ import {TokenService} from "src/app/shared/services/token.service";
     selector: "app-voice-assistant-chat",
     templateUrl: "./voice-assistant-chat.component.html",
     styleUrls: ["./voice-assistant-chat.component.scss"],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false,
 })
 export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
     @ViewChild("modalContent") modalContent: TemplateRef<any> | undefined;

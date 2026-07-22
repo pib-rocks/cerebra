@@ -1,4 +1,4 @@
-import {Component, Input, OnInit} from "@angular/core";
+import {Component, Input, OnInit, ChangeDetectionStrategy} from "@angular/core";
 import {ActivatedRoute, NavigationStart, Router} from "@angular/router";
 import {Observable} from "rxjs";
 import {SidebarElement} from "src/app/shared/interfaces/sidebar-element.interface";
@@ -8,6 +8,8 @@ import {CerebraRegex} from "src/app/shared/types/cerebra-regex";
     selector: "app-voice-assistant-nav",
     templateUrl: "./voice-assistant-nav.component.html",
     styleUrls: ["./voice-assistant-nav.component.scss"],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false,
 })
 export class VoiceAssistantNavComponent implements OnInit {
     sidebarElements?: SidebarElement[];

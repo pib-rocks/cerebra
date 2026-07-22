@@ -32,11 +32,9 @@
                     data-test="DDN_Voice_Assistant_Model"
                     class="form-select"
                     aria-label="Voice-assistant language model">
-                    <option
-                        *ngFor="let model of models"
-                        [value]="model.id">
-                        {{ model.visualName }}
-                    </option>
+                    @for (model of models; track model) {
+                    <option [value]="model.id">{{ model.visualName }}</option>
+                    }
                 </select>
             </div>
         </div>

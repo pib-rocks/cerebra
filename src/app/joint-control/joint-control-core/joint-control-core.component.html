@@ -13,8 +13,8 @@
             <div class="col-3 sidebar-label m-0 p-0">Active</div>
             <div class="col-3 sidebar-label m-0 p-0">Current</div>
         </div>
+        @for (motor of displayMotors; track motor) {
         <div
-            *ngFor="let motor of displayMotors"
             class="row m-0 p-0"
             [ngClass]="[joint.reversed ? 'flex-row-reverse' : 'flex-row', motor === selectedMotor || selectedMotor?.isMultiMotor ? 'background-selected' : '']"
             [style]="'height: ' + (joint.segmentHeight*100) + '%;'">
@@ -29,12 +29,13 @@
                 [motor]="motor"
                 class="col-6 cursor m-0 p-0"></app-motor-current>
         </div>
+        }
     </div>
     <div
         id="joint-canvas"
         class="m-0 p-0">
+        @for (motor of joint.motors; track motor) {
         <a
-            *ngFor="let motor of joint.motors"
             (click)="selectMotor(motor)"
             [id]="'touchpoint-' + motor.motorPathName"
             [ngClass]="selectedMotor?.motorName === motor.motorName ? 'active-touchpoint' : ''"
@@ -51,6 +52,7 @@
                     alt="touch-area of touchpoint"></div>
             </div>
         </a>
+        }
         <img
             class="img-fluid joint-background m-0 p-0"
             [src]="'../../../assets' + joint.background"

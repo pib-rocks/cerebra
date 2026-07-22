@@ -1,4 +1,9 @@
-import {Component, OnInit, TemplateRef} from "@angular/core";
+import {
+    Component,
+    OnInit,
+    TemplateRef,
+    ChangeDetectionStrategy,
+} from "@angular/core";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {
     AbstractControl,
@@ -13,6 +18,8 @@ import {TokenService} from "src/app/shared/services/token.service";
     selector: "app-smart-connect",
     templateUrl: "./smart-connect.component.html",
     styleUrls: ["./smart-connect.component.css"],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false,
 })
 export class SmartConnectComponent implements OnInit {
     // prevent user from opening modal multiple times in case of delay

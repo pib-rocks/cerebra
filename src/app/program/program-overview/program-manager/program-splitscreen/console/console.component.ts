@@ -8,6 +8,7 @@ import {
     Output,
     SimpleChanges,
     ViewChild,
+    ChangeDetectionStrategy,
 } from "@angular/core";
 import {FormControl} from "@angular/forms";
 import {Observable, Subscription} from "rxjs";
@@ -18,6 +19,8 @@ import {ExecutionState, ProgramState} from "src/app/shared/types/program-state";
     selector: "app-console",
     templateUrl: "./console.component.html",
     styleUrls: ["./console.component.scss"],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false,
 })
 export class ConsoleComponent implements AfterViewInit, OnChanges {
     @Input() programLogs$!: Observable<ProgramLogLine[]>;

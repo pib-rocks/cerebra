@@ -79,14 +79,14 @@
 				"serve": {
 					"builder": "@angular-devkit/build-angular:dev-server",
 					"configurations": {
-						"production": {
-							"browserTarget": "cerebra:build:production"
+            "production": {
+              "buildTarget": "cerebra:build:production"
 						},
-						"development": {
-							"browserTarget": "cerebra:build:development"
+            "development": {
+              "buildTarget": "cerebra:build:development"
 						},
-						"rosmock": {
-							"browserTarget": "cerebra:build:rosmock"
+            "rosmock": {
+              "buildTarget": "cerebra:build:rosmock"
 						}
 					},
 					"options": {
@@ -96,8 +96,8 @@
 				},
 				"extract-i18n": {
 					"builder": "@angular-devkit/build-angular:extract-i18n",
-					"options": {
-						"browserTarget": "cerebra:build"
+          "options": {
+            "buildTarget": "cerebra:build"
 					}
 				},
 				"test": {
@@ -134,8 +134,30 @@
 	},
 	"schematics": {
 		"@schematics/angular:component": {
-			"style": "scss"
-		}
+      "style": "scss",
+      "type": "component"
+    },
+    "@schematics/angular:directive": {
+      "type": "directive"
+    },
+    "@schematics/angular:service": {
+      "type": "service"
+    },
+    "@schematics/angular:guard": {
+      "typeSeparator": "."
+    },
+    "@schematics/angular:interceptor": {
+      "typeSeparator": "."
+    },
+    "@schematics/angular:module": {
+      "typeSeparator": "."
+    },
+    "@schematics/angular:pipe": {
+      "typeSeparator": "."
+    },
+    "@schematics/angular:resolver": {
+      "typeSeparator": "."
+    }
 	},
 	"cli": {
 		"analytics": false,

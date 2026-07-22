@@ -1,4 +1,4 @@
-import {Component, OnInit} from "@angular/core";
+import {Component, OnInit, ChangeDetectionStrategy} from "@angular/core";
 import {JointConfiguration} from "../../shared/types/joint-configuration";
 import {ActivatedRoute, Router} from "@angular/router";
 import {MotorConfiguration} from "src/app/shared/types/motor-configuration";
@@ -7,6 +7,8 @@ import {MotorConfiguration} from "src/app/shared/types/motor-configuration";
     selector: "app-joint-control-core",
     templateUrl: "./joint-control-core.component.html",
     styleUrls: ["./joint-control-core.component.scss"],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false,
 })
 export class JointControlCoreComponent implements OnInit {
     joint!: JointConfiguration;

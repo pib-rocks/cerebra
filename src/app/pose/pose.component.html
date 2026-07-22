@@ -30,41 +30,37 @@
         </button>
     </div>
 
-    <div
-        *ngIf="importErrors.length > 0"
-        class="pose-import-message pose-import-error m-3">
+    @if (importErrors.length > 0) {
+    <div class="pose-import-message pose-import-error m-3">
         <div><strong>Import failed</strong></div>
         <ul class="mb-0">
-            <li *ngFor="let error of importErrors">{{error}}</li>
+            @for (error of importErrors; track error) {
+            <li>{{error}}</li>
+            }
         </ul>
     </div>
-
-    <div
-        *ngIf="importWarnings.length > 0"
-        class="pose-import-message pose-import-warning m-3">
+    } @if (importWarnings.length > 0) {
+    <div class="pose-import-message pose-import-warning m-3">
         <div><strong>Import warnings</strong></div>
         <ul class="mb-0">
-            <li *ngFor="let warning of importWarnings">{{warning}}</li>
+            @for (warning of importWarnings; track warning) {
+            <li>{{warning}}</li>
+            }
         </ul>
     </div>
-
-    <div
-        *ngIf="importPreview"
-        class="pose-import-preview m-3">
+    } @if (importPreview) {
+    <div class="pose-import-preview m-3">
         <div class="mb-2">
             <strong>Import pose?</strong>
         </div>
-
         <div>
             Name:
             <strong>{{importPreview.name}}</strong>
         </div>
-
         <div>
             Motor positions:
             <strong>{{importPreview.motorPositions.length}}</strong>
         </div>
-
         <div class="d-flex flex-row mt-3">
             <button
                 type="button"
@@ -73,7 +69,6 @@
                 (click)="confirmPoseImport()">
                 Confirm import
             </button>
-
             <button
                 type="button"
                 class="btn btn-regular"
@@ -83,10 +78,11 @@
             </button>
         </div>
     </div>
+    }
 
     <div class="pose-list-scroll">
+        @for (pose of poses | async; track pose) {
         <div
-            *ngFor="let pose of poses | async"
             class="pose-item d-flex flex-row mt-1 mb-2"
             [ngClass]="pose.poseId === selectedPoseId ? 'selected' : 'unselected'">
             <button
@@ -107,8 +103,8 @@
                 (dblclick)="renamePose(pose)">
                 {{pose.name}}
             </button>
+            @if (pose.deletable || pose.name === 'Startup/Resting') {
             <button
-                *ngIf="pose.deletable || pose.name === 'Startup/Resting'"
                 #updateButton
                 class="update-button flex-shrink-0"
                 data-test="BTN_Update_pose"
@@ -119,8 +115,8 @@
                     src="../../../assets/joint-control/other/update-pose.svg"
                     alt="update-pose" />
             </button>
+            } @if (pose.deletable) {
             <button
-                *ngIf="pose.deletable"
                 [attr.data-test]="'BTN_Pose_Rename_' + pose.name"
                 #renameButton
                 class="rename-button flex-shrink-0"
@@ -131,8 +127,8 @@
                     src="../../../assets/edit.svg"
                     alt="rename-pose" />
             </button>
+            } @if (pose.deletable) {
             <button
-                *ngIf="pose.deletable"
                 [attr.data-test]="'BTN_Pose_Delete_' + pose.name"
                 class="delete-button flex-shrink-0"
                 data-test="BTN_Delete_pose"
@@ -142,6 +138,7 @@
                     src="../../../assets/delete.svg"
                     alt="delete-pose" />
             </button>
+            }
             <button
                 class="pose-export-button flex-shrink-0"
                 title="Export pose"
@@ -149,6 +146,7 @@
                 Export
             </button>
         </div>
+        }
     </div>
 
     <ng-template

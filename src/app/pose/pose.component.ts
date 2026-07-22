@@ -6,6 +6,7 @@ import {
     TemplateRef,
     ViewChild,
     ViewChildren,
+    ChangeDetectionStrategy,
 } from "@angular/core";
 import {FormControl, Validators} from "@angular/forms";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
@@ -23,6 +24,8 @@ import {
     selector: "app-pose",
     templateUrl: "./pose.component.html",
     styleUrls: ["./pose.component.css"],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false,
 })
 export class PoseComponent implements OnInit {
     @ViewChild("modalContent") modalContent: TemplateRef<any> | undefined;

@@ -1,4 +1,4 @@
-import {Component, OnInit} from "@angular/core";
+import {Component, OnInit, ChangeDetectionStrategy} from "@angular/core";
 import {ActivatedRoute, Params, Router} from "@angular/router";
 import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
 import {CerebraRegex} from "src/app/shared/types/cerebra-regex";
@@ -8,6 +8,8 @@ import {VoiceAssistant} from "src/app/shared/types/voice-assistant";
     selector: "app-personality-description",
     templateUrl: "./personality-description.component.html",
     styleUrls: ["./personality-description.component.scss"],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false,
 })
 export class PersonalityDescriptionComponent implements OnInit {
     personality?: VoiceAssistant;

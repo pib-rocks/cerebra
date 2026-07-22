@@ -1,4 +1,4 @@
-import {Component, OnInit} from "@angular/core";
+import {Component, OnInit, ChangeDetectionStrategy} from "@angular/core";
 import {FormControl, FormGroup, Validators} from "@angular/forms";
 import {Observable} from "rxjs";
 import {BrickletService} from "src/app/shared/services/bricklet.service";
@@ -12,6 +12,8 @@ import {
     selector: "app-hardware-id",
     templateUrl: "./hardware-id.component.html",
     styleUrl: "./hardware-id.component.scss",
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false,
 })
 export class HardwareIdComponent implements OnInit {
     servoBricklets: Bricklet[] = [];

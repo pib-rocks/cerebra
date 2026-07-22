@@ -6,6 +6,7 @@ import {
     OnDestroy,
     Renderer2,
     ViewChild,
+    ChangeDetectionStrategy,
 } from "@angular/core";
 import {Subscription} from "rxjs";
 import {MotorService} from "src/app/shared/services/motor.service";
@@ -15,6 +16,8 @@ import {MotorConfiguration} from "src/app/shared/types/motor-configuration";
     selector: "app-motor-current",
     templateUrl: "./motor-current.component.html",
     styleUrls: ["./motor-current.component.scss"],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false,
 })
 export class MotorCurrentComponent implements AfterViewInit, OnDestroy {
     @Input() motor!: MotorConfiguration;

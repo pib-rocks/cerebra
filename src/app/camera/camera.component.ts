@@ -4,6 +4,7 @@ import {
     OnDestroy,
     OnInit,
     ViewChild,
+    ChangeDetectionStrategy,
 } from "@angular/core";
 import {FormControl} from "@angular/forms";
 import {Observable, map} from "rxjs";
@@ -14,6 +15,8 @@ import {CameraService} from "../shared/services/camera.service";
     selector: "app-camera",
     templateUrl: "./camera.component.html",
     styleUrls: ["./camera.component.scss"],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    standalone: false,
 })
 export class CameraComponent implements OnInit, OnDestroy {
     @ViewChild("videobox") videoBox?: ElementRef;
