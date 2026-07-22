@@ -1,0 +1,72 @@
+<div class="system-panel">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="form-headline">Raspberry Pi system information</div>
+        <button
+            type="button"
+            class="btn btn-regular hardware-button"
+            data-test="BTN_Refresh_System_Info"
+            (click)="refresh()"
+            [disabled]="loading">
+            Refresh
+        </button>
+    </div>
+
+    <div
+        *ngIf="error"
+        class="validation-error mb-3">
+        {{ error }}
+    </div>
+
+    <div
+        *ngIf="loading"
+        class="form-content">
+        Loading system information…
+    </div>
+
+    <div
+        *ngIf="info && !loading"
+        class="info-grid form-content">
+        <label>Hostname</label>
+        <span data-test="TXT_Hostname">{{ info.hostname }}</span>
+
+        <label>Host IP</label>
+        <span>{{ info.hostIp || "—" }}</span>
+
+        <label>Operating system</label>
+        <span>{{ info.os.prettyName }}</span>
+
+        <label>Architecture</label>
+        <span>{{ info.arch }}</span>
+
+        <label>Kernel</label>
+        <span class="kernel">{{ info.kernel }}</span>
+
+        <label>CPU</label>
+        <span>{{ info.cpu.model }} ({{ info.cpu.cores }} cores)</span>
+
+        <label>Memory</label>
+        <span>
+            {{ info.memory.usedMb }} / {{ info.memory.totalMb }} MB ({{
+                memoryPercent(info)
+            }}%)
+        </span>
+
+        <label>Temperature</label>
+        <span>
+            {{
+                info.temperatureC != null ? info.temperatureC + " °C" : "—"
+            }}
+        </span>
+
+        <label>Uptime</label>
+        <span>{{ formatUptime(info.uptimeSeconds) }}</span>
+
+        <label>Load average</label>
+        <span *ngIf="info.loadAverage; else noLoad">
+            {{ info.loadAverage.oneMinute }} /
+            {{ info.loadAverage.fiveMinutes }} /
+            {{ info.loadAverage.fifteenMinutes }}
+        </span>
+        <ng-template #noLoad><span>—</span></ng-template>
+    </div>
+</div>

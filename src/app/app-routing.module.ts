@@ -24,6 +24,9 @@ import {HardwareIdComponent} from "./system/hardware-id/hardware-id.component";
 import {RgbLedButtonComponent} from "./program/program-overview/rgb-led-button/rgb-led-button.component";
 import {ProgramOverviewComponent} from "./program/program-overview/program-overview.component";
 import {SystemComponent} from "./system/system.component";
+import {SystemDockerComponent} from "./system/docker/system-docker.component";
+import {SystemHostInfoComponent} from "./system/host-info/system-host-info.component";
+import {SystemBrickletsComponent} from "./system/bricklets/system-bricklets.component";
 
 const routes: Routes = [
     {
@@ -53,6 +56,18 @@ const routes: Routes = [
             {
                 path: "hardware-ids",
                 component: HardwareIdComponent,
+            },
+            {
+                path: "docker",
+                component: SystemDockerComponent,
+            },
+            {
+                path: "host-info",
+                component: SystemHostInfoComponent,
+            },
+            {
+                path: "bricklets",
+                component: SystemBrickletsComponent,
             },
             {path: "", redirectTo: "hardware-ids", pathMatch: "full"},
         ],

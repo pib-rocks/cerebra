@@ -1,0 +1,121 @@
+@import "src/styles";
+
+* {
+    color: white;
+}
+
+.form-headline {
+    font-size: 1.3vw;
+}
+
+.form-content {
+    font-size: 1.1vw;
+    font-weight: bolder;
+}
+
+.hardware-button {
+    font-size: 1vw;
+    font-weight: bold;
+}
+
+.validation-error {
+    color: $pink-color;
+    font-size: 1.1vw;
+}
+
+.connection-banner {
+    padding: 0.5rem 0.75rem;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+.connection-banner.online {
+    background: rgba(61, 220, 151, 0.15);
+    color: #3ddc97;
+}
+
+.connection-banner.offline {
+    background: rgba(225, 0, 114, 0.15);
+    color: $pink-color;
+}
+
+.bricklet-section {
+    margin-bottom: 1.75rem;
+}
+
+.bricklet-section h3 {
+    font-size: 1.15vw;
+    margin-bottom: 0.75rem;
+    color: $blue-color;
+}
+
+.bricklet-card {
+    background: $black-transparent-2;
+    border: 1px solid $blue-dark-2;
+    border-radius: 4px;
+    padding: 0.85rem 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.card-header {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.uid,
+.status,
+.meta {
+    color: $grey-color;
+    font-size: 0.95vw;
+}
+
+.health-dot {
+    width: 0.7rem;
+    height: 0.7rem;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.health-dot.healthy {
+    background: #3ddc97;
+}
+
+.health-dot.unhealthy {
+    background: $pink-color;
+}
+
+.pin-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0.5rem;
+    font-size: 0.95vw;
+}
+
+.pin-table th,
+.pin-table td {
+    border-bottom: 1px solid $blue-dark-2;
+    padding: 0.4rem 0.5rem;
+    text-align: left;
+}
+
+.pin-table th {
+    color: $blue-color;
+    font-weight: bold;
+}
+
+.color-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.color-swatch {
+    width: 1.1rem;
+    height: 1.1rem;
+    border-radius: 3px;
+    border: 1px solid $white-color;
+    display: inline-block;
+}

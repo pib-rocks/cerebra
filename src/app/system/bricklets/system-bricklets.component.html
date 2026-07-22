@@ -1,0 +1,192 @@
+<div class="system-panel">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="form-headline">Connected bricklets</div>
+        <button
+            type="button"
+            class="btn btn-regular hardware-button"
+            data-test="BTN_Refresh_Bricklets"
+            (click)="refresh()"
+            [disabled]="loading">
+            Refresh
+        </button>
+    </div>
+
+    <div
+        *ngIf="error"
+        class="validation-error mb-3">
+        {{ error }}
+    </div>
+
+    <div
+        *ngIf="!loading && !error"
+        class="connection-banner mb-3"
+        [class.online]="tinkerforgeConnected"
+        [class.offline]="!tinkerforgeConnected">
+        Tinkerforge daemon:
+        {{ tinkerforgeConnected ? "connected" : "not reachable" }}
+    </div>
+
+    <div
+        *ngIf="loading"
+        class="form-content">
+        Loading bricklet status…
+    </div>
+
+    <ng-container *ngIf="!loading && !error">
+        <section
+            class="bricklet-section"
+            *ngIf="servoBricklets.length">
+            <h3>Servo Bricklets</h3>
+            <div
+                class="bricklet-card"
+                *ngFor="let bricklet of servoBricklets">
+                <div class="card-header">
+                    <span
+                        class="health-dot"
+                        [class.healthy]="bricklet.connected"
+                        [class.unhealthy]="!bricklet.connected"></span>
+                    <strong
+                        >Servo Bricklet
+                        {{ bricklet.brickletNumber }}</strong
+                    >
+                    <span class="uid">UID: {{ bricklet.uid || "—" }}</span>
+                    <span class="status">{{
+                        bricklet.connected ? "connected" : "disconnected"
+                    }}</span>
+                </div>
+                <div
+                    class="meta"
+                    *ngIf="bricklet.servo">
+                    Voltage:
+                    {{
+                        bricklet.servo.voltageMv != null
+                            ? bricklet.servo.voltageMv + " mV"
+                            : "—"
+                    }}
+                </div>
+                <table
+                    class="pin-table"
+                    *ngIf="bricklet.servo as servo">
+                    <thead>
+                        <tr>
+                            <th>Pin</th>
+                            <th>Motor</th>
+                            <th>Status</th>
+                            <th>Enabled</th>
+                            <th>Current</th>
+                            <th>Position</th>
+                            <th>Invert</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let pin of servo.pins">
+                            <td>{{ pin.pin }}</td>
+                            <td>{{ pin.motorName || "—" }}</td>
+                            <td>
+                                {{
+                                    pin.connected
+                                        ? "connected"
+                                        : "disconnected"
+                                }}
+                            </td>
+                            <td>
+                                {{
+                                    pin.enabled == null
+                                        ? "—"
+                                        : pin.enabled
+                                          ? "on"
+                                          : "off"
+                                }}
+                            </td>
+                            <td>
+                                {{
+                                    pin.currentMa != null
+                                        ? pin.currentMa + " mA"
+                                        : "—"
+                                }}
+                            </td>
+                            <td>{{ pin.position ?? "—" }}</td>
+                            <td>{{ pin.invert ? "yes" : "no" }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section
+            class="bricklet-section"
+            *ngIf="relayBricklets.length">
+            <h3>Solid State Relay</h3>
+            <div
+                class="bricklet-card"
+                *ngFor="let bricklet of relayBricklets">
+                <div class="card-header">
+                    <span
+                        class="health-dot"
+                        [class.healthy]="bricklet.connected"
+                        [class.unhealthy]="!bricklet.connected"></span>
+                    <strong>{{ bricklet.type }}</strong>
+                    <span class="uid">UID: {{ bricklet.uid || "—" }}</span>
+                </div>
+                <div class="meta">
+                    Status:
+                    {{
+                        bricklet.relay?.turnedOn == null
+                            ? "—"
+                            : bricklet.relay?.turnedOn
+                              ? "ON"
+                              : "OFF"
+                    }}
+                </div>
+            </div>
+        </section>
+
+        <section
+            class="bricklet-section"
+            *ngIf="rgbBricklets.length">
+            <h3>RGB LED Button Bricklets</h3>
+            <div
+                class="bricklet-card"
+                *ngFor="let bricklet of rgbBricklets; index as i">
+                <div class="card-header">
+                    <span
+                        class="health-dot"
+                        [class.healthy]="bricklet.connected"
+                        [class.unhealthy]="!bricklet.connected"></span>
+                    <strong>RGB LED Button {{ i + 1 }}</strong>
+                    <span class="uid">UID: {{ bricklet.uid || "—" }}</span>
+                    <span class="status">{{
+                        bricklet.connected ? "connected" : "disconnected"
+                    }}</span>
+                </div>
+                <div
+                    class="rgb-details"
+                    *ngIf="bricklet.rgbButton as rgb">
+                    <div class="meta">
+                        Button:
+                        {{ rgb.buttonState || "—" }}
+                    </div>
+                    <div class="meta color-row">
+                        Color:
+                        <span
+                            class="color-swatch"
+                            [style.background]="colorCss(rgb.color)"></span>
+                        <span *ngIf="rgb.color as c">
+                            RGB({{ c.r }}, {{ c.g }}, {{ c.b }})
+                        </span>
+                        <span *ngIf="!rgb.color">—</span>
+                    </div>
+                    <div
+                        class="meta"
+                        *ngIf="rgb.identity as identity">
+                        Hardware {{ formatVersion(identity.hardwareVersion) }}
+                        · Firmware
+                        {{ formatVersion(identity.firmwareVersion) }}
+                        · Device ID {{ identity.deviceIdentifier ?? "—" }}
+                        · Position {{ identity.position || "—" }}
+                    </div>
+                </div>
+            </div>
+        </section>
+    </ng-container>
+</div>

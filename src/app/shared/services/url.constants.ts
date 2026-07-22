@@ -10,4 +10,8 @@ export enum UrlConstants {
     BRICKLET = "/bricklet",
     HOST_IP = "/host-ip",
     RGB_BUTTON = "/button-programs",
+    SYSTEM_INFO = "/system/info",
+    SYSTEM_CONTAINERS = "/system/containers",
+    SYSTEM_BRICKLETS_STATUS = "/system/bricklets/status",
+    SYSTEM_DIAGNOSTICS = "/system/diagnostics.zip",
 }

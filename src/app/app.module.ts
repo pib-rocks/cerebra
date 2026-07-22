@@ -47,6 +47,9 @@ import {IpRetrieverComponent} from "./ui-components/ip-retriever/ip-retriever.co
 import {RgbLedButtonComponent} from "./program/program-overview/rgb-led-button/rgb-led-button.component";
 import {ProgramOverviewComponent} from "./program/program-overview/program-overview.component";
 import {SystemComponent} from "./system/system.component";
+import {SystemDockerComponent} from "./system/docker/system-docker.component";
+import {SystemHostInfoComponent} from "./system/host-info/system-host-info.component";
+import {SystemBrickletsComponent} from "./system/bricklets/system-bricklets.component";
 
 @NgModule({
     declarations: [
@@ -82,6 +85,9 @@ import {SystemComponent} from "./system/system.component";
         RgbLedButtonComponent,
         ProgramOverviewComponent,
         SystemComponent,
+        SystemDockerComponent,
+        SystemHostInfoComponent,
+        SystemBrickletsComponent,
     ],
     imports: [
         BrowserModule,

@@ -1,0 +1,41 @@
+@import "src/styles";
+
+* {
+    color: white;
+}
+
+.form-headline {
+    font-size: 1.3vw;
+}
+
+.form-content {
+    font-size: 1.1vw;
+    font-weight: bolder;
+}
+
+.hardware-button {
+    font-size: 1vw;
+    font-weight: bold;
+}
+
+.validation-error {
+    color: $pink-color;
+    font-size: 1.1vw;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 1rem 2rem;
+    align-items: start;
+    padding-left: 0.5rem;
+}
+
+.info-grid label {
+    color: $grey-color;
+    font-weight: normal;
+}
+
+.kernel {
+    word-break: break-word;
+}

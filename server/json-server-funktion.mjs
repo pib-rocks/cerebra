@@ -12,6 +12,7 @@ import AssistantModel from "./dto/assistantmodel.mjs";
 import Pose from "./dto/pose.mjs";
 import MotorPosition from "./dto/motor-position.mjs";
 import ButtonProgram from "./dto/button-program.mjs";
+import {createZip} from "./create-zip.mjs";
 
 const server = jsonServer.create();
 const router = jsonServer.router(mockData);
@@ -19,6 +20,56 @@ const middlewares = jsonServer.defaults();
 
 server.use(middlewares);
 server.use(jsonServer.bodyParser);
+
+const mockContainers = [
+    {
+        id: "a1b2c3d",
+        name: "flask-app",
+        image: "flask_api",
+        status: "running",
+        health: "healthy",
+        startedAt: "2026-07-20T08:00:00Z",
+        ports: ["0.0.0.0:5000->5000/tcp"],
+    },
+    {
+        id: "e4f5g6h",
+        name: "rosbridge-ws",
+        image: "rosbridge-ws",
+        status: "running",
+        health: "healthy",
+        startedAt: "2026-07-20T08:00:05Z",
+        ports: ["0.0.0.0:9090->9090/tcp"],
+    },
+    {
+        id: "i7j8k9l",
+        name: "ros-motors",
+        image: "ros_motors",
+        status: "exited",
+        health: "unhealthy",
+        startedAt: "2026-07-19T12:00:00Z",
+        ports: [],
+    },
+    {
+        id: "m0n1o2p",
+        name: "pib-blockly-server",
+        image: "pib-blockly-server",
+        status: "running",
+        health: "healthy",
+        startedAt: "2026-07-20T08:00:02Z",
+        ports: ["0.0.0.0:2442->2442/tcp"],
+    },
+];
+
+const mockContainerLogs = {
+    "flask-app":
+        "2026-07-20T08:00:01Z [INFO] Flask app started on 0.0.0.0:5000\n2026-07-20T08:01:00Z [INFO] GET /bricklet 200\n",
+    "rosbridge-ws":
+        "2026-07-20T08:00:06Z [INFO] Rosbridge websocket listening on 9090\n",
+    "ros-motors":
+        "2026-07-19T12:00:01Z [ERROR] Tinkerforge connection lost\n2026-07-19T12:00:02Z [INFO] Shutting down\n",
+    "pib-blockly-server":
+        "2026-07-20T08:00:03Z [INFO] Blockly server ready\n",
+};
 
 //getAllPersonalities
 server.get("/voice-assistant/personality", (req, res, next) => {
@@ -603,6 +654,174 @@ server.put("/button-programs", (req, res, next) => {
         }
     });
     return res.status(200).send({buttonPrograms: updatedButtonPrograms});
+});
+
+// System information APIs
+server.get("/system/info", (req, res) => {
+    return res.status(200).send({
+        hostname: "pib-dev",
+        os: {
+            prettyName: "Debian GNU/Linux 12 (bookworm)",
+            versionId: "12",
+            id: "debian",
+        },
+        arch: "aarch64",
+        kernel: "Linux version 6.6.0-raspi",
+        cpu: {
+            model: "Cortex-A76",
+            cores: 4,
+        },
+        memory: {
+            totalMb: 8192,
+            usedMb: 2450,
+            availableMb: 5742,
+        },
+        temperatureC: 51.2,
+        uptimeSeconds: 126540,
+        loadAverage: {
+            oneMinute: 0.42,
+            fiveMinutes: 0.38,
+            fifteenMinutes: 0.35,
+        },
+        hostIp: "192.168.1.42",
+    });
+});
+
+server.get("/system/containers", (req, res) => {
+    return res.status(200).send({containers: mockContainers});
+});
+
+server.get("/system/containers/:name/logs", (req, res) => {
+    const name = req.params.name;
+    const logs = mockContainerLogs[name];
+    if (logs === undefined) {
+        return res.status(404).send({error: `Container '${name}' not found`});
+    }
+    return res.status(200).send({name, logs});
+});
+
+server.get("/system/bricklets/status", (req, res) => {
+    const motorsByBrickletId = {};
+    mockData.brickletPin.forEach((pin) => {
+        if (!motorsByBrickletId[pin.brickletId]) {
+            motorsByBrickletId[pin.brickletId] = [];
+        }
+        const motor = mockData.motors.find((m) => m.id === pin.motorId);
+        motorsByBrickletId[pin.brickletId].push({
+            pin: pin.pin,
+            motorName: motor?.name || null,
+            invert: pin.invert,
+            connected: true,
+            enabled: true,
+            currentMa: 110 + pin.pin,
+            position: 0,
+            voltageMv: 5200,
+        });
+    });
+
+    const bricklets = mockData.bricklet.map((bricklet) => {
+        const entry = {
+            brickletNumber: bricklet.brickletNumber,
+            uid: bricklet.uid,
+            type: bricklet.type,
+            connected: true,
+            identity: {
+                uid: bricklet.uid,
+                hardwareVersion: [2, 0, 0],
+                firmwareVersion: [2, 0, 3],
+                deviceIdentifier: 2157,
+                position: "a",
+            },
+            servo: null,
+            relay: null,
+            rgbButton: null,
+        };
+
+        if (bricklet.type === "Servo Bricklet") {
+            const pins = motorsByBrickletId[bricklet.id] || [];
+            entry.servo = {pins, voltageMv: 5200};
+        } else if (bricklet.type === "Solid State Relay Bricklet") {
+            entry.relay = {turnedOn: false, connected: true};
+            entry.identity.deviceIdentifier = 2114;
+        } else if (bricklet.type === "RGB LED Button Bricklet") {
+            entry.rgbButton = {
+                connected: true,
+                color: {r: 0, g: 80, b: 255},
+                buttonState: "released",
+                identity: entry.identity,
+            };
+            entry.identity.deviceIdentifier = 2118;
+        }
+        return entry;
+    });
+
+    return res.status(200).send({
+        bricklets,
+        tinkerforgeConnected: true,
+    });
+});
+
+server.get("/system/diagnostics.zip", (req, res) => {
+    const zip = createZip({
+        "README.txt":
+            "Mock pib diagnostics archive with representative support data.\n",
+        "meta.json": JSON.stringify(
+            {
+                generatedAt: new Date().toISOString(),
+                source: "cerebra-mock",
+                version: 2,
+            },
+            null,
+            2,
+        ),
+        "system/system-info.json": JSON.stringify(
+            {
+                hostname: "pib-dev",
+                os: {prettyName: "Debian GNU/Linux 12 (bookworm)"},
+                arch: "aarch64",
+                temperatureC: 51.2,
+                hostIp: "192.168.1.42",
+                memory: {totalMb: 8192, usedMb: 2450, availableMb: 5742},
+            },
+            null,
+            2,
+        ),
+        "docker/containers.json": JSON.stringify(
+            {containers: mockContainers},
+            null,
+            2,
+        ),
+        "docker/logs/flask-app.log": mockContainerLogs["flask-app"],
+        "docker/logs/ros-motors.log": mockContainerLogs["ros-motors"],
+        "bricklets/live-status.json": JSON.stringify(
+            {tinkerforgeConnected: true, bricklets: []},
+            null,
+            2,
+        ),
+        "database/bricklets.json": JSON.stringify(mockData.bricklet, null, 2),
+        "database/motors.json": JSON.stringify(
+            mockData.motors.map((m) => ({
+                name: m.name,
+                turnedOn: m.turnedOn,
+                velocity: m.velocity,
+            })),
+            null,
+            2,
+        ),
+        "config/host-files-summary.json": JSON.stringify(
+            {"config/os-release": "ok (mock)"},
+            null,
+            2,
+        ),
+        "commands/00_uname_-a.txt": "Linux pib-dev 6.6.0-raspi aarch64\n",
+        "host-logs/setup-pib.log": "mock setup log\n",
+    });
+    res.setHeader("Content-Type", "application/zip");
+    res.setHeader(
+        "Content-Disposition",
+        'attachment; filename="pib-diagnostics-mock.zip"',
+    );
+    return res.status(200).send(zip);
 });
 
 server.use(router);

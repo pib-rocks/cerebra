@@ -24,6 +24,11 @@ a {
     background-image: linear-gradient(to top, $blue-dark-2, $black-color);
 }
 
+.diagnostics-button {
+    font-weight: bold;
+    white-space: nowrap;
+}
+
 .nav-tabs .nav-item a {
     border: none;
     color: $blue-color;

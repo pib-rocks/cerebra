@@ -1,0 +1,105 @@
+@import "src/styles";
+
+* {
+    color: white;
+}
+
+.form-headline {
+    font-size: 1.3vw;
+}
+
+.form-content {
+    font-size: 1.1vw;
+    font-weight: bolder;
+}
+
+.hardware-button {
+    font-size: 1vw;
+    font-weight: bold;
+}
+
+.validation-error {
+    color: $pink-color;
+    font-size: 1.1vw;
+}
+
+.container-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.container-row {
+    display: grid;
+    grid-template-columns: auto 1.4fr 1.6fr 0.8fr 0.8fr;
+    gap: 0.75rem;
+    align-items: center;
+    width: 100%;
+    text-align: left;
+    background: $black-transparent-2;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+}
+
+.container-row:hover,
+.container-row.selected {
+    border-color: $blue-color;
+    background: rgba(0, 148, 223, 0.15);
+}
+
+.container-name {
+    font-weight: bold;
+}
+
+.container-meta,
+.container-status,
+.health-label {
+    font-size: 0.95vw;
+    color: $grey-color;
+}
+
+.health-dot {
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.health-dot.healthy,
+.health-label.healthy {
+    color: #3ddc97;
+}
+
+.health-dot.healthy {
+    background: #3ddc97;
+}
+
+.health-dot.unhealthy,
+.health-label.unhealthy {
+    color: $pink-color;
+}
+
+.health-dot.unhealthy {
+    background: $pink-color;
+}
+
+.logs-panel {
+    border-top: 1px solid $blue-color;
+    padding-top: 1rem;
+}
+
+.logs-output {
+    max-height: 28rem;
+    overflow: auto;
+    background: $blue-dark-5;
+    border: 1px solid $blue-dark-2;
+    border-radius: 4px;
+    padding: 1rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-family: monospace;
+    font-size: 0.85vw;
+    margin: 0;
+}
