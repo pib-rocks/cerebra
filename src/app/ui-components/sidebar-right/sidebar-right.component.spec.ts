@@ -21,14 +21,17 @@ describe("SideBarRightComponent", () => {
     ]);
     beforeEach(async () => {
         await TestBed.configureTestingModule({
-            declarations: [SideBarRightComponent],
             providers: [
                 {
                     provide: ActivatedRoute,
                     useValue: {},
                 },
             ],
-            imports: [RouterTestingModule, HttpClientTestingModule],
+            imports: [
+                RouterTestingModule,
+                HttpClientTestingModule,
+                SideBarRightComponent,
+            ],
         }).compileComponents();
 
         fixture = TestBed.createComponent(SideBarRightComponent);

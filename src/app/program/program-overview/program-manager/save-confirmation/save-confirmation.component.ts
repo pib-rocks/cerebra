@@ -7,7 +7,6 @@ import {SaveConfirmationOptions} from "../../../../shared/types/save-confirmatio
     templateUrl: "./save-confirmation.component.html",
     styleUrls: ["./save-confirmation.component.scss"],
     changeDetection: ChangeDetectionStrategy.Eager,
-    standalone: false,
 })
 export class SaveConfirmationComponent {
     @Input() title: string = "Warning";

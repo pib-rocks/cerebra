@@ -7,7 +7,6 @@ import {UrlConstants} from "src/app/shared/services/url.constants";
     templateUrl: "./ip-retriever.component.html",
     styleUrls: ["./ip-retriever.component.scss"],
     changeDetection: ChangeDetectionStrategy.Eager,
-    standalone: false,
 })
 export class IpRetrieverComponent implements OnInit {
     hostIp: string = "";

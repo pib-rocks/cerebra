@@ -1,14 +1,21 @@
 import {Component, OnInit, ChangeDetectionStrategy} from "@angular/core";
-import {ActivatedRoute, Params} from "@angular/router";
+import {ActivatedRoute, Params, RouterLink} from "@angular/router";
 import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
 import {VoiceAssistant} from "src/app/shared/types/voice-assistant";
+import {ReactiveFormsModule, FormsModule} from "@angular/forms";
+import {VoiceAssistantPersonalitySidebarRightComponent} from "./voice-assistant-personality-sidebar-right/voice-assistant-personality-sidebar-right.component";
 
 @Component({
     selector: "app-personality-description",
     templateUrl: "./personality-description.component.html",
     styleUrls: ["./personality-description.component.scss"],
     changeDetection: ChangeDetectionStrategy.Eager,
-    standalone: false,
+    imports: [
+        RouterLink,
+        ReactiveFormsModule,
+        FormsModule,
+        VoiceAssistantPersonalitySidebarRightComponent,
+    ],
 })
 export class PersonalityDescriptionComponent implements OnInit {
     personality?: VoiceAssistant;

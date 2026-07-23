@@ -54,11 +54,6 @@ describe("VoiceAssistantComponent", () => {
             },
         );
         await TestBed.configureTestingModule({
-            declarations: [
-                VoiceAssistantComponent,
-                VoiceAssistantNavComponent,
-                BoolToOnOffPipe,
-            ],
             providers: [
                 {
                     provide: ActivatedRoute,
@@ -81,6 +76,9 @@ describe("VoiceAssistantComponent", () => {
                 ReactiveFormsModule,
                 RouterTestingModule,
                 HttpClientTestingModule,
+                VoiceAssistantComponent,
+                VoiceAssistantNavComponent,
+                BoolToOnOffPipe,
             ],
         }).compileComponents();
         voiceAssistantService = TestBed.inject(

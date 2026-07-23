@@ -43,11 +43,11 @@ describe("ChatWindowComponent", () => {
         });
 
         await TestBed.configureTestingModule({
-            declarations: [ChatWindowComponent],
             imports: [
                 HttpClientTestingModule,
                 RouterTestingModule,
                 ReactiveFormsModule,
+                ChatWindowComponent,
             ],
             providers: [
                 {

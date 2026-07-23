@@ -35,8 +35,7 @@ describe("SmartConnectComponent", () => {
         mockNgbModal = jasmine.createSpyObj("NgbModal", ["open", "dismissAll"]);
 
         await TestBed.configureTestingModule({
-            declarations: [SmartConnectComponent],
-            imports: [ReactiveFormsModule],
+            imports: [ReactiveFormsModule, SmartConnectComponent],
             providers: [
                 {provide: RosService, useValue: mockRosService},
                 {provide: TokenService, useValue: mockTokenService},
