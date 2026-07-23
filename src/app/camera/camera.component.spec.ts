@@ -23,8 +23,13 @@ describe("CameraComponent", () => {
 
     beforeEach(async () => {
         TestBed.configureTestingModule({
-            declarations: [CameraComponent, HorizontalSliderComponent],
-            imports: [ReactiveFormsModule, NgbPopover, HttpClientTestingModule],
+            imports: [
+                ReactiveFormsModule,
+                NgbPopover,
+                HttpClientTestingModule,
+                CameraComponent,
+                HorizontalSliderComponent,
+            ],
             providers: [RosService, CameraService, ApiService],
         }).compileComponents();
         rosService = TestBed.inject(RosService);

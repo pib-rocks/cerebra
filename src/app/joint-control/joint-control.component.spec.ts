@@ -9,8 +9,7 @@ describe("JointControlComponent", () => {
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
-            declarations: [JointControlComponent],
-            imports: [RouterTestingModule],
+            imports: [RouterTestingModule, JointControlComponent],
         }).compileComponents();
 
         fixture = TestBed.createComponent(JointControlComponent);

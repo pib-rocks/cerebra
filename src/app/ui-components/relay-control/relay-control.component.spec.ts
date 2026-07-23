@@ -29,7 +29,7 @@ describe("RelayControlComponent", () => {
         matSnackBarServiceMock = jasmine.createSpyObj("MatSnackBar", ["open"]);
 
         await TestBed.configureTestingModule({
-            declarations: [RelayControlComponent],
+            imports: [RelayControlComponent],
             providers: [
                 {provide: RosService, useValue: rosServiceMock},
                 {provide: MatSnackBar, useValue: matSnackBarServiceMock},

@@ -20,7 +20,7 @@ describe("ProgramWorkspaceComponent", () => {
             ]);
 
         await TestBed.configureTestingModule({
-            declarations: [ProgramWorkspaceComponent],
+            imports: [ProgramWorkspaceComponent],
             providers: [
                 {
                     provide: PoseService,

@@ -14,8 +14,7 @@ describe("VerticalSliderComponent", () => {
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
-            declarations: [VerticalSliderComponent],
-            imports: [ReactiveFormsModule],
+            imports: [ReactiveFormsModule, VerticalSliderComponent],
         }).compileComponents();
 
         fixture = TestBed.createComponent(VerticalSliderComponent);

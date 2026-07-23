@@ -65,11 +65,6 @@ describe("MotorSettingsComponent", () => {
         };
 
         await TestBed.configureTestingModule({
-            declarations: [
-                MotorSettingsComponent,
-                HorizontalSliderComponent,
-                VerticalSliderComponent,
-            ],
             providers: [
                 {
                     provide: MotorService,
@@ -80,7 +75,12 @@ describe("MotorSettingsComponent", () => {
                     useValue: modalServiceSpy,
                 },
             ],
-            imports: [ReactiveFormsModule],
+            imports: [
+                ReactiveFormsModule,
+                MotorSettingsComponent,
+                HorizontalSliderComponent,
+                VerticalSliderComponent,
+            ],
         }).compileComponents();
 
         motorService = TestBed.inject(

@@ -2,14 +2,20 @@ import {Component, OnInit, ChangeDetectionStrategy} from "@angular/core";
 import {VoiceAssistant} from "src/app/shared/types/voice-assistant";
 import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
 import {ActivatedRoute, Params} from "@angular/router";
-import {FormControl, FormGroup, Validators} from "@angular/forms";
+import {
+    FormControl,
+    FormGroup,
+    Validators,
+    ReactiveFormsModule,
+    FormsModule,
+} from "@angular/forms";
 import {AssistantModel} from "src/app/shared/types/assistantModel";
 @Component({
     selector: "app-va-personality-sidebar-right",
     templateUrl: "./voice-assistant-personality-sidebar-right.component.html",
     styleUrls: ["./voice-assistant-personality-sidebar-right.component.scss"],
     changeDetection: ChangeDetectionStrategy.Eager,
-    standalone: false,
+    imports: [ReactiveFormsModule, FormsModule],
 })
 export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
     pauseThresholdMin = 0.1;

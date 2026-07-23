@@ -12,8 +12,7 @@ describe("ConsoleComponent", () => {
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
-            declarations: [ConsoleComponent],
-            imports: [ReactiveFormsModule],
+            imports: [ReactiveFormsModule, ConsoleComponent],
         }).compileComponents();
 
         fixture = TestBed.createComponent(ConsoleComponent);

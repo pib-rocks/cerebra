@@ -5,19 +5,27 @@ import {
     ChangeDetectionStrategy,
     OnInit,
 } from "@angular/core";
-import {FormControl} from "@angular/forms";
+import {FormControl, ReactiveFormsModule} from "@angular/forms";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {BehaviorSubject, map} from "rxjs";
 import {MotorService} from "src/app/shared/services/motor.service";
 import {MotorConfiguration} from "src/app/shared/types/motor-configuration";
 import {MotorSettings} from "src/app/shared/types/motor-settings.class";
+import {NgClass} from "@angular/common";
+import {HorizontalSliderComponent} from "../../../sliders/horizontal-slider/horizontal-slider.component";
+import {VerticalSliderComponent} from "../../../sliders/vertical-slider/vertical-slider.component";
 
 @Component({
     selector: "app-motor-settings",
     templateUrl: "./motor-settings.component.html",
     styleUrls: ["./motor-settings.component.scss"],
     changeDetection: ChangeDetectionStrategy.Eager,
-    standalone: false,
+    imports: [
+        NgClass,
+        ReactiveFormsModule,
+        HorizontalSliderComponent,
+        VerticalSliderComponent,
+    ],
 })
 export class MotorSettingsComponent implements OnInit {
     @Input() motor!: MotorConfiguration;

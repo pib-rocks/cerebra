@@ -10,17 +10,18 @@ import {
     ViewChild,
     ChangeDetectionStrategy,
 } from "@angular/core";
-import {FormControl} from "@angular/forms";
+import {FormControl, ReactiveFormsModule} from "@angular/forms";
 import {Observable, Subscription} from "rxjs";
 import {ProgramLogLine} from "src/app/shared/types/program-log-line";
 import {ExecutionState, ProgramState} from "src/app/shared/types/program-state";
+import {NgClass} from "@angular/common";
 
 @Component({
     selector: "app-console",
     templateUrl: "./console.component.html",
     styleUrls: ["./console.component.scss"],
     changeDetection: ChangeDetectionStrategy.Eager,
-    standalone: false,
+    imports: [ReactiveFormsModule, NgClass],
 })
 export class ConsoleComponent implements AfterViewInit, OnChanges {
     @Input() programLogs$!: Observable<ProgramLogLine[]>;

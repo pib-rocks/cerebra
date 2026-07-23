@@ -1,5 +1,10 @@
 import {Component, OnInit, ChangeDetectionStrategy} from "@angular/core";
-import {Router} from "@angular/router";
+import {
+    Router,
+    RouterLink,
+    RouterLinkActive,
+    RouterOutlet,
+} from "@angular/router";
 import {map, Observable} from "rxjs";
 import {ProgramService} from "src/app/shared/services/program.service";
 
@@ -8,7 +13,7 @@ import {ProgramService} from "src/app/shared/services/program.service";
     templateUrl: "./program-overview.component.html",
     styleUrl: "./program-overview.component.scss",
     changeDetection: ChangeDetectionStrategy.Eager,
-    standalone: false,
+    imports: [RouterLink, RouterLinkActive, RouterOutlet],
 })
 export class ProgramOverviewComponent implements OnInit {
     selected$!: Observable<string>;

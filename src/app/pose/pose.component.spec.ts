@@ -41,7 +41,7 @@ describe("PoseComponent", () => {
         poseServiceSpy.getPosesObservable.and.returnValue(posesSubject);
 
         await TestBed.configureTestingModule({
-            declarations: [PoseComponent],
+            imports: [PoseComponent],
             providers: [
                 {
                     provide: PoseService,

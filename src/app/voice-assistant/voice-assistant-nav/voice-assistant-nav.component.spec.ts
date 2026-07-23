@@ -19,8 +19,12 @@ describe("VoiceAssistantNavComponent", () => {
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
-            declarations: [VoiceAssistantNavComponent, BoolToOnOffPipe],
-            imports: [RouterTestingModule, ReactiveFormsModule],
+            imports: [
+                RouterTestingModule,
+                ReactiveFormsModule,
+                VoiceAssistantNavComponent,
+                BoolToOnOffPipe,
+            ],
         }).compileComponents();
         router = TestBed.inject(Router);
         elements = [

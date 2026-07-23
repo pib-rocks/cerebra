@@ -9,18 +9,19 @@ import {
 
 import {Observable, Subject} from "rxjs";
 import {NgbModal, NgbModalRef} from "@ng-bootstrap/ng-bootstrap";
-import {FormControl, Validators} from "@angular/forms";
-import {ActivatedRoute, Router} from "@angular/router";
+import {FormControl, Validators, ReactiveFormsModule} from "@angular/forms";
+import {ActivatedRoute, Router, RouterOutlet} from "@angular/router";
 import {Program} from "../../../shared/types/program";
 import {SidebarElement} from "../../../shared/interfaces/sidebar-element.interface";
 import {ProgramService} from "../../../shared/services/program.service";
+import {SideBarRightComponent} from "../../../ui-components/sidebar-right/sidebar-right.component";
 
 @Component({
     selector: "app-program-manager",
     templateUrl: "./program-manager.component.html",
     styleUrls: ["./program-manager.component.scss"],
     changeDetection: ChangeDetectionStrategy.Eager,
-    standalone: false,
+    imports: [RouterOutlet, SideBarRightComponent, ReactiveFormsModule],
 })
 export class ProgramManagerComponent implements OnInit, AfterViewInit {
     @ViewChild("modalContent") modalContent: TemplateRef<any> | undefined;

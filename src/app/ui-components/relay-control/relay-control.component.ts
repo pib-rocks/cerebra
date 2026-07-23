@@ -7,7 +7,6 @@ import {MatSnackBar} from "@angular/material/snack-bar";
     templateUrl: "./relay-control.component.html",
     styleUrls: ["./relay-control.component.scss"],
     changeDetection: ChangeDetectionStrategy.Eager,
-    standalone: false,
 })
 export class RelayControlComponent implements OnInit {
     turnedOn = false;

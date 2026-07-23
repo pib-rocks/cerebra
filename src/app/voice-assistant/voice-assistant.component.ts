@@ -8,17 +8,32 @@ import {
 import {SidebarElement} from "../shared/interfaces/sidebar-element.interface";
 import {Observable} from "rxjs";
 import {VoiceAssistantService} from "../shared/services/voice-assistant.service";
-import {FormControl, FormGroup, Validators} from "@angular/forms";
+import {
+    FormControl,
+    FormGroup,
+    Validators,
+    ReactiveFormsModule,
+    FormsModule,
+} from "@angular/forms";
 import {NgbModal, NgbModalRef} from "@ng-bootstrap/ng-bootstrap";
 import {VoiceAssistant} from "../shared/types/voice-assistant";
 import {AssistantModel} from "../shared/types/assistantModel";
+import {VoiceAssistantNavComponent} from "./voice-assistant-nav/voice-assistant-nav.component";
+import {RouterOutlet} from "@angular/router";
+import {NgClass} from "@angular/common";
 
 @Component({
     selector: "app-voice-assistant",
     templateUrl: "./voice-assistant.component.html",
     styleUrls: ["./voice-assistant.component.scss"],
     changeDetection: ChangeDetectionStrategy.Eager,
-    standalone: false,
+    imports: [
+        VoiceAssistantNavComponent,
+        RouterOutlet,
+        ReactiveFormsModule,
+        NgClass,
+        FormsModule,
+    ],
 })
 export class VoiceAssistantComponent implements OnInit {
     personalityForm!: FormGroup;
