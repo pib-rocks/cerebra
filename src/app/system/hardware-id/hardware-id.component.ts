@@ -1,6 +1,5 @@
 import {Component, OnInit, ChangeDetectionStrategy} from "@angular/core";
 import {FormControl, FormGroup, Validators} from "@angular/forms";
-import {Observable} from "rxjs";
 import {BrickletService} from "src/app/shared/services/bricklet.service";
 import {Bricklet} from "src/app/shared/types/bricklet";
 import {

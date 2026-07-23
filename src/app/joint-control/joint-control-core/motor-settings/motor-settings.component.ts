@@ -3,6 +3,7 @@ import {
     Input,
     TemplateRef,
     ChangeDetectionStrategy,
+    OnInit,
 } from "@angular/core";
 import {FormControl} from "@angular/forms";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
@@ -18,7 +19,7 @@ import {MotorSettings} from "src/app/shared/types/motor-settings.class";
     changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false,
 })
-export class MotorSettingsComponent {
+export class MotorSettingsComponent implements OnInit {
     @Input() motor!: MotorConfiguration;
     @Input() reversed!: boolean;
 

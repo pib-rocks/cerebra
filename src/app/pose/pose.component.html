@@ -81,7 +81,7 @@
     }
 
     <div class="pose-list-scroll">
-        @for (pose of poses | async; track pose) {
+        @for (pose of poses | async; track pose.poseId) {
         <div
             class="pose-item d-flex flex-row mt-1 mb-2"
             [ngClass]="pose.poseId === selectedPoseId ? 'selected' : 'unselected'">

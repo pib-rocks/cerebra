@@ -116,7 +116,7 @@ export class HorizontalSliderComponent
         this.trackHeightSave = this.trackHeight;
         this.thumbRadiusSave = this.thumbRadius;
         this.resizeSliderAndThumbRaduis();
-        this.resizeObservable$.subscribe((evt) => {
+        this.resizeObservable$.subscribe((_evt) => {
             this.resizeSliderAndThumbRaduis();
         });
 

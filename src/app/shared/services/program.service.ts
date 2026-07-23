@@ -183,7 +183,7 @@ export class ProgramService {
     }
 
     provideProgramInput(programNumber: string, input: string) {
-        let mpid = this.programNumberToMpid.get(programNumber);
+        const mpid = this.programNumberToMpid.get(programNumber);
         if (mpid === undefined) {
             throw new Error(
                 `no mpid associated with program '${programNumber}'`,

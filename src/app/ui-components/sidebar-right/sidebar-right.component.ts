@@ -4,6 +4,7 @@ import {
     OnDestroy,
     OnInit,
     ChangeDetectionStrategy,
+    OnChanges,
 } from "@angular/core";
 import {ActivatedRoute, Router} from "@angular/router";
 import {Observable, Subscription} from "rxjs";
@@ -16,7 +17,7 @@ import {SidebarElement} from "src/app/shared/interfaces/sidebar-element.interfac
     changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false,
 })
-export class SideBarRightComponent implements OnInit, OnDestroy {
+export class SideBarRightComponent implements OnInit, OnDestroy, OnChanges {
     @Input() optionCallbackMethods: {
         icon: string;
         label: string;

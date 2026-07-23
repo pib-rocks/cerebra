@@ -15,7 +15,7 @@ describe("PoseComponent", () => {
     let modalService: jasmine.SpyObj<NgbModal>;
     let matSnackBarService: jasmine.SpyObj<MatSnackBar>;
 
-    let posesSubject = new Subject();
+    const posesSubject = new Subject();
 
     let posesSubscriber: jasmine.Spy;
 
@@ -24,7 +24,7 @@ describe("PoseComponent", () => {
     const pose3 = new Pose("pose-3", "id-3");
 
     beforeEach(async () => {
-        let poseServiceSpy = jasmine.createSpyObj("PoseService", [
+        const poseServiceSpy = jasmine.createSpyObj("PoseService", [
             "getPosesObservable",
             "saveCurrentPose",
             "renamePose",
@@ -33,8 +33,8 @@ describe("PoseComponent", () => {
             "updatePoseMotorPositions",
         ]);
 
-        let modalServiceSpy = jasmine.createSpyObj("ModalService", ["open"]);
-        let matSnackBarServiceSpy = jasmine.createSpyObj("MatSnackBar", [
+        const modalServiceSpy = jasmine.createSpyObj("ModalService", ["open"]);
+        const matSnackBarServiceSpy = jasmine.createSpyObj("MatSnackBar", [
             "open",
         ]);
 
@@ -90,9 +90,9 @@ describe("PoseComponent", () => {
         const name = "name";
         let nameFormValueBefore: string = "";
         let modalPromise!: Promise<any>;
-        let mockRef: NgbModalRef = {
+        const mockRef: NgbModalRef = {
             get result() {
-                let promise = new Promise((resolve, reject) => {
+                const promise = new Promise((resolve, _reject) => {
                     nameFormValueBefore = component.nameFormControl.value!;
                     component.nameFormControl.setValue(name);
                     resolve(undefined);
@@ -115,12 +115,12 @@ describe("PoseComponent", () => {
 
     it("should rename the pose", async () => {
         const name = "name";
-        let pose2Renamed = new Pose(name, pose2.poseId);
+        const pose2Renamed = new Pose(name, pose2.poseId);
         let nameFormValueBefore: string = "";
         let modalPromise!: Promise<any>;
-        let mockRef: NgbModalRef = {
+        const mockRef: NgbModalRef = {
             get result() {
-                let promise = new Promise((resolve, reject) => {
+                const promise = new Promise((resolve, _reject) => {
                     nameFormValueBefore = component.nameFormControl.value!;
                     component.nameFormControl.setValue(name);
                     resolve(undefined);

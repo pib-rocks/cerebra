@@ -13,7 +13,7 @@ import {MotorConfiguration} from "src/app/shared/types/motor-configuration";
 export class JointControlCoreComponent implements OnInit {
     joint!: JointConfiguration;
     selectedMotor!: any;
-    displayMotors: MotorConfiguration[] = new Array();
+    displayMotors: MotorConfiguration[] = [];
 
     constructor(
         private route: ActivatedRoute,
@@ -23,7 +23,7 @@ export class JointControlCoreComponent implements OnInit {
     ngOnInit(): void {
         this.route.data.subscribe((data) => {
             this.joint = data["joint"];
-            this.displayMotors = new Array();
+            this.displayMotors = [];
             this.selectedMotor = undefined;
             this.displayMotors = this.joint.motors.filter(
                 (motor) => !motor.isMultiMotor,

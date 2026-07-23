@@ -58,10 +58,10 @@ describe("VoiceAssistantChatComponent", () => {
                     useValue: {
                         //Need this navigate for the right-sidebar-component (mock of "this.router.navigate([uuid ?? "."], {relativeTo: this.route});")
                         navigate: (
-                            commands: any[],
-                            extras?: NavigationExtras,
+                            _commands: any[],
+                            _extras?: NavigationExtras,
                         ) => {
-                            return new Promise((resolve, reject) => {
+                            return new Promise((_resolve, _reject) => {
                                 return true;
                             });
                         },

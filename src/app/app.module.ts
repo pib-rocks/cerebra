@@ -1,4 +1,8 @@
-import {ErrorHandler, NgModule} from "@angular/core";
+import {
+    ErrorHandler,
+    NgModule,
+    provideZoneChangeDetection,
+} from "@angular/core";
 import {ReactiveFormsModule, FormsModule} from "@angular/forms";
 import {BrowserModule} from "@angular/platform-browser";
 import {HttpClientModule} from "@angular/common/http";
@@ -101,6 +105,7 @@ import {SystemComponent} from "./system/system.component";
         MarkdownModule.forRoot(),
     ],
     providers: [
+        provideZoneChangeDetection(),
         {
             provide: HIGHLIGHT_OPTIONS,
             useValue: {

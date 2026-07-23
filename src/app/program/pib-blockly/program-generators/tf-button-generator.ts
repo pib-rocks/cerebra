@@ -1,4 +1,3 @@
-import * as Blockly from "blockly";
 import {Block} from "blockly/core/block";
 import {pythonGenerator} from "blockly/python";
 import {
@@ -12,7 +11,6 @@ import {
     INIT_TF_BUTTON_CLIENTS,
 } from "./util/definitions";
 import {
-    TF_BUTTON_SET_COLOR_FUNCTION,
     TF_BUTTON_TASTER_FUNCTION,
     TF_BUTTON_SWITCH_FUNCTION,
 } from "./util/function-declarations";

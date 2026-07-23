@@ -2,7 +2,7 @@ import * as Blockly from "blockly";
 
 export const moveToPose = (Blockly.Blocks["move_to_pose"] = {
     init() {
-        const input = this.appendDummyInput()
+        this.appendDummyInput()
             .appendField("set Pose")
             .appendField(new CustomFieldDropdown(this.getPoses), "POSE");
         this.setColour(355);

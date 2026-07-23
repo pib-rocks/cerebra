@@ -55,7 +55,7 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
         location: Location,
     ) {
         location.onUrlChange((url, _state) => {
-            let urlArray: string[] = url.split("/");
+            const urlArray: string[] = url.split("/");
             this.currentChatId = urlArray[urlArray.length - 1];
         });
     }

@@ -11,7 +11,7 @@ describe("MotorCurrentComponent", () => {
     let fixture: ComponentFixture<MotorCurrentComponent>;
 
     let motorService: jasmine.SpyObj<MotorService>;
-    let renderer: jasmine.SpyObj<Renderer2>;
+    let _renderer: jasmine.SpyObj<Renderer2>;
 
     let currentSubject: Subject<number>;
 
@@ -37,7 +37,7 @@ describe("MotorCurrentComponent", () => {
         motorService = TestBed.inject(
             MotorService,
         ) as jasmine.SpyObj<MotorService>;
-        renderer = TestBed.inject(Renderer2) as jasmine.SpyObj<Renderer2>;
+        _renderer = TestBed.inject(Renderer2) as jasmine.SpyObj<Renderer2>;
 
         fixture = TestBed.createComponent(MotorCurrentComponent);
         component = fixture.componentInstance;

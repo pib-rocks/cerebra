@@ -15,11 +15,11 @@ describe("PersonalityDescriptionComponent", () => {
     let component: PersonalityDescriptionComponent;
     let fixture: ComponentFixture<PersonalityDescriptionComponent>;
 
-    let voiceAssistantService: VoiceAssistantService;
+    let _voiceAssistantService: VoiceAssistantService;
 
-    let fakePersonality: VoiceAssistant;
+    let _fakePersonality: VoiceAssistant;
 
-    let router: Router;
+    let _router: Router;
     let paramsSubject: Subject<{personalityUuid: string}>;
 
     beforeEach(async () => {
@@ -70,11 +70,11 @@ describe("PersonalityDescriptionComponent", () => {
                 },
             ],
         }).compileComponents();
-        voiceAssistantService = TestBed.inject(VoiceAssistantService);
-        router = TestBed.inject(Router);
+        _voiceAssistantService = TestBed.inject(VoiceAssistantService);
+        _router = TestBed.inject(Router);
         fixture = TestBed.createComponent(PersonalityDescriptionComponent);
         component = fixture.componentInstance;
-        fakePersonality = new VoiceAssistant(
+        _fakePersonality = new VoiceAssistant(
             "1234",
             "fakePersonality",
             "Female",

@@ -10,7 +10,7 @@ describe("ProgramWorkspaceComponent", () => {
     let component: ProgramWorkspaceComponent;
     let poseService: jasmine.SpyObj<PoseService>;
     let fixture: ComponentFixture<ProgramWorkspaceComponent>;
-    let poseSubject = new Subject<Pose[]>();
+    const poseSubject = new Subject<Pose[]>();
 
     beforeEach(async () => {
         const poseServiceSpy: jasmine.SpyObj<PoseService> =

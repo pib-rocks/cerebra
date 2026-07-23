@@ -102,11 +102,13 @@ export class ProgramWorkspaceComponent
         });
 
         this.poseService.getPosesObservable().subscribe((poses) => {
-            poses.length > 0
-                ? this.updatePoseBlockDropdown(poses)
-                : this.updatePoseBlockDropdown([
-                      new Pose("no pose available", "NO POSE"),
-                  ]);
+            if (poses.length > 0) {
+                this.updatePoseBlockDropdown(poses);
+            } else {
+                this.updatePoseBlockDropdown([
+                    new Pose("no pose available", "NO POSE"),
+                ]);
+            }
         });
 
         this.workspace = Blockly.inject("blocklyDiv", {

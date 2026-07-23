@@ -40,7 +40,7 @@ describe("SideBarRightComponent", () => {
             {
                 icon: "",
                 label: "New program",
-                // eslint-disable-next-line @typescript-eslint/no-empty-function
+
                 clickCallback: () => {},
                 disabled: false,
             },
@@ -50,14 +50,14 @@ describe("SideBarRightComponent", () => {
             {
                 icon: "",
                 label: "Rename",
-                // eslint-disable-next-line @typescript-eslint/no-empty-function
+
                 clickCallback: () => {},
                 disabled: false,
             },
             {
                 icon: "",
                 label: "Delete",
-                // eslint-disable-next-line @typescript-eslint/no-empty-function
+
                 clickCallback: () => {},
                 disabled: false,
             },

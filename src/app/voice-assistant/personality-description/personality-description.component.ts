@@ -1,7 +1,6 @@
 import {Component, OnInit, ChangeDetectionStrategy} from "@angular/core";
-import {ActivatedRoute, Params, Router} from "@angular/router";
+import {ActivatedRoute, Params} from "@angular/router";
 import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
-import {CerebraRegex} from "src/app/shared/types/cerebra-regex";
 import {VoiceAssistant} from "src/app/shared/types/voice-assistant";
 
 @Component({

@@ -36,7 +36,6 @@ describe("VoiceAssistantPersonalitySidebarRightComponent", () => {
                 "deletePersonalityById",
                 "getAllPersonalities",
                 "updatePersonalityById",
-                ,
                 "getAllAssistantModels",
             ]);
 
