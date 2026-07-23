@@ -13,7 +13,7 @@ describe("PoseService", () => {
     let motorService: jasmine.SpyObj<MotorService>;
 
     let posesSubscriber: jasmine.Spy;
-    let indexLeftSubject: Subject<number> = new Subject();
+    const indexLeftSubject: Subject<number> = new Subject();
 
     const pose1 = new Pose("pose-1", "id-1");
     const pose2 = new Pose("pose-2", "id-2");

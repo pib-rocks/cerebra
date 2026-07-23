@@ -6,8 +6,9 @@ import {
     TemplateRef,
     ViewChild,
     ViewChildren,
+    ChangeDetectionStrategy,
 } from "@angular/core";
-import {FormControl, Validators} from "@angular/forms";
+import {FormControl, Validators, ReactiveFormsModule} from "@angular/forms";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {Observable, from, map} from "rxjs";
 import {MatSnackBar} from "@angular/material/snack-bar";
@@ -18,11 +19,14 @@ import {
     PoseImportValidationResult,
     PoseTransfer,
 } from "src/app/shared/types/pose-transfer";
+import {NgClass, AsyncPipe} from "@angular/common";
 
 @Component({
     selector: "app-pose",
     templateUrl: "./pose.component.html",
     styleUrls: ["./pose.component.css"],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    imports: [NgClass, ReactiveFormsModule, AsyncPipe],
 })
 export class PoseComponent implements OnInit {
     @ViewChild("modalContent") modalContent: TemplateRef<any> | undefined;

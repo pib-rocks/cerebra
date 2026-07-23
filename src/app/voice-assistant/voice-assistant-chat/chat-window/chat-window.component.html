@@ -21,8 +21,8 @@
     <div class="col-12 pr-2">
         <div class="chat-container mb-3 p-2 ">
             <div class="messages mb-3 d-flex flex-column-reverse">
+                @for (message of messages; track message) {
                 <div
-                    *ngFor="let message of messages"
                     class="d-flex mt-3 mb-3"
                     [ngClass]="message.isUser ? 'flex-row-reverse' : 'flex-row'">
                     <div
@@ -41,6 +41,7 @@
                         </markdown>
                     </div>
                 </div>
+                }
             </div>
             <div class="chat-input">
                 <input

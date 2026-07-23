@@ -47,7 +47,6 @@ describe("VoiceAssistantChatComponent", () => {
             {tokenStatus$: tokenStatusSubject.asObservable()},
         );
         await TestBed.configureTestingModule({
-            declarations: [VoiceAssistantChatComponent, SideBarRightComponent],
             providers: [
                 {
                     provide: NgbModal,
@@ -58,14 +57,13 @@ describe("VoiceAssistantChatComponent", () => {
                     useValue: {
                         //Need this navigate for the right-sidebar-component (mock of "this.router.navigate([uuid ?? "."], {relativeTo: this.route});")
                         navigate: (
-                            commands: any[],
-                            extras?: NavigationExtras,
+                            _commands: any[],
+                            _extras?: NavigationExtras,
                         ) => {
-                            return new Promise((resolve, reject) => {
+                            return new Promise((_resolve, _reject) => {
                                 return true;
                             });
                         },
-
                         url: "localhost/voice-assistant/personality/1234",
                     },
                 },
@@ -98,6 +96,8 @@ describe("VoiceAssistantChatComponent", () => {
                 ReactiveFormsModule,
                 FormsModule,
                 HttpClientTestingModule,
+                VoiceAssistantChatComponent,
+                SideBarRightComponent,
             ],
         }).compileComponents();
         chatService = TestBed.inject(ChatService);

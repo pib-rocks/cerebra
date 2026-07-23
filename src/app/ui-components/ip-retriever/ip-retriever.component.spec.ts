@@ -13,7 +13,7 @@ describe("IpRetrieverComponent", () => {
         const mockIp = "192.168.1.1";
         apiServiceSpy.get.and.returnValue(of({host_ip: mockIp}));
         await TestBed.configureTestingModule({
-            declarations: [IpRetrieverComponent],
+            imports: [IpRetrieverComponent],
             providers: [{provide: ApiService, useValue: apiServiceSpy}],
         }).compileComponents();
 

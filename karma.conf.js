@@ -30,6 +30,9 @@ module.exports = function (config) {
             reporters: [{type: "lcov"}, {type: "html"}, {type: "text-summary"}],
         },
         reporters: ["progress", "kjhtml"],
+        files: [
+            { pattern: "./src/index.html", watched: true, included: false, served: true }
+        ],
         browsers: ["Chrome"],
         customLaunchers: {
             NoSandbox: {

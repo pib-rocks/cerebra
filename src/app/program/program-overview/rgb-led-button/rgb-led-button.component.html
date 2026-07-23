@@ -7,25 +7,24 @@
         (ngSubmit)="updateConfig()">
         <div class="row font-size align-items-start">
             <div class="col-sm-6">
-                <ng-container *ngFor="let button of buttons; index as i">
-                    <div class="d-flex align-items-center mb-2">
-                        <label class="me-3 p-0 col-auto flex-shrink-0">
-                            {{ button.type }} {{ i + 1 }}:
-                        </label>
-                        <select
-                            [attr.data-test]="'TXT_Button_Program_' + button.brickletNumber"
-                            class="form-select"
-                            [formControlName]="button.brickletNumber">
-                            <option value=""></option>
-                            <ng-container
-                                *ngFor="let program of programs | async">
-                                <option [value]="program.programNumber">
-                                    {{ program.name }}
-                                </option>
-                            </ng-container>
-                        </select>
-                    </div>
-                </ng-container>
+                @for (button of buttons; track button; let i = $index) {
+                <div class="d-flex align-items-center mb-2">
+                    <label class="me-3 p-0 col-auto flex-shrink-0">
+                        {{ button.type }} {{ i + 1 }}:
+                    </label>
+                    <select
+                        [attr.data-test]="'TXT_Button_Program_' + button.brickletNumber"
+                        class="form-select"
+                        [formControlName]="button.brickletNumber">
+                        <option value=""></option>
+                        @for (program of programs | async; track program) {
+                        <option [value]="program.programNumber">
+                            {{ program.name }}
+                        </option>
+                        }
+                    </select>
+                </div>
+                }
             </div>
         </div>
         <div class="row">

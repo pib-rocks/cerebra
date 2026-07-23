@@ -13,15 +13,19 @@ import {
     OnDestroy,
     OnChanges,
     SimpleChanges,
+    ChangeDetectionStrategy,
 } from "@angular/core";
-import {FormControl} from "@angular/forms";
+import {FormControl, ReactiveFormsModule} from "@angular/forms";
 import {Observable, asyncScheduler, fromEvent} from "rxjs";
 import {SliderThumb} from "./slider-thumb";
+import {NgClass} from "@angular/common";
 
 @Component({
     selector: "app-horizontal-slider",
     templateUrl: "./horizontal-slider.component.html",
     styleUrls: ["./horizontal-slider.component.scss"],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    imports: [NgClass, ReactiveFormsModule],
 })
 export class HorizontalSliderComponent
     implements OnInit, AfterViewInit, OnDestroy, OnChanges
@@ -113,7 +117,7 @@ export class HorizontalSliderComponent
         this.trackHeightSave = this.trackHeight;
         this.thumbRadiusSave = this.thumbRadius;
         this.resizeSliderAndThumbRaduis();
-        this.resizeObservable$.subscribe((evt) => {
+        this.resizeObservable$.subscribe((_evt) => {
             this.resizeSliderAndThumbRaduis();
         });
 

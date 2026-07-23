@@ -4,9 +4,15 @@ import {
     OnInit,
     TemplateRef,
     ViewChild,
+    ChangeDetectionStrategy,
 } from "@angular/core";
-import {FormControl, Validators} from "@angular/forms";
-import {ActivatedRoute, Router} from "@angular/router";
+import {FormControl, Validators, ReactiveFormsModule} from "@angular/forms";
+import {
+    ActivatedRoute,
+    Router,
+    RouterOutlet,
+    RouterLink,
+} from "@angular/router";
 import {NgbModal, NgbModalRef} from "@ng-bootstrap/ng-bootstrap";
 import {Observable, Subject, Subscription} from "rxjs";
 import {SidebarElement} from "src/app/shared/interfaces/sidebar-element.interface";
@@ -18,11 +24,19 @@ import {VoiceAssistant} from "src/app/shared/types/voice-assistant";
 import {VoiceAssistantState} from "../../shared/types/voice-assistant-state";
 import {Location} from "@angular/common";
 import {TokenService} from "src/app/shared/services/token.service";
+import {SideBarRightComponent} from "../../ui-components/sidebar-right/sidebar-right.component";
 
 @Component({
     selector: "app-voice-assistant-chat",
     templateUrl: "./voice-assistant-chat.component.html",
     styleUrls: ["./voice-assistant-chat.component.scss"],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    imports: [
+        RouterOutlet,
+        RouterLink,
+        SideBarRightComponent,
+        ReactiveFormsModule,
+    ],
 })
 export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
     @ViewChild("modalContent") modalContent: TemplateRef<any> | undefined;
@@ -52,7 +66,7 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
         location: Location,
     ) {
         location.onUrlChange((url, _state) => {
-            let urlArray: string[] = url.split("/");
+            const urlArray: string[] = url.split("/");
             this.currentChatId = urlArray[urlArray.length - 1];
         });
     }

@@ -1,6 +1,10 @@
-import {Component, OnInit} from "@angular/core";
-import {FormControl, FormGroup, Validators} from "@angular/forms";
-import {Observable} from "rxjs";
+import {Component, OnInit, ChangeDetectionStrategy} from "@angular/core";
+import {
+    FormControl,
+    FormGroup,
+    Validators,
+    ReactiveFormsModule,
+} from "@angular/forms";
 import {BrickletService} from "src/app/shared/services/bricklet.service";
 import {Bricklet} from "src/app/shared/types/bricklet";
 import {
@@ -12,6 +16,8 @@ import {
     selector: "app-hardware-id",
     templateUrl: "./hardware-id.component.html",
     styleUrl: "./hardware-id.component.scss",
+    changeDetection: ChangeDetectionStrategy.Eager,
+    imports: [ReactiveFormsModule],
 })
 export class HardwareIdComponent implements OnInit {
     servoBricklets: Bricklet[] = [];

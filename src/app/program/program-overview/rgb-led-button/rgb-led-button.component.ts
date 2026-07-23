@@ -1,5 +1,5 @@
-import {Component, OnInit} from "@angular/core";
-import {FormControl, FormGroup} from "@angular/forms";
+import {Component, OnInit, ChangeDetectionStrategy} from "@angular/core";
+import {FormControl, FormGroup, ReactiveFormsModule} from "@angular/forms";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {Observable} from "rxjs";
 import {take, switchMap, filter} from "rxjs/operators";
@@ -9,11 +9,14 @@ import {RgbLedButtonService} from "src/app/shared/services/rgb-led-button.servic
 import {Bricklet} from "src/app/shared/types/bricklet";
 import {ButtonProgram} from "src/app/shared/types/button-program";
 import {Program} from "src/app/shared/types/program";
+import {AsyncPipe} from "@angular/common";
 
 @Component({
     selector: "app-rgb-led-button",
     templateUrl: "./rgb-led-button.component.html",
     styleUrl: "./rgb-led-button.component.scss",
+    changeDetection: ChangeDetectionStrategy.Eager,
+    imports: [ReactiveFormsModule, AsyncPipe],
 })
 export class RgbLedButtonComponent implements OnInit {
     buttons: Bricklet[] = [];
