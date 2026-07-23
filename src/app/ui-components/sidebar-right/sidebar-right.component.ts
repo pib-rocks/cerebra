@@ -6,16 +6,36 @@ import {
     ChangeDetectionStrategy,
     OnChanges,
 } from "@angular/core";
-import {ActivatedRoute, Router} from "@angular/router";
+import {
+    ActivatedRoute,
+    Router,
+    RouterLinkActive,
+    RouterLink,
+} from "@angular/router";
 import {Observable, Subscription} from "rxjs";
 import {SidebarElement} from "src/app/shared/interfaces/sidebar-element.interface";
+import {
+    NgbDropdown,
+    NgbDropdownToggle,
+    NgbDropdownMenu,
+    NgbDropdownButtonItem,
+    NgbDropdownItem,
+} from "@ng-bootstrap/ng-bootstrap/dropdown";
 
 @Component({
     selector: "app-sidebar-right",
     templateUrl: "./sidebar-right.component.html",
     styleUrls: ["./sidebar-right.component.scss"],
     changeDetection: ChangeDetectionStrategy.Eager,
-    standalone: false,
+    imports: [
+        RouterLinkActive,
+        RouterLink,
+        NgbDropdown,
+        NgbDropdownToggle,
+        NgbDropdownMenu,
+        NgbDropdownButtonItem,
+        NgbDropdownItem,
+    ],
 })
 export class SideBarRightComponent implements OnInit, OnDestroy, OnChanges {
     @Input() optionCallbackMethods: {

@@ -31,8 +31,7 @@ describe("RgbLedButtonComponent", () => {
         matSnackbarServiceSpy = jasmine.createSpyObj("MatSnackBar", ["open"]);
 
         await TestBed.configureTestingModule({
-            declarations: [RgbLedButtonComponent],
-            imports: [ReactiveFormsModule],
+            imports: [ReactiveFormsModule, RgbLedButtonComponent],
             providers: [
                 {provide: ProgramService, useValue: programServiceSpy},
                 {provide: BrickletService, useValue: brickletServiceSpy},

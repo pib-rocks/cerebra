@@ -9,8 +9,7 @@ describe("PersonalityWrapperComponent", () => {
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
-            declarations: [PersonalityWrapperComponent],
-            imports: [RouterTestingModule],
+            imports: [RouterTestingModule, PersonalityWrapperComponent],
         }).compileComponents();
 
         fixture = TestBed.createComponent(PersonalityWrapperComponent);

@@ -1,7 +1,6 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-
 import {PythonCodeComponent} from "./python-code.component";
-import {HighlightModule} from "ngx-highlightjs";
+import {HighlightModule, HIGHLIGHT_OPTIONS} from "ngx-highlightjs";
 
 describe("PythonCodeComponent", () => {
     let component: PythonCodeComponent;
@@ -9,8 +8,18 @@ describe("PythonCodeComponent", () => {
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
-            declarations: [PythonCodeComponent],
-            imports: [HighlightModule],
+            imports: [HighlightModule, PythonCodeComponent],
+            providers: [
+                {
+                    provide: HIGHLIGHT_OPTIONS,
+                    useValue: {
+                        coreLibraryLoader: () => import("highlight.js/lib/core"),
+                        languages: {
+                            python: () => import("highlight.js/lib/languages/python"),
+                        }
+                    }
+                }
+            ]
         }).compileComponents();
 
         fixture = TestBed.createComponent(PythonCodeComponent);

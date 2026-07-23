@@ -16,8 +16,7 @@ describe("HorizontalSliderComponent", () => {
     const testSubject: Subject<number[]> = new Subject<number[]>();
     beforeEach(async () => {
         await TestBed.configureTestingModule({
-            declarations: [HorizontalSliderComponent],
-            imports: [ReactiveFormsModule],
+            imports: [ReactiveFormsModule, HorizontalSliderComponent],
         }).compileComponents();
         fixture = TestBed.createComponent(HorizontalSliderComponent);
         component = fixture.componentInstance;

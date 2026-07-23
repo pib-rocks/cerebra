@@ -5,13 +5,23 @@ import {ProgramService} from "src/app/shared/services/program.service";
 import {ProgramCode} from "src/app/shared/types/program-code";
 import {ExecutionState, ProgramState} from "src/app/shared/types/program-state";
 import {ProgramLogLine} from "src/app/shared/types/program-log-line";
+import {SplitComponent, SplitAreaComponent} from "angular-split";
+import {ProgramWorkspaceComponent} from "./program-workspace/program-workspace.component";
+import {PythonCodeComponent} from "./python-code/python-code.component";
+import {ConsoleComponent} from "./console/console.component";
 
 @Component({
     selector: "app-program-splitscreen",
     templateUrl: "./program-splitscreen.component.html",
     styleUrls: ["./program-splitscreen.component.scss"],
     changeDetection: ChangeDetectionStrategy.Eager,
-    standalone: false,
+    imports: [
+        SplitComponent,
+        SplitAreaComponent,
+        ProgramWorkspaceComponent,
+        PythonCodeComponent,
+        ConsoleComponent,
+    ],
 })
 export class ProgramSplitscreenComponent implements OnInit {
     ExecutionState = ExecutionState;

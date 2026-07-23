@@ -28,7 +28,6 @@ import {Pose} from "src/app/shared/types/pose";
     templateUrl: "./program-workspace.component.html",
     styleUrls: ["./program-workspace.component.scss"],
     changeDetection: ChangeDetectionStrategy.Eager,
-    standalone: false,
 })
 export class ProgramWorkspaceComponent
     implements OnInit, AfterViewInit, OnDestroy, OnChanges

@@ -22,7 +22,7 @@ describe("MotorCurrentComponent", () => {
         motorServiceSpy.getCurrentObservable.and.returnValue(currentSubject);
 
         await TestBed.configureTestingModule({
-            declarations: [MotorPositionComponent],
+            imports: [MotorPositionComponent],
             providers: [
                 {
                     provide: MotorService,
