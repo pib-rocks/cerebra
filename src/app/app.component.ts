@@ -1,10 +1,28 @@
-import {Component, OnInit} from "@angular/core";
-import {NavigationEnd, Router} from "@angular/router";
+import {Component, OnInit, ChangeDetectionStrategy} from "@angular/core";
+import {
+    NavigationEnd,
+    Router,
+    RouterLink,
+    RouterLinkActive,
+    RouterOutlet,
+} from "@angular/router";
+import {RelayControlComponent} from "./ui-components/relay-control/relay-control.component";
+import {SmartConnectComponent} from "./ui-components/smart-connect/smart-connect.component";
+import {IpRetrieverComponent} from "./ui-components/ip-retriever/ip-retriever.component";
 
 @Component({
     selector: "app-root",
     templateUrl: "./app.component.html",
     styleUrls: ["./app.component.scss"],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    imports: [
+        RouterLink,
+        RouterLinkActive,
+        RelayControlComponent,
+        SmartConnectComponent,
+        IpRetrieverComponent,
+        RouterOutlet,
+    ],
 })
 export class AppComponent implements OnInit {
     currentRoute: string = "";

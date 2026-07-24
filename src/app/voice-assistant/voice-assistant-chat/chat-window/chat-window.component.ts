@@ -1,17 +1,21 @@
-import {Component, OnInit} from "@angular/core";
-import {FormControl} from "@angular/forms";
-import {ActivatedRoute, Params} from "@angular/router";
+import {Component, OnInit, ChangeDetectionStrategy} from "@angular/core";
+import {FormControl, ReactiveFormsModule} from "@angular/forms";
+import {ActivatedRoute, Params, RouterLink} from "@angular/router";
 import {ChatService} from "src/app/shared/services/chat.service";
 import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
 import {ChatMessage} from "src/app/shared/types/chat-message";
 import {Chat} from "src/app/shared/types/chat.class";
 import {Subscription, combineLatest, map} from "rxjs";
 import {TokenService} from "src/app/shared/services/token.service";
+import {NgClass} from "@angular/common";
+import {MarkdownComponent} from "ngx-markdown";
 
 @Component({
     selector: "app-chat-window",
     templateUrl: "./chat-window.component.html",
     styleUrls: ["./chat-window.component.scss"],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    imports: [RouterLink, NgClass, MarkdownComponent, ReactiveFormsModule],
 })
 export class ChatWindowComponent implements OnInit {
     chat?: Chat;

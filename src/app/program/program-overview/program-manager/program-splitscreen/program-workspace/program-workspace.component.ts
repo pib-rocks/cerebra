@@ -10,6 +10,7 @@ import {
     Output,
     SimpleChanges,
     ViewChild,
+    ChangeDetectionStrategy,
 } from "@angular/core";
 import * as Blockly from "blockly";
 import {toolbox} from "../../blockly";
@@ -26,6 +27,7 @@ import {Pose} from "src/app/shared/types/pose";
     selector: "app-program-workspace",
     templateUrl: "./program-workspace.component.html",
     styleUrls: ["./program-workspace.component.scss"],
+    changeDetection: ChangeDetectionStrategy.Eager,
 })
 export class ProgramWorkspaceComponent
     implements OnInit, AfterViewInit, OnDestroy, OnChanges
@@ -99,11 +101,13 @@ export class ProgramWorkspaceComponent
         });
 
         this.poseService.getPosesObservable().subscribe((poses) => {
-            poses.length > 0
-                ? this.updatePoseBlockDropdown(poses)
-                : this.updatePoseBlockDropdown([
-                      new Pose("no pose available", "NO POSE"),
-                  ]);
+            if (poses.length > 0) {
+                this.updatePoseBlockDropdown(poses);
+            } else {
+                this.updatePoseBlockDropdown([
+                    new Pose("no pose available", "NO POSE"),
+                ]);
+            }
         });
 
         this.workspace = Blockly.inject("blocklyDiv", {

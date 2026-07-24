@@ -45,14 +45,13 @@
     </div>
 
     <!-- Decrypt Token Form -->
-    <div
-        *ngIf="isTokenStored; else encryptToken"
-        class="mt-4 mb-4 mr-5 ml-5">
-        <div
-            *ngIf="isTokenActive"
-            class="d-flex justify-content-center mb-3">
+    @if (isTokenStored) {
+    <div class="mt-4 mb-4 mr-5 ml-5">
+        @if (isTokenActive) {
+        <div class="d-flex justify-content-center mb-3">
             <span class="text-success">Token already decrypted.</span>
         </div>
+        }
         <p [ngClass]="{disabled: isTokenActive}">
             Enter your password to connect to Smart API.
         </p>
@@ -90,9 +89,11 @@
                     </button>
                 </div>
             </div>
-            <div *ngIf="onErrorSubmit">
+            @if (onErrorSubmit) {
+            <div>
                 <span class="text-danger">Failed to decrypt token.</span>
             </div>
+            }
             <div class="d-flex justify-content-around mt-3 mb-4">
                 <button
                     id="decrypt-form-btn"
@@ -113,10 +114,7 @@
             </div>
         </form>
     </div>
-</ng-template>
-
-<!-- Encrypt Token Form -->
-<ng-template #encryptToken>
+    } @else {
     <div class="mt-4 mb-4 mr-5 ml-5">
         <p>
             <b
@@ -126,7 +124,6 @@
             Please note that if you forget the password, an new token must be
             requested and encrypted.
         </p>
-
         <form
             [formGroup]="encryptTokenForm"
             (ngSubmit)="onSubmitEncryptToken()">
@@ -142,7 +139,6 @@
                         formControlName="token"
                         ngbAutofocus />
                 </div>
-
                 <div class="form-group w-100">
                     <label for="encrypt-password">Password</label>
                     <div class="input-group">
@@ -159,16 +155,16 @@
                                 (click)="togglePasswordTextType()"></i
                         ></span>
                     </div>
-
-                    <div
-                        *ngIf="encryptTokenForm.get('password')?.errors?.['minlength'] && (encryptTokenForm.touched || encryptTokenForm.dirty)">
+                    @if (encryptTokenForm.get('password')?.errors?.['minlength']
+                    && (encryptTokenForm.touched || encryptTokenForm.dirty)) {
+                    <div>
                         <span class="text-danger"
                             >Password needs to be at least 8 characters
                             long.</span
                         >
                     </div>
+                    }
                 </div>
-
                 <div class="form-group w-100">
                     <label for="confirmPassword">Confirm password</label>
                     <div class="input-group">
@@ -185,19 +181,23 @@
                                 (click)="togglePasswordTextType()"></i
                         ></span>
                     </div>
-                    <div
-                        *ngIf="encryptTokenForm.get('confirmPassword')?.errors?.['mismatch'] && (encryptTokenForm.touched || encryptTokenForm.dirty)">
+                    @if
+                    (encryptTokenForm.get('confirmPassword')?.errors?.['mismatch']
+                    && (encryptTokenForm.touched || encryptTokenForm.dirty)) {
+                    <div>
                         <span class="text-danger">Passwords do not match.</span>
                     </div>
+                    }
                 </div>
-                <div *ngIf="onErrorSubmit">
+                @if (onErrorSubmit) {
+                <div>
                     <span class="text-danger"
                         >Failed to encrypt token. Please check your network
                         connection and try again.</span
                     >
                 </div>
+                }
             </div>
-
             <div class="d-flex justify-content-around mt-3 mb-4">
                 <button
                     id="encrypt-form-btn"
@@ -218,4 +218,7 @@
             </div>
         </form>
     </div>
+    }
 </ng-template>
+
+<!-- Encrypt Token Form -->

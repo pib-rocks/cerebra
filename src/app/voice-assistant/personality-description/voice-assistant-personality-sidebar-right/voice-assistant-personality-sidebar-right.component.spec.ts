@@ -36,17 +36,16 @@ describe("VoiceAssistantPersonalitySidebarRightComponent", () => {
                 "deletePersonalityById",
                 "getAllPersonalities",
                 "updatePersonalityById",
-                ,
                 "getAllAssistantModels",
             ]);
 
         await TestBed.configureTestingModule({
-            declarations: [VoiceAssistantPersonalitySidebarRightComponent],
             imports: [
                 HttpClientTestingModule,
                 RouterTestingModule,
                 FormsModule,
                 ReactiveFormsModule,
+                VoiceAssistantPersonalitySidebarRightComponent,
             ],
             providers: [
                 {

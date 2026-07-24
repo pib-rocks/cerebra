@@ -1,13 +1,16 @@
-import {Component, OnInit} from "@angular/core";
+import {Component, OnInit, ChangeDetectionStrategy} from "@angular/core";
 import {BehaviorSubject} from "rxjs";
 import {MotorService} from "src/app/shared/services/motor.service";
 import {MotorConfiguration} from "../../../shared/types/motor-configuration";
 import {ActivatedRoute} from "@angular/router";
+import {HorizontalSliderComponent} from "../../../sliders/horizontal-slider/horizontal-slider.component";
 
 @Component({
     selector: "app-motor-position",
     templateUrl: "./motor-position.component.html",
     styleUrls: ["./motor-position.component.scss"],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    imports: [HorizontalSliderComponent],
 })
 export class MotorPositionComponent implements OnInit {
     motor!: MotorConfiguration;

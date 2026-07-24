@@ -8,14 +8,17 @@ import {
     EventEmitter,
     Output,
     Renderer2,
+    ChangeDetectionStrategy,
 } from "@angular/core";
-import {FormControl} from "@angular/forms";
+import {FormControl, ReactiveFormsModule} from "@angular/forms";
 import {Observable} from "rxjs";
 
 @Component({
     selector: "app-vertical-slider",
     templateUrl: "./vertical-slider.component.html",
     styleUrls: ["./vertical-slider.component.scss"],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    imports: [ReactiveFormsModule],
 })
 export class VerticalSliderComponent implements OnInit, AfterViewInit {
     @ViewChild("slider") slider?: ElementRef;

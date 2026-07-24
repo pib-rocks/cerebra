@@ -4,16 +4,37 @@ import {
     OnDestroy,
     OnInit,
     ViewChild,
+    ChangeDetectionStrategy,
 } from "@angular/core";
-import {FormControl} from "@angular/forms";
+import {FormControl, ReactiveFormsModule} from "@angular/forms";
 import {Observable, map} from "rxjs";
 import {CameraSettings} from "../shared/types/camera-settings";
 import {CameraService} from "../shared/services/camera.service";
+import {
+    NgbDropdown,
+    NgbDropdownToggle,
+    NgbDropdownMenu,
+    NgbDropdownButtonItem,
+    NgbDropdownItem,
+} from "@ng-bootstrap/ng-bootstrap/dropdown";
+import {NgbPopover} from "@ng-bootstrap/ng-bootstrap/popover";
+import {HorizontalSliderComponent} from "../sliders/horizontal-slider/horizontal-slider.component";
 
 @Component({
     selector: "app-camera",
     templateUrl: "./camera.component.html",
     styleUrls: ["./camera.component.scss"],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    imports: [
+        ReactiveFormsModule,
+        NgbDropdown,
+        NgbDropdownToggle,
+        NgbDropdownMenu,
+        NgbDropdownButtonItem,
+        NgbDropdownItem,
+        NgbPopover,
+        HorizontalSliderComponent,
+    ],
 })
 export class CameraComponent implements OnInit, OnDestroy {
     @ViewChild("videobox") videoBox?: ElementRef;

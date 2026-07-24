@@ -34,8 +34,7 @@ describe("HardwareIdComponent", () => {
         });
 
         await TestBed.configureTestingModule({
-            imports: [ReactiveFormsModule],
-            declarations: [HardwareIdComponent],
+            imports: [ReactiveFormsModule, HardwareIdComponent],
             providers: [
                 {
                     provide: BrickletService,

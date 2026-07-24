@@ -24,7 +24,7 @@ describe("VoiceAssistantComponent", () => {
     let fixture: ComponentFixture<VoiceAssistantComponent>;
     let voiceAssistantService: jasmine.SpyObj<VoiceAssistantService>;
     let modalService: NgbModal;
-    let router: Router;
+    let _router: Router;
     const models = [
         new AssistantModel(1, "gpt-3", "GPT-3", false),
         new AssistantModel(1, "gpt-4", "GPT-4", true),
@@ -54,11 +54,6 @@ describe("VoiceAssistantComponent", () => {
             },
         );
         await TestBed.configureTestingModule({
-            declarations: [
-                VoiceAssistantComponent,
-                VoiceAssistantNavComponent,
-                BoolToOnOffPipe,
-            ],
             providers: [
                 {
                     provide: ActivatedRoute,
@@ -81,19 +76,26 @@ describe("VoiceAssistantComponent", () => {
                 ReactiveFormsModule,
                 RouterTestingModule,
                 HttpClientTestingModule,
+                VoiceAssistantComponent,
+                VoiceAssistantNavComponent,
+                BoolToOnOffPipe,
             ],
         }).compileComponents();
         voiceAssistantService = TestBed.inject(
             VoiceAssistantService,
         ) as jasmine.SpyObj<VoiceAssistantService>;
         modalService = TestBed.inject(NgbModal);
-        router = TestBed.inject(Router);
+        _router = TestBed.inject(Router);
         fixture = TestBed.createComponent(VoiceAssistantComponent);
         component = fixture.componentInstance;
         voiceAssistantService.assistantModelsSubject = new BehaviorSubject<
             AssistantModel[]
         >(models);
         component.ngOnInit();
+    });
+
+    afterEach(() => {
+        fixture.destroy();
     });
 
     it("should create", () => {

@@ -5,37 +5,35 @@
         (ngSubmit)="updateIds()">
         <div class="d-flex gap-4 align-items-start">
             <div class="bricklet-grid form-content">
-                <ng-container *ngFor="let bricklet of servoBricklets">
-                    <label
-                        >{{ bricklet.type }} {{ bricklet.brickletNumber
-                        }}:</label
-                    >
-                    <input
-                        type="text"
-                        [attr.data-test]="'TXT_Bricklet_UID_' + bricklet.brickletNumber"
-                        class="form-control"
-                        [formControlName]="bricklet.brickletNumber" />
-                </ng-container>
+                @for (bricklet of servoBricklets; track bricklet) {
+                <label
+                    >{{ bricklet.type }} {{ bricklet.brickletNumber }}:</label
+                >
+                <input
+                    type="text"
+                    [attr.data-test]="'TXT_Bricklet_UID_' + bricklet.brickletNumber"
+                    class="form-control"
+                    [formControlName]="bricklet.brickletNumber" />
+                }
             </div>
 
             <div class="bricklet-grid form-content">
-                <ng-container *ngFor="let bricklet of relayBricklets">
-                    <label>{{ bricklet.type }}:</label>
-                    <input
-                        type="text"
-                        [attr.data-test]="'TXT_Bricklet_UID_' + bricklet.brickletNumber"
-                        class="form-control"
-                        [formControlName]="bricklet.brickletNumber" />
-                </ng-container>
-
-                <ng-container *ngFor="let bricklet of rgbBricklets; index as i">
-                    <label>{{ bricklet.type }} {{ i + 1 }}:</label>
-                    <input
-                        type="text"
-                        [attr.data-test]="'TXT_Bricklet_UID_' + bricklet.brickletNumber"
-                        class="form-control"
-                        [formControlName]="bricklet.brickletNumber" />
-                </ng-container>
+                @for (bricklet of relayBricklets; track bricklet) {
+                <label>{{ bricklet.type }}:</label>
+                <input
+                    type="text"
+                    [attr.data-test]="'TXT_Bricklet_UID_' + bricklet.brickletNumber"
+                    class="form-control"
+                    [formControlName]="bricklet.brickletNumber" />
+                } @for (bricklet of rgbBricklets; track bricklet; let i =
+                $index) {
+                <label>{{ bricklet.type }} {{ i + 1 }}:</label>
+                <input
+                    type="text"
+                    [attr.data-test]="'TXT_Bricklet_UID_' + bricklet.brickletNumber"
+                    class="form-control"
+                    [formControlName]="bricklet.brickletNumber" />
+                }
             </div>
         </div>
         <div class="row">
@@ -48,14 +46,14 @@
                     Update
                 </button>
             </div>
-            <div
-                class="col-auto mt-4 ml-4 mb-3 pl-2 align-self-center"
-                *ngIf="brickletUidForm.invalid">
+            @if (brickletUidForm.invalid) {
+            <div class="col-auto mt-4 ml-4 mb-3 pl-2 align-self-center">
                 <span class="validation-error"
                     >IDs must be unique, up to 6 characters long, and contain
                     only letters and numbers.</span
                 >
             </div>
+            }
         </div>
     </form>
 </div>

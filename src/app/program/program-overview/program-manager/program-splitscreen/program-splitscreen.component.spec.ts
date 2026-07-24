@@ -38,10 +38,6 @@ describe("ProgramSplitscreenComponent", () => {
         data = new BehaviorSubject<Params>({code: "{}"});
 
         await TestBed.configureTestingModule({
-            declarations: [
-                ProgramSplitscreenComponent,
-                ProgramWorkspaceComponent,
-            ],
             providers: [
                 {
                     provide: ProgramService,
@@ -52,7 +48,12 @@ describe("ProgramSplitscreenComponent", () => {
                     useValue: {params, data},
                 },
             ],
-            imports: [AngularSplitModule, HttpClientModule],
+            imports: [
+                AngularSplitModule,
+                HttpClientModule,
+                ProgramSplitscreenComponent,
+                ProgramWorkspaceComponent,
+            ],
         }).compileComponents();
         programService = TestBed.inject(
             ProgramService,
@@ -134,6 +135,9 @@ describe("ProgramSplitscreenComponent", () => {
         const programState = new Subject<ProgramState>();
         programService.getProgramLogs.and.returnValue(programLogs);
         programService.getProgramState.and.returnValue(programState);
+        programService.getProgramByProgramNumber.and.returnValue(
+            new Subject<any>(),
+        );
 
         params.next({"program-number": programNumber});
 

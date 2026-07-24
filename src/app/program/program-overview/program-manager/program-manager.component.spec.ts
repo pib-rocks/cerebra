@@ -32,6 +32,7 @@ describe("ProgramManagerComponent", () => {
         programServiceSpy.getAllPrograms.and.returnValue(
             new BehaviorSubject([]),
         );
+        programServiceSpy.programsSubject = new BehaviorSubject<Program[]>([]);
 
         router = {url: "change this"};
 
@@ -56,7 +57,7 @@ describe("ProgramManagerComponent", () => {
                 },
                 {
                     provide: ActivatedRoute,
-                    useValue: {url: new Observable<UrlSegment[]>()},
+                    useValue: {url: of([])},
                 },
             ],
         }).compileComponents();

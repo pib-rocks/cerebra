@@ -20,8 +20,7 @@ describe("ProgramOverviewComponent", () => {
         });
 
         await TestBed.configureTestingModule({
-            declarations: [ProgramOverviewComponent],
-            imports: [RouterTestingModule],
+            imports: [RouterTestingModule, ProgramOverviewComponent],
             providers: [{provide: ProgramService, useValue: programServiceSpy}],
         }).compileComponents();
 

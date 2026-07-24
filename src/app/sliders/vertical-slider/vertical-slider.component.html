@@ -1,9 +1,12 @@
 <div class="d-flex h-100 flex-column align-items-center min-w min-h">
-    <p *ngIf="showPrompt">
-        {{name}}<span *ngIf="unitLong">{{ " " + unitLong }}</span>
+    @if (showPrompt) {
+    <p>
+        {{name}}@if (unitLong) {
+        <span>{{ " " + unitLong }}</span>
+        }
     </p>
+    } @if (showTextInput) {
     <input
-        *ngIf="showTextInput"
         [id]="name + 'Input'"
         data-test="TXT_Vertical_Slider_Input"
         class="form-control text-input"
@@ -14,6 +17,7 @@
         [name]="name"
         [formControl]="rangeFormControl"
         (input)="sendEvent()" />
+    }
     <div
         class="range-slider mt-3 h-100 d-flex flex-column align-items-center"
         style="position:relative;width:120px;">
@@ -215,10 +219,10 @@
             </svg>
         </div>
     </div>
-    <span
-        *ngIf="rangeFormControl.errors"
-        style="color: red; font-size: 13px; content:''">
+    @if (rangeFormControl.errors) {
+    <span style="color: red; font-size: 13px; content:''">
         {{ name }} must be a number and can not be empty, minus or greater than
         {{ maxValue }}
     </span>
+    }
 </div>

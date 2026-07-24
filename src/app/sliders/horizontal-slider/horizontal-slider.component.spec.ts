@@ -16,8 +16,7 @@ describe("HorizontalSliderComponent", () => {
     const testSubject: Subject<number[]> = new Subject<number[]>();
     beforeEach(async () => {
         await TestBed.configureTestingModule({
-            declarations: [HorizontalSliderComponent],
-            imports: [ReactiveFormsModule],
+            imports: [ReactiveFormsModule, HorizontalSliderComponent],
         }).compileComponents();
         fixture = TestBed.createComponent(HorizontalSliderComponent);
         component = fixture.componentInstance;
@@ -91,10 +90,7 @@ describe("HorizontalSliderComponent", () => {
             },
         ];
         component.sliderWidth = 1000;
-        const linearTransformSpy = spyOn(
-            component,
-            "linearTransform",
-        ).and.returnValues(100, 300);
+        spyOn(component, "linearTransform").and.returnValues(100, 300);
         component.setThumbPosition(component.thumbs[0]);
         expect(component.thumbs[0].position).toEqual(100);
         expect(component.currentMinBubblePosition).toEqual(100);
@@ -183,10 +179,7 @@ describe("HorizontalSliderComponent", () => {
     it("should move the selected slider", () => {
         const setThumbValueSpy = spyOn(component, "setThumbValue");
         const sendEventSpy = spyOn(component, "sendEvent");
-        const linearTransformSpy = spyOn(
-            component,
-            "linearTransform",
-        ).and.returnValue(100);
+        spyOn(component, "linearTransform").and.returnValue(100);
         component.thumbSelected = component.thumbs[0];
         spyOn(
             component.slider.nativeElement,

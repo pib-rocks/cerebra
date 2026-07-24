@@ -40,12 +40,13 @@
                             class="microphone-icon align-middle"
                             src="../../assets/voice-assistant-svgs/chat/voice_interaction_on.svg" />
                     </div>
+                    @if (turnedOn && (activeChatId !== currentChatId)) {
                     <a
-                        *ngIf="turnedOn && (activeChatId !== currentChatId)"
                         data-test="LNK_Jump_to_Active_Chat"
                         [routerLink]="['/', 'voice-assistant', activePersonalityId, 'chat', activeChatId]"
                         >Jump to active chat
                     </a>
+                    }
                 </div>
             </div>
             <div>

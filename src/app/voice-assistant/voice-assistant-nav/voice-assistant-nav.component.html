@@ -1,6 +1,6 @@
 <ul class="nav nav-tabs">
+    @for (sidebarElement of sidebarElements; track sidebarElement) {
     <li
-        *ngFor="let sidebarElement of sidebarElements"
         class="nav-item"
         [ngClass]="{'navbar-btn-active': isRouteActive(sidebarElement.getUUID())}">
         <a
@@ -12,9 +12,8 @@
             {{sidebarElement.getName()}}
         </a>
     </li>
-    <li
-        class=""
-        *ngIf="button?.enabled ?? false">
+    } @if (button?.enabled ?? false) {
+    <li class="">
         <button
             id="add-personality-button"
             data-test="BTN_Add_Personality"
@@ -24,4 +23,5 @@
             +
         </button>
     </li>
+    }
 </ul>

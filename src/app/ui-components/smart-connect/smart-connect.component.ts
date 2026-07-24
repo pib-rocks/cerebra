@@ -1,18 +1,27 @@
-import {Component, OnInit, TemplateRef} from "@angular/core";
+import {
+    Component,
+    OnInit,
+    TemplateRef,
+    ChangeDetectionStrategy,
+} from "@angular/core";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {
     AbstractControl,
     FormControl,
     FormGroup,
     Validators,
+    ReactiveFormsModule,
 } from "@angular/forms";
 import {RosService} from "../../shared/services/ros-service/ros.service";
 import {TokenService} from "src/app/shared/services/token.service";
+import {NgClass, NgOptimizedImage} from "@angular/common";
 
 @Component({
     selector: "app-smart-connect",
     templateUrl: "./smart-connect.component.html",
     styleUrls: ["./smart-connect.component.css"],
+    changeDetection: ChangeDetectionStrategy.Eager,
+    imports: [NgClass, NgOptimizedImage, ReactiveFormsModule],
 })
 export class SmartConnectComponent implements OnInit {
     // prevent user from opening modal multiple times in case of delay

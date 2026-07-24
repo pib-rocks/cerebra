@@ -1,7 +1,7 @@
 <div class="pt-4 pl-2 pr-2">
     <ul class="nav nav-tabs">
+        @for (joint of joints; track joint) {
         <li
-            *ngFor="let joint of joints"
             class="nav-item"
             routerLinkActive="navbar-btn-active">
             <a
@@ -12,6 +12,7 @@
                 {{joint.label}}
             </a>
         </li>
+        }
     </ul>
     <div class="mt-3">
         <div class="background-image">

@@ -16,7 +16,7 @@ describe("SaveConfirmationComponent", () => {
         ]);
 
         TestBed.configureTestingModule({
-            declarations: [SaveConfirmationComponent],
+            imports: [SaveConfirmationComponent],
             providers: [{provide: NgbActiveModal, useValue: activeModalSpy}],
         });
 

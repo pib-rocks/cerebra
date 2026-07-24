@@ -27,14 +27,13 @@ describe("JointControlCoreComponent", () => {
         data = new BehaviorSubject({joint: initialConfig});
 
         await TestBed.configureTestingModule({
-            declarations: [JointControlCoreComponent],
             providers: [
                 {
                     provide: ActivatedRoute,
                     useValue: {data},
                 },
             ],
-            imports: [RouterTestingModule],
+            imports: [RouterTestingModule, JointControlCoreComponent],
         }).compileComponents();
 
         fixture = TestBed.createComponent(JointControlCoreComponent);

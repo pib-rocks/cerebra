@@ -320,10 +320,7 @@ export class RosService implements IRosService {
         );
     }
 
-    private createRosService(
-        serviceName: string,
-        serviceType: string,
-    ): any {
+    private createRosService(serviceName: string, serviceType: string): any {
         return new ROSLIB.Service({
             ros: this.ros,
             name: serviceName,
@@ -480,7 +477,7 @@ export class RosService implements IRosService {
         const successCallback = (response: ExistTokenResponse) => {
             subject.next(response);
         };
-        const errorCallback = (error: any) => {
+        const errorCallback = (_error: any) => {
             subject.next(failedResponse);
         };
         this.existTokenService.callService({}, successCallback, errorCallback);
@@ -508,7 +505,7 @@ export class RosService implements IRosService {
         const successCallback = (response: DecryptTokenResponse) => {
             subject.next(response.successful);
         };
-        const errorCallback = (error: any) => {
+        const errorCallback = (_error: any) => {
             subject.next(false);
         };
 
@@ -533,7 +530,7 @@ export class RosService implements IRosService {
         const successCallback = (response: EncryptTokenResponse) => {
             subject.next(response.successful);
         };
-        const errorCallback = (error: any) => {
+        const errorCallback = (_error: any) => {
             subject.next(false);
         };
 
