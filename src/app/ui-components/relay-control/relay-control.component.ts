@@ -1,6 +1,8 @@
-import {Component, OnInit, ChangeDetectionStrategy} from "@angular/core";
+import {Component, OnInit, OnDestroy, ChangeDetectionStrategy} from "@angular/core";
 import {RosService} from "src/app/shared/services/ros-service/ros.service";
+import {BrickletService} from "src/app/shared/services/bricklet.service";
 import {MatSnackBar} from "@angular/material/snack-bar";
+import {Subscription} from "rxjs";
 
 @Component({
     selector: "app-relay-control",
@@ -8,28 +10,56 @@ import {MatSnackBar} from "@angular/material/snack-bar";
     styleUrls: ["./relay-control.component.scss"],
     changeDetection: ChangeDetectionStrategy.Eager,
 })
-export class RelayControlComponent implements OnInit {
+export class RelayControlComponent implements OnInit, OnDestroy {
     turnedOn = false;
     isRelayAvailable = false;
     isLoading = false;
 
+    private hasConfiguredRelay = false;
+    private hasRosState = false;
+    private subscriptions = new Subscription();
+
     constructor(
         private rosService: RosService,
+        private brickletService: BrickletService,
         private matSnackBarService: MatSnackBar,
     ) {}
 
     ngOnInit(): void {
+        this.subscriptions.add(
+            this.brickletService.getBrickletObservable().subscribe((bricklets) => {
+                this.hasConfiguredRelay = bricklets.some(
+                    (b) =>
+                        b.type === "Solid State Relay Bricklet" &&
+                        !!b.uid &&
+                        b.uid.trim() !== "",
+                );
+                this.updateRelayAvailability();
+            }),
+        );
+
         // set current state of SSR (in case another user is using it)
-        this.rosService.solidStateRelayStateReceiver$.subscribe({
-            next: (state) => {
-                if (state) {
-                    this.isRelayAvailable = true;
-                    this.turnedOn = state.turned_on;
-                } else {
-                    this.isRelayAvailable = false;
-                }
-            },
-        });
+        this.subscriptions.add(
+            this.rosService.solidStateRelayStateReceiver$.subscribe({
+                next: (state) => {
+                    if (state) {
+                        this.hasRosState = true;
+                        this.turnedOn = state.turned_on;
+                    } else {
+                        this.hasRosState = false;
+                    }
+                    this.updateRelayAvailability();
+                },
+            }),
+        );
+    }
+
+    private updateRelayAvailability(): void {
+        this.isRelayAvailable = this.hasConfiguredRelay || this.hasRosState;
+    }
+
+    ngOnDestroy(): void {
+        this.subscriptions.unsubscribe();
     }
 
     toggleSolidStateRelay() {
