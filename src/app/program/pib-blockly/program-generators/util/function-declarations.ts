@@ -3,37 +3,22 @@ import {CodeGenerator} from "blockly";
 // play-audio-from-speech
 
 export const PLAY_AUDIO_FROM_SPEECH_FUNCTION = (generator: CodeGenerator) => `
-def ${generator.FUNCTION_NAME_PLACEHOLDER_}(speech: str, voice: str) -> None:
+def ${generator.FUNCTION_NAME_PLACEHOLDER_}(speech: str, voice: str = "F1", language: str = "auto") -> None:
 
-    logging.info(f"received request to say '{speech}' as '{voice}'.")
+    logging.info(f"received request to say '{speech}' with voice '{voice}' in language '{language}'.")
 
     request = PlayAudioFromSpeech.Request()
     request.speech = speech
+    request.gender = voice
+    request.language = language
     request.join = True
-
-    if voice == 'Hannah':
-        request.gender = "Female"
-        request.language = "German"
-    elif voice == 'Daniel':
-        request.gender = "Male"
-        request.language = "German"
-    elif voice == 'Emma':
-        request.gender = "Female"
-        request.language = "English"
-    elif voice == 'Brian':
-        request.gender = "Male"
-        request.language = "English"
-    else:
-        logging.error(f"unrecognized voice: '{voice}', aborting...")
-        return
 
     future = play_audio_from_speech_client.call_async(request)
 
-    logging.info(f"now speaking...")
+    logging.info(f"now speaking via local Supertonic TTS...")
     rclpy.spin_until_future_complete(node, future)
     logging.info("finished speaking.")
 `;
-
 export const PLAY_AUDIO_FROM_FILE_FUNCTION = (generator: CodeGenerator) => `
 def ${generator.FUNCTION_NAME_PLACEHOLDER_}(filepath: str) -> None:
 
