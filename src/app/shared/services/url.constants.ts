@@ -10,5 +10,5 @@ export enum UrlConstants {
     BRICKLET = "/bricklet",
     HOST_IP = "/host-ip",
     RGB_BUTTON = "/button-programs",
-    DIAGNOSTICS = "/api/v1/diagnostics",
+    DIAGNOSTICS = "/diagnostics",
 }

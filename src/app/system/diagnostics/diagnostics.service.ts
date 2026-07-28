@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
-import { HttpClient } from "@angular/common/http";
 import { Observable } from "rxjs";
+import { ApiService } from "src/app/shared/services/api.service";
 import { UrlConstants } from "src/app/shared/services/url.constants";
 
 export interface DiagnosticsSummary {
@@ -57,19 +57,17 @@ export interface SystemTelemetry {
   providedIn: "root",
 })
 export class DiagnosticsService {
-  private baseUrl = UrlConstants.DIAGNOSTICS;
-
-  constructor(private http: HttpClient) {}
+  constructor(private apiService: ApiService) {}
 
   getSummary(): Observable<DiagnosticsSummary> {
-    return this.http.get<DiagnosticsSummary>(`${this.baseUrl}/summary`);
+    return this.apiService.get(`${UrlConstants.DIAGNOSTICS}/summary`);
   }
 
   getBricklets(): Observable<{ bricklets: BrickletTelemetry[] }> {
-    return this.http.get<{ bricklets: BrickletTelemetry[] }>(`${this.baseUrl}/bricklets`);
+    return this.apiService.get(`${UrlConstants.DIAGNOSTICS}/bricklets`);
   }
 
   getSystem(): Observable<SystemTelemetry> {
-    return this.http.get<SystemTelemetry>(`${this.baseUrl}/system`);
+    return this.apiService.get(`${UrlConstants.DIAGNOSTICS}/system`);
   }
 }
