@@ -52,14 +52,14 @@ const routes: Routes = [
         component: SystemComponent,
         children: [
             {
-                path: "hardware-ids",
-                component: HardwareIdComponent,
-            },
-            {
                 path: "diagnostics",
                 component: DiagnosticsComponent,
             },
-            {path: "", redirectTo: "hardware-ids", pathMatch: "full"},
+            {
+                path: "hardware-ids",
+                component: HardwareIdComponent,
+            },
+            {path: "", redirectTo: "diagnostics", pathMatch: "full"},
         ],
     },
     {
