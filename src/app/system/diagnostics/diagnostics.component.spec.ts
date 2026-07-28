@@ -79,4 +79,20 @@ describe("DiagnosticsComponent", () => {
     expect(component.summary?.overallStatus).toBe("ok");
     expect(component.bricklets.length).toBe(1);
   });
+
+  it("should render Servo Bricklets and RGB LED Buttons tables side-by-side in col-md-6 grid columns", () => {
+    const compiled = fixture.nativeElement as HTMLElement;
+    const servoTable = compiled.querySelector("#table-servo-bricklets");
+    const buttonTable = compiled.querySelector("#table-button-bricklets");
+
+    expect(servoTable).toBeTruthy();
+    expect(buttonTable).toBeTruthy();
+
+    const servoCol = servoTable?.closest(".col-md-6");
+    const buttonCol = buttonTable?.closest(".col-md-6");
+
+    expect(servoCol).toBeTruthy();
+    expect(buttonCol).toBeTruthy();
+    expect(servoCol?.parentElement).toBe(buttonCol?.parentElement);
+  });
 });
