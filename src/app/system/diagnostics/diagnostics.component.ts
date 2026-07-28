@@ -73,4 +73,18 @@ export class DiagnosticsComponent implements OnInit {
     if (status === "warning") return "badge-warning";
     return "badge-danger";
   }
+
+  get servoBricklets(): BrickletTelemetry[] {
+    return this.bricklets.filter((b) => b.type === "Servo Bricklet");
+  }
+
+  get buttonBricklets(): BrickletTelemetry[] {
+    return this.bricklets.filter((b) => b.type === "RGB LED Button Bricklet");
+  }
+
+  get otherBricklets(): BrickletTelemetry[] {
+    return this.bricklets.filter(
+      (b) => b.type !== "Servo Bricklet" && b.type !== "RGB LED Button Bricklet"
+    );
+  }
 }

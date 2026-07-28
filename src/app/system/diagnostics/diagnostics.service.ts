@@ -7,6 +7,13 @@ export interface DiagnosticsSummary {
   overallStatus: string;
   cpuTemperature: number;
   cpuStatus: string;
+  memoryUsage?: {
+    total: string;
+    used: string;
+    free: string;
+    percentUsed: number;
+  };
+  memoryStatus?: string;
   diskSpace: {
     total: string;
     used: string;
@@ -35,6 +42,8 @@ export interface BrickletTelemetry {
   current: number;
   status: string;
   pins: BrickletPinTelemetry[];
+  color?: string;
+  pressState?: string;
 }
 
 export interface SystemTelemetry {
