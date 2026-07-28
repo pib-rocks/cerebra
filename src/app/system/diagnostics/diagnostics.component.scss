@@ -1,11 +1,27 @@
 @import "src/styles";
 
 .diagnostics-container {
-  color: #fff;
+  color: #ffffff;
+
+  h3 {
+    color: #ffffff;
+    font-weight: 700;
+  }
+
+  h4, h5, .card-title {
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid #e83e8c; /* Cerebra pink accent line */
+    padding-bottom: 0.4rem;
+    display: inline-block;
+    letter-spacing: 0.5px;
+  }
 
   .card {
-    background-color: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: rgba(30, 30, 40, 0.7) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 8px;
   }
 
@@ -31,8 +47,16 @@
   }
 
   table {
-    color: #fff;
-    th, td {
+    color: #ffffff !important;
+
+    th {
+      color: #e83e8c !important; /* Cerebra pink table headers */
+      font-weight: 600;
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    td {
+      color: #ffffff !important;
       border-color: rgba(255, 255, 255, 0.1);
     }
   }
