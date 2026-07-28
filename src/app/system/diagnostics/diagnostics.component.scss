@@ -1,0 +1,39 @@
+@import "src/styles";
+
+.diagnostics-container {
+  color: #fff;
+
+  .card {
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+  }
+
+  .badge-success {
+    background-color: #28a745;
+    color: #fff;
+    font-size: 14px;
+    padding: 6px 12px;
+  }
+
+  .badge-warning {
+    background-color: #ffc107;
+    color: #212529;
+    font-size: 14px;
+    padding: 6px 12px;
+  }
+
+  .badge-danger {
+    background-color: #dc3545;
+    color: #fff;
+    font-size: 14px;
+    padding: 6px 12px;
+  }
+
+  table {
+    color: #fff;
+    th, td {
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+  }
+}

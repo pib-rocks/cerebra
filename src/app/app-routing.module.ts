@@ -21,6 +21,7 @@ import {ProgramSplitscreenComponent} from "./program/program-overview/program-ma
 import {programCodeResolver} from "./program/program-overview/program-manager/program-splitscreen/resolver/program-code.resolver";
 import {PoseComponent} from "./pose/pose.component";
 import {HardwareIdComponent} from "./system/hardware-id/hardware-id.component";
+import {DiagnosticsComponent} from "./system/diagnostics/diagnostics.component";
 import {RgbLedButtonComponent} from "./program/program-overview/rgb-led-button/rgb-led-button.component";
 import {ProgramOverviewComponent} from "./program/program-overview/program-overview.component";
 import {SystemComponent} from "./system/system.component";
@@ -53,6 +54,10 @@ const routes: Routes = [
             {
                 path: "hardware-ids",
                 component: HardwareIdComponent,
+            },
+            {
+                path: "diagnostics",
+                component: DiagnosticsComponent,
             },
             {path: "", redirectTo: "hardware-ids", pathMatch: "full"},
         ],
