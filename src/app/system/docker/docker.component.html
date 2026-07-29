@@ -53,7 +53,7 @@
             <td class="align-middle text-muted"><code>{{ c.image || 'N/A' }}</code></td>
             <td class="align-middle">
               <span class="badge" [ngClass]="getStatusBadgeClass(c.status)">
-                {{ c.status | uppercase }}
+                {{ (c.status === 'exited' ? 'STOPPED' : c.status) | uppercase }}
               </span>
             </td>
             <td class="align-middle">
