@@ -1,6 +1,6 @@
 <div class="diagnostics-container p-3">
   <div class="d-flex justify-content-between align-items-center mb-3">
-    <h3 class="text-white">System-Diagnose & Telemetrie</h3>
+    <h3 class="text-white">System Diagnostics & Telemetry</h3>
     <button
       id="btn-refresh-diagnostics"
       data-test="BTN_Refresh_Diagnostics"
@@ -9,7 +9,7 @@
       (click)="refreshDiagnostics()"
     >
       <i class="fas fa-sync-alt mr-1" [class.fa-spin]="loading"></i>
-      {{ loading ? 'Lade Daten...' : 'Aktualisieren' }}
+      {{ loading ? 'Loading...' : 'Refresh' }}
     </button>
   </div>
 
@@ -19,15 +19,15 @@
 
   <!-- Summary Table -->
   <div class="card mb-4 p-3 shadow-sm" *ngIf="summary">
-    <h4 class="card-title text-white">System-Übersicht</h4>
+    <h4 class="card-title text-white">System Summary</h4>
     <div class="table-responsive">
       <table class="table table-striped table-hover mt-2 mb-0" id="table-system-summary">
         <thead>
           <tr>
-            <th>Gesamtzustand</th>
-            <th>CPU Temperatur</th>
-            <th>Arbeitsspeicher (RAM)</th>
-            <th>Speicherplatz (Disk)</th>
+            <th>Overall Status</th>
+            <th>CPU Temperature</th>
+            <th>RAM Memory</th>
+            <th>Disk Space</th>
             <th>Container Status</th>
             <th>Bricklets Status</th>
           </tr>
@@ -56,17 +56,17 @@
             </td>
             <td>
               <span class="badge" [ngClass]="getStatusBadgeClass(summary.diskStatus)">
-                {{ summary.diskSpace.free }} frei ({{ summary.diskSpace.percentUsed }}%)
+                {{ summary.diskSpace.free }} free ({{ summary.diskSpace.percentUsed }}%)
               </span>
             </td>
             <td>
               <span class="badge" [ngClass]="getStatusBadgeClass(summary.containersStatus)">
-                {{ summary.healthyContainersCount }}/{{ summary.totalContainersCount }} Gesund
+                {{ summary.healthyContainersCount }}/{{ summary.totalContainersCount }} Healthy
               </span>
             </td>
             <td>
               <span class="badge" [ngClass]="getStatusBadgeClass(summary.brickletsStatus)">
-                {{ summary.totalBrickletsCount }} Verbunden
+                {{ summary.totalBrickletsCount }} Connected
               </span>
             </td>
           </tr>
@@ -105,7 +105,7 @@
               </tr>
               <tr *ngIf="servoBricklets.length === 0">
                 <td colspan="5" class="text-center text-muted">
-                  Keine Servo-Bricklet Telemetriedaten verfügbar.
+                  No Servo Bricklet telemetry data available.
                 </td>
               </tr>
             </tbody>
@@ -150,7 +150,7 @@
               </tr>
               <tr *ngIf="buttonBricklets.length === 0">
                 <td colspan="5" class="text-center text-muted">
-                  Keine RGB LED Button Telemetriedaten verfügbar.
+                  No RGB LED Button telemetry data available.
                 </td>
               </tr>
             </tbody>
@@ -160,42 +160,9 @@
     </div>
   </div>
 
-  <!-- Other Bricklets Table (if any) -->
-  <div class="card mb-4 p-3 shadow-sm" *ngIf="otherBricklets.length > 0">
-    <h4 class="card-title text-white">Weitere Bricklets</h4>
-    <div class="table-responsive">
-      <table class="table table-striped table-hover mt-2" id="table-other-bricklets">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Typ</th>
-            <th>UID</th>
-            <th>Status</th>
-            <th>Spannung</th>
-            <th>Stromstärke</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let b of otherBricklets">
-            <td>{{ b.brickletNumber }}</td>
-            <td>{{ b.type }}</td>
-            <td><code>{{ b.uid || 'N/A' }}</code></td>
-            <td>
-              <span class="badge" [ngClass]="getStatusBadgeClass(b.status)">
-                {{ b.status | uppercase }}
-              </span>
-            </td>
-            <td>{{ b.voltage }} V</td>
-            <td>{{ b.current }} mA</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
   <!-- Host & Container Status -->
   <div class="card p-3 shadow-sm" *ngIf="system">
-    <h4 class="card-title text-white">Docker Container & Dienst-Status</h4>
+    <h4 class="card-title text-white">Docker Containers & Service Status</h4>
     <div class="row mt-2">
       <div class="col-md-4" *ngFor="let c of system.containers">
         <div class="border rounded p-2 mb-2 d-flex justify-content-between align-items-center">

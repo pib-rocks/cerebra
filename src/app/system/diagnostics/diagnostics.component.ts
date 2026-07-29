@@ -42,7 +42,7 @@ export class DiagnosticsComponent implements OnInit {
         this.cdr.markForCheck();
       },
       error: (err) => {
-        this.error = "Fehler beim Laden der Systemübersicht";
+        this.error = "Failed to load system diagnostics summary.";
         this.cdr.markForCheck();
       },
     });
@@ -80,11 +80,5 @@ export class DiagnosticsComponent implements OnInit {
 
   get buttonBricklets(): BrickletTelemetry[] {
     return this.bricklets.filter((b) => b.type === "RGB LED Button Bricklet");
-  }
-
-  get otherBricklets(): BrickletTelemetry[] {
-    return this.bricklets.filter(
-      (b) => b.type !== "Servo Bricklet" && b.type !== "RGB LED Button Bricklet"
-    );
   }
 }
