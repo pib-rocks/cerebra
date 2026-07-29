@@ -22,7 +22,7 @@ import {programCodeResolver} from "./program/program-overview/program-manager/pr
 import {PoseComponent} from "./pose/pose.component";
 import {HardwareIdComponent} from "./system/hardware-id/hardware-id.component";
 import {DiagnosticsComponent} from "./system/diagnostics/diagnostics.component";
-import {DockerComponent} from "./system/docker/docker.component";
+import {DockerManagementComponent} from "./system/docker/docker.component";
 import {RgbLedButtonComponent} from "./program/program-overview/rgb-led-button/rgb-led-button.component";
 import {ProgramOverviewComponent} from "./program/program-overview/program-overview.component";
 import {SystemComponent} from "./system/system.component";
@@ -58,7 +58,7 @@ const routes: Routes = [
             },
             {
                 path: "docker",
-                component: DockerComponent,
+                component: DockerManagementComponent,
             },
             {
                 path: "hardware-ids",
