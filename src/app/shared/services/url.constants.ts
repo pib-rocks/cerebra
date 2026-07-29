@@ -11,4 +11,5 @@ export enum UrlConstants {
     HOST_IP = "/host-ip",
     RGB_BUTTON = "/button-programs",
     DIAGNOSTICS = "/diagnostics",
+    DOCKER = "/docker",
 }
