@@ -46,7 +46,15 @@
     padding: 6px 12px;
   }
 
-  table {
+  table, .table {
+    --bs-table-color: #ffffff;
+    --bs-table-bg: transparent;
+    --bs-table-border-color: rgba(255, 255, 255, 0.15);
+    --bs-table-striped-color: #ffffff;
+    --bs-table-striped-bg: rgba(0, 0, 0, 0.2);
+    --bs-table-hover-color: #ffffff;
+    --bs-table-hover-bg: rgba(255, 255, 255, 0.08);
+
     color: #ffffff !important;
 
     th {

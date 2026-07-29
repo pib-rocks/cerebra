@@ -95,4 +95,20 @@ describe("DiagnosticsComponent", () => {
     expect(buttonCol).toBeTruthy();
     expect(servoCol?.parentElement).toBe(buttonCol?.parentElement);
   });
+
+  it("should apply native dark mode styling (table-dark) and mb-0 to all diagnostics tables", () => {
+    const compiled = fixture.nativeElement as HTMLElement;
+    const summaryTable = compiled.querySelector("#table-system-summary");
+    const servoTable = compiled.querySelector("#table-servo-bricklets");
+    const buttonTable = compiled.querySelector("#table-button-bricklets");
+
+    expect(summaryTable?.classList.contains("table-dark")).toBeTrue();
+    expect(summaryTable?.classList.contains("mb-0")).toBeTrue();
+
+    expect(servoTable?.classList.contains("table-dark")).toBeTrue();
+    expect(servoTable?.classList.contains("mb-0")).toBeTrue();
+
+    expect(buttonTable?.classList.contains("table-dark")).toBeTrue();
+    expect(buttonTable?.classList.contains("mb-0")).toBeTrue();
+  });
 });
