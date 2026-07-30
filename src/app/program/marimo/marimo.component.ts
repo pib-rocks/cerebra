@@ -2,7 +2,8 @@ import { Component, OnInit, ViewChild, TemplateRef } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormControl, Validators, ReactiveFormsModule } from "@angular/forms";
 import { DomSanitizer, SafeResourceUrl } from "@angular/platform-browser";
-import { Observable, Subject } from "rxjs";
+import { ActivatedRoute, Router, NavigationEnd } from "@angular/router";
+import { Observable, Subject, filter, startWith } from "rxjs";
 import { NgbModal } from "@ng-bootstrap/ng-bootstrap";
 import { MarimoNotebook, MarimoService } from "./marimo.service";
 import { SidebarElement } from "../../shared/interfaces/sidebar-element.interface";
@@ -33,13 +34,32 @@ export class MarimoComponent implements OnInit {
     constructor(
         private marimoService: MarimoService,
         private sanitizer: DomSanitizer,
-        private modalService: NgbModal
+        private modalService: NgbModal,
+        private route: ActivatedRoute,
+        private router: Router
     ) {}
 
     ngOnInit(): void {
         this.subject = this.marimoService.notebooksSubject;
         // The iframe must render even if the notebooks request is slow, empty or failing.
         this.setIframeUrl(this.defaultFilename);
+
+        // The URL (:notebook child param) is the source of truth for the loaded notebook.
+        // Re-read it on every navigation so clicking a notebook link updates the iframe,
+        // even though this component instance is reused across /program/marimo/<file>.
+        this.router.events
+            .pipe(
+                filter((e) => e instanceof NavigationEnd),
+                startWith(null)
+            )
+            .subscribe(() => {
+                const notebook = this.route.firstChild?.snapshot.paramMap.get("notebook");
+                if (notebook) {
+                    this.selectedFilename = notebook;
+                    this.setIframeUrl(notebook);
+                }
+            });
+
         this.marimoService.getNotebooks().subscribe({
             next: (res: { notebooks?: MarimoNotebook[] } | null) => {
                 const notebooks = res?.notebooks;
