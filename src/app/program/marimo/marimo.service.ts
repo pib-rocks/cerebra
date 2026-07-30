@@ -26,10 +26,11 @@ export class MarimoService {
     getNotebooks(): Observable<any> {
         return this.apiService.get(`${this.baseUrl}/notebooks`).pipe(
             tap((res: any) => {
-                if (res && res.notebooks) {
-                    this.notebooks = res.notebooks.map(
-                        (nb: MarimoNotebook) => new MarimoWorkbook(nb.title, nb.name)
-                    );
+                const notebooks = res?.notebooks;
+                if (Array.isArray(notebooks)) {
+                    this.notebooks = notebooks
+                        .filter((nb: MarimoNotebook) => !!nb?.name)
+                        .map((nb: MarimoNotebook) => new MarimoWorkbook(nb.title, nb.name));
                     this.notebooksSubject.next(this.notebooks);
                 }
             })

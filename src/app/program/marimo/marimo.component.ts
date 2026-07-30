@@ -4,7 +4,7 @@ import { FormControl, Validators, ReactiveFormsModule } from "@angular/forms";
 import { DomSanitizer, SafeResourceUrl } from "@angular/platform-browser";
 import { Observable, Subject } from "rxjs";
 import { NgbModal } from "@ng-bootstrap/ng-bootstrap";
-import { MarimoService } from "./marimo.service";
+import { MarimoNotebook, MarimoService } from "./marimo.service";
 import { SidebarElement } from "../../shared/interfaces/sidebar-element.interface";
 import { SideBarRightComponent } from "../../ui-components/sidebar-right/sidebar-right.component";
 
@@ -19,7 +19,8 @@ export class MarimoComponent implements OnInit {
     @ViewChild("modalContent") modalContent: TemplateRef<any> | undefined;
     subject!: Observable<SidebarElement[]>;
     selected: Subject<string> = new Subject();
-    selectedFilename = "pib_sdk_demo.py";
+    readonly defaultFilename = "pib_sdk_demo.py";
+    selectedFilename = this.defaultFilename;
     marimoUrl: SafeResourceUrl | null = null;
     nameFormControl = new FormControl("", [
         Validators.required,
@@ -37,12 +38,22 @@ export class MarimoComponent implements OnInit {
 
     ngOnInit(): void {
         this.subject = this.marimoService.notebooksSubject;
-        this.marimoService.getNotebooks().subscribe((res) => {
-            if (res && res.notebooks && res.notebooks.length > 0) {
-                this.selectNotebook(res.notebooks[0].name);
-            } else {
-                this.setIframeUrl("pib_sdk_demo.py");
-            }
+        // The iframe must render even if the notebooks request is slow, empty or failing.
+        this.setIframeUrl(this.defaultFilename);
+        this.marimoService.getNotebooks().subscribe({
+            next: (res: { notebooks?: MarimoNotebook[] } | null) => {
+                const notebooks = res?.notebooks;
+                const firstName =
+                    notebooks && notebooks.length > 0 ? notebooks[0]?.name : undefined;
+                if (firstName) {
+                    this.selectNotebook(firstName);
+                } else {
+                    this.setIframeUrl(this.defaultFilename);
+                }
+            },
+            error: () => {
+                this.setIframeUrl(this.defaultFilename);
+            },
         });
     }
 
@@ -54,9 +65,8 @@ export class MarimoComponent implements OnInit {
 
     setIframeUrl(filename: string): void {
         const host = window.location.hostname || "192.168.1.28";
-        const rawUrl = filename
-            ? `http://${host}:2718/?file=${filename}&theme=dark`
-            : `http://${host}:2718/?theme=dark`;
+        const file = filename || this.defaultFilename;
+        const rawUrl = `http://${host}:2718/?file=${file}&theme=dark`;
         this.marimoUrl = this.sanitizer.bypassSecurityTrustResourceUrl(rawUrl);
     }
 
@@ -107,7 +117,7 @@ export class MarimoComponent implements OnInit {
                     if (remaining.length > 0) {
                         this.selectNotebook(remaining[0].filename);
                     } else {
-                        this.setIframeUrl("pib_sdk_demo.py");
+                        this.setIframeUrl(this.defaultFilename);
                     }
                 }
             });
