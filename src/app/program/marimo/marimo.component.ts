@@ -53,8 +53,9 @@ export class MarimoComponent implements OnInit {
     }
 
     setIframeUrl(filename: string): void {
-        const host = window.location.hostname || "192.168.1.28";
-        const rawUrl = filename ? `http://${host}:2718/?file=${filename}&theme=dark` : `http://${host}:2718/?theme=dark`;
+        const rawUrl = filename
+            ? `/marimo-server/?file=${filename}&theme=dark`
+            : `/marimo-server/?theme=dark`;
         this.marimoUrl = this.sanitizer.bypassSecurityTrustResourceUrl(rawUrl);
     }
 
