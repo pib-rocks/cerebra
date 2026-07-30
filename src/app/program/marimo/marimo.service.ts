@@ -19,10 +19,8 @@ export class MarimoService {
 
     constructor(private apiService: ApiService) {}
 
-    getNotebooks(): Observable<{ status: string; notebooks: MarimoNotebook[] }> {
-        return this.apiService.get<{ status: string; notebooks: MarimoNotebook[] }>(
-            `${this.baseUrl}/notebooks`
-        );
+    getNotebooks(): Observable<any> {
+        return this.apiService.get(`${this.baseUrl}/notebooks`);
     }
 
     createNotebook(name: string, content?: string): Observable<any> {
