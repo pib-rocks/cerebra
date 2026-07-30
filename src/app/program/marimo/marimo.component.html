@@ -1,12 +1,6 @@
 <div class="row m-0 h-100 p-0">
     <div class="col-9 p-2">
         <div class="card background-card h-100 p-0 border-pink">
-            <div class="card-header border-pink d-flex justify-content-between align-items-center py-2 px-3">
-                <span class="text-white font-weight-bold">
-                    MARIMO EDITOR: {{ selectedNotebook ? selectedNotebook.title : 'pib SDK Demo' }}
-                </span>
-                <span class="badge badge-success px-2 py-1">REACTIVE PYTHON</span>
-            </div>
             <div class="card-body p-0 h-100 bg-dark-editor">
                 <iframe
                     *ngIf="marimoUrl"
