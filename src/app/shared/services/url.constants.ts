@@ -12,4 +12,5 @@ export enum UrlConstants {
     RGB_BUTTON = "/button-programs",
     DIAGNOSTICS = "/diagnostics",
     DOCKER = "/docker",
+    MARIMO = "/marimo",
 }
