@@ -116,6 +116,12 @@ const routes: Routes = [
             {
                 path: "marimo",
                 component: MarimoComponent,
+                children: [
+                    {
+                        path: ":notebook",
+                        component: MarimoComponent,
+                    },
+                ],
             },
             {
                 path: "rgb-led-button",
