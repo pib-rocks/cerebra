@@ -24,7 +24,10 @@ export class ProgramOverviewComponent implements OnInit {
     ) {}
 
     get isProgramTabActive(): boolean {
-        return !this.router.url.includes("rgb-led-button");
+        return (
+            !this.router.url.includes("rgb-led-button") &&
+            !this.router.url.includes("marimo")
+        );
     }
 
     ngOnInit(): void {
