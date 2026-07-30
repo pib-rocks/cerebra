@@ -1,60 +1,84 @@
-<div class="row m-0 h-100 p-0">
-    <div class="col-9 p-2">
-        <div class="card background-card h-100 p-0 border-pink">
-            <div class="card-body p-0 h-100 bg-dark-editor">
-                <iframe
-                    *ngIf="marimoUrl"
-                    [src]="marimoUrl"
-                    class="w-100 h-100 border-0 bg-dark-editor"
-                    style="min-height: 680px;"
-                    title="Marimo Reactive Notebook Editor">
-                </iframe>
-            </div>
-        </div>
+<div class="row full-height mx-0">
+    <div class="main col-sm-9 col-xl-10 p-0">
+        <iframe
+            *ngIf="marimoUrl"
+            [src]="marimoUrl"
+            class="w-100 h-100 border-0 bg-dark-editor"
+            style="min-height: 720px;"
+            title="Marimo Reactive Notebook Editor">
+        </iframe>
     </div>
-
-    <div class="col-3 p-2">
-        <div class="card background-card h-100 border-pink">
-            <div class="card-header border-pink py-2 px-3">
-                <span class="text-white font-weight-bold">MARIMO WORKBOOKS</span>
-            </div>
-            <div class="card-body p-3">
-                <div class="input-group mb-3">
-                    <input
-                        type="text"
-                        class="form-control bg-dark text-white border-pink"
-                        placeholder="New Workbook..."
-                        [(ngModel)]="newNotebookName"
-                        (keyup.enter)="createNewNotebook()">
-                    <div class="input-group-append">
-                        <button
-                            class="btn btn-pink text-white"
-                            type="button"
-                            (click)="createNewNotebook()">
-                            + Add
-                        </button>
-                    </div>
-                </div>
-
-                <div class="list-group">
-                    <div
-                        *ngFor="let nb of notebooks"
-                        class="list-group-item list-group-item-action bg-dark text-white border-pink mb-2 d-flex justify-content-between align-items-center cursor-pointer"
-                        [class.active]="selectedNotebook?.name === nb.name"
-                        (click)="selectNotebook(nb)">
-                        <div>
-                            <i class="fa fa-file-code-o mr-2 text-pink"></i>
-                            <span>{{ nb.title }}</span>
-                        </div>
-                        <button
-                            class="btn btn-sm btn-outline-danger border-0 p-1"
-                            title="Delete Workbook"
-                            (click)="deleteNotebook(nb, $event)">
-                            <i class="fa fa-trash"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div class="col-sm-3 col-xl-2 p-0">
+        <app-sidebar-right
+            [optionCallbackMethods]="optionCallbackMethods"
+            [dropdownCallbackMethods]="dropdownCallbackMethods"
+            [subject]="subject"
+            [rerouteOnRefresh]="false"
+            [selectedObservable]="selected"
+            [lStorage]="'marimo_notebook'">
+        </app-sidebar-right>
     </div>
 </div>
+
+<ng-template
+    #modalContent
+    let-modal
+    id="template">
+    <div
+        class="row display-flex modal-header"
+        id="modal-header">
+        <div
+            class="col-10"
+            id="header-title">
+            <span id="header-title-text">{{ modalTitle }}</span>
+        </div>
+        <div
+            class="col-2 text-right"
+            id="close-button">
+            <button
+                id="modal-close-button"
+                data-test="BTN_Close"
+                type="button"
+                (click)="modal.dismiss('Cross')"
+                class="btn">
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="10"
+                    height="16">
+                    <text
+                        font-family="Titillium"
+                        fill="#FFF"
+                        font-weight="bold"
+                        font-size="16"
+                        y="11.062">
+                        X
+                    </text>
+                </svg>
+            </button>
+        </div>
+    </div>
+    <div
+        class="row display-flex modal-body pt-3 pb-3 justify-content-center"
+        id="modal-body">
+        <input
+            id="input-name"
+            data-test="INP_Name"
+            type="text"
+            class="input-name focus col-11"
+            placeholder="NAME"
+            [formControl]="nameFormControl"
+            (keyup.enter)="modal.close('Save')" />
+    </div>
+    <div
+        class="row modal-footer pb-0 justify-content-center"
+        id="modal-footer">
+        <button
+            id="modal-save-button"
+            data-test="BTN_Save"
+            type="button"
+            class="btn fill-button col-11 p-0 mb-3"
+            (click)="modal.close('Save')">
+            <span id="save-button-text">SAVE</span>
+        </button>
+    </div>
+</ng-template>

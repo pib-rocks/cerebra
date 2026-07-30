@@ -1,49 +1,55 @@
-import { Component, OnInit } from "@angular/core";
+import { Component, OnInit, ViewChild, TemplateRef } from "@angular/core";
 import { CommonModule } from "@angular/common";
-import { FormsModule } from "@angular/forms";
+import { FormControl, Validators, ReactiveFormsModule } from "@angular/forms";
 import { DomSanitizer, SafeResourceUrl } from "@angular/platform-browser";
-import { MarimoService, MarimoNotebook } from "./marimo.service";
+import { Observable, Subject } from "rxjs";
+import { NgbModal } from "@ng-bootstrap/ng-bootstrap";
+import { MarimoService } from "./marimo.service";
+import { SidebarElement } from "../../shared/interfaces/sidebar-element.interface";
+import { SideBarRightComponent } from "../../ui-components/sidebar-right/sidebar-right.component";
 
 @Component({
     selector: "app-marimo",
     standalone: true,
-    imports: [CommonModule, FormsModule],
+    imports: [CommonModule, ReactiveFormsModule, SideBarRightComponent],
     templateUrl: "./marimo.component.html",
     styleUrls: ["./marimo.component.scss"],
 })
 export class MarimoComponent implements OnInit {
-    notebooks: MarimoNotebook[] = [];
-    selectedNotebook: MarimoNotebook | null = null;
+    @ViewChild("modalContent") modalContent: TemplateRef<any> | undefined;
+    subject!: Observable<SidebarElement[]>;
+    selected: Subject<string> = new Subject();
+    selectedFilename = "pib_sdk_demo.py";
     marimoUrl: SafeResourceUrl | null = null;
-    newNotebookName = "";
+    nameFormControl = new FormControl("", [
+        Validators.required,
+        Validators.minLength(2),
+        Validators.maxLength(255),
+    ]);
+    modalTitle = "WORKBOOK";
+    targetUuid = "";
 
     constructor(
         private marimoService: MarimoService,
-        private sanitizer: DomSanitizer
+        private sanitizer: DomSanitizer,
+        private modalService: NgbModal
     ) {}
 
     ngOnInit(): void {
-        this.loadNotebooks();
-        this.setIframeUrl("pib_sdk_demo.py");
-    }
-
-    loadNotebooks(): void {
-        this.marimoService.getNotebooks().subscribe({
-            next: (res) => {
-                if (res && res.notebooks) {
-                    this.notebooks = res.notebooks;
-                    if (!this.selectedNotebook && this.notebooks.length > 0) {
-                        this.selectNotebook(this.notebooks[0]);
-                    }
-                }
-            },
-            error: (err) => console.error("Error loading Marimo notebooks:", err),
+        this.subject = this.marimoService.notebooksSubject;
+        this.marimoService.getNotebooks().subscribe((res) => {
+            if (res && res.notebooks && res.notebooks.length > 0) {
+                this.selectNotebook(res.notebooks[0].name);
+            } else {
+                this.setIframeUrl("pib_sdk_demo.py");
+            }
         });
     }
 
-    selectNotebook(nb: MarimoNotebook): void {
-        this.selectedNotebook = nb;
-        this.setIframeUrl(nb.name);
+    selectNotebook(filename: string): void {
+        this.selectedFilename = filename;
+        this.selected.next(filename);
+        this.setIframeUrl(filename);
     }
 
     setIframeUrl(filename: string): void {
@@ -52,30 +58,81 @@ export class MarimoComponent implements OnInit {
         this.marimoUrl = this.sanitizer.bypassSecurityTrustResourceUrl(rawUrl);
     }
 
-    createNewNotebook(): void {
-        if (!this.newNotebookName.trim()) return;
-        const name = this.newNotebookName.trim();
-        this.marimoService.createNotebook(name).subscribe({
-            next: () => {
-                this.newNotebookName = "";
-                this.loadNotebooks();
-            },
-            error: (err) => console.error("Error creating notebook:", err),
+    showModal(): Promise<string> {
+        return this.modalService.open(this.modalContent, {
+            ariaLabelledBy: "modal-basic-title",
+            size: "sm",
+            windowClass: "cerebra-modal",
+            backdropClass: "cerebra-modal-backdrop",
+        }).result;
+    }
+
+    addWorkbook(): void {
+        this.modalTitle = "NEW WORKBOOK";
+        this.nameFormControl.setValue("");
+        this.showModal().then(() => {
+            if (this.nameFormControl.valid && this.nameFormControl.value) {
+                const name = this.nameFormControl.value.trim();
+                this.marimoService.createNotebook(name).subscribe(() => {
+                    const filename = name.endsWith(".py") ? name : `${name}.py`;
+                    this.selectNotebook(filename);
+                });
+            }
         });
     }
 
-    deleteNotebook(nb: MarimoNotebook, event: Event): void {
-        event.stopPropagation();
-        if (confirm(`Are you sure you want to delete notebook '${nb.name}'?`)) {
-            this.marimoService.deleteNotebook(nb.name).subscribe({
-                next: () => {
-                    if (this.selectedNotebook?.name === nb.name) {
-                        this.selectedNotebook = null;
+    renameWorkbook(uuid: string): void {
+        this.modalTitle = "RENAME WORKBOOK";
+        this.targetUuid = uuid;
+        const currentName = uuid.replace(".py", "");
+        this.nameFormControl.setValue(currentName);
+        this.showModal().then(() => {
+            if (this.nameFormControl.valid && this.nameFormControl.value) {
+                const newName = this.nameFormControl.value.trim();
+                this.marimoService.renameNotebook(uuid, newName).subscribe(() => {
+                    const filename = newName.endsWith(".py") ? newName : `${newName}.py`;
+                    this.selectNotebook(filename);
+                });
+            }
+        });
+    }
+
+    deleteWorkbook(uuid: string): void {
+        if (confirm(`Are you sure you want to delete workbook '${uuid}'?`)) {
+            this.marimoService.deleteNotebook(uuid).subscribe(() => {
+                if (this.selectedFilename === uuid) {
+                    const remaining = this.marimoService.notebooks;
+                    if (remaining.length > 0) {
+                        this.selectNotebook(remaining[0].filename);
+                    } else {
+                        this.setIframeUrl("pib_sdk_demo.py");
                     }
-                    this.loadNotebooks();
-                },
-                error: (err) => console.error("Error deleting notebook:", err),
+                }
             });
         }
     }
+
+    optionCallbackMethods = [
+        {
+            icon: "",
+            label: "New workbook",
+            clickCallback: this.addWorkbook.bind(this),
+            disabled: false,
+        },
+    ];
+
+    dropdownCallbackMethods = [
+        {
+            icon: "../../assets/edit.svg",
+            label: "Rename",
+            clickCallback: this.renameWorkbook.bind(this),
+            disabled: false,
+        },
+        {
+            icon: "../../assets/delete.svg",
+            label: "Delete",
+            clickCallback: this.deleteWorkbook.bind(this),
+            disabled: false,
+        },
+    ];
 }
