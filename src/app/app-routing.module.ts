@@ -24,6 +24,7 @@ import {HardwareIdComponent} from "./system/hardware-id/hardware-id.component";
 import {DiagnosticsComponent} from "./system/diagnostics/diagnostics.component";
 import {DockerManagementComponent} from "./system/docker/docker.component";
 import {RgbLedButtonComponent} from "./program/program-overview/rgb-led-button/rgb-led-button.component";
+import {MarimoComponent} from "./program/marimo/marimo.component";
 import {ProgramOverviewComponent} from "./program/program-overview/program-overview.component";
 import {SystemComponent} from "./system/system.component";
 
@@ -112,6 +113,10 @@ const routes: Routes = [
         path: "program",
         component: ProgramOverviewComponent,
         children: [
+            {
+                path: "marimo",
+                component: MarimoComponent,
+            },
             {
                 path: "rgb-led-button",
                 component: RgbLedButtonComponent,
