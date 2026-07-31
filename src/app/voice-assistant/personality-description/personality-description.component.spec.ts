@@ -1,4 +1,9 @@
-import {ComponentFixture, TestBed} from "@angular/core/testing";
+import {
+    ComponentFixture,
+    TestBed,
+    fakeAsync,
+    tick,
+} from "@angular/core/testing";
 import {PersonalityDescriptionComponent} from "./personality-description.component";
 import {HttpClientTestingModule} from "@angular/common/http/testing";
 import {BehaviorSubject, Subject} from "rxjs";
@@ -16,7 +21,7 @@ describe("PersonalityDescriptionComponent", () => {
     let component: PersonalityDescriptionComponent;
     let fixture: ComponentFixture<PersonalityDescriptionComponent>;
 
-    let _voiceAssistantService: VoiceAssistantService;
+    let _voiceAssistantService: jasmine.SpyObj<VoiceAssistantService>;
 
     let _fakePersonality: VoiceAssistant;
 
@@ -83,7 +88,9 @@ describe("PersonalityDescriptionComponent", () => {
                 },
             ],
         }).compileComponents();
-        _voiceAssistantService = TestBed.inject(VoiceAssistantService);
+        _voiceAssistantService = TestBed.inject(
+            VoiceAssistantService,
+        ) as jasmine.SpyObj<VoiceAssistantService>;
         _router = TestBed.inject(Router);
         fixture = TestBed.createComponent(PersonalityDescriptionComponent);
         component = fixture.componentInstance;
@@ -125,4 +132,20 @@ describe("PersonalityDescriptionComponent", () => {
         expect(spyUpdateDescription).toHaveBeenCalled();
         expect(component.personality.description).toBe("Testdesc2");
     });
+
+    it("saves the SOUL text after the debounce", fakeAsync(() => {
+        const personality = new VoiceAssistant(
+            "1234",
+            "fakePersonality",
+            "Female",
+            0.8,
+            "old soul",
+        );
+        component.personality = personality;
+        component.textAreaContent = "Du bist pib.";
+        component.updateDescription();
+        tick(1000);
+        expect(_voiceAssistantService.updatePersonalityById).toHaveBeenCalled();
+        expect(personality.description).toBe("Du bist pib.");
+    }));
 });
