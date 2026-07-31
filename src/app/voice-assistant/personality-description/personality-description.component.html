@@ -22,12 +22,20 @@
             </div>
             <div class="row mt-3 content-window">
                 <div class="col">
+                    <label
+                        for="textarea-personality"
+                        class="soul-label">
+                        SOUL.md
+                    </label>
+                    <p class="soul-hint">
+                        This text defines pib's identity and is loaded by the agent.
+                    </p>
                     <textarea
                         id="textarea-personality"
                         data-test="TXT_Peronality"
                         class="form-control p-3 mb-4"
                         rows="16"
-                        placeholder="Describe personality with a prompt..."
+                        placeholder="Edit SOUL.md — pib's identity for the agent..."
                         [(ngModel)]="textAreaContent"
                         (input)="updateDescription()">
                         {{personality?.description ?? "ERROR: Personality not found"}}
