@@ -282,24 +282,26 @@ describe("ChatService", () => {
     it("should get the correct listening-state if no inital status was published yet", () => {
         const chatId = "test-id";
         const next = jasmine.createSpy();
-        rosService.getChatIsListening.and.returnValue(
-            new BehaviorSubject(true),
-        );
+        const listeningResponse$ = new Subject<boolean>();
+        rosService.getChatIsListening.and.returnValue(listeningResponse$);
         service.getIsListeningObservable(chatId).subscribe({next});
         expect(rosService.getChatIsListening).toHaveBeenCalledOnceWith(chatId);
-        voiceAssistantChatIsListeningReceiver$.next({
-            chat_id: chatId,
-            listening: false,
-        });
+        // Defaults to true when a chat is selected and no status has been published yet
+        expect(next.calls.allArgs()).toEqual([[true]]);
+        listeningResponse$.next(false);
         voiceAssistantChatIsListeningReceiver$.next({
             chat_id: chatId,
             listening: true,
         });
         voiceAssistantChatIsListeningReceiver$.next({
             chat_id: "other-chat-id",
-            listening: true,
+            listening: false,
         });
-        expect(next.calls.allArgs()).toEqual([[true], [false], [true]]);
+        expect(next.calls.allArgs()).toEqual([
+            [true],
+            [false],
+            [true],
+        ]);
     });
 
     it("should get the correct listening-state if an inital status was already published", () => {

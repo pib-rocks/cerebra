@@ -57,7 +57,10 @@ export class ChatWindowComponent implements OnInit {
                 this.chatMessageFormControl.valueChanges,
                 this.chatService.getIsListeningObservable(chatId),
             ]).subscribe(([inputText, isListening]) => {
-                this.textInputActive = Boolean(inputText && isListening);
+                this.textInputActive =
+                    inputText != null &&
+                    inputText.trim().length > 2 &&
+                    isListening;
             });
 
             this.chatMessagesSubscription = this.chatService

@@ -139,6 +139,15 @@ describe("ChatWindowComponent", () => {
         isListeningSubject.next(true);
         expect(component.textInputActive).toBeFalse();
 
+        component.chatMessageFormControl.setValue("ab");
+        expect(component.textInputActive).toBeFalse();
+
+        component.chatMessageFormControl.setValue("  ab  ");
+        expect(component.textInputActive).toBeFalse();
+
+        component.chatMessageFormControl.setValue("abc");
+        expect(component.textInputActive).toBeTrue();
+
         component.chatMessageFormControl.setValue("non empty text");
         expect(component.textInputActive).toBeTrue();
 
