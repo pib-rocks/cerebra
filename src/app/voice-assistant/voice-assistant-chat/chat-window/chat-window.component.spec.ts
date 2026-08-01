@@ -3,7 +3,7 @@ import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {ChatWindowComponent} from "./chat-window.component";
 import {HttpClientTestingModule} from "@angular/common/http/testing";
 import {ActivatedRoute} from "@angular/router";
-import {BehaviorSubject, Subject} from "rxjs";
+import {BehaviorSubject, Subject, of, throwError} from "rxjs";
 import {RouterTestingModule} from "@angular/router/testing";
 import {ChatService} from "src/app/shared/services/chat.service";
 import {ChatMessage} from "src/app/shared/types/chat-message";
@@ -33,6 +33,7 @@ describe("ChatWindowComponent", () => {
                 "filterMessageUpdates",
                 "getChatMessagesObservable",
                 "sendChatMessage",
+                "createChatMessage",
                 "getChat",
             ]);
 
@@ -147,6 +148,11 @@ describe("ChatWindowComponent", () => {
         expect(component.textInputActive).toBeFalse();
     });
 
+    it("should store currentChatId from route params", () => {
+        paramsSubject.next({chatUuid: chatId});
+        expect(component.currentChatId).toBe(chatId);
+    });
+
     it("should send a chat-message and clear the input field", () => {
         const chatId = "c-id";
         const messageContent = "hello world";
@@ -166,9 +172,80 @@ describe("ChatWindowComponent", () => {
         expect(component.chatMessageFormControl.value).toBe("");
     });
 
+    it("should send a chat-message using currentChatId when chat is not populated", () => {
+        const chatId = "c-id";
+        const messageContent = "hello world";
+        component.chat = undefined;
+        component.currentChatId = chatId;
+        component.textInputActive = true;
+        component.chatMessageFormControl.setValue(messageContent);
+        chatService.sendChatMessage.and.returnValue(of(undefined));
+
+        component.sendChatMessage();
+
+        expect(chatService.sendChatMessage).toHaveBeenCalledOnceWith(
+            chatId,
+            messageContent,
+        );
+        expect(component.chatMessageFormControl.value).toBe("");
+    });
+
+    it("should clear the input field immediately before send completes", () => {
+        const chatId = "c-id";
+        const messageContent = "hello world";
+        const sendSubject = new Subject<void>();
+        component.currentChatId = chatId;
+        component.textInputActive = true;
+        component.chatMessageFormControl.setValue(messageContent);
+        chatService.sendChatMessage.and.returnValue(sendSubject);
+
+        component.sendChatMessage();
+
+        expect(component.chatMessageFormControl.value).toBe("");
+        expect(chatService.sendChatMessage).toHaveBeenCalledOnceWith(
+            chatId,
+            messageContent,
+        );
+        sendSubject.next();
+        sendSubject.complete();
+    });
+
+    it("should fall back to createChatMessage if sendChatMessage fails", () => {
+        const chatId = "c-id";
+        const messageContent = "hello world";
+        component.currentChatId = chatId;
+        component.textInputActive = true;
+        component.chatMessageFormControl.setValue(messageContent);
+        chatService.sendChatMessage.and.returnValue(
+            throwError(() => new Error("ros disconnected")),
+        );
+        chatService.createChatMessage.and.returnValue(
+            of({
+                messageId: "message-id",
+                timestamp: "now",
+                isUser: true,
+                content: messageContent,
+            }),
+        );
+
+        component.sendChatMessage();
+
+        expect(chatService.sendChatMessage).toHaveBeenCalledOnceWith(
+            chatId,
+            messageContent,
+        );
+        expect(chatService.createChatMessage).toHaveBeenCalledOnceWith(
+            chatId,
+            messageContent,
+        );
+        expect(component.chatMessageFormControl.value).toBe("");
+    });
+
     it("should not send a chat message, if no chat is selected", () => {
         const messageContent = "hello world";
         component.chat = undefined;
+        component.currentChatId = undefined;
+        component.textInputActive = true;
         component.chatMessageFormControl.setValue(messageContent);
 
         component.sendChatMessage();
