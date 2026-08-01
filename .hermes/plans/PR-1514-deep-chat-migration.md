@@ -201,8 +201,11 @@ Port the dark-navy / pink-frame look from `chat-window.component.scss` using
 - Delete `chat-window.component.ts/.html/.scss/.spec.ts`.
 - Update `src/app/app-routing.module.ts` to point at the new component.
 - Check whether `ngx-markdown` / `marked` are still used elsewhere **before**
-  removing them from `package.json` (they are likely used by other features —
-  verify with a repo-wide grep and do not remove if still referenced).
+  removing them from `package.json`.
+  **VERIFIED FINDING — DO NOT REMOVE THEM.** `MarkdownModule.forRoot()` is
+  registered globally in `src/main.ts:43` and `personality-description.component.spec.ts`
+  imports `MarkdownModule`. Removing the dependency would break the app bootstrap.
+  Only the `import {MarkdownComponent}` inside the deleted legacy component goes away.
 
 ## Out of scope
 - Replacing the ROS-based voice pipeline with browser `speechToText`/`textToSpeech`

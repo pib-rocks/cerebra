@@ -45,6 +45,13 @@ export class ChatWindowDeepChatComponent
     private chatMessagesSubscription?: Subscription;
     private tokenStatusSubscription?: Subscription;
 
+    /** Stamped deep-chat submit control for Playwright is_enabled()/is_disabled(). */
+    private stampedSubmitButton: Element | null = null;
+    private smartConnectEnabled = false;
+    private currentInputText = "";
+    private e2eHooksObserver?: MutationObserver;
+    private e2eHooksRetryTimeout?: ReturnType<typeof setTimeout>;
+
     readonly USER_ICON =
         "../../../../assets/voice-assistant-svgs/chat/user.svg";
     readonly VA_ICON =
@@ -90,8 +97,10 @@ export class ChatWindowDeepChatComponent
         this.wireConnect(el);
         this.wireLoadHistory(el);
         this.wireValidateInput(el);
+        this.wireOnInput(el);
         this.wireTokenStatus(el);
         this.applyNames(el);
+        this.applyE2eHooks(el);
 
         if (this.currentChatId) {
             this.subscribeToChatMessages(this.currentChatId);
@@ -102,6 +111,7 @@ export class ChatWindowDeepChatComponent
         this.routeParamsSubscription?.unsubscribe();
         this.chatMessagesSubscription?.unsubscribe();
         this.tokenStatusSubscription?.unsubscribe();
+        this.teardownE2eHooksWatchers();
     }
 
     private wireConnect(el: any): void {
@@ -136,11 +146,19 @@ export class ChatWindowDeepChatComponent
             (text?.trim().length ?? 0) > 2;
     }
 
+    private wireOnInput(el: any): void {
+        el.onInput = (body?: {content?: {text?: string}}) => {
+            this.currentInputText = body?.content?.text ?? "";
+            this.syncSubmitButtonDisabled();
+        };
+    }
+
     private wireTokenStatus(el: any): void {
         this.tokenStatusSubscription?.unsubscribe();
         this.tokenStatusSubscription = this.tokenService.tokenStatus$.subscribe(
             ({tokenExists, tokenActive}) => {
                 const enabled = tokenExists && tokenActive;
+                this.smartConnectEnabled = enabled;
                 el.textInput = {
                     disabled: !enabled,
                     placeholder: {
@@ -152,8 +170,135 @@ export class ChatWindowDeepChatComponent
                 if (typeof el.disableSubmitButton === "function") {
                     el.disableSubmitButton(!enabled);
                 }
+                this.syncSubmitButtonDisabled();
             },
         );
+    }
+
+    /**
+     * Stamp legacy E2E hooks onto deep-chat's internal input/submit so
+     * Playwright (#message-input / #chat-send-button) and Robot Framework
+     * (data-test=TXT_Chat_Message / BTN_Chat_Send) keep working.
+     *
+     * deep-chat renders asynchronously (often inside shadow DOM); retry via
+     * setTimeout + MutationObserver. Never throws.
+     */
+    private applyE2eHooks(el: any): void {
+        try {
+            if (this.tryStampE2eHooks(el)) {
+                return;
+            }
+
+            this.e2eHooksRetryTimeout = setTimeout(() => {
+                try {
+                    if (this.tryStampE2eHooks(el)) {
+                        return;
+                    }
+                    this.observeE2eHooks(el);
+                } catch {
+                    // never throw
+                }
+            }, 50);
+        } catch {
+            // never throw
+        }
+    }
+
+    private tryStampE2eHooks(el: any): boolean {
+        try {
+            const root: ParentNode = el.shadowRoot ?? el;
+
+            const input =
+                root.querySelector?.("#chat-view textarea") ??
+                root.querySelector?.("textarea") ??
+                root.querySelector?.("input[type=text]") ??
+                // deep-chat's real control is a contenteditable #text-input
+                root.querySelector?.("#text-input") ??
+                root.querySelector?.("#chat-view #text-input");
+
+            const button =
+                root.querySelector?.("#submit-icon") ??
+                root.querySelector?.(".input-button-svg") ??
+                root.querySelector?.("button");
+
+            if (input) {
+                input.setAttribute("id", "message-input");
+                input.setAttribute("data-test", "TXT_Chat_Message");
+            }
+            if (button) {
+                button.setAttribute("id", "chat-send-button");
+                button.setAttribute("data-test", "BTN_Chat_Send");
+                this.stampedSubmitButton = button;
+                this.syncSubmitButtonDisabled();
+            }
+
+            return !!(input && button);
+        } catch {
+            return false;
+        }
+    }
+
+    private observeE2eHooks(el: any): void {
+        try {
+            const root: Node = el.shadowRoot ?? el;
+            this.e2eHooksObserver?.disconnect();
+            this.e2eHooksObserver = new MutationObserver(() => {
+                try {
+                    if (this.tryStampE2eHooks(el)) {
+                        this.teardownE2eHooksWatchers();
+                    }
+                } catch {
+                    // never throw
+                }
+            });
+            this.e2eHooksObserver.observe(root, {
+                childList: true,
+                subtree: true,
+            });
+            // Bound the watcher so a never-ready deep-chat cannot leak.
+            this.e2eHooksRetryTimeout = setTimeout(() => {
+                this.teardownE2eHooksWatchers();
+            }, 5000);
+        } catch {
+            // never throw
+        }
+    }
+
+    private teardownE2eHooksWatchers(): void {
+        try {
+            this.e2eHooksObserver?.disconnect();
+            this.e2eHooksObserver = undefined;
+            if (this.e2eHooksRetryTimeout !== undefined) {
+                clearTimeout(this.e2eHooksRetryTimeout);
+                this.e2eHooksRetryTimeout = undefined;
+            }
+        } catch {
+            // never throw
+        }
+    }
+
+    private syncSubmitButtonDisabled(): void {
+        try {
+            const button = this.stampedSubmitButton;
+            if (!button) return;
+
+            const textOk = (this.currentInputText?.trim().length ?? 0) > 2;
+            const enabled = this.smartConnectEnabled && textOk;
+            // NOTE: deep-chat's submit control (#submit-icon) is a div/svg
+            // wrapper, NOT a <button>. Playwright's is_disabled() only honours
+            // the `disabled` attribute on real form controls; for everything
+            // else it relies on `aria-disabled`. Set BOTH so the pib-backend
+            // Playwright and Robot suites keep working.
+            if (enabled) {
+                button.removeAttribute("disabled");
+                button.setAttribute("aria-disabled", "false");
+            } else {
+                button.setAttribute("disabled", "");
+                button.setAttribute("aria-disabled", "true");
+            }
+        } catch {
+            // never throw
+        }
     }
 
     private subscribeToChatMessages(chatId: string): void {
