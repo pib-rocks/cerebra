@@ -585,6 +585,30 @@ describe("RosMockService", () => {
         ]);
     }));
 
+    it("should emit the VA reply under 1s for warm in-process agent latency", fakeAsync(() => {
+        service["isListeningFromChatId"].set(chatId, true);
+        apiService.post.and.returnValues(
+            new BehaviorSubject(userMessage),
+            new BehaviorSubject(vaMessage),
+        );
+        const messageReceiverNextSpy = spyOn(
+            service.chatMessageReceiver$,
+            "next",
+        );
+
+        service
+            .sendChatMessage(chatId, userMessage.content)
+            .subscribe(subscriber);
+
+        expect(messageReceiverNextSpy).toHaveBeenCalledTimes(1);
+        tick(RosService.WARM_AGENT_FIRST_TOKEN_MS - 1);
+        expect(messageReceiverNextSpy).toHaveBeenCalledTimes(1);
+        tick(1);
+        expect(messageReceiverNextSpy).toHaveBeenCalledTimes(2);
+        expect(RosService.WARM_AGENT_FIRST_TOKEN_MS).toBeLessThan(1000);
+        flush();
+    }));
+
     it("should not send a chat message if currently not listening", fakeAsync(() => {
         service["isListeningFromChatId"].set(chatId, false);
         const messageReceiverNextSpy = spyOn(

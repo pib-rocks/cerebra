@@ -382,6 +382,52 @@ describe("ChatService", () => {
         );
     });
 
+    it("should report sub-1s FIRST_TOKEN elapsed for warm-agent responses", () => {
+        const consoleSpy = spyOn(console, "log");
+        rosService.sendChatMessage.and.returnValue(of(undefined));
+        service.sendChatMessage("warm-chat", "hello").subscribe();
+        consoleSpy.calls.reset();
+
+        chatMessageReceiver$.next({
+            chat_id: "warm-chat",
+            message_id: "ai-1",
+            timestamp: "now",
+            is_user: false,
+            content: "Hi",
+        });
+
+        const firstTokenCall = consoleSpy.calls
+            .allArgs()
+            .map((args) => String(args[0]))
+            .find((msg) => msg.startsWith("[PERF_TRACE_UI] FIRST_TOKEN"));
+        expect(firstTokenCall).toBeDefined();
+        const match = firstTokenCall!.match(
+            /^\[PERF_TRACE_UI\] FIRST_TOKEN chatId=warm-chat t=\d+(?:\.\d+)?ms elapsed=(\d+(?:\.\d+)?)ms$/,
+        );
+        expect(match).not.toBeNull();
+        expect(Number(match![1])).toBeLessThan(1000);
+
+        // Rapid follow-up chunks must not re-log FIRST_TOKEN.
+        consoleSpy.calls.reset();
+        chatMessageReceiver$.next({
+            chat_id: "warm-chat",
+            message_id: "ai-1",
+            timestamp: "now",
+            is_user: false,
+            content: "Hi there",
+        });
+        chatMessageReceiver$.next({
+            chat_id: "warm-chat",
+            message_id: "ai-1",
+            timestamp: "now",
+            is_user: false,
+            content: "Hi there!",
+        });
+        expect(consoleSpy).not.toHaveBeenCalledWith(
+            jasmine.stringMatching(/^\[PERF_TRACE_UI\] FIRST_TOKEN/),
+        );
+    });
+
     it("should get the correct listening-state if no inital status was published yet", () => {
         const chatId = "test-id";
         const next = jasmine.createSpy();
