@@ -23,6 +23,7 @@ import {PoseComponent} from "./pose/pose.component";
 import {HardwareIdComponent} from "./system/hardware-id/hardware-id.component";
 import {DiagnosticsComponent} from "./system/diagnostics/diagnostics.component";
 import {DockerManagementComponent} from "./system/docker/docker.component";
+import {MicrophoneArrayComponent} from "./system/microphone-array/microphone-array.component";
 import {RgbLedButtonComponent} from "./program/program-overview/rgb-led-button/rgb-led-button.component";
 import {MarimoComponent} from "./program/marimo/marimo.component";
 import {ProgramOverviewComponent} from "./program/program-overview/program-overview.component";
@@ -64,6 +65,10 @@ const routes: Routes = [
             {
                 path: "hardware-ids",
                 component: HardwareIdComponent,
+            },
+            {
+                path: "microphone-array",
+                component: MicrophoneArrayComponent,
             },
             {path: "", redirectTo: "diagnostics", pathMatch: "full"},
         ],
