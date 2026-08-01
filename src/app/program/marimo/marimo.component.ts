@@ -84,9 +84,10 @@ export class MarimoComponent implements OnInit {
     }
 
     setIframeUrl(filename: string): void {
-        const host = window.location.hostname || "192.168.1.28";
         const file = filename || this.defaultFilename;
-        const rawUrl = `http://${host}:2718/?file=${file}&theme=dark`;
+        // Served through the Nginx reverse proxy so the iframe stays same-origin;
+        // hitting the marimo port directly is blocked by the browser.
+        const rawUrl = `/marimo-server/?file=${file}&theme=dark`;
         this.marimoUrl = this.sanitizer.bypassSecurityTrustResourceUrl(rawUrl);
     }
 
