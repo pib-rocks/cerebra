@@ -17,7 +17,6 @@ describe("ChatWindowComponent", () => {
     let chatService: jasmine.SpyObj<ChatService>;
     let paramsSubject: Subject<{chatUuid: string}>;
     let messagesSubject: Subject<ChatMessage[]>;
-    let isListeningSubject: Subject<boolean>;
     let tokenStatusSubject: Subject<{
         tokenExists: boolean;
         tokenActive: boolean;
@@ -35,7 +34,6 @@ describe("ChatWindowComponent", () => {
                 "getChatMessagesObservable",
                 "sendChatMessage",
                 "getChat",
-                "getIsListeningObservable",
             ]);
 
         const tokenServiceSpy = jasmine.createSpyObj("TokenService", [], {
@@ -79,10 +77,6 @@ describe("ChatWindowComponent", () => {
 
         messagesSubject = new Subject<ChatMessage[]>();
         chatService.getChatMessagesObservable.and.returnValue(messagesSubject);
-        isListeningSubject = new Subject<boolean>();
-        chatService.getIsListeningObservable.and.returnValue(
-            isListeningSubject,
-        );
         chatService.filterMessageUpdates.and.returnValue([
             {
                 messageId: "message-id-1",
@@ -130,13 +124,8 @@ describe("ChatWindowComponent", () => {
         expect(component.messages).toEqual([secondMessage, firstMessage]);
     });
 
-    it("should set the active-state based on the listening-status and text-input", () => {
+    it("should set the active-state based on non-whitespace text-input length", () => {
         paramsSubject.next({chatUuid: chatId});
-        expect(chatService.getIsListeningObservable).toHaveBeenCalledWith(
-            chatId,
-        );
-
-        isListeningSubject.next(true);
         expect(component.textInputActive).toBeFalse();
 
         component.chatMessageFormControl.setValue("ab");
@@ -151,11 +140,8 @@ describe("ChatWindowComponent", () => {
         component.chatMessageFormControl.setValue("non empty text");
         expect(component.textInputActive).toBeTrue();
 
-        isListeningSubject.next(false);
+        component.chatMessageFormControl.setValue("   ");
         expect(component.textInputActive).toBeFalse();
-
-        isListeningSubject.next(true);
-        expect(component.textInputActive).toBeTrue();
 
         component.chatMessageFormControl.setValue("");
         expect(component.textInputActive).toBeFalse();

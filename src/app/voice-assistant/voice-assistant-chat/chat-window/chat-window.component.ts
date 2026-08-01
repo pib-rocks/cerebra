@@ -5,7 +5,7 @@ import {ChatService} from "src/app/shared/services/chat.service";
 import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
 import {ChatMessage} from "src/app/shared/types/chat-message";
 import {Chat} from "src/app/shared/types/chat.class";
-import {Subscription, combineLatest, map} from "rxjs";
+import {Subscription, map} from "rxjs";
 import {TokenService} from "src/app/shared/services/token.service";
 import {NgClass} from "@angular/common";
 import {MarkdownComponent} from "ngx-markdown";
@@ -53,15 +53,14 @@ export class ChatWindowComponent implements OnInit {
             const chatId = params["chatUuid"];
             if (!chatId) return;
 
-            this.textInputActiveSubscription = combineLatest([
-                this.chatMessageFormControl.valueChanges,
-                this.chatService.getIsListeningObservable(chatId),
-            ]).subscribe(([inputText, isListening]) => {
-                this.textInputActive =
-                    inputText != null &&
-                    inputText.trim().length > 2 &&
-                    isListening;
-            });
+            this.textInputActiveSubscription =
+                this.chatMessageFormControl.valueChanges.subscribe(
+                    (inputText) => {
+                        this.textInputActive = Boolean(
+                            inputText && inputText.trim().length > 2,
+                        );
+                    },
+                );
 
             this.chatMessagesSubscription = this.chatService
                 .getChatMessagesObservable(chatId)
