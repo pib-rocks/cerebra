@@ -31,6 +31,7 @@
     "angular-split": "^20.0.0",
     "bootstrap": "^5.3.3",
     "bootstrap-icons": "^1.11.3",
+    "deep-chat": "^2.5.0",
     "font-awesome": "^4.7.0",
     "json-server": "^0.17.4",
     "marked": "^18.0.0",

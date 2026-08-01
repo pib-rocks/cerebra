@@ -6,7 +6,7 @@ import {jointGuard} from "./security/joint-guard";
 import {VoiceAssistantComponent} from "./voice-assistant/voice-assistant.component";
 import {PersonalityDescriptionComponent} from "./voice-assistant/personality-description/personality-description.component";
 import {voiceAssistantResolver} from "./voice-assistant/voice-assistant-resolver/voice-assistant.resolver";
-import {ChatWindowComponent} from "./voice-assistant/voice-assistant-chat/chat-window/chat-window.component";
+import {ChatWindowDeepChatComponent} from "./voice-assistant/voice-assistant-chat/chat-window-deep-chat/chat-window-deep-chat.component";
 import {chatResolver} from "./voice-assistant/voice-assistant-resolver/chat.resolver";
 import {PersonalityWrapperComponent} from "./voice-assistant/personality-wrapper/personality-wrapper.component";
 import {JointControlComponent} from "./joint-control/joint-control.component";
@@ -96,12 +96,12 @@ const routes: Routes = [
                         children: [
                             {
                                 path: ":chatUuid",
-                                component: ChatWindowComponent,
+                                component: ChatWindowDeepChatComponent,
                                 resolve: {chat: chatResolver},
                             },
                             {
                                 path: "",
-                                component: ChatWindowComponent,
+                                component: ChatWindowDeepChatComponent,
                             },
                         ],
                     },
