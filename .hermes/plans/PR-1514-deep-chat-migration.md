@@ -105,11 +105,15 @@ export function extractText(body: {messages: MessageContent[]}): string {
 Add `deep-chat-mapper.spec.ts` with full coverage (user/ai roles, empty body,
 missing text, single vs. multiple messages).
 
-### Step 3 — New component, parallel behind a flag
-- Create `chat-window-deep-chat/chat-window-deep-chat.component.ts/.html`
-  next to the existing folder.
-- Keep the existing route intact; switch via an environment flag
-  (e.g. `environment.useDeepChat`) so the legacy UI stays available for rollback.
+### Step 3 — New component, parallel (NO environment flag)
+
+There is **no `src/environments/` directory** in this repo, so do not invent one.
+Instead:
+- Create `src/app/voice-assistant/voice-assistant-chat/chat-window-deep-chat/chat-window-deep-chat.component.ts`
+  (+ `.html`, `.scss`, `.spec.ts`).
+- Leave `app-routing.module.ts` and the legacy `ChatWindowComponent` **completely
+  untouched** in this stage. The new component is not routed yet — it is verified
+  by its unit tests only. Routing cut-over happens later in Step 10.
 
 ### Step 4 — `connect.handler`
 ```typescript
