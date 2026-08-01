@@ -15,4 +15,6 @@ services:
             - "80:80"
         networks:
             - pib-network
+        extra_hosts:
+            - "host.docker.internal:host-gateway"
         restart: always
