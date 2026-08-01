@@ -148,7 +148,7 @@ export class MarimoComponent implements OnInit {
     optionCallbackMethods = [
         {
             icon: "",
-            label: "New workbook",
+            label: "New notebook",
             clickCallback: this.addWorkbook.bind(this),
             disabled: false,
         },
