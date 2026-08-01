@@ -7,6 +7,9 @@ export interface DiagnosticsSummary {
   overallStatus: string;
   cpuTemperature: number;
   cpuStatus: string;
+  cpuPercent?: number;
+  cpuUsagePercent?: number;
+  cpuUsage?: number;
   memoryUsage?: {
     total: string;
     used: string;
