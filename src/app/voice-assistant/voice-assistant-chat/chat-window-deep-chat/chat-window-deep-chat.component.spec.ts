@@ -27,10 +27,6 @@ describe("ChatWindowDeepChatComponent", () => {
         connect?: {handler: (body: any, signals: any) => void};
         loadHistory?: () => Promise<ReturnType<typeof toDeepChat>[]>;
         validateInput?: (text?: string) => boolean;
-        onInput?: (body: {
-            content?: {text?: string};
-            isUser?: boolean;
-        }) => void;
         textInput?: unknown;
         [key: string]: unknown;
     };
@@ -359,114 +355,5 @@ describe("ChatWindowDeepChatComponent", () => {
         expect(mockDeepChat.validateInput!("  ab  ")).toBeFalse();
         expect(mockDeepChat.validateInput!("abc")).toBeTrue();
         expect(mockDeepChat.validateInput!("abcd")).toBeTrue();
-    });
-
-    describe("applyE2eHooks", () => {
-        it("stamps legacy ids and data-test attributes onto input and button", () => {
-            const root = document.createElement("div");
-            const textarea = document.createElement("textarea");
-            const button = document.createElement("button");
-            root.appendChild(textarea);
-            root.appendChild(button);
-
-            (component as any).applyE2eHooks(root);
-
-            expect(textarea.id).toBe("message-input");
-            expect(textarea.getAttribute("data-test")).toBe(
-                "TXT_Chat_Message",
-            );
-            expect(button.id).toBe("chat-send-button");
-            expect(button.getAttribute("data-test")).toBe("BTN_Chat_Send");
-        });
-
-        it("does not throw when input or button is missing", () => {
-            const empty = document.createElement("div");
-            expect(() =>
-                (component as any).applyE2eHooks(empty),
-            ).not.toThrow();
-
-            const inputOnly = document.createElement("div");
-            inputOnly.appendChild(document.createElement("textarea"));
-            expect(() =>
-                (component as any).applyE2eHooks(inputOnly),
-            ).not.toThrow();
-
-            const buttonOnly = document.createElement("div");
-            buttonOnly.appendChild(document.createElement("button"));
-            expect(() =>
-                (component as any).applyE2eHooks(buttonOnly),
-            ).not.toThrow();
-        });
-
-        it("toggles disabled on the stamped button at the 2→3 character boundary", () => {
-            const root = document.createElement("div");
-            const textarea = document.createElement("textarea");
-            const button = document.createElement("button");
-            root.appendChild(textarea);
-            root.appendChild(button);
-
-            (component as any).smartConnectEnabled = true;
-            (component as any).currentInputText = "";
-            (component as any).applyE2eHooks(root);
-
-            expect(button.hasAttribute("disabled")).toBeTrue();
-
-            (component as any).currentInputText = "ab";
-            (component as any).syncSubmitButtonDisabled();
-            expect(button.hasAttribute("disabled")).toBeTrue();
-
-            (component as any).currentInputText = "abc";
-            (component as any).syncSubmitButtonDisabled();
-            expect(button.hasAttribute("disabled")).toBeFalse();
-
-            (component as any).currentInputText = "ab";
-            (component as any).syncSubmitButtonDisabled();
-            expect(button.hasAttribute("disabled")).toBeTrue();
-        });
-
-        it("mirrors the disabled state onto aria-disabled for non-form submit controls", () => {
-            // deep-chat's real submit control (#submit-icon) is a div/svg, not a
-            // <button>. Playwright's is_disabled() falls back to aria-disabled
-            // for non-form elements, so both attributes must stay in sync.
-            const root = document.createElement("div");
-            const input = document.createElement("div");
-            input.id = "text-input";
-            const icon = document.createElement("div");
-            icon.id = "submit-icon";
-            root.appendChild(input);
-            root.appendChild(icon);
-
-            (component as any).smartConnectEnabled = true;
-            (component as any).currentInputText = "ab";
-            (component as any).applyE2eHooks(root);
-
-            expect(icon.id).toBe("chat-send-button");
-            expect(icon.getAttribute("data-test")).toBe("BTN_Chat_Send");
-            expect(icon.getAttribute("aria-disabled")).toBe("true");
-
-            (component as any).currentInputText = "abc";
-            (component as any).syncSubmitButtonDisabled();
-            expect(icon.getAttribute("aria-disabled")).toBe("false");
-            expect(icon.hasAttribute("disabled")).toBeFalse();
-        });
-
-        it("keeps stamped button disabled when SmartConnect is off", () => {
-            const root = document.createElement("div");
-            const textarea = document.createElement("textarea");
-            const button = document.createElement("button");
-            root.appendChild(textarea);
-            root.appendChild(button);
-
-            (component as any).smartConnectEnabled = true;
-            (component as any).currentInputText = "long enough";
-            (component as any).applyE2eHooks(root);
-            expect(button.hasAttribute("disabled")).toBeFalse();
-
-            tokenStatusSubject.next({
-                tokenExists: false,
-                tokenActive: false,
-            });
-            expect(button.hasAttribute("disabled")).toBeTrue();
-        });
     });
 });
