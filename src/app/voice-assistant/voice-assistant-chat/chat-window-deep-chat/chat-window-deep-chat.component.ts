@@ -189,11 +189,28 @@ export class ChatWindowDeepChatComponent
                 return;
             }
 
-            // deep-chat attaches its shadow root and renders #text-input /
-            // #submit-icon asynchronously AFTER ngAfterViewInit. A MutationObserver
-            // is not enough here: at this point `el.shadowRoot` is still null, so
-            // we would observe the wrong root and never fire. Poll instead until
-            // the shadow root exists and the controls are present.
+            // deep-chat exposes an official lifecycle hook that fires once the
+            // component has rendered its shadow DOM. This is the reliable place
+            // to stamp; the poll below is only a safety net.
+            const previous = el.onComponentRender;
+            el.onComponentRender = (ref: any) => {
+                try {
+                    if (typeof previous === "function") previous(ref);
+                } catch {
+                    // never let a foreign handler break ours
+                }
+                try {
+                    this.tryStampE2eHooks(el);
+                } catch {
+                    // never throw
+                }
+            };
+
+            // Safety net: deep-chat attaches its shadow root and renders
+            // #text-input / #submit-icon asynchronously AFTER ngAfterViewInit.
+            // A MutationObserver alone is not enough because at this point
+            // `el.shadowRoot` is still null, so we would observe the wrong root
+            // and never fire. Poll until the controls exist.
             let attempts = 0;
             const poll = () => {
                 attempts += 1;
@@ -208,8 +225,8 @@ export class ChatWindowDeepChatComponent
                 if (attempts < 60) {
                     this.e2eHooksRetryTimeout = setTimeout(poll, 100);
                 } else {
-                    // Give up quietly; also try a MutationObserver as last resort
-                    // now that the shadow root has most likely been attached.
+                    // Last resort: now that the shadow root has most likely been
+                    // attached, watch it for late re-renders.
                     this.observeE2eHooks(el);
                 }
             };
