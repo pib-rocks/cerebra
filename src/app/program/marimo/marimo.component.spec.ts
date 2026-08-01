@@ -1,5 +1,7 @@
+import {SecurityContext} from "@angular/core";
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {ReactiveFormsModule} from "@angular/forms";
+import {DomSanitizer} from "@angular/platform-browser";
 import {ActivatedRoute, Router} from "@angular/router";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {BehaviorSubject, of, Subject} from "rxjs";
@@ -120,10 +122,24 @@ describe("MarimoComponent", () => {
     });
 
     describe("setIframeUrl", () => {
+        const resolvedUrl = () =>
+            TestBed.inject(DomSanitizer).sanitize(
+                SecurityContext.RESOURCE_URL,
+                component.marimoUrl,
+            );
+
+        it("points the iframe at the Nginx reverse proxy, not the marimo port", () => {
+            component.setIframeUrl("analysis.py");
+
+            expect(resolvedUrl()).toBe("/marimo-server/?file=analysis.py&theme=dark");
+        });
+
         it("coalesces an empty filename to the default notebook", () => {
             component.setIframeUrl("");
-            // marimoUrl is a SafeResourceUrl; assert it was produced (non-null).
-            expect(component.marimoUrl).toBeTruthy();
+
+            expect(resolvedUrl()).toBe(
+                `/marimo-server/?file=${component.defaultFilename}&theme=dark`,
+            );
         });
     });
 });
