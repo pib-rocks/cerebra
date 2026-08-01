@@ -74,6 +74,15 @@ export class DiagnosticsComponent implements OnInit {
     return "badge-danger";
   }
 
+  getCpuUsagePercent(): number | undefined {
+    if (!this.summary) return undefined;
+    return (
+      this.summary.cpuPercent ??
+      this.summary.cpuUsagePercent ??
+      this.summary.cpuUsage
+    );
+  }
+
   get servoBricklets(): BrickletTelemetry[] {
     return this.bricklets.filter((b) => b.type === "Servo Bricklet");
   }

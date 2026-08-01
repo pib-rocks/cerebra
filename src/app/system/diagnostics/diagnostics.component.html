@@ -26,8 +26,8 @@
           <tr>
             <th>Overall Status</th>
             <th>CPU Temperature</th>
-            <th>RAM Memory</th>
-            <th>Disk Space</th>
+            <th>Free RAM</th>
+            <th>Free disk space</th>
             <th>Container Status</th>
             <th>Bricklets Status</th>
           </tr>
@@ -53,10 +53,13 @@
                   N/A
                 </ng-container>
               </span>
+              <div *ngIf="getCpuUsagePercent() !== undefined" class="mt-1 text-white-50 small">
+                CPU: {{ getCpuUsagePercent() }}%
+              </div>
             </td>
             <td>
               <span class="badge" [ngClass]="getStatusBadgeClass(summary.diskStatus)">
-                {{ summary.diskSpace.free }} free ({{ summary.diskSpace.percentUsed }}%)
+                {{ summary.diskSpace.free }} / {{ summary.diskSpace.total }} ({{ summary.diskSpace.percentUsed }}%)
               </span>
             </td>
             <td>
@@ -84,7 +87,6 @@
           <table class="table table-dark table-striped table-hover mt-2 mb-0" id="table-servo-bricklets">
             <thead>
               <tr>
-                <th>ID</th>
                 <th>UID</th>
                 <th>Status</th>
                 <th>Voltage</th>
@@ -93,7 +95,6 @@
             </thead>
             <tbody>
               <tr *ngFor="let b of servoBricklets">
-                <td>{{ b.brickletNumber }}</td>
                 <td><code>{{ b.uid || 'N/A' }}</code></td>
                 <td>
                   <span class="badge" [ngClass]="getStatusBadgeClass(b.status)">
@@ -104,7 +105,7 @@
                 <td>{{ b.current }} mA</td>
               </tr>
               <tr *ngIf="servoBricklets.length === 0">
-                <td colspan="5" class="text-center text-muted">
+                <td colspan="4" class="text-center text-muted">
                   No Servo Bricklet telemetry data available.
                 </td>
               </tr>
@@ -121,7 +122,6 @@
           <table class="table table-dark table-striped table-hover mt-2 mb-0" id="table-button-bricklets">
             <thead>
               <tr>
-                <th>ID</th>
                 <th>UID</th>
                 <th>Status</th>
                 <th>Color</th>
@@ -130,7 +130,6 @@
             </thead>
             <tbody>
               <tr *ngFor="let b of buttonBricklets">
-                <td>{{ b.brickletNumber }}</td>
                 <td><code>{{ b.uid || 'N/A' }}</code></td>
                 <td>
                   <span class="badge" [ngClass]="getStatusBadgeClass(b.status)">
@@ -149,7 +148,7 @@
                 <td>{{ b.pressState || 'Released' }}</td>
               </tr>
               <tr *ngIf="buttonBricklets.length === 0">
-                <td colspan="5" class="text-center text-muted">
+                <td colspan="4" class="text-center text-muted">
                   No RGB LED Button telemetry data available.
                 </td>
               </tr>

@@ -22,6 +22,14 @@ describe("DiagnosticsComponent", () => {
         overallStatus: "ok",
         cpuTemperature: 50.0,
         cpuStatus: "ok",
+        cpuPercent: 42.5,
+        memoryUsage: {
+          total: "8.0 GB",
+          used: "3.2 GB",
+          free: "4.8 GB",
+          percentUsed: 40.0,
+        },
+        memoryStatus: "ok",
         diskSpace: { total: "64.0 GB", used: "20.0 GB", free: "44.0 GB", percentUsed: 31.2 },
         diskStatus: "ok",
         containersStatus: "ok",
@@ -111,4 +119,92 @@ describe("DiagnosticsComponent", () => {
     expect(buttonTable?.classList.contains("table-dark")).toBeTrue();
     expect(buttonTable?.classList.contains("mb-0")).toBeTrue();
   });
+
+  it("should rename summary headers to Free RAM and Free disk space", () => {
+    const compiled = fixture.nativeElement as HTMLElement;
+    const headers = Array.from(
+      compiled.querySelectorAll("#table-system-summary thead th")
+    ).map((th) => th.textContent?.trim());
+
+    expect(headers).toContain("Free RAM");
+    expect(headers).toContain("Free disk space");
+    expect(headers).not.toContain("RAM Memory");
+    expect(headers).not.toContain("Disk Space");
+  });
+
+  it("should format disk space as free / total (percentUsed%)", () => {
+    const compiled = fixture.nativeElement as HTMLElement;
+    const cells = compiled.querySelectorAll("#table-system-summary tbody td");
+    const diskCell = cells[3];
+
+    expect(diskCell?.textContent?.replace(/\s+/g, " ").trim()).toContain(
+      "44.0 GB / 64.0 GB (31.2%)"
+    );
+  });
+
+  it("should display CPU usage percentage inside the Free RAM cell", () => {
+    const compiled = fixture.nativeElement as HTMLElement;
+    const cells = compiled.querySelectorAll("#table-system-summary tbody td");
+    const ramCell = cells[2];
+
+    expect(ramCell?.textContent).toContain("CPU: 42.5%");
+    expect(component.getCpuUsagePercent()).toBe(42.5);
+  });
+
+  it("should resolve CPU usage from cpuUsagePercent or cpuUsage fallbacks", () => {
+    component.summary = {
+      ...component.summary!,
+      cpuPercent: undefined,
+      cpuUsagePercent: 18,
+      cpuUsage: undefined,
+    };
+    expect(component.getCpuUsagePercent()).toBe(18);
+
+    component.summary = {
+      ...component.summary!,
+      cpuPercent: undefined,
+      cpuUsagePercent: undefined,
+      cpuUsage: 7,
+    };
+    expect(component.getCpuUsagePercent()).toBe(7);
+  });
+
+  it("should remove ID column from servo and button bricklet tables and use colspan 4 for empty rows", () => {
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    const servoHeaders = Array.from(
+      compiled.querySelectorAll("#table-servo-bricklets thead th")
+    ).map((th) => th.textContent?.trim());
+    const buttonHeaders = Array.from(
+      compiled.querySelectorAll("#table-button-bricklets thead th")
+    ).map((th) => th.textContent?.trim());
+
+    expect(servoHeaders).not.toContain("ID");
+    expect(buttonHeaders).not.toContain("ID");
+    expect(servoHeaders).toEqual(["UID", "Status", "Voltage", "Current"]);
+    expect(buttonHeaders).toEqual(["UID", "Status", "Color", "Press State"]);
+
+    const servoCells = compiled.querySelectorAll("#table-servo-bricklets tbody tr td");
+    expect(servoCells.length).toBe(4);
+    expect(servoCells[0].textContent?.trim()).toBe("29FA");
+
+    // Re-create with no bricklets so both empty-state rows render under OnPush
+    diagnosticsServiceSpy.getBricklets.and.returnValue(of({ bricklets: [] }));
+    const emptyFixture = TestBed.createComponent(DiagnosticsComponent);
+    emptyFixture.detectChanges();
+    const emptyCompiled = emptyFixture.nativeElement as HTMLElement;
+
+    const servoEmpty = emptyCompiled.querySelector(
+      "#table-servo-bricklets tbody tr td"
+    ) as HTMLTableCellElement;
+    const buttonEmpty = emptyCompiled.querySelector(
+      "#table-button-bricklets tbody tr td"
+    ) as HTMLTableCellElement;
+
+    expect(servoEmpty.textContent).toContain("No Servo Bricklet telemetry data available.");
+    expect(buttonEmpty.textContent).toContain("No RGB LED Button telemetry data available.");
+    expect(servoEmpty.colSpan).toBe(4);
+    expect(buttonEmpty.colSpan).toBe(4);
+  });
 });
+
