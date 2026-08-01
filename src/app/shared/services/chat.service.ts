@@ -1,6 +1,6 @@
 import {Injectable} from "@angular/core";
 import {Chat, ChatDto} from "../types/chat.class";
-import {BehaviorSubject, Observable, map} from "rxjs";
+import {BehaviorSubject, Observable, catchError, map} from "rxjs";
 import {ApiService} from "./api.service";
 import {UrlConstants} from "./url.constants";
 import {SidebarService} from "../interfaces/sidebar-service.interface";
@@ -176,7 +176,11 @@ export class ChatService implements SidebarService {
     }
 
     sendChatMessage(chatId: string, content: string): Observable<void> {
-        return this.rosService.sendChatMessage(chatId, content);
+        return this.rosService.sendChatMessage(chatId, content).pipe(
+            catchError(() =>
+                this.createChatMessage(chatId, content).pipe(map(() => void 0)),
+            ),
+        );
     }
 
     getChatMessagesObservable(chatId: string): Observable<ChatMessage[]> {

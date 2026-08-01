@@ -19,6 +19,7 @@ import {MarkdownComponent} from "ngx-markdown";
 })
 export class ChatWindowComponent implements OnInit {
     chat?: Chat;
+    currentChatId: string | undefined;
     personalityName: string | undefined;
     messages?: ChatMessage[];
     extendedMessages?: ChatMessage[];
@@ -51,6 +52,7 @@ export class ChatWindowComponent implements OnInit {
             this.textInputActiveSubscription?.unsubscribe();
 
             const chatId = params["chatUuid"];
+            this.currentChatId = chatId;
             if (!chatId) return;
 
             this.textInputActiveSubscription =
@@ -92,13 +94,17 @@ export class ChatWindowComponent implements OnInit {
     }
 
     sendChatMessage() {
-        if (this.chat && this.textInputActive) {
-            this.chatService
-                .sendChatMessage(
-                    this.chat.chatId,
-                    this.chatMessageFormControl.value,
-                )
-                .subscribe(() => this.chatMessageFormControl.setValue(""));
+        const chatId = this.currentChatId || this.chat?.chatId;
+        if (chatId && this.textInputActive) {
+            const messageContent = this.chatMessageFormControl.value;
+            this.chatMessageFormControl.setValue("");
+            this.chatService.sendChatMessage(chatId, messageContent).subscribe({
+                error: () => {
+                    this.chatService
+                        .createChatMessage(chatId, messageContent)
+                        .subscribe();
+                },
+            });
         }
     }
 }
