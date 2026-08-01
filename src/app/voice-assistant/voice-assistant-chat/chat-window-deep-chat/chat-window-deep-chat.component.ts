@@ -189,16 +189,31 @@ export class ChatWindowDeepChatComponent
                 return;
             }
 
-            this.e2eHooksRetryTimeout = setTimeout(() => {
+            // deep-chat attaches its shadow root and renders #text-input /
+            // #submit-icon asynchronously AFTER ngAfterViewInit. A MutationObserver
+            // is not enough here: at this point `el.shadowRoot` is still null, so
+            // we would observe the wrong root and never fire. Poll instead until
+            // the shadow root exists and the controls are present.
+            let attempts = 0;
+            const poll = () => {
+                attempts += 1;
                 try {
                     if (this.tryStampE2eHooks(el)) {
+                        this.teardownE2eHooksWatchers();
                         return;
                     }
-                    this.observeE2eHooks(el);
                 } catch {
                     // never throw
                 }
-            }, 50);
+                if (attempts < 60) {
+                    this.e2eHooksRetryTimeout = setTimeout(poll, 100);
+                } else {
+                    // Give up quietly; also try a MutationObserver as last resort
+                    // now that the shadow root has most likely been attached.
+                    this.observeE2eHooks(el);
+                }
+            };
+            this.e2eHooksRetryTimeout = setTimeout(poll, 50);
         } catch {
             // never throw
         }
@@ -209,12 +224,13 @@ export class ChatWindowDeepChatComponent
             const root: ParentNode = el.shadowRoot ?? el;
 
             const input =
+                // deep-chat v2.5.0 renders a contenteditable div, NOT a textarea,
+                // and it lives inside the component's shadow root.
+                root.querySelector?.("#text-input") ??
+                root.querySelector?.("[contenteditable=true]") ??
                 root.querySelector?.("#chat-view textarea") ??
                 root.querySelector?.("textarea") ??
-                root.querySelector?.("input[type=text]") ??
-                // deep-chat's real control is a contenteditable #text-input
-                root.querySelector?.("#text-input") ??
-                root.querySelector?.("#chat-view #text-input");
+                root.querySelector?.("input[type=text]");
 
             const button =
                 root.querySelector?.("#submit-icon") ??
