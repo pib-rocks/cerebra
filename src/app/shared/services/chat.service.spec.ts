@@ -3,7 +3,7 @@ import {TestBed, waitForAsync} from "@angular/core/testing";
 import {ChatService} from "./chat.service";
 import {ApiService} from "./api.service";
 import {Chat} from "../types/chat.class";
-import {BehaviorSubject, Observable, Subject, map, of} from "rxjs";
+import {BehaviorSubject, Subject, map, of, throwError} from "rxjs";
 import {ChatMessage} from "../types/chat-message";
 import {ChatMessage as ChatMessageRos} from "../ros-types/msg/chat-message";
 import {RosService} from "./ros-service/ros.service";
@@ -267,17 +267,52 @@ describe("ChatService", () => {
         });
     });
 
-    it("should send a chat message", () => {
-        const observable = new Observable<void>();
+    it("should send a chat message", waitForAsync(() => {
         const chatId = "test-id";
         const content = "some-content";
-        rosService.sendChatMessage.and.returnValue(observable);
-        expect(service.sendChatMessage(chatId, content)).toBe(observable);
+        rosService.sendChatMessage.and.returnValue(of(undefined));
+        service.sendChatMessage(chatId, content).subscribe();
         expect(rosService.sendChatMessage).toHaveBeenCalledOnceWith(
             chatId,
             content,
         );
-    });
+        expect(apiService.post).not.toHaveBeenCalled();
+    }));
+
+    it("should fall back to createChatMessage when ROS send fails", waitForAsync(() => {
+        const chatId = "test-id";
+        const content = "some-content";
+        const message: ChatMessage = {
+            messageId: "message_id",
+            timestamp: "tomorrow",
+            isUser: true,
+            content,
+        };
+        rosService.sendChatMessage.and.returnValue(
+            throwError(() => new Error("ros disconnected")),
+        );
+        apiService.post.and.returnValue(of(message));
+
+        let completed = false;
+        service.sendChatMessage(chatId, content).subscribe({
+            next: () => {
+                completed = true;
+            },
+        });
+
+        expect(rosService.sendChatMessage).toHaveBeenCalledOnceWith(
+            chatId,
+            content,
+        );
+        expect(apiService.post).toHaveBeenCalledOnceWith(
+            "/voice-assistant/chat/test-id/messages",
+            jasmine.objectContaining({
+                content,
+                isUser: true,
+            }),
+        );
+        expect(completed).toBeTrue();
+    }));
 
     it("should get the correct listening-state if no inital status was published yet", () => {
         const chatId = "test-id";
