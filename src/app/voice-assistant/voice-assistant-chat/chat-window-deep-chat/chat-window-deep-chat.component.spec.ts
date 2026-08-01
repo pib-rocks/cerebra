@@ -150,6 +150,58 @@ describe("ChatWindowDeepChatComponent", () => {
         );
     });
 
+    it("handler logs PERF_TRACE_UI SUBMIT_CLICK", () => {
+        const consoleSpy = spyOn(console, "log");
+        const signals = {onResponse: jasmine.createSpy("onResponse")};
+
+        mockDeepChat.connect!.handler(
+            {messages: [{role: "user", text: "hello there"}]},
+            signals,
+        );
+
+        expect(consoleSpy).toHaveBeenCalledWith(
+            jasmine.stringMatching(
+                /^\[PERF_TRACE_UI\] SUBMIT_CLICK chatId=chat-id t=\d+(\.\d+)?ms$/,
+            ),
+        );
+    });
+
+    it("logs PERF_TRACE_UI TTFT on first AI onResponse", () => {
+        const consoleSpy = spyOn(console, "log");
+        const signals = {onResponse: jasmine.createSpy("onResponse")};
+        mockDeepChat.connect!.handler(
+            {messages: [{role: "user", text: "hi there"}]},
+            signals,
+        );
+        consoleSpy.calls.reset();
+
+        messagesSubject.next([
+            {
+                messageId: "ai-1",
+                timestamp: "2",
+                isUser: false,
+                content: "Hel",
+            },
+        ]);
+
+        expect(consoleSpy).toHaveBeenCalledWith(
+            jasmine.stringMatching(/^\[PERF_TRACE_UI\] TTFT \d+(\.\d+)?ms$/),
+        );
+
+        consoleSpy.calls.reset();
+        messagesSubject.next([
+            {
+                messageId: "ai-1",
+                timestamp: "2",
+                isUser: false,
+                content: "Hello",
+            },
+        ]);
+        expect(consoleSpy).not.toHaveBeenCalledWith(
+            jasmine.stringMatching(/^\[PERF_TRACE_UI\] TTFT/),
+        );
+    });
+
     it("handler error path calls onResponse with error", () => {
         chatService.sendChatMessage.and.returnValue(
             throwError(() => new Error("ros disconnected")),
