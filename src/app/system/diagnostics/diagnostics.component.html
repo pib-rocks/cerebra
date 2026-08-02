@@ -1,20 +1,46 @@
 <div class="diagnostics-container p-3">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h3 class="text-white">System Diagnostics & Telemetry</h3>
-    <button
-      id="btn-refresh-diagnostics"
-      data-test="BTN_Refresh_Diagnostics"
-      class="btn btn-primary"
-      [disabled]="loading"
-      (click)="refreshDiagnostics()"
-    >
-      <i class="fas fa-sync-alt mr-1" [class.fa-spin]="loading"></i>
-      {{ loading ? 'Loading...' : 'Refresh' }}
-    </button>
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <h3 class="text-white mb-0">System Diagnostics & Telemetry</h3>
+    <div class="d-flex flex-wrap gap-2">
+      <button
+        id="btn-export-hardware-ids"
+        data-test="BTN_Export_Hardware_IDs"
+        class="btn btn-outline-light"
+        [disabled]="exportingHardwareIds || loading"
+        (click)="exportHardwareIds()"
+      >
+        <i class="fas fa-download mr-1"></i>
+        {{ exportingHardwareIds ? 'Exporting...' : 'Export Hardware-IDs' }}
+      </button>
+      <button
+        id="btn-import-hardware-ids"
+        data-test="BTN_Import_Hardware_IDs"
+        class="btn btn-outline-light"
+        [disabled]="loading"
+        (click)="openImportModal()"
+      >
+        <i class="fas fa-upload mr-1"></i>
+        Import Hardware-IDs
+      </button>
+      <button
+        id="btn-refresh-diagnostics"
+        data-test="BTN_Refresh_Diagnostics"
+        class="btn btn-primary"
+        [disabled]="loading"
+        (click)="refreshDiagnostics()"
+      >
+        <i class="fas fa-sync-alt mr-1" [class.fa-spin]="loading"></i>
+        {{ loading ? 'Loading...' : 'Refresh' }}
+      </button>
+    </div>
   </div>
 
   <div *ngIf="error" class="alert alert-danger">
     {{ error }}
+  </div>
+
+  <div *ngIf="importSuccessMessage" class="alert alert-success">
+    {{ importSuccessMessage }}
   </div>
 
   <!-- Summary Table -->
@@ -169,6 +195,118 @@
           <span class="badge" [ngClass]="getStatusBadgeClass(c.health)">
             {{ c.status === 'exited' ? 'stopped' : c.status }} ({{ c.health }})
           </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Import Hardware-IDs Modal -->
+  <div *ngIf="showImportModal" class="modal-backdrop fade show"></div>
+  <div
+    *ngIf="showImportModal"
+    class="modal d-block fade show"
+    tabindex="-1"
+    role="dialog"
+    aria-modal="true"
+    id="hardware-ids-import-modal"
+  >
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable" role="document">
+      <div class="modal-content bg-dark text-white border-secondary shadow-lg">
+        <div class="modal-header border-secondary d-flex justify-content-between align-items-center">
+          <h5 class="modal-title font-weight-bold mb-0">Import Hardware-IDs</h5>
+          <button
+            type="button"
+            class="close text-white"
+            aria-label="Close"
+            data-test="BTN_Import_Hardware_IDs_Close"
+            (click)="closeImportModal()"
+          >
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p class="text-white-50">
+            Upload a hardware-config JSON backup. The file is validated before it is applied.
+          </p>
+
+          <input
+            #hardwareImportInput
+            type="file"
+            accept="application/json,.json"
+            hidden
+            data-test="INP_Hardware_IDs_Import"
+            (change)="onHardwareImportFileSelected($event)"
+          />
+
+          <button
+            type="button"
+            id="btn-choose-hardware-import-file"
+            data-test="BTN_Choose_Hardware_IDs_File"
+            class="btn btn-outline-light mb-3"
+            (click)="openHardwareImportFileDialog()"
+          >
+            <i class="fas fa-file-upload mr-1"></i>
+            Choose JSON file
+          </button>
+
+          <div *ngIf="importErrors.length > 0" class="alert alert-danger">
+            <div><strong>Validation failed</strong></div>
+            <ul class="mb-0">
+              <li *ngFor="let err of importErrors">{{ err }}</li>
+            </ul>
+          </div>
+
+          <div *ngIf="importWarnings.length > 0" class="alert alert-warning">
+            <div><strong>Warnings</strong></div>
+            <ul class="mb-0">
+              <li *ngFor="let warning of importWarnings">{{ warning }}</li>
+            </ul>
+          </div>
+
+          <div *ngIf="importPreview" class="import-preview border border-secondary rounded p-3">
+            <div class="mb-2"><strong>Import preview</strong></div>
+            <div>Version: <strong>{{ importPreview.version }}</strong></div>
+            <div>Bricklets: <strong>{{ importPreview.bricklets.length }}</strong></div>
+            <div>Motors: <strong>{{ importPreview.motors.length }}</strong></div>
+
+            <div class="table-responsive mt-3" *ngIf="importPreview.bricklets.length > 0">
+              <table class="table table-dark table-sm table-striped mb-0" id="table-import-preview-bricklets">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>UID</th>
+                    <th>Type</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let b of importPreview.bricklets">
+                    <td>{{ b.brickletNumber }}</td>
+                    <td><code>{{ b.uid || '(empty)' }}</code></td>
+                    <td>{{ b.type || 'N/A' }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer border-secondary">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-test="BTN_Import_Hardware_IDs_Cancel"
+            (click)="closeImportModal()"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary"
+            data-test="BTN_Import_Hardware_IDs_Confirm"
+            [disabled]="!importPreview || importingHardwareIds || importErrors.length > 0"
+            (click)="confirmHardwareImport()"
+          >
+            {{ importingHardwareIds ? 'Importing...' : 'Confirm import' }}
+          </button>
         </div>
       </div>
     </div>
