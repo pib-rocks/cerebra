@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { DiagnosticsComponent } from "./diagnostics.component";
-import { DiagnosticsService, HardwareConfig } from "./diagnostics.service";
-import { of, throwError } from "rxjs";
+import { DiagnosticsService } from "./diagnostics.service";
+import { of } from "rxjs";
 import { provideHttpClient } from "@angular/common/http";
 import { provideHttpClientTesting } from "@angular/common/http/testing";
 
@@ -10,35 +10,11 @@ describe("DiagnosticsComponent", () => {
   let fixture: ComponentFixture<DiagnosticsComponent>;
   let diagnosticsServiceSpy: jasmine.SpyObj<DiagnosticsService>;
 
-  const sampleHardwareConfig: HardwareConfig = {
-    version: 1,
-    bricklets: [
-      {
-        brickletNumber: 1,
-        uid: "29FA",
-        type: "Servo Bricklet",
-      },
-    ],
-    motors: [
-      {
-        name: "head_pan",
-        pulseWidthMin: 700,
-        pulseWidthMax: 2500,
-        brickletPins: [{ brickletNumber: 1, pin: 0, invert: false }],
-      },
-    ],
-  };
-
   beforeEach(async () => {
     diagnosticsServiceSpy = jasmine.createSpyObj("DiagnosticsService", [
       "getSummary",
       "getBricklets",
       "getSystem",
-      "exportHardwareConfig",
-      "importHardwareConfig",
-      "downloadHardwareConfig",
-      "parseHardwareConfigFileContent",
-      "validateHardwareConfig",
     ]);
 
     diagnosticsServiceSpy.getSummary.and.returnValue(
@@ -88,15 +64,6 @@ describe("DiagnosticsComponent", () => {
         status: "ok",
       })
     );
-
-    diagnosticsServiceSpy.exportHardwareConfig.and.returnValue(of(sampleHardwareConfig));
-    diagnosticsServiceSpy.importHardwareConfig.and.returnValue(of(sampleHardwareConfig));
-    diagnosticsServiceSpy.parseHardwareConfigFileContent.and.returnValue({
-      valid: true,
-      config: sampleHardwareConfig,
-      errors: [],
-      warnings: [],
-    });
 
     await TestBed.configureTestingModule({
       imports: [DiagnosticsComponent],
@@ -240,125 +207,10 @@ describe("DiagnosticsComponent", () => {
     expect(buttonEmpty.colSpan).toBe(4);
   });
 
-  it("should render Export and Import Hardware-IDs buttons", () => {
+  it("should not render Export or Import Hardware-IDs buttons", () => {
     const compiled = fixture.nativeElement as HTMLElement;
-    const exportBtn = compiled.querySelector(
-      '[data-test="BTN_Export_Hardware_IDs"]'
-    ) as HTMLButtonElement;
-    const importBtn = compiled.querySelector(
-      '[data-test="BTN_Import_Hardware_IDs"]'
-    ) as HTMLButtonElement;
-
-    expect(exportBtn).toBeTruthy();
-    expect(importBtn).toBeTruthy();
-    expect(exportBtn.textContent).toContain("Export Hardware-IDs");
-    expect(importBtn.textContent).toContain("Import Hardware-IDs");
-  });
-
-  it("should export Hardware-IDs and trigger a JSON download", () => {
-    component.exportHardwareIds();
-
-    expect(diagnosticsServiceSpy.exportHardwareConfig).toHaveBeenCalled();
-    expect(diagnosticsServiceSpy.downloadHardwareConfig).toHaveBeenCalledWith(
-      sampleHardwareConfig
-    );
-    expect(component.importSuccessMessage).toBe("Hardware-IDs exported successfully.");
-  });
-
-  it("should open the import modal when Import Hardware-IDs is clicked", () => {
-    const compiled = fixture.nativeElement as HTMLElement;
-    const importBtn = compiled.querySelector(
-      '[data-test="BTN_Import_Hardware_IDs"]'
-    ) as HTMLButtonElement;
-
-    importBtn.click();
-    fixture.detectChanges();
-
-    expect(component.showImportModal).toBeTrue();
-    expect(compiled.querySelector("#hardware-ids-import-modal")).toBeTruthy();
-  });
-
-  it("should validate selected JSON and show import preview", () => {
-    component.openImportModal();
-    fixture.detectChanges();
-
-    const fileContent = JSON.stringify(sampleHardwareConfig);
-    class MockFileReader {
-      result: string | null = null;
-      onload: ((ev: ProgressEvent<FileReader>) => void) | null = null;
-      onerror: ((ev: ProgressEvent<FileReader>) => void) | null = null;
-      readAsText(_file: Blob): void {
-        this.result = fileContent;
-        this.onload?.({} as ProgressEvent<FileReader>);
-      }
-    }
-    spyOn(window as any, "FileReader").and.returnValue(new MockFileReader());
-
-    const file = new File([fileContent], "hardware-config.json", {
-      type: "application/json",
-    });
-    const event = {
-      target: { files: [file], value: "hardware-config.json" },
-    } as unknown as Event;
-
-    component.onHardwareImportFileSelected(event);
-    fixture.detectChanges();
-
-    expect(diagnosticsServiceSpy.parseHardwareConfigFileContent).toHaveBeenCalledWith(
-      fileContent
-    );
-    expect(component.importPreview).toEqual(sampleHardwareConfig);
-    expect(component.importErrors).toEqual([]);
-
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector("#table-import-preview-bricklets")).toBeTruthy();
-  });
-
-  it("should surface validation errors from invalid import files", () => {
-    diagnosticsServiceSpy.parseHardwareConfigFileContent.and.returnValue({
-      valid: false,
-      errors: ["Duplicate Bricklet UID assignment: '29FA'"],
-      warnings: [],
-    });
-
-    // Simulate completed FileReader path without async I/O
-    const result = diagnosticsServiceSpy.parseHardwareConfigFileContent("{}");
-    component.importErrors = result.errors;
-    component.importWarnings = result.warnings;
-    component.importPreview = result.valid ? result.config ?? null : null;
-    component.showImportModal = true;
-    fixture.detectChanges();
-
-    expect(component.importPreview).toBeNull();
-    expect(component.importErrors).toEqual([
-      "Duplicate Bricklet UID assignment: '29FA'",
-    ]);
-  });
-
-  it("should confirm import via DiagnosticsService and close the modal", () => {
-    component.openImportModal();
-    component.importPreview = sampleHardwareConfig;
-    component.confirmHardwareImport();
-
-    expect(diagnosticsServiceSpy.importHardwareConfig).toHaveBeenCalledWith(
-      sampleHardwareConfig
-    );
-    expect(component.showImportModal).toBeFalse();
-    expect(component.importSuccessMessage).toBe("Hardware-IDs imported successfully.");
-  });
-
-  it("should surface server validation errors when import fails", () => {
-    diagnosticsServiceSpy.importHardwareConfig.and.returnValue(
-      throwError(() => ({ error: { error: "Duplicate Bricklet UID assignment: '29FA'" } }))
-    );
-
-    component.openImportModal();
-    component.importPreview = sampleHardwareConfig;
-    component.confirmHardwareImport();
-
-    expect(component.importErrors).toEqual([
-      "Duplicate Bricklet UID assignment: '29FA'",
-    ]);
-    expect(component.showImportModal).toBeTrue();
+    expect(compiled.querySelector('[data-test="BTN_Export_Hardware_IDs"]')).toBeNull();
+    expect(compiled.querySelector('[data-test="BTN_Import_Hardware_IDs"]')).toBeNull();
+    expect(compiled.querySelector("#hardware-ids-import-modal")).toBeNull();
   });
 });
