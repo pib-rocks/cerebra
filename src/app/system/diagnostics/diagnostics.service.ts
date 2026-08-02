@@ -149,7 +149,7 @@ export class DiagnosticsService {
     anchor.href = url;
     anchor.download = "hardware-config.json";
     anchor.click();
-    URL.revokeObjectURL(url);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
   parseHardwareConfigFileContent(content: string): HardwareConfigValidationResult {
