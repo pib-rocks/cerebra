@@ -151,7 +151,7 @@ export class DiagnosticsService {
     document.body.appendChild(anchor);
     anchor.click();
     document.body.removeChild(anchor);
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
   }
 
   parseHardwareConfigFileContent(content: string): HardwareConfigValidationResult {
