@@ -148,8 +148,10 @@ export class DiagnosticsService {
     const anchor = document.createElement("a");
     anchor.href = url;
     anchor.download = "hardware-config.json";
+    document.body.appendChild(anchor);
     anchor.click();
-    URL.revokeObjectURL(url);
+    document.body.removeChild(anchor);
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
   }
 
   parseHardwareConfigFileContent(content: string): HardwareConfigValidationResult {

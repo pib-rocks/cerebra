@@ -65,13 +65,18 @@ export class HardwareIdComponent implements OnInit {
             );
 
             bricklets.forEach((bricklet) => {
-                this.brickletUidForm.addControl(
-                    bricklet.brickletNumber.toString(),
-                    new FormControl(bricklet.uid, [
-                        Validators.maxLength(6),
-                        patternOrOptionalValidator(),
-                    ]),
-                );
+                const controlName = bricklet.brickletNumber.toString();
+                if (this.brickletUidForm.contains(controlName)) {
+                    this.brickletUidForm.get(controlName)?.setValue(bricklet.uid);
+                } else {
+                    this.brickletUidForm.addControl(
+                        controlName,
+                        new FormControl(bricklet.uid, [
+                            Validators.maxLength(6),
+                            patternOrOptionalValidator(),
+                        ]),
+                    );
+                }
             });
         });
     }
@@ -123,7 +128,6 @@ export class HardwareIdComponent implements OnInit {
     onHardwareImportFileSelected(event: Event): void {
         const input = event.target as HTMLInputElement;
         const file = input.files?.[0];
-        input.value = "";
 
         this.importPreview = null;
         this.importErrors = [];
@@ -131,6 +135,7 @@ export class HardwareIdComponent implements OnInit {
         this.importSuccessMessage = null;
 
         if (!file) {
+            input.value = "";
             return;
         }
 
@@ -142,10 +147,12 @@ export class HardwareIdComponent implements OnInit {
             this.importErrors = result.errors;
             this.importWarnings = result.warnings;
             this.importPreview = result.valid ? result.config ?? null : null;
+            input.value = "";
         };
         reader.onerror = () => {
             this.importErrors = ["The selected file could not be read."];
             this.importPreview = null;
+            input.value = "";
         };
         reader.readAsText(file);
     }
@@ -164,6 +171,7 @@ export class HardwareIdComponent implements OnInit {
                 this.showImportModal = false;
                 this.resetImportState();
                 this.importSuccessMessage = "Hardware-IDs imported successfully.";
+                this.brickletService.reloadBrickletsFromDb();
             },
             error: (err) => {
                 this.importingHardwareIds = false;

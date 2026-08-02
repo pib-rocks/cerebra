@@ -37,6 +37,13 @@ export class BrickletService {
         return this.brickletSubject;
     }
 
+    public reloadBrickletsFromDb(): void {
+        this.getAllBrickletsFromDb().subscribe((bricklets) => {
+            this.bricklets = bricklets;
+            this.brickletSubject.next(this.bricklets);
+        });
+    }
+
     public renameBrickletUid(bricklets: Bricklet[]) {
         const dummyBricklets = bricklets.map((bricklet) => ({
             ...bricklet,
