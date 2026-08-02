@@ -21,6 +21,8 @@ export class ChatService implements SidebarService {
     > = new Map();
     private IsListeningFromChatId: Map<string, BehaviorSubject<boolean>> =
         new Map();
+    /** Tracks send start times so FIRST_TOKEN can report elapsed ms per chat. */
+    private pendingSendStartMsByChatId: Map<string, number> = new Map();
 
     constructor(
         private apiService: ApiService,
@@ -28,6 +30,7 @@ export class ChatService implements SidebarService {
     ) {
         this.getAllChats();
         this.rosService.chatMessageReceiver$.subscribe((rosChatMessage) => {
+            this.logFirstTokenIfPending(rosChatMessage);
             const subject = this.messagesSubjectFromChatId.get(
                 rosChatMessage.chat_id,
             );
@@ -176,11 +179,42 @@ export class ChatService implements SidebarService {
     }
 
     sendChatMessage(chatId: string, content: string): Observable<void> {
+        const sendStartMs = performance.now();
+        console.log(
+            `[PERF_TRACE_UI] SEND_START chatId=${chatId} t=${sendStartMs.toFixed(3)}ms`,
+        );
+        this.pendingSendStartMsByChatId.set(chatId, sendStartMs);
+
+        const wsDispatchMs = performance.now();
+        console.log(
+            `[PERF_TRACE_UI] WS_DISPATCH chatId=${chatId} t=${wsDispatchMs.toFixed(3)}ms`,
+        );
+
         return this.rosService.sendChatMessage(chatId, content).pipe(
             catchError(() =>
                 this.createChatMessage(chatId, content).pipe(map(() => void 0)),
             ),
         );
+    }
+
+    private logFirstTokenIfPending(rosChatMessage: {
+        chat_id: string;
+        is_user: boolean;
+    }): void {
+        if (rosChatMessage.is_user) {
+            return;
+        }
+        const sendStartMs = this.pendingSendStartMsByChatId.get(
+            rosChatMessage.chat_id,
+        );
+        if (sendStartMs === undefined) {
+            return;
+        }
+        const firstTokenMs = performance.now();
+        console.log(
+            `[PERF_TRACE_UI] FIRST_TOKEN chatId=${rosChatMessage.chat_id} t=${firstTokenMs.toFixed(3)}ms elapsed=${(firstTokenMs - sendStartMs).toFixed(3)}ms`,
+        );
+        this.pendingSendStartMsByChatId.delete(rosChatMessage.chat_id);
     }
 
     getChatMessagesObservable(chatId: string): Observable<ChatMessage[]> {

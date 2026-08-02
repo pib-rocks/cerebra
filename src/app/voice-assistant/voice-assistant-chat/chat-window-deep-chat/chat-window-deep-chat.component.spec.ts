@@ -150,6 +150,58 @@ describe("ChatWindowDeepChatComponent", () => {
         );
     });
 
+    it("handler logs PERF_TRACE_UI SUBMIT_CLICK", () => {
+        const consoleSpy = spyOn(console, "log");
+        const signals = {onResponse: jasmine.createSpy("onResponse")};
+
+        mockDeepChat.connect!.handler(
+            {messages: [{role: "user", text: "hello there"}]},
+            signals,
+        );
+
+        expect(consoleSpy).toHaveBeenCalledWith(
+            jasmine.stringMatching(
+                /^\[PERF_TRACE_UI\] SUBMIT_CLICK chatId=chat-id t=\d+(\.\d+)?ms$/,
+            ),
+        );
+    });
+
+    it("logs PERF_TRACE_UI TTFT on first AI onResponse", () => {
+        const consoleSpy = spyOn(console, "log");
+        const signals = {onResponse: jasmine.createSpy("onResponse")};
+        mockDeepChat.connect!.handler(
+            {messages: [{role: "user", text: "hi there"}]},
+            signals,
+        );
+        consoleSpy.calls.reset();
+
+        messagesSubject.next([
+            {
+                messageId: "ai-1",
+                timestamp: "2",
+                isUser: false,
+                content: "Hel",
+            },
+        ]);
+
+        expect(consoleSpy).toHaveBeenCalledWith(
+            jasmine.stringMatching(/^\[PERF_TRACE_UI\] TTFT \d+(\.\d+)?ms$/),
+        );
+
+        consoleSpy.calls.reset();
+        messagesSubject.next([
+            {
+                messageId: "ai-1",
+                timestamp: "2",
+                isUser: false,
+                content: "Hello",
+            },
+        ]);
+        expect(consoleSpy).not.toHaveBeenCalledWith(
+            jasmine.stringMatching(/^\[PERF_TRACE_UI\] TTFT/),
+        );
+    });
+
     it("handler error path calls onResponse with error", () => {
         chatService.sendChatMessage.and.returnValue(
             throwError(() => new Error("ros disconnected")),
@@ -275,6 +327,48 @@ describe("ChatWindowDeepChatComponent", () => {
             text: "Hello",
             overwrite: true,
         });
+    });
+
+    it("handles rapid sub-1s streaming chunks without dropping overwrites", () => {
+        const signals = {onResponse: jasmine.createSpy("onResponse")};
+        const consoleSpy = spyOn(console, "log");
+        mockDeepChat.connect!.handler(
+            {messages: [{role: "user", text: "hi there"}]},
+            signals,
+        );
+
+        const chunks = ["H", "He", "Hel", "Hell", "Hello"];
+        for (const content of chunks) {
+            messagesSubject.next([
+                {
+                    messageId: "ai-fast-1",
+                    timestamp: "2",
+                    isUser: false,
+                    content,
+                },
+            ]);
+        }
+
+        expect(signals.onResponse).toHaveBeenCalledOnceWith({
+            role: "ai",
+            text: "H",
+        });
+        expect(mockDeepChat.addMessage).toHaveBeenCalledTimes(chunks.length - 1);
+        expect(mockDeepChat.addMessage.calls.mostRecent().args[0]).toEqual({
+            role: "ai",
+            text: "Hello",
+            overwrite: true,
+        });
+
+        const ttftCalls = consoleSpy.calls
+            .allArgs()
+            .filter((args) => String(args[0]).startsWith("[PERF_TRACE_UI] TTFT"));
+        expect(ttftCalls.length).toBe(1);
+        const ttftMatch = String(ttftCalls[0][0]).match(
+            /^\[PERF_TRACE_UI\] TTFT (\d+(?:\.\d+)?)ms$/,
+        );
+        expect(ttftMatch).not.toBeNull();
+        expect(Number(ttftMatch![1])).toBeLessThan(1000);
     });
 
     it("a new messageId appends without overwrite", () => {

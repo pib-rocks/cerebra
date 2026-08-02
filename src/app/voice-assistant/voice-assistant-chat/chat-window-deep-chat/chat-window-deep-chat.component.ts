@@ -37,6 +37,8 @@ export class ChatWindowDeepChatComponent
 
     private pendingSignals?: {onResponse: (response: unknown) => void};
     private lastStreamedMessageId: string | undefined;
+    /** Timestamp of the latest user submit, used to measure TTFT. */
+    private submitClickMs: number | undefined;
 
     private routeParamsSubscription?: Subscription;
     private chatMessagesSubscription?: Subscription;
@@ -63,6 +65,7 @@ export class ChatWindowDeepChatComponent
                 this.currentChatId = chatId;
                 this.lastStreamedMessageId = undefined;
                 this.pendingSignals = undefined;
+                this.submitClickMs = undefined;
                 if (!chatId) return;
 
                 this.chat = this.chatService.getChat(chatId);
@@ -106,11 +109,16 @@ export class ChatWindowDeepChatComponent
             handler: (body: any, signals: any) => {
                 const text = extractText(body);
                 const chatId = this.currentChatId!;
+                this.submitClickMs = performance.now();
+                console.log(
+                    `[PERF_TRACE_UI] SUBMIT_CLICK chatId=${chatId} t=${this.submitClickMs.toFixed(3)}ms`,
+                );
                 this.pendingSignals = signals;
                 this.chatService.sendChatMessage(chatId, text).subscribe({
                     error: (err) => {
                         signals.onResponse({error: String(err)});
                         this.pendingSignals = undefined;
+                        this.submitClickMs = undefined;
                     },
                 });
             },
@@ -171,6 +179,7 @@ export class ChatWindowDeepChatComponent
         const {messageId, content} = newest;
 
         if (this.pendingSignals && content) {
+            this.logTtftIfPending();
             this.pendingSignals.onResponse({role: "ai", text: content});
             this.lastStreamedMessageId = messageId;
             this.pendingSignals = undefined;
@@ -184,10 +193,20 @@ export class ChatWindowDeepChatComponent
             }
         } else {
             if (typeof el.addMessage === "function") {
+                this.logTtftIfPending();
                 el.addMessage({role: "ai", text: content});
             }
             this.lastStreamedMessageId = messageId;
         }
+    }
+
+    private logTtftIfPending(): void {
+        if (this.submitClickMs === undefined) {
+            return;
+        }
+        const ttftMs = performance.now() - this.submitClickMs;
+        console.log(`[PERF_TRACE_UI] TTFT ${ttftMs.toFixed(3)}ms`);
+        this.submitClickMs = undefined;
     }
 
     private applyStyles(el: any): void {

@@ -191,6 +191,14 @@ export class RosService implements IRosService {
         return new BehaviorSubject(this.getIsListening(chatId));
     }
 
+    /**
+     * Simulated first-token delay for a warm in-process Hermes agent (PR-1521).
+     * Must stay well under 1000 ms so local mock mirrors < 1s TTFT.
+     */
+    static readonly WARM_AGENT_FIRST_TOKEN_MS = 300;
+    /** Delay between streaming overwrite chunks in the "update" mock path. */
+    static readonly WARM_AGENT_STREAM_CHUNK_MS = 200;
+
     sendChatMessage(chatId: string, content: string): Observable<void> {
         console.info(JSON.stringify({chat_id: chatId, content: content}));
         const listening = this.getIsListening(chatId);
@@ -204,10 +212,10 @@ export class RosService implements IRosService {
             ).subscribe((_) => {
                 this.setIsListening(chatId, true);
             });
-        }, 2000);
+        }, RosService.WARM_AGENT_FIRST_TOKEN_MS);
         if (content.toLocaleLowerCase() == "update") {
             setTimeout(async () => {
-                await this.sleep(1500);
+                await this.sleep(RosService.WARM_AGENT_STREAM_CHUNK_MS);
                 this.updateMessage(
                     chatId,
                     `this is the response to your input "${content}". Second line for "${content}".`,
@@ -215,7 +223,7 @@ export class RosService implements IRosService {
                 ).subscribe((_) => {
                     this.setIsListening(chatId, true);
                 });
-            }, 2000);
+            }, RosService.WARM_AGENT_FIRST_TOKEN_MS);
         }
         return new BehaviorSubject<void>(undefined);
     }
