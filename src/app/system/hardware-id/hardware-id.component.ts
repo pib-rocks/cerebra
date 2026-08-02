@@ -65,13 +65,18 @@ export class HardwareIdComponent implements OnInit {
             );
 
             bricklets.forEach((bricklet) => {
-                this.brickletUidForm.addControl(
-                    bricklet.brickletNumber.toString(),
-                    new FormControl(bricklet.uid, [
-                        Validators.maxLength(6),
-                        patternOrOptionalValidator(),
-                    ]),
-                );
+                const controlName = bricklet.brickletNumber.toString();
+                if (this.brickletUidForm.contains(controlName)) {
+                    this.brickletUidForm.get(controlName)?.setValue(bricklet.uid);
+                } else {
+                    this.brickletUidForm.addControl(
+                        controlName,
+                        new FormControl(bricklet.uid, [
+                            Validators.maxLength(6),
+                            patternOrOptionalValidator(),
+                        ]),
+                    );
+                }
             });
         });
     }
@@ -164,6 +169,7 @@ export class HardwareIdComponent implements OnInit {
                 this.showImportModal = false;
                 this.resetImportState();
                 this.importSuccessMessage = "Hardware-IDs imported successfully.";
+                this.brickletService.reloadBrickletsFromDb();
             },
             error: (err) => {
                 this.importingHardwareIds = false;
