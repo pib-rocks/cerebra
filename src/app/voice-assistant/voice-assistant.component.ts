@@ -180,7 +180,13 @@ export class VoiceAssistantComponent implements OnInit {
     }
 
     openAddModal = () => {
-        this.personalityForm.reset();
+        this.uuid = undefined;
+        this.personalityForm.reset({
+            gender: "Female",
+            pausethreshold: 0.8,
+            messageHistory: 10,
+            assistantModel: this.models[0]?.id ?? 1,
+        });
         this.thresholdString =
             this.personalityForm.controls["pausethreshold"].value + "s";
         this.messageHistory =

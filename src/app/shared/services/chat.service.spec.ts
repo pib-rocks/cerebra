@@ -3,7 +3,7 @@ import {TestBed, waitForAsync} from "@angular/core/testing";
 import {ChatService} from "./chat.service";
 import {ApiService} from "./api.service";
 import {Chat} from "../types/chat.class";
-import {BehaviorSubject, Observable, Subject, map, of} from "rxjs";
+import {BehaviorSubject, Subject, map, of, throwError} from "rxjs";
 import {ChatMessage} from "../types/chat-message";
 import {ChatMessage as ChatMessageRos} from "../ros-types/msg/chat-message";
 import {RosService} from "./ros-service/ros.service";
@@ -26,18 +26,16 @@ describe("ChatService", () => {
     let voiceAssistantChatIsListeningReceiver$: Subject<ChatIsListening>;
 
     beforeEach(() => {
+        chatMessageReceiver$ = new Subject();
+        voiceAssistantChatIsListeningReceiver$ = new Subject();
         const rosServiceSpy: jasmine.SpyObj<RosService> = jasmine.createSpyObj(
             "RosService",
             ["sendChatMessage", "getChatIsListening"],
             {
-                chatMessageReceiver$: new Subject(),
+                chatMessageReceiver$: chatMessageReceiver$,
+                chatIsListeningReceiver$: voiceAssistantChatIsListeningReceiver$,
             },
         );
-        chatMessageReceiver$ = new Subject();
-        rosServiceSpy.chatMessageReceiver$ = chatMessageReceiver$;
-        voiceAssistantChatIsListeningReceiver$ = new Subject();
-        rosServiceSpy.chatIsListeningReceiver$ =
-            voiceAssistantChatIsListeningReceiver$;
 
         const apiServiceSpy: jasmine.SpyObj<ApiService> = jasmine.createSpyObj(
             "ApiService",
@@ -267,39 +265,192 @@ describe("ChatService", () => {
         });
     });
 
-    it("should send a chat message", () => {
-        const observable = new Observable<void>();
+    it("should send a chat message", waitForAsync(() => {
         const chatId = "test-id";
         const content = "some-content";
-        rosService.sendChatMessage.and.returnValue(observable);
-        expect(service.sendChatMessage(chatId, content)).toBe(observable);
+        rosService.sendChatMessage.and.returnValue(of(undefined));
+        service.sendChatMessage(chatId, content).subscribe();
         expect(rosService.sendChatMessage).toHaveBeenCalledOnceWith(
             chatId,
             content,
+        );
+        expect(apiService.post).not.toHaveBeenCalled();
+    }));
+
+    it("should fall back to createChatMessage when ROS send fails", waitForAsync(() => {
+        const chatId = "test-id";
+        const content = "some-content";
+        const message: ChatMessage = {
+            messageId: "message_id",
+            timestamp: "tomorrow",
+            isUser: true,
+            content,
+        };
+        rosService.sendChatMessage.and.returnValue(
+            throwError(() => new Error("ros disconnected")),
+        );
+        apiService.post.and.returnValue(of(message));
+
+        let completed = false;
+        service.sendChatMessage(chatId, content).subscribe({
+            next: () => {
+                completed = true;
+            },
+        });
+
+        expect(rosService.sendChatMessage).toHaveBeenCalledOnceWith(
+            chatId,
+            content,
+        );
+        expect(apiService.post).toHaveBeenCalledOnceWith(
+            "/voice-assistant/chat/test-id/messages",
+            jasmine.objectContaining({
+                content,
+                isUser: true,
+            }),
+        );
+        expect(completed).toBeTrue();
+    }));
+
+    it("should log PERF_TRACE_UI SEND_START and WS_DISPATCH when sending", () => {
+        const consoleSpy = spyOn(console, "log");
+        rosService.sendChatMessage.and.returnValue(of(undefined));
+
+        service.sendChatMessage("perf-chat", "hello").subscribe();
+
+        expect(consoleSpy).toHaveBeenCalledWith(
+            jasmine.stringMatching(
+                /^\[PERF_TRACE_UI\] SEND_START chatId=perf-chat t=\d+(\.\d+)?ms$/,
+            ),
+        );
+        expect(consoleSpy).toHaveBeenCalledWith(
+            jasmine.stringMatching(
+                /^\[PERF_TRACE_UI\] WS_DISPATCH chatId=perf-chat t=\d+(\.\d+)?ms$/,
+            ),
+        );
+    });
+
+    it("should log PERF_TRACE_UI FIRST_TOKEN on first AI response after send", () => {
+        const consoleSpy = spyOn(console, "log");
+        rosService.sendChatMessage.and.returnValue(of(undefined));
+        service.sendChatMessage("perf-chat", "hello").subscribe();
+        consoleSpy.calls.reset();
+
+        chatMessageReceiver$.next({
+            chat_id: "perf-chat",
+            message_id: "ai-1",
+            timestamp: "now",
+            is_user: false,
+            content: "Hi",
+        });
+
+        expect(consoleSpy).toHaveBeenCalledWith(
+            jasmine.stringMatching(
+                /^\[PERF_TRACE_UI\] FIRST_TOKEN chatId=perf-chat t=\d+(\.\d+)?ms elapsed=\d+(\.\d+)?ms$/,
+            ),
+        );
+
+        consoleSpy.calls.reset();
+        chatMessageReceiver$.next({
+            chat_id: "perf-chat",
+            message_id: "ai-1",
+            timestamp: "now",
+            is_user: false,
+            content: "Hi there",
+        });
+        expect(consoleSpy).not.toHaveBeenCalledWith(
+            jasmine.stringMatching(/^\[PERF_TRACE_UI\] FIRST_TOKEN/),
+        );
+    });
+
+    it("should not log FIRST_TOKEN for user echo messages", () => {
+        const consoleSpy = spyOn(console, "log");
+        rosService.sendChatMessage.and.returnValue(of(undefined));
+        service.sendChatMessage("perf-chat", "hello").subscribe();
+        consoleSpy.calls.reset();
+
+        chatMessageReceiver$.next({
+            chat_id: "perf-chat",
+            message_id: "user-1",
+            timestamp: "now",
+            is_user: true,
+            content: "hello",
+        });
+
+        expect(consoleSpy).not.toHaveBeenCalledWith(
+            jasmine.stringMatching(/^\[PERF_TRACE_UI\] FIRST_TOKEN/),
+        );
+    });
+
+    it("should report sub-1s FIRST_TOKEN elapsed for warm-agent responses", () => {
+        const consoleSpy = spyOn(console, "log");
+        rosService.sendChatMessage.and.returnValue(of(undefined));
+        service.sendChatMessage("warm-chat", "hello").subscribe();
+        consoleSpy.calls.reset();
+
+        chatMessageReceiver$.next({
+            chat_id: "warm-chat",
+            message_id: "ai-1",
+            timestamp: "now",
+            is_user: false,
+            content: "Hi",
+        });
+
+        const firstTokenCall = consoleSpy.calls
+            .allArgs()
+            .map((args) => String(args[0]))
+            .find((msg) => msg.startsWith("[PERF_TRACE_UI] FIRST_TOKEN"));
+        expect(firstTokenCall).toBeDefined();
+        const match = firstTokenCall!.match(
+            /^\[PERF_TRACE_UI\] FIRST_TOKEN chatId=warm-chat t=\d+(?:\.\d+)?ms elapsed=(\d+(?:\.\d+)?)ms$/,
+        );
+        expect(match).not.toBeNull();
+        expect(Number(match![1])).toBeLessThan(1000);
+
+        // Rapid follow-up chunks must not re-log FIRST_TOKEN.
+        consoleSpy.calls.reset();
+        chatMessageReceiver$.next({
+            chat_id: "warm-chat",
+            message_id: "ai-1",
+            timestamp: "now",
+            is_user: false,
+            content: "Hi there",
+        });
+        chatMessageReceiver$.next({
+            chat_id: "warm-chat",
+            message_id: "ai-1",
+            timestamp: "now",
+            is_user: false,
+            content: "Hi there!",
+        });
+        expect(consoleSpy).not.toHaveBeenCalledWith(
+            jasmine.stringMatching(/^\[PERF_TRACE_UI\] FIRST_TOKEN/),
         );
     });
 
     it("should get the correct listening-state if no inital status was published yet", () => {
         const chatId = "test-id";
         const next = jasmine.createSpy();
-        rosService.getChatIsListening.and.returnValue(
-            new BehaviorSubject(true),
-        );
+        const listeningResponse$ = new Subject<boolean>();
+        rosService.getChatIsListening.and.returnValue(listeningResponse$);
         service.getIsListeningObservable(chatId).subscribe({next});
         expect(rosService.getChatIsListening).toHaveBeenCalledOnceWith(chatId);
-        voiceAssistantChatIsListeningReceiver$.next({
-            chat_id: chatId,
-            listening: false,
-        });
+        // Defaults to true when a chat is selected and no status has been published yet
+        expect(next.calls.allArgs()).toEqual([[true]]);
+        listeningResponse$.next(false);
         voiceAssistantChatIsListeningReceiver$.next({
             chat_id: chatId,
             listening: true,
         });
         voiceAssistantChatIsListeningReceiver$.next({
             chat_id: "other-chat-id",
-            listening: true,
+            listening: false,
         });
-        expect(next.calls.allArgs()).toEqual([[true], [false], [true]]);
+        expect(next.calls.allArgs()).toEqual([
+            [true],
+            [false],
+            [true],
+        ]);
     });
 
     it("should get the correct listening-state if an inital status was already published", () => {

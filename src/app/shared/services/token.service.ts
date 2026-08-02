@@ -10,10 +10,7 @@ export class TokenService {
     private readonly tokenStatusSubject = new BehaviorSubject<{
         tokenExists: boolean;
         tokenActive: boolean;
-    }>({
-        tokenExists: false,
-        tokenActive: false,
-    });
+    }>({tokenExists: true, tokenActive: true});
     tokenStatus$ = this.tokenStatusSubject.asObservable();
 
     constructor(private readonly rosService: RosService) {

@@ -38,3 +38,32 @@ input.form-control:focus {
     padding-left: 0.5rem;
     width: 100%;
 }
+
+.gap-2 {
+    gap: 0.5rem;
+}
+
+.import-preview {
+    background-color: rgba(0, 0, 0, 0.25);
+}
+
+.modal-content {
+    background-color: rgba(30, 30, 40, 0.98);
+}
+
+.table {
+    --bs-table-color: #ffffff;
+    --bs-table-bg: transparent;
+    --bs-table-border-color: rgba(255, 255, 255, 0.15);
+    --bs-table-striped-color: #ffffff;
+    --bs-table-striped-bg: rgba(0, 0, 0, 0.2);
+
+    th {
+        color: $pink-color !important;
+        font-weight: 600;
+    }
+
+    td {
+        color: #ffffff !important;
+    }
+}

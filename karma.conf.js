@@ -40,6 +40,9 @@ module.exports = function (config) {
                 flags: ["--no-sandbox"],
             },
         },
+        browserNoActivityTimeout: 60000,
+        browserDisconnectTimeout: 10000,
+        browserDisconnectTolerance: 3,
         restartOnFileChange: true,
     });
 };

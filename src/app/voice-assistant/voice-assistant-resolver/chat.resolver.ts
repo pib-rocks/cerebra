@@ -10,10 +10,9 @@ export const chatResolver: ResolveFn<Observable<any> | void> = (
     route,
 ): Observable<Chat> | void => {
     if (inject(ChatService).chats.length == 0) {
-        if (route.url.length > 0) {
-            return inject(ApiService).get(
-                UrlConstants.CHAT + `/${route.url.pop()?.toString()}`,
-            );
+        const chatUuid = route.paramMap.get("chatUuid") || route.params["chatUuid"];
+        if (chatUuid) {
+            return inject(ApiService).get(`${UrlConstants.CHAT}/${chatUuid}`);
         }
     }
 };

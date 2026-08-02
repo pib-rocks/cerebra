@@ -1,0 +1,83 @@
+<div class="row full-height mx-0">
+    <div class="main col-sm-9 col-xl-10 p-0">
+        <iframe
+            *ngIf="marimoUrl"
+            [src]="marimoUrl"
+            class="w-100 h-100 border-0 bg-dark-editor"
+            style="min-height: 720px;"
+            title="Marimo Reactive Notebook Editor">
+        </iframe>
+    </div>
+    <div class="col-sm-3 col-xl-2 p-0">
+        <app-sidebar-right
+            [optionCallbackMethods]="optionCallbackMethods"
+            [dropdownCallbackMethods]="dropdownCallbackMethods"
+            [subject]="subject"
+            [rerouteOnRefresh]="false"
+            [lStorage]="'marimo_notebook'">
+        </app-sidebar-right>
+    </div>
+</div>
+
+<ng-template
+    #modalContent
+    let-modal
+    id="template">
+    <div
+        class="row display-flex modal-header"
+        id="modal-header">
+        <div
+            class="col-10"
+            id="header-title">
+            <span id="header-title-text">{{ modalTitle }}</span>
+        </div>
+        <div
+            class="col-2 text-right"
+            id="close-button">
+            <button
+                id="modal-close-button"
+                data-test="BTN_Close"
+                type="button"
+                (click)="modal.dismiss('Cross')"
+                class="btn">
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="10"
+                    height="16">
+                    <text
+                        font-family="Titillium"
+                        fill="#FFF"
+                        font-weight="bold"
+                        font-size="16"
+                        y="11.062">
+                        X
+                    </text>
+                </svg>
+            </button>
+        </div>
+    </div>
+    <div
+        class="row display-flex modal-body pt-3 pb-3 justify-content-center"
+        id="modal-body">
+        <input
+            id="input-name"
+            data-test="INP_Name"
+            type="text"
+            class="input-name focus col-11"
+            placeholder="NAME"
+            [formControl]="nameFormControl"
+            (keyup.enter)="modal.close('Save')" />
+    </div>
+    <div
+        class="row modal-footer pb-0 justify-content-center"
+        id="modal-footer">
+        <button
+            id="modal-save-button"
+            data-test="BTN_Save"
+            type="button"
+            class="btn fill-button col-11 p-0 mb-3"
+            (click)="modal.close('Save')">
+            <span id="save-button-text">SAVE</span>
+        </button>
+    </div>
+</ng-template>

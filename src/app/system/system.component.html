@@ -4,11 +4,44 @@
             class="nav-item"
             routerLinkActive="navbar-btn-active">
             <a
+                id="diagnostics-nav"
+                data-test="LNK_Diagnostics"
+                class="nav-link sidebar-btn"
+                routerLink="diagnostics">
+                Diagnose
+            </a>
+        </li>
+        <li
+            class="nav-item"
+            routerLinkActive="navbar-btn-active">
+            <a
+                id="docker-nav"
+                data-test="LNK_Docker"
+                class="nav-link sidebar-btn"
+                routerLink="docker">
+                Docker
+            </a>
+        </li>
+        <li
+            class="nav-item"
+            routerLinkActive="navbar-btn-active">
+            <a
                 id="hardware-nav"
                 data-test="LNK_Hardware_IDs"
                 class="nav-link sidebar-btn"
                 routerLink="hardware-ids">
                 Hardware IDs
+            </a>
+        </li>
+        <li
+            class="nav-item"
+            routerLinkActive="navbar-btn-active">
+            <a
+                id="microphone-array-nav"
+                data-test="LNK_Microphone_Array"
+                class="nav-link sidebar-btn"
+                routerLink="microphone-array">
+                Microphone Array
             </a>
         </li>
     </ul>

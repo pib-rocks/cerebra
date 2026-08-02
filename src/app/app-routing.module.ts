@@ -6,7 +6,7 @@ import {jointGuard} from "./security/joint-guard";
 import {VoiceAssistantComponent} from "./voice-assistant/voice-assistant.component";
 import {PersonalityDescriptionComponent} from "./voice-assistant/personality-description/personality-description.component";
 import {voiceAssistantResolver} from "./voice-assistant/voice-assistant-resolver/voice-assistant.resolver";
-import {ChatWindowComponent} from "./voice-assistant/voice-assistant-chat/chat-window/chat-window.component";
+import {ChatWindowDeepChatComponent} from "./voice-assistant/voice-assistant-chat/chat-window-deep-chat/chat-window-deep-chat.component";
 import {chatResolver} from "./voice-assistant/voice-assistant-resolver/chat.resolver";
 import {PersonalityWrapperComponent} from "./voice-assistant/personality-wrapper/personality-wrapper.component";
 import {JointControlComponent} from "./joint-control/joint-control.component";
@@ -21,7 +21,11 @@ import {ProgramSplitscreenComponent} from "./program/program-overview/program-ma
 import {programCodeResolver} from "./program/program-overview/program-manager/program-splitscreen/resolver/program-code.resolver";
 import {PoseComponent} from "./pose/pose.component";
 import {HardwareIdComponent} from "./system/hardware-id/hardware-id.component";
+import {DiagnosticsComponent} from "./system/diagnostics/diagnostics.component";
+import {DockerManagementComponent} from "./system/docker/docker.component";
+import {MicrophoneArrayComponent} from "./system/microphone-array/microphone-array.component";
 import {RgbLedButtonComponent} from "./program/program-overview/rgb-led-button/rgb-led-button.component";
+import {MarimoComponent} from "./program/marimo/marimo.component";
 import {ProgramOverviewComponent} from "./program/program-overview/program-overview.component";
 import {SystemComponent} from "./system/system.component";
 
@@ -51,10 +55,22 @@ const routes: Routes = [
         component: SystemComponent,
         children: [
             {
+                path: "diagnostics",
+                component: DiagnosticsComponent,
+            },
+            {
+                path: "docker",
+                component: DockerManagementComponent,
+            },
+            {
                 path: "hardware-ids",
                 component: HardwareIdComponent,
             },
-            {path: "", redirectTo: "hardware-ids", pathMatch: "full"},
+            {
+                path: "microphone-array",
+                component: MicrophoneArrayComponent,
+            },
+            {path: "", redirectTo: "diagnostics", pathMatch: "full"},
         ],
     },
     {
@@ -85,12 +101,12 @@ const routes: Routes = [
                         children: [
                             {
                                 path: ":chatUuid",
-                                component: ChatWindowComponent,
+                                component: ChatWindowDeepChatComponent,
                                 resolve: {chat: chatResolver},
                             },
                             {
                                 path: "",
-                                component: ChatWindowComponent,
+                                component: ChatWindowDeepChatComponent,
                             },
                         ],
                     },
@@ -102,6 +118,16 @@ const routes: Routes = [
         path: "program",
         component: ProgramOverviewComponent,
         children: [
+            {
+                path: "marimo",
+                component: MarimoComponent,
+                children: [
+                    {
+                        path: ":notebook",
+                        component: MarimoComponent,
+                    },
+                ],
+            },
             {
                 path: "rgb-led-button",
                 component: RgbLedButtonComponent,

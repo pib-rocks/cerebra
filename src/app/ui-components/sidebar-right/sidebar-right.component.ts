@@ -4,6 +4,7 @@ import {
     OnDestroy,
     OnInit,
     ChangeDetectionStrategy,
+    ChangeDetectorRef,
     OnChanges,
 } from "@angular/core";
 import {
@@ -62,6 +63,7 @@ export class SideBarRightComponent implements OnInit, OnDestroy, OnChanges {
     constructor(
         private router: Router,
         private route: ActivatedRoute,
+        private cdr: ChangeDetectorRef,
     ) {}
 
     ngOnDestroy(): void {
@@ -87,6 +89,7 @@ export class SideBarRightComponent implements OnInit, OnDestroy, OnChanges {
         this.subscription = this.subject.subscribe(
             (serviceElements: SidebarElement[]) => {
                 this.sidebarElements = serviceElements;
+                this.cdr.markForCheck();
                 if (!this.rerouteOnRefresh) return;
                 if (
                     this.sidebarElements.find(

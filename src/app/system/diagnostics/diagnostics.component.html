@@ -1,0 +1,178 @@
+<div class="diagnostics-container p-3">
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <h3 class="text-white mb-0">System Diagnostics & Telemetry</h3>
+    <div class="d-flex flex-wrap gap-2">
+      <button
+        id="btn-refresh-diagnostics"
+        data-test="BTN_Refresh_Diagnostics"
+        class="btn btn-primary"
+        [disabled]="loading"
+        (click)="refreshDiagnostics()"
+      >
+        <i class="fas fa-sync-alt mr-1" [class.fa-spin]="loading"></i>
+        {{ loading ? 'Loading...' : 'Refresh' }}
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger">
+    {{ error }}
+  </div>
+
+  <!-- Summary Table -->
+  <div class="card mb-4 p-3 shadow-sm" *ngIf="summary">
+    <h4 class="card-title text-white">System Summary</h4>
+    <div class="table-responsive">
+      <table class="table table-dark table-striped table-hover mt-2 mb-0" id="table-system-summary">
+        <thead>
+          <tr>
+            <th>Overall Status</th>
+            <th>CPU Temperature</th>
+            <th>Free RAM</th>
+            <th>Free disk space</th>
+            <th>Container Status</th>
+            <th>Bricklets Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <span class="badge" [ngClass]="getStatusBadgeClass(summary.overallStatus)">
+                {{ summary.overallStatus | uppercase }}
+              </span>
+            </td>
+            <td>
+              <span class="badge" [ngClass]="getStatusBadgeClass(summary.cpuStatus)">
+                {{ summary.cpuTemperature }} °C
+              </span>
+            </td>
+            <td>
+              <span class="badge" [ngClass]="getStatusBadgeClass(summary.memoryStatus || 'ok')">
+                <ng-container *ngIf="summary.memoryUsage">
+                  {{ summary.memoryUsage.used }} / {{ summary.memoryUsage.total }} ({{ summary.memoryUsage.percentUsed }}%)
+                </ng-container>
+                <ng-container *ngIf="!summary.memoryUsage">
+                  N/A
+                </ng-container>
+              </span>
+              <div *ngIf="getCpuUsagePercent() !== undefined" class="mt-1 text-white-50 small">
+                CPU: {{ getCpuUsagePercent() }}%
+              </div>
+            </td>
+            <td>
+              <span class="badge" [ngClass]="getStatusBadgeClass(summary.diskStatus)">
+                {{ summary.diskSpace.free }} / {{ summary.diskSpace.total }} ({{ summary.diskSpace.percentUsed }}%)
+              </span>
+            </td>
+            <td>
+              <span class="badge" [ngClass]="getStatusBadgeClass(summary.containersStatus)">
+                {{ summary.healthyContainersCount }}/{{ summary.totalContainersCount }} Healthy
+              </span>
+            </td>
+            <td>
+              <span class="badge" [ngClass]="getStatusBadgeClass(summary.brickletsStatus)">
+                {{ summary.totalBrickletsCount }} Connected
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Servo Bricklets & RGB LED Buttons Side-by-Side -->
+  <div class="row mb-4">
+    <div class="col-md-6 mb-3 mb-md-0">
+      <div class="card p-3 shadow-sm h-100">
+        <h4 class="card-title text-white">Servo Bricklets</h4>
+        <div class="table-responsive">
+          <table class="table table-dark table-striped table-hover mt-2 mb-0" id="table-servo-bricklets">
+            <thead>
+              <tr>
+                <th>UID</th>
+                <th>Status</th>
+                <th>Voltage</th>
+                <th>Current</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let b of servoBricklets">
+                <td><code>{{ b.uid || 'N/A' }}</code></td>
+                <td>
+                  <span class="badge" [ngClass]="getStatusBadgeClass(b.status)">
+                    {{ b.status | uppercase }}
+                  </span>
+                </td>
+                <td>{{ b.voltage }} V</td>
+                <td>{{ b.current }} mA</td>
+              </tr>
+              <tr *ngIf="servoBricklets.length === 0">
+                <td colspan="4" class="text-center text-muted">
+                  No Servo Bricklet telemetry data available.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="card p-3 shadow-sm h-100">
+        <h4 class="card-title text-white">RGB LED Buttons</h4>
+        <div class="table-responsive">
+          <table class="table table-dark table-striped table-hover mt-2 mb-0" id="table-button-bricklets">
+            <thead>
+              <tr>
+                <th>UID</th>
+                <th>Status</th>
+                <th>Color</th>
+                <th>Press State</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let b of buttonBricklets">
+                <td><code>{{ b.uid || 'N/A' }}</code></td>
+                <td>
+                  <span class="badge" [ngClass]="getStatusBadgeClass(b.status)">
+                    {{ b.status | uppercase }}
+                  </span>
+                </td>
+                <td>
+                  <span
+                    *ngIf="b.color"
+                    class="d-inline-block rounded-circle border mr-1"
+                    [style.background-color]="b.color"
+                    style="width: 14px; height: 14px; vertical-align: middle;"
+                  ></span>
+                  {{ b.color || 'N/A' }}
+                </td>
+                <td>{{ b.pressState || 'Released' }}</td>
+              </tr>
+              <tr *ngIf="buttonBricklets.length === 0">
+                <td colspan="4" class="text-center text-muted">
+                  No RGB LED Button telemetry data available.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Host & Container Status -->
+  <div class="card p-3 shadow-sm" *ngIf="system">
+    <h4 class="card-title text-white">Docker Containers & Service Status</h4>
+    <div class="row mt-2">
+      <div class="col-md-4" *ngFor="let c of system.containers">
+        <div class="border rounded p-2 mb-2 d-flex justify-content-between align-items-center">
+          <span class="text-white"><strong>{{ c.name }}</strong></span>
+          <span class="badge" [ngClass]="getStatusBadgeClass(c.health)">
+            {{ c.status === 'exited' ? 'stopped' : c.status }} ({{ c.health }})
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
