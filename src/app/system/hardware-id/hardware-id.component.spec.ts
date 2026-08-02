@@ -197,8 +197,8 @@ describe("HardwareIdComponent", () => {
 
         expect(exportBtn).toBeTruthy();
         expect(importBtn).toBeTruthy();
-        expect(exportBtn.textContent).toContain("Export Hardware-IDs");
-        expect(importBtn.textContent).toContain("Import Hardware-IDs");
+        expect(exportBtn.textContent).toContain("Export IDs");
+        expect(importBtn.textContent).toContain("Import IDs");
     });
 
     it("should export Hardware-IDs and trigger a JSON download", () => {
