@@ -84,12 +84,15 @@ describe("DiagnosticsService hardware-config", () => {
       click: clickSpy,
     } as unknown as HTMLAnchorElement);
 
+    jasmine.clock().install();
     service.downloadHardwareConfig(sampleConfig);
+    jasmine.clock().tick(10000);
 
     expect(createObjectURLSpy).toHaveBeenCalled();
     expect(createElementSpy).toHaveBeenCalledWith("a");
     expect(clickSpy).toHaveBeenCalled();
     expect(revokeObjectURLSpy).toHaveBeenCalledWith("blob:mock");
+    jasmine.clock().uninstall();
   });
 
   it("should validate a correct hardware-config document", () => {

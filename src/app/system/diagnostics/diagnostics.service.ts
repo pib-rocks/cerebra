@@ -142,15 +142,19 @@ export class DiagnosticsService {
   }
 
   downloadHardwareConfig(config: HardwareConfig): void {
-    const json = JSON.stringify(config, null, 2);
+    const json = typeof config === "string" ? config : JSON.stringify(config, null, 2);
     const blob = new Blob([json], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
     anchor.href = url;
     anchor.download = "hardware-config.json";
-    document.body.appendChild(anchor);
-    anchor.click();
-    document.body.removeChild(anchor);
+    try {
+      document.body.appendChild(anchor);
+      anchor.click();
+      document.body.removeChild(anchor);
+    } catch {
+      anchor.click();
+    }
     setTimeout(() => URL.revokeObjectURL(url), 10000);
   }
 

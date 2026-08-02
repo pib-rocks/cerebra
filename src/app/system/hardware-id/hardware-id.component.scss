@@ -45,10 +45,20 @@ input.form-control:focus {
 
 .import-preview {
     background-color: rgba(0, 0, 0, 0.25);
+
+    .table-responsive {
+        max-height: 250px;
+        overflow-y: auto;
+    }
 }
 
 .modal-content {
     background-color: rgba(30, 30, 40, 0.98);
+}
+
+.modal-body {
+    max-height: 60vh;
+    overflow-y: auto;
 }
 
 .table {
