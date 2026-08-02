@@ -133,16 +133,37 @@
                         (change)="onHardwareImportFileSelected($event)"
                     />
 
-                    <button
-                        type="button"
-                        id="btn-choose-hardware-import-file"
-                        data-test="BTN_Choose_Hardware_IDs_File"
-                        class="btn btn-outline-light mb-3"
-                        (click)="openHardwareImportFileDialog()"
-                    >
-                        <i class="fas fa-file-upload mr-1"></i>
-                        Choose JSON file
-                    </button>
+                    <div class="d-flex flex-wrap align-items-center mb-3">
+                        <button
+                            type="button"
+                            id="btn-choose-hardware-import-file"
+                            data-test="BTN_Choose_Hardware_IDs_File"
+                            class="btn btn-outline-light mr-2 mb-2"
+                            (click)="openHardwareImportFileDialog()"
+                        >
+                            <i class="fas fa-file-upload mr-1"></i>
+                            Choose JSON file
+                        </button>
+
+                        <button
+                            type="button"
+                            class="btn btn-primary mr-2 mb-2"
+                            data-test="BTN_Import_Hardware_IDs_Confirm"
+                            [disabled]="!importPreview || importingHardwareIds || importErrors.length > 0"
+                            (click)="confirmHardwareImport()"
+                        >
+                            {{ importingHardwareIds ? 'Importing...' : 'Confirm import' }}
+                        </button>
+
+                        <button
+                            type="button"
+                            class="btn btn-secondary mb-2"
+                            data-test="BTN_Import_Hardware_IDs_Cancel"
+                            (click)="closeImportModal()"
+                        >
+                            Cancel
+                        </button>
+                    </div>
 
                     @if (importErrors.length > 0) {
                     <div class="alert alert-danger">
@@ -197,25 +218,6 @@
                         }
                     </div>
                     }
-                </div>
-                <div class="modal-footer border-secondary">
-                    <button
-                        type="button"
-                        class="btn btn-secondary"
-                        data-test="BTN_Import_Hardware_IDs_Cancel"
-                        (click)="closeImportModal()"
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        type="button"
-                        class="btn btn-primary"
-                        data-test="BTN_Import_Hardware_IDs_Confirm"
-                        [disabled]="!importPreview || importingHardwareIds || importErrors.length > 0"
-                        (click)="confirmHardwareImport()"
-                    >
-                        {{ importingHardwareIds ? 'Importing...' : 'Confirm import' }}
-                    </button>
                 </div>
             </div>
         </div>
