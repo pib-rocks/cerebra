@@ -45,6 +45,7 @@ describe("HardwareIdComponent", () => {
             "getBrickletObservable",
             "renameBrickletUid",
             "getBricklet",
+            "reloadBrickletsFromDb",
         ]);
 
         brickletServiceSpy.getBrickletObservable.and.returnValue(
@@ -292,6 +293,7 @@ describe("HardwareIdComponent", () => {
         expect(diagnosticsServiceSpy.importHardwareConfig).toHaveBeenCalledWith(
             sampleHardwareConfig,
         );
+        expect(brickletServiceSpy.reloadBrickletsFromDb).toHaveBeenCalled();
         expect(component.showImportModal).toBeFalse();
         expect(component.importSuccessMessage).toBe(
             "Hardware-IDs imported successfully.",
