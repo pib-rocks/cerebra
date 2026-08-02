@@ -128,7 +128,6 @@ export class HardwareIdComponent implements OnInit {
     onHardwareImportFileSelected(event: Event): void {
         const input = event.target as HTMLInputElement;
         const file = input.files?.[0];
-        input.value = "";
 
         this.importPreview = null;
         this.importErrors = [];
@@ -136,6 +135,7 @@ export class HardwareIdComponent implements OnInit {
         this.importSuccessMessage = null;
 
         if (!file) {
+            input.value = "";
             return;
         }
 
@@ -147,10 +147,12 @@ export class HardwareIdComponent implements OnInit {
             this.importErrors = result.errors;
             this.importWarnings = result.warnings;
             this.importPreview = result.valid ? result.config ?? null : null;
+            input.value = "";
         };
         reader.onerror = () => {
             this.importErrors = ["The selected file could not be read."];
             this.importPreview = null;
+            input.value = "";
         };
         reader.readAsText(file);
     }
