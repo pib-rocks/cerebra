@@ -49,6 +49,11 @@ export class ChatWindowDeepChatComponent
     readonly VA_ICON =
         "../../../../assets/voice-assistant-svgs/chat/pib-icon-speaking.png";
 
+    /** Light label colour — black on the #041939 chat background is only ~1.2:1. */
+    readonly NAME_STYLE = {color: "#ffffff", fontWeight: "500"};
+    readonly USER_NAME = "User";
+    readonly FALLBACK_AI_NAME = "pib";
+
     constructor(
         private readonly chatService: ChatService,
         private readonly voiceAssistantService: VoiceAssistantService,
@@ -265,12 +270,19 @@ export class ChatWindowDeepChatComponent
         el.auxiliaryStyle = `
             code { color: #d3cccc; }
             blockquote { background-color: #344864; }
+            .name { color: #ffffff; }
         `;
     }
 
     private applyNames(el?: any): void {
         const target = el ?? this.deepChatRef?.nativeElement;
-        if (!target || !this.personalityName) return;
-        target.names = {ai: {text: this.personalityName}};
+        if (!target) return;
+        target.names = {
+            user: {text: this.USER_NAME, style: this.NAME_STYLE},
+            ai: {
+                text: this.personalityName ?? this.FALLBACK_AI_NAME,
+                style: this.NAME_STYLE,
+            },
+        };
     }
 }

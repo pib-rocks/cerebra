@@ -450,4 +450,55 @@ describe("ChatWindowDeepChatComponent", () => {
         expect(mockDeepChat.validateInput!("abc")).toBeTrue();
         expect(mockDeepChat.validateInput!("abcd")).toBeTrue();
     });
+
+    it("applyNames sets a light colour on both user and ai labels", () => {
+        const names = mockDeepChat["names"] as {
+            user: {style: {color: string}};
+            ai: {style: {color: string}};
+        };
+
+        expect(names.user.style.color).toBe("#ffffff");
+        expect(names.ai.style.color).toBe("#ffffff");
+    });
+
+    it("applyNames keeps ai.text equal to the resolved personality name", () => {
+        component.personalityName = "Eva";
+        (component as unknown as {applyNames: (el?: unknown) => void}).applyNames(
+            mockDeepChat,
+        );
+
+        const names = mockDeepChat["names"] as {ai: {text: string}};
+        expect(names.ai.text).toBe("Eva");
+    });
+
+    it('applyNames keeps user.text as "User"', () => {
+        const names = mockDeepChat["names"] as {user: {text: string}};
+        expect(names.user.text).toBe("User");
+    });
+
+    it("applyNames still assigns styled names when personalityName is undefined", () => {
+        component.personalityName = undefined;
+        (component as unknown as {applyNames: (el?: unknown) => void}).applyNames(
+            mockDeepChat,
+        );
+
+        const names = mockDeepChat["names"] as {
+            user: {text: string; style: {color: string}};
+            ai: {style: {color: string}};
+        };
+        expect(names).toBeDefined();
+        expect(names.user.text).toBe("User");
+        expect(names.user.style.color).toBe("#ffffff");
+        expect(names.ai.style.color).toBe("#ffffff");
+    });
+
+    it("auxiliaryStyle contains the light .name rule plus the pre-existing rules", () => {
+        const auxiliaryStyle = mockDeepChat["auxiliaryStyle"] as string;
+
+        expect(auxiliaryStyle).toContain(".name { color: #ffffff; }");
+        expect(auxiliaryStyle).toContain("code { color: #d3cccc; }");
+        expect(auxiliaryStyle).toContain(
+            "blockquote { background-color: #344864; }",
+        );
+    });
 });
