@@ -67,7 +67,9 @@ export class HardwareIdComponent implements OnInit {
             bricklets.forEach((bricklet) => {
                 const controlName = bricklet.brickletNumber.toString();
                 if (this.brickletUidForm.contains(controlName)) {
-                    this.brickletUidForm.get(controlName)?.setValue(bricklet.uid);
+                    this.brickletUidForm
+                        .get(controlName)
+                        ?.setValue(bricklet.uid);
                 } else {
                     this.brickletUidForm.addControl(
                         controlName,
@@ -102,7 +104,8 @@ export class HardwareIdComponent implements OnInit {
             next: (config) => {
                 this.diagnosticsService.downloadHardwareConfig(config);
                 this.exportingHardwareIds = false;
-                this.importSuccessMessage = "Hardware-IDs exported successfully.";
+                this.importSuccessMessage =
+                    "Hardware-IDs exported successfully.";
             },
             error: () => {
                 this.exportingHardwareIds = false;
@@ -141,7 +144,8 @@ export class HardwareIdComponent implements OnInit {
 
         const reader = new FileReader();
         reader.onload = () => {
-            const content = typeof reader.result === "string" ? reader.result : "";
+            const content =
+                typeof reader.result === "string" ? reader.result : "";
             const result =
                 this.diagnosticsService.parseHardwareConfigFileContent(content);
             this.importErrors = result.errors;
@@ -165,21 +169,24 @@ export class HardwareIdComponent implements OnInit {
         this.importingHardwareIds = true;
         this.error = null;
 
-        this.diagnosticsService.importHardwareConfig(this.importPreview).subscribe({
-            next: () => {
-                this.importingHardwareIds = false;
-                this.showImportModal = false;
-                this.resetImportState();
-                this.importSuccessMessage = "Hardware-IDs imported successfully.";
-                this.brickletService.reloadBrickletsFromDb();
-            },
-            error: (err) => {
-                this.importingHardwareIds = false;
-                const serverError =
-                    err?.error?.error || "Failed to import Hardware-IDs.";
-                this.importErrors = [serverError];
-            },
-        });
+        this.diagnosticsService
+            .importHardwareConfig(this.importPreview)
+            .subscribe({
+                next: () => {
+                    this.importingHardwareIds = false;
+                    this.showImportModal = false;
+                    this.resetImportState();
+                    this.importSuccessMessage =
+                        "Hardware-IDs imported successfully.";
+                    this.brickletService.reloadBrickletsFromDb();
+                },
+                error: (err) => {
+                    this.importingHardwareIds = false;
+                    const serverError =
+                        err?.error?.error || "Failed to import Hardware-IDs.";
+                    this.importErrors = [serverError];
+                },
+            });
     }
 
     private detectChangedBricklets(

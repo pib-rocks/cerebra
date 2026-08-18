@@ -18,12 +18,7 @@ export type MicrophoneArrayPreset =
     | "raw"
     | "custom";
 
-export type LedRingMode =
-    | "doa_trace"
-    | "pulse"
-    | "solid"
-    | "mute"
-    | "off";
+export type LedRingMode = "doa_trace" | "pulse" | "solid" | "mute" | "off";
 
 export type HighPassFilterValue = 0 | 1 | 2 | 3;
 
@@ -50,7 +45,9 @@ export class MicrophoneArrayService {
     constructor(private apiService: ApiService) {}
 
     getTelemetry(): Observable<MicrophoneArrayTelemetry> {
-        return this.apiService.get(`${UrlConstants.MICROPHONE_ARRAY}/telemetry`);
+        return this.apiService.get(
+            `${UrlConstants.MICROPHONE_ARRAY}/telemetry`,
+        );
     }
 
     getTuning(): Observable<MicrophoneArrayTuning> {

@@ -31,7 +31,12 @@ module.exports = function (config) {
         },
         reporters: ["progress", "kjhtml"],
         files: [
-            { pattern: "./src/index.html", watched: true, included: false, served: true }
+            {
+                pattern: "./src/index.html",
+                watched: true,
+                included: false,
+                served: true,
+            },
         ],
         browsers: ["Chrome"],
         customLaunchers: {

@@ -20,7 +20,12 @@ describe("MarimoComponent", () => {
     const setup = () => {
         marimoServiceSpy = jasmine.createSpyObj(
             "MarimoService",
-            ["getNotebooks", "createNotebook", "renameNotebook", "deleteNotebook"],
+            [
+                "getNotebooks",
+                "createNotebook",
+                "renameNotebook",
+                "deleteNotebook",
+            ],
             {
                 notebooksSubject: new BehaviorSubject<any[]>([]),
             },
@@ -76,11 +81,16 @@ describe("MarimoComponent", () => {
                 new MarimoWorkbook("Keep One", "keep_one.py"),
                 new MarimoWorkbook("Keep Two", "keep_two.py"),
             ];
-            const selectSpy = spyOn(component, "selectNotebook").and.callThrough();
+            const selectSpy = spyOn(
+                component,
+                "selectNotebook",
+            ).and.callThrough();
 
             component.deleteWorkbook(openFile);
 
-            expect(marimoServiceSpy.deleteNotebook).toHaveBeenCalledWith(openFile);
+            expect(marimoServiceSpy.deleteNotebook).toHaveBeenCalledWith(
+                openFile,
+            );
             expect(selectSpy).toHaveBeenCalledWith("keep_one.py");
         });
 
@@ -89,11 +99,16 @@ describe("MarimoComponent", () => {
             component.selectedFilename = openFile;
             // No notebooks remain after the delete.
             (marimoServiceSpy as any).notebooks = [];
-            const setUrlSpy = spyOn(component, "setIframeUrl").and.callThrough();
+            const setUrlSpy = spyOn(
+                component,
+                "setIframeUrl",
+            ).and.callThrough();
 
             component.deleteWorkbook(openFile);
 
-            expect(marimoServiceSpy.deleteNotebook).toHaveBeenCalledWith(openFile);
+            expect(marimoServiceSpy.deleteNotebook).toHaveBeenCalledWith(
+                openFile,
+            );
             expect(setUrlSpy).toHaveBeenCalledWith(component.defaultFilename);
         });
 
@@ -107,7 +122,9 @@ describe("MarimoComponent", () => {
 
             component.deleteWorkbook("other.py");
 
-            expect(marimoServiceSpy.deleteNotebook).toHaveBeenCalledWith("other.py");
+            expect(marimoServiceSpy.deleteNotebook).toHaveBeenCalledWith(
+                "other.py",
+            );
             expect(selectSpy).not.toHaveBeenCalled();
             expect(setUrlSpy).not.toHaveBeenCalled();
         });
@@ -131,7 +148,9 @@ describe("MarimoComponent", () => {
         it("points the iframe at the Nginx reverse proxy, not the marimo port", () => {
             component.setIframeUrl("analysis.py");
 
-            expect(resolvedUrl()).toBe("/marimo-server/?file=analysis.py&theme=dark");
+            expect(resolvedUrl()).toBe(
+                "/marimo-server/?file=analysis.py&theme=dark",
+            );
         });
 
         it("coalesces an empty filename to the default notebook", () => {

@@ -111,7 +111,9 @@ export class ChatWindowDeepChatComponent
                 const chatId = this.currentChatId!;
                 this.submitClickMs = performance.now();
                 console.log(
-                    `[PERF_TRACE_UI] SUBMIT_CLICK chatId=${chatId} t=${this.submitClickMs.toFixed(3)}ms`,
+                    `[PERF_TRACE_UI] SUBMIT_CLICK chatId=${chatId} t=${this.submitClickMs.toFixed(
+                        3,
+                    )}ms`,
                 );
                 this.pendingSignals = signals;
                 this.chatService.sendChatMessage(chatId, text).subscribe({

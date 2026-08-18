@@ -1,4 +1,10 @@
-import {ComponentFixture, TestBed, fakeAsync, tick, discardPeriodicTasks} from "@angular/core/testing";
+import {
+    ComponentFixture,
+    TestBed,
+    fakeAsync,
+    tick,
+    discardPeriodicTasks,
+} from "@angular/core/testing";
 import {MicrophoneArrayComponent} from "./microphone-array.component";
 import {
     MicrophoneArrayService,
@@ -77,7 +83,9 @@ describe("MicrophoneArrayComponent", () => {
     it("should render DOA compass with angle readout and status badges", () => {
         const compiled = fixture.nativeElement as HTMLElement;
 
-        expect(compiled.querySelector("[data-test='VIS_DOA_Compass']")).toBeTruthy();
+        expect(
+            compiled.querySelector("[data-test='VIS_DOA_Compass']"),
+        ).toBeTruthy();
         expect(
             compiled.querySelector("[data-test='TXT_DOA_Angle']")?.textContent,
         ).toContain("135°");
@@ -91,10 +99,13 @@ describe("MicrophoneArrayComponent", () => {
 
     it("should render 5-channel audio level meters", () => {
         const compiled = fixture.nativeElement as HTMLElement;
-        const bars = compiled.querySelectorAll("[data-test^='BAR_Audio_Level_']");
+        const bars = compiled.querySelectorAll(
+            "[data-test^='BAR_Audio_Level_']",
+        );
         expect(bars.length).toBe(5);
         expect(
-            compiled.querySelector("[data-test='TXT_Audio_Level_0']")?.textContent,
+            compiled.querySelector("[data-test='TXT_Audio_Level_0']")
+                ?.textContent,
         ).toContain("80%");
     });
 

@@ -46,12 +46,14 @@ describe("PersonalityDescriptionComponent", () => {
                 "Female",
                 1.5,
                 "FakeDescription",
-            )
+            ),
         );
-        voiceAssistantServiceSpy.personalitiesSubject = new BehaviorSubject<VoiceAssistant[]>([]);
-        voiceAssistantServiceSpy.assistantModelsSubject = new BehaviorSubject<AssistantModel[]>([
-            {id: "123", name: "TestModel"} as unknown as AssistantModel
-        ]);
+        voiceAssistantServiceSpy.personalitiesSubject = new BehaviorSubject<
+            VoiceAssistant[]
+        >([]);
+        voiceAssistantServiceSpy.assistantModelsSubject = new BehaviorSubject<
+            AssistantModel[]
+        >([{id: "123", name: "TestModel"} as unknown as AssistantModel]);
 
         await TestBed.configureTestingModule({
             imports: [

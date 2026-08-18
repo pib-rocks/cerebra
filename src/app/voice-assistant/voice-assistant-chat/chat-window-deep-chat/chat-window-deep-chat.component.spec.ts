@@ -353,7 +353,9 @@ describe("ChatWindowDeepChatComponent", () => {
             role: "ai",
             text: "H",
         });
-        expect(mockDeepChat.addMessage).toHaveBeenCalledTimes(chunks.length - 1);
+        expect(mockDeepChat.addMessage).toHaveBeenCalledTimes(
+            chunks.length - 1,
+        );
         expect(mockDeepChat.addMessage.calls.mostRecent().args[0]).toEqual({
             role: "ai",
             text: "Hello",
@@ -362,7 +364,9 @@ describe("ChatWindowDeepChatComponent", () => {
 
         const ttftCalls = consoleSpy.calls
             .allArgs()
-            .filter((args) => String(args[0]).startsWith("[PERF_TRACE_UI] TTFT"));
+            .filter((args) =>
+                String(args[0]).startsWith("[PERF_TRACE_UI] TTFT"),
+            );
         expect(ttftCalls.length).toBe(1);
         const ttftMatch = String(ttftCalls[0][0]).match(
             /^\[PERF_TRACE_UI\] TTFT (\d+(?:\.\d+)?)ms$/,
