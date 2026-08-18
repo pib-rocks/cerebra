@@ -1,4 +1,4 @@
-import {Component, OnInit} from "@angular/core";
+import {Component, OnInit, ChangeDetectionStrategy} from "@angular/core";
 import {ApiService} from "src/app/shared/services/api.service";
 import {UrlConstants} from "src/app/shared/services/url.constants";
 
@@ -6,6 +6,7 @@ import {UrlConstants} from "src/app/shared/services/url.constants";
     selector: "app-ip-retriever",
     templateUrl: "./ip-retriever.component.html",
     styleUrls: ["./ip-retriever.component.scss"],
+    changeDetection: ChangeDetectionStrategy.Eager,
 })
 export class IpRetrieverComponent implements OnInit {
     hostIp: string = "";

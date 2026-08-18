@@ -13,7 +13,7 @@ describe("PoseService", () => {
     let motorService: jasmine.SpyObj<MotorService>;
 
     let posesSubscriber: jasmine.Spy;
-    let indexLeftSubject: Subject<number> = new Subject();
+    const indexLeftSubject: Subject<number> = new Subject();
 
     const pose1 = new Pose("pose-1", "id-1");
     const pose2 = new Pose("pose-2", "id-2");
@@ -45,10 +45,12 @@ describe("PoseService", () => {
             {
                 name: pose1.name,
                 poseId: pose1.poseId,
+                deletable: pose1.deletable,
             },
             {
                 name: pose2.name,
                 poseId: pose2.poseId,
+                deletable: pose2.deletable,
             },
         ];
 
@@ -122,7 +124,11 @@ describe("PoseService", () => {
 
     it("should rename the pose", () => {
         const name = "updated-name";
-        const updatedPose1Dto: PoseDTO = {name, poseId: pose1.poseId};
+        const updatedPose1Dto: PoseDTO = {
+            name,
+            poseId: pose1.poseId,
+            deletable: true,
+        };
         const updatedPose1 = new Pose(name, pose1.poseId);
         apiService.patch.and.returnValue(of(updatedPose1Dto));
 
@@ -199,4 +205,15 @@ describe("PoseService", () => {
 
         flush();
     }));
+
+    it("should update motor positions of the pose", () => {
+        apiService.patch.and.returnValue(of(undefined));
+
+        poseService.updatePoseMotorPositions(pose2.poseId).subscribe();
+
+        expect(apiService.patch).toHaveBeenCalledOnceWith(
+            `/pose/${pose2.poseId}/motor-positions`,
+            jasmine.objectContaining({motorPositions: jasmine.any(Array)}),
+        );
+    });
 });

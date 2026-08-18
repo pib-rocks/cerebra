@@ -1,6 +1,7 @@
 import {Injectable} from "@angular/core";
 import {BehaviorSubject, Observable, Subject, map, of, tap} from "rxjs";
 import {Pose, PoseDTO} from "../types/pose";
+import {PoseTransfer} from "../types/pose-transfer";
 import {ApiService} from "./api.service";
 import {UrlConstants} from "./url.constants";
 import {MotorPosition} from "../types/motor-position";
@@ -88,6 +89,61 @@ export class PoseService {
             }, 1000);
         });
     }
+
+    public updatePoseMotorPositions(poseId: string): Observable<void> {
+        const motorPositions = this.currentMotorPositions;
+        return this.updatePoseMotorPositionsInDb(poseId, motorPositions).pipe(
+            tap(() => {
+                this.poseIdToMotorPositions.set(
+                    poseId,
+                    structuredClone(motorPositions),
+                );
+            }),
+        );
+    }
+
+    public importPose(poseTransfer: PoseTransfer): Observable<Pose> {
+        const motorPositions = structuredClone(poseTransfer.motorPositions);
+
+        return this.createPoseInDb(poseTransfer.name, motorPositions).pipe(
+            tap((pose) => {
+                this.poses.push(pose);
+                this.poseIdToMotorPositions.set(pose.poseId, motorPositions);
+                this.publishPoses();
+            }),
+        );
+    }
+
+    public exportPose(poseId: string): Observable<PoseTransfer> {
+        const pose = this.getCachedPoseOfId(poseId);
+
+        if (!pose) {
+            throw new Error(
+                `Pose mit ID ${poseId} wurde nicht im lokalen Cache gefunden.`,
+            );
+        }
+
+        const cachedMotorPositions = this.poseIdToMotorPositions.get(poseId);
+        const motorPositionsObservable: Observable<MotorPosition[]> =
+            cachedMotorPositions
+                ? of(cachedMotorPositions)
+                : this.getMotorPositionsOfPoseFromDb(poseId).pipe(
+                      tap((motorPositions) =>
+                          this.poseIdToMotorPositions.set(
+                              poseId,
+                              motorPositions,
+                          ),
+                      ),
+                  );
+
+        return motorPositionsObservable.pipe(
+            map((motorPositions) => ({
+                name: pose.name,
+                motorPositions: structuredClone(motorPositions),
+            })),
+        );
+    }
+
     private getMotorPositionsOfPoseFromDb(
         poseId: string,
     ): Observable<MotorPosition[]> {
@@ -99,7 +155,9 @@ export class PoseService {
         return this.apiService.get(UrlConstants.POSE).pipe(
             map((posesDto) => {
                 const poseDtos: PoseDTO[] = posesDto["poses"];
-                return poseDtos.map((dto) => new Pose(dto.name, dto.poseId));
+                return poseDtos.map(
+                    (dto) => new Pose(dto.name, dto.poseId, dto.deletable),
+                );
             }),
         );
     }
@@ -114,11 +172,26 @@ export class PoseService {
     ): Observable<Pose> {
         return this.apiService
             .post(UrlConstants.POSE, {name, motorPositions})
-            .pipe(map((dto: PoseDTO) => new Pose(dto.name, dto.poseId)));
+            .pipe(
+                map(
+                    (dto: PoseDTO) =>
+                        new Pose(dto.name, dto.poseId, dto.deletable),
+                ),
+            );
     }
 
     private deletePoseFromDb(poseId: string): Observable<any> {
         return this.apiService.delete(`${UrlConstants.POSE}/${poseId}`);
+    }
+
+    private updatePoseMotorPositionsInDb(
+        poseId: string,
+        motorPositions: MotorPosition[],
+    ): Observable<void> {
+        return this.apiService.patch(
+            `${UrlConstants.POSE}/${poseId}/motor-positions`,
+            {motorPositions},
+        );
     }
 
     private publishPoses() {

@@ -35,8 +35,7 @@ describe("SmartConnectComponent", () => {
         mockNgbModal = jasmine.createSpyObj("NgbModal", ["open", "dismissAll"]);
 
         await TestBed.configureTestingModule({
-            declarations: [SmartConnectComponent],
-            imports: [ReactiveFormsModule],
+            imports: [ReactiveFormsModule, SmartConnectComponent],
             providers: [
                 {provide: RosService, useValue: mockRosService},
                 {provide: TokenService, useValue: mockTokenService},
@@ -154,5 +153,15 @@ describe("SmartConnectComponent", () => {
         tokenStatus$.next({tokenExists: true, tokenActive: false});
         expect(component.isTokenStored).toBeTrue();
         expect(component.isTokenActive).toBeFalse();
+    });
+
+    it("should toggle password control based on tokenActive", () => {
+        const passwordControl = component.decryptTokenForm.controls["password"];
+
+        tokenStatus$.next({tokenExists: true, tokenActive: false});
+        expect(passwordControl.disabled).toBeFalse();
+
+        tokenStatus$.next({tokenExists: true, tokenActive: true});
+        expect(passwordControl.disabled).toBeTrue();
     });
 });

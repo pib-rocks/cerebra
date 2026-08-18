@@ -15,6 +15,8 @@ import {
 import {VoiceAssistantState} from "../../ros-types/msg/voice-assistant-state";
 import {SetVoiceAssistantStateResponse} from "../../ros-types/srv/set-voice-assistant-state";
 import {Observable, Subject} from "rxjs";
+import {SolidStateRelayState} from "../../ros-types/msg/solid-state-relay-state";
+import {SetSolidStateRelayStateResponse} from "../../ros-types/srv/set-solid-state-relay-state";
 
 describe("RosService", () => {
     let rosService: RosService;
@@ -76,6 +78,8 @@ describe("RosService", () => {
         expect(rosService["encryptTokenService"]).toBeTruthy();
         expect(rosService["decryptTokenService"]).toBeTruthy();
         expect(rosService["deleteTokenTopic"]).toBeTruthy();
+        expect(rosService["solidStateRelayStateTopic"]).toBeTruthy();
+        expect(rosService["setSolidStateRelayStateService"]).toBeTruthy();
     });
 
     it("should call the set_voice_assistant_state ros service", () => {
@@ -84,20 +88,15 @@ describe("RosService", () => {
             "callService",
         ).and.callFake((_msg, callback) => {
             const res: SetVoiceAssistantStateResponse = {successful: true};
-            callback(res);
+            callback!(res);
         });
-        const subscribeObject = jasmine.createSpyObj("subscriber", [
-            "next",
-            "error",
-        ]);
         const state: VoiceAssistantState = {
             turned_on: true,
             chat_id: "test-chat-id",
         };
-        const subject = rosService.setVoiceAssistantState(state);
-        subject.subscribe(subscribeObject);
-        expect(subscribeObject.next).toHaveBeenCalledTimes(1);
-        expect(subscribeObject.error).not.toHaveBeenCalled();
+        rosService.setVoiceAssistantState(state).subscribe(subscriber);
+        expect(subscriber.next).toHaveBeenCalledTimes(1);
+        expect(subscriber.error).not.toHaveBeenCalled();
         expect(setVoiceAssistantStateSpy).toHaveBeenCalledOnceWith(
             jasmine.objectContaining({
                 voice_assistant_state: state,
@@ -113,20 +112,15 @@ describe("RosService", () => {
             "callService",
         ).and.callFake((_msg, callback) => {
             const res: SetVoiceAssistantStateResponse = {successful: false};
-            callback(res);
+            callback!(res);
         });
-        const subscribeObject = jasmine.createSpyObj("subscriber", [
-            "next",
-            "error",
-        ]);
         const state: VoiceAssistantState = {
             turned_on: true,
             chat_id: "test-chat-id",
         };
-        const subject = rosService.setVoiceAssistantState(state);
-        subject.subscribe(subscribeObject);
-        expect(subscribeObject.next).not.toHaveBeenCalled();
-        expect(subscribeObject.error).toHaveBeenCalledOnceWith(
+        rosService.setVoiceAssistantState(state).subscribe(subscriber);
+        expect(subscriber.next).not.toHaveBeenCalled();
+        expect(subscriber.error).toHaveBeenCalledOnceWith(
             jasmine.objectContaining(new Error("could not apply state...")),
         );
         expect(setVoiceAssistantStateSpy).toHaveBeenCalledOnceWith(
@@ -143,21 +137,17 @@ describe("RosService", () => {
             rosService["setVoiceAssistantStateService"],
             "callService",
         ).and.callFake((_msg, _callback, errorCallback) => {
-            if (errorCallback) errorCallback("errror-message");
+            if (errorCallback) errorCallback("error-message");
         });
-        const subscribeObject = jasmine.createSpyObj("subscriber", [
-            "next",
-            "error",
-        ]);
         const state: VoiceAssistantState = {
             turned_on: true,
             chat_id: "test-chat-id",
         };
-        const subject = rosService.setVoiceAssistantState(state);
-        subject.subscribe(subscribeObject);
-        expect(subscribeObject.next).not.toHaveBeenCalled();
-        expect(subscribeObject.error).toHaveBeenCalledOnceWith(
-            jasmine.objectContaining(new Error("error-message")),
+        rosService.setVoiceAssistantState(state).subscribe(subscriber);
+        expect(subscriber.next).not.toHaveBeenCalled();
+        expect(subscriber.error).toHaveBeenCalledWith(jasmine.any(Error));
+        expect(subscriber.error.calls.mostRecent().args[0].message).toBe(
+            "error-message",
         );
         expect(setVoiceAssistantStateSpy).toHaveBeenCalledOnceWith(
             jasmine.objectContaining({
@@ -216,15 +206,11 @@ describe("RosService", () => {
             rosService["applyJointTrajectoryService"],
             "callService",
         ).and.callFake((_jt, resolve, _reject) => {
-            resolve({successful: true});
+            resolve!({successful: true});
         });
-        const subscriberSpy = jasmine.createSpyObj("subscriber-spy", [
-            "next",
-            "error",
-        ]);
-        rosService.applyJointTrajectory(jt).subscribe(subscriberSpy);
-        expect(subscriberSpy.next).toHaveBeenCalled();
-        expect(subscriberSpy.error).not.toHaveBeenCalled();
+        rosService.applyJointTrajectory(jt).subscribe(subscriber);
+        expect(subscriber.next).toHaveBeenCalled();
+        expect(subscriber.error).not.toHaveBeenCalled();
     });
 
     it("should return an error, if communication with ros was not successful", () => {
@@ -235,13 +221,9 @@ describe("RosService", () => {
         ).and.callFake((_jt, _resolve, reject) => {
             reject?.("error");
         });
-        const subscriberSpy = jasmine.createSpyObj("subscriber-spy", [
-            "next",
-            "error",
-        ]);
-        rosService.applyJointTrajectory(jt).subscribe(subscriberSpy);
-        expect(subscriberSpy.next).not.toHaveBeenCalled();
-        expect(subscriberSpy.error).toHaveBeenCalled();
+        rosService.applyJointTrajectory(jt).subscribe(subscriber);
+        expect(subscriber.next).not.toHaveBeenCalled();
+        expect(subscriber.error).toHaveBeenCalled();
     });
 
     it("should return an error, if communication with ros was successful, but jt could not be applied", () => {
@@ -250,15 +232,11 @@ describe("RosService", () => {
             rosService["applyJointTrajectoryService"],
             "callService",
         ).and.callFake((_jt, resolve, _reject) => {
-            resolve({successful: false});
+            resolve!({successful: false});
         });
-        const subscriberSpy = jasmine.createSpyObj("subscriber-spy", [
-            "next",
-            "error",
-        ]);
-        rosService.applyJointTrajectory(jt).subscribe(subscriberSpy);
-        expect(subscriberSpy.next).not.toHaveBeenCalled();
-        expect(subscriberSpy.error).toHaveBeenCalled();
+        rosService.applyJointTrajectory(jt).subscribe(subscriber);
+        expect(subscriber.next).not.toHaveBeenCalled();
+        expect(subscriber.error).toHaveBeenCalled();
     });
 
     it("should call the service with the MotorSettingsMessage on calling applyMotorSettings", () => {
@@ -284,22 +262,15 @@ describe("RosService", () => {
                 settings_applied: true,
                 settings_persisted: true,
             };
-            callback(res);
+            callback!(res);
         });
         spyOn(rosService.motorSettingsReceiver$, "next");
 
         const obs: Observable<MotorSettingsMessage> =
             rosService.applyMotorSettings(motorSettingsMessage);
-        const subscribeCallBackSpy = jasmine.createSpyObj("subscriber", [
-            "next",
-            "error",
-        ]);
-        obs.subscribe(subscribeCallBackSpy);
+        obs.subscribe(subscriber);
 
-        expect(subscribeCallBackSpy.next).toHaveBeenCalledOnceWith(
-            motorSettingsMessage,
-        );
-        rosService.applyMotorSettings(motorSettingsMessage);
+        expect(subscriber.next).toHaveBeenCalledOnceWith(motorSettingsMessage);
     });
 
     it("should publish the preview size on calling setPreviewsize", () => {
@@ -368,7 +339,7 @@ describe("RosService", () => {
         rosService["proxyProgramStopService"] = stoptSpy;
 
         startSpy.callService.and.callFake((_request, callback) => {
-            callback({proxy_goal_id: "test-proxy-goal-id"});
+            callback!({proxy_goal_id: "test-proxy-goal-id"});
         });
 
         const programNumber = "test-uuid";
@@ -465,7 +436,7 @@ describe("RosService", () => {
             rosService["getChatIsListeningService"],
             "callService",
         ).and.callFake((_request, successCallback, _errorCallback) => {
-            successCallback(isListeningResponse);
+            successCallback!(isListeningResponse);
         });
         rosService.getChatIsListening(chatId).subscribe(subscriber);
         expect(subscriber.next).toHaveBeenCalledOnceWith(
@@ -503,7 +474,7 @@ describe("RosService", () => {
             rosService["sendChatMessageService"],
             "callService",
         ).and.callFake((_request, successCallback, _errorCallback) => {
-            successCallback({successful: true});
+            successCallback!({successful: true});
         });
         rosService
             .sendChatMessage(chatId, chatMessageContent)
@@ -522,7 +493,7 @@ describe("RosService", () => {
             rosService["sendChatMessageService"],
             "callService",
         ).and.callFake((_request, successCallback, _errorCallback) => {
-            successCallback({successful: false});
+            successCallback!({successful: false});
         });
         rosService
             .sendChatMessage(chatId, chatMessageContent)
@@ -560,7 +531,7 @@ describe("RosService", () => {
             rosService["existTokenService"],
             "callService",
         ).and.callFake((_request, successCallback, _errorCallback) => {
-            successCallback({token_exists: false, token_active: false});
+            successCallback!({token_exists: false, token_active: false});
         });
 
         rosService.checkTokenExists().subscribe(subscriber);
@@ -580,7 +551,7 @@ describe("RosService", () => {
             rosService["encryptTokenService"],
             "callService",
         ).and.callFake((_request, successCallback, _errorCallback) => {
-            successCallback({successful: true});
+            successCallback!({successful: true});
         });
 
         rosService.encryptToken(token, password).subscribe(subscriber);
@@ -621,7 +592,7 @@ describe("RosService", () => {
             rosService["decryptTokenService"],
             "callService",
         ).and.callFake((_request, successCallback, _errorCallback) => {
-            successCallback({successful: true});
+            successCallback!({successful: true});
         });
 
         rosService.decryptToken(password).subscribe(subscriber);
@@ -649,6 +620,136 @@ describe("RosService", () => {
         expect(subscriber.next).toHaveBeenCalledWith(false);
         expect(callServiceSpy).toHaveBeenCalledOnceWith(
             {password: password},
+            jasmine.any(Function),
+            jasmine.any(Function),
+        );
+    });
+
+    it("should initialize connectionStatus$ with an initial value of false", () => {
+        rosService.connectionStatus$.subscribe((status) => {
+            expect(status).toBeFalse();
+        });
+    });
+
+    it("should update connectionStatus based on ROS events", () => {
+        let connectionCallback: () => void = () => {};
+        let errorCallback: (error: unknown) => void = () => {};
+        let closeCallback: () => void = () => {};
+
+        const mockRos = jasmine.createSpyObj("ros", [
+            "on",
+            "callOnConnection",
+            "once",
+        ]);
+        mockRos.on.and.callFake(
+            (
+                event: string,
+                callback: () => void | ((error: unknown) => void),
+            ) => {
+                if (event === "connection") connectionCallback = callback;
+                if (event === "error") errorCallback = callback;
+                if (event === "close") closeCallback = callback;
+            },
+        );
+        mockRos.callOnConnection.and.callFake(() => {});
+        mockRos.once.and.callFake(() => {});
+
+        spyOn<any>(RosService.prototype, "setUpRos").and.returnValue(mockRos);
+
+        const service = new RosService();
+
+        expect(mockRos.on).toHaveBeenCalledWith(
+            "connection",
+            jasmine.any(Function),
+        );
+        expect(mockRos.on).toHaveBeenCalledWith("error", jasmine.any(Function));
+        expect(mockRos.on).toHaveBeenCalledWith("close", jasmine.any(Function));
+
+        const emittedStatuses: boolean[] = [];
+        const subscription = service.connectionStatus$.subscribe((status) => {
+            emittedStatuses.push(status);
+        });
+
+        connectionCallback();
+        errorCallback("error");
+        closeCallback();
+
+        expect(emittedStatuses).toEqual([false, true, false]);
+
+        subscription.unsubscribe();
+    });
+
+    it("should subscribe to the solid-state-relay-topic and receive the correct state", () => {
+        const state: SolidStateRelayState = {
+            turned_on: true,
+        };
+        const subscribeSolidStateRelayStateTopicSpy = spyOn(
+            rosService["solidStateRelayStateTopic"],
+            "subscribe",
+        ).and.callFake((callback: (msg: SolidStateRelayState) => void) =>
+            callback(state),
+        );
+
+        const solidStateRelayStateReceiverSpy = spyOn(
+            rosService.solidStateRelayStateReceiver$,
+            "next",
+        );
+
+        rosService["subscribeSolidStateRelayStateTopic"]();
+
+        expect(subscribeSolidStateRelayStateTopicSpy).toHaveBeenCalledTimes(1);
+        expect(solidStateRelayStateReceiverSpy).toHaveBeenCalledTimes(1);
+        expect(solidStateRelayStateReceiverSpy).toHaveBeenCalledWith(state);
+    });
+
+    it("should call the setSolidStateRelayState ros service and handle success response", () => {
+        const setSolidStateRelayStateSpy = spyOn(
+            rosService["setSolidStateRelayStateService"],
+            "callService",
+        ).and.callFake((_msg, successCallback) => {
+            const res: SetSolidStateRelayStateResponse = {successful: true};
+            successCallback!(res);
+        });
+        const state: SolidStateRelayState = {
+            turned_on: true,
+        };
+
+        rosService.setSolidStateRelayState(state).subscribe(subscriber);
+
+        expect(setSolidStateRelayStateSpy).toHaveBeenCalledOnceWith(
+            jasmine.objectContaining({
+                solid_state_relay_state: state,
+            }),
+            jasmine.any(Function),
+            jasmine.any(Function),
+        );
+        expect(subscriber.next).toHaveBeenCalledTimes(1);
+        expect(subscriber.error).not.toHaveBeenCalled();
+    });
+
+    it("should publish an error if the solid state relay state could not be set", () => {
+        const setSolidStateRelayStateSpy = spyOn(
+            rosService["setSolidStateRelayStateService"],
+            "callService",
+        ).and.callFake((_msg, callback) => {
+            const res: SetSolidStateRelayStateResponse = {successful: false};
+            callback!(res);
+        });
+        const state: SolidStateRelayState = {
+            turned_on: true,
+        };
+
+        rosService.setSolidStateRelayState(state).subscribe(subscriber);
+
+        expect(subscriber.next).not.toHaveBeenCalled();
+        expect(subscriber.error).toHaveBeenCalledTimes(1);
+        expect(subscriber.error.calls.mostRecent().args[0]).toEqual(
+            new Error("could not apply solid state relay state..."),
+        );
+        expect(setSolidStateRelayStateSpy).toHaveBeenCalledOnceWith(
+            jasmine.objectContaining({
+                solid_state_relay_state: state,
+            }),
             jasmine.any(Function),
             jasmine.any(Function),
         );

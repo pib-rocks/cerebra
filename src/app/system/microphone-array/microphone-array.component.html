@@ -1,0 +1,472 @@
+<div class="microphone-array-container p-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="text-white mb-0">Microphone Array</h3>
+        <button
+            id="btn-refresh-microphone-array"
+            data-test="BTN_Refresh_Microphone_Array"
+            class="btn btn-primary"
+            [disabled]="loading || saving"
+            (click)="refreshAll()">
+            <i
+                class="fas fa-sync-alt mr-1"
+                [class.fa-spin]="loading"></i>
+            {{ loading ? "Loading..." : "Refresh" }}
+        </button>
+    </div>
+
+    <div
+        *ngIf="error"
+        class="alert alert-danger"
+        data-test="MSG_Microphone_Array_Error">
+        {{ error }}
+    </div>
+
+    <div
+        *ngIf="successMessage"
+        class="alert alert-success"
+        data-test="MSG_Microphone_Array_Success">
+        {{ successMessage }}
+    </div>
+
+    <div class="row mb-4">
+        <!-- DOA Compass -->
+        <div class="col-lg-5 mb-3 mb-lg-0">
+            <div class="card p-3 shadow-sm h-100">
+                <h4 class="card-title text-white">DOA Compass</h4>
+                <div
+                    class="doa-compass-wrapper d-flex flex-column align-items-center"
+                    data-test="VIS_DOA_Compass">
+                    <svg
+                        class="doa-compass"
+                        viewBox="0 0 200 200"
+                        aria-label="Direction of arrival compass">
+                        <defs>
+                            <radialGradient
+                                id="doaRadarGlow"
+                                cx="50%"
+                                cy="50%"
+                                r="50%">
+                                <stop
+                                    offset="0%"
+                                    stop-color="#e83e8c"
+                                    stop-opacity="0.35" />
+                                <stop
+                                    offset="70%"
+                                    stop-color="#1e1e28"
+                                    stop-opacity="0.1" />
+                                <stop
+                                    offset="100%"
+                                    stop-color="#1e1e28"
+                                    stop-opacity="0" />
+                            </radialGradient>
+                        </defs>
+
+                        <circle
+                            class="doa-outer"
+                            cx="100"
+                            cy="100"
+                            r="92" />
+                        <circle
+                            class="doa-ring"
+                            cx="100"
+                            cy="100"
+                            r="70" />
+                        <circle
+                            class="doa-ring"
+                            cx="100"
+                            cy="100"
+                            r="45" />
+                        <circle
+                            class="doa-center"
+                            cx="100"
+                            cy="100"
+                            r="4" />
+                        <circle
+                            cx="100"
+                            cy="100"
+                            r="92"
+                            fill="url(#doaRadarGlow)" />
+
+                        <!-- Cardinal ticks -->
+                        <line
+                            x1="100"
+                            y1="12"
+                            x2="100"
+                            y2="22"
+                            class="doa-tick" />
+                        <line
+                            x1="100"
+                            y1="178"
+                            x2="100"
+                            y2="188"
+                            class="doa-tick" />
+                        <line
+                            x1="12"
+                            y1="100"
+                            x2="22"
+                            y2="100"
+                            class="doa-tick" />
+                        <line
+                            x1="178"
+                            y1="100"
+                            x2="188"
+                            y2="100"
+                            class="doa-tick" />
+
+                        <text
+                            x="100"
+                            y="34"
+                            class="doa-label"
+                            text-anchor="middle">
+                            0°
+                        </text>
+                        <text
+                            x="168"
+                            y="104"
+                            class="doa-label"
+                            text-anchor="middle">
+                            90°
+                        </text>
+                        <text
+                            x="100"
+                            y="176"
+                            class="doa-label"
+                            text-anchor="middle">
+                            180°
+                        </text>
+                        <text
+                            x="32"
+                            y="104"
+                            class="doa-label"
+                            text-anchor="middle">
+                            270°
+                        </text>
+
+                        <!-- Direction needle -->
+                        <g [attr.transform]="doaNeedleTransform">
+                            <line
+                                class="doa-needle"
+                                x1="100"
+                                y1="100"
+                                x2="100"
+                                y2="28"
+                                data-test="VIS_DOA_Needle" />
+                            <circle
+                                class="doa-needle-tip"
+                                cx="100"
+                                cy="28"
+                                r="5" />
+                        </g>
+                    </svg>
+                    <div
+                        class="doa-angle-readout mt-2"
+                        data-test="TXT_DOA_Angle">
+                        {{ doaAngle }}°
+                    </div>
+                </div>
+
+                <div class="status-badges mt-3 d-flex flex-wrap gap-2">
+                    <span
+                        class="badge"
+                        data-test="BADGE_VAD"
+                        [ngClass]="
+                            telemetry.voice_activity
+                                ? 'badge-success'
+                                : 'badge-secondary'
+                        ">
+                        VAD: {{ telemetry.voice_activity ? "Active" : "Idle" }}
+                    </span>
+                    <span
+                        class="badge"
+                        data-test="BADGE_Speech"
+                        [ngClass]="
+                            telemetry.speech_detected
+                                ? 'badge-success'
+                                : 'badge-secondary'
+                        ">
+                        Speech: {{ telemetry.speech_detected ? "Detected" :
+                        "None" }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Audio Levels -->
+        <div class="col-lg-7">
+            <div class="card p-3 shadow-sm h-100">
+                <h4 class="card-title text-white">Audio Level Meter</h4>
+                <div
+                    class="audio-levels"
+                    data-test="VIS_Audio_Levels">
+                    <div
+                        *ngFor="let label of channelLabels; let i = index"
+                        class="audio-level-row mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-white-50">{{ label }}</span>
+                            <span
+                                class="text-white small"
+                                [attr.data-test]="'TXT_Audio_Level_' + i">
+                                {{ getAudioLevelPercent(i) }}%
+                            </span>
+                        </div>
+                        <div class="progress audio-level-bar">
+                            <div
+                                class="progress-bar"
+                                role="progressbar"
+                                [style.width.%]="getAudioLevelPercent(i)"
+                                [attr.aria-valuenow]="
+                                    getAudioLevelPercent(i)
+                                "
+                                aria-valuemin="0"
+                                aria-valuemax="100"
+                                [attr.data-test]="'BAR_Audio_Level_' + i"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Presets + DSP -->
+    <div class="row mb-4">
+        <div class="col-lg-4 mb-3 mb-lg-0">
+            <div class="card p-3 shadow-sm h-100">
+                <h4 class="card-title text-white">Presets</h4>
+                <label
+                    class="text-white-50 small"
+                    for="microphone-array-preset">
+                    DSP Preset
+                </label>
+                <select
+                    id="microphone-array-preset"
+                    class="form-select"
+                    data-test="SEL_Microphone_Array_Preset"
+                    [(ngModel)]="tuning.preset"
+                    [ngModelOptions]="{standalone: true}"
+                    [disabled]="saving"
+                    (ngModelChange)="onPresetChange($event)">
+                    <option
+                        *ngFor="let preset of presets"
+                        [ngValue]="preset.value">
+                        {{ preset.label }}
+                    </option>
+                </select>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card p-3 shadow-sm h-100">
+                <h4 class="card-title text-white">DSP Controls</h4>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="form-check mb-2">
+                            <input
+                                class="form-check-input"
+                                type="checkbox"
+                                id="agc-enabled"
+                                data-test="CHK_AGC_Enabled"
+                                [(ngModel)]="tuning.agc_enabled"
+                                [ngModelOptions]="{standalone: true}"
+                                [disabled]="saving"
+                                (ngModelChange)="onDspChange()" />
+                            <label
+                                class="form-check-label text-white"
+                                for="agc-enabled">
+                                AGC (Automatic Gain Control)
+                            </label>
+                        </div>
+
+                        <label
+                            class="text-white-50 small"
+                            for="agc-max-gain">
+                            Max Gain: {{ tuning.agc_max_gain }} dB
+                        </label>
+                        <input
+                            id="agc-max-gain"
+                            type="range"
+                            class="form-range"
+                            min="0"
+                            max="60"
+                            step="1"
+                            data-test="SLD_AGC_Max_Gain"
+                            [(ngModel)]="tuning.agc_max_gain"
+                            [ngModelOptions]="{standalone: true}"
+                            [disabled]="saving || !tuning.agc_enabled"
+                            (change)="onDspChange()" />
+
+                        <label
+                            class="text-white-50 small mt-2"
+                            for="agc-target-level">
+                            Target Power Level: {{ getTargetLevelDbov() }} dBov
+                        </label>
+                        <input
+                            id="agc-target-level"
+                            type="range"
+                            class="form-range"
+                            min="-80"
+                            max="0"
+                            step="0.5"
+                            data-test="SLD_AGC_Target_Level"
+                            [ngModel]="getTargetLevelDbov()"
+                            [ngModelOptions]="{standalone: true}"
+                            [disabled]="saving || !tuning.agc_enabled"
+                            (ngModelChange)="setTargetLevelDbov($event)"
+                            (change)="onDspChange()" />
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <div class="form-check mb-2">
+                            <input
+                                class="form-check-input"
+                                type="checkbox"
+                                id="stat-noise"
+                                data-test="CHK_Stationary_Noise"
+                                [(ngModel)]="
+                                    tuning.stationary_noise_suppression
+                                "
+                                [ngModelOptions]="{standalone: true}"
+                                [disabled]="saving"
+                                (ngModelChange)="onDspChange()" />
+                            <label
+                                class="form-check-label text-white"
+                                for="stat-noise">
+                                Stationary Noise Suppression
+                            </label>
+                        </div>
+
+                        <div class="form-check mb-2">
+                            <input
+                                class="form-check-input"
+                                type="checkbox"
+                                id="nonstat-noise"
+                                data-test="CHK_Non_Stationary_Noise"
+                                [(ngModel)]="
+                                    tuning.non_stationary_noise_suppression
+                                "
+                                [ngModelOptions]="{standalone: true}"
+                                [disabled]="saving"
+                                (ngModelChange)="onDspChange()" />
+                            <label
+                                class="form-check-label text-white"
+                                for="nonstat-noise">
+                                Non-Stationary Noise Suppression
+                            </label>
+                        </div>
+
+                        <div class="form-check mb-3">
+                            <input
+                                class="form-check-input"
+                                type="checkbox"
+                                id="aec-enabled"
+                                data-test="CHK_AEC_Enabled"
+                                [(ngModel)]="tuning.aec_enabled"
+                                [ngModelOptions]="{standalone: true}"
+                                [disabled]="saving"
+                                (ngModelChange)="onDspChange()" />
+                            <label
+                                class="form-check-label text-white"
+                                for="aec-enabled">
+                                AEC Echo Cancellation
+                            </label>
+                        </div>
+
+                        <label
+                            class="text-white-50 small"
+                            for="high-pass-filter">
+                            High-Pass Filter
+                        </label>
+                        <select
+                            id="high-pass-filter"
+                            class="form-select"
+                            data-test="SEL_High_Pass_Filter"
+                            [(ngModel)]="tuning.high_pass_filter"
+                            [ngModelOptions]="{standalone: true}"
+                            [disabled]="saving"
+                            (ngModelChange)="onDspChange()">
+                            <option
+                                *ngFor="let opt of highPassOptions"
+                                [ngValue]="opt.value">
+                                {{ opt.label }}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LED Ring -->
+    <div class="card p-3 shadow-sm">
+        <h4 class="card-title text-white">LED Ring Controls</h4>
+        <div class="row align-items-end">
+            <div class="col-md-4 mb-3">
+                <label
+                    class="text-white-50 small"
+                    for="led-mode">
+                    Mode
+                </label>
+                <select
+                    id="led-mode"
+                    class="form-select"
+                    data-test="SEL_LED_Mode"
+                    [(ngModel)]="tuning.led_mode"
+                    [ngModelOptions]="{standalone: true}"
+                    [disabled]="saving"
+                    (ngModelChange)="onLedChange()">
+                    <option
+                        *ngFor="let mode of ledModes"
+                        [ngValue]="mode.value">
+                        {{ mode.label }}
+                    </option>
+                </select>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <label
+                    class="text-white-50 small"
+                    for="led-brightness">
+                    Brightness: {{ tuning.led_brightness }}%
+                </label>
+                <input
+                    id="led-brightness"
+                    type="range"
+                    class="form-range"
+                    min="0"
+                    max="100"
+                    step="1"
+                    data-test="SLD_LED_Brightness"
+                    [(ngModel)]="tuning.led_brightness"
+                    [ngModelOptions]="{standalone: true}"
+                    [disabled]="saving || tuning.led_mode === 'off'"
+                    (change)="onLedChange()" />
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <label
+                    class="text-white-50 small"
+                    for="led-color">
+                    Color
+                </label>
+                <div class="d-flex align-items-center">
+                    <input
+                        id="led-color"
+                        type="color"
+                        class="form-control form-control-color"
+                        data-test="CLR_LED_Color"
+                        [(ngModel)]="tuning.led_color"
+                        [ngModelOptions]="{standalone: true}"
+                        [disabled]="
+                            saving ||
+                            tuning.led_mode === 'off' ||
+                            tuning.led_mode === 'mute'
+                        "
+                        (change)="onLedChange()" />
+                    <span class="text-white-50 ml-2 small"
+                        >{{ tuning.led_color }}</span
+                    >
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

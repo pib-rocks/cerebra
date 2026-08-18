@@ -51,7 +51,6 @@ describe("MotorPositionComponent", () => {
         motorServiceSpy.getPositionObservable.and.returnValue(positionSubject);
 
         await TestBed.configureTestingModule({
-            declarations: [MotorPositionComponent, HorizontalSliderComponent],
             providers: [
                 {
                     provide: ActivatedRoute,
@@ -62,7 +61,12 @@ describe("MotorPositionComponent", () => {
                     useValue: motorServiceSpy,
                 },
             ],
-            imports: [RouterTestingModule, ReactiveFormsModule],
+            imports: [
+                RouterTestingModule,
+                ReactiveFormsModule,
+                MotorPositionComponent,
+                HorizontalSliderComponent,
+            ],
         }).compileComponents();
 
         motorService = TestBed.inject(

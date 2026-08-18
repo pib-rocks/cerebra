@@ -9,4 +9,10 @@ export enum UrlConstants {
     POSE = "/pose",
     BRICKLET = "/bricklet",
     HOST_IP = "/host-ip",
+    RGB_BUTTON = "/button-programs",
+    DIAGNOSTICS = "/diagnostics",
+    DOCKER = "/docker",
+    MICROPHONE_ARRAY = "/system/microphone-array",
+    HARDWARE_CONFIG = "/system/hardware-config",
+    MARIMO = "/marimo",
 }

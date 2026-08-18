@@ -65,6 +65,11 @@ import {
 } from "../../ros-types/srv/decrypt-token";
 import {ExistTokenResponse} from "../../ros-types/srv/exist-token";
 import {ProgramInput} from "../../ros-types/msg/program-input";
+import {SolidStateRelayState} from "../../ros-types/msg/solid-state-relay-state";
+import {
+    SetSolidStateRelayStateRequest,
+    SetSolidStateRelayStateResponse,
+} from "../../ros-types/srv/set-solid-state-relay-state";
 
 @Injectable({
     providedIn: "root",
@@ -98,6 +103,9 @@ export class RosService implements IRosService {
             chat_id: "",
         });
     chatMessageReceiver$: Subject<ChatMessage> = new Subject<ChatMessage>();
+    solidStateRelayStateReceiver$: BehaviorSubject<
+        SolidStateRelayState | undefined
+    > = new BehaviorSubject<SolidStateRelayState | undefined>(undefined);
 
     private ros!: ROSLIB.Ros;
 
@@ -116,6 +124,7 @@ export class RosService implements IRosService {
     private chatMessageTopic!: ROSLIB.Topic<ChatMessage>;
     private voiceAssistantStateTopic!: ROSLIB.Topic<VoiceAssistantState>;
     private chatIsListeningTopic!: ROSLIB.Topic<ChatIsListening>;
+    private solidStateRelayStateTopic!: ROSLIB.Topic<SolidStateRelayState>;
 
     private existTokenService!: ROSLIB.Service<
         Record<string, never>,
@@ -158,7 +167,15 @@ export class RosService implements IRosService {
         ApplyJointTrajectoryResponse
     >;
 
+    private setSolidStateRelayStateService!: ROSLIB.Service<
+        SetSolidStateRelayStateRequest,
+        SetSolidStateRelayStateResponse
+    >;
+
     private runProgramAction!: ROSLIB.ActionClient;
+
+    private connectionStatusSubject = new BehaviorSubject<boolean>(false);
+    public connectionStatus$ = this.connectionStatusSubject.asObservable();
 
     constructor() {
         this.ros = this.setUpRos();
@@ -166,13 +183,16 @@ export class RosService implements IRosService {
             console.log("Connected to ROS");
             this.initTopicsAndServices();
             this.initSubscribers();
+            this.connectionStatusSubject.next(true);
         });
-        this.ros.on("error", (error: string) => {
+        this.ros.on("error", (error: unknown) => {
             console.log("Error connecting to ROSBridge server:", error);
+            this.connectionStatusSubject.next(false);
         });
 
         this.ros.on("close", () => {
             console.log("Disconnected from ROSBridge server.");
+            this.connectionStatusSubject.next(false);
         });
     }
 
@@ -249,6 +269,10 @@ export class RosService implements IRosService {
             rosTopics.deleteTokenTopic,
             rosDataTypes.empty,
         );
+        this.solidStateRelayStateTopic = this.createRosTopic(
+            rosTopics.solidStateRelayState,
+            rosDataTypes.solidStateRelayState,
+        );
 
         this.applyMotorSettingsService = this.createRosService(
             rosServices.applyMotorSettings,
@@ -290,12 +314,13 @@ export class RosService implements IRosService {
             rosServices.decryptToken,
             rosDataTypes.decryptToken,
         );
+        this.setSolidStateRelayStateService = this.createRosService(
+            rosServices.setSolidStateRelayState,
+            rosDataTypes.setSolidStateRelayState,
+        );
     }
 
-    private createRosService(
-        serviceName: string,
-        serviceType: string,
-    ): ROSLIB.Service {
+    private createRosService(serviceName: string, serviceType: string): any {
         return new ROSLIB.Service({
             ros: this.ros,
             name: serviceName,
@@ -337,6 +362,7 @@ export class RosService implements IRosService {
         this.subscribeProxyRunProgramFeedbackTopic();
         this.subscribeProxyRunProgramResultTopic();
         this.subscribeProxyRunProgramStatusTopic();
+        this.subscribeSolidStateRelayStateTopic();
     }
 
     private subscribeDefaultRosMessageTopic(
@@ -429,6 +455,13 @@ export class RosService implements IRosService {
             this.chatIsListeningReceiver$.next(message);
         });
     }
+    private subscribeSolidStateRelayStateTopic() {
+        this.solidStateRelayStateTopic.subscribe(
+            (message: SolidStateRelayState) => {
+                this.solidStateRelayStateReceiver$.next(message);
+            },
+        );
+    }
 
     checkTokenExists(): Observable<ExistTokenResponse> {
         const failedResponse: ExistTokenResponse = {
@@ -444,7 +477,7 @@ export class RosService implements IRosService {
         const successCallback = (response: ExistTokenResponse) => {
             subject.next(response);
         };
-        const errorCallback = (error: any) => {
+        const errorCallback = (_error: any) => {
             subject.next(failedResponse);
         };
         this.existTokenService.callService({}, successCallback, errorCallback);
@@ -453,7 +486,7 @@ export class RosService implements IRosService {
     }
 
     deleteTokenMessage() {
-        const message = new ROSLIB.Message({});
+        const message = {};
         this.deleteTokenTopic.publish(message);
     }
 
@@ -472,7 +505,7 @@ export class RosService implements IRosService {
         const successCallback = (response: DecryptTokenResponse) => {
             subject.next(response.successful);
         };
-        const errorCallback = (error: any) => {
+        const errorCallback = (_error: any) => {
             subject.next(false);
         };
 
@@ -497,7 +530,7 @@ export class RosService implements IRosService {
         const successCallback = (response: EncryptTokenResponse) => {
             subject.next(response.successful);
         };
-        const errorCallback = (error: any) => {
+        const errorCallback = (_error: any) => {
             subject.next(false);
         };
 
@@ -527,6 +560,33 @@ export class RosService implements IRosService {
             subject.error(new Error(error));
         };
         this.setVoiceAssistantStateService.callService(
+            request,
+            successCallback,
+            errorCallback,
+        );
+        return subject;
+    }
+
+    setSolidStateRelayState(
+        solidStateRelayState: SolidStateRelayState,
+    ): Observable<void> {
+        const subject: Subject<void> = new ReplaySubject();
+        const request: SetSolidStateRelayStateRequest = {
+            solid_state_relay_state: solidStateRelayState,
+        };
+        const successCallback = (response: SetSolidStateRelayStateResponse) => {
+            if (response.successful) {
+                subject.next();
+            } else {
+                subject.error(
+                    new Error("could not apply solid state relay state..."),
+                );
+            }
+        };
+        const errorCallback = (error: any) => {
+            subject.error(new Error(error));
+        };
+        this.setSolidStateRelayStateService.callService(
             request,
             successCallback,
             errorCallback,
@@ -702,7 +762,7 @@ export class RosService implements IRosService {
             console.error("ROS is not connected.");
             return;
         }
-        const message = new ROSLIB.Message({data: period});
+        const message = {data: period};
         this.cameraTimerPeriodTopic.publish(message);
     }
 
@@ -711,7 +771,7 @@ export class RosService implements IRosService {
             console.error("ROS is not connected.");
             return;
         }
-        const message = new ROSLIB.Message({data: [width, height]});
+        const message = {data: [width, height]};
         this.cameraPreviewSizeTopic.publish(message);
     }
 
@@ -720,7 +780,7 @@ export class RosService implements IRosService {
             console.error("ROS is not connected.");
             return;
         }
-        const message = new ROSLIB.Message({data: factor});
+        const message = {data: factor};
         this.cameraQualityFactorTopic.publish(message);
     }
 

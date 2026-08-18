@@ -1,0 +1,236 @@
+<div>
+    <div
+        class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2 pl-2">
+        <div class="form-headline mb-0">Please input your bricklet uids.</div>
+        <div class="d-flex flex-wrap gap-2">
+            <button
+                type="button"
+                id="btn-export-hardware-ids"
+                data-test="BTN_Export_Hardware_IDs"
+                class="btn btn-outline-light"
+                [disabled]="exportingHardwareIds"
+                (click)="exportHardwareIds()">
+                <i class="fas fa-download mr-1"></i>
+                {{ exportingHardwareIds ? 'Exporting...' : 'Export IDs' }}
+            </button>
+            <button
+                type="button"
+                id="btn-import-hardware-ids"
+                data-test="BTN_Import_Hardware_IDs"
+                class="btn btn-outline-light"
+                (click)="openImportModal()">
+                <i class="fas fa-upload mr-1"></i>
+                Import IDs
+            </button>
+        </div>
+    </div>
+
+    @if (error) {
+    <div class="alert alert-danger mx-2">{{ error }}</div>
+    } @if (importSuccessMessage) {
+    <div class="alert alert-success mx-2">{{ importSuccessMessage }}</div>
+    }
+
+    <form
+        [formGroup]="brickletUidForm"
+        (ngSubmit)="updateIds()">
+        <div class="d-flex gap-4 align-items-start">
+            <div class="bricklet-grid form-content">
+                @for (bricklet of servoBricklets; track bricklet) {
+                <label
+                    >{{ bricklet.type }} {{ bricklet.brickletNumber }}:</label
+                >
+                <input
+                    type="text"
+                    [attr.data-test]="'TXT_Bricklet_UID_' + bricklet.brickletNumber"
+                    class="form-control"
+                    [formControlName]="bricklet.brickletNumber" />
+                }
+            </div>
+
+            <div class="bricklet-grid form-content">
+                @for (bricklet of relayBricklets; track bricklet) {
+                <label>{{ bricklet.type }}:</label>
+                <input
+                    type="text"
+                    [attr.data-test]="'TXT_Bricklet_UID_' + bricklet.brickletNumber"
+                    class="form-control"
+                    [formControlName]="bricklet.brickletNumber" />
+                } @for (bricklet of rgbBricklets; track bricklet; let i =
+                $index) {
+                <label>{{ bricklet.type }} {{ i + 1 }}:</label>
+                <input
+                    type="text"
+                    [attr.data-test]="'TXT_Bricklet_UID_' + bricklet.brickletNumber"
+                    class="form-control"
+                    [formControlName]="bricklet.brickletNumber" />
+                }
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-auto mt-4 mb-3 pl-2">
+                <button
+                    id="update-bricklet-uids-button"
+                    data-test="BTN_Update_bricklet_UIDs"
+                    class="hardware-button btn btn-regular"
+                    [disabled]="brickletUidForm.invalid">
+                    Update
+                </button>
+            </div>
+            @if (brickletUidForm.invalid) {
+            <div class="col-auto mt-4 ml-4 mb-3 pl-2 align-self-center">
+                <span class="validation-error"
+                    >IDs must be unique, up to 6 characters long, and contain
+                    only letters and numbers.</span
+                >
+            </div>
+            }
+        </div>
+    </form>
+
+    <!-- Import Hardware-IDs Modal -->
+    @if (showImportModal) {
+    <div class="modal-backdrop fade show"></div>
+    <div
+        class="modal d-block fade show"
+        tabindex="-1"
+        role="dialog"
+        aria-modal="true"
+        id="hardware-ids-import-modal">
+        <div
+            class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable"
+            role="document">
+            <div
+                class="modal-content bg-dark text-white border-secondary shadow-lg">
+                <div
+                    class="modal-header border-secondary d-flex justify-content-between align-items-center">
+                    <h5 class="modal-title font-weight-bold mb-0">
+                        Import IDs
+                    </h5>
+                    <button
+                        type="button"
+                        class="close text-white"
+                        aria-label="Close"
+                        data-test="BTN_Import_Hardware_IDs_Close"
+                        (click)="closeImportModal()">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-white-50">
+                        Upload a hardware-config JSON backup. The file is
+                        validated before it is applied.
+                    </p>
+
+                    <input
+                        #hardwareImportInput
+                        type="file"
+                        accept="application/json,.json"
+                        hidden
+                        data-test="INP_Hardware_IDs_Import"
+                        (change)="onHardwareImportFileSelected($event)" />
+
+                    <div class="d-flex flex-wrap align-items-center mb-3">
+                        <button
+                            type="button"
+                            id="btn-choose-hardware-import-file"
+                            data-test="BTN_Choose_Hardware_IDs_File"
+                            class="btn btn-outline-light mr-2 mb-2"
+                            (click)="openHardwareImportFileDialog()">
+                            <i class="fas fa-file-upload mr-1"></i>
+                            Choose JSON file
+                        </button>
+
+                        <button
+                            type="button"
+                            class="btn btn-primary mr-2 mb-2"
+                            data-test="BTN_Import_Hardware_IDs_Confirm"
+                            [disabled]="!importPreview || importingHardwareIds || importErrors.length > 0"
+                            (click)="confirmHardwareImport()">
+                            {{ importingHardwareIds ? 'Importing...' : 'Confirm
+                            import' }}
+                        </button>
+
+                        <button
+                            type="button"
+                            class="btn btn-secondary mb-2"
+                            data-test="BTN_Import_Hardware_IDs_Cancel"
+                            (click)="closeImportModal()">
+                            Cancel
+                        </button>
+                    </div>
+
+                    @if (importErrors.length > 0) {
+                    <div class="alert alert-danger">
+                        <div><strong>Validation failed</strong></div>
+                        <ul class="mb-0">
+                            @for (err of importErrors; track err) {
+                            <li>{{ err }}</li>
+                            }
+                        </ul>
+                    </div>
+                    } @if (importWarnings.length > 0) {
+                    <div class="alert alert-warning">
+                        <div><strong>Warnings</strong></div>
+                        <ul class="mb-0">
+                            @for (warning of importWarnings; track warning) {
+                            <li>{{ warning }}</li>
+                            }
+                        </ul>
+                    </div>
+                    } @if (importPreview) {
+                    <div
+                        class="import-preview border border-secondary rounded p-3">
+                        <div class="mb-2"><strong>Import preview</strong></div>
+                        <div>
+                            Version:
+                            <strong>{{ importPreview.version }}</strong>
+                        </div>
+                        <div>
+                            Bricklets:
+                            <strong
+                                >{{ importPreview.bricklets.length }}</strong
+                            >
+                        </div>
+                        <div>
+                            Motors:
+                            <strong>{{ importPreview.motors.length }}</strong>
+                        </div>
+
+                        @if (importPreview.bricklets.length > 0) {
+                        <div class="table-responsive mt-3">
+                            <table
+                                class="table table-dark table-sm table-striped mb-0"
+                                id="table-import-preview-bricklets">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>UID</th>
+                                        <th>Type</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @for (b of importPreview.bricklets; track
+                                    b.brickletNumber) {
+                                    <tr>
+                                        <td>{{ b.brickletNumber }}</td>
+                                        <td>
+                                            <code
+                                                >{{ b.uid || '(empty)' }}</code
+                                            >
+                                        </td>
+                                        <td>{{ b.type || 'N/A' }}</td>
+                                    </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        }
+                    </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+    }
+</div>

@@ -8,39 +8,35 @@
     #slider>
     <div class="row pb-3 mx-0 px-0">
         <!-- name -->
-        <p
-            class="px-0"
-            *ngIf="name && displayName">
-            {{ name + ' ' }}<span>({{ unitLong }})</span>
-        </p>
+        @if (name && displayName) {
+        <p class="px-0">{{ name + ' ' }}<span>({{ unitLong }})</span></p>
+        }
     </div>
     <div class="row ml-0 p-0 bubble-row">
         <!-- left bubble span -->
-        <span
-            *ngIf="minBubblePosition <= currentMinBubblePosition"
-            class="bubble-span-left"
-            >{{ leftValue }}{{ unitShort }}</span
-        >
+        @if (minBubblePosition <= currentMinBubblePosition) {
+        <span class="bubble-span-left">{{ leftValue }}{{ unitShort }}</span>
+        }
         <!-- right bubble span -->
-        <span
-            *ngIf="currentMaxBubblePosition <= maxBubblePosition"
-            class="bubble-span-right"
-            >{{ rightValue }}{{ unitShort }}</span
-        >
+        @if (currentMaxBubblePosition <= maxBubblePosition) {
+        <span class="bubble-span-right">{{ rightValue }}{{ unitShort }}</span>
+        }
         <!-- bubble input -->
+        @for (thumb of thumbs; track thumb; let i = $index) {
         <input
-            *ngFor="let thumb of thumbs; index as i"
             #bubbleInput
             id="slider-bubbleinput-{{baseId}}-{{i}}"
+            data-test="TXT_Slider_BubbleInput"
             class="bubble-input overlay"
             [ngClass]="thumb.inputVisible ? '' : 'invisible'"
             [attr.style]="'left: ' + thumb.position + 'px; z-index: ' + (10-i) + ';'"
             [formControl]="thumb.bubbleFormControl"
             (blur)="toggleInputInvisible(thumb)"
             (keydown.enter)="toggleInputInvisible(thumb)" />
+        }
         <!-- bubble overlay -->
+        @for (thumb of thumbs; track thumb; let i = $index) {
         <div
-            *ngFor="let thumb of thumbs; index as i"
             id="bubble-span-{{baseId}}-{{i}}"
             class="bubble-span overlay"
             [ngClass]="thumb.inputVisible ? 'invisible' : ''"
@@ -48,6 +44,7 @@
             (dblclick)="toggleInputVisible(thumb)">
             {{ thumb.valueSanitized }}{{ unitShort }}
         </div>
+        }
     </div>
     <div class="row pb-2 mt-3 px-0 pt-0 m-0 display-flex">
         <svg
@@ -74,13 +71,15 @@
                 [attr.rx]="trackHeight / 2"
                 fill="#e10072" />
             <!-- slider thumbs -->
+            @for (thumb of thumbs; track thumb; let i = $index) {
             <circle
-                *ngFor="let thumb of thumbs; index as i"
                 id="slider-{{baseId}}-thumb-{{i}}"
+                [attr.data-test]="'CIR_Slider_Thumb_' + baseId"
                 [attr.cx]="thumb.position"
                 [attr.cy]="thumbRadius"
                 [attr.r]="thumbRadius"
                 fill="#e10072" />
+            }
         </svg>
     </div>
 </div>

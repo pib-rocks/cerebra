@@ -14,4 +14,5 @@ export enum rosTopics {
     proxyRunProgramStatus = "/proxy_run_program_status",
     programInput = "/program_input",
     deleteTokenTopic = "/delete_token",
+    solidStateRelayState = "/solid_state_relay_state",
 }

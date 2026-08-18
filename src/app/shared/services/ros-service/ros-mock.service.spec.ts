@@ -9,7 +9,7 @@ import {
 import {RosService} from "./ros-mock.service";
 import {MotorSettingsMessage} from "../../ros-types/msg/motor-settings-message";
 import {orangeJpegBase64, redJpegBase64} from "./ros-mock-data";
-import {BehaviorSubject, Subscriber} from "rxjs";
+import {BehaviorSubject, skip, Subscriber} from "rxjs";
 import {
     RunProgramFeedback,
     RunProgramResult,
@@ -585,6 +585,30 @@ describe("RosMockService", () => {
         ]);
     }));
 
+    it("should emit the VA reply under 1s for warm in-process agent latency", fakeAsync(() => {
+        service["isListeningFromChatId"].set(chatId, true);
+        apiService.post.and.returnValues(
+            new BehaviorSubject(userMessage),
+            new BehaviorSubject(vaMessage),
+        );
+        const messageReceiverNextSpy = spyOn(
+            service.chatMessageReceiver$,
+            "next",
+        );
+
+        service
+            .sendChatMessage(chatId, userMessage.content)
+            .subscribe(subscriber);
+
+        expect(messageReceiverNextSpy).toHaveBeenCalledTimes(1);
+        tick(RosService.WARM_AGENT_FIRST_TOKEN_MS - 1);
+        expect(messageReceiverNextSpy).toHaveBeenCalledTimes(1);
+        tick(1);
+        expect(messageReceiverNextSpy).toHaveBeenCalledTimes(2);
+        expect(RosService.WARM_AGENT_FIRST_TOKEN_MS).toBeLessThan(1000);
+        flush();
+    }));
+
     it("should not send a chat message if currently not listening", fakeAsync(() => {
         service["isListeningFromChatId"].set(chatId, false);
         const messageReceiverNextSpy = spyOn(
@@ -638,5 +662,40 @@ describe("RosMockService", () => {
         expect(consoleInfoSpy).toHaveBeenCalledOnceWith(
             `{"input":"${input}","mpid":${mpid}}`,
         );
+    });
+
+    it("should set SSR state when different from current", (done) => {
+        service.setSolidStateRelayState({turned_on: true}).subscribe({
+            next: () => {
+                expect(
+                    service.solidStateRelayStateReceiver$.value.turned_on,
+                ).toBeTrue();
+                done();
+            },
+            error: () => fail("Should not throw error"),
+        });
+    });
+
+    it("should error when setting the same SSR state", (done) => {
+        service.setSolidStateRelayState({turned_on: false}).subscribe({
+            next: () => fail("Should not succeed"),
+            error: (err) => {
+                expect(err).toBe(
+                    "could not apply state of solid state relay...",
+                );
+                done();
+            },
+        });
+    });
+
+    it("should emit new state to solidStateRelayStateReceiver$", (done) => {
+        service.solidStateRelayStateReceiver$
+            .pipe(skip(1)) // skip initial value
+            .subscribe((state) => {
+                expect(state.turned_on).toBeTrue();
+                done();
+            });
+
+        service.setSolidStateRelayState({turned_on: true});
     });
 });

@@ -1,0 +1,192 @@
+<div class="docker-container p-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="text-white">Docker Container Management</h3>
+        <div>
+            <button
+                id="btn-purge-docker"
+                data-test="BTN_Purge_Docker"
+                class="btn btn-danger mr-2"
+                [disabled]="purging || loading"
+                (click)="purgeDocker()">
+                <i
+                    class="fas fa-trash-alt mr-1"
+                    [class.fa-spin]="purging"></i>
+                {{ purging ? 'Purging...' : 'Purge Docker' }}
+            </button>
+            <button
+                id="btn-refresh-docker"
+                data-test="BTN_Refresh_Docker"
+                class="btn btn-primary"
+                [disabled]="loading"
+                (click)="refreshContainers()">
+                <i
+                    class="fas fa-sync-alt mr-1"
+                    [class.fa-spin]="loading"></i>
+                {{ loading ? 'Loading...' : 'Refresh' }}
+            </button>
+        </div>
+    </div>
+
+    <div
+        *ngIf="error"
+        class="alert alert-danger alert-dismissible fade show">
+        {{ error }}
+    </div>
+
+    <div
+        *ngIf="successMessage"
+        class="alert alert-success alert-dismissible fade show">
+        {{ successMessage }}
+    </div>
+
+    <!-- Container Control Table -->
+    <div class="card p-3 shadow-sm mb-4">
+        <h4 class="card-title text-white mb-3">Containers</h4>
+        <div class="table-responsive">
+            <table
+                class="table table-dark table-striped table-hover mb-0"
+                id="table-docker-containers">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Image</th>
+                        <th>Status</th>
+                        <th>Health</th>
+                        <th class="text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let c of containers">
+                        <td class="align-middle font-weight-bold">
+                            {{ c.name }}
+                        </td>
+                        <td class="align-middle text-muted">
+                            <code>{{ c.image || 'N/A' }}</code>
+                        </td>
+                        <td class="align-middle">
+                            <span
+                                class="badge"
+                                [ngClass]="getStatusBadgeClass(c.status)">
+                                {{ (c.status === 'exited' ? 'STOPPED' :
+                                c.status) | uppercase }}
+                            </span>
+                        </td>
+                        <td class="align-middle">
+                            <span
+                                class="badge"
+                                [ngClass]="getStatusBadgeClass(c.health)">
+                                {{ (c.health || 'unknown') | uppercase }}
+                            </span>
+                        </td>
+                        <td class="align-middle text-right">
+                            <button
+                                class="btn btn-sm btn-success mr-1"
+                                [disabled]="actionLoading[c.name] || c.status === 'running'"
+                                (click)="startContainer(c.name)"
+                                title="Start Container">
+                                <i class="fas fa-play"></i> Start
+                            </button>
+                            <button
+                                class="btn btn-sm btn-warning mr-1"
+                                [disabled]="actionLoading[c.name] || c.status !== 'running'"
+                                (click)="stopContainer(c.name)"
+                                title="Stop Container">
+                                <i class="fas fa-stop"></i> Stop
+                            </button>
+                            <button
+                                class="btn btn-sm btn-info mr-1"
+                                [disabled]="actionLoading[c.name]"
+                                (click)="restartContainer(c.name)"
+                                title="Restart Container">
+                                <i class="fas fa-redo"></i> Restart
+                            </button>
+                            <button
+                                class="btn btn-sm btn-secondary"
+                                (click)="openLogsModal(c.name)"
+                                title="View Live Logs">
+                                <i class="fas fa-file-alt"></i> Logs
+                            </button>
+                        </td>
+                    </tr>
+                    <tr *ngIf="containers.length === 0 && !loading">
+                        <td
+                            colspan="5"
+                            class="text-center text-muted">
+                            No Docker containers found.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Live Log Stream Modal -->
+    <div
+        *ngIf="showLogModal"
+        class="modal-backdrop fade show"></div>
+    <div
+        *ngIf="showLogModal"
+        class="modal d-block fade show"
+        tabindex="-1"
+        role="dialog"
+        aria-modal="true">
+        <div
+            class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable"
+            role="document">
+            <div
+                class="modal-content bg-dark text-white border-secondary shadow-lg">
+                <div
+                    class="modal-header border-secondary d-flex justify-content-between align-items-center">
+                    <h5 class="modal-title font-weight-bold">
+                        <i class="fas fa-terminal mr-2 text-info"></i>
+                        Live Logs: {{ activeContainerName }}
+                        <span class="badge badge-info ml-2">1s Refresh</span>
+                    </h5>
+                    <div class="d-flex align-items-center">
+                        <button
+                            id="btn-auto-scroll"
+                            class="btn btn-sm mr-2"
+                            [ngClass]="autoScroll ? 'btn-outline-info active' : 'btn-outline-secondary'"
+                            (click)="toggleAutoScroll()"
+                            title="Toggle Auto-Scroll">
+                            <i class="fas fa-arrow-down mr-1"></i> Auto-Scroll:
+                            {{ autoScroll ? 'ON' : 'OFF' }}
+                        </button>
+                        <button
+                            id="btn-clear-logs"
+                            data-test="BTN_Clear_Logs"
+                            class="btn btn-sm btn-danger mr-3"
+                            (click)="clearLogs()"
+                            title="Clear Container Logs">
+                            <i class="fas fa-eraser mr-1"></i> Clear Logs
+                        </button>
+                        <button
+                            type="button"
+                            class="close text-white"
+                            aria-label="Close"
+                            (click)="closeLogsModal()">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-body p-0 bg-black">
+                    <div
+                        #logContainer
+                        class="log-viewer-box p-3 font-monospace">
+                        <pre class="m-0 text-light log-text">
+{{ logsText }}</pre
+                        >
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        (click)="closeLogsModal()">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

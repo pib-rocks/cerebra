@@ -1,0 +1,150 @@
+@import "src/styles";
+
+.microphone-array-container {
+    color: #ffffff;
+
+    h3 {
+        color: #ffffff;
+        font-weight: 700;
+    }
+
+    h4,
+    .card-title {
+        color: #ffffff !important;
+        font-weight: 700 !important;
+        font-size: 1.25rem;
+        margin-bottom: 1rem;
+        border-bottom: 2px solid #e83e8c;
+        padding-bottom: 0.4rem;
+        display: inline-block;
+        letter-spacing: 0.5px;
+    }
+
+    .card {
+        background-color: rgba(30, 30, 40, 0.7) !important;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 8px;
+    }
+
+    .badge-success {
+        background-color: #28a745;
+        color: #fff;
+        font-size: 14px;
+        padding: 6px 12px;
+    }
+
+    .badge-secondary {
+        background-color: #6c757d;
+        color: #fff;
+        font-size: 14px;
+        padding: 6px 12px;
+    }
+
+    .badge-warning {
+        background-color: #ffc107;
+        color: #212529;
+        font-size: 14px;
+        padding: 6px 12px;
+    }
+
+    .doa-compass {
+        width: min(280px, 100%);
+        height: auto;
+    }
+
+    .doa-outer {
+        fill: rgba(20, 20, 30, 0.9);
+        stroke: #e83e8c;
+        stroke-width: 2;
+    }
+
+    .doa-ring {
+        fill: none;
+        stroke: rgba(255, 255, 255, 0.2);
+        stroke-width: 1;
+    }
+
+    .doa-center {
+        fill: #e83e8c;
+    }
+
+    .doa-tick {
+        stroke: rgba(255, 255, 255, 0.55);
+        stroke-width: 2;
+    }
+
+    .doa-label {
+        fill: rgba(255, 255, 255, 0.7);
+        font-size: 10px;
+    }
+
+    .doa-needle {
+        stroke: #e83e8c;
+        stroke-width: 3;
+        stroke-linecap: round;
+    }
+
+    .doa-needle-tip {
+        fill: #ff7eb3;
+    }
+
+    .doa-angle-readout {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #e83e8c;
+    }
+
+    .audio-level-bar {
+        height: 14px;
+        background-color: rgba(0, 0, 0, 0.35);
+        border-radius: 6px;
+        overflow: hidden;
+    }
+
+    .audio-level-bar .progress-bar {
+        background: linear-gradient(
+            90deg,
+            #28a745 0%,
+            #ffc107 70%,
+            #dc3545 100%
+        );
+        transition: width 0.15s ease-out;
+    }
+
+    .form-select,
+    .form-control,
+    .form-control-color {
+        background-color: rgba(20, 20, 30, 0.85);
+        border-color: rgba(255, 255, 255, 0.2);
+        color: #ffffff;
+    }
+
+    .form-select:disabled,
+    .form-control:disabled,
+    .form-range:disabled,
+    .form-control-color:disabled {
+        opacity: 0.55;
+    }
+
+    .form-check-label {
+        color: #ffffff;
+    }
+
+    .form-range {
+        accent-color: #e83e8c;
+    }
+
+    .form-control-color {
+        width: 3rem;
+        height: 2.4rem;
+        padding: 0.2rem;
+    }
+
+    .gap-2 {
+        gap: 0.5rem;
+    }
+
+    .ml-2 {
+        margin-left: 0.5rem;
+    }
+}

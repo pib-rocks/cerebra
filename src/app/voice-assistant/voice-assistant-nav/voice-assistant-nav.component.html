@@ -1,25 +1,27 @@
 <ul class="nav nav-tabs">
+    @for (sidebarElement of sidebarElements; track sidebarElement) {
     <li
-        *ngFor="let sidebarElement of sidebarElements"
         class="nav-item"
         [ngClass]="{'navbar-btn-active': isRouteActive(sidebarElement.getUUID())}">
         <a
             class="nav-link"
             id="personality-{{sidebarElement.getUUID()}}"
+            [attr.data-test]="'LNK_' + sidebarElement.getName()"
             [routerLink]="[sidebarElement.getUUID(), 'chat']"
             [ngClass]="{'navbar-ref-active': isRouteActive(sidebarElement.getUUID())}">
             {{sidebarElement.getName()}}
         </a>
     </li>
-    <li
-        class=""
-        *ngIf="button?.enabled ?? false">
+    } @if (button?.enabled ?? false) {
+    <li class="">
         <button
             id="add-personality-button"
+            data-test="BTN_Add_Personality"
             type="button"
             class="nav-link"
             (click)="button?.func()">
             +
         </button>
     </li>
+    }
 </ul>

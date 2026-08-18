@@ -1,17 +1,38 @@
 @import "src/styles";
 
+.soul-label {
+    display: block;
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    color: $grey-dark-1;
+    margin-bottom: 0.25rem;
+}
+
+.soul-hint {
+    font-size: 13px;
+    letter-spacing: 0.3px;
+    color: $grey-dark-1;
+    opacity: 0.7;
+    margin-bottom: 0.75rem;
+}
+
 textarea {
-    height: 68vh;
+    height: 72vh;
+    min-height: 420px;
     border-radius: 0px;
     background: transparent;
-    font-size: 16px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+        "Liberation Mono", "Courier New", monospace;
+    font-size: 15px;
     font-weight: normal;
     font-stretch: normal;
     font-style: normal;
-    line-height: normal;
-    letter-spacing: 0.4px;
+    line-height: 1.5;
+    letter-spacing: 0.2px;
     text-align: left;
     color: $grey-dark-1;
+    resize: vertical;
 }
 
 svg:hover path {
@@ -32,12 +53,14 @@ textarea:focus {
         $blue-dark-3 var(--pos-relative),
         $blue-dark-3
     );
-    font-size: 16px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+        "Liberation Mono", "Courier New", monospace;
+    font-size: 15px;
     font-weight: normal;
     font-stretch: normal;
     font-style: normal;
-    line-height: normal;
-    letter-spacing: 0.4px;
+    line-height: 1.5;
+    letter-spacing: 0.2px;
     text-align: left;
     color: $grey-dark-1;
 }

@@ -1,5 +1,9 @@
-import {ComponentFixture, TestBed} from "@angular/core/testing";
-
+import {
+    ComponentFixture,
+    TestBed,
+    fakeAsync,
+    tick,
+} from "@angular/core/testing";
 import {PersonalityDescriptionComponent} from "./personality-description.component";
 import {HttpClientTestingModule} from "@angular/common/http/testing";
 import {BehaviorSubject, Subject} from "rxjs";
@@ -10,16 +14,18 @@ import {RouterTestingModule} from "@angular/router/testing";
 import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
 import {VoiceAssistantPersonalitySidebarRightComponent} from "./voice-assistant-personality-sidebar-right/voice-assistant-personality-sidebar-right.component";
 import {VoiceAssistantNavComponent} from "../voice-assistant-nav/voice-assistant-nav.component";
+import {MarkdownModule} from "ngx-markdown";
+import {AssistantModel} from "src/app/shared/types/assistantModel";
 
 describe("PersonalityDescriptionComponent", () => {
     let component: PersonalityDescriptionComponent;
     let fixture: ComponentFixture<PersonalityDescriptionComponent>;
 
-    let voiceAssistantService: VoiceAssistantService;
+    let _voiceAssistantService: jasmine.SpyObj<VoiceAssistantService>;
 
-    let fakePersonality: VoiceAssistant;
+    let _fakePersonality: VoiceAssistant;
 
-    let router: Router;
+    let _router: Router;
     let paramsSubject: Subject<{personalityUuid: string}>;
 
     beforeEach(async () => {
@@ -33,16 +39,30 @@ describe("PersonalityDescriptionComponent", () => {
                 "deletePersonalityById",
                 "getAllPersonalities",
             ]);
+        voiceAssistantServiceSpy.getPersonality.and.returnValue(
+            new VoiceAssistant(
+                "01234567-0123-0123-0123-0123456789ab",
+                "FakeName",
+                "Female",
+                1.5,
+                "FakeDescription",
+            ),
+        );
+        voiceAssistantServiceSpy.personalitiesSubject = new BehaviorSubject<
+            VoiceAssistant[]
+        >([]);
+        voiceAssistantServiceSpy.assistantModelsSubject = new BehaviorSubject<
+            AssistantModel[]
+        >([{id: "123", name: "TestModel"} as unknown as AssistantModel]);
 
         await TestBed.configureTestingModule({
-            declarations: [
-                VoiceAssistantNavComponent,
-                VoiceAssistantPersonalitySidebarRightComponent,
-            ],
             imports: [
                 HttpClientTestingModule,
                 FormsModule,
                 RouterTestingModule,
+                VoiceAssistantNavComponent,
+                VoiceAssistantPersonalitySidebarRightComponent,
+                MarkdownModule.forRoot(),
             ],
             providers: [
                 {
@@ -57,7 +77,7 @@ describe("PersonalityDescriptionComponent", () => {
                     },
                 },
                 {
-                    provice: VoiceAssistantService,
+                    provide: VoiceAssistantService,
                     useValue: voiceAssistantServiceSpy,
                 },
                 {
@@ -70,11 +90,13 @@ describe("PersonalityDescriptionComponent", () => {
                 },
             ],
         }).compileComponents();
-        voiceAssistantService = TestBed.inject(VoiceAssistantService);
-        router = TestBed.inject(Router);
+        _voiceAssistantService = TestBed.inject(
+            VoiceAssistantService,
+        ) as jasmine.SpyObj<VoiceAssistantService>;
+        _router = TestBed.inject(Router);
         fixture = TestBed.createComponent(PersonalityDescriptionComponent);
         component = fixture.componentInstance;
-        fakePersonality = new VoiceAssistant(
+        _fakePersonality = new VoiceAssistant(
             "1234",
             "fakePersonality",
             "Female",
@@ -112,4 +134,20 @@ describe("PersonalityDescriptionComponent", () => {
         expect(spyUpdateDescription).toHaveBeenCalled();
         expect(component.personality.description).toBe("Testdesc2");
     });
+
+    it("saves the SOUL text after the debounce", fakeAsync(() => {
+        const personality = new VoiceAssistant(
+            "1234",
+            "fakePersonality",
+            "Female",
+            0.8,
+            "old soul",
+        );
+        component.personality = personality;
+        component.textAreaContent = "Du bist pib.";
+        component.updateDescription();
+        tick(1000);
+        expect(_voiceAssistantService.updatePersonalityById).toHaveBeenCalled();
+        expect(personality.description).toBe("Du bist pib.");
+    }));
 });

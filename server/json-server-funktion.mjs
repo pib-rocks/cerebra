@@ -1,5 +1,5 @@
 import jsonServer from "json-server";
-import mockData from "./json-server-database.json" assert {type: "json"};
+import mockData from "./json-server-database.json" with {type: "json"};
 import Personality from "./dto/personality.mjs";
 import CameraSettings from "./dto/camera-settings.mjs";
 import Chat from "./dto/chat.mjs";
@@ -11,6 +11,7 @@ import Program from "./dto/program.mjs";
 import AssistantModel from "./dto/assistantmodel.mjs";
 import Pose from "./dto/pose.mjs";
 import MotorPosition from "./dto/motor-position.mjs";
+import ButtonProgram from "./dto/button-program.mjs";
 
 const server = jsonServer.create();
 const router = jsonServer.router(mockData);
@@ -463,6 +464,18 @@ server.get("/pose/:poseId/motor-positions", (req, res, next) => {
     return res.status(200).send({motorPositions});
 });
 
+//updatePoseMotorPositions
+server.patch("/pose/:poseId/motor-positions", (req, res, next) => {
+    const pose = mockData.poses.find(
+        (pose) => pose.poseId == req.params.poseId,
+    );
+    if (!pose) {
+        return res.status(404).send();
+    }
+    pose.motorPositions = req.body.motorPositions;
+    return res.status(200).send(Pose.getPose(pose));
+});
+
 //getAllPrograms
 server.get("/program", (req, res, next) => {
     let response = [];
@@ -562,6 +575,34 @@ server.get("/assistant-model/:id", (req, res, next) => {
         return res.status(404).send();
     }
     return res.status(200).send(response);
+});
+
+//getButtonPrograms
+server.get("/button-programs", (req, res, next) => {
+    let response = [];
+    mockData.buttonProgram.forEach((buttonProgram) => {
+        response.push(ButtonProgram.getButtonProgram(buttonProgram));
+    });
+    return res.status(200).send({buttonPrograms: response});
+});
+
+//updateButtonPrograms
+server.put("/button-programs", (req, res, next) => {
+    let updatedButtonPrograms = [];
+    req.body.buttonProgramUpdates.forEach((buttonProgram) => {
+        let updated = false;
+        mockData.buttonProgram.forEach((bp) => {
+            if (bp.brickletNumber == buttonProgram.brickletNumber) {
+                bp.programNumber = buttonProgram.programNumber;
+                updatedButtonPrograms.push(ButtonProgram.getButtonProgram(bp));
+                updated = true;
+            }
+        });
+        if (!updated) {
+            return res.status(404).send();
+        }
+    });
+    return res.status(200).send({buttonPrograms: updatedButtonPrograms});
 });
 
 server.use(router);

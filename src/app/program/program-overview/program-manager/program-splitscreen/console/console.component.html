@@ -1,0 +1,44 @@
+<div
+    class="wrapper p-4 d-flex flex-column-reverse"
+    (click)="onClick()"
+    (keydown)="onClick()"
+    tabindex="0"
+    id="console-area">
+    @if (state.executionState === ExecutionState.RUNNING) {
+    <textarea
+        class="flex-shrink-0"
+        id="program-input-area"
+        data-test="TXT_Program_Input"
+        [ngClass]="lastLogLineIfInput?.isError ? 'stderr' : 'stdout'"
+        #programInputArea
+        [formControl]="programInputForm">
+    </textarea>
+    } @if (state.executionState === ExecutionState.FINISHED_SUCCESSFUL) {
+    <div class="info">Program has finished successfully (exit code: 0)</div>
+    } @if (state.executionState === ExecutionState.FINISHED_ERROR) {
+    <div class="info">
+        Program has finished with errors (exit code: {{state.exitCode}})
+    </div>
+    } @if (state.executionState === ExecutionState.INTERRUPTED) {
+    <div class="info">Program execution has been interrupted by the user.</div>
+    } @if (lastLogLineIfInput && (state.executionState ===
+    ExecutionState.FINISHED_SUCCESSFUL || state.executionState ===
+    ExecutionState.INTERRUPTED || state.executionState ===
+    ExecutionState.FINISHED_ERROR)) {
+    <div [ngClass]="lastLogLineIfInput.isError ? 'stderr' : 'stdout'">
+        {{lastLogLineIfInput.content}}
+    </div>
+    } @for (line of logs; track line) {
+    <div [ngClass]="line.isError ? 'stderr' : 'stdout'">{{line.content}}</div>
+    } @if (state.executionState >= ExecutionState.RUNNING) {
+    <div class="info">
+        Program is now executing (output will be displayed here)
+    </div>
+    } @if (state.executionState >= ExecutionState.STARTING) {
+    <div class="info">Starting execution of program...</div>
+    } @if (state.executionState === ExecutionState.NOT_STARTED) {
+    <div class="info">
+        Program has not started yet (click 'Run' to start execution)
+    </div>
+    }
+</div>

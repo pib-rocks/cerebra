@@ -23,8 +23,13 @@ describe("CameraComponent", () => {
 
     beforeEach(async () => {
         TestBed.configureTestingModule({
-            declarations: [CameraComponent, HorizontalSliderComponent],
-            imports: [ReactiveFormsModule, NgbPopover, HttpClientTestingModule],
+            imports: [
+                ReactiveFormsModule,
+                NgbPopover,
+                HttpClientTestingModule,
+                CameraComponent,
+                HorizontalSliderComponent,
+            ],
             providers: [RosService, CameraService, ApiService],
         }).compileComponents();
         rosService = TestBed.inject(RosService);
@@ -76,17 +81,20 @@ describe("CameraComponent", () => {
     }));
 
     it("should change the running state of the camera when clicking camera icon", () => {
-        const spyOnToggleCamera = spyOn(component, "toggleCameraState");
+        spyOn(rosService, "subscribeCameraTopic");
+        spyOn(cameraService, "publishCameraSettings");
+        const spyOnToggleCamera = spyOn(
+            component,
+            "toggleCameraState",
+        ).and.callThrough();
         const toggleBtn = fixture.debugElement.query(By.css("#toggleCamera"));
-        const cameraActiveState = component.cameraSettings?.isActive;
+        // Initially isActive is falsy (undefined from empty CameraSettings)
         toggleBtn.nativeElement.click();
-        expect(spyOnToggleCamera).toHaveBeenCalled();
-        fixture.detectChanges();
-        expect(cameraActiveState).toBeTrue;
+        expect(spyOnToggleCamera).toHaveBeenCalledTimes(1);
+        expect(component.cameraSettings?.isActive).toBeTrue();
         toggleBtn.nativeElement.click();
-        expect(spyOnToggleCamera).toHaveBeenCalled();
-        fixture.detectChanges();
-        expect(cameraActiveState).toBeFalse;
+        expect(spyOnToggleCamera).toHaveBeenCalledTimes(2);
+        expect(component.cameraSettings?.isActive).toBeFalse();
     });
 
     it("startCamera should subscribe to the camera topic", () => {

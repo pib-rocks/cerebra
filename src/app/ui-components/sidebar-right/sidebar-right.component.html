@@ -1,22 +1,23 @@
 <div class="col sidebar-right-wrapper h-100">
     <div class="row">
         <div class="mt-4">
-            <div
-                class="row"
-                *ngFor="let sidebarElement of sidebarElements">
+            @for (sidebarElement of sidebarElements; track sidebarElement) {
+            <div class="row">
                 <div
                     class="col-11 element-div ml-sm-2 ml-xl-3 mt-3 text-nowrap"
                     routerLinkActive="element-div-active">
                     <div class="d-flex justify-content-between">
                         <a
                             [routerLink]="sidebarElement.getUUID()"
-                            class="element text-truncate col-9 pl-sm-1 pl-xl-3 pr-2 pb-2 text-center-vertical">
+                            class="element text-truncate col-9 pl-sm-1 pl-xl-3 pr-2 pb-2 text-center-vertical"
+                            [attr.data-test]="'BTN_' + sidebarElement.getName()">
                             {{ sidebarElement.getName() }}
                         </a>
                         <div ngbDropdown>
                             <button
                                 type="button"
                                 class="btn pl-sm-0"
+                                data-test="DDN_sidebarElement.getName()"
                                 id="dropdownbutton-{{sidebarElement.getName()}}"
                                 title="Edit"
                                 ngbDropdownToggle>
@@ -25,38 +26,44 @@
                             <div
                                 ngbDropdownMenu
                                 attr.aria-labelledby="dropdownbutton-{{sidebarElement.getName()}}">
-                                <div
-                                    *ngFor="let callback of dropdownCallbackMethods">
+                                @for (callback of dropdownCallbackMethods; track
+                                callback) {
+                                <div>
                                     <button
                                         ngbDropdownItem
                                         [disabled]="callback.disabled"
                                         id="sidebar-right-{{toLowerCaseAndRemoveSpace(callback.label)}}-{{sidebarElement.getName()}}"
+                                        data-test="DDN_sidebarElement.getName()"
                                         (click)="callback.clickCallback(sidebarElement.getUUID())">
+                                        @if (callback.icon !== '') {
                                         <img
-                                            *ngIf="callback.icon !== ''"
                                             [src]="callback.icon"
                                             class="item pr-1 mb-1" />
+                                        }
                                         <label>{{callback.label}}</label>
                                     </button>
                                 </div>
+                                }
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+            }
             <div class="row mt-4">
-                <div class="col-11 ml-sm-2 ml-xl-3 element-div">
-                    <div
-                        *ngFor="let option of optionCallbackMethods"
-                        class="row">
+                <div class="col-11 ml-sm-2 ml-xl-3 p-0">
+                    @for (option of optionCallbackMethods; track option) {
+                    <div class="element-div option-row">
                         <button
                             type="button"
                             class="col btn pl-3 p-3 text-truncate element text-center"
                             id="sidebar-right-{{option.label}}"
+                            [attr.data-test]="'BTN_' + option.label"
                             (click)="option.clickCallback('')">
                             <label class="mb-0">{{option.label}}</label>
                         </button>
                     </div>
+                    }
                 </div>
             </div>
         </div>

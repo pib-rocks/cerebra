@@ -1,0 +1,26 @@
+<div class="row pt-2 mt-2">
+    <div class="col-6 text-right">
+        <span class="align-middle"> Chats </span>
+    </div>
+    <div class="col-auto pr-0 pl-0">
+        <a
+            class="toggle-button"
+            id="chat-window-toggle-voice-assistant"
+            data-test="TGL_Personality"
+            [routerLink]="this.chat ? ['../../'] : ['../']">
+            <img
+                [src]="'../../assets/toggle-switch-left.png'"
+                alt="Toggle for turning to personality settings" />
+        </a>
+    </div>
+    <div class="col text-left">
+        <span class="align-middle">Personality</span>
+    </div>
+</div>
+<div class="row mt-3 content-window pb-2">
+    <div class="col-12 pr-2">
+        <div class="chat-container mb-3 p-2">
+            <deep-chat #deepChat></deep-chat>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,97 @@
+<div class="row full-height mx-0">
+    <div class="main col-sm-9 col-xl-10">
+        <router-outlet></router-outlet>
+    </div>
+    <div class="col-sm-3 col-xl-2 p-0">
+        <app-sidebar-right
+            [optionCallbackMethods]="optionCallbackMethods"
+            [dropdownCallbackMethods]="dropdownCallbackMethods"
+            [subject]="subject"
+            [rerouteOnRefresh]="false"
+            [selectedObservable]="selected"
+            [lStorage]="'program'">
+        </app-sidebar-right>
+    </div>
+</div>
+
+<ng-template
+    #modalContent
+    let-modal
+    id="template">
+    <div
+        class="row display-flex modal-header"
+        id="modal-header">
+        <div
+            class="col-10"
+            id="header-title">
+            <span id="header-title-text">PROGRAM</span>
+        </div>
+        <div
+            class="col-2 text-right"
+            id="close-button">
+            <button
+                id="modal-close-button"
+                data-test="BTN_Close"
+                type="button"
+                (click)="modal.dismiss('Cross')"
+                class="btn">
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="10"
+                    height="16">
+                    <text
+                        font-family="Titillium"
+                        fill="#FFF"
+                        font-weight="bold"
+                        font-size="16"
+                        y="11.062">
+                        X
+                    </text>
+                </svg>
+            </button>
+        </div>
+    </div>
+    <div
+        class="row m-2 mt-4 pr-2"
+        id="row-name">
+        <label
+            for="name-input"
+            class="col-3 mt-2 justify-content-end"
+            id="label-name"
+            >Name</label
+        >
+        <input
+            ngbAutofocus
+            class="col-9"
+            [formControl]="nameFormControl"
+            data-test="TXT_Name"
+            type="text"
+            (keydown)="($event).key ==='Enter' ? modal.close('Save'): ''"
+            name="name-input"
+            id="name-input" />
+    </div>
+    <div class="row justify-content-center mt-2 mb-3">
+        <div class="col-3 align-self-center">
+            <button
+                type="button"
+                [disabled]="nameFormControl.invalid"
+                class="btn btn-regular"
+                id="modal-save-button"
+                data-test="BTN_Save"
+                (keydown.enter)="modal.close('Save')"
+                (click)="modal.close('Save')">
+                Save
+            </button>
+        </div>
+        <div class="col-3 align-self-center">
+            <button
+                type="button"
+                class="btn btn-regular"
+                id="modal-cancel-button"
+                data-test="BTN_Cancel"
+                (click)="modal.dismiss('Cancel')">
+                Cancel
+            </button>
+        </div>
+    </div>
+</ng-template>

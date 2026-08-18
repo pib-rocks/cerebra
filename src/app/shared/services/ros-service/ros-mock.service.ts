@@ -30,6 +30,7 @@ import {MotorSettingsError} from "../../error/motor-settings-error";
 import {ChatIsListening} from "../../ros-types/msg/chat-is-listening";
 import {motors} from "../../types/motor-configuration";
 import {ExistTokenResponse} from "../../ros-types/srv/exist-token";
+import {SolidStateRelayState} from "../../ros-types/msg/solid-state-relay-state";
 
 @Injectable({
     providedIn: "root",
@@ -95,6 +96,9 @@ export class RosService implements IRosService {
         turned_on: false,
         chat_id: "",
     };
+    private solidStateRelayState: SolidStateRelayState = {
+        turned_on: false,
+    };
     uuidCounter: number = 0;
     userMessageTimeout: any;
     vaMessageTimeout: any;
@@ -128,12 +132,18 @@ export class RosService implements IRosService {
     chatIsListeningReceiver$: Subject<ChatIsListening> =
         new Subject<ChatIsListening>();
     chatMessageReceiver$: Subject<ChatMessage> = new Subject<ChatMessage>();
-
+    solidStateRelayStateReceiver$: BehaviorSubject<any> =
+        new BehaviorSubject<any>({
+            turned_on: false,
+        });
     cameraTimer: any;
 
     private motorNames = motors.map((motor) => motor.motorName);
 
     private isListeningFromChatId: Map<string, boolean> = new Map();
+
+    private connectionStatusSubject = new BehaviorSubject<boolean>(true);
+    public connectionStatus$ = this.connectionStatusSubject.asObservable();
 
     constructor(private apiService: ApiService) {
         let currentToggle: boolean = true;
@@ -181,6 +191,14 @@ export class RosService implements IRosService {
         return new BehaviorSubject(this.getIsListening(chatId));
     }
 
+    /**
+     * Simulated first-token delay for a warm in-process Hermes agent (PR-1521).
+     * Must stay well under 1000 ms so local mock mirrors < 1s TTFT.
+     */
+    static readonly WARM_AGENT_FIRST_TOKEN_MS = 300;
+    /** Delay between streaming overwrite chunks in the "update" mock path. */
+    static readonly WARM_AGENT_STREAM_CHUNK_MS = 200;
+
     sendChatMessage(chatId: string, content: string): Observable<void> {
         console.info(JSON.stringify({chat_id: chatId, content: content}));
         const listening = this.getIsListening(chatId);
@@ -194,10 +212,10 @@ export class RosService implements IRosService {
             ).subscribe((_) => {
                 this.setIsListening(chatId, true);
             });
-        }, 2000);
+        }, RosService.WARM_AGENT_FIRST_TOKEN_MS);
         if (content.toLocaleLowerCase() == "update") {
             setTimeout(async () => {
-                await this.sleep(1500);
+                await this.sleep(RosService.WARM_AGENT_STREAM_CHUNK_MS);
                 this.updateMessage(
                     chatId,
                     `this is the response to your input "${content}". Second line for "${content}".`,
@@ -205,7 +223,7 @@ export class RosService implements IRosService {
                 ).subscribe((_) => {
                     this.setIsListening(chatId, true);
                 });
-            }, 2000);
+            }, RosService.WARM_AGENT_FIRST_TOKEN_MS);
         }
         return new BehaviorSubject<void>(undefined);
     }
@@ -249,6 +267,24 @@ export class RosService implements IRosService {
         }
         this.voiceAssistantStateReceiver$.next(
             structuredClone(this.voiceAssistantState),
+        );
+        return subject;
+    }
+
+    setSolidStateRelayState(state: SolidStateRelayState): Observable<void> {
+        console.info(JSON.stringify({state}));
+        const subject = new ReplaySubject<void>();
+        if (this.solidStateRelayState.turned_on == state.turned_on) {
+            subject.error("could not apply state of solid state relay...");
+        } else {
+            subject.next();
+            subject.complete();
+            this.solidStateRelayState = structuredClone({
+                turned_on: state.turned_on,
+            });
+        }
+        this.solidStateRelayStateReceiver$.next(
+            structuredClone(this.solidStateRelayState),
         );
         return subject;
     }

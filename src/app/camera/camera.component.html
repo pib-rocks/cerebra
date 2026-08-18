@@ -8,6 +8,7 @@
                     class="custom-control-input"
                     type="checkbox"
                     id="toggleCamera"
+                    data-test="TGL_Camera_On_Off"
                     [formControl]="toggleCamera"
                     (input)="toggleCameraState()" />
                 <label
@@ -30,6 +31,7 @@
                     type="button"
                     class="btn cameraIcon video-nav-element"
                     id="dropdownbutton"
+                    data-test="DDN_Camera_resolution"
                     ngbDropdownToggle>
                     <svg
                         class="cameraIcon"
@@ -51,18 +53,21 @@
                     style="margin: 0px">
                     <button
                         id="dropdownbutton-item-480px"
+                        data-test="BTN_Camera_resolution_480p"
                         ngbDropdownItem
                         (click)="setSize(640, 480, 'SD')">
                         480p (SD)
                     </button>
                     <button
                         id="dropdownbutton-item-720px"
+                        data-test="BTN_Camera_resolution_720p"
                         ngbDropdownItem
                         (click)="setSize(1280, 720, 'HD')">
                         720p (HD)
                     </button>
                     <button
                         id="dropdownbutton-item-1080px"
+                        data-test="BTN_Camera_resolution_1080p"
                         ngbDropdownItem
                         (click)="setSize(1920, 1080, 'FHD')">
                         1080p (FHD)
@@ -76,6 +81,7 @@
                 type="button"
                 class="btn cameraIcon video-nav-element"
                 id="videosettings"
+                data-test="BTN_Video_settings"
                 [ngbPopover]="sliderTemplate"
                 autoClose="outside"
                 placement="bottom-right"
@@ -103,6 +109,7 @@
                 </label>
                 <app-horizontal-slider
                     #refreshRate
+                    data-test="SLD_Camera_refreshRate"
                     [numberOfThumbs]="1"
                     [name]="'refreshRate'"
                     [unitLong]="'s'"
@@ -120,6 +127,7 @@
                 </label>
                 <app-horizontal-slider
                     #qualityFactor
+                    data-test="SLD_Camera_qualityFactor"
                     [numberOfThumbs]="1"
                     [name]="'qualityFactor'"
                     [messageReceiver$]="qualityReceiver$"
