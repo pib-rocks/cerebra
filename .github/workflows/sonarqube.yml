@@ -1,4 +1,4 @@
-name: SonarCloud-Analysis
+name: SonarQube-Analysis
 
 on:
   workflow_call:
@@ -19,7 +19,7 @@ jobs:
           name: coverage-report
           path: coverage/cerebra/
 
-      - name: SonarCloud-Scan
-        uses: SonarSource/sonarqube-scan-action@v5.3.1
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v8.2.1
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
