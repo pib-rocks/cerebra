@@ -1,0 +1,49 @@
+:host {
+    display: block;
+}
+
+.reset-control {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    min-height: min(55vh, 520px);
+}
+
+.reset-button {
+    align-items: center;
+    border-radius: 4px;
+    display: inline-flex;
+    font-size: 18px;
+    gap: 10px;
+    height: 52px;
+    justify-content: center;
+    min-width: 180px;
+}
+
+.reset-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.65;
+}
+
+.reset-progress-content {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    justify-content: center;
+    min-height: 190px;
+    padding: 32px;
+    text-align: center;
+}
+
+.reset-progress-content p {
+    color: #fff;
+    font-size: 20px;
+    margin: 0;
+}
+
+.reset-spinner {
+    color: #e10072;
+    height: 42px;
+    width: 42px;
+}

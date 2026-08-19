@@ -47,6 +47,7 @@ import {IpRetrieverComponent} from "./ui-components/ip-retriever/ip-retriever.co
 import {RgbLedButtonComponent} from "./program/program-overview/rgb-led-button/rgb-led-button.component";
 import {ProgramOverviewComponent} from "./program/program-overview/program-overview.component";
 import {SystemComponent} from "./system/system.component";
+import {RobotResetComponent} from "./joint-control/robot-reset/robot-reset.component";
 
 @NgModule({
     declarations: [
@@ -82,6 +83,7 @@ import {SystemComponent} from "./system/system.component";
         RgbLedButtonComponent,
         ProgramOverviewComponent,
         SystemComponent,
+        RobotResetComponent,
     ],
     imports: [
         BrowserModule,

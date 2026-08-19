@@ -64,6 +64,8 @@ describe("RosService", () => {
 
     it("should create all ROSLIB topics and services", () => {
         expect(rosService["jointTrajectoryTopic"]).toBeTruthy();
+        expect(rosService["collisionJointLimitsTopic"]).toBeTruthy();
+        expect(rosService["collisionLimitRequestTopic"]).toBeTruthy();
         expect(rosService["motorCurrentTopic"]).toBeTruthy();
         expect(rosService["cameraTopic"]).toBeTruthy();
         expect(rosService["cameraTimerPeriodTopic"]).toBeTruthy();

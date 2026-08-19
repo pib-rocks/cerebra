@@ -116,6 +116,8 @@ export class RosService implements IRosService {
         new BehaviorSubject<number>(80);
     jointTrajectoryReceiver$: Subject<JointTrajectoryMessage> =
         new Subject<JointTrajectoryMessage>();
+    collisionJointLimitsReceiver$: Subject<JointTrajectoryMessage> =
+        new Subject<JointTrajectoryMessage>();
     motorSettingsReceiver$: Subject<MotorSettingsMessage> =
         new Subject<MotorSettingsMessage>();
     proxyRunProgramFeedbackReceiver$: Subject<ProxyRunProgramFeedback> =
@@ -167,6 +169,26 @@ export class RosService implements IRosService {
         console.info(JSON.stringify({joint_trajectory: jointTrajectory}));
         this.jointTrajectoryReceiver$.next(structuredClone(jointTrajectory));
         return of(undefined);
+    }
+
+    requestCollisionLimits(motorName: string): void {
+        this.collisionJointLimitsReceiver$.next({
+            header: {
+                stamp: {sec: 0, nanosec: 0},
+                frame_id: "",
+            },
+            joint_names: [motorName],
+            points: [
+                {
+                    positions: [-9000],
+                    time_from_start: {sec: 0, nanosec: 0},
+                },
+                {
+                    positions: [9000],
+                    time_from_start: {sec: 0, nanosec: 0},
+                },
+            ],
+        });
     }
 
     resetMotorZero(motorName: string): Observable<void> {

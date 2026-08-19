@@ -1,5 +1,19 @@
 import {Injectable} from "@angular/core";
-import {BehaviorSubject, Observable, Subject, map, of, tap} from "rxjs";
+import {
+    BehaviorSubject,
+    Observable,
+    Subject,
+    concatMap,
+    forkJoin,
+    from,
+    last,
+    map,
+    of,
+    switchMap,
+    take,
+    tap,
+    timer,
+} from "rxjs";
 import {Pose, PoseDTO} from "../types/pose";
 import {ApiService} from "./api.service";
 import {UrlConstants} from "./url.constants";
@@ -89,6 +103,30 @@ export class PoseService {
         });
     }
 
+    public applyPoseSequence(
+        poseNames: string[],
+        settleMilliseconds: number,
+    ): Observable<void> {
+        if (poseNames.length === 0) return of(undefined);
+
+        return this.getPoseMotorPositionSequenceFromDb(poseNames).pipe(
+            switchMap((sequence) =>
+                from(sequence).pipe(
+                    concatMap((motorPositions) =>
+                        this.motorService.setPositions(motorPositions).pipe(
+                            take(1),
+                            switchMap(() =>
+                                timer(Math.max(0, settleMilliseconds)),
+                            ),
+                        ),
+                    ),
+                    last(),
+                    map(() => undefined),
+                ),
+            ),
+        );
+    }
+
     public updatePoseMotorPositions(poseId: string): Observable<void> {
         const motorPositions = this.currentMotorPositions;
         return this.updatePoseMotorPositionsInDb(poseId, motorPositions).pipe(
@@ -107,6 +145,32 @@ export class PoseService {
         return this.apiService
             .get(`${UrlConstants.POSE}/${poseId}/motor-positions`)
             .pipe(map((dto) => dto["motorPositions"]));
+    }
+
+    private getPoseMotorPositionSequenceFromDb(
+        poseNames: string[],
+    ): Observable<MotorPosition[][]> {
+        return this.getAllPosesFromDb().pipe(
+            switchMap((poses) => {
+                const poseIds = poseNames.map((poseName) => {
+                    const matches = poses.filter(
+                        (pose) =>
+                            pose.name.toLowerCase() === poseName.toLowerCase(),
+                    );
+                    if (matches.length !== 1) {
+                        throw new Error(
+                            `Expected one pose named "${poseName}", found ${matches.length}`,
+                        );
+                    }
+                    return matches[0].poseId;
+                });
+                return forkJoin(
+                    poseIds.map((poseId) =>
+                        this.getMotorPositionsOfPoseFromDb(poseId),
+                    ),
+                );
+            }),
+        );
     }
     private getAllPosesFromDb(): Observable<Pose[]> {
         return this.apiService.get(UrlConstants.POSE).pipe(

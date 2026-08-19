@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1" />
+        <title>pib Collision Planner</title>
+        <link
+            rel="stylesheet"
+            href="./styles.css" />
+        <script type="importmap">
+            {
+                "imports": {
+                    "three": "./vendor/three.module.js",
+                    "three/addons/": "./vendor/"
+                }
+            }
+        </script>
+        <script>
+            window.addEventListener("error", (event) => {
+                window.setTimeout(() => {
+                    const status = document.querySelector("#status");
+                    if (status) {
+                        status.textContent = `Startup error: ${event.message}`;
+                    }
+                });
+            });
+            window.addEventListener("unhandledrejection", (event) => {
+                window.setTimeout(() => {
+                    const status = document.querySelector("#status");
+                    if (status) {
+                        status.textContent = `Startup error: ${event.reason}`;
+                    }
+                });
+            });
+        </script>
+    </head>
+    <body>
+        <main class="workspace">
+            <section
+                class="viewport"
+                aria-label="3D robot workspace">
+                <div class="topbar">
+                    <div>
+                        <h1>pib collision planner</h1>
+                        <p>X: left/right | Y: front/back | Z: height | millimetres</p>
+                    </div>
+                    <div class="view-actions">
+                        <button
+                            id="front-view"
+                            type="button">
+                            Front
+                        </button>
+                        <button
+                            id="side-view"
+                            type="button">
+                            Side
+                        </button>
+                        <button
+                            id="top-view"
+                            type="button">
+                            Top
+                        </button>
+                        <button
+                            id="fit-view"
+                            type="button">
+                            Fit
+                        </button>
+                    </div>
+                </div>
+                <div id="scene"></div>
+                <div class="scene-key">
+                    <span><i class="key-joint"></i>Joint</span>
+                    <span><i class="key-plane"></i>Plane</span>
+                    <span><i class="key-volume"></i>Volume</span>
+                </div>
+                <output
+                    id="status"
+                    aria-live="polite">
+                    Loading pib geometry...
+                </output>
+            </section>
+
+            <aside class="controls">
+                <section class="control-section joints-section">
+                    <div class="section-heading">
+                        <div>
+                            <p class="eyebrow">Robot pose</p>
+                            <h2>Arm joints</h2>
+                        </div>
+                        <div class="pose-actions">
+                            <button
+                                id="live-pose"
+                                type="button"
+                                disabled>
+                                Live pose
+                            </button>
+                            <button
+                                id="reset-pose"
+                                type="button">
+                                Reset pose
+                            </button>
+                        </div>
+                    </div>
+                    <div
+                        class="segmented"
+                        role="tablist"
+                        aria-label="Arm side">
+                        <button
+                            id="left-arm-tab"
+                            class="active"
+                            role="tab"
+                            aria-selected="true"
+                            type="button">
+                            Left arm
+                        </button>
+                        <button
+                            id="right-arm-tab"
+                            role="tab"
+                            aria-selected="false"
+                            type="button">
+                            Right arm
+                        </button>
+                    </div>
+                    <div id="joint-controls"></div>
+                </section>
+
+                <section class="control-section obstacles-section">
+                    <div class="section-heading">
+                        <div>
+                            <p class="eyebrow">Environment</p>
+                            <h2>Forbidden geometry</h2>
+                        </div>
+                        <div class="add-actions">
+                            <button
+                                id="add-plane"
+                                type="button">
+                                Add plane
+                            </button>
+                            <button
+                                id="add-box"
+                                type="button">
+                                Add box
+                            </button>
+                        </div>
+                    </div>
+                    <div
+                        id="obstacle-list"
+                        class="obstacle-list"></div>
+                    <form
+                        id="obstacle-editor"
+                        hidden>
+                        <div class="editor-heading">
+                            <input
+                                id="obstacle-name"
+                                aria-label="Geometry name"
+                                maxlength="40" />
+                            <button
+                                id="delete-obstacle"
+                                class="danger"
+                                type="button">
+                                Delete
+                            </button>
+                        </div>
+                        <div class="transform-mode segmented">
+                            <button
+                                id="move-mode"
+                                class="active"
+                                type="button">
+                                Move
+                            </button>
+                            <button
+                                id="rotate-mode"
+                                type="button">
+                                Rotate
+                            </button>
+                        </div>
+                        <fieldset>
+                            <legend>Position (mm)</legend>
+                            <div
+                                id="position-fields"
+                                class="coordinate-grid"></div>
+                        </fieldset>
+                        <fieldset>
+                            <legend>Rotation (degrees)</legend>
+                            <div
+                                id="rotation-fields"
+                                class="coordinate-grid"></div>
+                        </fieldset>
+                        <fieldset id="size-fieldset">
+                            <legend>Volume size (mm)</legend>
+                            <div
+                                id="size-fields"
+                                class="coordinate-grid"></div>
+                        </fieldset>
+                        <label class="margin-field">
+                            Safety margin (mm)
+                            <input
+                                id="safety-margin"
+                                type="number"
+                                min="0"
+                                max="500"
+                                step="1" />
+                        </label>
+                    </form>
+                    <div class="export-actions">
+                        <button
+                            id="copy-json"
+                            type="button">
+                            Copy JSON
+                        </button>
+                        <button
+                            id="download-json"
+                            type="button">
+                            Download JSON
+                        </button>
+                    </div>
+                </section>
+            </aside>
+        </main>
+        <script
+            type="module"
+            src="./app.js"></script>
+    </body>
+</html>

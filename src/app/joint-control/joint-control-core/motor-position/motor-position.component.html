@@ -18,7 +18,7 @@
                 [numberOfThumbs]="1"
                 [unitLong]="'μs'"
                 [defaultValues]="[0]"
-                [active]="turnedOn"
+                [active]="turnedOn && sliderRangeAvailable"
                 [step]="1"
                 [messageReceiver$]="positionReceiver$"
                 (sliderEvent)="setPosition($event[0])"></app-horizontal-slider>

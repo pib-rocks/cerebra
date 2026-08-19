@@ -206,6 +206,79 @@ describe("PoseService", () => {
         flush();
     }));
 
+    it("should apply a named pose sequence with a settling interval", fakeAsync(() => {
+        const start1Positions: MotorPosition[] = [
+            {motorName: "test-motor", position: 100},
+        ];
+        const start2Positions: MotorPosition[] = [
+            {motorName: "test-motor", position: 200},
+        ];
+        const start3Positions: MotorPosition[] = [
+            {motorName: "test-motor", position: 300},
+        ];
+        const startPoses: PoseDTO[] = [
+            {name: "start1", poseId: "start-1", deletable: true},
+            {name: "start2", poseId: "start-2", deletable: true},
+            {name: "start3", poseId: "start-3", deletable: true},
+        ];
+        const positionsByUrl = new Map<string, MotorPosition[]>([
+            ["/pose/start-1/motor-positions", start1Positions],
+            ["/pose/start-2/motor-positions", start2Positions],
+            ["/pose/start-3/motor-positions", start3Positions],
+        ]);
+        apiService.get.and.callFake((url) => {
+            if (url === "/pose") return of({poses: startPoses});
+            return of({motorPositions: positionsByUrl.get(url)});
+        });
+        motorService.setPositions.and.returnValue(of(undefined));
+        const completed = jasmine.createSpy();
+
+        poseService
+            .applyPoseSequence(["start1", "start2", "start3"], 10_000)
+            .subscribe({complete: completed});
+
+        expect(motorService.setPositions.calls.allArgs()).toEqual([
+            [start1Positions],
+        ]);
+        tick(9_999);
+        expect(motorService.setPositions).toHaveBeenCalledTimes(1);
+
+        tick(1);
+        expect(motorService.setPositions.calls.allArgs()).toEqual([
+            [start1Positions],
+            [start2Positions],
+        ]);
+        tick(10_000);
+        expect(motorService.setPositions.calls.allArgs()).toEqual([
+            [start1Positions],
+            [start2Positions],
+            [start3Positions],
+        ]);
+        expect(completed).not.toHaveBeenCalled();
+
+        tick(10_000);
+        expect(completed).toHaveBeenCalledTimes(1);
+    }));
+
+    it("should reject a pose sequence before moving if a pose is missing", () => {
+        apiService.get.and.returnValue(
+            of({
+                poses: [
+                    {name: "start1", poseId: "start-1", deletable: true},
+                    {name: "start3", poseId: "start-3", deletable: true},
+                ],
+            }),
+        );
+        const errorSubscriber = jasmine.createSpy();
+
+        poseService
+            .applyPoseSequence(["start1", "start2", "start3"], 10_000)
+            .subscribe({error: errorSubscriber});
+
+        expect(errorSubscriber).toHaveBeenCalled();
+        expect(motorService.setPositions).not.toHaveBeenCalled();
+    });
+
     it("should update motor positions of the pose", () => {
         apiService.patch.and.returnValue(of(undefined));
 

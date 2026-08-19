@@ -71,6 +71,7 @@ describe("HorizontalSliderComponent", () => {
             18,
             5,
         );
+        expect(component.linearTransform(30, 10, 10, 20, 40)).toBe(30);
     });
 
     it("should set thumb positions correctly", () => {

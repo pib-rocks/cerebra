@@ -4,7 +4,9 @@
 <div
     class="d-flex m-0 p-0"
     [ngClass]="joint.reversed ? 'flex-row-reverse' : 'flex-row'">
-    <div class="flex-grow-1 m-0 p-0">
+    <div
+        class="flex-grow-1 m-0 p-0 joint-admin-columns"
+        data-test="SEC_Joint_Admin_Columns">
         <div
             class="row m-0 p-0 d-flex align-items-end pb-2"
             [ngClass]="joint.reversed ? 'flex-row-reverse' : 'flex-row'"
@@ -32,7 +34,7 @@
     </div>
     <div
         id="joint-canvas"
-        class="m-0 p-0">
+        class="m-0 p-0 joint-visual">
         <a
             *ngFor="let motor of joint.motors"
             (click)="selectMotor(motor)"

@@ -150,6 +150,12 @@ span {
     background-color: transparent !important;
 }
 
+.reset-modal-backdrop {
+    z-index: 1040 !important;
+    background-color: $black-color !important;
+    opacity: 0.75 !important;
+}
+
 input {
     color: $white-color;
     background-color: $blue-dark-2;

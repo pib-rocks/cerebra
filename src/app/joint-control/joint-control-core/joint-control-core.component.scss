@@ -34,6 +34,17 @@
     position: relative;
 }
 
+:host-context(.joint-control-only) {
+    .joint-admin-columns {
+        display: none !important;
+    }
+
+    .joint-visual {
+        margin-left: auto !important;
+        margin-right: auto !important;
+    }
+}
+
 .touch-area {
     position: absolute;
     top: 50%;

@@ -3,6 +3,61 @@
     <head>
         <meta charset="utf-8" />
         <title>Cerebra</title>
+        <script>
+            (() => {
+                const query = new URLSearchParams(window.location.search);
+                const viewAllParameter = query.get("viewall");
+
+                if (viewAllParameter === "true") {
+                    document.cookie =
+                        "viewall=true; Path=/; Max-Age=31536000; SameSite=Lax";
+                } else if (viewAllParameter === "false") {
+                    document.cookie =
+                        "viewall=; Path=/; Max-Age=0; SameSite=Lax";
+                }
+
+                const hasViewAllCookie = document.cookie
+                    .split(";")
+                    .map((cookie) => cookie.trim())
+                    .includes("viewall=true");
+                const showFullView =
+                    viewAllParameter === "true" ||
+                    (viewAllParameter !== "false" && hasViewAllCookie);
+
+                document.documentElement.classList.toggle(
+                    "view-all",
+                    showFullView,
+                );
+
+                const enforceJointControlRoute = () => {
+                    const isJointControlRoute =
+                        window.location.pathname === "/" ||
+                        window.location.pathname.startsWith("/joint-control");
+
+                    if (!isJointControlRoute) {
+                        window.location.replace("/joint-control/head");
+                    }
+                };
+
+                if (!showFullView) {
+                    enforceJointControlRoute();
+                    window.addEventListener(
+                        "popstate",
+                        enforceJointControlRoute,
+                    );
+                }
+            })();
+        </script>
+        <style>
+            html:not(.view-all) .sidebar-wrapper,
+            html:not(.view-all) #hamburger-button {
+                display: none !important;
+            }
+
+            html:not(.view-all) .content-wrapper {
+                margin-left: 0 !important;
+            }
+        </style>
         <base href="/" />
         <meta
             name="viewport"

@@ -33,10 +33,15 @@ describe("MotorService", () => {
     beforeEach(() => {
         const rosServiceSpy: jasmine.SpyObj<RosService> = jasmine.createSpyObj(
             "RosService",
-            ["applyMotorSettings", "applyJointTrajectory"],
+            [
+                "applyMotorSettings",
+                "applyJointTrajectory",
+                "requestCollisionLimits",
+            ],
             {
                 motorSettingsReceiver$: new Subject(),
                 jointTrajectoryReceiver$: new Subject(),
+                collisionJointLimitsReceiver$: new Subject(),
                 currentReceiver$: new Subject(),
             },
         );

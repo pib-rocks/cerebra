@@ -1,5 +1,9 @@
-<div class="wrapper">
-    <div class="sidebar-wrapper">
+<div
+    class="wrapper"
+    [class.joint-control-only]="!showFullView">
+    <div
+        *ngIf="showFullView"
+        class="sidebar-wrapper">
         <aside
             class="main-sidebar elevation-4 sidebar justify-content-between d-flex flex-column">
             <div class="d-flex flex-column align-items-center">
@@ -168,6 +172,7 @@
             <div class="d-flex flex-row">
                 <div class="flex-grow-0 flex-shrink-0 m-0 p-0 mt-5">
                     <button
+                        *ngIf="showFullView"
                         id="hamburger-button"
                         data-test="BTN_Hamburger"
                         class="btn bi bi-list"

@@ -22,6 +22,7 @@ export interface IRosService {
     cameraPreviewSizeReceiver$: BehaviorSubject<number[]>;
     cameraQualityFactorReceiver$: BehaviorSubject<number>;
     jointTrajectoryReceiver$: Subject<JointTrajectoryMessage>;
+    collisionJointLimitsReceiver$: Subject<JointTrajectoryMessage>;
     motorSettingsReceiver$: Subject<MotorSettingsMessage>;
     proxyRunProgramFeedbackReceiver$: Subject<ProxyRunProgramFeedback>;
     proxyRunProgramResultReceiver$: Subject<ProxyRunProgramResult>;
@@ -51,6 +52,8 @@ export interface IRosService {
     ) => Observable<GoalHandle<RunProgramFeedback, RunProgramResult>>;
 
     applyJointTrajectory: (jointTrajectory: JointTrajectoryMessage) => void;
+
+    requestCollisionLimits: (motorName: string) => void;
 
     resetMotorZero: (motorName: string) => Observable<void>;
 

@@ -17,6 +17,25 @@ import {UrlConstants} from "./url.constants";
 import {MotorDTO} from "../types/motor-dto";
 import {MotorSettingsError} from "../error/motor-settings-error";
 import {MotorPosition, fromJointTrajectory} from "../types/motor-position";
+import {
+    CollisionJointLimits,
+    fromCollisionJointLimits,
+} from "../types/collision-joint-limits";
+
+const COLLISION_LIMITED_MOTORS = new Set([
+    "shoulder_vertical_left",
+    "shoulder_horizontal_left",
+    "upper_arm_left_rotation",
+    "elbow_left",
+    "lower_arm_left_rotation",
+    "wrist_left",
+    "shoulder_vertical_right",
+    "shoulder_horizontal_right",
+    "upper_arm_right_rotation",
+    "elbow_right",
+    "lower_arm_right_rotation",
+    "wrist_right",
+]);
 
 @Injectable({
     providedIn: "root",
@@ -46,6 +65,10 @@ export class MotorService {
         new Map();
     private motorNameToCurrentSubject: Map<string, BehaviorSubject<number>> =
         new Map();
+    private motorNameToCollisionLimitsSubject: Map<
+        string,
+        BehaviorSubject<CollisionJointLimits | null>
+    > = new Map();
 
     private publishToSubject<T>(
         motorName: string,
@@ -135,6 +158,25 @@ export class MotorService {
                 }
             });
 
+        this.rosService.collisionJointLimitsReceiver$.subscribe((message) => {
+            const limits = fromCollisionJointLimits(message);
+            if (!limits) return;
+            let subject = this.motorNameToCollisionLimitsSubject.get(
+                limits.motorName,
+            );
+            if (!subject) {
+                subject = new BehaviorSubject<CollisionJointLimits | null>(
+                    limits,
+                );
+                this.motorNameToCollisionLimitsSubject.set(
+                    limits.motorName,
+                    subject,
+                );
+            } else {
+                subject.next(limits);
+            }
+        });
+
         this.rosService.currentReceiver$.subscribe(
             (status: DiagnosticStatus) => {
                 const motorName: string = status.name;
@@ -170,6 +212,23 @@ export class MotorService {
             this.motorNameToCurrentSubject,
             this.defaultCurrent,
         );
+    }
+
+    getCollisionLimitsObservable(
+        motorName: string,
+    ): Observable<CollisionJointLimits | null> {
+        let subject = this.motorNameToCollisionLimitsSubject.get(motorName);
+        if (!subject) {
+            subject = new BehaviorSubject<CollisionJointLimits | null>(null);
+            this.motorNameToCollisionLimitsSubject.set(motorName, subject);
+        }
+        return subject;
+    }
+
+    requestCollisionLimits(motorName: string): void {
+        if (COLLISION_LIMITED_MOTORS.has(motorName)) {
+            this.rosService.requestCollisionLimits(motorName);
+        }
     }
 
     applySettings(motorName: string, settings: MotorSettings): void {

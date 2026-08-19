@@ -13,6 +13,8 @@ services:
                 NODE_ENV: production # or 'development' for dev build
         ports:
             - "80:80"
+        volumes:
+            - ./src/assets/collision-planner:/usr/share/nginx/html/cerebra/assets/collision-planner:ro
         networks:
             - pib-network
         restart: always

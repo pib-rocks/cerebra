@@ -24,12 +24,17 @@ import {HardwareIdComponent} from "./system/hardware-id/hardware-id.component";
 import {RgbLedButtonComponent} from "./program/program-overview/rgb-led-button/rgb-led-button.component";
 import {ProgramOverviewComponent} from "./program/program-overview/program-overview.component";
 import {SystemComponent} from "./system/system.component";
+import {RobotResetComponent} from "./joint-control/robot-reset/robot-reset.component";
 
 const routes: Routes = [
     {
         path: "joint-control",
         component: JointControlComponent,
         children: [
+            {
+                path: "reset",
+                component: RobotResetComponent,
+            },
             {
                 path: ":joint-name",
                 component: JointControlCoreComponent,

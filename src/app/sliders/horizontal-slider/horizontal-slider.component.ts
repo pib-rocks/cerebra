@@ -174,6 +174,9 @@ export class HorizontalSliderComponent
         newMin: number,
         newMax: number,
     ) {
+        if (oldMin === oldMax) {
+            return (newMin + newMax) / 2;
+        }
         value -= oldMin;
         value /= oldMax - oldMin;
         value *= newMax - newMin;
@@ -242,6 +245,7 @@ export class HorizontalSliderComponent
     }
 
     toggleInputVisible(thumb: SliderThumb) {
+        if (!this.active) return;
         thumb.inputVisible = true;
         asyncScheduler.schedule(() => {
             thumb.bubbleInputElem?.nativeElement.focus();
@@ -250,6 +254,10 @@ export class HorizontalSliderComponent
     }
 
     toggleInputInvisible(thumb: SliderThumb) {
+        if (!this.active) {
+            thumb.inputVisible = false;
+            return;
+        }
         this.setThumbValue(thumb, thumb.bubbleFormControl.value);
         this.sendEvent();
         thumb.inputVisible = false;
@@ -295,20 +303,20 @@ export class HorizontalSliderComponent
     }
 
     onMouseDown(event: MouseEvent) {
-        if (this.primaryButtonPressed(event.buttons)) {
+        if (this.active && this.primaryButtonPressed(event.buttons)) {
             this.selectClosestSlider(event.x);
             this.moveSelectedSlider(event.x);
         }
     }
 
     onMouseLeave(event: MouseEvent) {
-        if (this.primaryButtonPressed(event.buttons)) {
+        if (this.active && this.primaryButtonPressed(event.buttons)) {
             this.moveSelectedSlider(event.x);
         }
     }
 
     onMouseMove(event: MouseEvent) {
-        this.moveSelectedSlider(event.x);
+        if (this.active) this.moveSelectedSlider(event.x);
     }
 
     onMouseUp(event: MouseEvent) {
@@ -318,7 +326,7 @@ export class HorizontalSliderComponent
     }
 
     onMouseEnter(event: MouseEvent) {
-        if (this.primaryButtonPressed(event.buttons)) {
+        if (this.active && this.primaryButtonPressed(event.buttons)) {
             this.moveSelectedSlider(event.x);
         } else {
             this.unselectSlider();

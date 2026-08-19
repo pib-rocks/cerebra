@@ -21,4 +21,15 @@ describe("JointControlComponent", () => {
     it("should create", () => {
         expect(component).toBeTruthy();
     });
+
+    it("should show Reset immediately after Right Arm", () => {
+        const tabLinks = fixture.nativeElement.querySelectorAll(
+            ".nav-link",
+        ) as NodeListOf<HTMLElement>;
+        const tabLabels = Array.from(tabLinks).map(
+            (element) => element.textContent?.trim(),
+        );
+
+        expect(tabLabels.slice(-2)).toEqual(["Right Arm", "Reset"]);
+    });
 });

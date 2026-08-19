@@ -91,6 +91,8 @@ export class RosService implements IRosService {
         new BehaviorSubject<number>(80);
     jointTrajectoryReceiver$: Subject<JointTrajectoryMessage> =
         new Subject<JointTrajectoryMessage>();
+    collisionJointLimitsReceiver$: Subject<JointTrajectoryMessage> =
+        new Subject<JointTrajectoryMessage>();
     motorSettingsReceiver$: Subject<MotorSettingsMessage> =
         new Subject<MotorSettingsMessage>();
     proxyRunProgramFeedbackReceiver$: Subject<ProxyRunProgramFeedback> =
@@ -119,6 +121,8 @@ export class RosService implements IRosService {
     private cameraPreviewSizeTopic!: ROSLIB.Topic;
     private cameraQualityFactorTopic!: ROSLIB.Topic;
     private jointTrajectoryTopic!: ROSLIB.Topic;
+    private collisionJointLimitsTopic!: ROSLIB.Topic;
+    private collisionLimitRequestTopic!: ROSLIB.Topic;
     private motorSettingsTopic!: ROSLIB.Topic;
     private deleteTokenTopic!: ROSLIB.Topic;
     private proxyRunProgramFeedbackTopic!: ROSLIB.Topic<ProxyRunProgramFeedback>;
@@ -184,6 +188,7 @@ export class RosService implements IRosService {
 
     private connectionStatusSubject = new BehaviorSubject<boolean>(false);
     public connectionStatus$ = this.connectionStatusSubject.asObservable();
+    private requestedCollisionLimitMotor: string | null = null;
 
     constructor() {
         this.ros = this.setUpRos();
@@ -192,6 +197,7 @@ export class RosService implements IRosService {
             this.initTopicsAndServices();
             this.initSubscribers();
             this.connectionStatusSubject.next(true);
+            this.publishCollisionLimitRequests();
         });
         this.ros.on("error", (error: string) => {
             console.log("Error connecting to ROSBridge server:", error);
@@ -240,6 +246,14 @@ export class RosService implements IRosService {
         this.jointTrajectoryTopic = this.createRosTopic(
             rosTopics.jointTrajectoryTopicName,
             rosDataTypes.jointTrajectory,
+        );
+        this.collisionJointLimitsTopic = this.createRosTopic(
+            rosTopics.collisionJointLimitsTopicName,
+            rosDataTypes.jointTrajectory,
+        );
+        this.collisionLimitRequestTopic = this.createRosTopic(
+            rosTopics.collisionLimitRequestTopicName,
+            rosDataTypes.string,
         );
         this.chatMessageTopic = this.createRosTopic(
             rosTopics.chatMessages,
@@ -374,6 +388,7 @@ export class RosService implements IRosService {
         this.subscribeMotorSettingsTopic();
         this.subscribeMotorCurrentTopic();
         this.subscribeJointTrajectoryTopic();
+        this.subscribeCollisionJointLimitsTopic();
         this.subscribeProxyRunProgramFeedbackTopic();
         this.subscribeProxyRunProgramResultTopic();
         this.subscribeProxyRunProgramStatusTopic();
@@ -405,6 +420,14 @@ export class RosService implements IRosService {
         this.jointTrajectoryTopic.subscribe((jointTrajectoryMessage) => {
             this.jointTrajectoryReceiver$.next(
                 jointTrajectoryMessage as JointTrajectoryMessage,
+            );
+        });
+    }
+
+    private subscribeCollisionJointLimitsTopic() {
+        this.collisionJointLimitsTopic.subscribe((message) => {
+            this.collisionJointLimitsReceiver$.next(
+                message as JointTrajectoryMessage,
             );
         });
     }
@@ -632,6 +655,26 @@ export class RosService implements IRosService {
             errorCallback,
         );
         return subject;
+    }
+
+    requestCollisionLimits(motorName: string): void {
+        this.requestedCollisionLimitMotor = motorName;
+        if (!this.connectionStatusSubject.value) return;
+        this.publishCollisionLimitRequest(motorName);
+    }
+
+    private publishCollisionLimitRequests(): void {
+        if (this.requestedCollisionLimitMotor) {
+            this.publishCollisionLimitRequest(
+                this.requestedCollisionLimitMotor,
+            );
+        }
+    }
+
+    private publishCollisionLimitRequest(motorName: string): void {
+        this.collisionLimitRequestTopic.publish(
+            new ROSLIB.Message({data: motorName}),
+        );
     }
 
     resetMotorZero(motorName: string): Observable<void> {
