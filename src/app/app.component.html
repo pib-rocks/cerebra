@@ -1,5 +1,46 @@
 <div
+    *ngIf="rightUpperArmRecoveryState.active"
+    class="recovery-blocking-overlay"
+    data-test="MODAL_Right_Upper_Arm_Recovery"
+    role="alertdialog"
+    aria-modal="true"
+    aria-labelledby="recovery-dialog-title"
+    aria-describedby="recovery-dialog-message">
+    <section class="recovery-dialog">
+        <div
+            *ngIf="rightUpperArmRecoveryState.state !== 'fault'"
+            class="recovery-spinner"
+            aria-hidden="true"></div>
+        <h1 id="recovery-dialog-title">
+            {{
+                rightUpperArmRecoveryState.state === "fault"
+                    ? "Robot movement is locked"
+                    : "pib is recovering"
+            }}
+        </h1>
+        <p id="recovery-dialog-message">
+            {{ rightUpperArmRecoveryState.message }}
+        </p>
+        <div
+            *ngIf="rightUpperArmRecoveryState.state !== 'fault'"
+            class="recovery-progress"
+            role="progressbar"
+            aria-label="Right upper-arm recovery progress"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            [attr.aria-valuenow]="rightUpperArmRecoveryState.progress_percent">
+            <div
+                class="recovery-progress-value"
+                [style.width.%]="rightUpperArmRecoveryState.progress_percent"></div>
+        </div>
+        <p class="recovery-lock-note">Controls remain locked until recovery finishes.</p>
+    </section>
+</div>
+
+<div
     class="wrapper"
+    [attr.inert]="rightUpperArmRecoveryState.active ? '' : null"
+    [attr.aria-hidden]="rightUpperArmRecoveryState.active ? 'true' : null"
     [class.joint-control-only]="!showFullView">
     <div
         *ngIf="showFullView"

@@ -1,15 +1,25 @@
-import {Component, OnInit} from "@angular/core";
+import {Component, OnDestroy, OnInit} from "@angular/core";
 import {NavigationEnd, Router} from "@angular/router";
+import {Subscription} from "rxjs";
+import {RosService} from "./shared/services/ros-service/ros.service";
+import {
+    RIGHT_UPPER_ARM_READY_STATE,
+    RightUpperArmRecoveryState,
+} from "./shared/types/right-upper-arm-recovery-state";
 
 @Component({
     selector: "app-root",
     templateUrl: "./app.component.html",
     styleUrls: ["./app.component.scss"],
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, OnDestroy {
     currentRoute: string = "";
     isActiveRoute = false;
     showFullView = this.readViewAllCookie();
+    rightUpperArmRecoveryState: RightUpperArmRecoveryState = {
+        ...RIGHT_UPPER_ARM_READY_STATE,
+    };
+    private recoveryStateSubscription?: Subscription;
     jointControlNavItemGroup = [
         "/joint-control/",
         "/joint-control/head",
@@ -19,9 +29,16 @@ export class AppComponent implements OnInit {
         "/joint-control/right-arm",
     ];
 
-    constructor(private router: Router) {}
+    constructor(
+        private router: Router,
+        private rosService: RosService,
+    ) {}
 
     ngOnInit(): void {
+        this.recoveryStateSubscription =
+            this.rosService.rightUpperArmRecoveryStateReceiver$.subscribe(
+                (state) => (this.rightUpperArmRecoveryState = state),
+            );
         this.router.events.subscribe((event) => {
             if (event instanceof NavigationEnd) {
                 this.isActiveRoute =
@@ -33,6 +50,10 @@ export class AppComponent implements OnInit {
         this.updateViewMode(
             `${window.location.pathname}${window.location.search}`,
         );
+    }
+
+    ngOnDestroy(): void {
+        this.recoveryStateSubscription?.unsubscribe();
     }
 
     private updateViewMode(url: string): void {

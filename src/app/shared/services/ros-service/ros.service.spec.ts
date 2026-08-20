@@ -17,6 +17,7 @@ import {SetVoiceAssistantStateResponse} from "../../ros-types/srv/set-voice-assi
 import {Observable, Subject} from "rxjs";
 import {SolidStateRelayState} from "../../ros-types/msg/solid-state-relay-state";
 import {SetSolidStateRelayStateResponse} from "../../ros-types/srv/set-solid-state-relay-state";
+import {RIGHT_UPPER_ARM_READY_STATE} from "../../types/right-upper-arm-recovery-state";
 
 describe("RosService", () => {
     let rosService: RosService;
@@ -66,6 +67,7 @@ describe("RosService", () => {
         expect(rosService["jointTrajectoryTopic"]).toBeTruthy();
         expect(rosService["collisionJointLimitsTopic"]).toBeTruthy();
         expect(rosService["collisionLimitRequestTopic"]).toBeTruthy();
+        expect(rosService["rightUpperArmRecoveryStateTopic"]).toBeTruthy();
         expect(rosService["motorCurrentTopic"]).toBeTruthy();
         expect(rosService["cameraTopic"]).toBeTruthy();
         expect(rosService["cameraTimerPeriodTopic"]).toBeTruthy();
@@ -82,6 +84,30 @@ describe("RosService", () => {
         expect(rosService["deleteTokenTopic"]).toBeTruthy();
         expect(rosService["solidStateRelayStateTopic"]).toBeTruthy();
         expect(rosService["setSolidStateRelayStateService"]).toBeTruthy();
+    });
+
+    it("publishes a valid right upper-arm recovery state to the receiver", () => {
+        const state = {
+            ...RIGHT_UPPER_ARM_READY_STATE,
+            active: true,
+            state: "recovering",
+            message: "Recovery in progress",
+            progress_percent: 40,
+        };
+        spyOn(
+            rosService["rightUpperArmRecoveryStateTopic"],
+            "subscribe",
+        ).and.callFake((callback) =>
+            callback({data: JSON.stringify(state)} as any),
+        );
+        const receiverSpy = spyOn(
+            rosService.rightUpperArmRecoveryStateReceiver$,
+            "next",
+        );
+
+        rosService["subscribeRightUpperArmRecoveryStateTopic"]();
+
+        expect(receiverSpy).toHaveBeenCalledOnceWith(state);
     });
 
     it("should call the set_voice_assistant_state ros service", () => {

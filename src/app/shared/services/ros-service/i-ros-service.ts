@@ -14,6 +14,7 @@ import {ProxyRunProgramStatus} from "../../ros-types/msg/proxy-run-program-statu
 import {ChatMessage} from "../../ros-types/msg/chat-message";
 import {ChatIsListening} from "../../ros-types/msg/chat-is-listening";
 import {SolidStateRelayState} from "../../ros-types/msg/solid-state-relay-state";
+import {RightUpperArmRecoveryState} from "../../types/right-upper-arm-recovery-state";
 
 export interface IRosService {
     currentReceiver$: Subject<DiagnosticStatus>;
@@ -23,6 +24,7 @@ export interface IRosService {
     cameraQualityFactorReceiver$: BehaviorSubject<number>;
     jointTrajectoryReceiver$: Subject<JointTrajectoryMessage>;
     collisionJointLimitsReceiver$: Subject<JointTrajectoryMessage>;
+    rightUpperArmRecoveryStateReceiver$: BehaviorSubject<RightUpperArmRecoveryState>;
     motorSettingsReceiver$: Subject<MotorSettingsMessage>;
     proxyRunProgramFeedbackReceiver$: Subject<ProxyRunProgramFeedback>;
     proxyRunProgramResultReceiver$: Subject<ProxyRunProgramResult>;

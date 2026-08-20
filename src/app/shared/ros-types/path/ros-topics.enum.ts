@@ -2,6 +2,7 @@ export enum rosTopics {
     jointTrajectoryTopicName = "/joint_trajectory",
     collisionJointLimitsTopicName = "/collision_joint_limits",
     collisionLimitRequestTopicName = "/collision_limit_request",
+    rightUpperArmRecoveryState = "/right_upper_arm_recovery_state",
     motorCurrentTopicName = "/motor_current",
     cameraPreviewSizeTopicName = "/size_topic",
     cameraTimerPeriodTopicName = "/timer_period_topic",

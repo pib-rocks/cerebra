@@ -31,6 +31,10 @@ import {ChatIsListening} from "../../ros-types/msg/chat-is-listening";
 import {motors} from "../../types/motor-configuration";
 import {ExistTokenResponse} from "../../ros-types/srv/exist-token";
 import {SolidStateRelayState} from "../../ros-types/msg/solid-state-relay-state";
+import {
+    RIGHT_UPPER_ARM_READY_STATE,
+    RightUpperArmRecoveryState,
+} from "../../types/right-upper-arm-recovery-state";
 
 @Injectable({
     providedIn: "root",
@@ -118,6 +122,10 @@ export class RosService implements IRosService {
         new Subject<JointTrajectoryMessage>();
     collisionJointLimitsReceiver$: Subject<JointTrajectoryMessage> =
         new Subject<JointTrajectoryMessage>();
+    rightUpperArmRecoveryStateReceiver$: BehaviorSubject<RightUpperArmRecoveryState> =
+        new BehaviorSubject<RightUpperArmRecoveryState>({
+            ...RIGHT_UPPER_ARM_READY_STATE,
+        });
     motorSettingsReceiver$: Subject<MotorSettingsMessage> =
         new Subject<MotorSettingsMessage>();
     proxyRunProgramFeedbackReceiver$: Subject<ProxyRunProgramFeedback> =

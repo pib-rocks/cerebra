@@ -74,6 +74,10 @@ import {
     ResetMotorZeroRequest,
     ResetMotorZeroResponse,
 } from "../../ros-types/srv/reset-motor-zero";
+import {
+    RIGHT_UPPER_ARM_READY_STATE,
+    RightUpperArmRecoveryState,
+} from "../../types/right-upper-arm-recovery-state";
 
 @Injectable({
     providedIn: "root",
@@ -93,6 +97,10 @@ export class RosService implements IRosService {
         new Subject<JointTrajectoryMessage>();
     collisionJointLimitsReceiver$: Subject<JointTrajectoryMessage> =
         new Subject<JointTrajectoryMessage>();
+    rightUpperArmRecoveryStateReceiver$: BehaviorSubject<RightUpperArmRecoveryState> =
+        new BehaviorSubject<RightUpperArmRecoveryState>({
+            ...RIGHT_UPPER_ARM_READY_STATE,
+        });
     motorSettingsReceiver$: Subject<MotorSettingsMessage> =
         new Subject<MotorSettingsMessage>();
     proxyRunProgramFeedbackReceiver$: Subject<ProxyRunProgramFeedback> =
@@ -123,6 +131,7 @@ export class RosService implements IRosService {
     private jointTrajectoryTopic!: ROSLIB.Topic;
     private collisionJointLimitsTopic!: ROSLIB.Topic;
     private collisionLimitRequestTopic!: ROSLIB.Topic;
+    private rightUpperArmRecoveryStateTopic!: ROSLIB.Topic;
     private motorSettingsTopic!: ROSLIB.Topic;
     private deleteTokenTopic!: ROSLIB.Topic;
     private proxyRunProgramFeedbackTopic!: ROSLIB.Topic<ProxyRunProgramFeedback>;
@@ -253,6 +262,10 @@ export class RosService implements IRosService {
         );
         this.collisionLimitRequestTopic = this.createRosTopic(
             rosTopics.collisionLimitRequestTopicName,
+            rosDataTypes.string,
+        );
+        this.rightUpperArmRecoveryStateTopic = this.createRosTopic(
+            rosTopics.rightUpperArmRecoveryState,
             rosDataTypes.string,
         );
         this.chatMessageTopic = this.createRosTopic(
@@ -389,6 +402,7 @@ export class RosService implements IRosService {
         this.subscribeMotorCurrentTopic();
         this.subscribeJointTrajectoryTopic();
         this.subscribeCollisionJointLimitsTopic();
+        this.subscribeRightUpperArmRecoveryStateTopic();
         this.subscribeProxyRunProgramFeedbackTopic();
         this.subscribeProxyRunProgramResultTopic();
         this.subscribeProxyRunProgramStatusTopic();
@@ -429,6 +443,32 @@ export class RosService implements IRosService {
             this.collisionJointLimitsReceiver$.next(
                 message as JointTrajectoryMessage,
             );
+        });
+    }
+
+    private subscribeRightUpperArmRecoveryStateTopic() {
+        this.rightUpperArmRecoveryStateTopic.subscribe((message: any) => {
+            try {
+                const state = JSON.parse(
+                    String(message.data),
+                ) as Partial<RightUpperArmRecoveryState>;
+                if (
+                    typeof state.active !== "boolean" ||
+                    typeof state.state !== "string" ||
+                    typeof state.message !== "string"
+                ) {
+                    throw new Error("missing required recovery-state fields");
+                }
+                this.rightUpperArmRecoveryStateReceiver$.next({
+                    ...RIGHT_UPPER_ARM_READY_STATE,
+                    ...state,
+                });
+            } catch (error) {
+                console.error(
+                    "Could not parse right upper-arm recovery state:",
+                    error,
+                );
+            }
         });
     }
 
