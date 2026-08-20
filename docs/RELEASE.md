@@ -7,9 +7,23 @@ merge carries onto `main`.
 **The release tag is the only place the version is stated.** There is no version file
 to bump.
 
+> ## Release order: pib-backend FIRST, cerebra second
+>
+> `cerebra` and `pib-backend` share **one** version number and are released **as a
+> pair**. pib-backend is always released first, because cerebra is the consumer and
+> its Docker build verifies that the matching backend release already exists.
+>
+> The cerebra Docker build **fails** if `pib-rocks/pib-backend` has no *published*
+> release with the same tag. A cerebra image can therefore never be published against
+> a backend version that was never released.
+
 ---
 
 ## The four steps
+
+> **Step 0 — release pib-backend first.** Before any of the following, publish the
+> same version in [`pib-rocks/pib-backend`](https://github.com/pib-rocks/pib-backend)
+> (see its `docs/RELEASE.md`). If you skip this, step 4 fails on purpose.
 
 ### 1. Merge the work into `develop`
 
@@ -103,8 +117,36 @@ pushed).
 | Symptom | Cause | Fix |
 |---|---|---|
 | `No release tag found on this merge commit` | Merged to `main` while the release was still a draft, or no release was cut at all | Publish the release on `develop`, then merge again (or re-run after tagging) |
+| `pib-backend has no release v…` | cerebra was released before pib-backend | Publish the same version in pib-backend first, then re-run the workflow |
+| `pib-backend release v… is still a DRAFT` | The backend release exists but was never published | Publish it in pib-backend, then re-run |
 | Release notes appear but no tag exists | The release is still a **draft** | Press *Publish release* |
 | Tag was created on `main` instead of `develop` | `commitish: develop` missing in `release-drafter.yml` | Restore it; delete and recreate the tag on `develop` |
+
+### If cerebra fails after pib-backend was already published
+
+The pair is incomplete, and pib-backend's *Release Pairing Guard* will start reporting
+it (as PENDING first, then as an error after 2 hours). Either finish the cerebra
+release, or withdraw the pib-backend release so both sides stay in step.
+
+---
+
+## Version coupling with pib-backend
+
+- Both repositories always carry the **same** tag, e.g. `v0.6.1`.
+- Enforcement is two-sided:
+  - **cerebra** (hard, blocking): the Docker build refuses to push unless
+    pib-backend has a published release with the same tag.
+  - **pib-backend** (monitoring): `release-pairing-guard.yml` checks after each
+    release that cerebra follows, and fails if it never does.
+- A local git hook is deliberately **not** used for this: hooks are not distributed
+  with a clone, are bypassable with `--no-verify`, and would need setting up on every
+  machine. The enforcement lives in CI.
+
+### Optional token
+
+Both repos are public, so the cross-repo check works unauthenticated (GitHub API
+limit: 60 requests/hour). Setting the repository secret `RELEASE_GUARD_TOKEN` to a
+token with read access raises that to 5000/hour and is recommended but not required.
 
 ---
 

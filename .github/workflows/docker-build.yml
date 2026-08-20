@@ -54,6 +54,56 @@ jobs:
         echo "Resolved release tag: ${TAG}"
         echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
 
+    # Release order is fixed: pib-backend is released FIRST, cerebra second.
+    # cerebra is the consumer, so its build is the place that can verify the
+    # backend release already exists. A cerebra image must never be published
+    # against a backend version that was never released.
+    - name: Require the same published release in pib-backend
+      env:
+        # Optional: a token with read access to pib-backend raises the API rate
+        # limit from 60/h (unauthenticated) to 5000/h. Both repos are public,
+        # so the guard also works without it.
+        GH_TOKEN: ${{ secrets.RELEASE_GUARD_TOKEN }}
+      run: |
+        TAG="${{ steps.get_tag.outputs.tag }}"
+        API="https://api.github.com/repos/pib-rocks/pib-backend/releases/tags/${TAG}"
+
+        if [ -n "${GH_TOKEN}" ]; then
+          CODE=$(curl -sS -o /tmp/backend_release.json -w '%{http_code}' \
+                   -H "Accept: application/vnd.github+json" \
+                   -H "Authorization: Bearer ${GH_TOKEN}" "${API}")
+        else
+          CODE=$(curl -sS -o /tmp/backend_release.json -w '%{http_code}' \
+                   -H "Accept: application/vnd.github+json" "${API}")
+        fi
+
+        if [ "${CODE}" = "404" ]; then
+          echo "::error::pib-backend has no release ${TAG}."
+          echo "::error::Release order is pib-backend FIRST, then cerebra."
+          echo "::error::Publish ${TAG} in pib-rocks/pib-backend (on develop,"
+          echo "::error::then merge develop -> main) before releasing cerebra."
+          echo "::error::See docs/RELEASE.md."
+          exit 1
+        fi
+
+        if [ "${CODE}" != "200" ]; then
+          echo "::error::Could not verify the pib-backend release ${TAG}"
+          echo "::error::(HTTP ${CODE}). Refusing to publish an image that may"
+          echo "::error::not have a matching backend release."
+          cat /tmp/backend_release.json
+          exit 1
+        fi
+
+        # A draft release carries no git tag and is not a release.
+        IS_DRAFT=$(python3 -c "import json;print(json.load(open('/tmp/backend_release.json'))['draft'])")
+        if [ "${IS_DRAFT}" != "False" ]; then
+          echo "::error::pib-backend release ${TAG} exists but is still a DRAFT."
+          echo "::error::Publish it first - a draft creates no git tag."
+          exit 1
+        fi
+
+        echo "Verified: pib-backend ${TAG} is published. Proceeding."
+
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v4
 
@@ -75,3 +125,4 @@ jobs:
           *.cache-to=type=registry,ref=ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}-cache:buildcache,mode=max
           *.tags=ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:latest
           *.tags+=ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:${{ steps.get_tag.outputs.tag }}
+          *.args.APP_VERSION=${{ steps.get_tag.outputs.tag }}
