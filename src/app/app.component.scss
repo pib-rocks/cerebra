@@ -11,6 +11,16 @@
     border: 0;
 }
 
+.version-footer {
+    font-size: 9px;
+    line-height: 1.2;
+    margin-top: 2px;
+    color: $grey-color;
+    pointer-events: none;
+    user-select: none;
+    text-align: center;
+}
+
 .btn-active,
 .nav-pills .nav-link.sidebar-btn:hover {
     margin: 10px 10px 10px 8px;

@@ -9,6 +9,7 @@ import {
 import {RelayControlComponent} from "./ui-components/relay-control/relay-control.component";
 import {SmartConnectComponent} from "./ui-components/smart-connect/smart-connect.component";
 import {IpRetrieverComponent} from "./ui-components/ip-retriever/ip-retriever.component";
+import {APP_VERSION} from "./shared/util/version";
 
 @Component({
     selector: "app-root",
@@ -27,6 +28,7 @@ import {IpRetrieverComponent} from "./ui-components/ip-retriever/ip-retriever.co
 export class AppComponent implements OnInit {
     currentRoute: string = "";
     isActiveRoute = false;
+    appVersion: string = APP_VERSION;
     jointControlNavItemGroup = [
         "/joint-control/",
         "/joint-control/head",
