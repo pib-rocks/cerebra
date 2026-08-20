@@ -21,5 +21,10 @@ jobs:
       - uses: release-drafter/release-drafter@v6
         with:
           config-name: release-drafter.yml
+          # Pin the draft to `develop`: publishing the release must create the
+          # git tag at the develop tip, not on the default branch (main).
+          # The develop -> main merge then carries that tag onto main, where
+          # the Docker Build Pipeline reads it. See docs/RELEASE.md.
+          commitish: develop
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

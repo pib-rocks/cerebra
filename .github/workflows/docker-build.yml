@@ -24,6 +24,36 @@ jobs:
       with:
         fetch-depth: 0  # Fetch all history for tags
 
+    - name: Resolve release tag from the merge
+      id: get_tag
+      run: |
+        # The release is published on `develop`, which creates the git tag at
+        # the develop tip. Merging develop -> main brings that tag along, and
+        # THAT tag is the single source of truth for the image version.
+        #
+        #   --no-ff merge (cerebra policy): tag sits on the 2nd parent
+        #                                   (the merged develop tip)
+        #   fast-forward merge:             tag sits on HEAD itself
+        #
+        # Do NOT use `git describe --tags --abbrev=0` here: when no release was
+        # published it silently returns the PREVIOUS release tag, which would
+        # overwrite an already published image while reporting success.
+        TAG="$(git tag --points-at HEAD^2 2>/dev/null | head -n1)"
+        if [ -z "$TAG" ]; then
+          TAG="$(git tag --points-at HEAD | head -n1)"
+        fi
+
+        if [ -z "$TAG" ]; then
+          echo "::error::No release tag found on this merge commit."
+          echo "::error::Publish the release on 'develop' first - note that a"
+          echo "::error::DRAFT release does not create a git tag - and then"
+          echo "::error::merge develop -> main. See docs/RELEASE.md."
+          exit 1
+        fi
+
+        echo "Resolved release tag: ${TAG}"
+        echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v4
 
@@ -34,12 +64,8 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Get latest release tag
-      id: get_tag
-      run: echo "tag=$(git describe --tags --abbrev=0)" >> "$GITHUB_OUTPUT"
-
+    # No `if:` guard needed - the run has already failed if there is no tag.
     - name: Build and push Docker with tags
-      if: steps.get_tag.outputs.tag != ''
       uses: docker/bake-action@v7
       with:
         push: true
