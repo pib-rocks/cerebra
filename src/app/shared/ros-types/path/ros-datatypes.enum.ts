@@ -30,6 +30,7 @@ export enum rosDataTypes {
     encryptToken = "datatypes/srv/EncryptToken",
     decryptToken = "datatypes/srv/DecryptToken",
     setSolidStateRelayState = "datatypes/srv/SetSolidStateRelayState",
+    emptyService = "std_srvs/srv/Empty",
     // action
     runProgram = "datatypes/action/RunProgram",
 }

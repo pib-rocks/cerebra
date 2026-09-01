@@ -64,5 +64,7 @@ export interface IRosService {
 
     publishProgramInput: (input: string, mpid: number) => void;
 
+    refreshButtonColors: () => void;
+
     setSolidStateRelayState(state: SolidStateRelayState): Observable<void>;
 }

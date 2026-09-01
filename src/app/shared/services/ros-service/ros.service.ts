@@ -172,6 +172,11 @@ export class RosService implements IRosService {
         SetSolidStateRelayStateResponse
     >;
 
+    private refreshColorsService!: ROSLIB.Service<
+        Record<string, never>,
+        Record<string, never>
+    >;
+
     private runProgramAction!: ROSLIB.ActionClient;
 
     private connectionStatusSubject = new BehaviorSubject<boolean>(false);
@@ -317,6 +322,10 @@ export class RosService implements IRosService {
         this.setSolidStateRelayStateService = this.createRosService(
             rosServices.setSolidStateRelayState,
             rosDataTypes.setSolidStateRelayState,
+        );
+        this.refreshColorsService = this.createRosService(
+            rosServices.refreshColors,
+            rosDataTypes.emptyService,
         );
     }
 
@@ -592,6 +601,15 @@ export class RosService implements IRosService {
             errorCallback,
         );
         return subject;
+    }
+
+    refreshButtonColors(): void {
+        this.refreshColorsService.callService(
+            {},
+            () => undefined,
+            (error: any) =>
+                console.error("failed to refresh button colors: " + error),
+        );
     }
 
     applyJointTrajectory(
