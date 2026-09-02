@@ -368,6 +368,7 @@ export const toolbox: string = `<xml xmlns="http://www.w3.org/1999/xhtml" id="to
 <category name="Motoric skills" colour="355">
     <block type="move_motor"></block>
     <block type="move_to_pose"></block>
+    <block type="set_hand_position_xyz"></block>
 </category>
 <category name="Audio skills" colour="260">
     <block type="play_audio_from_speech"></block>
