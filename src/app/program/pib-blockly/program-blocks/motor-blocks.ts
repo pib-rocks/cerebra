@@ -65,8 +65,16 @@ export const motor_blocks = Blockly.common.createBlockDefinitionsFromJsonArray([
     },
     {
         type: "set_hand_position_xyz",
-        message0: "Set Hand Position at XYZ %1 %2 X %3 Y %4 Z %5",
+        message0: "Set Hand Position at XYZ %1 %2 %3 X %4 Y %5 Z %6",
         args0: [
+            {
+                type: "field_dropdown",
+                name: "MODE",
+                options: [
+                    ["absolute", "ABSOLUTE"],
+                    ["relative", "RELATIVE"],
+                ],
+            },
             {
                 type: "field_dropdown",
                 name: "SIDE",
