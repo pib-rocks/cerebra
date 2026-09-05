@@ -1,33 +1,16 @@
 import {NgModule} from "@angular/core";
 import {RouterModule, Routes} from "@angular/router";
-import {CameraComponent} from "./camera/camera.component";
-import {VoiceAssistantChatComponent} from "./voice-assistant/voice-assistant-chat/voice-assistant-chat.component";
 import {jointGuard} from "./security/joint-guard";
-import {VoiceAssistantComponent} from "./voice-assistant/voice-assistant.component";
-import {PersonalityDescriptionComponent} from "./voice-assistant/personality-description/personality-description.component";
 import {voiceAssistantResolver} from "./voice-assistant/voice-assistant-resolver/voice-assistant.resolver";
-import {ChatWindowDeepChatComponent} from "./voice-assistant/voice-assistant-chat/chat-window-deep-chat/chat-window-deep-chat.component";
 import {chatResolver} from "./voice-assistant/voice-assistant-resolver/chat.resolver";
-import {PersonalityWrapperComponent} from "./voice-assistant/personality-wrapper/personality-wrapper.component";
 import {JointControlComponent} from "./joint-control/joint-control.component";
 import {JointControlCoreComponent} from "./joint-control/joint-control-core/joint-control-core.component";
-import {ProgramManagerComponent} from "./program/program-overview/program-manager/program-manager.component";
 import {jointResolver} from "./joint-control/joint-resolver/joint-resolver";
 import {MotorPositionComponent} from "./joint-control/joint-control-core/motor-position/motor-position.component";
 import {motorResolver} from "./joint-control/joint-control-core/motor-position/motor-resolver/motor.resolver";
 import {motorGuard} from "./security/motor-guard";
 import {SaveConfirmationGuard} from "./security/save-confirmation.guard";
-import {ProgramSplitscreenComponent} from "./program/program-overview/program-manager/program-splitscreen/program-splitscreen.component";
 import {programCodeResolver} from "./program/program-overview/program-manager/program-splitscreen/resolver/program-code.resolver";
-import {PoseComponent} from "./pose/pose.component";
-import {HardwareIdComponent} from "./system/hardware-id/hardware-id.component";
-import {DiagnosticsComponent} from "./system/diagnostics/diagnostics.component";
-import {DockerManagementComponent} from "./system/docker/docker.component";
-import {MicrophoneArrayComponent} from "./system/microphone-array/microphone-array.component";
-import {RgbLedButtonComponent} from "./program/program-overview/rgb-led-button/rgb-led-button.component";
-import {MarimoComponent} from "./program/marimo/marimo.component";
-import {ProgramOverviewComponent} from "./program/program-overview/program-overview.component";
-import {SystemComponent} from "./system/system.component";
 
 const routes: Routes = [
     {
@@ -52,61 +35,98 @@ const routes: Routes = [
     },
     {
         path: "system",
-        component: SystemComponent,
+        loadComponent: () =>
+            import("./system/system.component").then((m) => m.SystemComponent),
         children: [
             {
                 path: "diagnostics",
-                component: DiagnosticsComponent,
+                loadComponent: () =>
+                    import("./system/diagnostics/diagnostics.component").then(
+                        (m) => m.DiagnosticsComponent,
+                    ),
             },
             {
                 path: "docker",
-                component: DockerManagementComponent,
+                loadComponent: () =>
+                    import("./system/docker/docker.component").then(
+                        (m) => m.DockerManagementComponent,
+                    ),
             },
             {
                 path: "hardware-ids",
-                component: HardwareIdComponent,
+                loadComponent: () =>
+                    import("./system/hardware-id/hardware-id.component").then(
+                        (m) => m.HardwareIdComponent,
+                    ),
             },
             {
                 path: "microphone-array",
-                component: MicrophoneArrayComponent,
+                loadComponent: () =>
+                    import(
+                        "./system/microphone-array/microphone-array.component"
+                    ).then((m) => m.MicrophoneArrayComponent),
             },
             {path: "", redirectTo: "diagnostics", pathMatch: "full"},
         ],
     },
     {
         path: "pose",
-        component: PoseComponent,
+        loadComponent: () =>
+            import("./pose/pose.component").then((m) => m.PoseComponent),
     },
     {
         path: "camera",
-        component: CameraComponent,
+        loadComponent: () =>
+            import("./camera/camera.component").then((m) => m.CameraComponent),
     },
     {
         path: "voice-assistant",
-        component: VoiceAssistantComponent,
+        loadComponent: () =>
+            import("./voice-assistant/voice-assistant.component").then(
+                (m) => m.VoiceAssistantComponent,
+            ),
         children: [
             {
                 path: ":personalityUuid",
-                component: PersonalityWrapperComponent,
+                loadComponent: () =>
+                    import(
+                        "./voice-assistant/personality-wrapper/personality-wrapper.component"
+                    ).then((m) => m.PersonalityWrapperComponent),
                 children: [
                     {
                         path: "",
-                        component: PersonalityDescriptionComponent,
+                        loadComponent: () =>
+                            import(
+                                "./voice-assistant/personality-description/personality-description.component"
+                            ).then((m) => m.PersonalityDescriptionComponent),
                         resolve: {personality: voiceAssistantResolver},
                     },
                     {
                         path: "chat",
-                        component: VoiceAssistantChatComponent,
+                        loadComponent: () =>
+                            import(
+                                "./voice-assistant/voice-assistant-chat/voice-assistant-chat.component"
+                            ).then((m) => m.VoiceAssistantChatComponent),
                         resolve: {personality: voiceAssistantResolver},
                         children: [
                             {
                                 path: ":chatUuid",
-                                component: ChatWindowDeepChatComponent,
+                                loadComponent: () =>
+                                    import(
+                                        "./voice-assistant/voice-assistant-chat/chat-window-deep-chat/chat-window-deep-chat.component"
+                                    ).then(
+                                        (m) => m.ChatWindowDeepChatComponent,
+                                    ),
                                 resolve: {chat: chatResolver},
                             },
                             {
                                 path: "",
-                                component: ChatWindowDeepChatComponent,
+                                loadComponent: () =>
+                                    import(
+                                        "./voice-assistant/voice-assistant-chat/chat-window-deep-chat/chat-window-deep-chat.component"
+                                    ).then(
+                                        (m) => m.ChatWindowDeepChatComponent,
+                                    ),
                             },
                         ],
                     },
@@ -116,29 +136,47 @@ const routes: Routes = [
     },
     {
         path: "program",
-        component: ProgramOverviewComponent,
+        loadComponent: () =>
+            import(
+                "./program/program-overview/program-overview.component"
+            ).then((m) => m.ProgramOverviewComponent),
         children: [
             {
                 path: "marimo",
-                component: MarimoComponent,
+                loadComponent: () =>
+                    import("./program/marimo/marimo.component").then(
+                        (m) => m.MarimoComponent,
+                    ),
                 children: [
                     {
                         path: ":notebook",
-                        component: MarimoComponent,
+                        loadComponent: () =>
+                            import("./program/marimo/marimo.component").then(
+                                (m) => m.MarimoComponent,
+                            ),
                     },
                 ],
             },
             {
                 path: "rgb-led-button",
-                component: RgbLedButtonComponent,
+                loadComponent: () =>
+                    import(
+                        "./program/program-overview/rgb-led-button/rgb-led-button.component"
+                    ).then((m) => m.RgbLedButtonComponent),
             },
             {
                 path: "",
-                component: ProgramManagerComponent,
+                loadComponent: () =>
+                    import(
+                        "./program/program-overview/program-manager/program-manager.component"
+                    ).then((m) => m.ProgramManagerComponent),
                 children: [
                     {
                         path: ":program-number",
-                        component: ProgramSplitscreenComponent,
+                        loadComponent: () =>
+                            import(
+                                "./program/program-overview/program-manager/program-splitscreen/program-splitscreen.component"
+                            ).then((m) => m.ProgramSplitscreenComponent),
                         canDeactivate: [SaveConfirmationGuard],
                         resolve: {code: programCodeResolver},
                     },
