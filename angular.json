@@ -20,9 +20,7 @@
 						"outputPath": "dist/cerebra",
 						"index": "src/index.html",
 						"main": "src/main.ts",
-						"polyfills": [
-							"zone.js"
-						],
+						"polyfills": [],
 						"tsConfig": "tsconfig.app.json",
 						"assets": [
 							"src/favicon.ico",
