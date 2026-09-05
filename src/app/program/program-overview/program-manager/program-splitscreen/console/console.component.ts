@@ -9,7 +9,10 @@ import {
     SimpleChanges,
     ViewChild,
     ChangeDetectionStrategy,
+    DestroyRef,
+    inject,
 } from "@angular/core";
+import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 import {FormControl, ReactiveFormsModule} from "@angular/forms";
 import {Observable, Subscription} from "rxjs";
 import {ProgramLogLine} from "src/app/shared/types/program-log-line";
@@ -24,6 +27,8 @@ import {NgClass} from "@angular/common";
     imports: [ReactiveFormsModule, NgClass],
 })
 export class ConsoleComponent implements AfterViewInit, OnChanges {
+    private readonly destroyRef = inject(DestroyRef);
+
     @Input() programLogs$!: Observable<ProgramLogLine[]>;
     @Input() programState$!: Observable<ProgramState>;
     @Output() programInput = new EventEmitter<string>();
@@ -43,27 +48,27 @@ export class ConsoleComponent implements AfterViewInit, OnChanges {
     stateSubscription?: Subscription;
 
     ngOnChanges(changes: SimpleChanges): void {
-        this.programInputForm.valueChanges.subscribe(
-            this.onInputValueChanged.bind(this),
-        );
+        this.programInputForm.valueChanges
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe(this.onInputValueChanged.bind(this));
 
         if ("programLogs$" in changes) {
             this.logsSubscription?.unsubscribe();
             const logsNext = changes["programLogs$"].currentValue as Observable<
                 ProgramLogLine[]
             >;
-            this.logsSubscription = logsNext.subscribe(
-                this.onLogsReceived.bind(this),
-            );
+            this.logsSubscription = logsNext
+                .pipe(takeUntilDestroyed(this.destroyRef))
+                .subscribe(this.onLogsReceived.bind(this));
         }
 
         if ("programState$" in changes) {
             this.stateSubscription?.unsubscribe();
             const stateNext = changes["programState$"]
                 .currentValue as Observable<ProgramState>;
-            this.stateSubscription = stateNext.subscribe(
-                this.onStateUpdated.bind(this),
-            );
+            this.stateSubscription = stateNext
+                .pipe(takeUntilDestroyed(this.destroyRef))
+                .subscribe(this.onStateUpdated.bind(this));
         }
     }
 

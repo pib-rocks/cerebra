@@ -7,7 +7,7 @@ import {
     ChangeDetectionStrategy,
 } from "@angular/core";
 import {FormControl, ReactiveFormsModule} from "@angular/forms";
-import {Observable, map} from "rxjs";
+import {Observable, Subscription, map} from "rxjs";
 import {CameraSettings} from "../shared/types/camera-settings";
 import {CameraService} from "../shared/services/camera.service";
 import {
@@ -50,6 +50,8 @@ export class CameraComponent implements OnInit, OnDestroy {
         "M880-275 720-435v111L244-800h416q24 0 42 18t18 42v215l160-160v410ZM848-27 39-836l42-42L890-69l-42 42ZM159-800l561 561v19q0 24-18 42t-42 18H140q-24 0-42-18t-18-42v-520q0-24 18-42t42-18h19Z";
 
     cameraSettings: CameraSettings | undefined;
+    cameraReceiverSubscription?: Subscription;
+    cameraSettingsSubscription?: Subscription;
 
     constructor(private cameraService: CameraService) {
         this.subscribeCameraSettings();
@@ -58,12 +60,13 @@ export class CameraComponent implements OnInit, OnDestroy {
     ngOnInit(): void {
         this.subscribeCameraReseiver();
         this.imageSrc = "../../assets/camera-placeholder.jpg";
-        this.cameraService.cameraReciver$.subscribe((message) => {
-            this.imageSrc = "data:image/jpeg;base64," + message;
-            if (message.startsWith("Camera not available")) {
-                this.imageSrc = "../../assets/camera-error-image.svg";
-            }
-        });
+        this.cameraReceiverSubscription =
+            this.cameraService.cameraReciver$.subscribe((message) => {
+                this.imageSrc = "data:image/jpeg;base64," + message;
+                if (message.startsWith("Camera not available")) {
+                    this.imageSrc = "../../assets/camera-error-image.svg";
+                }
+            });
         this.qualityReceiver$ =
             this.cameraService.rosCameraQualityFactorReceiver.pipe(
                 map((n) => [n]),
@@ -75,6 +78,8 @@ export class CameraComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy(): void {
+        this.cameraReceiverSubscription?.unsubscribe();
+        this.cameraSettingsSubscription?.unsubscribe();
         this.stopCamera();
         this.cameraSettings!.isActive = false;
     }
@@ -157,11 +162,12 @@ export class CameraComponent implements OnInit, OnDestroy {
     }
 
     subscribeCameraSettings() {
-        this.cameraService.cameraSettings.subscribe(
-            (message: CameraSettings) => {
-                this.cameraSettings = message;
-            },
-        );
+        this.cameraSettingsSubscription =
+            this.cameraService.cameraSettings.subscribe(
+                (message: CameraSettings) => {
+                    this.cameraSettings = message;
+                },
+            );
     }
 
     publishCameraSettings(cameraSettings: CameraSettings) {

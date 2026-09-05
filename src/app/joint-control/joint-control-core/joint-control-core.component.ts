@@ -1,4 +1,11 @@
-import {Component, OnInit, ChangeDetectionStrategy} from "@angular/core";
+import {
+    Component,
+    OnInit,
+    ChangeDetectionStrategy,
+    DestroyRef,
+    inject,
+} from "@angular/core";
+import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 import {JointConfiguration} from "../../shared/types/joint-configuration";
 import {ActivatedRoute, Router, RouterOutlet} from "@angular/router";
 import {MotorConfiguration} from "src/app/shared/types/motor-configuration";
@@ -19,6 +26,8 @@ import {MotorCurrentComponent} from "./motor-current/motor-current.component";
     ],
 })
 export class JointControlCoreComponent implements OnInit {
+    private readonly destroyRef = inject(DestroyRef);
+
     joint!: JointConfiguration;
     selectedMotor!: any;
     displayMotors: MotorConfiguration[] = [];
@@ -29,14 +38,16 @@ export class JointControlCoreComponent implements OnInit {
     ) {}
 
     ngOnInit(): void {
-        this.route.data.subscribe((data) => {
-            this.joint = data["joint"];
-            this.displayMotors = [];
-            this.selectedMotor = undefined;
-            this.displayMotors = this.joint.motors.filter(
-                (motor) => !motor.isMultiMotor,
-            );
-        });
+        this.route.data
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe((data) => {
+                this.joint = data["joint"];
+                this.displayMotors = [];
+                this.selectedMotor = undefined;
+                this.displayMotors = this.joint.motors.filter(
+                    (motor) => !motor.isMultiMotor,
+                );
+            });
     }
 
     selectMotor(motor: any) {

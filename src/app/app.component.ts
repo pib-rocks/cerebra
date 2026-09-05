@@ -1,4 +1,11 @@
-import {Component, OnInit, ChangeDetectionStrategy} from "@angular/core";
+import {
+    Component,
+    OnInit,
+    ChangeDetectionStrategy,
+    DestroyRef,
+    inject,
+} from "@angular/core";
+import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 import {
     NavigationEnd,
     Router,
@@ -26,6 +33,8 @@ import {APP_VERSION} from "./shared/util/version";
     ],
 })
 export class AppComponent implements OnInit {
+    private readonly destroyRef = inject(DestroyRef);
+
     currentRoute: string = "";
     isActiveRoute = false;
     appVersion: string = APP_VERSION;
@@ -41,11 +50,13 @@ export class AppComponent implements OnInit {
     constructor(private router: Router) {}
 
     ngOnInit(): void {
-        this.router.events.subscribe((event) => {
-            if (event instanceof NavigationEnd) {
-                this.isActiveRoute =
-                    event.urlAfterRedirects.includes("joint-control");
-            }
-        });
+        this.router.events
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe((event) => {
+                if (event instanceof NavigationEnd) {
+                    this.isActiveRoute =
+                        event.urlAfterRedirects.includes("joint-control");
+                }
+            });
     }
 }
