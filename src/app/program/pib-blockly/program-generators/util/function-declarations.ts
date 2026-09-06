@@ -55,30 +55,11 @@ def ${generator.FUNCTION_NAME_PLACEHOLDER_}(motor_name: str) -> int:
         return 0
 `;
 
-export const GET_CURRENT_HAND_POSITION_FUNCTION = (
-    generator: CodeGenerator,
-    getJointPositionFunctionName: string,
-) => `
-def ${generator.FUNCTION_NAME_PLACEHOLDER_}(side: str):
-
-    from pib_sdk import fk, get_arm_model
-
-    motor_names = get_arm_model(side).motor_names
-    q_deg = [
-        ${getJointPositionFunctionName}(motor_name) / 100.0
-        for motor_name in motor_names
-    ]
-    return fk(side, q_deg).translation
-`;
-
-export const SET_HAND_POSITION_XYZ_FUNCTION = (
-    generator: CodeGenerator,
-    getCurrentHandPositionFunctionName: string,
-) => `
+export const SET_HAND_POSITION_XYZ_FUNCTION = (generator: CodeGenerator) => `
 def ${generator.FUNCTION_NAME_PLACEHOLDER_}(side: str, mode: str, x, y, z) -> None:
 
     if mode == "RELATIVE":
-        current = ${getCurrentHandPositionFunctionName}(side)
+        current = get_hand_position_xyz(side)
         target = [current[0] + x, current[1] + y, current[2] + z]
     else:
         target = [x, y, z]
@@ -129,6 +110,17 @@ def ${generator.FUNCTION_NAME_PLACEHOLDER_}(poseId: str) -> None:
             pib_sdk.Write(host=rosbridge_host, port=9090).move(motor_name, position)
         except Exception:
             pib_sdk.Write(host="localhost", port=9090).move(motor_name, position)
+`;
+
+export const SAVE_CURRENT_POSE_FUNCTION = (generator: CodeGenerator) => `
+def ${generator.FUNCTION_NAME_PLACEHOLDER_}(name: str) -> None:
+
+    motor_names = _expand_motor_specs([All])
+    assert "turn_head_motor" in motor_names
+    assert "tilt_forward_motor" in motor_names
+
+    with Telemetry(host=rosbridge_host, port=9090) as telemetry:
+        save_current_pose(telemetry, pose_backend, name, motor_names)
 `;
 
 // set-solid-state-relay
