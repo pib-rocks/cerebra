@@ -9,6 +9,8 @@ import {
 import {of, throwError} from "rxjs";
 import {Bricklet} from "src/app/shared/types/bricklet";
 import {AbstractControl, ReactiveFormsModule} from "@angular/forms";
+import {provideZonelessChangeDetection} from "@angular/core";
+import {ApiService} from "src/app/shared/services/api.service";
 
 describe("HardwareIdComponent", () => {
     let component: HardwareIdComponent;
@@ -315,5 +317,111 @@ describe("HardwareIdComponent", () => {
             "Duplicate Bricklet UID assignment: '29FA'",
         ]);
         expect(component.showImportModal).toBeTrue();
+    });
+});
+
+describe("HardwareIdComponent import preview (zoneless)", () => {
+    let component: HardwareIdComponent;
+    let fixture: ComponentFixture<HardwareIdComponent>;
+
+    // Payload shape produced by pib-backend export_hardware_config().
+    const exportedFileContent = JSON.stringify(
+        {
+            version: 1,
+            bricklets: [
+                {brickletNumber: 1, uid: "E2E001", type: "Servo Bricklet"},
+                {brickletNumber: 2, uid: "", type: "Servo Bricklet"},
+            ],
+            motors: [
+                {
+                    name: "elbow_left",
+                    pulseWidthMin: 700,
+                    pulseWidthMax: 2500,
+                    rotationRangeMin: -9000,
+                    rotationRangeMax: 9000,
+                    velocity: 16000,
+                    acceleration: 10000,
+                    deceleration: 5000,
+                    period: 19500,
+                    turnedOn: true,
+                    visible: true,
+                    invert: false,
+                    brickletPins: [{brickletNumber: 1, pin: 8, invert: false}],
+                },
+            ],
+        },
+        null,
+        2,
+    );
+
+    beforeEach(async () => {
+        const brickletServiceSpy = jasmine.createSpyObj("BrickletService", [
+            "getBrickletObservable",
+            "renameBrickletUid",
+            "getBricklet",
+            "reloadBrickletsFromDb",
+        ]);
+        brickletServiceSpy.getBrickletObservable.and.returnValue(
+            of([new Bricklet("AAA", 1, "Servo Bricklet")]),
+        );
+
+        await TestBed.configureTestingModule({
+            imports: [ReactiveFormsModule, HardwareIdComponent],
+            providers: [
+                provideZonelessChangeDetection(),
+                {provide: BrickletService, useValue: brickletServiceSpy},
+                // Real DiagnosticsService so the exported JSON is really parsed.
+                DiagnosticsService,
+                {
+                    provide: ApiService,
+                    useValue: jasmine.createSpyObj("ApiService", [
+                        "get",
+                        "post",
+                    ]),
+                },
+            ],
+        }).compileComponents();
+
+        fixture = TestBed.createComponent(HardwareIdComponent);
+        component = fixture.componentInstance;
+        await fixture.whenStable();
+    });
+
+    it("renders the import preview for a re-imported export without an extra change detection run", async () => {
+        component.openImportModal();
+        await fixture.whenStable();
+
+        class MockFileReader {
+            result: string | null = null;
+            onload: ((ev: ProgressEvent<FileReader>) => void) | null = null;
+            onerror: ((ev: ProgressEvent<FileReader>) => void) | null = null;
+            readAsText(): void {
+                this.result = exportedFileContent;
+                this.onload?.({} as ProgressEvent<FileReader>);
+            }
+        }
+        spyOn(
+            window as unknown as {FileReader: unknown},
+            "FileReader" as never,
+        ).and.returnValue(new MockFileReader() as never);
+
+        const file = new File([exportedFileContent], "hardware-config.json", {
+            type: "application/json",
+        });
+        component.onHardwareImportFileSelected({
+            target: {files: [file], value: "hardware-config.json"},
+        } as unknown as Event);
+
+        await fixture.whenStable();
+
+        const compiled = fixture.nativeElement as HTMLElement;
+        const preview = compiled.querySelector(".import-preview");
+        expect(preview).toBeTruthy();
+        expect(preview?.textContent).toContain("E2E001");
+
+        const confirmBtn = compiled.querySelector(
+            '[data-test="BTN_Import_Hardware_IDs_Confirm"]',
+        ) as HTMLButtonElement;
+        expect(confirmBtn.disabled).toBeFalse();
     });
 });

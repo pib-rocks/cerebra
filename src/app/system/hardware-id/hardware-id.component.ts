@@ -2,6 +2,7 @@ import {
     Component,
     OnInit,
     ChangeDetectionStrategy,
+    ChangeDetectorRef,
     ElementRef,
     ViewChild,
     DestroyRef,
@@ -55,6 +56,7 @@ export class HardwareIdComponent implements OnInit {
     constructor(
         private brickletService: BrickletService,
         private diagnosticsService: DiagnosticsService,
+        private cdr: ChangeDetectorRef,
     ) {}
 
     ngOnInit(): void {
@@ -88,6 +90,8 @@ export class HardwareIdComponent implements OnInit {
                         );
                     }
                 });
+
+                this.cdr.markForCheck();
             });
     }
 
@@ -114,10 +118,12 @@ export class HardwareIdComponent implements OnInit {
                 this.exportingHardwareIds = false;
                 this.importSuccessMessage =
                     "Hardware-IDs exported successfully.";
+                this.cdr.markForCheck();
             },
             error: () => {
                 this.exportingHardwareIds = false;
                 this.error = "Failed to export Hardware-IDs.";
+                this.cdr.markForCheck();
             },
         });
     }
@@ -160,11 +166,15 @@ export class HardwareIdComponent implements OnInit {
             this.importWarnings = result.warnings;
             this.importPreview = result.valid ? result.config ?? null : null;
             input.value = "";
+            // The app runs zoneless, so this FileReader callback has to notify
+            // change detection itself for the preview to render.
+            this.cdr.markForCheck();
         };
         reader.onerror = () => {
             this.importErrors = ["The selected file could not be read."];
             this.importPreview = null;
             input.value = "";
+            this.cdr.markForCheck();
         };
         reader.readAsText(file);
     }
@@ -187,12 +197,14 @@ export class HardwareIdComponent implements OnInit {
                     this.importSuccessMessage =
                         "Hardware-IDs imported successfully.";
                     this.brickletService.reloadBrickletsFromDb();
+                    this.cdr.markForCheck();
                 },
                 error: (err) => {
                     this.importingHardwareIds = false;
                     const serverError =
                         err?.error?.error || "Failed to import Hardware-IDs.";
                     this.importErrors = [serverError];
+                    this.cdr.markForCheck();
                 },
             });
     }
