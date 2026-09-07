@@ -1,4 +1,11 @@
-import {Component, OnInit, ChangeDetectionStrategy} from "@angular/core";
+import {
+    Component,
+    OnInit,
+    ChangeDetectionStrategy,
+    DestroyRef,
+    inject,
+} from "@angular/core";
+import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 import {ActivatedRoute, Params, RouterLink} from "@angular/router";
 import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
 import {VoiceAssistant} from "src/app/shared/types/voice-assistant";
@@ -18,6 +25,8 @@ import {VoiceAssistantPersonalitySidebarRightComponent} from "./voice-assistant-
     ],
 })
 export class PersonalityDescriptionComponent implements OnInit {
+    private readonly destroyRef = inject(DestroyRef);
+
     personality?: VoiceAssistant;
     textAreaContent: string = "";
     timer: any;
@@ -29,19 +38,24 @@ export class PersonalityDescriptionComponent implements OnInit {
 
     ngOnInit(): void {
         this.personality = this.route.snapshot.data["personality"];
-        this.route.params.subscribe((params: Params) => {
-            this.personality = this.voiceAssistantService.getPersonality(
-                params["personalityUuid"],
-            );
-            this.textAreaContent = this.personality?.description ?? "";
-        });
-        this.voiceAssistantService.personalitiesSubject.subscribe(() => {
-            if (this.personality) {
+        this.route.params
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe((params: Params) => {
                 this.personality = this.voiceAssistantService.getPersonality(
-                    this.personality?.getUUID(),
+                    params["personalityUuid"],
                 );
-            }
-        });
+                this.textAreaContent = this.personality?.description ?? "";
+            });
+        this.voiceAssistantService.personalitiesSubject
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe(() => {
+                if (this.personality) {
+                    this.personality =
+                        this.voiceAssistantService.getPersonality(
+                            this.personality?.getUUID(),
+                        );
+                }
+            });
     }
 
     updateDescription() {

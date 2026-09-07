@@ -4,7 +4,10 @@ import {
     TemplateRef,
     ChangeDetectionStrategy,
     OnInit,
+    DestroyRef,
+    inject,
 } from "@angular/core";
+import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 import {FormControl, ReactiveFormsModule} from "@angular/forms";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {BehaviorSubject, map} from "rxjs";
@@ -28,6 +31,8 @@ import {VerticalSliderComponent} from "../../../sliders/vertical-slider/vertical
     ],
 })
 export class MotorSettingsComponent implements OnInit {
+    private readonly destroyRef = inject(DestroyRef);
+
     @Input() motor!: MotorConfiguration;
     @Input() reversed!: boolean;
 
@@ -54,7 +59,10 @@ export class MotorSettingsComponent implements OnInit {
     ngOnInit(): void {
         this.motorService
             .getSettingsObservable(this.motor.sourceMotorName)
-            .pipe(map((settings) => structuredClone(settings)))
+            .pipe(
+                map((settings) => structuredClone(settings)),
+                takeUntilDestroyed(this.destroyRef),
+            )
             .subscribe((settings) => {
                 this.settings = settings;
                 this.pulseWidthSubject$.next([

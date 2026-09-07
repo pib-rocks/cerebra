@@ -5,7 +5,10 @@ import {
     TemplateRef,
     AfterViewInit,
     ChangeDetectionStrategy,
+    DestroyRef,
+    inject,
 } from "@angular/core";
+import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 
 import {Observable, Subject} from "rxjs";
 import {NgbModal, NgbModalRef} from "@ng-bootstrap/ng-bootstrap";
@@ -24,6 +27,8 @@ import {SideBarRightComponent} from "../../../ui-components/sidebar-right/sideba
     imports: [RouterOutlet, SideBarRightComponent, ReactiveFormsModule],
 })
 export class ProgramManagerComponent implements OnInit, AfterViewInit {
+    private readonly destroyRef = inject(DestroyRef);
+
     @ViewChild("modalContent") modalContent: TemplateRef<any> | undefined;
     closeResult!: string;
     ngbModalRef?: NgbModalRef;
@@ -49,11 +54,13 @@ export class ProgramManagerComponent implements OnInit, AfterViewInit {
     }
 
     ngAfterViewInit() {
-        this.route.url.subscribe((_segments) => {
-            this.programService.getAllPrograms().subscribe((programs) => {
-                this.selected.next(programs[0]?.getUUID());
+        this.route.url
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe((_segments) => {
+                this.programService.getAllPrograms().subscribe((programs) => {
+                    this.selected.next(programs[0]?.getUUID());
+                });
             });
-        });
     }
 
     getProgramFromRoute(): Program | undefined {
