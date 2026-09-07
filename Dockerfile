@@ -9,7 +9,7 @@ RUN npm install
 COPY . .
 
 ARG APP_VERSION
-RUN printf 'export const APP_VERSION = "%s";' "$APP_VERSION" > /app/src/app/shared/util/version.ts
+RUN APP_VERSION_VAL="${APP_VERSION:-dev}" && printf 'export const APP_VERSION = "%s";' "$APP_VERSION_VAL" > /app/src/app/shared/util/version.ts
 
 ARG NODE_ENV=production
 RUN if [ "$NODE_ENV" = "production" ]; then \
