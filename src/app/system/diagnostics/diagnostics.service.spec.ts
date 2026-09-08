@@ -127,6 +127,67 @@ describe("DiagnosticsService hardware-config", () => {
     expect(result.errors.some((e) => e.includes("invalid format"))).toBeTrue();
   });
 
+  it("should accept a config exported by the backend (export/import round-trip)", () => {
+    // Payload shape produced by pib-backend hardware_config_service.export_hardware_config().
+    const exportedFile = JSON.stringify(
+      {
+        version: 1,
+        bricklets: [
+          {brickletNumber: 1, uid: "E2E001", type: "Servo Bricklet"},
+          {brickletNumber: 2, uid: "", type: "Servo Bricklet"},
+          {brickletNumber: 3, uid: "", type: "Servo Bricklet"},
+          {brickletNumber: 4, uid: "", type: "Solid State Relay Bricklet"},
+          {brickletNumber: 5, uid: "", type: "RGB LED Button Bricklet"},
+          {brickletNumber: 6, uid: "", type: "RGB LED Button Bricklet"},
+          {brickletNumber: 7, uid: "", type: "RGB LED Button Bricklet"},
+        ],
+        motors: [
+          {
+            name: "elbow_left",
+            pulseWidthMin: 700,
+            pulseWidthMax: 2500,
+            rotationRangeMin: -9000,
+            rotationRangeMax: 9000,
+            velocity: 16000,
+            acceleration: 10000,
+            deceleration: 5000,
+            period: 19500,
+            turnedOn: true,
+            visible: true,
+            invert: false,
+            brickletPins: [{brickletNumber: 3, pin: 8, invert: false}],
+          },
+          {
+            name: "elbow_right",
+            pulseWidthMin: 700,
+            pulseWidthMax: 2500,
+            rotationRangeMin: -9000,
+            rotationRangeMax: 9000,
+            velocity: 16000,
+            acceleration: 10000,
+            deceleration: 5000,
+            period: 19500,
+            turnedOn: true,
+            visible: true,
+            invert: false,
+            brickletPins: [{brickletNumber: 1, pin: 8, invert: false}],
+          },
+        ],
+      },
+      null,
+      2
+    );
+
+    const result = service.parseHardwareConfigFileContent(exportedFile);
+
+    expect(result.errors).toEqual([]);
+    expect(result.warnings).toEqual([]);
+    expect(result.valid).toBeTrue();
+    expect(result.config?.bricklets.length).toBe(7);
+    expect(result.config?.bricklets[0].uid).toBe("E2E001");
+    expect(result.config?.motors.length).toBe(2);
+  });
+
   it("should reject missing bricklets/motors arrays", () => {
     const result = service.validateHardwareConfig({ version: 1 });
 
