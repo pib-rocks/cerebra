@@ -16,6 +16,8 @@ export const IMPORT_PIB_SDK_IK =
     "from pib_sdk import ik, Write, right_arm, left_arm";
 export const IMPORT_PIB_SDK_POSES =
     "from pib_sdk.features.poses import save_current_pose, list_poses, get_pose";
+export const IMPORT_PIB_SDK_PLAY_POSE_SEQUENCE_TIMED =
+    "from pib_sdk.features.poses import play_pose_sequence_timed";
 export const IMPORT_PIB_SDK_POSE_CONTROL =
     "from pib_sdk.control import All, _expand_motor_specs";
 export const IMPORT_PIB_SDK_TELEMETRY =
@@ -29,6 +31,7 @@ export const IMPORT_PLAY_AUDIO_FROM_SPREECH =
     "from datatypes.srv import PlayAudioFromSpeech";
 export const IMPORT_PLAY_AUDIO_FROM_FILE =
     "from datatypes.srv import PlayAudioFromFile";
+export const IMPORT_SET_VOLUME = "from datatypes.srv import SetVolume";
 export const IMPORT_APPLY_JOINT_TRAJECTORY =
     "from datatypes.srv import ApplyJointTrajectory";
 export const IMPORT_GET_JOINT_POSITION =
@@ -98,6 +101,17 @@ play_audio_from_file_client = node.create_client(
 
 logging.info(f"waiting for 'play_audio_from_file' service to become available...")
 play_audio_from_file_client.wait_for_service()
+logging.info(f"service now available")
+`;
+
+export const INIT_SET_VOLUME_CLIENT = `
+set_volume_client = node.create_client(
+    SetVolume,
+    'set_volume'
+)
+
+logging.info(f"waiting for 'set_volume' service to become available...")
+set_volume_client.wait_for_service()
 logging.info(f"service now available")
 `;
 
