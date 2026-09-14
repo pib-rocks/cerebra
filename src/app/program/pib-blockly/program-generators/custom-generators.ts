@@ -13,6 +13,7 @@ import * as runScript from "./run-script-generator";
 import {RESERVED_WORDS} from "./util/reserved-words";
 import * as displayGenerators from "./display-generators";
 import * as programLog from "./program-log-generator";
+import * as setVolume from "./set-volume-generator";
 
 export * from "blockly/python";
 
@@ -31,6 +32,7 @@ const generators: typeof pythonGenerator.forBlock = {
     ...displayGenerators,
     ...runScript,
     ...programLog,
+    ...setVolume,
 };
 
 for (const name in generators) {
@@ -41,6 +43,9 @@ pythonGenerator.forBlock["play_audio_from_speech"] =
     generators["playAudioFromSpeechGenerator"];
 
 pythonGenerator.forBlock["move_to_pose"] = generators["moveToPoseGenerator"];
+
+pythonGenerator.forBlock["play_pose_sequence"] =
+    generators["play_pose_sequence"];
 
 pythonGenerator.forBlock["set_face_expression"] =
     generators["setFaceExpressionGenerator"];

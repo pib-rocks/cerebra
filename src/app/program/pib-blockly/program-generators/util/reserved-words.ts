@@ -17,6 +17,9 @@ export const RESERVED_WORDS = [
     // play-audio-from-speech
     "PlayAudioFromSpeech",
     "play_audio_from_speech_client",
+    // set-volume
+    "SetVolume",
+    "set_volume_client",
     // motor
     "ik",
     "Write",
@@ -33,6 +36,8 @@ export const RESERVED_WORDS = [
     "fd",
     // pose
     "pose_client",
+    "pose_backend",
+    "play_pose_sequence_timed",
     // solid-state relay
     "SetSolidStateRelay",
     "set_solid_state_relay_state_client",
