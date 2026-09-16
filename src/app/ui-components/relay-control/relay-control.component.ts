@@ -1,4 +1,9 @@
-import {Component, OnInit, OnDestroy, ChangeDetectionStrategy} from "@angular/core";
+import {
+    Component,
+    OnInit,
+    OnDestroy,
+    ChangeDetectionStrategy,
+} from "@angular/core";
 import {RosService} from "src/app/shared/services/ros-service/ros.service";
 import {BrickletService} from "src/app/shared/services/bricklet.service";
 import {MatSnackBar} from "@angular/material/snack-bar";
@@ -27,15 +32,17 @@ export class RelayControlComponent implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         this.subscriptions.add(
-            this.brickletService.getBrickletObservable().subscribe((bricklets) => {
-                this.hasConfiguredRelay = bricklets.some(
-                    (b) =>
-                        b.type === "Solid State Relay Bricklet" &&
-                        !!b.uid &&
-                        b.uid.trim() !== "",
-                );
-                this.updateRelayAvailability();
-            }),
+            this.brickletService
+                .getBrickletObservable()
+                .subscribe((bricklets) => {
+                    this.hasConfiguredRelay = bricklets.some(
+                        (b) =>
+                            b.type === "Solid State Relay Bricklet" &&
+                            !!b.uid &&
+                            b.uid.trim() !== "",
+                    );
+                    this.updateRelayAvailability();
+                }),
         );
 
         // set current state of SSR (in case another user is using it)

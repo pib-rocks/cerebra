@@ -208,9 +208,9 @@ describe("HardwareIdComponent", () => {
         component.exportHardwareIds();
 
         expect(diagnosticsServiceSpy.exportHardwareConfig).toHaveBeenCalled();
-        expect(diagnosticsServiceSpy.downloadHardwareConfig).toHaveBeenCalledWith(
-            sampleHardwareConfig,
-        );
+        expect(
+            diagnosticsServiceSpy.downloadHardwareConfig,
+        ).toHaveBeenCalledWith(sampleHardwareConfig);
         expect(component.importSuccessMessage).toBe(
             "Hardware-IDs exported successfully.",
         );
@@ -226,7 +226,9 @@ describe("HardwareIdComponent", () => {
         fixture.detectChanges();
 
         expect(component.showImportModal).toBeTrue();
-        expect(compiled.querySelector("#hardware-ids-import-modal")).toBeTruthy();
+        expect(
+            compiled.querySelector("#hardware-ids-import-modal"),
+        ).toBeTruthy();
     });
 
     it("should validate selected JSON and show import preview", () => {
@@ -243,7 +245,9 @@ describe("HardwareIdComponent", () => {
                 this.onload?.({} as ProgressEvent<FileReader>);
             }
         }
-        spyOn(window as any, "FileReader").and.returnValue(new MockFileReader());
+        spyOn(window as any, "FileReader").and.returnValue(
+            new MockFileReader(),
+        );
 
         const file = new File([fileContent], "hardware-config.json", {
             type: "application/json",
@@ -274,7 +278,8 @@ describe("HardwareIdComponent", () => {
             warnings: [],
         });
 
-        const result = diagnosticsServiceSpy.parseHardwareConfigFileContent("{}");
+        const result =
+            diagnosticsServiceSpy.parseHardwareConfigFileContent("{}");
         component.importErrors = result.errors;
         component.importWarnings = result.warnings;
         component.importPreview = result.valid ? result.config ?? null : null;

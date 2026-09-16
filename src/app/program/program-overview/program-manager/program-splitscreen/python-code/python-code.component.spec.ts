@@ -13,13 +13,15 @@ describe("PythonCodeComponent", () => {
                 {
                     provide: HIGHLIGHT_OPTIONS,
                     useValue: {
-                        coreLibraryLoader: () => import("highlight.js/lib/core"),
+                        coreLibraryLoader: () =>
+                            import("highlight.js/lib/core"),
                         languages: {
-                            python: () => import("highlight.js/lib/languages/python"),
-                        }
-                    }
-                }
-            ]
+                            python: () =>
+                                import("highlight.js/lib/languages/python"),
+                        },
+                    },
+                },
+            ],
         }).compileComponents();
 
         fixture = TestBed.createComponent(PythonCodeComponent);
