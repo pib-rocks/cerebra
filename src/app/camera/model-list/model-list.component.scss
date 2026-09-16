@@ -1,0 +1,48 @@
+@import "src/styles";
+
+.model-panel {
+    padding: 1rem;
+    color: $white-color;
+    background-color: rgba($blue-dark-5, 0.8);
+    border: 1px solid $blue-color;
+}
+
+.model-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 2.5rem;
+}
+
+.model-panel-header h2 {
+    margin: 0;
+    font-size: 1.25rem;
+}
+
+.camera-restarting {
+    display: inline-flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.model-state {
+    text-transform: capitalize;
+}
+
+.state-running {
+    color: #75dc8b;
+}
+
+.state-starting {
+    color: #ffd166;
+}
+
+.state-failed {
+    color: #ff7676;
+}
+
+th,
+td {
+    white-space: nowrap;
+    vertical-align: middle;
+}

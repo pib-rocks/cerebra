@@ -15,6 +15,8 @@ import {ChatMessage} from "../../ros-types/msg/chat-message";
 import {ChatIsListening} from "../../ros-types/msg/chat-is-listening";
 import {SolidStateRelayState} from "../../ros-types/msg/solid-state-relay-state";
 import {DetectionArray} from "../../ros-types/msg/detection-array";
+import {ModelStatusArray} from "../../ros-types/msg/model-status";
+import {ModelInfo} from "../../ros-types/srv/list-models";
 
 export interface IRosService {
     currentReceiver$: Subject<DiagnosticStatus>;
@@ -36,6 +38,7 @@ export interface IRosService {
     detectionReceiver$: Subject<DetectionArray>;
     detectionModelsReceiver$: BehaviorSubject<string[]>;
     detectionClearReceiver$: Subject<string | undefined>;
+    modelStatusReceiver$: BehaviorSubject<ModelStatusArray>;
     connectionStatus$: Observable<boolean>;
 
     setVoiceAssistantState: (
@@ -69,4 +72,10 @@ export interface IRosService {
     publishProgramInput: (input: string, mpid: number) => void;
 
     setSolidStateRelayState(state: SolidStateRelayState): Observable<void>;
+
+    listModels(): Observable<ModelInfo[]>;
+
+    startModel(model: ModelInfo, owner: string): Observable<void>;
+
+    stopModel(modelId: string, owner: string): Observable<void>;
 }
