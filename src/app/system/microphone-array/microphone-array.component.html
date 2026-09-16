@@ -174,8 +174,7 @@
                                 ? 'badge-success'
                                 : 'badge-secondary'
                         ">
-                        VAD:
-                        {{ telemetry.voice_activity ? "Active" : "Idle" }}
+                        VAD: {{ telemetry.voice_activity ? "Active" : "Idle" }}
                     </span>
                     <span
                         class="badge"
@@ -185,12 +184,8 @@
                                 ? 'badge-success'
                                 : 'badge-secondary'
                         ">
-                        Speech:
-                        {{
-                            telemetry.speech_detected
-                                ? "Detected"
-                                : "None"
-                        }}
+                        Speech: {{ telemetry.speech_detected ? "Detected" :
+                        "None" }}
                     </span>
                 </div>
             </div>
@@ -206,8 +201,7 @@
                     <div
                         *ngFor="let label of channelLabels; let i = index"
                         class="audio-level-row mb-3">
-                        <div
-                            class="d-flex justify-content-between mb-1">
+                        <div class="d-flex justify-content-between mb-1">
                             <span class="text-white-50">{{ label }}</span>
                             <span
                                 class="text-white small"
@@ -304,8 +298,7 @@
                         <label
                             class="text-white-50 small mt-2"
                             for="agc-target-level">
-                            Target Power Level: {{ getTargetLevelDbov() }}
-                            dBov
+                            Target Power Level: {{ getTargetLevelDbov() }} dBov
                         </label>
                         <input
                             id="agc-target-level"
@@ -469,9 +462,9 @@
                             tuning.led_mode === 'mute'
                         "
                         (change)="onLedChange()" />
-                    <span class="text-white-50 ml-2 small">{{
-                        tuning.led_color
-                    }}</span>
+                    <span class="text-white-50 ml-2 small"
+                        >{{ tuning.led_color }}</span
+                    >
                 </div>
             </div>
         </div>

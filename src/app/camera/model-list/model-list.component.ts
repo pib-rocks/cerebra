@@ -58,20 +58,14 @@ export class ModelListComponent implements OnInit, OnDestroy {
     }
 
     start(model: ModelInfo): void {
-        this.runAction(
-            model.model_id,
-            () => this.rosService.startModel(model, ModelListComponent.OWNER),
+        this.runAction(model.model_id, () =>
+            this.rosService.startModel(model, ModelListComponent.OWNER),
         );
     }
 
     stop(model: ModelInfo): void {
-        this.runAction(
-            model.model_id,
-            () =>
-                this.rosService.stopModel(
-                    model.model_id,
-                    ModelListComponent.OWNER,
-                ),
+        this.runAction(model.model_id, () =>
+            this.rosService.stopModel(model.model_id, ModelListComponent.OWNER),
         );
     }
 

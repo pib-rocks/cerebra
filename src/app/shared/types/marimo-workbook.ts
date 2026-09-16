@@ -1,7 +1,10 @@
-import { SidebarElement } from "../interfaces/sidebar-element.interface";
+import {SidebarElement} from "../interfaces/sidebar-element.interface";
 
 export class MarimoWorkbook implements SidebarElement {
-    constructor(public name: string, public filename: string) {}
+    constructor(
+        public name: string,
+        public filename: string,
+    ) {}
 
     getUUID(): string {
         return this.filename;

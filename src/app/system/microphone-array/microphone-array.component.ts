@@ -192,9 +192,7 @@ export class MicrophoneArrayComponent implements OnInit, OnDestroy {
         });
     }
 
-    applyTuningUpdate(
-        update: Partial<MicrophoneArrayTuning>,
-    ): void {
+    applyTuningUpdate(update: Partial<MicrophoneArrayTuning>): void {
         this.saving = true;
         this.error = null;
         this.successMessage = null;
