@@ -32,6 +32,8 @@ import {motors} from "../../types/motor-configuration";
 import {ExistTokenResponse} from "../../ros-types/srv/exist-token";
 import {SolidStateRelayState} from "../../ros-types/msg/solid-state-relay-state";
 import {DetectionArray} from "../../ros-types/msg/detection-array";
+import {ModelStatusArray} from "../../ros-types/msg/model-status";
+import {ModelInfo} from "../../ros-types/srv/list-models";
 
 @Injectable({
     providedIn: "root",
@@ -143,7 +145,38 @@ export class RosService implements IRosService {
         "object_detection",
     ]);
     detectionClearReceiver$ = new Subject<string | undefined>();
+    modelStatusReceiver$ = new BehaviorSubject<ModelStatusArray>({
+        models: [
+            {
+                model_id: "object_detection",
+                state: "running",
+                fps: 24.8,
+                active: true,
+            },
+        ],
+    });
     cameraTimer: any;
+
+    private readonly mockModels: ModelInfo[] = [
+        {
+            model_id: "hand_tracking",
+            task: "hand tracking",
+            licence: "Apache-2.0",
+            shaves: [4, 1, 4],
+            size_bytes: 17400000,
+            available: true,
+            active: false,
+        },
+        {
+            model_id: "object_detection",
+            task: "object detection",
+            licence: "Apache-2.0",
+            shaves: [6],
+            size_bytes: 14900000,
+            available: true,
+            active: true,
+        },
+    ];
 
     private motorNames = motors.map((motor) => motor.motorName);
 
@@ -294,6 +327,61 @@ export class RosService implements IRosService {
             structuredClone(this.solidStateRelayState),
         );
         return subject;
+    }
+
+    listModels(): Observable<ModelInfo[]> {
+        return of(structuredClone(this.mockModels));
+    }
+
+    startModel(model: ModelInfo, owner: string): Observable<void> {
+        console.info(
+            JSON.stringify({
+                model_id: model.model_id,
+                shaves: model.shaves,
+                owner,
+            }),
+        );
+        return this.mockModelAction(model.model_id, true);
+    }
+
+    stopModel(modelId: string, owner: string): Observable<void> {
+        console.info(JSON.stringify({model_id: modelId, owner}));
+        return this.mockModelAction(modelId, false);
+    }
+
+    private mockModelAction(modelId: string, start: boolean): Observable<void> {
+        this.detectionClearReceiver$.next(undefined);
+        this.modelStatusReceiver$.next({
+            models: [
+                {
+                    model_id: modelId,
+                    state: start ? "starting" : "idle",
+                    fps: 0,
+                    active: start,
+                },
+            ],
+        });
+        return new Observable<void>((subscriber) => {
+            const timer = setTimeout(() => {
+                const model = this.mockModels.find(
+                    ({model_id}) => model_id === modelId,
+                );
+                if (model) model.active = start;
+                this.modelStatusReceiver$.next({
+                    models: [
+                        {
+                            model_id: modelId,
+                            state: start ? "running" : "idle",
+                            fps: start ? 24.8 : 0,
+                            active: start,
+                        },
+                    ],
+                });
+                subscriber.next();
+                subscriber.complete();
+            }, 2500);
+            return () => clearTimeout(timer);
+        });
     }
 
     runProgram(

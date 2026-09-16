@@ -71,6 +71,10 @@ import {
     SetSolidStateRelayStateResponse,
 } from "../../ros-types/srv/set-solid-state-relay-state";
 import {DetectionArray} from "../../ros-types/msg/detection-array";
+import {ModelStatusArray} from "../../ros-types/msg/model-status";
+import {ListModelsResponse, ModelInfo} from "../../ros-types/srv/list-models";
+import {StartModelRequest} from "../../ros-types/srv/start-model";
+import {StopModelRequest} from "../../ros-types/srv/stop-model";
 
 @Injectable({
     providedIn: "root",
@@ -110,6 +114,7 @@ export class RosService implements IRosService {
     detectionReceiver$ = new Subject<DetectionArray>();
     detectionModelsReceiver$ = new BehaviorSubject<string[]>([]);
     detectionClearReceiver$ = new Subject<string | undefined>();
+    modelStatusReceiver$ = new BehaviorSubject<ModelStatusArray>({models: []});
 
     private ros!: ROSLIB.Ros;
 
@@ -129,7 +134,7 @@ export class RosService implements IRosService {
     private voiceAssistantStateTopic!: ROSLIB.Topic<VoiceAssistantState>;
     private chatIsListeningTopic!: ROSLIB.Topic<ChatIsListening>;
     private solidStateRelayStateTopic!: ROSLIB.Topic<SolidStateRelayState>;
-    private modelStatusTopic!: ROSLIB.Topic;
+    private modelStatusTopic!: ROSLIB.Topic<ModelStatusArray>;
     private detectionTopics = new Map<string, ROSLIB.Topic<DetectionArray>>();
     private detectionTopicRefreshTimer?: ReturnType<typeof setInterval>;
     private detectionDiscoveryGeneration = 0;
@@ -181,6 +186,18 @@ export class RosService implements IRosService {
         SetSolidStateRelayStateRequest,
         SetSolidStateRelayStateResponse
     >;
+    private listModelsService!: ROSLIB.Service<
+        Record<string, never>,
+        ListModelsResponse
+    >;
+    private startModelService!: ROSLIB.Service<
+        StartModelRequest,
+        Record<string, never>
+    >;
+    private stopModelService!: ROSLIB.Service<
+        StopModelRequest,
+        Record<string, never>
+    >;
 
     private runProgramAction!: ROSLIB.ActionClient;
 
@@ -208,6 +225,7 @@ export class RosService implements IRosService {
             this.detectionDiscoveryInFlight = false;
             this.clearDetectionTopics();
             this.lastModelStatus = undefined;
+            this.modelStatusReceiver$.next({models: []});
             this.connectionStatusSubject.next(false);
         });
     }
@@ -338,6 +356,18 @@ export class RosService implements IRosService {
             rosServices.setSolidStateRelayState,
             rosDataTypes.setSolidStateRelayState,
         );
+        this.listModelsService = this.createRosService(
+            rosServices.listModels,
+            rosDataTypes.listModels,
+        );
+        this.startModelService = this.createRosService(
+            rosServices.startModel,
+            rosDataTypes.startModel,
+        );
+        this.stopModelService = this.createRosService(
+            rosServices.stopModel,
+            rosDataTypes.stopModel,
+        );
     }
 
     private createRosService(serviceName: string, serviceType: string): any {
@@ -389,7 +419,17 @@ export class RosService implements IRosService {
 
     private subscribeModelStatusTopic() {
         this.modelStatusTopic.subscribe((message) => {
-            const serializedStatus = JSON.stringify(message);
+            const serializedStatus = JSON.stringify(
+                [...message.models]
+                    .sort((left, right) =>
+                        left.model_id.localeCompare(right.model_id),
+                    )
+                    .map(({model_id, state, active}) => ({
+                        model_id,
+                        state,
+                        active,
+                    })),
+            );
             if (
                 this.lastModelStatus !== undefined &&
                 serializedStatus !== this.lastModelStatus
@@ -397,6 +437,7 @@ export class RosService implements IRosService {
                 this.detectionClearReceiver$.next(undefined);
             }
             this.lastModelStatus = serializedStatus;
+            this.modelStatusReceiver$.next(message);
             this.refreshDetectionTopics();
         });
     }
@@ -719,6 +760,55 @@ export class RosService implements IRosService {
             errorCallback,
         );
         return subject;
+    }
+
+    listModels(): Observable<ModelInfo[]> {
+        return from(
+            new Promise<ModelInfo[]>((resolve, reject) => {
+                this.listModelsService.callService(
+                    {},
+                    (response) => resolve(response.models),
+                    (error) => reject(new Error(error)),
+                );
+            }),
+        );
+    }
+
+    startModel(model: ModelInfo, owner: string): Observable<void> {
+        this.clearModelPipelineState();
+        return this.callModelAction(this.startModelService, {
+            model_id: model.model_id,
+            shaves: model.shaves,
+            owner,
+        });
+    }
+
+    stopModel(modelId: string, owner: string): Observable<void> {
+        this.clearModelPipelineState();
+        return this.callModelAction(this.stopModelService, {
+            model_id: modelId,
+            owner,
+        });
+    }
+
+    private callModelAction<Request extends object>(
+        service: ROSLIB.Service<Request, Record<string, never>>,
+        request: Request,
+    ): Observable<void> {
+        return from(
+            new Promise<void>((resolve, reject) => {
+                service.callService(
+                    request,
+                    () => resolve(),
+                    (error) => reject(new Error(error)),
+                );
+            }),
+        );
+    }
+
+    private clearModelPipelineState() {
+        this.modelStatusReceiver$.next({models: []});
+        this.detectionClearReceiver$.next(undefined);
     }
 
     applyJointTrajectory(

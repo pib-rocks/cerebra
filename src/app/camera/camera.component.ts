@@ -23,6 +23,7 @@ import {
     Detection,
     DetectionArray,
 } from "../shared/ros-types/msg/detection-array";
+import {ModelListComponent} from "./model-list/model-list.component";
 
 interface DetectionLayer {
     modelId: string;
@@ -51,6 +52,7 @@ interface OverlayKeypoint {
         NgbDropdownItem,
         NgbPopover,
         HorizontalSliderComponent,
+        ModelListComponent,
     ],
 })
 export class CameraComponent implements OnInit, OnDestroy {

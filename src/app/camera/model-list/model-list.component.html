@@ -1,0 +1,96 @@
+<section
+    class="model-panel mb-4"
+    aria-labelledby="model-panel-title">
+    <div class="model-panel-header">
+        <h2 id="model-panel-title">Models</h2>
+        @if (actionInFlight) {
+        <span
+            class="camera-restarting"
+            role="status"
+            aria-live="polite">
+            <span
+                class="spinner-border spinner-border-sm"
+                aria-hidden="true"></span>
+            Camera restarting
+        </span>
+        }
+    </div>
+
+    @if (error) {
+    <div
+        class="alert alert-danger py-2"
+        role="alert">
+        {{ error }}
+    </div>
+    }
+
+    <div class="table-responsive">
+        <table class="table table-dark table-striped table-hover mb-0">
+            <thead>
+                <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">Task</th>
+                    <th scope="col">Licence</th>
+                    <th scope="col">SHAVEs</th>
+                    <th scope="col">Size</th>
+                    <th scope="col">Available</th>
+                    <th scope="col">State</th>
+                    <th scope="col">FPS</th>
+                    <th
+                        scope="col"
+                        class="text-end">
+                        Action
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (model of models; track model.model_id) {
+                <tr [attr.data-model-id]="model.model_id">
+                    <td>{{ model.model_id }}</td>
+                    <td>{{ model.task }}</td>
+                    <td>{{ model.licence }}</td>
+                    <td>{{ formatShaves(model.shaves) }}</td>
+                    <td>{{ formatSize(model.size_bytes) }}</td>
+                    <td>{{ model.available ? "Yes" : "No" }}</td>
+                    <td>
+                        <span
+                            class="model-state"
+                            [class]="'model-state state-' + (statusFor(model.model_id)?.state ?? 'unknown')">
+                            {{ statusFor(model.model_id)?.state ?? "—" }}
+                        </span>
+                    </td>
+                    <td>{{ formatFps(statusFor(model.model_id)) }}</td>
+                    <td class="text-end">
+                        @if (isActive(model)) {
+                        <button
+                            type="button"
+                            class="btn btn-sm btn-outline-light"
+                            [disabled]="actionInFlight !== undefined"
+                            (click)="stop(model)">
+                            Stop
+                        </button>
+                        } @else {
+                        <button
+                            type="button"
+                            class="btn btn-sm btn-regular"
+                            [disabled]="!model.available || actionInFlight !== undefined"
+                            (click)="start(model)">
+                            Start
+                        </button>
+                        }
+                    </td>
+                </tr>
+                } @empty {
+                <tr>
+                    <td
+                        colspan="9"
+                        class="text-center">
+                        {{ loading ? "Loading models…" : "No models available."
+                        }}
+                    </td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</section>
