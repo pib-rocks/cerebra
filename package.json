@@ -85,7 +85,7 @@
     "typescript-eslint": "^8.65.0"
   },
   "lint-staged": {
-    "*.{js,html,css,scss,ts}": "prettier --write ."
+    "*.{js,html,css,scss,ts}": "prettier --write"
   },
   "overrides": {
     "summernote": {
