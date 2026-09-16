@@ -17,6 +17,8 @@ export enum rosDataTypes {
     proxyRunProgramStatus = "datatypes/msg/ProxyRunProgramStatus",
     programInput = "datatypes/msg/ProgramInput",
     solidStateRelayState = "datatypes/msg/SolidStateRelayState",
+    detectionArray = "datatypes/DetectionArray",
+    modelStatusArray = "datatypes/ModelStatusArray",
     // srv
     applyMotorSettings = "datatypes/srv/ApplyMotorSettings",
     proxyRunProgramStart = "datatypes/srv/ProxyStartProgram",

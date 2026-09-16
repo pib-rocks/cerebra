@@ -31,6 +31,7 @@ import {ChatIsListening} from "../../ros-types/msg/chat-is-listening";
 import {motors} from "../../types/motor-configuration";
 import {ExistTokenResponse} from "../../ros-types/srv/exist-token";
 import {SolidStateRelayState} from "../../ros-types/msg/solid-state-relay-state";
+import {DetectionArray} from "../../ros-types/msg/detection-array";
 
 @Injectable({
     providedIn: "root",
@@ -136,6 +137,12 @@ export class RosService implements IRosService {
         new BehaviorSubject<any>({
             turned_on: false,
         });
+    detectionReceiver$ = new Subject<DetectionArray>();
+    detectionModelsReceiver$ = new BehaviorSubject<string[]>([
+        "hand_tracking",
+        "object_detection",
+    ]);
+    detectionClearReceiver$ = new Subject<string | undefined>();
     cameraTimer: any;
 
     private motorNames = motors.map((motor) => motor.motorName);
@@ -421,12 +428,55 @@ export class RosService implements IRosService {
             this.cameraReceiver$.next(
                 toggle ? orangeJpegBase64 : redJpegBase64,
             );
+            this.detectionReceiver$.next({
+                model_id: "hand_tracking",
+                frame_width: 640,
+                frame_height: 480,
+                detections: [
+                    {
+                        label: "hand",
+                        score: 0.94,
+                        x_min: toggle ? 100 : 120,
+                        y_min: 80,
+                        x_max: toggle ? 320 : 340,
+                        y_max: 380,
+                        keypoint_names: ["wrist", "index"],
+                        keypoint_x: [180, 270],
+                        keypoint_y: [330, 140],
+                        keypoint_z: [500, 0],
+                        scalar_names: [],
+                        scalar_values: [],
+                    },
+                ],
+            });
+            this.detectionReceiver$.next({
+                model_id: "object_detection",
+                frame_width: 640,
+                frame_height: 480,
+                detections: [
+                    {
+                        label: "person",
+                        score: 0.88,
+                        x_min: 360,
+                        y_min: 70,
+                        x_max: 570,
+                        y_max: 430,
+                        keypoint_names: [],
+                        keypoint_x: [],
+                        keypoint_y: [],
+                        keypoint_z: [],
+                        scalar_names: [],
+                        scalar_values: [],
+                    },
+                ],
+            });
         }, 500);
     }
 
     unsubscribeCameraTopic(): void {
         clearInterval(this.cameraTimer);
         this.cameraTimer = undefined;
+        this.detectionClearReceiver$.next(undefined);
     }
 
     publishProgramInput(input: string, mpid: number) {

@@ -19,6 +19,23 @@ import {
 } from "@ng-bootstrap/ng-bootstrap/dropdown";
 import {NgbPopover} from "@ng-bootstrap/ng-bootstrap/popover";
 import {HorizontalSliderComponent} from "../sliders/horizontal-slider/horizontal-slider.component";
+import {
+    Detection,
+    DetectionArray,
+} from "../shared/ros-types/msg/detection-array";
+
+interface DetectionLayer {
+    modelId: string;
+    color: string;
+    enabled: boolean;
+    message?: DetectionArray;
+}
+
+interface OverlayKeypoint {
+    name: string;
+    x: number;
+    y: number;
+}
 
 @Component({
     selector: "app-camera",
@@ -37,6 +54,8 @@ import {HorizontalSliderComponent} from "../sliders/horizontal-slider/horizontal
     ],
 })
 export class CameraComponent implements OnInit, OnDestroy {
+    private static readonly DETECTION_STALE_MS = 1500;
+
     @ViewChild("videobox") videoBox?: ElementRef;
     @ViewChild("refreshRate") refreshRateSlider!: ElementRef;
     @ViewChild("qualityFactor") qualityFactorSlider!: ElementRef;
@@ -52,6 +71,23 @@ export class CameraComponent implements OnInit, OnDestroy {
     cameraSettings: CameraSettings | undefined;
     cameraReceiverSubscription?: Subscription;
     cameraSettingsSubscription?: Subscription;
+    detectionSubscription?: Subscription;
+    detectionModelsSubscription?: Subscription;
+    detectionClearSubscription?: Subscription;
+    detectionLayers = new Map<string, DetectionLayer>();
+    detectionModels: DetectionLayer[] = [];
+    private detectionExpiryTimers = new Map<
+        string,
+        ReturnType<typeof setTimeout>
+    >();
+    private imageIsLive = false;
+
+    get visibleDetectionLayers(): DetectionLayer[] {
+        if (!this.imageIsLive) return [];
+        return this.detectionModels.filter(
+            (layer) => layer.enabled && layer.message !== undefined,
+        );
+    }
 
     constructor(private cameraService: CameraService) {
         this.subscribeCameraSettings();
@@ -63,10 +99,25 @@ export class CameraComponent implements OnInit, OnDestroy {
         this.cameraReceiverSubscription =
             this.cameraService.cameraReciver$.subscribe((message) => {
                 this.imageSrc = "data:image/jpeg;base64," + message;
+                this.imageIsLive = true;
                 if (message.startsWith("Camera not available")) {
                     this.imageSrc = "../../assets/camera-error-image.svg";
+                    this.imageIsLive = false;
+                    this.clearDetections();
                 }
             });
+        this.detectionModelsSubscription =
+            this.cameraService.detectionModelsReceiver$.subscribe((models) =>
+                this.updateDetectionModels(models),
+            );
+        this.detectionSubscription =
+            this.cameraService.detectionReceiver$.subscribe((message) =>
+                this.updateDetections(message),
+            );
+        this.detectionClearSubscription =
+            this.cameraService.detectionClearReceiver$.subscribe((modelId) =>
+                this.clearDetections(modelId),
+            );
         this.qualityReceiver$ =
             this.cameraService.rosCameraQualityFactorReceiver.pipe(
                 map((n) => [n]),
@@ -80,6 +131,10 @@ export class CameraComponent implements OnInit, OnDestroy {
     ngOnDestroy(): void {
         this.cameraReceiverSubscription?.unsubscribe();
         this.cameraSettingsSubscription?.unsubscribe();
+        this.detectionSubscription?.unsubscribe();
+        this.detectionModelsSubscription?.unsubscribe();
+        this.detectionClearSubscription?.unsubscribe();
+        this.clearDetections();
         this.stopCamera();
         this.cameraSettings!.isActive = false;
     }
@@ -116,6 +171,101 @@ export class CameraComponent implements OnInit, OnDestroy {
     stopCamera() {
         this.cameraService.stopCamera();
         this.imageSrc = "../../assets/camera-placeholder.jpg";
+        this.imageIsLive = false;
+        this.clearDetections();
+    }
+
+    setModelEnabled(modelId: string, enabled: boolean) {
+        const layer = this.detectionLayers.get(modelId);
+        if (layer) layer.enabled = enabled;
+    }
+
+    keypoints(detection: Detection): OverlayKeypoint[] {
+        return detection.keypoint_names
+            .map((name, index) => ({
+                name,
+                x: detection.keypoint_x[index],
+                y: detection.keypoint_y[index],
+            }))
+            .filter(
+                (keypoint) =>
+                    Number.isFinite(keypoint.x) && Number.isFinite(keypoint.y),
+            );
+    }
+
+    detectionLabel(detection: Detection): string {
+        const percentage = Number.isFinite(detection.score)
+            ? ` ${Math.round(detection.score * 100)}%`
+            : "";
+        return `${detection.label}${percentage}`;
+    }
+
+    private updateDetectionModels(modelIds: string[]) {
+        const availableModels = new Set(modelIds);
+        for (const modelId of modelIds) {
+            this.ensureDetectionLayer(modelId);
+        }
+        this.detectionModels = [...this.detectionLayers.values()].filter(
+            (layer) => availableModels.has(layer.modelId),
+        );
+    }
+
+    private updateDetections(message: DetectionArray) {
+        if (
+            !message.model_id ||
+            message.frame_width <= 0 ||
+            message.frame_height <= 0
+        ) {
+            return;
+        }
+
+        const layer = this.ensureDetectionLayer(message.model_id);
+        layer.message = message;
+        if (!this.detectionModels.includes(layer)) {
+            this.detectionModels = [...this.detectionModels, layer];
+        }
+
+        const oldTimer = this.detectionExpiryTimers.get(message.model_id);
+        if (oldTimer !== undefined) clearTimeout(oldTimer);
+        this.detectionExpiryTimers.set(
+            message.model_id,
+            setTimeout(
+                () => this.clearDetections(message.model_id),
+                CameraComponent.DETECTION_STALE_MS,
+            ),
+        );
+    }
+
+    private ensureDetectionLayer(modelId: string): DetectionLayer {
+        let layer = this.detectionLayers.get(modelId);
+        if (!layer) {
+            layer = {
+                modelId,
+                color: this.modelColor(modelId),
+                enabled: true,
+            };
+            this.detectionLayers.set(modelId, layer);
+        }
+        return layer;
+    }
+
+    private clearDetections(modelId?: string) {
+        const modelIds = modelId ? [modelId] : [...this.detectionLayers.keys()];
+        for (const id of modelIds) {
+            const layer = this.detectionLayers.get(id);
+            if (layer) layer.message = undefined;
+            const timer = this.detectionExpiryTimers.get(id);
+            if (timer !== undefined) clearTimeout(timer);
+            this.detectionExpiryTimers.delete(id);
+        }
+    }
+
+    private modelColor(modelId: string): string {
+        let hash = 0;
+        for (const character of modelId) {
+            hash = (hash * 31 + character.charCodeAt(0)) % 360;
+        }
+        return `hsl(${hash}, 85%, 55%)`;
     }
 
     toggleCameraState() {

@@ -27,6 +27,9 @@ export class CameraService {
     rosCameraQualityFactorReceiver =
         this.rosService.cameraQualityFactorReceiver$;
     rosCameraTimerPeriodReceiver = this.rosService.cameraTimerPeriodReceiver$;
+    detectionReceiver$ = this.rosService.detectionReceiver$;
+    detectionModelsReceiver$ = this.rosService.detectionModelsReceiver$;
+    detectionClearReceiver$ = this.rosService.detectionClearReceiver$;
     cameraReciver$: Subject<string> = new Subject<string>();
     cameraSettings: BehaviorSubject<CameraSettings> =
         new BehaviorSubject<CameraSettings>({} as CameraSettings);
