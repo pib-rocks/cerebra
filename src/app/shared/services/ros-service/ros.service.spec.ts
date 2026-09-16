@@ -17,6 +17,7 @@ import {SetVoiceAssistantStateResponse} from "../../ros-types/srv/set-voice-assi
 import {Observable, Subject} from "rxjs";
 import {SolidStateRelayState} from "../../ros-types/msg/solid-state-relay-state";
 import {SetSolidStateRelayStateResponse} from "../../ros-types/srv/set-solid-state-relay-state";
+import {DetectionArray} from "../../ros-types/msg/detection-array";
 
 describe("RosService", () => {
     let rosService: RosService;
@@ -80,6 +81,80 @@ describe("RosService", () => {
         expect(rosService["deleteTokenTopic"]).toBeTruthy();
         expect(rosService["solidStateRelayStateTopic"]).toBeTruthy();
         expect(rosService["setSolidStateRelayStateService"]).toBeTruthy();
+        expect(rosService["modelStatusTopic"]).toBeTruthy();
+    });
+
+    it("should subscribe to multiple discovered detection topics", () => {
+        const callbacks = new Map<string, (message: DetectionArray) => void>();
+        const topics = new Map<string, jasmine.SpyObj<any>>();
+        spyOn<any>(rosService, "createRosTopic").and.callFake(
+            (topicName: string) => {
+                const topic = jasmine.createSpyObj<any>("topic", [
+                    "subscribe",
+                    "unsubscribe",
+                ]);
+                topic.subscribe.and.callFake(
+                    (callback: (message: DetectionArray) => void) => {
+                        callbacks.set(topicName, callback);
+                    },
+                );
+                topics.set(topicName, topic);
+                return topic;
+            },
+        );
+        const received: DetectionArray[] = [];
+        rosService.detectionReceiver$.subscribe((message) =>
+            received.push(message),
+        );
+
+        rosService["syncDetectionTopics"]([
+            "/detections/hands",
+            "/detections/objects",
+        ]);
+        callbacks.get("/detections/hands")?.({
+            model_id: "hands",
+            frame_width: 640,
+            frame_height: 480,
+            detections: [],
+        });
+        callbacks.get("/detections/objects")?.({
+            model_id: "objects",
+            frame_width: 1280,
+            frame_height: 720,
+            detections: [],
+        });
+
+        expect(rosService.detectionModelsReceiver$.value).toEqual([
+            "hands",
+            "objects",
+        ]);
+        expect(received.map((message) => message.model_id)).toEqual([
+            "hands",
+            "objects",
+        ]);
+
+        rosService["syncDetectionTopics"](["/detections/hands"]);
+        expect(
+            topics.get("/detections/objects")?.unsubscribe,
+        ).toHaveBeenCalled();
+    });
+
+    it("should clear detections when model status changes", () => {
+        let statusCallback: (message: any) => void = () => {};
+        spyOn(rosService["modelStatusTopic"], "subscribe").and.callFake(
+            (callback) => {
+                statusCallback = callback;
+            },
+        );
+        spyOn<any>(rosService, "refreshDetectionTopics");
+        const clearSpy = spyOn(rosService.detectionClearReceiver$, "next");
+
+        rosService["subscribeModelStatusTopic"]();
+        statusCallback({models: [{model_id: "hands", running: true}]});
+        statusCallback({models: [{model_id: "hands", running: true}]});
+        statusCallback({models: [{model_id: "hands", running: false}]});
+
+        expect(clearSpy).toHaveBeenCalledOnceWith(undefined);
     });
 
     it("should call the set_voice_assistant_state ros service", () => {

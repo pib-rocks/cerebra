@@ -15,4 +15,5 @@ export enum rosTopics {
     programInput = "/program_input",
     deleteTokenTopic = "/delete_token",
     solidStateRelayState = "/solid_state_relay_state",
+    modelStatus = "/models_status",
 }

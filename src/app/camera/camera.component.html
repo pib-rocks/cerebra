@@ -139,15 +139,80 @@
             </ng-template>
         </div>
     </div>
+    @if (detectionModels.length > 0) {
+    <div
+        class="d-flex flex-wrap justify-content-center gap-3 mb-4"
+        aria-label="Detection overlays">
+        @for (model of detectionModels; track model.modelId) {
+        <div class="form-check form-switch detection-toggle">
+            <input
+                #modelToggle
+                class="form-check-input"
+                type="checkbox"
+                role="switch"
+                [id]="'detection-' + model.modelId"
+                [checked]="model.enabled"
+                (change)="setModelEnabled(model.modelId, modelToggle.checked)" />
+            <label
+                class="form-check-label"
+                [for]="'detection-' + model.modelId">
+                <span
+                    class="detection-color"
+                    [style.background-color]="model.color"></span>
+                {{ model.modelId }}
+            </label>
+        </div>
+        }
+    </div>
+    }
     <div class="row justify-content-center pb-5 mb-5">
         <div
             class="col-auto pb-5 d-flex justify-content-center"
             id="cameraColumn"
             #videobox>
-            <img
-                [src]="imageSrc"
-                alt="camera"
-                width="auto" />
+            <div class="camera-image">
+                <img
+                    [src]="imageSrc"
+                    alt="camera"
+                    width="auto" />
+                @for (layer of visibleDetectionLayers; track layer.modelId) {
+                <svg
+                    class="detection-overlay"
+                    [attr.viewBox]="'0 0 ' + layer.message!.frame_width + ' ' + layer.message!.frame_height"
+                    preserveAspectRatio="none"
+                    [attr.aria-label]="layer.modelId + ' detections'">
+                    @for (detection of layer.message!.detections; track $index)
+                    {
+                    <rect
+                        class="detection-box"
+                        [attr.x]="detection.x_min"
+                        [attr.y]="detection.y_min"
+                        [attr.width]="detection.x_max - detection.x_min"
+                        [attr.height]="detection.y_max - detection.y_min"
+                        [attr.stroke]="layer.color"
+                        vector-effect="non-scaling-stroke" />
+                    <text
+                        class="detection-label"
+                        [attr.x]="detection.x_min + 4"
+                        [attr.y]="detection.y_min + 18"
+                        [attr.fill]="layer.color"
+                        vector-effect="non-scaling-stroke">
+                        {{ detectionLabel(detection) }}
+                    </text>
+                    @for (keypoint of keypoints(detection); track $index) {
+                    <circle
+                        class="detection-keypoint"
+                        [attr.cx]="keypoint.x"
+                        [attr.cy]="keypoint.y"
+                        r="4"
+                        [attr.fill]="layer.color"
+                        vector-effect="non-scaling-stroke">
+                        <title>{{ keypoint.name }}</title>
+                    </circle>
+                    } }
+                </svg>
+                }
+            </div>
         </div>
     </div>
 </div>

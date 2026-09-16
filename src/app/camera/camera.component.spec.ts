@@ -13,6 +13,7 @@ import {CameraService} from "../shared/services/camera.service";
 import {ApiService} from "../shared/services/api.service";
 import {HttpClientTestingModule} from "@angular/common/http/testing";
 import {HorizontalSliderComponent} from "../sliders/horizontal-slider/horizontal-slider.component";
+import {DetectionArray} from "../shared/ros-types/msg/detection-array";
 
 describe("CameraComponent", () => {
     let component: CameraComponent;
@@ -20,6 +21,31 @@ describe("CameraComponent", () => {
     let rosService: RosService;
     let spyUnsubscribeCamera: jasmine.Spy<() => void>;
     let cameraService: CameraService;
+    const detectionMessage = (
+        modelId: string,
+        frameWidth = 640,
+        frameHeight = 480,
+    ): DetectionArray => ({
+        model_id: modelId,
+        frame_width: frameWidth,
+        frame_height: frameHeight,
+        detections: [
+            {
+                label: "hand",
+                score: 0.9,
+                x_min: 64,
+                y_min: 48,
+                x_max: 320,
+                y_max: 240,
+                keypoint_names: ["wrist"],
+                keypoint_x: [128],
+                keypoint_y: [96],
+                keypoint_z: [0],
+                scalar_names: [],
+                scalar_values: [],
+            },
+        ],
+    });
 
     beforeEach(async () => {
         TestBed.configureTestingModule({
@@ -106,5 +132,78 @@ describe("CameraComponent", () => {
     it("stopCamera should get called when OnDestroy is called", () => {
         component.ngOnDestroy();
         expect(spyUnsubscribeCamera).toHaveBeenCalled();
+    });
+
+    it("should render independent overlays using each detection frame size", () => {
+        rosService.cameraReceiver$.next("camera-image");
+        rosService.detectionModelsReceiver$.next(["hands", "objects"]);
+        rosService.detectionReceiver$.next(detectionMessage("hands"));
+        rosService.detectionReceiver$.next(
+            detectionMessage("objects", 1280, 720),
+        );
+        fixture.detectChanges();
+
+        const overlays = fixture.debugElement.queryAll(
+            By.css(".detection-overlay"),
+        );
+        expect(overlays.length).toBe(2);
+        expect(overlays[0].attributes["viewBox"]).toBe("0 0 640 480");
+        expect(overlays[1].attributes["viewBox"]).toBe("0 0 1280 720");
+    });
+
+    it("should toggle a model overlay independently", () => {
+        rosService.cameraReceiver$.next("camera-image");
+        rosService.detectionModelsReceiver$.next(["hands", "objects"]);
+        rosService.detectionReceiver$.next(detectionMessage("hands"));
+        rosService.detectionReceiver$.next(detectionMessage("objects"));
+        fixture.detectChanges();
+
+        const toggles = fixture.debugElement.queryAll(
+            By.css(".detection-toggle input"),
+        );
+        toggles[0].nativeElement.click();
+        fixture.detectChanges();
+
+        const overlays = fixture.debugElement.queryAll(
+            By.css(".detection-overlay"),
+        );
+        expect(overlays.length).toBe(1);
+        expect(overlays[0].attributes["aria-label"]).toBe("objects detections");
+    });
+
+    it("should clear stale detections when messages stop", fakeAsync(() => {
+        rosService.cameraReceiver$.next("camera-image");
+        rosService.detectionModelsReceiver$.next(["hands"]);
+        rosService.detectionReceiver$.next(detectionMessage("hands"));
+        fixture.detectChanges();
+        expect(
+            fixture.debugElement.queryAll(By.css(".detection-overlay")).length,
+        ).toBe(1);
+
+        tick(1500);
+        fixture.detectChanges();
+        expect(
+            fixture.debugElement.queryAll(By.css(".detection-overlay")).length,
+        ).toBe(0);
+    }));
+
+    it("should clear overlays immediately while the pipeline restarts", () => {
+        rosService.cameraReceiver$.next("camera-image");
+        rosService.detectionModelsReceiver$.next(["hands"]);
+        rosService.detectionReceiver$.next(detectionMessage("hands"));
+        fixture.detectChanges();
+
+        rosService.detectionClearReceiver$.next(undefined);
+        fixture.detectChanges();
+
+        expect(
+            fixture.debugElement.queryAll(By.css(".detection-overlay")).length,
+        ).toBe(0);
+
+        rosService.detectionReceiver$.next(detectionMessage("hands"));
+        fixture.detectChanges();
+        expect(
+            fixture.debugElement.queryAll(By.css(".detection-overlay")).length,
+        ).toBe(1);
     });
 });
