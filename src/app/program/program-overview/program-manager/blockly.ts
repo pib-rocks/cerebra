@@ -369,6 +369,7 @@ export const toolbox: string = `<xml xmlns="http://www.w3.org/1999/xhtml" id="to
     <block type="move_motor"></block>
     <block type="move_to_pose"></block>
     <block type="save_current_pose"></block>
+    <block type="save_detection_as_pose"></block>
     <block type="set_hand_position_xyz"></block>
 </category>
 <category name="Audio skills" colour="260">
@@ -384,6 +385,9 @@ export const toolbox: string = `<xml xmlns="http://www.w3.org/1999/xhtml" id="to
     <block type="vision_object_count"></block>
     <block type="vision_objects_different"></block>
     <block type="vision_describe_image"></block>
+    <block type="start_model"></block>
+    <block type="stop_model"></block>
+    <block type="get_detection_field"></block>
 </category>
 <category name="Expressions" colour="180">
     <block type="set_face_expression"></block>
