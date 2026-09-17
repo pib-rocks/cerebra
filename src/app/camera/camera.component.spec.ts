@@ -48,7 +48,7 @@ describe("CameraComponent", () => {
     });
 
     beforeEach(async () => {
-        TestBed.configureTestingModule({
+        await TestBed.configureTestingModule({
             imports: [
                 ReactiveFormsModule,
                 NgbPopover,
@@ -117,10 +117,22 @@ describe("CameraComponent", () => {
         expect(component.cameraSettings?.isActive).toBeFalse();
     });
 
-    it("startCamera should subscribe to the camera topic", () => {
-        const spySubscribe = spyOn(rosService, "subscribeCameraTopic");
+    it("should subscribe to the camera topic during initialization", () => {
+        expect(rosService["cameraSubscriptionRequested"]).toBeTrue();
+    });
+
+    it("startCamera should subscribe to the camera topic idempotently", () => {
+        rosService["initTopicsAndServices"]();
+        const spySubscribe = spyOn(
+            rosService,
+            "subscribeCameraTopic",
+        ).and.callThrough();
+        const topicSubscribe = spyOn(rosService["cameraTopic"], "subscribe");
         component.startCamera();
-        expect(spySubscribe).toHaveBeenCalled();
+        component.startCamera();
+        expect(spySubscribe).toHaveBeenCalledTimes(2);
+        expect(topicSubscribe).toHaveBeenCalledTimes(1);
+        expect(rosService["cameraTopicSubscribed"]).toBeTrue();
     });
 
     it("should refresh the displayed frame at the configured UI rate", fakeAsync(() => {
@@ -140,18 +152,73 @@ describe("CameraComponent", () => {
         expect(startModel).not.toHaveBeenCalled();
     }));
 
+    it("should retain only the newest pending detection per model", fakeAsync(() => {
+        component.updateRefreshRateLabel(0.5);
+        rosService.cameraReceiver$.next("camera-image");
+        rosService.detectionModelsReceiver$.next(["hands"]);
+        rosService.detectionReceiver$.next(detectionMessage("hands"));
+        const newest = detectionMessage("hands");
+        newest.detections[0].x_min = 123;
+        rosService.detectionReceiver$.next(newest);
+
+        tick(499);
+        fixture.detectChanges();
+        expect(fixture.debugElement.query(By.css(".detection-box"))).toBeNull();
+
+        tick(1);
+        fixture.detectChanges();
+        expect(
+            fixture.debugElement.query(By.css(".detection-box")).attributes[
+                "x"
+            ],
+        ).toBe("123");
+    }));
+
+    it("should notify zoneless Angular once for each display flush", fakeAsync(() => {
+        const markForCheck = spyOn(
+            component["changeDetectorRef"],
+            "markForCheck",
+        );
+        component.updateRefreshRateLabel(0.5);
+
+        rosService.cameraReceiver$.next("frame-one");
+        rosService.cameraReceiver$.next("frame-two");
+        rosService.cameraReceiver$.next("frame-three");
+        expect(markForCheck).toHaveBeenCalledTimes(1);
+
+        tick(500);
+        expect(markForCheck).toHaveBeenCalledTimes(2);
+    }));
+
     it("stopCamera should get called when OnDestroy is called", () => {
         component.ngOnDestroy();
         expect(spyUnsubscribeCamera).toHaveBeenCalled();
     });
 
-    it("should render independent overlays using each detection frame size", () => {
+    it("should clear pending display state, overlays, and timers on stop", () => {
+        rosService.cameraReceiver$.next("camera-image");
+        rosService.detectionModelsReceiver$.next(["hands"]);
+        rosService.detectionReceiver$.next(detectionMessage("hands"));
+
+        component.stopCamera();
+
+        expect(component.imageSrc).toBe("../../assets/camera-placeholder.jpg");
+        expect(component.visibleDetectionLayers).toEqual([]);
+        expect(component["pendingCameraFrame"]).toBeUndefined();
+        expect(component["pendingDetections"].size).toBe(0);
+        expect(component["displayRefreshTimer"]).toBeUndefined();
+        expect(component["detectionExpiryTimers"].size).toBe(0);
+        expect(component["diagnosticTimer"]).toBeUndefined();
+    });
+
+    it("should render independent overlays using each detection frame size", fakeAsync(() => {
         rosService.cameraReceiver$.next("camera-image");
         rosService.detectionModelsReceiver$.next(["hands", "objects"]);
         rosService.detectionReceiver$.next(detectionMessage("hands"));
         rosService.detectionReceiver$.next(
             detectionMessage("objects", 1280, 720),
         );
+        tick(100);
         fixture.detectChanges();
 
         const overlays = fixture.debugElement.queryAll(
@@ -160,16 +227,30 @@ describe("CameraComponent", () => {
         expect(overlays.length).toBe(2);
         expect(overlays[0].attributes["viewBox"]).toBe("0 0 640 480");
         expect(overlays[1].attributes["viewBox"]).toBe("0 0 1280 720");
-    });
+    }));
 
-    it("should draw detection boxes and landmarks", () => {
+    it("should draw detection boxes and all 21 hand landmarks", fakeAsync(() => {
+        const message = detectionMessage("hands");
+        message.detections[0].keypoint_names = Array.from(
+            {length: 21},
+            (_, index) => `landmark-${index}`,
+        );
+        message.detections[0].keypoint_x = Array.from(
+            {length: 21},
+            (_, index) => 100 + index,
+        );
+        message.detections[0].keypoint_y = Array.from(
+            {length: 21},
+            (_, index) => 200 + index,
+        );
         rosService.cameraReceiver$.next("camera-image");
         rosService.detectionModelsReceiver$.next(["hands"]);
-        rosService.detectionReceiver$.next(detectionMessage("hands"));
+        rosService.detectionReceiver$.next(message);
+        tick(100);
         fixture.detectChanges();
 
         const box = fixture.debugElement.query(By.css(".detection-box"));
-        const landmark = fixture.debugElement.query(
+        const landmarks = fixture.debugElement.queryAll(
             By.css(".detection-keypoint"),
         );
 
@@ -177,22 +258,31 @@ describe("CameraComponent", () => {
         expect(box.attributes["y"]).toBe("48");
         expect(box.attributes["width"]).toBe("256");
         expect(box.attributes["height"]).toBe("192");
-        expect(landmark.attributes["cx"]).toBe("128");
-        expect(landmark.attributes["cy"]).toBe("96");
-    });
+        expect(landmarks.length).toBe(21);
+        expect(landmarks[20].attributes["cx"]).toBe("120");
+        expect(landmarks[20].attributes["cy"]).toBe("220");
+    }));
 
     it("should place the model list beside the camera image", () => {
-        const workspace = fixture.debugElement.query(
+        const workspaceElement = fixture.debugElement.query(
+            By.css(".camera-workspace"),
+        ).nativeElement as HTMLElement;
+        const modelList = fixture.debugElement.query(
             By.css("#cameraColumn + .model-column app-model-list"),
         );
 
-        expect(workspace).not.toBeNull();
+        expect(modelList).not.toBeNull();
+        expect(getComputedStyle(workspaceElement).display).toBe("grid");
+        expect(getComputedStyle(workspaceElement).gridTemplateColumns).not.toBe(
+            "none",
+        );
     });
 
     it("should clear stale detections when messages stop", fakeAsync(() => {
         rosService.cameraReceiver$.next("camera-image");
         rosService.detectionModelsReceiver$.next(["hands"]);
         rosService.detectionReceiver$.next(detectionMessage("hands"));
+        tick(100);
         fixture.detectChanges();
         expect(
             fixture.debugElement.queryAll(By.css(".detection-overlay")).length,
@@ -205,10 +295,11 @@ describe("CameraComponent", () => {
         ).toBe(0);
     }));
 
-    it("should clear overlays immediately while the pipeline restarts", () => {
+    it("should clear overlays immediately while the pipeline restarts", fakeAsync(() => {
         rosService.cameraReceiver$.next("camera-image");
         rosService.detectionModelsReceiver$.next(["hands"]);
         rosService.detectionReceiver$.next(detectionMessage("hands"));
+        tick(100);
         fixture.detectChanges();
 
         rosService.detectionClearReceiver$.next(undefined);
@@ -219,17 +310,19 @@ describe("CameraComponent", () => {
         ).toBe(0);
 
         rosService.detectionReceiver$.next(detectionMessage("hands"));
+        tick(100);
         fixture.detectChanges();
         expect(
             fixture.debugElement.queryAll(By.css(".detection-overlay")).length,
         ).toBe(1);
-    });
+    }));
 
     it("should keep overlays while detection messages continue", fakeAsync(() => {
         rosService.cameraReceiver$.next("camera-image");
         rosService.detectionModelsReceiver$.next(["hands"]);
         rosService.detectionReceiver$.next(detectionMessage("hands"));
 
+        tick(100);
         tick(1000);
         rosService.detectionReceiver$.next(detectionMessage("hands"));
         tick(1000);

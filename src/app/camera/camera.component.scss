@@ -92,8 +92,16 @@ video {
     background: #28a745;
 }
 
+.camera-workspace {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 22rem;
+    align-items: start;
+    gap: 1.5rem;
+    min-width: 0;
+}
+
 .model-column {
-    max-width: 22rem;
+    width: 22rem;
 }
 
 .video-settings-label {

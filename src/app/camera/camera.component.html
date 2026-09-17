@@ -118,7 +118,10 @@
                     [rightValue]="1"
                     [step]="0.1"
                     [defaultValues]="[cameraSettings?.refreshRate ?? 0.1]"
-                    (sliderEvent)="updateRefreshRateLabel($event[0]); refreshRatePublish($event[0])"></app-horizontal-slider>
+                    (sliderEvent)="
+                        updateRefreshRateLabel($event[0]);
+                        refreshRatePublish($event[0])
+                    "></app-horizontal-slider>
                 <label
                     for="qualityFactor"
                     id="qualityFactor_label"
@@ -135,14 +138,16 @@
                     [rightValue]="10"
                     [step]="10"
                     [defaultValues]="[cameraSettings?.qualityFactor ?? 90]"
-                    (sliderEvent)="updateQualityFactorLabel($event[0]); qualityControlPublish($event[0])"></app-horizontal-slider>
+                    (sliderEvent)="
+                        updateQualityFactorLabel($event[0]);
+                        qualityControlPublish($event[0])
+                    "></app-horizontal-slider>
             </ng-template>
         </div>
     </div>
-    <div
-        class="row justify-content-center align-items-start g-4 px-3 pb-5 mb-5">
+    <div class="camera-workspace px-3 pb-5 mb-5">
         <div
-            class="col-12 col-lg-9 d-flex justify-content-center"
+            class="d-flex justify-content-center"
             id="cameraColumn"
             #videobox>
             <div class="camera-image">
@@ -153,11 +158,16 @@
                 @for (layer of visibleDetectionLayers; track layer.modelId) {
                 <svg
                     class="detection-overlay"
-                    [attr.viewBox]="'0 0 ' + layer.message!.frame_width + ' ' + layer.message!.frame_height"
+                    [attr.viewBox]="
+                        '0 0 ' +
+                        layer.message!.frame_width +
+                        ' ' +
+                        layer.message!.frame_height
+                    "
                     preserveAspectRatio="none"
                     [attr.aria-label]="layer.modelId + ' detections'">
-                    @for (detection of layer.message!.detections; track $index)
-                    {
+                    @for ( detection of layer.message!.detections; track $index
+                    ) {
                     <rect
                         class="detection-box"
                         [attr.x]="detection.x_min"
@@ -202,7 +212,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-12 col-lg-3 model-column">
+        <div class="model-column">
             <app-model-list></app-model-list>
         </div>
     </div>

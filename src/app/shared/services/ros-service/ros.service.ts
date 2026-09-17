@@ -140,6 +140,8 @@ export class RosService implements IRosService {
     private detectionDiscoveryGeneration = 0;
     private detectionDiscoveryInFlight = false;
     private lastModelStatus?: string;
+    private cameraSubscriptionRequested = false;
+    private cameraTopicSubscribed = false;
 
     private existTokenService!: ROSLIB.Service<
         Record<string, never>,
@@ -220,6 +222,10 @@ export class RosService implements IRosService {
         this.ros.on("close", () => {
             console.log("Disconnected from ROSBridge server.");
             this.modelStatusTopic?.unsubscribe();
+            if (this.cameraTopicSubscribed) {
+                this.cameraTopic?.unsubscribe();
+                this.cameraTopicSubscribed = false;
+            }
             this.stopDetectionTopicDiscovery();
             this.detectionDiscoveryGeneration++;
             this.detectionDiscoveryInFlight = false;
@@ -243,6 +249,7 @@ export class RosService implements IRosService {
     }
 
     private initTopicsAndServices() {
+        this.cameraTopicSubscribed = false;
         this.cameraTopic = this.createRosTopic(
             rosTopics.cameraTopicName,
             rosDataTypes.string,
@@ -415,6 +422,7 @@ export class RosService implements IRosService {
         this.subscribeSolidStateRelayStateTopic();
         this.subscribeModelStatusTopic();
         this.startDetectionTopicDiscovery();
+        if (this.cameraSubscriptionRequested) this.subscribeCameraTopic();
     }
 
     private subscribeModelStatusTopic() {
@@ -544,14 +552,20 @@ export class RosService implements IRosService {
 
     //Has its own method to make it accessible by the camera components "startCamera" method
     subscribeCameraTopic() {
+        this.cameraSubscriptionRequested = true;
+        if (!this.cameraTopic || this.cameraTopicSubscribed) return;
         this.subscribeDefaultRosMessageTopic(
             this.cameraTopic,
             this.cameraReceiver$,
         );
+        this.cameraTopicSubscribed = true;
     }
 
     unsubscribeCameraTopic() {
+        this.cameraSubscriptionRequested = false;
+        if (!this.cameraTopic || !this.cameraTopicSubscribed) return;
         this.cameraTopic.unsubscribe();
+        this.cameraTopicSubscribed = false;
     }
 
     private subscribeJointTrajectoryTopic() {
