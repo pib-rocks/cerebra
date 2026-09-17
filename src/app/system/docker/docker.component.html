@@ -27,17 +27,15 @@
         </div>
     </div>
 
-    <div
-        *ngIf="error"
-        class="alert alert-danger alert-dismissible fade show">
+    @if (error) {
+    <div class="alert alert-danger alert-dismissible fade show">
         {{ error }}
     </div>
-
-    <div
-        *ngIf="successMessage"
-        class="alert alert-success alert-dismissible fade show">
+    } @if (successMessage) {
+    <div class="alert alert-success alert-dismissible fade show">
         {{ successMessage }}
     </div>
+    }
 
     <!-- Container Control Table -->
     <div class="card p-3 shadow-sm mb-4">
@@ -56,7 +54,8 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr *ngFor="let c of containers">
+                    @for (c of containers; track c) {
+                    <tr>
                         <td class="align-middle font-weight-bold">
                             {{ c.name }}
                         </td>
@@ -108,24 +107,25 @@
                             </button>
                         </td>
                     </tr>
-                    <tr *ngIf="containers.length === 0 && !loading">
+                    } @if (containers.length === 0 && !loading) {
+                    <tr>
                         <td
                             colspan="5"
                             class="text-center text-muted">
                             No Docker containers found.
                         </td>
                     </tr>
+                    }
                 </tbody>
             </table>
         </div>
     </div>
 
     <!-- Live Log Stream Modal -->
+    @if (showLogModal) {
+    <div class="modal-backdrop fade show"></div>
+    } @if (showLogModal) {
     <div
-        *ngIf="showLogModal"
-        class="modal-backdrop fade show"></div>
-    <div
-        *ngIf="showLogModal"
         class="modal d-block fade show"
         tabindex="-1"
         role="dialog"
@@ -149,8 +149,8 @@
                             [ngClass]="autoScroll ? 'btn-outline-info active' : 'btn-outline-secondary'"
                             (click)="toggleAutoScroll()"
                             title="Toggle Auto-Scroll">
-                            <i class="fas fa-arrow-down mr-1"></i> Auto-Scroll:
-                            {{ autoScroll ? 'ON' : 'OFF' }}
+                            <i class="fas fa-arrow-down mr-1"></i>
+                            Auto-Scroll: {{ autoScroll ? 'ON' : 'OFF' }}
                         </button>
                         <button
                             id="btn-clear-logs"
@@ -189,4 +189,5 @@
             </div>
         </div>
     </div>
+    }
 </div>

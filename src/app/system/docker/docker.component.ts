@@ -61,7 +61,7 @@ export class DockerManagementComponent implements OnInit, OnDestroy {
                 this.loading = false;
                 this.cdr.markForCheck();
             },
-            error: (err) => {
+            error: () => {
                 this.error = "Failed to load Docker containers.";
                 this.loading = false;
                 this.cdr.markForCheck();
@@ -82,7 +82,7 @@ export class DockerManagementComponent implements OnInit, OnDestroy {
                     res.message || `Container ${name} started.`;
                 this.refreshContainers();
             },
-            error: (err) => {
+            error: () => {
                 this.actionLoading[name] = false;
                 this.error = `Failed to start container ${name}.`;
                 this.cdr.markForCheck();
@@ -103,7 +103,7 @@ export class DockerManagementComponent implements OnInit, OnDestroy {
                     res.message || `Container ${name} stopped.`;
                 this.refreshContainers();
             },
-            error: (err) => {
+            error: () => {
                 this.actionLoading[name] = false;
                 this.error = `Failed to stop container ${name}.`;
                 this.cdr.markForCheck();
@@ -124,7 +124,7 @@ export class DockerManagementComponent implements OnInit, OnDestroy {
                     res.message || `Container ${name} restarted.`;
                 this.refreshContainers();
             },
-            error: (err) => {
+            error: () => {
                 this.actionLoading[name] = false;
                 this.error = `Failed to restart container ${name}.`;
                 this.cdr.markForCheck();
@@ -153,7 +153,7 @@ export class DockerManagementComponent implements OnInit, OnDestroy {
                     res.message || "Docker purge completed successfully.";
                 this.refreshContainers();
             },
-            error: (err) => {
+            error: () => {
                 this.purging = false;
                 this.error = "Failed to purge Docker system.";
                 this.cdr.markForCheck();
