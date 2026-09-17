@@ -63,6 +63,35 @@ video {
     stroke-linejoin: round;
 }
 
+.camera-diagnostic {
+    position: absolute;
+    right: 0.4rem;
+    bottom: 0.4rem;
+    display: flex;
+    gap: 0.6rem;
+    padding: 0.3rem 0.45rem;
+    border-radius: 0.25rem;
+    color: $white-color;
+    background: rgb(0 0 0 / 65%);
+    font-size: 0.7rem;
+    line-height: 1;
+    pointer-events: none;
+}
+
+.connection-state::before {
+    content: "";
+    display: inline-block;
+    width: 0.45rem;
+    height: 0.45rem;
+    margin-right: 0.2rem;
+    border-radius: 50%;
+    background: #dc3545;
+}
+
+.connection-state.connected::before {
+    background: #28a745;
+}
+
 .model-column {
     max-width: 22rem;
 }

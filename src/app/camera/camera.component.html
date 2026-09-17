@@ -187,6 +187,19 @@
                     } }
                 </svg>
                 }
+                <div
+                    class="camera-diagnostic"
+                    role="status"
+                    aria-live="polite">
+                    <span>5s: {{ cameraFramesLastWindow }} frames</span>
+                    <span>{{ detectionMessagesLastWindow }} detections</span>
+                    <span
+                        class="connection-state"
+                        [class.connected]="rosbridgeConnected">
+                        rosbridge {{ rosbridgeConnected ? "connected" :
+                        "disconnected" }}
+                    </span>
+                </div>
             </div>
         </div>
         <div class="col-12 col-lg-3 model-column">
