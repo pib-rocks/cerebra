@@ -21,12 +21,11 @@ export class CameraService {
         this.getCameraSettings();
         this.subscribeCameraQualityFactorReceiver();
         this.subscribeCameraPreviewSizeReceiver();
-        this.subscribeCameraTimerPeriodReceiver();
         this.subscribeCameraReseiver();
     }
     rosCameraQualityFactorReceiver =
         this.rosService.cameraQualityFactorReceiver$;
-    rosCameraTimerPeriodReceiver = this.rosService.cameraTimerPeriodReceiver$;
+    connectionStatus$ = this.rosService.connectionStatus$;
     detectionReceiver$ = this.rosService.detectionReceiver$;
     detectionModelsReceiver$ = this.rosService.detectionModelsReceiver$;
     detectionClearReceiver$ = this.rosService.detectionClearReceiver$;
@@ -39,9 +38,8 @@ export class CameraService {
             .put(UrlConstants.CAMERA, updateCameraSettings)
             .pipe(
                 catchError((err) => {
-                    return throwError(() => {
-                        console.log(err);
-                    });
+                    console.log(err);
+                    return throwError(() => err);
                 }),
             )
             .subscribe(() => {
@@ -54,9 +52,8 @@ export class CameraService {
             .get(UrlConstants.CAMERA)
             .pipe(
                 catchError((err) => {
-                    return throwError(() => {
-                        console.log(err);
-                    });
+                    console.log(err);
+                    return throwError(() => err);
                 }),
             )
             .subscribe((response) => {
@@ -97,20 +94,6 @@ export class CameraService {
         );
     }
 
-    subscribeCameraTimerPeriodReceiver() {
-        this.rosService.cameraTimerPeriodReceiver$.subscribe(
-            (message: number) => {
-                if (
-                    this.cameraSettings.getValue().refreshRate != message &&
-                    this.cameraSettings.getValue().refreshRate != undefined
-                ) {
-                    this.cameraSettings.getValue().refreshRate = message;
-                    this.publishCameraSettings(this.cameraSettings.getValue());
-                }
-            },
-        );
-    }
-
     subscribeCameraReseiver() {
         this.rosService.cameraReceiver$.subscribe((message: string) => {
             this.cameraReciver$.next(message);
@@ -125,7 +108,6 @@ export class CameraService {
 
     refreshRatePublish = (formControlValue: number) => {
         this.cameraSettings.getValue().refreshRate = formControlValue;
-        this.rosService.setTimerPeriod(formControlValue);
         this.publishCameraSettings(this.cameraSettings.getValue());
     };
 

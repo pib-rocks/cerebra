@@ -139,40 +139,10 @@
             </ng-template>
         </div>
     </div>
-    <div class="row justify-content-center px-3">
-        <div class="col-12">
-            <app-model-list></app-model-list>
-        </div>
-    </div>
-    @if (detectionModels.length > 0) {
     <div
-        class="d-flex flex-wrap justify-content-center gap-3 mb-4"
-        aria-label="Detection overlays">
-        @for (model of detectionModels; track model.modelId) {
-        <div class="form-check form-switch detection-toggle">
-            <input
-                #modelToggle
-                class="form-check-input"
-                type="checkbox"
-                role="switch"
-                [id]="'detection-' + model.modelId"
-                [checked]="model.enabled"
-                (change)="setModelEnabled(model.modelId, modelToggle.checked)" />
-            <label
-                class="form-check-label"
-                [for]="'detection-' + model.modelId">
-                <span
-                    class="detection-color"
-                    [style.background-color]="model.color"></span>
-                {{ model.modelId }}
-            </label>
-        </div>
-        }
-    </div>
-    }
-    <div class="row justify-content-center pb-5 mb-5">
+        class="row justify-content-center align-items-start g-4 px-3 pb-5 mb-5">
         <div
-            class="col-auto pb-5 d-flex justify-content-center"
+            class="col-12 col-lg-9 d-flex justify-content-center"
             id="cameraColumn"
             #videobox>
             <div class="camera-image">
@@ -217,7 +187,23 @@
                     } }
                 </svg>
                 }
+                <div
+                    class="camera-diagnostic"
+                    role="status"
+                    aria-live="polite">
+                    <span>5s: {{ cameraFramesLastWindow }} frames</span>
+                    <span>{{ detectionMessagesLastWindow }} detections</span>
+                    <span
+                        class="connection-state"
+                        [class.connected]="rosbridgeConnected">
+                        rosbridge {{ rosbridgeConnected ? "connected" :
+                        "disconnected" }}
+                    </span>
+                </div>
             </div>
+        </div>
+        <div class="col-12 col-lg-3 model-column">
+            <app-model-list></app-model-list>
         </div>
     </div>
 </div>

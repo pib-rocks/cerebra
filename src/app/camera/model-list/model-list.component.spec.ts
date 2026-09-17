@@ -25,6 +25,12 @@ describe("ModelListComponent", () => {
         available: true,
         active: false,
     };
+    const objectDetection: ModelInfo = {
+        ...handTracking,
+        model_id: "object_detection",
+        task: "object detection",
+        shaves: [6],
+    };
 
     beforeEach(async () => {
         status$ = new BehaviorSubject<ModelStatusArray>({models: []});
@@ -48,13 +54,16 @@ describe("ModelListComponent", () => {
         fixture.detectChanges();
     });
 
-    it("renders model metadata including per-network SHAVEs", () => {
+    it("renders every model as a switch without a table", () => {
         const text = fixture.nativeElement.textContent;
         expect(text).toContain("hand_tracking");
         expect(text).toContain("hand tracking");
-        expect(text).toContain("Apache-2.0");
-        expect(text).toContain("4 / 1 / 4");
-        expect(text).toContain("10.0 MB");
+        expect(fixture.nativeElement.querySelector("table")).toBeNull();
+        expect(
+            fixture.nativeElement.querySelector(
+                'input[type="checkbox"][role="switch"]',
+            ),
+        ).not.toBeNull();
     });
 
     it("replaces live state and allows starting to recover to running", () => {
@@ -86,11 +95,11 @@ describe("ModelListComponent", () => {
         expect(fixture.nativeElement.textContent).toContain("18.3");
     });
 
-    it("sends owner and per-network SHAVEs and shows the restart", () => {
+    it("starts a model from its switch and shows the restart", () => {
         const action = new Subject<void>();
         rosService.startModel.and.returnValue(action);
 
-        component.start(handTracking);
+        component.setModelActive(handTracking, true);
         fixture.detectChanges();
 
         expect(rosService.startModel).toHaveBeenCalledOnceWith(
@@ -100,7 +109,6 @@ describe("ModelListComponent", () => {
         expect(fixture.nativeElement.textContent).toContain(
             "Camera restarting",
         );
-        expect(component.statuses.size).toBe(0);
 
         action.next();
         action.complete();
@@ -109,6 +117,30 @@ describe("ModelListComponent", () => {
             "Camera restarting",
         );
         expect(rosService.listModels).toHaveBeenCalledTimes(2);
+    });
+
+    it("stops a model from its switch", () => {
+        rosService.stopModel.and.returnValue(of(undefined));
+
+        component.setModelActive({...handTracking, active: true}, false);
+
+        expect(rosService.stopModel).toHaveBeenCalledOnceWith(
+            "hand_tracking",
+            "cerebra-ui",
+        );
+    });
+
+    it("allows different models to start independently", () => {
+        const actions = new Subject<void>();
+        rosService.startModel.and.returnValue(actions);
+
+        component.setModelActive(handTracking, true);
+        component.setModelActive(objectDetection, true);
+
+        expect(rosService.startModel).toHaveBeenCalledTimes(2);
+        expect(component.actionsInFlight).toEqual(
+            new Set(["hand_tracking", "object_detection"]),
+        );
     });
 
     it("clears a status snapshot when updates stop", fakeAsync(() => {

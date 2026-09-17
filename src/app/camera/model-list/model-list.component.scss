@@ -5,6 +5,7 @@
     color: $white-color;
     background-color: rgba($blue-dark-5, 0.8);
     border: 1px solid $blue-color;
+    min-width: 16rem;
 }
 
 .model-panel-header {
@@ -12,6 +13,7 @@
     align-items: center;
     justify-content: space-between;
     min-height: 2.5rem;
+    margin-bottom: 0.75rem;
 }
 
 .model-panel-header h2 {
@@ -23,9 +25,50 @@
     display: inline-flex;
     gap: 0.5rem;
     align-items: center;
+    font-size: 0.75rem;
+}
+
+.model-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.model-item {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.875rem 0;
+    border-top: 1px solid rgba($white-color, 0.2);
+}
+
+.model-copy {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.model-copy label {
+    margin: 0;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.model-id,
+.model-state,
+.model-empty {
+    font-size: 0.75rem;
+}
+
+.model-id {
+    overflow: hidden;
+    color: rgba($white-color, 0.7);
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .model-state {
+    color: rgba($white-color, 0.8);
     text-transform: capitalize;
 }
 
@@ -41,8 +84,10 @@
     color: #ff7676;
 }
 
-th,
-td {
-    white-space: nowrap;
-    vertical-align: middle;
+.form-check-input {
+    cursor: pointer;
+}
+
+.form-check-input:disabled {
+    cursor: not-allowed;
 }

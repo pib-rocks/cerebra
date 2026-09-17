@@ -28,7 +28,6 @@ import {ModelListComponent} from "./model-list/model-list.component";
 interface DetectionLayer {
     modelId: string;
     color: string;
-    enabled: boolean;
     message?: DetectionArray;
 }
 
@@ -57,6 +56,8 @@ interface OverlayKeypoint {
 })
 export class CameraComponent implements OnInit, OnDestroy {
     private static readonly DETECTION_STALE_MS = 1500;
+    private static readonly DIAGNOSTIC_WINDOW_MS = 5000;
+    private static readonly DEFAULT_REFRESH_RATE_SECONDS = 0.1;
 
     @ViewChild("videobox") videoBox?: ElementRef;
     @ViewChild("refreshRate") refreshRateSlider!: ElementRef;
@@ -76,18 +77,27 @@ export class CameraComponent implements OnInit, OnDestroy {
     detectionSubscription?: Subscription;
     detectionModelsSubscription?: Subscription;
     detectionClearSubscription?: Subscription;
+    connectionStatusSubscription?: Subscription;
     detectionLayers = new Map<string, DetectionLayer>();
     detectionModels: DetectionLayer[] = [];
+    cameraFramesLastWindow = 0;
+    detectionMessagesLastWindow = 0;
+    rosbridgeConnected = false;
     private detectionExpiryTimers = new Map<
         string,
         ReturnType<typeof setTimeout>
     >();
+    private cameraFrameTimes: number[] = [];
+    private detectionMessageTimes: number[] = [];
+    private diagnosticTimer?: ReturnType<typeof setTimeout>;
+    private displayRefreshTimer?: ReturnType<typeof setTimeout>;
+    private pendingCameraFrame?: string;
     private imageIsLive = false;
 
     get visibleDetectionLayers(): DetectionLayer[] {
         if (!this.imageIsLive) return [];
         return this.detectionModels.filter(
-            (layer) => layer.enabled && layer.message !== undefined,
+            (layer) => layer.message !== undefined,
         );
     }
 
@@ -96,17 +106,10 @@ export class CameraComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit(): void {
-        this.subscribeCameraReseiver();
         this.imageSrc = "../../assets/camera-placeholder.jpg";
         this.cameraReceiverSubscription =
             this.cameraService.cameraReciver$.subscribe((message) => {
-                this.imageSrc = "data:image/jpeg;base64," + message;
-                this.imageIsLive = true;
-                if (message.startsWith("Camera not available")) {
-                    this.imageSrc = "../../assets/camera-error-image.svg";
-                    this.imageIsLive = false;
-                    this.clearDetections();
-                }
+                this.receiveCameraFrame(message);
             });
         this.detectionModelsSubscription =
             this.cameraService.detectionModelsReceiver$.subscribe((models) =>
@@ -124,10 +127,16 @@ export class CameraComponent implements OnInit, OnDestroy {
             this.cameraService.rosCameraQualityFactorReceiver.pipe(
                 map((n) => [n]),
             );
-        this.refreshRateReceiver$ =
-            this.cameraService.rosCameraTimerPeriodReceiver.pipe(
-                map((n) => [n]),
-            );
+        this.refreshRateReceiver$ = this.cameraService.cameraSettings.pipe(
+            map((settings) => [
+                settings.refreshRate ??
+                    CameraComponent.DEFAULT_REFRESH_RATE_SECONDS,
+            ]),
+        );
+        this.connectionStatusSubscription =
+            this.cameraService.connectionStatus$.subscribe((connected) => {
+                this.rosbridgeConnected = connected;
+            });
     }
 
     ngOnDestroy(): void {
@@ -136,9 +145,14 @@ export class CameraComponent implements OnInit, OnDestroy {
         this.detectionSubscription?.unsubscribe();
         this.detectionModelsSubscription?.unsubscribe();
         this.detectionClearSubscription?.unsubscribe();
+        this.connectionStatusSubscription?.unsubscribe();
+        if (this.diagnosticTimer !== undefined) {
+            clearTimeout(this.diagnosticTimer);
+        }
+        this.clearDisplayRefreshTimer();
         this.clearDetections();
         this.stopCamera();
-        this.cameraSettings!.isActive = false;
+        if (this.cameraSettings) this.cameraSettings.isActive = false;
     }
 
     setSize(
@@ -172,27 +186,26 @@ export class CameraComponent implements OnInit, OnDestroy {
 
     stopCamera() {
         this.cameraService.stopCamera();
+        this.pendingCameraFrame = undefined;
+        this.clearDisplayRefreshTimer();
         this.imageSrc = "../../assets/camera-placeholder.jpg";
         this.imageIsLive = false;
         this.clearDetections();
     }
 
-    setModelEnabled(modelId: string, enabled: boolean) {
-        const layer = this.detectionLayers.get(modelId);
-        if (layer) layer.enabled = enabled;
-    }
-
     keypoints(detection: Detection): OverlayKeypoint[] {
-        return detection.keypoint_names
-            .map((name, index) => ({
-                name,
-                x: detection.keypoint_x[index],
-                y: detection.keypoint_y[index],
-            }))
-            .filter(
-                (keypoint) =>
-                    Number.isFinite(keypoint.x) && Number.isFinite(keypoint.y),
-            );
+        const count = Math.min(
+            detection.keypoint_x.length,
+            detection.keypoint_y.length,
+        );
+        return Array.from({length: count}, (_, index) => ({
+            name: detection.keypoint_names[index] ?? `Landmark ${index + 1}`,
+            x: detection.keypoint_x[index],
+            y: detection.keypoint_y[index],
+        })).filter(
+            (keypoint) =>
+                Number.isFinite(keypoint.x) && Number.isFinite(keypoint.y),
+        );
     }
 
     detectionLabel(detection: Detection): string {
@@ -213,6 +226,8 @@ export class CameraComponent implements OnInit, OnDestroy {
     }
 
     private updateDetections(message: DetectionArray) {
+        this.detectionMessageTimes.push(Date.now());
+        this.updateDiagnostics();
         if (
             !message.model_id ||
             message.frame_width <= 0 ||
@@ -244,7 +259,6 @@ export class CameraComponent implements OnInit, OnDestroy {
             layer = {
                 modelId,
                 color: this.modelColor(modelId),
-                enabled: true,
             };
             this.detectionLayers.set(modelId, layer);
         }
@@ -293,6 +307,10 @@ export class CameraComponent implements OnInit, OnDestroy {
 
     updateRefreshRateLabel(sliderNumber: number) {
         this.cameraSettings!.refreshRate = sliderNumber;
+        this.clearDisplayRefreshTimer();
+        if (this.pendingCameraFrame !== undefined) {
+            this.displayPendingCameraFrame();
+        }
     }
 
     updateQualityFactorLabel(sliderNumber: number) {
@@ -307,10 +325,6 @@ export class CameraComponent implements OnInit, OnDestroy {
     addCssClass() {
         const videoSettingsButton = document.getElementById("videosettings");
         videoSettingsButton?.classList.add("showPopover");
-    }
-
-    subscribeCameraReseiver() {
-        this.cameraService.subscribeCameraReseiver();
     }
 
     subscribeCameraSettings() {
@@ -333,4 +347,87 @@ export class CameraComponent implements OnInit, OnDestroy {
     refreshRatePublish = (formControlValue: number) => {
         this.cameraService.refreshRatePublish(formControlValue);
     };
+
+    private receiveCameraFrame(message: string) {
+        this.cameraFrameTimes.push(Date.now());
+        this.updateDiagnostics();
+
+        if (message.startsWith("Camera not available")) {
+            this.pendingCameraFrame = undefined;
+            this.clearDisplayRefreshTimer();
+            this.imageSrc = "../../assets/camera-error-image.svg";
+            this.imageIsLive = false;
+            this.clearDetections();
+            return;
+        }
+
+        this.pendingCameraFrame = "data:image/jpeg;base64," + message;
+        this.imageIsLive = true;
+        if (this.displayRefreshTimer === undefined) {
+            this.displayPendingCameraFrame();
+        }
+    }
+
+    private displayPendingCameraFrame() {
+        if (this.pendingCameraFrame === undefined) return;
+        this.imageSrc = this.pendingCameraFrame;
+        this.pendingCameraFrame = undefined;
+        this.displayRefreshTimer = setTimeout(() => {
+            this.displayRefreshTimer = undefined;
+            this.displayPendingCameraFrame();
+        }, this.displayRefreshDelayMs());
+    }
+
+    private displayRefreshDelayMs(): number {
+        const refreshRate = this.cameraSettings?.refreshRate;
+        const seconds =
+            refreshRate !== undefined && refreshRate > 0
+                ? refreshRate
+                : CameraComponent.DEFAULT_REFRESH_RATE_SECONDS;
+        return seconds * 1000;
+    }
+
+    private clearDisplayRefreshTimer() {
+        if (this.displayRefreshTimer !== undefined) {
+            clearTimeout(this.displayRefreshTimer);
+            this.displayRefreshTimer = undefined;
+        }
+    }
+
+    private updateDiagnostics() {
+        const now = Date.now();
+        const cutoff = now - CameraComponent.DIAGNOSTIC_WINDOW_MS;
+        this.cameraFrameTimes = this.cameraFrameTimes.filter(
+            (timestamp) => timestamp >= cutoff,
+        );
+        this.detectionMessageTimes = this.detectionMessageTimes.filter(
+            (timestamp) => timestamp >= cutoff,
+        );
+        this.cameraFramesLastWindow = this.cameraFrameTimes.length;
+        this.detectionMessagesLastWindow = this.detectionMessageTimes.length;
+
+        if (
+            this.diagnosticTimer === undefined &&
+            (this.cameraFrameTimes.length > 0 ||
+                this.detectionMessageTimes.length > 0)
+        ) {
+            const oldestTimestamp = Math.min(
+                this.cameraFrameTimes[0] ?? Number.POSITIVE_INFINITY,
+                this.detectionMessageTimes[0] ?? Number.POSITIVE_INFINITY,
+            );
+            this.diagnosticTimer = setTimeout(
+                () => {
+                    this.diagnosticTimer = undefined;
+                    this.updateDiagnostics();
+                },
+                Math.max(
+                    0,
+                    oldestTimestamp +
+                        CameraComponent.DIAGNOSTIC_WINDOW_MS -
+                        now +
+                        1,
+                ),
+            );
+        }
+    }
 }

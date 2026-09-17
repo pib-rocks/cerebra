@@ -69,11 +69,18 @@ describe("CameraService", () => {
         expect(service.cameraSettings.getValue().resY).toBe(480);
     });
 
-    it("should return camera refreshRate over ros topic", () => {
+    it("should save refresh rate without changing the camera publisher", () => {
         service.cameraSettings.next(updateCameraSettings);
-        service.subscribeCameraTimerPeriodReceiver();
-        rosService.cameraTimerPeriodReceiver$.next(0.5);
-        expect(service.cameraSettings.getValue().refreshRate).toBe(0.5);
+        const setTimerPeriod = spyOn(rosService, "setTimerPeriod");
+        const putCameraSettings = spyOn(apiService, "put").and.returnValue(
+            behaviorSubjectOfUpdatedCameraSettings,
+        );
+
+        service.refreshRatePublish(0.7);
+
+        expect(service.cameraSettings.getValue().refreshRate).toBe(0.7);
+        expect(putCameraSettings).toHaveBeenCalled();
+        expect(setTimerPeriod).not.toHaveBeenCalled();
     });
 
     it("should return camera imageString over ros topic", () => {

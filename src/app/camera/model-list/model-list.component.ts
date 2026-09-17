@@ -5,7 +5,7 @@ import {
     OnInit,
 } from "@angular/core";
 import {Observable, Subscription, finalize} from "rxjs";
-import {ModelStatus} from "../../shared/ros-types/msg/model-status";
+import {ModelState, ModelStatus} from "../../shared/ros-types/msg/model-status";
 import {ModelInfo} from "../../shared/ros-types/srv/list-models";
 import {RosService} from "../../shared/services/ros-service/ros.service";
 
@@ -21,7 +21,7 @@ export class ModelListComponent implements OnInit, OnDestroy {
 
     models: ModelInfo[] = [];
     statuses = new Map<string, ModelStatus>();
-    actionInFlight?: string;
+    actionsInFlight = new Set<string>();
     loading = true;
     error?: string;
 
@@ -57,15 +57,15 @@ export class ModelListComponent implements OnInit, OnDestroy {
         this.clearStatusExpiry();
     }
 
-    start(model: ModelInfo): void {
+    setModelActive(model: ModelInfo, active: boolean): void {
+        model.active = active;
         this.runAction(model.model_id, () =>
-            this.rosService.startModel(model, ModelListComponent.OWNER),
-        );
-    }
-
-    stop(model: ModelInfo): void {
-        this.runAction(model.model_id, () =>
-            this.rosService.stopModel(model.model_id, ModelListComponent.OWNER),
+            active
+                ? this.rosService.startModel(model, ModelListComponent.OWNER)
+                : this.rosService.stopModel(
+                      model.model_id,
+                      ModelListComponent.OWNER,
+                  ),
         );
     }
 
@@ -77,27 +77,19 @@ export class ModelListComponent implements OnInit, OnDestroy {
         return this.statusFor(model.model_id)?.active ?? model.active;
     }
 
-    formatShaves(shaves: number[]): string {
-        return shaves.join(" / ");
+    stateFor(model: ModelInfo): ModelState {
+        return (
+            this.statusFor(model.model_id)?.state ??
+            (this.isActive(model) ? "running" : "idle")
+        );
     }
 
-    formatSize(bytes: number): string {
-        if (!Number.isFinite(bytes) || bytes < 0) return "—";
-        if (bytes < 1024) return `${bytes} B`;
-        const units = ["KB", "MB", "GB"];
-        let value = bytes / 1024;
-        let unit = units[0];
-        for (let index = 1; index < units.length && value >= 1024; index++) {
-            value /= 1024;
-            unit = units[index];
-        }
-        return `${value.toFixed(1)} ${unit}`;
-    }
-
-    formatFps(status?: ModelStatus): string {
-        return status && Number.isFinite(status.fps)
-            ? status.fps.toFixed(1)
-            : "—";
+    statusText(model: ModelInfo): string {
+        const status = this.statusFor(model.model_id);
+        const state = this.stateFor(model);
+        return status?.active && Number.isFinite(status.fps)
+            ? `${state} · ${status.fps.toFixed(1)} FPS`
+            : state;
     }
 
     private loadModels(): void {
@@ -123,15 +115,16 @@ export class ModelListComponent implements OnInit, OnDestroy {
     }
 
     private runAction(modelId: string, action: () => Observable<void>) {
-        if (this.actionInFlight) return;
-        this.actionInFlight = modelId;
+        if (this.actionsInFlight.has(modelId)) return;
+        this.actionsInFlight = new Set(this.actionsInFlight).add(modelId);
         this.error = undefined;
-        this.clearStatuses();
         this.subscriptions.add(
             action()
                 .pipe(
                     finalize(() => {
-                        this.actionInFlight = undefined;
+                        const actionsInFlight = new Set(this.actionsInFlight);
+                        actionsInFlight.delete(modelId);
+                        this.actionsInFlight = actionsInFlight;
                         this.loadModels();
                     }),
                 )
