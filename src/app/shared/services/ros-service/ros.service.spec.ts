@@ -87,6 +87,19 @@ describe("RosService", () => {
         expect(rosService["stopModelService"]).toBeTruthy();
     });
 
+    it("should make the camera subscription lifecycle idempotent", () => {
+        const subscribe = spyOn(rosService["cameraTopic"], "subscribe");
+        const unsubscribe = spyOn(rosService["cameraTopic"], "unsubscribe");
+
+        rosService.subscribeCameraTopic();
+        rosService.subscribeCameraTopic();
+        expect(subscribe).toHaveBeenCalledTimes(1);
+
+        rosService.unsubscribeCameraTopic();
+        rosService.unsubscribeCameraTopic();
+        expect(unsubscribe).toHaveBeenCalledTimes(1);
+    });
+
     it("should subscribe to multiple discovered detection topics", () => {
         const callbacks = new Map<string, (message: DetectionArray) => void>();
         const topics = new Map<string, jasmine.SpyObj<any>>();
@@ -825,6 +838,7 @@ describe("RosService", () => {
             "on",
             "callOnConnection",
             "once",
+            "getTopics",
         ]);
         mockRos.on.and.callFake(
             (
@@ -838,6 +852,7 @@ describe("RosService", () => {
         );
         mockRos.callOnConnection.and.callFake(() => {});
         mockRos.once.and.callFake(() => {});
+        mockRos.getTopics.and.callFake(() => {});
 
         spyOn<any>(RosService.prototype, "setUpRos").and.returnValue(mockRos);
 
