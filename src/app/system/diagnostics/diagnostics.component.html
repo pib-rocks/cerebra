@@ -17,16 +17,13 @@
         </div>
     </div>
 
-    <div
-        *ngIf="error"
-        class="alert alert-danger">
-        {{ error }}
-    </div>
+    @if (error) {
+    <div class="alert alert-danger">{{ error }}</div>
+    }
 
     <!-- Summary Table -->
-    <div
-        class="card mb-4 p-3 shadow-sm"
-        *ngIf="summary">
+    @if (summary) {
+    <div class="card mb-4 p-3 shadow-sm">
         <h4 class="card-title text-white">System Summary</h4>
         <div class="table-responsive">
             <table
@@ -62,20 +59,21 @@
                             <span
                                 class="badge"
                                 [ngClass]="getStatusBadgeClass(summary.memoryStatus || 'ok')">
-                                <ng-container *ngIf="summary.memoryUsage">
+                                @if (summary.memoryUsage) {
+                                <ng-container>
                                     {{ summary.memoryUsage.used }} / {{
                                     summary.memoryUsage.total }} ({{
                                     summary.memoryUsage.percentUsed }}%)
                                 </ng-container>
-                                <ng-container *ngIf="!summary.memoryUsage">
-                                    N/A
-                                </ng-container>
+                                } @if (!summary.memoryUsage) {
+                                <ng-container> N/A </ng-container>
+                                }
                             </span>
-                            <div
-                                *ngIf="getCpuUsagePercent() !== undefined"
-                                class="mt-1 text-white-50 small">
+                            @if (getCpuUsagePercent() !== undefined) {
+                            <div class="mt-1 text-white-50 small">
                                 CPU: {{ getCpuUsagePercent() }}%
                             </div>
+                            }
                         </td>
                         <td>
                             <span
@@ -106,6 +104,7 @@
             </table>
         </div>
     </div>
+    }
 
     <!-- Servo Bricklets & RGB LED Buttons Side-by-Side -->
     <div class="row mb-4">
@@ -125,7 +124,8 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr *ngFor="let b of servoBricklets">
+                            @for (b of servoBricklets; track b) {
+                            <tr>
                                 <td><code>{{ b.uid || 'N/A' }}</code></td>
                                 <td>
                                     <span
@@ -137,13 +137,15 @@
                                 <td>{{ b.voltage }} V</td>
                                 <td>{{ b.current }} mA</td>
                             </tr>
-                            <tr *ngIf="servoBricklets.length === 0">
+                            } @if (servoBricklets.length === 0) {
+                            <tr>
                                 <td
                                     colspan="4"
                                     class="text-center text-muted">
                                     No Servo Bricklet telemetry data available.
                                 </td>
                             </tr>
+                            }
                         </tbody>
                     </table>
                 </div>
@@ -166,7 +168,8 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr *ngFor="let b of buttonBricklets">
+                            @for (b of buttonBricklets; track b) {
+                            <tr>
                                 <td><code>{{ b.uid || 'N/A' }}</code></td>
                                 <td>
                                     <span
@@ -176,22 +179,24 @@
                                     </span>
                                 </td>
                                 <td>
+                                    @if (b.color) {
                                     <span
-                                        *ngIf="b.color"
                                         class="d-inline-block rounded-circle border mr-1"
                                         [style.background-color]="b.color"
                                         style="width: 14px; height: 14px; vertical-align: middle;"></span>
-                                    {{ b.color || 'N/A' }}
+                                    } {{ b.color || 'N/A' }}
                                 </td>
                                 <td>{{ b.pressState || 'Released' }}</td>
                             </tr>
-                            <tr *ngIf="buttonBricklets.length === 0">
+                            } @if (buttonBricklets.length === 0) {
+                            <tr>
                                 <td
                                     colspan="4"
                                     class="text-center text-muted">
                                     No RGB LED Button telemetry data available.
                                 </td>
                             </tr>
+                            }
                         </tbody>
                     </table>
                 </div>
@@ -200,16 +205,14 @@
     </div>
 
     <!-- Host & Container Status -->
-    <div
-        class="card p-3 shadow-sm"
-        *ngIf="system">
+    @if (system) {
+    <div class="card p-3 shadow-sm">
         <h4 class="card-title text-white">
             Docker Containers & Service Status
         </h4>
         <div class="row mt-2">
-            <div
-                class="col-md-4"
-                *ngFor="let c of system.containers">
+            @for (c of system.containers; track c) {
+            <div class="col-md-4">
                 <div
                     class="border rounded p-2 mb-2 d-flex justify-content-between align-items-center">
                     <span class="text-white"
@@ -223,6 +226,8 @@
                     </span>
                 </div>
             </div>
+            }
         </div>
     </div>
+    }
 </div>
