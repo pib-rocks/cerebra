@@ -14,5 +14,8 @@ export enum UrlConstants {
     DOCKER = "/docker",
     MICROPHONE_ARRAY = "/system/microphone-array",
     HARDWARE_CONFIG = "/system/hardware-config",
+    HARDWARE_VARIANT = "/system/hardware-variant",
+    HARDWARE_CAPABILITIES = "/system/hardware-capabilities",
+    CONTROLLER = "/controller",
     MARIMO = "/marimo",
 }

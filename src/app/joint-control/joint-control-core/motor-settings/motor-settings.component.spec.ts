@@ -5,11 +5,12 @@ import {HorizontalSliderComponent} from "src/app/sliders/horizontal-slider/horiz
 import {VerticalSliderComponent} from "src/app/sliders/vertical-slider/vertical-slider.component";
 import {MotorService} from "src/app/shared/services/motor.service";
 import {ReactiveFormsModule} from "@angular/forms";
-import {Subject} from "rxjs";
+import {BehaviorSubject, Subject} from "rxjs";
 import {MotorSettings} from "src/app/shared/types/motor-settings.class";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {TemplateRef} from "@angular/core";
 import {MotorConfiguration} from "src/app/shared/types/motor-configuration";
+import {VariantService} from "src/app/shared/services/variant.service";
 
 describe("MotorSettingsComponent", () => {
     let component: MotorSettingsComponent;
@@ -21,6 +22,8 @@ describe("MotorSettingsComponent", () => {
     let motor: MotorConfiguration;
 
     let modalService: jasmine.SpyObj<NgbModal>;
+    let actualPositionAvailable: BehaviorSubject<boolean>;
+    let temperatureAvailable: BehaviorSubject<boolean>;
 
     beforeEach(async () => {
         const motorServiceSpy: jasmine.SpyObj<MotorService> =
@@ -34,6 +37,16 @@ describe("MotorSettingsComponent", () => {
         const modalServiceSpy: jasmine.SpyObj<NgbModal> = jasmine.createSpyObj(
             "NgbModal",
             ["open"],
+        );
+        const variantServiceSpy = jasmine.createSpyObj("VariantService", [
+            "hasFeedback",
+        ]);
+        actualPositionAvailable = new BehaviorSubject(false);
+        temperatureAvailable = new BehaviorSubject(false);
+        variantServiceSpy.hasFeedback.and.callFake((feedback: string) =>
+            feedback === "actual_position"
+                ? actualPositionAvailable
+                : temperatureAvailable,
         );
 
         settings = {
@@ -74,6 +87,10 @@ describe("MotorSettingsComponent", () => {
                     provide: NgbModal,
                     useValue: modalServiceSpy,
                 },
+                {
+                    provide: VariantService,
+                    useValue: variantServiceSpy,
+                },
             ],
             imports: [
                 ReactiveFormsModule,
@@ -96,6 +113,17 @@ describe("MotorSettingsComponent", () => {
 
     it("should create", () => {
         expect(component).toBeTruthy();
+    });
+
+    it("gates advanced feedback in motor settings from capabilities", () => {
+        expect(component.showActualPosition).toBeFalse();
+        expect(component.showTemperature).toBeFalse();
+
+        actualPositionAvailable.next(true);
+        temperatureAvailable.next(true);
+
+        expect(component.showActualPosition).toBeTrue();
+        expect(component.showTemperature).toBeTrue();
     });
 
     it("should get its settings from the motor-service", () => {

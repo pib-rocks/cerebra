@@ -78,6 +78,14 @@ export interface HardwareConfigBricklet {
     type?: BrickletType | string;
 }
 
+export interface HardwareConfigController {
+    kind: string;
+    deviceType: string | null;
+    address: string;
+    number: number;
+    supplyVoltage: number | null;
+}
+
 export interface HardwareConfigMotor {
     name: string;
     pulseWidthMin?: number;
@@ -92,11 +100,17 @@ export interface HardwareConfigMotor {
     visible?: boolean;
     invert?: boolean;
     brickletPins?: HardwareConfigBrickletPin[];
+    controllerNumber?: number | null;
+    channel?: number | null;
+    currentLimit?: number;
+    torqueLimit?: number;
 }
 
 export interface HardwareConfig {
     version: number;
-    bricklets: HardwareConfigBricklet[];
+    variant?: string;
+    bricklets?: HardwareConfigBricklet[];
+    controllers?: HardwareConfigController[];
     motors: HardwareConfigMotor[];
 }
 
@@ -107,7 +121,7 @@ export interface HardwareConfigValidationResult {
     warnings: string[];
 }
 
-const HARDWARE_CONFIG_VERSION = 1;
+const HARDWARE_CONFIG_VERSION = 2;
 const UID_PATTERN = /^[A-Za-z0-9]{1,6}$/;
 const VALID_BRICKLET_TYPES = new Set<string>([
     "Solid State Relay Bricklet",
@@ -207,8 +221,15 @@ export class DiagnosticsService {
             );
         }
 
-        if (!Array.isArray(payload["bricklets"])) {
-            errors.push("Hardware config requires a 'bricklets' array.");
+        if (version === 1 && !Array.isArray(payload["bricklets"])) {
+            errors.push(
+                "Hardware config version 1 requires a 'bricklets' array.",
+            );
+        }
+        if (version === 2 && !Array.isArray(payload["controllers"])) {
+            errors.push(
+                "Hardware config version 2 requires a 'controllers' array.",
+            );
         }
         if (!Array.isArray(payload["motors"])) {
             errors.push("Hardware config requires a 'motors' array.");
@@ -218,14 +239,17 @@ export class DiagnosticsService {
             return {valid: false, errors, warnings};
         }
 
-        const brickletsRaw = payload["bricklets"] as unknown[];
+        const brickletsRaw = (payload["bricklets"] ?? []) as unknown[];
+        const controllersRaw = (payload["controllers"] ?? []) as unknown[];
         const motorsRaw = payload["motors"] as unknown[];
         const bricklets: HardwareConfigBricklet[] = [];
+        const controllers: HardwareConfigController[] = [];
         const motors: HardwareConfigMotor[] = [];
         const seenUids = new Set<string>();
         const seenBrickletNumbers = new Set<number>();
         const seenMotorNames = new Set<string>();
         const brickletNumbersInFile = new Set<number>();
+        const controllerNumbersInFile = new Set<number>();
 
         brickletsRaw.forEach((entry, index) => {
             if (!this.isObject(entry)) {
@@ -301,6 +325,89 @@ export class DiagnosticsService {
                         typeof brickletType === "string"
                             ? brickletType
                             : undefined,
+                });
+            }
+        });
+
+        const supportedKinds = new Set([
+            "tinkerforge_bricklet",
+            "feetech_st_serial",
+            "robstride_can",
+        ]);
+        const seenControllerAddresses = new Set<string>();
+        controllersRaw.forEach((entry, index) => {
+            if (!this.isObject(entry)) {
+                errors.push(`controllers[${index}] must be an object.`);
+                return;
+            }
+            const kind = entry["kind"];
+            const number = entry["number"];
+            const address = entry["address"] ?? "";
+            const deviceType = entry["deviceType"] ?? null;
+            const supplyVoltage =
+                entry["supplyVoltage"] ?? entry["supply_voltage"] ?? null;
+
+            if (typeof kind !== "string" || !supportedKinds.has(kind)) {
+                errors.push(
+                    `controllers[${index}].kind '${String(
+                        kind,
+                    )}' is not supported.`,
+                );
+            }
+            if (
+                typeof number !== "number" ||
+                !Number.isInteger(number) ||
+                controllerNumbersInFile.has(number)
+            ) {
+                errors.push(
+                    `controllers[${index}].number must be a unique integer.`,
+                );
+            } else {
+                controllerNumbersInFile.add(number);
+            }
+            if (typeof address !== "string") {
+                errors.push(`controllers[${index}].address must be a string.`);
+            } else if (address && seenControllerAddresses.has(address)) {
+                errors.push(`Duplicate controller address: '${address}'`);
+            } else if (address) {
+                seenControllerAddresses.add(address);
+            }
+            if (
+                deviceType !== null &&
+                (kind !== "tinkerforge_bricklet" ||
+                    typeof deviceType !== "string" ||
+                    !VALID_BRICKLET_TYPES.has(deviceType))
+            ) {
+                errors.push(
+                    `controllers[${index}].deviceType is not valid for '${String(
+                        kind,
+                    )}'.`,
+                );
+            }
+            if (
+                supplyVoltage !== null &&
+                (typeof supplyVoltage !== "number" || supplyVoltage <= 0)
+            ) {
+                errors.push(
+                    `controllers[${index}].supplyVoltage must be a positive number or null.`,
+                );
+            }
+
+            if (
+                typeof kind === "string" &&
+                supportedKinds.has(kind) &&
+                typeof number === "number" &&
+                Number.isInteger(number) &&
+                typeof address === "string" &&
+                (deviceType === null || typeof deviceType === "string") &&
+                (supplyVoltage === null || typeof supplyVoltage === "number")
+            ) {
+                controllers.push({
+                    kind,
+                    deviceType,
+                    address: address.trim(),
+                    number,
+                    supplyVoltage,
                 });
             }
         });
@@ -399,6 +506,38 @@ export class DiagnosticsService {
                 index,
                 errors,
             );
+            this.copyOptionalMotorNumber(
+                entry,
+                motor,
+                "controllerNumber",
+                "controller_number",
+                index,
+                errors,
+            );
+            this.copyOptionalMotorNumber(
+                entry,
+                motor,
+                "channel",
+                "channel",
+                index,
+                errors,
+            );
+            this.copyOptionalMotorNumeric(
+                entry,
+                motor,
+                "currentLimit",
+                "current_limit",
+                index,
+                errors,
+            );
+            this.copyOptionalMotorNumeric(
+                entry,
+                motor,
+                "torqueLimit",
+                "torque_limit",
+                index,
+                errors,
+            );
             this.copyOptionalMotorBoolean(
                 entry,
                 motor,
@@ -416,71 +555,88 @@ export class DiagnosticsService {
                 errors,
             );
 
-            const pinsRaw =
-                entry["brickletPins"] ?? entry["bricklet_pins"] ?? [];
-            if (!Array.isArray(pinsRaw)) {
-                errors.push(`motors[${index}].brickletPins must be an array.`);
-            } else {
-                motor.brickletPins = [];
-                pinsRaw.forEach((pinEntry, pinIndex) => {
-                    if (!this.isObject(pinEntry)) {
-                        errors.push(
-                            `motors[${index}].brickletPins[${pinIndex}] must be an object.`,
-                        );
-                        return;
-                    }
-                    const pinBrickletNumber =
-                        pinEntry["brickletNumber"] ??
-                        pinEntry["bricklet_number"];
-                    const pin = pinEntry["pin"];
-                    const invert = pinEntry["invert"] ?? false;
+            if (version === 1) {
+                const pinsRaw =
+                    entry["brickletPins"] ?? entry["bricklet_pins"] ?? [];
+                if (!Array.isArray(pinsRaw)) {
+                    errors.push(
+                        `motors[${index}].brickletPins must be an array.`,
+                    );
+                } else {
+                    motor.brickletPins = [];
+                    pinsRaw.forEach((pinEntry, pinIndex) => {
+                        if (!this.isObject(pinEntry)) {
+                            errors.push(
+                                `motors[${index}].brickletPins[${pinIndex}] must be an object.`,
+                            );
+                            return;
+                        }
+                        const pinBrickletNumber =
+                            pinEntry["brickletNumber"] ??
+                            pinEntry["bricklet_number"];
+                        const pin = pinEntry["pin"];
+                        const invert = pinEntry["invert"] ?? false;
 
-                    if (
-                        typeof pinBrickletNumber !== "number" ||
-                        !Number.isInteger(pinBrickletNumber)
-                    ) {
-                        errors.push(
-                            `motors[${index}].brickletPins[${pinIndex}].brickletNumber must be an integer.`,
-                        );
-                    } else if (!brickletNumbersInFile.has(pinBrickletNumber)) {
-                        warnings.push(
-                            `Motor '${trimmedName}' references brickletNumber ${pinBrickletNumber} that is not listed in this file (must already exist on the robot).`,
-                        );
-                    }
+                        if (
+                            typeof pinBrickletNumber !== "number" ||
+                            !Number.isInteger(pinBrickletNumber)
+                        ) {
+                            errors.push(
+                                `motors[${index}].brickletPins[${pinIndex}].brickletNumber must be an integer.`,
+                            );
+                        } else if (
+                            !brickletNumbersInFile.has(pinBrickletNumber)
+                        ) {
+                            warnings.push(
+                                `Motor '${trimmedName}' references brickletNumber ${pinBrickletNumber} that is not listed in this file (must already exist on the robot).`,
+                            );
+                        }
 
-                    if (typeof pin !== "number" || !Number.isInteger(pin)) {
-                        errors.push(
-                            `motors[${index}].brickletPins[${pinIndex}].pin must be an integer.`,
-                        );
-                    }
+                        if (typeof pin !== "number" || !Number.isInteger(pin)) {
+                            errors.push(
+                                `motors[${index}].brickletPins[${pinIndex}].pin must be an integer.`,
+                            );
+                        }
 
-                    if (typeof invert !== "boolean") {
-                        errors.push(
-                            `motors[${index}].brickletPins[${pinIndex}].invert must be a boolean.`,
-                        );
-                    }
+                        if (typeof invert !== "boolean") {
+                            errors.push(
+                                `motors[${index}].brickletPins[${pinIndex}].invert must be a boolean.`,
+                            );
+                        }
 
-                    if (
-                        typeof pinBrickletNumber === "number" &&
-                        Number.isInteger(pinBrickletNumber) &&
-                        typeof pin === "number" &&
-                        Number.isInteger(pin) &&
-                        typeof invert === "boolean"
-                    ) {
-                        motor.brickletPins!.push({
-                            brickletNumber: pinBrickletNumber,
-                            pin,
-                            invert,
-                        });
-                    }
-                });
+                        if (
+                            typeof pinBrickletNumber === "number" &&
+                            Number.isInteger(pinBrickletNumber) &&
+                            typeof pin === "number" &&
+                            Number.isInteger(pin) &&
+                            typeof invert === "boolean"
+                        ) {
+                            motor.brickletPins!.push({
+                                brickletNumber: pinBrickletNumber,
+                                pin,
+                                invert,
+                            });
+                        }
+                    });
+                }
             }
 
             motors.push(motor);
         });
 
-        if (bricklets.length === 0) {
+        if (version === 1 && bricklets.length === 0) {
             warnings.push("Import file contains no bricklets.");
+        }
+
+        const variant =
+            typeof payload["variant"] === "string"
+                ? payload["variant"].trim()
+                : undefined;
+        if (
+            payload["variant"] !== undefined &&
+            (!variant || typeof payload["variant"] !== "string")
+        ) {
+            errors.push("Hardware config variant must be a non-empty string.");
         }
 
         return {
@@ -489,8 +645,9 @@ export class DiagnosticsService {
                 errors.length === 0
                     ? {
                           version: version as number,
-                          bricklets,
+                          ...(version === 1 ? {bricklets} : {controllers}),
                           motors,
+                          ...(variant ? {variant} : {}),
                       }
                     : undefined,
             errors,
@@ -511,6 +668,14 @@ export class DiagnosticsService {
                 ? entry[camelKey as string]
                 : entry[snakeKey];
         if (value === undefined) {
+            return;
+        }
+        if (
+            value === null &&
+            (camelKey === "controllerNumber" || camelKey === "channel")
+        ) {
+            (motor as unknown as Record<string, unknown>)[camelKey as string] =
+                null;
             return;
         }
         if (typeof value !== "number" || !Number.isInteger(value)) {
@@ -541,6 +706,26 @@ export class DiagnosticsService {
         if (typeof value !== "boolean") {
             errors.push(
                 `motors[${index}].${String(camelKey)} must be a boolean.`,
+            );
+            return;
+        }
+        (motor as unknown as Record<string, unknown>)[camelKey as string] =
+            value;
+    }
+
+    private copyOptionalMotorNumeric(
+        entry: Record<string, unknown>,
+        motor: HardwareConfigMotor,
+        camelKey: keyof HardwareConfigMotor,
+        snakeKey: string,
+        index: number,
+        errors: string[],
+    ): void {
+        const value = entry[camelKey as string] ?? entry[snakeKey];
+        if (value === undefined) return;
+        if (typeof value !== "number" || !Number.isFinite(value)) {
+            errors.push(
+                `motors[${index}].${String(camelKey)} must be a number.`,
             );
             return;
         }

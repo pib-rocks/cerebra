@@ -103,7 +103,7 @@ describe("DiagnosticsService hardware-config", () => {
 
         expect(result.valid).toBeTrue();
         expect(result.errors).toEqual([]);
-        expect(result.config?.bricklets.length).toBe(2);
+        expect(result.config?.bricklets?.length).toBe(2);
         expect(result.config?.motors[0].name).toBe("head_pan");
     });
 
@@ -210,9 +210,46 @@ describe("DiagnosticsService hardware-config", () => {
         expect(result.errors).toEqual([]);
         expect(result.warnings).toEqual([]);
         expect(result.valid).toBeTrue();
-        expect(result.config?.bricklets.length).toBe(7);
-        expect(result.config?.bricklets[0].uid).toBe("E2E001");
+        expect(result.config?.bricklets?.length).toBe(7);
+        expect(result.config?.bricklets?.[0].uid).toBe("E2E001");
         expect(result.config?.motors.length).toBe(2);
+    });
+
+    it("accepts hardware-config v2 controllers without changing their schema", () => {
+        const result = service.validateHardwareConfig({
+            version: 2,
+            variant: "pib5advanced",
+            controllers: [
+                {
+                    kind: "feetech_st_serial",
+                    deviceType: null,
+                    address: "/dev/pib-head",
+                    number: 1,
+                    supplyVoltage: null,
+                },
+            ],
+            motors: [
+                {
+                    name: "turn_head_motor",
+                    controllerNumber: 1,
+                    channel: 2,
+                    currentLimit: 1.5,
+                    torqueLimit: 2.5,
+                },
+            ],
+        });
+
+        expect(result.valid).toBeTrue();
+        expect(result.errors).toEqual([]);
+        expect(result.config?.controllers?.[0].address).toBe("/dev/pib-head");
+        expect(result.config?.motors[0]).toEqual(
+            jasmine.objectContaining({
+                controllerNumber: 1,
+                channel: 2,
+                currentLimit: 1.5,
+                torqueLimit: 2.5,
+            }),
+        );
     });
 
     it("should reject missing bricklets/motors arrays", () => {

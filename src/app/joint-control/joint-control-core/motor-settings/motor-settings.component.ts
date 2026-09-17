@@ -17,6 +17,8 @@ import {MotorSettings} from "src/app/shared/types/motor-settings.class";
 import {NgClass} from "@angular/common";
 import {HorizontalSliderComponent} from "../../../sliders/horizontal-slider/horizontal-slider.component";
 import {VerticalSliderComponent} from "../../../sliders/vertical-slider/vertical-slider.component";
+import {VariantService} from "src/app/shared/services/variant.service";
+import {MotorFeedbackComponent} from "../motor-feedback/motor-feedback.component";
 
 @Component({
     selector: "app-motor-settings",
@@ -28,6 +30,7 @@ import {VerticalSliderComponent} from "../../../sliders/vertical-slider/vertical
         ReactiveFormsModule,
         HorizontalSliderComponent,
         VerticalSliderComponent,
+        MotorFeedbackComponent,
     ],
 })
 export class MotorSettingsComponent implements OnInit {
@@ -50,10 +53,13 @@ export class MotorSettingsComponent implements OnInit {
     settings!: MotorSettings;
 
     displayExtended: boolean = false;
+    showActualPosition = false;
+    showTemperature = false;
 
     constructor(
         private motorService: MotorService,
         private modalService: NgbModal,
+        private variantService: VariantService,
     ) {}
 
     ngOnInit(): void {
@@ -80,6 +86,14 @@ export class MotorSettingsComponent implements OnInit {
                 this.turnedOnFormControl.setValue(this.settings.turnedOn);
                 this.invertFormControl.setValue(this.settings.invert);
             });
+        this.variantService
+            .hasFeedback("actual_position")
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe((available) => (this.showActualPosition = available));
+        this.variantService
+            .hasFeedback("temperature")
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe((available) => (this.showTemperature = available));
     }
 
     openPopup(content: TemplateRef<any>) {
