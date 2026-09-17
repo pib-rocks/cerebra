@@ -17,14 +17,15 @@ describe("GlobalErrorHandlerComponent", () => {
     });
 
     it("should handle errors appropriately", () => {
+        // the handler reports through console.error, not console.log
         let error = null;
-        const consoleLogSpy = spyOn(console, "log").and.callThrough();
+        const consoleErrorSpy = spyOn(console, "error").and.callThrough();
         errorHandler.handleError(error);
-        expect(consoleLogSpy).toHaveBeenCalledWith(
+        expect(consoleErrorSpy).toHaveBeenCalledWith(
             "An unexpected error has occurred",
         );
         error = new Error("Test error");
         errorHandler.handleError(error);
-        expect(consoleLogSpy).toHaveBeenCalledWith(error.message);
+        expect(consoleErrorSpy).toHaveBeenCalledWith(error.message);
     });
 });
