@@ -43,6 +43,26 @@ input.form-control:focus {
     gap: 0.5rem;
 }
 
+.controller-group-heading,
+.controller-section h3 {
+    color: $pink-color;
+    font-size: 1.15rem;
+}
+
+.controller-section {
+    margin: 1.5rem 0.5rem 0;
+}
+
+.controller-detail {
+    display: flex;
+    gap: 1rem;
+    margin: 0.5rem 0;
+}
+
+.controller-documentation {
+    color: $grey-color;
+}
+
 .import-preview {
     background-color: rgba(0, 0, 0, 0.25);
 

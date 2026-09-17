@@ -1,0 +1,14 @@
+<div
+    class="feedback"
+    [attr.data-test]="'Motor_Feedback_' + feedback + '_' + motor.motorPathName">
+    <span class="feedback-label">{{ label }}</span>
+    @if (value !== undefined) {
+    <strong>{{ value }}</strong>
+    } @else {
+    <strong
+        class="feedback-placeholder"
+        title="The motor node has not published this diagnostic value yet."
+        >—</strong
+    >
+    }
+</div>

@@ -282,6 +282,31 @@ describe("MotorService", () => {
         );
     });
 
+    it("exposes actual position and temperature from diagnostic key/value pairs", () => {
+        let actualPosition: string | undefined;
+        let temperature: string | undefined;
+        service
+            .getFeedbackObservable("test-motor", "actual_position")
+            .subscribe((value) => (actualPosition = value));
+        service
+            .getFeedbackObservable("test-motor", "temperature")
+            .subscribe((value) => (temperature = value));
+
+        rosService.currentReceiver$.next({
+            level: "arraybuffer",
+            name: "test-motor",
+            hardware_id: "",
+            values: [
+                {key: "temperature", value: "41.5"},
+                {key: "current", value: "27"},
+                {key: "actual_position", value: "12.25"},
+            ],
+        });
+
+        expect(actualPosition).toBe("12.25");
+        expect(temperature).toBe("41.5");
+    });
+
     it("should get the settings-subject", () => {
         const observable = jasmine.createSpyObj("observable", ["pipe"]);
         const pipedObservable = new Observable();

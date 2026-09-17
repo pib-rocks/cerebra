@@ -6,11 +6,16 @@ import {
     DiagnosticsService,
     HardwareConfig,
 } from "../diagnostics/diagnostics.service";
-import {of, throwError} from "rxjs";
+import {BehaviorSubject, of, throwError} from "rxjs";
 import {Bricklet} from "src/app/shared/types/bricklet";
 import {AbstractControl, ReactiveFormsModule} from "@angular/forms";
 import {provideZonelessChangeDetection} from "@angular/core";
 import {ApiService} from "src/app/shared/services/api.service";
+import {
+    HardwareContext,
+    VariantService,
+} from "src/app/shared/services/variant.service";
+import {HardwareFeedback} from "src/app/shared/types/hardware-capabilities";
 
 describe("HardwareIdComponent", () => {
     let component: HardwareIdComponent;
@@ -18,6 +23,7 @@ describe("HardwareIdComponent", () => {
 
     let brickletServiceSpy: jasmine.SpyObj<BrickletService>;
     let diagnosticsServiceSpy: jasmine.SpyObj<DiagnosticsService>;
+    let hardwareContext: BehaviorSubject<HardwareContext>;
 
     const bricklet1 = new Bricklet("AAA", 1, "Servo Bricklet");
     const bricklet2 = new Bricklet("BBB", 2, "Servo Bricklet");
@@ -67,6 +73,23 @@ describe("HardwareIdComponent", () => {
             "parseHardwareConfigFileContent",
             "validateHardwareConfig",
         ]);
+        hardwareContext = new BehaviorSubject<HardwareContext>({
+            variant: {
+                variant: "pib5edu",
+                source: "fallback",
+                supported: [],
+                implementedVariants: [],
+                seedProfileImplemented: false,
+            },
+            capabilities: [],
+            controllers: [],
+            fallback: true,
+        });
+        const variantServiceSpy = jasmine.createSpyObj("VariantService", [
+            "getContextObservable",
+            "reload",
+        ]);
+        variantServiceSpy.getContextObservable.and.returnValue(hardwareContext);
 
         diagnosticsServiceSpy.exportHardwareConfig.and.returnValue(
             of(sampleHardwareConfig),
@@ -92,6 +115,7 @@ describe("HardwareIdComponent", () => {
                     provide: DiagnosticsService,
                     useValue: diagnosticsServiceSpy,
                 },
+                {provide: VariantService, useValue: variantServiceSpy},
             ],
         }).compileComponents();
 
@@ -202,6 +226,147 @@ describe("HardwareIdComponent", () => {
         expect(importBtn).toBeTruthy();
         expect(exportBtn.textContent).toContain("Export IDs");
         expect(importBtn.textContent).toContain("Import IDs");
+    });
+
+    it("renders the three pib4edu servo controllers reported by the backend", () => {
+        hardwareContext.next(
+            contextFor("pib4edu", [
+                controller(1, "tinkerforge_bricklet", "Servo Bricklet", 7.5),
+                controller(2, "tinkerforge_bricklet", "Servo Bricklet", 7.5),
+                controller(3, "tinkerforge_bricklet", "Servo Bricklet", 7.5),
+                controller(
+                    4,
+                    "tinkerforge_bricklet",
+                    "Solid State Relay Bricklet",
+                    null,
+                ),
+                controller(
+                    5,
+                    "tinkerforge_bricklet",
+                    "RGB LED Button Bricklet",
+                    null,
+                ),
+                controller(
+                    6,
+                    "tinkerforge_bricklet",
+                    "RGB LED Button Bricklet",
+                    null,
+                ),
+                controller(
+                    7,
+                    "tinkerforge_bricklet",
+                    "RGB LED Button Bricklet",
+                    null,
+                ),
+            ]),
+        );
+        fixture.detectChanges();
+
+        expect(
+            component.servoGroups.flatMap((group) => group.controllers).length,
+        ).toBe(3);
+        expect(component.relayControllers.length).toBe(1);
+        expect(component.rgbControllers.length).toBe(3);
+        expect(fixture.nativeElement.textContent).toContain("7.5 V");
+    });
+
+    it("groups pib5edu servo controllers by their reported 7.5 V and 12 V supplies", () => {
+        hardwareContext.next(
+            contextFor("pib5edu", [
+                controller(1, "tinkerforge_bricklet", "Servo Bricklet", 7.5),
+                controller(2, "tinkerforge_bricklet", "Servo Bricklet", 7.5),
+                controller(3, "tinkerforge_bricklet", "Servo Bricklet", 7.5),
+                controller(4, "tinkerforge_bricklet", "Servo Bricklet", 12),
+                controller(
+                    5,
+                    "tinkerforge_bricklet",
+                    "Solid State Relay Bricklet",
+                    null,
+                ),
+                controller(
+                    6,
+                    "tinkerforge_bricklet",
+                    "RGB LED Button Bricklet",
+                    null,
+                ),
+                controller(
+                    7,
+                    "tinkerforge_bricklet",
+                    "RGB LED Button Bricklet",
+                    null,
+                ),
+                controller(
+                    8,
+                    "tinkerforge_bricklet",
+                    "RGB LED Button Bricklet",
+                    null,
+                ),
+            ]),
+        );
+        fixture.detectChanges();
+
+        expect(
+            component.servoGroups.flatMap((group) => group.controllers).length,
+        ).toBe(4);
+        expect(fixture.nativeElement.textContent).toContain("7.5 V");
+        expect(fixture.nativeElement.textContent).toContain("12 V");
+    });
+
+    it("renders advanced serial device names without Bricklet UID fields", () => {
+        hardwareContext.next(
+            contextFor("pib5advanced", [
+                controller(1, "feetech_st_serial", null, null, "/dev/pib-head"),
+                controller(2, "feetech_st_serial", null, null, "/dev/pib-left"),
+                controller(
+                    3,
+                    "feetech_st_serial",
+                    null,
+                    null,
+                    "/dev/pib-right",
+                ),
+                controller(4, "feetech_st_serial", null, null, "/dev/pib-body"),
+            ]),
+        );
+        fixture.detectChanges();
+
+        expect(
+            fixture.nativeElement.querySelectorAll(
+                '[data-test^="TXT_Serial_Controller_"]',
+            ).length,
+        ).toBe(4);
+        expect(
+            fixture.nativeElement.querySelector(
+                '[data-test^="TXT_Bricklet_UID_"]',
+            ),
+        ).toBeNull();
+        expect(Object.keys(component.brickletUidForm.controls).length).toBe(0);
+        expect(component.brickletUidForm.valid).toBeTrue();
+        expect(fixture.nativeElement.textContent).toContain("/dev/pib-head");
+    });
+
+    it("shows the documented museum CAN interface before hardware is available", () => {
+        const museumContext = contextFor("pib5museum", []);
+        museumContext.capabilities.push({
+            kind: "robstride_can",
+            installedControllers: 0,
+            feedback: [
+                "current",
+                "target_position",
+                "actual_position",
+                "temperature",
+            ],
+            meaningfulSettings: [],
+        });
+        hardwareContext.next(museumContext);
+        fixture.detectChanges();
+
+        const canGroup = fixture.nativeElement.querySelector(
+            '[data-test="GRP_CAN_Interface"]',
+        );
+        expect(canGroup).toBeTruthy();
+        expect(canGroup.textContent).toContain("SocketCAN");
+        expect(canGroup.textContent).toContain("1 Mbit/s");
+        expect(canGroup.textContent).toContain("120 Ω");
     });
 
     it("should export Hardware-IDs and trigger a JSON download", () => {
@@ -325,6 +490,51 @@ describe("HardwareIdComponent", () => {
     });
 });
 
+function controller(
+    number: number,
+    kind: string,
+    deviceType: string | null,
+    supplyVoltage: number | null,
+    address = `UID${number}`,
+) {
+    return {number, kind, deviceType, supplyVoltage, address};
+}
+
+function contextFor(
+    variant: string,
+    controllers: ReturnType<typeof controller>[],
+): HardwareContext {
+    const counts = new Map<string, number>();
+    controllers.forEach((item) =>
+        counts.set(item.kind, (counts.get(item.kind) ?? 0) + 1),
+    );
+    return {
+        variant: {
+            variant,
+            source: "database",
+            supported: [variant],
+            implementedVariants: [variant],
+            seedProfileImplemented: true,
+        },
+        capabilities: Array.from(counts, ([kind, installedControllers]) => ({
+            kind,
+            installedControllers,
+            feedback:
+                kind === "tinkerforge_bricklet"
+                    ? (["current", "target_position"] as HardwareFeedback[])
+                    : ([
+                          "current",
+                          "target_position",
+                          "actual_position",
+                          "temperature",
+                      ] as HardwareFeedback[]),
+            meaningfulSettings: [],
+        })),
+        controllers,
+        fallback: false,
+    };
+}
+
 describe("HardwareIdComponent import preview (zoneless)", () => {
     let component: HardwareIdComponent;
     let fixture: ComponentFixture<HardwareIdComponent>;
@@ -369,12 +579,31 @@ describe("HardwareIdComponent import preview (zoneless)", () => {
         brickletServiceSpy.getBrickletObservable.and.returnValue(
             of([new Bricklet("AAA", 1, "Servo Bricklet")]),
         );
+        const variantServiceSpy = jasmine.createSpyObj("VariantService", [
+            "getContextObservable",
+            "reload",
+        ]);
+        variantServiceSpy.getContextObservable.and.returnValue(
+            of({
+                variant: {
+                    variant: "pib5edu",
+                    source: "fallback",
+                    supported: [],
+                    implementedVariants: [],
+                    seedProfileImplemented: false,
+                },
+                capabilities: [],
+                controllers: [],
+                fallback: true,
+            }),
+        );
 
         await TestBed.configureTestingModule({
             imports: [ReactiveFormsModule, HardwareIdComponent],
             providers: [
                 provideZonelessChangeDetection(),
                 {provide: BrickletService, useValue: brickletServiceSpy},
+                {provide: VariantService, useValue: variantServiceSpy},
                 // Real DiagnosticsService so the exported JSON is really parsed.
                 DiagnosticsService,
                 {

@@ -12,6 +12,11 @@
             <div class="col-3 sidebar-label m-0 p-0">Settings</div>
             <div class="col-3 sidebar-label m-0 p-0">Active</div>
             <div class="col-3 sidebar-label m-0 p-0">Current</div>
+            @if (showActualPosition) {
+            <div class="col sidebar-label m-0 p-0">Actual position</div>
+            } @if (showTemperature) {
+            <div class="col sidebar-label m-0 p-0">Temperature</div>
+            }
         </div>
         @for (motor of displayMotors; track motor) {
         <div
@@ -21,13 +26,24 @@
             <app-motor-settings
                 [reversed]="joint.reversed"
                 [motor]="motor"
-                class="col-6 m-0 p-0"></app-motor-settings>
+                [class]="primaryColumnClass + ' m-0 p-0'"></app-motor-settings>
             <app-motor-current
                 (click)="selectMotor(motor)"
                 [id]="'touchpoint-' + motor.motorPathName"
                 [reversed]="joint.reversed"
                 [motor]="motor"
-                class="col-6 cursor m-0 p-0"></app-motor-current>
+                [class]="primaryColumnClass + ' cursor m-0 p-0'"></app-motor-current>
+            @if (showActualPosition) {
+            <app-motor-feedback
+                class="col-2 m-0 p-0"
+                [motor]="motor"
+                feedback="actual_position"></app-motor-feedback>
+            } @if (showTemperature) {
+            <app-motor-feedback
+                class="col-2 m-0 p-0"
+                [motor]="motor"
+                feedback="temperature"></app-motor-feedback>
+            }
         </div>
         }
     </div>
