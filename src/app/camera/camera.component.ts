@@ -28,7 +28,6 @@ import {ModelListComponent} from "./model-list/model-list.component";
 interface DetectionLayer {
     modelId: string;
     color: string;
-    enabled: boolean;
     message?: DetectionArray;
 }
 
@@ -87,7 +86,7 @@ export class CameraComponent implements OnInit, OnDestroy {
     get visibleDetectionLayers(): DetectionLayer[] {
         if (!this.imageIsLive) return [];
         return this.detectionModels.filter(
-            (layer) => layer.enabled && layer.message !== undefined,
+            (layer) => layer.message !== undefined,
         );
     }
 
@@ -96,7 +95,6 @@ export class CameraComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit(): void {
-        this.subscribeCameraReseiver();
         this.imageSrc = "../../assets/camera-placeholder.jpg";
         this.cameraReceiverSubscription =
             this.cameraService.cameraReciver$.subscribe((message) => {
@@ -138,7 +136,7 @@ export class CameraComponent implements OnInit, OnDestroy {
         this.detectionClearSubscription?.unsubscribe();
         this.clearDetections();
         this.stopCamera();
-        this.cameraSettings!.isActive = false;
+        if (this.cameraSettings) this.cameraSettings.isActive = false;
     }
 
     setSize(
@@ -177,22 +175,19 @@ export class CameraComponent implements OnInit, OnDestroy {
         this.clearDetections();
     }
 
-    setModelEnabled(modelId: string, enabled: boolean) {
-        const layer = this.detectionLayers.get(modelId);
-        if (layer) layer.enabled = enabled;
-    }
-
     keypoints(detection: Detection): OverlayKeypoint[] {
-        return detection.keypoint_names
-            .map((name, index) => ({
-                name,
-                x: detection.keypoint_x[index],
-                y: detection.keypoint_y[index],
-            }))
-            .filter(
-                (keypoint) =>
-                    Number.isFinite(keypoint.x) && Number.isFinite(keypoint.y),
-            );
+        const count = Math.min(
+            detection.keypoint_x.length,
+            detection.keypoint_y.length,
+        );
+        return Array.from({length: count}, (_, index) => ({
+            name: detection.keypoint_names[index] ?? `Landmark ${index + 1}`,
+            x: detection.keypoint_x[index],
+            y: detection.keypoint_y[index],
+        })).filter(
+            (keypoint) =>
+                Number.isFinite(keypoint.x) && Number.isFinite(keypoint.y),
+        );
     }
 
     detectionLabel(detection: Detection): string {
@@ -244,7 +239,6 @@ export class CameraComponent implements OnInit, OnDestroy {
             layer = {
                 modelId,
                 color: this.modelColor(modelId),
-                enabled: true,
             };
             this.detectionLayers.set(modelId, layer);
         }
@@ -307,10 +301,6 @@ export class CameraComponent implements OnInit, OnDestroy {
     addCssClass() {
         const videoSettingsButton = document.getElementById("videosettings");
         videoSettingsButton?.classList.add("showPopover");
-    }
-
-    subscribeCameraReseiver() {
-        this.cameraService.subscribeCameraReseiver();
     }
 
     subscribeCameraSettings() {

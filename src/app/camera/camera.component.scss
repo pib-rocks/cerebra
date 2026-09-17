@@ -63,16 +63,8 @@ video {
     stroke-linejoin: round;
 }
 
-.detection-toggle {
-    color: $white-color;
-}
-
-.detection-color {
-    display: inline-block;
-    width: 0.75rem;
-    height: 0.75rem;
-    margin-right: 0.25rem;
-    border-radius: 50%;
+.model-column {
+    max-width: 22rem;
 }
 
 .video-settings-label {
