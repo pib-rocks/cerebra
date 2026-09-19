@@ -388,6 +388,10 @@ export const toolbox: string = `<xml xmlns="http://www.w3.org/1999/xhtml" id="to
     <block type="start_model"></block>
     <block type="stop_model"></block>
     <block type="get_detection_field"></block>
+    <block type="imu_get_acceleration"></block>
+    <block type="imu_get_angular_velocity"></block>
+    <block type="imu_is_data_available"></block>
+    <block type="imu_get_data_age"></block>
 </category>
 <category name="Expressions" colour="180">
     <block type="set_face_expression"></block>
