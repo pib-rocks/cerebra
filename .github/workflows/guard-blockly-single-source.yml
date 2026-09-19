@@ -2,8 +2,20 @@ name: Guard Blockly Single-Source
 
 # Enforces PR-1477: the vendored pib-blockly tree (src/app/program/pib-blockly)
 # is auto-generated from pib-backend and must NOT be edited directly in cerebra.
-# Any PR that touches this path must originate from the sync bot (pib-sync-bot)
-# on a sync/blockly-from-* branch. All other PRs touching it fail this check.
+#
+# A pull request touching this path is only accepted when all three hold:
+#   1. the head branch is a sync/blockly-from-* branch (created by the sync workflow),
+#   2. the head commit carries the identity the sync workflow commits with
+#      (pib-sync-bot <pib-sync-bot@users.noreply.github.com>),
+#   3. every changed file lives inside the vendored tree (a real sync changes nothing else).
+#
+# The earlier version required `github.actor == 'pib-sync-bot'`. The sync workflow opens its
+# pull request with the CEREBRA_SYNC_TOKEN, so the actor is the token owner (jueba) - every
+# legitimate sync PR failed this check (see #179). The checks above describe the sync itself
+# instead of the account that opened the PR.
+#
+# Scope: this is a process guard against accidental direct edits of a generated tree. Commit
+# authorship is not a security boundary - anyone with push access can set it.
 
 on:
   pull_request:
@@ -13,25 +25,63 @@ on:
 permissions:
   contents: read
 
+env:
+  ALLOWED_PATH: src/app/program/pib-blockly/
+  SYNC_BOT_NAME: pib-sync-bot
+
 jobs:
   guard:
     runs-on: ubuntu-latest
     steps:
-      - name: Verify change originates from the sync bot
-        run: |
-          ACTOR="${{ github.actor }}"
-          HEAD_REF="${{ github.head_ref }}"
-          echo "PR author:   $ACTOR"
-          echo "Head branch: $HEAD_REF"
+      - name: Check out the pull request head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
 
-          # Allowed: the sync bot pushing a sync/blockly-from-* branch.
-          if [ "$ACTOR" = "pib-sync-bot" ] && [[ "$HEAD_REF" == sync/blockly-from-* ]]; then
-            echo "✅ Change comes from the Blockly sync bot — allowed."
-            exit 0
+      - name: Verify the change is a pure Blockly sync from the bot
+        env:
+          ACTOR: ${{ github.actor }}
+          HEAD_REF: ${{ github.head_ref }}
+          BASE_REF: ${{ github.base_ref }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          fail() {
+            echo "::error::$*"
+            echo "::error::${ALLOWED_PATH} is auto-generated from pib-backend."
+            echo "::error::Do NOT edit it here. Make your change in pib-rocks/pib-backend"
+            echo "::error::(pib_blockly/pib_blockly_server/src/pib-blockly/); it will sync automatically."
+            echo "::error::See Jira PR-1477 and the KB page 'Blockly Code: Single-Source Architecture & Sync'."
+            exit 1
+          }
+
+          echo "PR actor:    ${ACTOR}"
+          echo "Head branch: ${HEAD_REF}"
+          echo "Base branch: ${BASE_REF}"
+          echo "Head commit: ${HEAD_SHA}"
+
+          # 1) the branch must be a sync branch produced by the sync workflow
+          if [[ "${HEAD_REF}" != sync/blockly-from-* ]]; then
+            fail "Head branch '${HEAD_REF}' is not a sync/blockly-from-* branch."
           fi
 
-          echo "::error::src/app/program/pib-blockly/ is auto-generated from pib-backend."
-          echo "::error::Do NOT edit it here. Make your change in pib-rocks/pib-backend"
-          echo "::error::(pib_blockly/pib_blockly_server/src/pib-blockly/); it will sync automatically."
-          echo "::error::See Jira PR-1477 and the KB page 'Blockly Code: Single-Source Architecture & Sync'."
-          exit 1
+          # 2) the head commit must carry the bot identity the sync workflow commits with
+          AUTHOR_NAME=$(git log -1 --format='%an' "${HEAD_SHA}")
+          AUTHOR_MAIL=$(git log -1 --format='%ae' "${HEAD_SHA}")
+          echo "Head author: ${AUTHOR_NAME} <${AUTHOR_MAIL}>"
+          if [[ "${AUTHOR_NAME}" != "${SYNC_BOT_NAME}" ]]; then
+            fail "Head commit author '${AUTHOR_NAME}' is not '${SYNC_BOT_NAME}'."
+          fi
+
+          # 3) a genuine sync touches nothing outside the vendored tree
+          mapfile -t CHANGED < <(git diff --name-only "origin/${BASE_REF}...${HEAD_SHA}")
+          echo "Changed files (${#CHANGED[@]}):"
+          printf '  %s\n' "${CHANGED[@]:-}"
+          OUTSIDE=$(printf '%s\n' "${CHANGED[@]:-}" | grep -v "^${ALLOWED_PATH}" | grep -v '^$' || true)
+          if [[ -n "${OUTSIDE}" ]]; then
+            echo "Files outside the vendored tree:"
+            printf '  %s\n' "${OUTSIDE}"
+            fail "This is not a pure Blockly sync - it also changes files outside ${ALLOWED_PATH}."
+          fi
+
+          echo "OK: pure Blockly sync from the bot (${#CHANGED[@]} files, all inside ${ALLOWED_PATH})."
