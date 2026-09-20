@@ -190,20 +190,22 @@ describe("CameraComponent", () => {
         rosService.detectionModelsReceiver$.next(["hands"]);
         rosService.detectionReceiver$.next(detectionMessage("hands"));
         const newest = detectionMessage("hands");
-        newest.detections[0].x_min = 123;
+        newest.detections[0].keypoint_x = [456];
+        newest.detections[0].keypoint_y = [321];
         rosService.detectionReceiver$.next(newest);
 
         tick(499);
         fixture.detectChanges();
-        expect(fixture.debugElement.query(By.css(".detection-box"))).toBeNull();
+        expect(
+            fixture.debugElement.query(By.css(".detection-keypoint")),
+        ).toBeNull();
 
         tick(1);
         fixture.detectChanges();
         expect(
-            fixture.debugElement.query(By.css(".detection-box")).attributes[
-                "x"
-            ],
-        ).toBe("123");
+            fixture.debugElement.query(By.css(".detection-keypoint"))
+                .attributes["cx"],
+        ).toBe("456");
     }));
 
     it("should notify zoneless Angular once for each display flush", fakeAsync(() => {
@@ -261,7 +263,7 @@ describe("CameraComponent", () => {
         expect(overlays[1].attributes["viewBox"]).toBe("0 0 1280 720");
     }));
 
-    it("should draw detection boxes and all 21 hand landmarks", fakeAsync(() => {
+    it("should draw the 21 hand landmarks without a box and hang the label on the wrist", fakeAsync(() => {
         const message = detectionMessage("hands");
         message.detections[0].keypoint_names = Array.from(
             {length: 21},
@@ -285,15 +287,58 @@ describe("CameraComponent", () => {
         const landmarks = fixture.debugElement.queryAll(
             By.css(".detection-keypoint"),
         );
+        const label = fixture.debugElement.query(By.css(".detection-label"));
+
+        // PR-1781: the palm box is drawn off the hand, so a skeleton detection
+        // shows its landmarks only and hangs the label on the wrist.
+        expect(box).toBeNull();
+        expect(landmarks.length).toBe(21);
+        expect(landmarks[20].attributes["cx"]).toBe("120");
+        expect(landmarks[20].attributes["cy"]).toBe("220");
+        expect(label.attributes["x"]).toBe("106");
+        expect(label.attributes["y"]).toBe("194");
+    }));
+
+    it("should keep box and corner label for a detection without keypoints", fakeAsync(() => {
+        const message = detectionMessage("objects");
+        message.detections[0].keypoint_names = [];
+        message.detections[0].keypoint_x = [];
+        message.detections[0].keypoint_y = [];
+        message.detections[0].keypoint_z = [];
+        rosService.cameraReceiver$.next("camera-image");
+        rosService.detectionModelsReceiver$.next(["objects"]);
+        rosService.detectionReceiver$.next(message);
+        tick(100);
+        fixture.detectChanges();
+
+        const box = fixture.debugElement.query(By.css(".detection-box"));
+        const label = fixture.debugElement.query(By.css(".detection-label"));
 
         expect(box.attributes["x"]).toBe("64");
         expect(box.attributes["y"]).toBe("48");
         expect(box.attributes["width"]).toBe("256");
         expect(box.attributes["height"]).toBe("192");
-        expect(landmarks.length).toBe(21);
-        expect(landmarks[20].attributes["cx"]).toBe("120");
-        expect(landmarks[20].attributes["cy"]).toBe("220");
+        expect(label.attributes["x"]).toBe("68");
+        expect(label.attributes["y"]).toBe("66");
     }));
+
+    it("should decide box visibility and label anchor from the keypoints", () => {
+        const hand = namedHandDetection();
+
+        expect(component.showsBox(hand)).toBeFalse();
+        expect(component.labelAnchor(hand)).toEqual({x: 6, y: 94});
+
+        const boxOnly: Detection = {
+            ...hand,
+            keypoint_names: [],
+            keypoint_x: [],
+            keypoint_y: [],
+            keypoint_z: [],
+        };
+
+        expect(component.showsBox(boxOnly)).toBeTrue();
+        expect(component.labelAnchor(boxOnly)).toEqual({x: 68, y: 66});
+    });
 
     it("should return 21 connections for a named MediaPipe hand", () => {
         const detection = namedHandDetection();

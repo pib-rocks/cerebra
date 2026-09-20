@@ -39,6 +39,11 @@ interface OverlayKeypoint {
     y: number;
 }
 
+interface OverlayAnchor {
+    x: number;
+    y: number;
+}
+
 interface OverlayConnection {
     x1: number;
     y1: number;
@@ -223,6 +228,24 @@ export class CameraComponent implements OnInit, OnDestroy {
             (keypoint) =>
                 Number.isFinite(keypoint.x) && Number.isFinite(keypoint.y),
         );
+    }
+
+    showsBox(detection: Detection): boolean {
+        // A detection that carries keypoints is drawn as a skeleton.  The palm
+        // box is computed from the axis-aligned palm square and ignores the
+        // hand's rotation (hand_tracking.py bbox_pixels), so it lands off the
+        // hand while the landmarks, which go through the rotated ROI, do not
+        // (PR-1781).  Box-only detections keep their box - it is their single
+        // visual.
+        return this.keypoints(detection).length === 0;
+    }
+
+    labelAnchor(detection: Detection): OverlayAnchor {
+        const keypoint = this.keypoints(detection)[0];
+        if (keypoint) {
+            return {x: keypoint.x + 6, y: keypoint.y - 6};
+        }
+        return {x: detection.x_min + 4, y: detection.y_min + 18};
     }
 
     connections(detection: Detection): OverlayConnection[] {
