@@ -13,7 +13,11 @@ import {CameraService} from "../shared/services/camera.service";
 import {ApiService} from "../shared/services/api.service";
 import {HttpClientTestingModule} from "@angular/common/http/testing";
 import {HorizontalSliderComponent} from "../sliders/horizontal-slider/horizontal-slider.component";
-import {DetectionArray} from "../shared/ros-types/msg/detection-array";
+import {
+    Detection,
+    DetectionArray,
+} from "../shared/ros-types/msg/detection-array";
+import {HAND_KEYPOINT_NAMES} from "./hand-skeleton";
 
 describe("CameraComponent", () => {
     let component: CameraComponent;
@@ -45,6 +49,34 @@ describe("CameraComponent", () => {
                 scalar_values: [],
             },
         ],
+    });
+    const namedHandDetection = (): Detection => ({
+        label: "hand",
+        score: 0.9,
+        x_min: 64,
+        y_min: 48,
+        x_max: 320,
+        y_max: 240,
+        keypoint_names: [...HAND_KEYPOINT_NAMES],
+        keypoint_x: HAND_KEYPOINT_NAMES.map((_, index) => index),
+        keypoint_y: HAND_KEYPOINT_NAMES.map((_, index) => 100 + index),
+        keypoint_z: HAND_KEYPOINT_NAMES.map(() => 0),
+        scalar_names: [],
+        scalar_values: [],
+    });
+    const unnamedDetection = (count: number): Detection => ({
+        label: "face",
+        score: 0.9,
+        x_min: 10,
+        y_min: 10,
+        x_max: 100,
+        y_max: 100,
+        keypoint_names: [],
+        keypoint_x: Array.from({length: count}, (_, index) => index),
+        keypoint_y: Array.from({length: count}, (_, index) => index),
+        keypoint_z: Array.from({length: count}, () => 0),
+        scalar_names: [],
+        scalar_values: [],
     });
 
     beforeEach(async () => {
@@ -262,6 +294,54 @@ describe("CameraComponent", () => {
         expect(landmarks[20].attributes["cx"]).toBe("120");
         expect(landmarks[20].attributes["cy"]).toBe("220");
     }));
+
+    it("should return 21 connections for a named MediaPipe hand", () => {
+        const detection = namedHandDetection();
+        const connections = component.connections(detection);
+
+        expect(connections.length).toBe(21);
+        expect(connections[0]).toEqual({
+            x1: 0,
+            y1: 100,
+            x2: 1,
+            y2: 101,
+        });
+        expect(connections[20]).toEqual({
+            x1: 0,
+            y1: 100,
+            x2: 17,
+            y2: 117,
+        });
+    });
+
+    it("should return no connections for a face-style detection with 5 unnamed keypoints", () => {
+        const detection = unnamedDetection(5);
+        expect(component.connections(detection)).toEqual([]);
+    });
+
+    it("should omit segments whose endpoints are not finite", () => {
+        const detection = namedHandDetection();
+        detection.keypoint_x[4] = Number.NaN;
+        detection.keypoint_y[8] = Number.POSITIVE_INFINITY;
+
+        const connections = component.connections(detection);
+
+        expect(connections.length).toBe(19);
+        expect(
+            connections.some(
+                (connection) =>
+                    (connection.x1 === 3 && connection.x2 === 4) ||
+                    (connection.x1 === 4 && connection.x2 === 3),
+            ),
+        ).toBeFalse();
+        expect(
+            connections.some(
+                (connection) =>
+                    (connection.x1 === 7 && connection.x2 === 8) ||
+                    (connection.x1 === 8 && connection.x2 === 7),
+            ),
+        ).toBeFalse();
+    });
 
     it("should place the model list beside the camera image", () => {
         const workspaceElement = fixture.debugElement.query(

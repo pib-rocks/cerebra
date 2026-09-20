@@ -25,6 +25,7 @@ import {
     DetectionArray,
 } from "../shared/ros-types/msg/detection-array";
 import {ModelListComponent} from "./model-list/model-list.component";
+import {handSkeletonConnections} from "./hand-skeleton";
 
 interface DetectionLayer {
     modelId: string;
@@ -36,6 +37,13 @@ interface OverlayKeypoint {
     name: string;
     x: number;
     y: number;
+}
+
+interface OverlayConnection {
+    x1: number;
+    y1: number;
+    x2: number;
+    y2: number;
 }
 
 @Component({
@@ -215,6 +223,10 @@ export class CameraComponent implements OnInit, OnDestroy {
             (keypoint) =>
                 Number.isFinite(keypoint.x) && Number.isFinite(keypoint.y),
         );
+    }
+
+    connections(detection: Detection): OverlayConnection[] {
+        return handSkeletonConnections(this.keypoints(detection));
     }
 
     detectionLabel(detection: Detection): string {

@@ -184,7 +184,16 @@
                         vector-effect="non-scaling-stroke">
                         {{ detectionLabel(detection) }}
                     </text>
-                    @for (keypoint of keypoints(detection); track $index) {
+                    @for (connection of connections(detection); track $index) {
+                    <line
+                        class="detection-connection"
+                        [attr.x1]="connection.x1"
+                        [attr.y1]="connection.y1"
+                        [attr.x2]="connection.x2"
+                        [attr.y2]="connection.y2"
+                        [attr.stroke]="layer.color"
+                        vector-effect="non-scaling-stroke" />
+                    } @for (keypoint of keypoints(detection); track $index) {
                     <circle
                         class="detection-keypoint"
                         [attr.cx]="keypoint.x"
