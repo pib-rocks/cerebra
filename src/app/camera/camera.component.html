@@ -167,7 +167,7 @@
                     preserveAspectRatio="none"
                     [attr.aria-label]="layer.modelId + ' detections'">
                     @for ( detection of layer.message!.detections; track $index
-                    ) {
+                    ) { @if (showsBox(detection)) {
                     <rect
                         class="detection-box"
                         [attr.x]="detection.x_min"
@@ -176,10 +176,11 @@
                         [attr.height]="detection.y_max - detection.y_min"
                         [attr.stroke]="layer.color"
                         vector-effect="non-scaling-stroke" />
+                    }
                     <text
                         class="detection-label"
-                        [attr.x]="detection.x_min + 4"
-                        [attr.y]="detection.y_min + 18"
+                        [attr.x]="labelAnchor(detection).x"
+                        [attr.y]="labelAnchor(detection).y"
                         [attr.fill]="layer.color"
                         vector-effect="non-scaling-stroke">
                         {{ detectionLabel(detection) }}
