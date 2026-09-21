@@ -53,6 +53,13 @@ const routes: Routes = [
                     ),
             },
             {
+                path: "update",
+                loadComponent: () =>
+                    import("./system/update/update.component").then(
+                        (m) => m.UpdateComponent,
+                    ),
+            },
+            {
                 path: "hardware-ids",
                 loadComponent: () =>
                     import("./system/hardware-id/hardware-id.component").then(
