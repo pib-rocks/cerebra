@@ -9,6 +9,7 @@ export interface MicrophoneArrayTelemetryDocument {
     speech_detected: boolean;
     audio_levels: number[];
     simulation: boolean;
+    simulation_reason: string | null;
     error?: string;
 }
 
@@ -51,6 +52,17 @@ export interface MicrophoneArrayTuningDocument {
     parameters: MicrophoneArrayParametersDocument;
     led_ring: MicrophoneArrayLedRingDocument;
     simulation: boolean;
+    simulation_reason: string | null;
+}
+
+export interface MicrophoneArrayHealthDocument {
+    simulation: boolean;
+    simulation_reason: string | null;
+    device_access: boolean;
+    owner: string;
+    vendor_id: string;
+    product_id: string;
+    note: string;
 }
 
 export interface MicrophoneArrayTuningUpdate {
@@ -65,6 +77,7 @@ export interface MicrophoneArrayTelemetryViewModel {
     speechDetected: boolean;
     audioLevels: number[];
     simulation: boolean;
+    simulationReason: string | null;
     error?: string;
 }
 
@@ -72,6 +85,7 @@ export interface MicrophoneArrayViewModel {
     preset: MicrophoneArrayPreset;
     presets: MicrophoneArrayPreset[];
     simulation: boolean;
+    simulationReason: string | null;
     highPassFilter?: HighPassFilterValue;
     agcEnabled?: boolean;
     agcMaxGain?: number;
@@ -88,6 +102,16 @@ export interface MicrophoneArrayViewModel {
     vadLed: boolean;
 }
 
+export interface MicrophoneArrayHealthViewModel {
+    simulation: boolean;
+    simulationReason: string | null;
+    deviceAccess: boolean;
+    owner: string;
+    vendorId: string;
+    productId: string;
+    note: string;
+}
+
 /**
  * The sole API-document adapter for this page. It keeps components independent
  * of whether documents come from HTTP today or rosbridge in the future.
@@ -100,8 +124,29 @@ export function adaptMicrophoneArrayDocument(
     document: MicrophoneArrayTuningDocument,
 ): MicrophoneArrayViewModel;
 export function adaptMicrophoneArrayDocument(
-    document: MicrophoneArrayTelemetryDocument | MicrophoneArrayTuningDocument,
-): MicrophoneArrayTelemetryViewModel | MicrophoneArrayViewModel {
+    document: MicrophoneArrayHealthDocument,
+): MicrophoneArrayHealthViewModel;
+export function adaptMicrophoneArrayDocument(
+    document:
+        | MicrophoneArrayTelemetryDocument
+        | MicrophoneArrayTuningDocument
+        | MicrophoneArrayHealthDocument,
+):
+    | MicrophoneArrayTelemetryViewModel
+    | MicrophoneArrayViewModel
+    | MicrophoneArrayHealthViewModel {
+    if ("device_access" in document) {
+        return {
+            simulation: document.simulation,
+            simulationReason: document.simulation_reason,
+            deviceAccess: document.device_access,
+            owner: document.owner,
+            vendorId: document.vendor_id,
+            productId: document.product_id,
+            note: document.note,
+        };
+    }
+
     if (!("parameters" in document)) {
         return {
             doaAngle: document.doa_angle,
@@ -109,6 +154,7 @@ export function adaptMicrophoneArrayDocument(
             speechDetected: document.speech_detected,
             audioLevels: document.audio_levels,
             simulation: document.simulation,
+            simulationReason: document.simulation_reason,
             error: document.error,
         };
     }
@@ -119,6 +165,7 @@ export function adaptMicrophoneArrayDocument(
         preset: document.preset,
         presets: document.presets,
         simulation: document.simulation,
+        simulationReason: document.simulation_reason,
         highPassFilter: parameters.HPFONOFF,
         agcEnabled:
             parameters.AGCONOFF === undefined
@@ -165,6 +212,14 @@ export class MicrophoneArrayService {
             this.apiService.get(
                 `${UrlConstants.MICROPHONE_ARRAY}/telemetry`,
             ) as Observable<MicrophoneArrayTelemetryDocument>
+        ).pipe(map((document) => adaptMicrophoneArrayDocument(document)));
+    }
+
+    getHealth(): Observable<MicrophoneArrayHealthViewModel> {
+        return (
+            this.apiService.get(
+                UrlConstants.MICROPHONE_ARRAY_HEALTH,
+            ) as Observable<MicrophoneArrayHealthDocument>
         ).pipe(map((document) => adaptMicrophoneArrayDocument(document)));
     }
 

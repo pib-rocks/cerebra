@@ -28,12 +28,93 @@
     </div>
     } @if (telemetry?.error) {
     <div
-        class="alert alert-warning"
+        class="alert alert-danger"
+        role="alert"
         data-test="MSG_Microphone_Array_Telemetry_Error">
-        {{ telemetry?.error }}
+        Telemetry error: {{ telemetry?.error }}
+    </div>
+    } @if (isSimulation) {
+    <div
+        class="alert alert-warning simulation-banner"
+        role="alert"
+        data-test="MSG_Microphone_Array_Simulation">
+        <strong>Simulated microphone array values</strong>
+        <div>
+            The values shown are simulated, not live measurements. @if
+            (simulationReason) { Reason: {{ simulationReason }}. } Live device
+            owner: {{ simulationOwner }}.
+        </div>
     </div>
     }
 
+    <div
+        class="card p-3 shadow-sm mb-4"
+        data-test="PANEL_Microphone_Array_Health">
+        <h4 class="card-title text-white">Array Health</h4>
+        @if (healthLoading && !health) {
+        <div
+            class="text-white-50"
+            data-test="TXT_Microphone_Array_Health_Loading">
+            Loading microphone array health...
+        </div>
+        } @else if (healthError) {
+        <div
+            class="alert alert-danger mb-0"
+            role="alert"
+            data-test="MSG_Microphone_Array_Health_Error">
+            {{ healthError }}
+        </div>
+        } @else if (health; as health) {
+        <dl class="health-grid mb-0">
+            <div>
+                <dt>Device access</dt>
+                <dd data-test="TXT_Microphone_Array_Device_Access">
+                    {{ health.deviceAccess ? "Yes" : "No" }}
+                </dd>
+            </div>
+            <div>
+                <dt>Owner</dt>
+                <dd data-test="TXT_Microphone_Array_Owner">
+                    {{ health.owner }}
+                </dd>
+            </div>
+            <div>
+                <dt>Vendor ID</dt>
+                <dd data-test="TXT_Microphone_Array_Vendor_Id">
+                    {{ health.vendorId }}
+                </dd>
+            </div>
+            <div>
+                <dt>Product ID</dt>
+                <dd data-test="TXT_Microphone_Array_Product_Id">
+                    {{ health.productId }}
+                </dd>
+            </div>
+            <div class="health-note">
+                <dt>Note</dt>
+                <dd data-test="TXT_Microphone_Array_Health_Note">
+                    {{ health.note }}
+                </dd>
+            </div>
+        </dl>
+        } @else {
+        <div
+            class="alert alert-danger mb-0"
+            role="alert"
+            data-test="MSG_Microphone_Array_Health_Error">
+            Microphone array health information is unavailable.
+        </div>
+        }
+    </div>
+
+    @if (telemetryLoading && !telemetry) {
+    <div
+        class="alert alert-info"
+        role="status"
+        data-test="TXT_Microphone_Array_Telemetry_Loading">
+        Loading microphone array telemetry...
+    </div>
+    } @else if (telemetry) {
     <div class="row mb-4">
         <!-- DOA Compass -->
         <div class="col-lg-5 mb-3 mb-lg-0">
@@ -249,8 +330,7 @@
             </div>
         </div>
     </div>
-
-    @if (tuning; as tuning) {
+    } @if (tuning; as tuning) {
     <!-- Presets + DSP -->
     <div class="row mb-4">
         <div class="col-lg-4 mb-3 mb-lg-0">

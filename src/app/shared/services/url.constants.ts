@@ -20,6 +20,7 @@ export enum UrlConstants {
     SYSTEM_UPDATE_CHECK = "/system/update/check",
     SYSTEM_UPDATE_AVAILABLE = "/system/update/available",
     MICROPHONE_ARRAY = "/system/microphone-array",
+    MICROPHONE_ARRAY_HEALTH = "/system/microphone-array/health",
     HARDWARE_CONFIG = "/system/hardware-config",
     HARDWARE_VARIANT = "/system/hardware-variant",
     HARDWARE_CAPABILITIES = "/system/hardware-capabilities",
