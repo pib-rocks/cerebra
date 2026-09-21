@@ -1,0 +1,417 @@
+<div class="update-container p-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3 class="text-white mb-1">System Update</h3>
+            <p class="text-muted mb-0">
+                Review installed revisions, check availability, and run an
+                update explicitly.
+            </p>
+        </div>
+        <button
+            id="btn-refresh-update-status"
+            data-test="BTN_Refresh_Update_Status"
+            class="btn btn-outline-light"
+            [disabled]="statusLoading"
+            (click)="refreshStatus()">
+            <i
+                class="fas fa-sync-alt mr-1"
+                [class.fa-spin]="statusLoading"></i>
+            Refresh status
+        </button>
+    </div>
+
+    @if (serviceUnavailable) {
+    <div
+        class="alert alert-warning"
+        data-test="TXT_Update_Service_Repair">
+        {{ serviceUnavailable }}
+    </div>
+    } @if (statusError) {
+    <div class="alert alert-danger">{{ statusError }}</div>
+    } @if (actionError) {
+    <div class="alert alert-danger">{{ actionError }}</div>
+    }
+
+    <div class="card p-3 shadow-sm mb-4">
+        <div
+            class="d-flex justify-content-between align-items-center flex-wrap mb-3">
+            <h4 class="card-title text-white mb-2">Installed revisions</h4>
+            <button
+                id="btn-refresh-revisions"
+                class="btn btn-sm btn-outline-light mb-2"
+                [disabled]="installedLoading"
+                (click)="loadInstalledRevisions()">
+                {{ installedLoading ? 'Loading...' : 'Refresh revisions' }}
+            </button>
+        </div>
+
+        @if (installedError) {
+        <div class="alert alert-danger">{{ installedError }}</div>
+        } @if (installed) {
+        <p class="text-light">
+            Image version:
+            <strong data-test="TXT_Image_Version">
+                {{ installed.imageVersion || 'not reported' }}
+            </strong>
+        </p>
+        <div class="table-responsive">
+            <table
+                id="table-installed-revisions"
+                class="table table-dark table-striped mb-0">
+                <thead>
+                    <tr>
+                        <th>Repository</th>
+                        <th>Revision</th>
+                        <th>Channel</th>
+                        <th>Build time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (repository of installedRepositories; track
+                    repository.name) {
+                    <tr>
+                        <td>{{ repository.name }}</td>
+                        <td>
+                            <code
+                                class="revision"
+                                [title]="repository.revision">
+                                {{ shortRevision(repository.revision) }}
+                            </code>
+                        </td>
+                        <td>{{ repository.channel || 'not reported' }}</td>
+                        <td>
+                            {{ repository.buildTime ? (repository.buildTime |
+                            date: 'medium') : 'not reported' }}
+                        </td>
+                    </tr>
+                    } @empty {
+                    <tr>
+                        <td
+                            colspan="4"
+                            class="text-muted text-center">
+                            No repository revisions were reported.
+                        </td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        }
+    </div>
+
+    <div class="card p-3 shadow-sm mb-4">
+        <div
+            class="d-flex justify-content-between align-items-center flex-wrap mb-3">
+            <h4 class="card-title text-white mb-2">Update availability</h4>
+            <button
+                id="btn-check-updates"
+                data-test="BTN_Check_Updates"
+                class="btn btn-info mb-2"
+                [disabled]="availabilityLoading || isActive"
+                (click)="checkForUpdates()">
+                <i
+                    class="fas fa-search mr-1"
+                    [class.fa-spin]="availabilityLoading"></i>
+                {{ availabilityLoading ? 'Checking...' : 'Check again' }}
+            </button>
+        </div>
+
+        @if (availabilityUnavailable) {
+        <div
+            class="alert alert-secondary"
+            data-test="TXT_Availability_Unavailable">
+            {{ availabilityUnavailable }}
+        </div>
+        } @if (availabilityError) {
+        <div class="alert alert-danger">{{ availabilityError }}</div>
+        } @if (availability) {
+        <p class="text-muted">
+            Checked: {{ availability.checkedAt ? (availability.checkedAt | date:
+            'medium') : 'time not reported' }}
+        </p>
+        <div class="table-responsive">
+            <table
+                id="table-update-availability"
+                class="table table-dark table-striped mb-0">
+                <thead>
+                    <tr>
+                        <th>Repository</th>
+                        <th>Installed</th>
+                        <th>Availability</th>
+                        <th>Target</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (repository of availableRepositories; track
+                    repository.name) {
+                    <tr>
+                        <td>{{ repository.name }}</td>
+                        <td>
+                            <code
+                                class="revision"
+                                [title]="repository.installed">
+                                {{ shortRevision(repository.installed) }}
+                            </code>
+                        </td>
+                        <td [ngClass]="availabilityClass(repository)">
+                            {{ availabilityText(repository) }}
+                        </td>
+                        <td>
+                            @if (repository.target) {
+                            <code
+                                class="revision"
+                                [title]="repository.target">
+                                {{ shortRevision(repository.target) }}
+                            </code>
+                            } @else {
+                            <span class="text-muted">not reported</span>
+                            }
+                        </td>
+                    </tr>
+                    } @empty {
+                    <tr>
+                        <td
+                            colspan="4"
+                            class="text-muted text-center">
+                            No repository availability was reported.
+                        </td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        }
+    </div>
+
+    <div class="card p-3 shadow-sm mb-4">
+        <h4 class="card-title text-white">Start update</h4>
+        <div class="alert alert-warning">
+            An update replaces the running stack. Expect brief downtime and
+            running programs to stop. Force update also discards all local
+            repository changes using <code>git reset --hard</code> and
+            <code>git clean -fd</code>.
+        </div>
+
+        @if (isActive) {
+        <div
+            class="alert alert-info"
+            data-test="TXT_Update_Already_Running">
+            Job {{ status?.jobId || '(ID not reported)' }} is {{ status?.state
+            }} on channel {{ status?.channel || 'not reported' }}. A second
+            update cannot be started.
+        </div>
+        }
+
+        <div class="form-group">
+            <label
+                class="text-light"
+                for="update-channel">
+                Channel
+            </label>
+            <input
+                id="update-channel"
+                data-test="INP_Update_Channel"
+                class="form-control"
+                type="text"
+                autocomplete="off"
+                placeholder="Enter the update channel explicitly"
+                [disabled]="isActive || starting"
+                [(ngModel)]="channel" />
+            <small class="form-text text-muted">
+                No channel is selected automatically.
+            </small>
+        </div>
+
+        <div class="custom-control custom-switch mb-3">
+            <input
+                id="update-force"
+                data-test="SWT_Update_Force"
+                class="custom-control-input"
+                type="checkbox"
+                [disabled]="isActive || starting"
+                [(ngModel)]="force" />
+            <label
+                class="custom-control-label text-light"
+                for="update-force">
+                Force update and discard local changes
+            </label>
+        </div>
+
+        <div class="form-group">
+            <label
+                class="text-light"
+                for="update-confirmation">
+                Type <strong>{{ confirmationToken }}</strong> to confirm
+            </label>
+            <input
+                id="update-confirmation"
+                data-test="INP_Update_Confirmation"
+                class="form-control confirmation-input"
+                type="text"
+                autocomplete="off"
+                [disabled]="isActive || starting"
+                [(ngModel)]="confirmation" />
+        </div>
+
+        <button
+            id="btn-start-update"
+            data-test="BTN_Start_Update"
+            class="btn btn-danger mr-2"
+            [disabled]="!canStart"
+            (click)="startUpdate()">
+            {{ starting ? 'Starting...' : 'Start update' }}
+        </button>
+    </div>
+
+    @if (status && (isActive || isTerminal)) {
+    <div class="card p-3 shadow-sm mb-4">
+        <div
+            class="d-flex justify-content-between align-items-center flex-wrap">
+            <h4 class="card-title text-white">Update progress</h4>
+            @if (isActive) {
+            <button
+                id="btn-cancel-update"
+                data-test="BTN_Cancel_Update"
+                class="btn btn-outline-warning"
+                [disabled]="cancelling || status.cancelRequested"
+                (click)="cancelUpdate()">
+                {{ status.cancelRequested ? 'Cancellation requested' :
+                cancelling ? 'Requesting...' : 'Cancel update' }}
+            </button>
+            }
+        </div>
+
+        <div
+            class="phase-list"
+            aria-label="Update phases">
+            @for (phase of phases; track phase) {
+            <div
+                class="phase"
+                [ngClass]="phaseClass(phase)">
+                <span class="phase-marker"></span>
+                <span>{{ phase | titlecase }}</span>
+            </div>
+            }
+        </div>
+
+        <dl class="row update-metadata mb-2">
+            <dt class="col-sm-3">State</dt>
+            <dd class="col-sm-9">{{ status.state }}</dd>
+            <dt class="col-sm-3">Message</dt>
+            <dd class="col-sm-9">
+                {{ status.message || 'No message reported.' }}
+            </dd>
+            <dt class="col-sm-3">Attempt</dt>
+            <dd class="col-sm-9">
+                {{ status.attempt ?? 'not reported' }} / {{ status.maxAttempts
+                ?? 'not reported' }}
+            </dd>
+            <dt class="col-sm-3">Started</dt>
+            <dd class="col-sm-9">
+                {{ status.startedAt ? (status.startedAt | date: 'medium') : 'not
+                reported' }}
+            </dd>
+            <dt class="col-sm-3">Last update</dt>
+            <dd class="col-sm-9">
+                {{ status.updatedAt ? (status.updatedAt | date: 'medium') : 'not
+                reported' }}
+            </dd>
+        </dl>
+
+        @if (status.predecessorInterrupted) {
+        <div class="alert alert-warning">
+            This job reports that its predecessor was interrupted.
+        </div>
+        } @if (isActive) {
+        <h5 class="text-white">Live log</h5>
+        <pre
+            id="update-live-log"
+            class="log-viewer"
+            data-test="TXT_Update_Live_Log">
+{{ log || 'Waiting for log output...' }}</pre
+        >
+        @if (logError) {
+        <div class="alert alert-danger">
+            {{ logError }}
+            <button
+                class="btn btn-sm btn-outline-light ml-2"
+                (click)="retryLog()">
+                Retry log
+            </button>
+        </div>
+        } }
+    </div>
+    } @if (status && isTerminal) {
+    <div
+        id="update-result"
+        class="card p-3 shadow-sm mb-4"
+        [ngClass]="{
+            'result-success': status.state === 'done',
+            'result-cancelled': status.state === 'cancelled',
+            'result-failure':
+                status.state === 'failed' || status.state === 'rolled_back'
+        }">
+        @if (status.state === 'done') {
+        <h4 class="text-success">Update completed successfully</h4>
+        <p class="text-light">New installed revisions:</p>
+        <ul class="text-light">
+            @for (repository of installedRepositories; track repository.name) {
+            <li>
+                {{ repository.name }}:
+                <code
+                    class="revision"
+                    [title]="repository.revision">
+                    {{ shortRevision(repository.revision) }}
+                </code>
+            </li>
+            } @empty {
+            <li>Waiting for refreshed revision data.</li>
+            }
+        </ul>
+        } @else if (status.state === 'cancelled') {
+        <h4 class="text-warning">Update cancelled</h4>
+        <p class="text-light">
+            {{ status.message || 'The update was cancelled.' }}
+        </p>
+        } @else {
+        <h4 class="text-danger">
+            {{ status.state === 'rolled_back' ? 'Update failed and was rolled
+            back' : 'Update failed' }}
+        </h4>
+        <p class="text-light">
+            {{ status.message || 'The backend did not report a reason.' }}
+        </p>
+        } @if ((status.unhealthyServices ?? []).length > 0) {
+        <div
+            class="alert alert-warning"
+            data-test="TXT_Unhealthy_Services">
+            <strong>Service warning:</strong> Services that were already
+            unhealthy before the update do not fail it.
+            <ul class="mb-0 mt-2">
+                @for (service of status.unhealthyServices ?? []; track service)
+                {
+                <li>{{ service }}</li>
+                }
+            </ul>
+        </div>
+        }
+
+        <h5 class="text-white">Log excerpt</h5>
+        <pre
+            id="update-result-log"
+            class="log-viewer">
+{{ logExcerpt || 'No log output was returned.' }}</pre
+        >
+        @if (logError) {
+        <div class="alert alert-danger">
+            {{ logError }}
+            <button
+                class="btn btn-sm btn-outline-light ml-2"
+                (click)="retryLog()">
+                Retry log
+            </button>
+        </div>
+        }
+    </div>
+    }
+</div>
