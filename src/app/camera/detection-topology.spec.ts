@@ -1,4 +1,7 @@
 import {
+    boxRule,
+    HAND_MODEL_IDS,
+    labelScalars,
     FACIAL_LANDMARKS_68_CONTOURS,
     FACIAL_LANDMARKS_68_INDEX_PAIRS,
     FACIAL_LANDMARKS_68_MODEL_ID,
@@ -102,5 +105,33 @@ describe("QR-code topology", () => {
         expect(
             topologyConnections(QR_CODE_MODEL_ID, keypoints.slice(0, 3)),
         ).toEqual([]);
+    });
+});
+
+describe("overlay box rule", () => {
+    it("names the models that drop their box", () => {
+        for (const modelId of HAND_MODEL_IDS) {
+            expect(boxRule(modelId)).withContext(modelId).toBe("skeleton");
+        }
+        expect(boxRule(FACEMESH_MODEL_ID)).toBe("skeleton");
+        expect(boxRule(FACIAL_LANDMARKS_68_MODEL_ID)).toBe("none");
+    });
+
+    it("keeps the box for every other model, topology or not", () => {
+        expect(boxRule(QR_CODE_MODEL_ID)).toBe("box");
+        expect(boxRule("face_detection_yunet_160x120")).toBe("box");
+        expect(boxRule("some_future_skeleton_model")).toBe("box");
+    });
+});
+
+describe("overlay label scalars", () => {
+    it("promotes palm_score and z_source for the hand chain only", () => {
+        for (const modelId of HAND_MODEL_IDS) {
+            expect(labelScalars(modelId).map((scalar) => scalar.name))
+                .withContext(modelId)
+                .toEqual(["palm_score", "z_source"]);
+        }
+        expect(labelScalars(QR_CODE_MODEL_ID)).toEqual([]);
+        expect(labelScalars("head_pose_estimation_crop")).toEqual([]);
     });
 });

@@ -183,9 +183,10 @@
                         [attr.y]="labelAnchor(detection).y"
                         [attr.fill]="layer.color"
                         vector-effect="non-scaling-stroke">
-                        {{ detectionLabel(detection) }}
+                        {{ detectionLabel(layer.modelId, detection) }}
                     </text>
-                    @for (scalar of scalars(detection); track $index) {
+                    @for (scalar of scalars(layer.modelId, detection); track
+                    $index) {
                     <text
                         class="detection-scalar"
                         [attr.x]="detection.x_min + 4"

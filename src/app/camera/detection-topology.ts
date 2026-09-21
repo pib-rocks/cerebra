@@ -68,13 +68,57 @@ export const FACIAL_LANDMARKS_68_INDEX_PAIRS: ReadonlyArray<
     ),
 );
 
-/** Models whose overlay draws a skeleton instead of a bounding box. */
+/** Models whose overlay draws a skeleton through their keypoints. */
 export function modelDrawsSkeleton(modelId: string): boolean {
     return (
         HAND_MODEL_IDS.includes(modelId) ||
         modelId === FACEMESH_MODEL_ID ||
         modelId === FACIAL_LANDMARKS_68_MODEL_ID
     );
+}
+
+/**
+ * What the overlay does with the detector box, per model (PR-1808).
+ *
+ * "box" draws it whenever it has an area, "none" never draws it, and "skeleton"
+ * drops it as soon as the detection carries keypoints. The decision used to
+ * follow modelDrawsSkeleton(), which tied box suppression to having a topology;
+ * a model can now draw its connections and still keep its box.
+ */
+export type BoxRule = "box" | "none" | "skeleton";
+
+const BOX_RULES: ReadonlyMap<string, BoxRule> = new Map<string, BoxRule>([
+    // The palm box is computed from the axis-aligned palm square and ignores
+    // the hand's rotation (hand_tracking.py bbox_pixels), so it lands off the
+    // hand while the landmarks do not (PR-1781, PR-1782).
+    ...HAND_MODEL_IDS.map((modelId): [string, BoxRule] => [
+        modelId,
+        "skeleton",
+    ]),
+    [FACEMESH_MODEL_ID, "skeleton"],
+    [FACIAL_LANDMARKS_68_MODEL_ID, "none"],
+]);
+
+export function boxRule(modelId: string): BoxRule {
+    return BOX_RULES.get(modelId) ?? "box";
+}
+
+/** A scalar the overlay prints on the label instead of below the box. */
+export interface LabelScalar {
+    name: string;
+    digits: number;
+}
+
+// The hand chain hides its box, so box-anchored scalar lines would float away
+// from the hand; palm_score and z_source ride on the wrist label instead.
+const HAND_LABEL_SCALARS: ReadonlyArray<LabelScalar> = [
+    {name: "palm_score", digits: 2},
+    {name: "z_source", digits: 0},
+];
+
+/** Scalars promoted into the overlay label, per model (PR-1808). */
+export function labelScalars(modelId: string): ReadonlyArray<LabelScalar> {
+    return HAND_MODEL_IDS.includes(modelId) ? HAND_LABEL_SCALARS : [];
 }
 
 function segment(

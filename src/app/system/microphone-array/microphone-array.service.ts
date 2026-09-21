@@ -1,17 +1,18 @@
 import {Injectable} from "@angular/core";
-import {map, Observable} from "rxjs";
+import {
+    combineLatest,
+    forkJoin,
+    map,
+    Observable,
+    switchMap,
+    throwError,
+} from "rxjs";
 import {ApiService} from "src/app/shared/services/api.service";
 import {UrlConstants} from "src/app/shared/services/url.constants";
-
-export interface MicrophoneArrayTelemetryDocument {
-    doa_angle: number;
-    voice_activity: boolean;
-    speech_detected: boolean;
-    audio_levels: number[];
-    simulation: boolean;
-    simulation_reason: string | null;
-    error?: string;
-}
+import {
+    MicrophoneArrayRosbridgeService,
+    RosbridgeConnectionState,
+} from "./microphone-array-rosbridge.service";
 
 export type MicrophoneArrayPreset = string;
 
@@ -46,15 +47,6 @@ export interface MicrophoneArrayLedRingDocument {
     vad_led: 0 | 1;
 }
 
-export interface MicrophoneArrayTuningDocument {
-    preset: MicrophoneArrayPreset;
-    presets: MicrophoneArrayPreset[];
-    parameters: MicrophoneArrayParametersDocument;
-    led_ring: MicrophoneArrayLedRingDocument;
-    simulation: boolean;
-    simulation_reason: string | null;
-}
-
 export interface MicrophoneArrayHealthDocument {
     simulation: boolean;
     simulation_reason: string | null;
@@ -72,20 +64,15 @@ export interface MicrophoneArrayTuningUpdate {
 }
 
 export interface MicrophoneArrayTelemetryViewModel {
-    doaAngle: number;
-    voiceActivity: boolean;
-    speechDetected: boolean;
-    audioLevels: number[];
-    simulation: boolean;
-    simulationReason: string | null;
-    error?: string;
+    doaAngle?: number;
+    voiceActivity?: boolean;
+    speechDetected?: boolean;
+    audioLevels?: number[];
+    connectionState: RosbridgeConnectionState;
 }
 
 export interface MicrophoneArrayViewModel {
-    preset: MicrophoneArrayPreset;
-    presets: MicrophoneArrayPreset[];
-    simulation: boolean;
-    simulationReason: string | null;
+    preset?: MicrophoneArrayPreset;
     highPassFilter?: HighPassFilterValue;
     agcEnabled?: boolean;
     agcMaxGain?: number;
@@ -96,10 +83,10 @@ export interface MicrophoneArrayViewModel {
     echoEnabled?: boolean;
     stationaryNoiseSuppressionSr?: boolean;
     nonStationaryNoiseSuppressionSr?: boolean;
-    ledMode: LedRingMode;
-    ledBrightness: number;
-    ledColor: string;
-    vadLed: boolean;
+    ledMode?: LedRingMode;
+    ledBrightness?: number;
+    ledColor?: string;
+    vadLed?: boolean;
 }
 
 export interface MicrophoneArrayHealthViewModel {
@@ -112,92 +99,20 @@ export interface MicrophoneArrayHealthViewModel {
     note: string;
 }
 
-/**
- * The sole API-document adapter for this page. It keeps components independent
- * of whether documents come from HTTP today or rosbridge in the future.
- * Missing DSP parameters remain undefined so the UI can report them honestly.
- */
-export function adaptMicrophoneArrayDocument(
-    document: MicrophoneArrayTelemetryDocument,
-): MicrophoneArrayTelemetryViewModel;
-export function adaptMicrophoneArrayDocument(
-    document: MicrophoneArrayTuningDocument,
-): MicrophoneArrayViewModel;
 export function adaptMicrophoneArrayDocument(
     document: MicrophoneArrayHealthDocument,
 ): MicrophoneArrayHealthViewModel;
 export function adaptMicrophoneArrayDocument(
-    document:
-        | MicrophoneArrayTelemetryDocument
-        | MicrophoneArrayTuningDocument
-        | MicrophoneArrayHealthDocument,
-):
-    | MicrophoneArrayTelemetryViewModel
-    | MicrophoneArrayViewModel
-    | MicrophoneArrayHealthViewModel {
-    if ("device_access" in document) {
-        return {
-            simulation: document.simulation,
-            simulationReason: document.simulation_reason,
-            deviceAccess: document.device_access,
-            owner: document.owner,
-            vendorId: document.vendor_id,
-            productId: document.product_id,
-            note: document.note,
-        };
-    }
-
-    if (!("parameters" in document)) {
-        return {
-            doaAngle: document.doa_angle,
-            voiceActivity: document.voice_activity,
-            speechDetected: document.speech_detected,
-            audioLevels: document.audio_levels,
-            simulation: document.simulation,
-            simulationReason: document.simulation_reason,
-            error: document.error,
-        };
-    }
-
-    const parameters = document.parameters;
-
+    document: MicrophoneArrayHealthDocument,
+): MicrophoneArrayHealthViewModel {
     return {
-        preset: document.preset,
-        presets: document.presets,
         simulation: document.simulation,
         simulationReason: document.simulation_reason,
-        highPassFilter: parameters.HPFONOFF,
-        agcEnabled:
-            parameters.AGCONOFF === undefined
-                ? undefined
-                : parameters.AGCONOFF === 1,
-        agcMaxGain: parameters.AGCMAXGAIN,
-        agcDesiredLevel: parameters.AGCDESIREDLEVEL,
-        agcTime: parameters.AGCTIME,
-        stationaryNoiseSuppression:
-            parameters.STATNOISEONOFF === undefined
-                ? undefined
-                : parameters.STATNOISEONOFF === 1,
-        nonStationaryNoiseSuppression:
-            parameters.NONSTATNOISEONOFF === undefined
-                ? undefined
-                : parameters.NONSTATNOISEONOFF === 1,
-        echoEnabled:
-            parameters.ECHOONOFF === undefined
-                ? undefined
-                : parameters.ECHOONOFF === 1,
-        stationaryNoiseSuppressionSr:
-            parameters.STATNOISEONOFF_SR === undefined
-                ? undefined
-                : parameters.STATNOISEONOFF_SR === 1,
-        nonStationaryNoiseSuppressionSr:
-            parameters.NONSTATNOISEONOFF_SR === undefined
-                ? undefined
-                : parameters.NONSTATNOISEONOFF_SR === 1,
-        ledMode: document.led_ring.mode,
-        ledBrightness: document.led_ring.brightness,
-        ledColor: document.led_ring.color,
-        vadLed: document.led_ring.vad_led === 1,
+        deviceAccess: document.device_access,
+        owner: document.owner,
+        vendorId: document.vendor_id,
+        productId: document.product_id,
+        note: document.note,
     };
 }
 
@@ -205,14 +120,46 @@ export function adaptMicrophoneArrayDocument(
     providedIn: "root",
 })
 export class MicrophoneArrayService {
-    constructor(private apiService: ApiService) {}
+    // The launch file pins this node name.
+    private static readonly NODE_NAME = "/doa_publisher";
+
+    constructor(
+        private apiService: ApiService,
+        private rosbridge: MicrophoneArrayRosbridgeService,
+    ) {}
+
+    connect(): void {
+        this.rosbridge.connect();
+    }
+
+    disconnect(): void {
+        this.rosbridge.disconnect();
+    }
 
     getTelemetry(): Observable<MicrophoneArrayTelemetryViewModel> {
-        return (
-            this.apiService.get(
-                `${UrlConstants.MICROPHONE_ARRAY}/telemetry`,
-            ) as Observable<MicrophoneArrayTelemetryDocument>
-        ).pipe(map((document) => adaptMicrophoneArrayDocument(document)));
+        return combineLatest([
+            this.rosbridge.connectionState$,
+            this.rosbridge.audioLevels$,
+            this.rosbridge.voiceActivity$,
+            this.rosbridge.speechDetected$,
+            this.rosbridge.doaAngle$,
+        ]).pipe(
+            map(
+                ([
+                    connectionState,
+                    audioLevels,
+                    voiceActivity,
+                    speechDetected,
+                    doaAngle,
+                ]) => ({
+                    connectionState,
+                    audioLevels,
+                    voiceActivity,
+                    speechDetected,
+                    doaAngle,
+                }),
+            ),
+        );
     }
 
     getHealth(): Observable<MicrophoneArrayHealthViewModel> {
@@ -224,21 +171,105 @@ export class MicrophoneArrayService {
     }
 
     getTuning(): Observable<MicrophoneArrayViewModel> {
-        return (
-            this.apiService.get(
-                `${UrlConstants.MICROPHONE_ARRAY}/tuning`,
-            ) as Observable<MicrophoneArrayTuningDocument>
-        ).pipe(map((document) => adaptMicrophoneArrayDocument(document)));
+        return forkJoin({
+            preset: this.getParameter<MicrophoneArrayPreset>("preset"),
+            ledMode: this.getParameter<LedRingMode>("led_mode"),
+            ledBrightness: this.getParameter<number>("led_brightness"),
+            ledColor: this.getParameter<string>("led_color"),
+            vadLed: this.getParameter<0 | 1>("vad_led"),
+            agcEnabled: this.getParameter<0 | 1>("AGCONOFF"),
+            agcMaxGain: this.getParameter<number>("AGCMAXGAIN"),
+            agcDesiredLevel: this.getParameter<number>("AGCDESIREDLEVEL"),
+            agcTime: this.getParameter<number>("AGCTIME"),
+            highPassFilter: this.getParameter<HighPassFilterValue>("HPFONOFF"),
+            echoEnabled: this.getParameter<0 | 1>("ECHOONOFF"),
+            stationaryNoiseSuppression: this.getParameter<0 | 1>(
+                "STATNOISEONOFF",
+            ),
+            stationaryNoiseSuppressionSr: this.getParameter<0 | 1>(
+                "STATNOISEONOFF_SR",
+            ),
+            nonStationaryNoiseSuppression: this.getParameter<0 | 1>(
+                "NONSTATNOISEONOFF",
+            ),
+            nonStationaryNoiseSuppressionSr: this.getParameter<0 | 1>(
+                "NONSTATNOISEONOFF_SR",
+            ),
+        }).pipe(
+            map((parameters) => ({
+                ...parameters,
+                vadLed: parameters.vadLed === 1,
+                agcEnabled: parameters.agcEnabled === 1,
+                echoEnabled: parameters.echoEnabled === 1,
+                stationaryNoiseSuppression:
+                    parameters.stationaryNoiseSuppression === 1,
+                stationaryNoiseSuppressionSr:
+                    parameters.stationaryNoiseSuppressionSr === 1,
+                nonStationaryNoiseSuppression:
+                    parameters.nonStationaryNoiseSuppression === 1,
+                nonStationaryNoiseSuppressionSr:
+                    parameters.nonStationaryNoiseSuppressionSr === 1,
+            })),
+        );
     }
 
     updateTuning(
         update: MicrophoneArrayTuningUpdate,
     ): Observable<MicrophoneArrayViewModel> {
-        return (
-            this.apiService.post(
-                `${UrlConstants.MICROPHONE_ARRAY}/tuning`,
-                update,
-            ) as Observable<MicrophoneArrayTuningDocument>
-        ).pipe(map((document) => adaptMicrophoneArrayDocument(document)));
+        const entries = this.parameterEntries(update);
+        if (entries.length !== 1) {
+            return throwError(
+                () =>
+                    new Error(
+                        "Exactly one microphone parameter must be written.",
+                    ),
+            );
+        }
+        const [name, value] = entries[0];
+        return this.setParameter(name, value).pipe(
+            switchMap(() => this.getTuning()),
+        );
+    }
+
+    private getParameter<T>(name: string): Observable<T> {
+        return this.rosbridge.getParameter<T>(
+            `${MicrophoneArrayService.NODE_NAME}:${name}`,
+        );
+    }
+
+    private setParameter(name: string, value: unknown): Observable<void> {
+        return this.rosbridge.setParameter(
+            `${MicrophoneArrayService.NODE_NAME}:${name}`,
+            value,
+        );
+    }
+
+    private parameterEntries(
+        update: MicrophoneArrayTuningUpdate,
+    ): [string, unknown][] {
+        const entries: [string, unknown][] = [];
+        if (update.preset !== undefined) {
+            entries.push(["preset", update.preset]);
+        }
+        for (const [name, value] of Object.entries(update.parameters ?? {})) {
+            if (value !== undefined) {
+                entries.push([name, value]);
+            }
+        }
+        const ledNames: Record<keyof MicrophoneArrayLedRingDocument, string> = {
+            mode: "led_mode",
+            brightness: "led_brightness",
+            color: "led_color",
+            vad_led: "vad_led",
+        };
+        for (const [name, value] of Object.entries(update.led_ring ?? {})) {
+            if (value !== undefined) {
+                entries.push([
+                    ledNames[name as keyof MicrophoneArrayLedRingDocument],
+                    value,
+                ]);
+            }
+        }
+        return entries;
     }
 }
