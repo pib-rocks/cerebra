@@ -25,7 +25,7 @@ import {
     DetectionArray,
 } from "../shared/ros-types/msg/detection-array";
 import {ModelListComponent} from "./model-list/model-list.component";
-import {handSkeletonConnections} from "./hand-skeleton";
+import {modelDrawsSkeleton, topologyConnections} from "./detection-topology";
 
 interface DetectionLayer {
     modelId: string;
@@ -230,14 +230,20 @@ export class CameraComponent implements OnInit, OnDestroy {
         );
     }
 
-    showsBox(detection: Detection): boolean {
-        // A detection that carries keypoints is drawn as a skeleton.  The palm
-        // box is computed from the axis-aligned palm square and ignores the
-        // hand's rotation (hand_tracking.py bbox_pixels), so it lands off the
-        // hand while the landmarks, which go through the rotated ROI, do not
-        // (PR-1781).  Box-only detections keep their box - it is their single
-        // visual.
-        return this.keypoints(detection).length === 0;
+    showsBox(modelId: string, detection: Detection): boolean {
+        // Models whose overlay is a skeleton hide the box: the palm box is
+        // computed from the axis-aligned palm square and ignores the hand's
+        // rotation (hand_tracking.py bbox_pixels), so it lands off the hand while
+        // the landmarks do not (PR-1781). Every other model keeps its box - for a
+        // box-only detector it is the only visual, and for a landmark model the
+        // box still says where the face is.
+        if (modelDrawsSkeleton(modelId)) {
+            return this.keypoints(detection).length === 0;
+        }
+        return (
+            detection.x_max > detection.x_min &&
+            detection.y_max > detection.y_min
+        );
     }
 
     labelAnchor(detection: Detection): OverlayAnchor {
@@ -248,8 +254,8 @@ export class CameraComponent implements OnInit, OnDestroy {
         return {x: detection.x_min + 4, y: detection.y_min + 18};
     }
 
-    connections(detection: Detection): OverlayConnection[] {
-        return handSkeletonConnections(this.keypoints(detection));
+    connections(modelId: string, detection: Detection): OverlayConnection[] {
+        return topologyConnections(modelId, this.keypoints(detection));
     }
 
     detectionLabel(detection: Detection): string {

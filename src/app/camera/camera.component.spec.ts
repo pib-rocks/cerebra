@@ -187,9 +187,9 @@ describe("CameraComponent", () => {
     it("should retain only the newest pending detection per model", fakeAsync(() => {
         component.updateRefreshRateLabel(0.5);
         rosService.cameraReceiver$.next("camera-image");
-        rosService.detectionModelsReceiver$.next(["hands"]);
-        rosService.detectionReceiver$.next(detectionMessage("hands"));
-        const newest = detectionMessage("hands");
+        rosService.detectionModelsReceiver$.next(["hand_tracking"]);
+        rosService.detectionReceiver$.next(detectionMessage("hand_tracking"));
+        const newest = detectionMessage("hand_tracking");
         newest.detections[0].keypoint_x = [456];
         newest.detections[0].keypoint_y = [321];
         rosService.detectionReceiver$.next(newest);
@@ -231,8 +231,8 @@ describe("CameraComponent", () => {
 
     it("should clear pending display state, overlays, and timers on stop", () => {
         rosService.cameraReceiver$.next("camera-image");
-        rosService.detectionModelsReceiver$.next(["hands"]);
-        rosService.detectionReceiver$.next(detectionMessage("hands"));
+        rosService.detectionModelsReceiver$.next(["hand_tracking"]);
+        rosService.detectionReceiver$.next(detectionMessage("hand_tracking"));
 
         component.stopCamera();
 
@@ -247,8 +247,8 @@ describe("CameraComponent", () => {
 
     it("should render independent overlays using each detection frame size", fakeAsync(() => {
         rosService.cameraReceiver$.next("camera-image");
-        rosService.detectionModelsReceiver$.next(["hands", "objects"]);
-        rosService.detectionReceiver$.next(detectionMessage("hands"));
+        rosService.detectionModelsReceiver$.next(["hand_tracking", "objects"]);
+        rosService.detectionReceiver$.next(detectionMessage("hand_tracking"));
         rosService.detectionReceiver$.next(
             detectionMessage("objects", 1280, 720),
         );
@@ -264,7 +264,7 @@ describe("CameraComponent", () => {
     }));
 
     it("should draw the 21 hand landmarks without a box and hang the label on the wrist", fakeAsync(() => {
-        const message = detectionMessage("hands");
+        const message = detectionMessage("hand_tracking");
         message.detections[0].keypoint_names = Array.from(
             {length: 21},
             (_, index) => `landmark-${index}`,
@@ -278,7 +278,7 @@ describe("CameraComponent", () => {
             (_, index) => 200 + index,
         );
         rosService.cameraReceiver$.next("camera-image");
-        rosService.detectionModelsReceiver$.next(["hands"]);
+        rosService.detectionModelsReceiver$.next(["hand_tracking"]);
         rosService.detectionReceiver$.next(message);
         tick(100);
         fixture.detectChanges();
@@ -325,7 +325,7 @@ describe("CameraComponent", () => {
     it("should decide box visibility and label anchor from the keypoints", () => {
         const hand = namedHandDetection();
 
-        expect(component.showsBox(hand)).toBeFalse();
+        expect(component.showsBox("hand_tracking", hand)).toBeFalse();
         expect(component.labelAnchor(hand)).toEqual({x: 6, y: 94});
 
         const boxOnly: Detection = {
@@ -336,13 +336,13 @@ describe("CameraComponent", () => {
             keypoint_z: [],
         };
 
-        expect(component.showsBox(boxOnly)).toBeTrue();
+        expect(component.showsBox("hand_tracking", boxOnly)).toBeTrue();
         expect(component.labelAnchor(boxOnly)).toEqual({x: 68, y: 66});
     });
 
     it("should return 21 connections for a named MediaPipe hand", () => {
         const detection = namedHandDetection();
-        const connections = component.connections(detection);
+        const connections = component.connections("hand_tracking", detection);
 
         expect(connections.length).toBe(21);
         expect(connections[0]).toEqual({
@@ -361,7 +361,7 @@ describe("CameraComponent", () => {
 
     it("should return no connections for a face-style detection with 5 unnamed keypoints", () => {
         const detection = unnamedDetection(5);
-        expect(component.connections(detection)).toEqual([]);
+        expect(component.connections("hand_tracking", detection)).toEqual([]);
     });
 
     it("should omit segments whose endpoints are not finite", () => {
@@ -369,7 +369,7 @@ describe("CameraComponent", () => {
         detection.keypoint_x[4] = Number.NaN;
         detection.keypoint_y[8] = Number.POSITIVE_INFINITY;
 
-        const connections = component.connections(detection);
+        const connections = component.connections("hand_tracking", detection);
 
         expect(connections.length).toBe(19);
         expect(
@@ -405,8 +405,8 @@ describe("CameraComponent", () => {
 
     it("should clear stale detections when messages stop", fakeAsync(() => {
         rosService.cameraReceiver$.next("camera-image");
-        rosService.detectionModelsReceiver$.next(["hands"]);
-        rosService.detectionReceiver$.next(detectionMessage("hands"));
+        rosService.detectionModelsReceiver$.next(["hand_tracking"]);
+        rosService.detectionReceiver$.next(detectionMessage("hand_tracking"));
         tick(100);
         fixture.detectChanges();
         expect(
@@ -422,8 +422,8 @@ describe("CameraComponent", () => {
 
     it("should clear overlays immediately while the pipeline restarts", fakeAsync(() => {
         rosService.cameraReceiver$.next("camera-image");
-        rosService.detectionModelsReceiver$.next(["hands"]);
-        rosService.detectionReceiver$.next(detectionMessage("hands"));
+        rosService.detectionModelsReceiver$.next(["hand_tracking"]);
+        rosService.detectionReceiver$.next(detectionMessage("hand_tracking"));
         tick(100);
         fixture.detectChanges();
 
@@ -434,7 +434,7 @@ describe("CameraComponent", () => {
             fixture.debugElement.queryAll(By.css(".detection-overlay")).length,
         ).toBe(0);
 
-        rosService.detectionReceiver$.next(detectionMessage("hands"));
+        rosService.detectionReceiver$.next(detectionMessage("hand_tracking"));
         tick(100);
         fixture.detectChanges();
         expect(
@@ -444,12 +444,12 @@ describe("CameraComponent", () => {
 
     it("should keep overlays while detection messages continue", fakeAsync(() => {
         rosService.cameraReceiver$.next("camera-image");
-        rosService.detectionModelsReceiver$.next(["hands"]);
-        rosService.detectionReceiver$.next(detectionMessage("hands"));
+        rosService.detectionModelsReceiver$.next(["hand_tracking"]);
+        rosService.detectionReceiver$.next(detectionMessage("hand_tracking"));
 
         tick(100);
         tick(1000);
-        rosService.detectionReceiver$.next(detectionMessage("hands"));
+        rosService.detectionReceiver$.next(detectionMessage("hand_tracking"));
         tick(1000);
         fixture.detectChanges();
 
@@ -461,7 +461,7 @@ describe("CameraComponent", () => {
     it("should show recent message counts and rosbridge state", () => {
         rosService.cameraReceiver$.next("frame-one");
         rosService.cameraReceiver$.next("frame-two");
-        rosService.detectionReceiver$.next(detectionMessage("hands"));
+        rosService.detectionReceiver$.next(detectionMessage("hand_tracking"));
         fixture.detectChanges();
 
         const diagnostic = fixture.debugElement.query(
@@ -471,5 +471,49 @@ describe("CameraComponent", () => {
         expect(diagnostic.textContent).toContain("2 frames");
         expect(diagnostic.textContent).toContain("1 detections");
         expect(diagnostic.textContent).toContain("rosbridge disconnected");
+    });
+
+    it("should draw no connections for a model without a registered topology", () => {
+        const detection = namedHandDetection();
+
+        expect(component.connections("facemesh_192x192", detection)).toEqual(
+            [],
+        );
+        expect(
+            component.connections("face_detection_yunet_160x120", detection),
+        ).toEqual([]);
+    });
+
+    it("should keep the box for a box-only model and for a face landmark model", () => {
+        const boxOnly: Detection = {
+            ...namedHandDetection(),
+            keypoint_names: [],
+            keypoint_x: [],
+            keypoint_y: [],
+            keypoint_z: [],
+        };
+
+        expect(
+            component.showsBox("face_detection_yunet_160x120", boxOnly),
+        ).toBeTrue();
+        expect(
+            component.showsBox("facemesh_192x192", namedHandDetection()),
+        ).toBeTrue();
+        expect(component.showsBox("hand_tracking_mp", boxOnly)).toBeTrue();
+        expect(
+            component.showsBox("hand_tracking_mp", namedHandDetection()),
+        ).toBeFalse();
+    });
+
+    it("should suppress an empty box for a non-skeleton model", () => {
+        const empty: Detection = {
+            ...namedHandDetection(),
+            x_min: 10,
+            x_max: 10,
+            y_min: 5,
+            y_max: 5,
+        };
+
+        expect(component.showsBox("yolov6n_coco_640x640", empty)).toBeFalse();
     });
 });
