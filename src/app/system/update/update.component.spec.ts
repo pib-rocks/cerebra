@@ -5,6 +5,7 @@ import {
     tick,
 } from "@angular/core/testing";
 import {HttpErrorResponse} from "@angular/common/http";
+import {DatePipe} from "@angular/common";
 import {of, throwError} from "rxjs";
 import {UpdateComponent} from "./update.component";
 import {
@@ -19,31 +20,36 @@ describe("UpdateComponent", () => {
     let fixture: ComponentFixture<UpdateComponent>;
     let updateServiceSpy: jasmine.SpyObj<UpdateService>;
 
+    // Copy of the live GET /api/system/revision document (192.168.1.217, 2026-09-21).
     const installed: InstalledRevisions = {
-        imageVersion: "v1.2.3",
+        imageVersion: "v0.6.2",
         repositories: {
-            "pib-backend": {
-                revision: "111111111111aaaaaaaa",
-                channel: "main",
-                buildTime: "2026-09-21T10:00:00Z",
-            },
             cerebra: {
-                revision: "222222222222bbbbbbbb",
-                channel: "main",
-                buildTime: "2026-09-21T10:01:00Z",
+                buildTime: "2026-09-21T13:21:15.376559+00:00",
+                channel: "develop",
+                gitSha: "0cafe8d7cadcc038f9f4dc855cc3eea2f9d9681a",
+                repository: "cerebra",
+            },
+            "pib-backend": {
+                buildTime: "2026-09-21T13:21:15.332111+00:00",
+                channel: "develop",
+                gitSha: "ce2ec8fd337b76c18174382aac2b12d8222c79bd",
+                repository: "pib-backend",
             },
         },
     };
+    const cerebraSha = "0cafe8d7cadcc038f9f4dc855cc3eea2f9d9681a";
+    const backendSha = "ce2ec8fd337b76c18174382aac2b12d8222c79bd";
     const availability: AvailableUpdates = {
         checkedAt: "2026-09-21T11:00:00Z",
         repositories: {
             "pib-backend": {
-                installed: "111111111111aaaaaaaa",
+                installed: backendSha,
                 target: "333333333333cccccccc",
                 updateAvailable: true,
             },
             cerebra: {
-                installed: "222222222222bbbbbbbb",
+                installed: cerebraSha,
                 updateAvailable: "unknown",
             },
         },
@@ -52,6 +58,11 @@ describe("UpdateComponent", () => {
         state: "idle",
         classification: "idle",
     };
+    // Timestamps of the live GET /api/system/update/status document.
+    const startedAt = "2026-09-21T13:13:26Z";
+    const updatedAt = "2026-09-21T13:21:15.423006+00:00";
+    const formatDate = (value: string): string =>
+        new DatePipe("en-US").transform(value, "medium") ?? "";
 
     beforeEach(async () => {
         updateServiceSpy = jasmine.createSpyObj("UpdateService", [
@@ -107,8 +118,8 @@ describe("UpdateComponent", () => {
 
         expect(updateServiceSpy.getInstalledRevisions).toHaveBeenCalled();
         expect(updateServiceSpy.getAvailableUpdates).toHaveBeenCalled();
-        expect(compiled.textContent).toContain("v1.2.3");
-        expect(compiled.textContent).toContain("111111111111");
+        expect(compiled.textContent).toContain("v0.6.2");
+        expect(compiled.textContent).toContain(backendSha.slice(0, 12));
         expect(compiled.textContent).toContain("Update available");
         expect(compiled.textContent).toContain(
             "Update availability is unknown.",
@@ -117,6 +128,98 @@ describe("UpdateComponent", () => {
             "target revision was not provided",
         );
     });
+
+    it("renders the gitSha of the API document in the revision column and in the result list", fakeAsync(() => {
+        const compiled = fixture.nativeElement as HTMLElement;
+        const revisionCells = Array.from(
+            compiled.querySelectorAll<HTMLElement>(
+                "#table-installed-revisions tbody code.revision",
+            ),
+        );
+
+        expect(revisionCells.map((cell) => cell.textContent?.trim())).toEqual([
+            cerebraSha.slice(0, 12),
+            backendSha.slice(0, 12),
+        ]);
+        expect(revisionCells.map((cell) => cell.getAttribute("title"))).toEqual(
+            [cerebraSha, backendSha],
+        );
+        expect(
+            compiled.querySelector("#table-installed-revisions")?.textContent,
+        ).not.toContain("unknown");
+
+        updateServiceSpy.getStatus.and.returnValue(
+            of({
+                state: "done",
+                classification: "succeeded",
+                startedAt,
+                updatedAt,
+            }),
+        );
+        component.refreshStatus();
+        tick();
+        fixture.detectChanges();
+
+        const resultRevisions = Array.from(
+            compiled.querySelectorAll<HTMLElement>(
+                "#update-result code.revision",
+            ),
+        );
+        expect(resultRevisions.map((cell) => cell.textContent?.trim())).toEqual(
+            [cerebraSha.slice(0, 12), backendSha.slice(0, 12)],
+        );
+        expect(
+            compiled.querySelector("#update-result")?.textContent,
+        ).not.toContain("unknown");
+    }));
+
+    it("renders the timestamps of the status document and 'not reported' for a missing one", fakeAsync(() => {
+        const compiled = fixture.nativeElement as HTMLElement;
+        const timestampText = (test: string): string =>
+            compiled
+                .querySelector(`[data-test='${test}']`)
+                ?.textContent?.trim() ?? "";
+
+        updateServiceSpy.getStatus.and.returnValue(
+            of({
+                state: "done",
+                classification: "succeeded",
+                jobId: "job-42",
+                startedAt,
+                updatedAt,
+            }),
+        );
+        component.refreshStatus();
+        tick();
+        fixture.detectChanges();
+
+        expect(timestampText("TXT_Update_Started_At")).toBe(
+            formatDate(startedAt),
+        );
+        expect(timestampText("TXT_Update_Updated_At")).toBe(
+            formatDate(updatedAt),
+        );
+        expect(
+            compiled.querySelector("[data-test='TXT_Update_Completed_At']"),
+        ).toBeNull();
+
+        updateServiceSpy.getStatus.and.returnValue(
+            of({
+                state: "failed",
+                classification: "failed",
+                jobId: "job-43",
+                updatedAt,
+            }),
+        );
+        component.refreshStatus();
+        tick();
+        fixture.detectChanges();
+
+        expect(timestampText("TXT_Update_Started_At")).toBe("not reported");
+        expect(timestampText("TXT_Update_Updated_At")).toBe(
+            formatDate(updatedAt),
+        );
+    }));
 
     it("requires an explicit channel and the exact confirmation token", () => {
         component.channel = "";

@@ -13,13 +13,21 @@ describe("UpdateService", () => {
     let service: UpdateService;
     let apiServiceSpy: jasmine.SpyObj<ApiService>;
 
+    // Copy of the live GET /api/system/revision document (192.168.1.217, 2026-09-21).
     const installed: InstalledRevisions = {
-        imageVersion: "v1.2.3",
+        imageVersion: "v0.6.2",
         repositories: {
             cerebra: {
-                revision: "1234567890abcdef",
-                channel: "main",
-                buildTime: "2026-09-21T10:00:00Z",
+                buildTime: "2026-09-21T13:21:15.376559+00:00",
+                channel: "develop",
+                gitSha: "0cafe8d7cadcc038f9f4dc855cc3eea2f9d9681a",
+                repository: "cerebra",
+            },
+            "pib-backend": {
+                buildTime: "2026-09-21T13:21:15.332111+00:00",
+                channel: "develop",
+                gitSha: "ce2ec8fd337b76c18174382aac2b12d8222c79bd",
+                repository: "pib-backend",
             },
         },
     };
@@ -27,12 +35,14 @@ describe("UpdateService", () => {
         state: "building",
         classification: "running",
         jobId: "job-1",
+        startedAt: "2026-09-21T13:13:26Z",
+        updatedAt: "2026-09-21T13:21:15.423006+00:00",
     };
     const availability: AvailableUpdates = {
         checkedAt: "2026-09-21T10:00:00Z",
         repositories: {
             cerebra: {
-                installed: "1234",
+                installed: "0cafe8d7cadcc038f9f4dc855cc3eea2f9d9681a",
                 target: "5678",
                 updateAvailable: true,
             },
@@ -55,9 +65,13 @@ describe("UpdateService", () => {
 
     it("loads installed revisions and current status through ApiService", () => {
         apiServiceSpy.get.and.returnValues(of(installed), of(status));
+        let receivedRevisions: InstalledRevisions | undefined;
+        let receivedStatus: UpdateStatus | undefined;
 
-        service.getInstalledRevisions().subscribe();
-        service.getStatus().subscribe();
+        service
+            .getInstalledRevisions()
+            .subscribe((value) => (receivedRevisions = value));
+        service.getStatus().subscribe((value) => (receivedStatus = value));
 
         expect(apiServiceSpy.get.calls.argsFor(0)).toEqual([
             UrlConstants.SYSTEM_REVISION,
@@ -65,6 +79,10 @@ describe("UpdateService", () => {
         expect(apiServiceSpy.get.calls.argsFor(1)).toEqual([
             UrlConstants.SYSTEM_UPDATE_STATUS,
         ]);
+        expect(receivedRevisions?.repositories["cerebra"].gitSha).toBe(
+            "0cafe8d7cadcc038f9f4dc855cc3eea2f9d9681a",
+        );
+        expect(receivedStatus?.startedAt).toBe("2026-09-21T13:13:26Z");
     });
 
     it("polls the log with the supplied offset", () => {

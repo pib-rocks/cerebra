@@ -74,8 +74,8 @@
                         <td>
                             <code
                                 class="revision"
-                                [title]="repository.revision">
-                                {{ shortRevision(repository.revision) }}
+                                [title]="repository.gitSha">
+                                {{ shortRevision(repository.gitSha) }}
                             </code>
                         </td>
                         <td>{{ repository.channel || 'not reported' }}</td>
@@ -307,15 +307,34 @@
                 ?? 'not reported' }}
             </dd>
             <dt class="col-sm-3">Started</dt>
-            <dd class="col-sm-9">
+            <dd
+                class="col-sm-9"
+                data-test="TXT_Update_Started_At">
                 {{ status.startedAt ? (status.startedAt | date: 'medium') : 'not
                 reported' }}
             </dd>
             <dt class="col-sm-3">Last update</dt>
-            <dd class="col-sm-9">
+            <dd
+                class="col-sm-9"
+                data-test="TXT_Update_Updated_At">
                 {{ status.updatedAt ? (status.updatedAt | date: 'medium') : 'not
                 reported' }}
             </dd>
+            @if (status.completedAt) {
+            <dt class="col-sm-3">Completed</dt>
+            <dd
+                class="col-sm-9"
+                data-test="TXT_Update_Completed_At">
+                {{ status.completedAt | date: 'medium' }}
+            </dd>
+            } @if (status.finishedAt) {
+            <dt class="col-sm-3">Finished</dt>
+            <dd
+                class="col-sm-9"
+                data-test="TXT_Update_Finished_At">
+                {{ status.finishedAt | date: 'medium' }}
+            </dd>
+            }
         </dl>
 
         @if (status.predecessorInterrupted) {
@@ -360,8 +379,8 @@
                 {{ repository.name }}:
                 <code
                     class="revision"
-                    [title]="repository.revision">
-                    {{ shortRevision(repository.revision) }}
+                    [title]="repository.gitSha">
+                    {{ shortRevision(repository.gitSha) }}
                 </code>
             </li>
             } @empty {
