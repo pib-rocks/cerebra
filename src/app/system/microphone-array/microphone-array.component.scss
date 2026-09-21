@@ -26,6 +26,44 @@
         border-radius: 8px;
     }
 
+    .simulation-banner {
+        border-width: 2px;
+        font-size: 1rem;
+
+        strong {
+            display: block;
+            font-size: 1.15rem;
+            margin-bottom: 0.25rem;
+        }
+    }
+
+    .health-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+
+        div {
+            min-width: 0;
+        }
+
+        dt {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        dd {
+            color: #ffffff;
+            margin-bottom: 0;
+            overflow-wrap: anywhere;
+        }
+
+        .health-note {
+            grid-column: 1 / -1;
+        }
+    }
+
     .badge-success {
         background-color: #28a745;
         color: #fff;

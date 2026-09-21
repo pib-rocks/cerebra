@@ -8,11 +8,13 @@ import {
 import {MicrophoneArrayComponent} from "./microphone-array.component";
 import {
     adaptMicrophoneArrayDocument,
+    MicrophoneArrayHealthDocument,
     MicrophoneArrayService,
     MicrophoneArrayTelemetryDocument,
+    MicrophoneArrayTelemetryViewModel,
     MicrophoneArrayTuningDocument,
 } from "./microphone-array.service";
-import {of, throwError} from "rxjs";
+import {of, Subject, throwError} from "rxjs";
 import {provideHttpClient} from "@angular/common/http";
 import {provideHttpClientTesting} from "@angular/common/http/testing";
 
@@ -28,6 +30,7 @@ describe("MicrophoneArrayComponent", () => {
         speech_detected: false,
         audio_levels: [0.05, 0.02, 0.02, 0.03, 0.02],
         simulation: true,
+        simulation_reason: "test reset",
     };
 
     const tuningDocument: MicrophoneArrayTuningDocument = {
@@ -58,17 +61,32 @@ describe("MicrophoneArrayComponent", () => {
             vad_led: 0,
         },
         simulation: true,
+        simulation_reason: "test reset",
+    };
+
+    const healthDocument: MicrophoneArrayHealthDocument = {
+        simulation: true,
+        simulation_reason: "test reset",
+        device_access: false,
+        owner: "ros-audio-io",
+        vendor_id: "0x2886",
+        product_id: "0x0018",
+        note: "Live values come from the ros-audio-io owner.",
     };
 
     beforeEach(async () => {
         serviceSpy = jasmine.createSpyObj("MicrophoneArrayService", [
             "getTelemetry",
+            "getHealth",
             "getTuning",
             "updateTuning",
         ]);
 
         serviceSpy.getTelemetry.and.returnValue(
             of(adaptMicrophoneArrayDocument(telemetryDocument)),
+        );
+        serviceSpy.getHealth.and.returnValue(
+            of(adaptMicrophoneArrayDocument(healthDocument)),
         );
         serviceSpy.getTuning.and.returnValue(
             of(adaptMicrophoneArrayDocument(tuningDocument)),
@@ -101,9 +119,152 @@ describe("MicrophoneArrayComponent", () => {
     it("should create component and load telemetry/tuning on init", () => {
         expect(component).toBeTruthy();
         expect(serviceSpy.getTelemetry).toHaveBeenCalled();
+        expect(serviceSpy.getHealth).toHaveBeenCalled();
         expect(serviceSpy.getTuning).toHaveBeenCalled();
         expect(component.telemetry?.doaAngle).toBe(180);
+        expect(component.health?.owner).toBe("ros-audio-io");
         expect(component.tuning?.preset).toBe("Standard");
+    });
+
+    it("should prominently identify simulated values, their reason, and owner", () => {
+        const banner = fixture.nativeElement.querySelector(
+            "[data-test='MSG_Microphone_Array_Simulation']",
+        ) as HTMLElement;
+
+        expect(banner).toBeTruthy();
+        expect(banner.textContent).toContain(
+            "simulated, not live measurements",
+        );
+        expect(banner.textContent).toContain("test reset");
+        expect(banner.textContent).toContain("ros-audio-io");
+    });
+
+    it("should not render the simulation banner for real values", () => {
+        serviceSpy.getTelemetry.and.returnValue(
+            of(
+                adaptMicrophoneArrayDocument({
+                    ...telemetryDocument,
+                    simulation: false,
+                    simulation_reason: null,
+                }),
+            ),
+        );
+        serviceSpy.getTuning.and.returnValue(
+            of(
+                adaptMicrophoneArrayDocument({
+                    ...tuningDocument,
+                    simulation: false,
+                    simulation_reason: null,
+                }),
+            ),
+        );
+        serviceSpy.getHealth.and.returnValue(
+            of(
+                adaptMicrophoneArrayDocument({
+                    ...healthDocument,
+                    simulation: false,
+                    simulation_reason: null,
+                }),
+            ),
+        );
+        const realFixture = TestBed.createComponent(MicrophoneArrayComponent);
+        realFixture.detectChanges();
+
+        expect(
+            realFixture.nativeElement.querySelector(
+                "[data-test='MSG_Microphone_Array_Simulation']",
+            ),
+        ).toBeNull();
+        realFixture.destroy();
+    });
+
+    it("should render every field from the health document", () => {
+        const compiled = fixture.nativeElement as HTMLElement;
+
+        expect(
+            compiled.querySelector(
+                "[data-test='TXT_Microphone_Array_Device_Access']",
+            )?.textContent,
+        ).toContain("No");
+        expect(
+            compiled.querySelector("[data-test='TXT_Microphone_Array_Owner']")
+                ?.textContent,
+        ).toContain("ros-audio-io");
+        expect(
+            compiled.querySelector(
+                "[data-test='TXT_Microphone_Array_Vendor_Id']",
+            )?.textContent,
+        ).toContain("0x2886");
+        expect(
+            compiled.querySelector(
+                "[data-test='TXT_Microphone_Array_Product_Id']",
+            )?.textContent,
+        ).toContain("0x0018");
+        expect(
+            compiled.querySelector(
+                "[data-test='TXT_Microphone_Array_Health_Note']",
+            )?.textContent,
+        ).toContain("Live values come from the ros-audio-io owner.");
+    });
+
+    it("should render an explicit failed health state", () => {
+        serviceSpy.getHealth.and.returnValue(
+            throwError(() => new Error("network")),
+        );
+        const errorFixture = TestBed.createComponent(MicrophoneArrayComponent);
+        errorFixture.detectChanges();
+
+        expect(
+            errorFixture.nativeElement.querySelector(
+                "[data-test='MSG_Microphone_Array_Health_Error']",
+            ).textContent,
+        ).toContain("Failed to load microphone array health information.");
+        errorFixture.destroy();
+    });
+
+    it("should show a loading state before the first telemetry answer", () => {
+        serviceSpy.getTelemetry.and.returnValue(
+            new Subject<MicrophoneArrayTelemetryViewModel>(),
+        );
+        const loadingFixture = TestBed.createComponent(
+            MicrophoneArrayComponent,
+        );
+        loadingFixture.detectChanges();
+
+        expect(
+            loadingFixture.nativeElement.querySelector(
+                "[data-test='TXT_Microphone_Array_Telemetry_Loading']",
+            ),
+        ).toBeTruthy();
+        expect(
+            loadingFixture.nativeElement.querySelector(
+                "[data-test='VIS_DOA_Compass']",
+            ),
+        ).toBeNull();
+        loadingFixture.destroy();
+    });
+
+    it("should render a telemetry document error as an error", () => {
+        serviceSpy.getTelemetry.and.returnValue(
+            of(
+                adaptMicrophoneArrayDocument({
+                    ...telemetryDocument,
+                    simulation: false,
+                    simulation_reason: null,
+                    error: "USB telemetry read failed",
+                }),
+            ),
+        );
+        const errorFixture = TestBed.createComponent(MicrophoneArrayComponent);
+        errorFixture.detectChanges();
+        const error = errorFixture.nativeElement.querySelector(
+            "[data-test='MSG_Microphone_Array_Telemetry_Error']",
+        ) as HTMLElement;
+
+        expect(error).toBeTruthy();
+        expect(error.classList).toContain("alert-danger");
+        expect(error.textContent).toContain("USB telemetry read failed");
+        errorFixture.destroy();
     });
 
     it("should render DOA compass with angle readout and status badges", () => {

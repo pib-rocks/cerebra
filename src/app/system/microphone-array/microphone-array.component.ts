@@ -9,6 +9,7 @@ import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {
     MicrophoneArrayService,
+    MicrophoneArrayHealthViewModel,
     MicrophoneArrayTelemetryViewModel,
     MicrophoneArrayTuningUpdate,
     MicrophoneArrayViewModel,
@@ -36,11 +37,15 @@ export interface HighPassOption {
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MicrophoneArrayComponent implements OnInit, OnDestroy {
+    health: MicrophoneArrayHealthViewModel | null = null;
     telemetry: MicrophoneArrayTelemetryViewModel | null = null;
     tuning: MicrophoneArrayViewModel | null = null;
 
     loading = false;
+    healthLoading = true;
+    telemetryLoading = true;
     saving = false;
+    healthError: string | null = null;
     error: string | null = null;
     successMessage: string | null = null;
 
@@ -98,6 +103,24 @@ export class MicrophoneArrayComponent implements OnInit, OnDestroy {
         return this.telemetry?.audioLevels ?? [];
     }
 
+    get isSimulation(): boolean {
+        return [this.telemetry, this.tuning, this.health].some(
+            (source) => source?.simulation === true,
+        );
+    }
+
+    get simulationReason(): string | null {
+        return (
+            [this.telemetry, this.tuning, this.health].find(
+                (source) => source?.simulation && source.simulationReason,
+            )?.simulationReason ?? null
+        );
+    }
+
+    get simulationOwner(): string {
+        return this.health?.owner ?? "ros-audio-io";
+    }
+
     channelLabel(index: number): string {
         return index === 0 ? "Master" : `Mic ${index}`;
     }
@@ -126,8 +149,25 @@ export class MicrophoneArrayComponent implements OnInit, OnDestroy {
 
     refreshAll(): void {
         this.loading = true;
+        this.healthLoading = true;
+        this.healthError = null;
         this.error = null;
         this.cdr.markForCheck();
+
+        this.microphoneArrayService.getHealth().subscribe({
+            next: (health) => {
+                this.health = health;
+                this.healthLoading = false;
+                this.cdr.markForCheck();
+            },
+            error: () => {
+                this.health = null;
+                this.healthLoading = false;
+                this.healthError =
+                    "Failed to load microphone array health information.";
+                this.cdr.markForCheck();
+            },
+        });
 
         this.microphoneArrayService.getTuning().subscribe({
             next: (tuning) => {
@@ -276,17 +316,23 @@ export class MicrophoneArrayComponent implements OnInit, OnDestroy {
     }
 
     private fetchTelemetry(): void {
+        if (!this.telemetry) {
+            this.telemetryLoading = true;
+            this.cdr.markForCheck();
+        }
         this.microphoneArrayService.getTelemetry().subscribe({
             next: (telemetry) => {
                 this.telemetry = telemetry;
+                this.telemetryLoading = false;
                 this.cdr.markForCheck();
             },
             error: () => {
+                this.telemetryLoading = false;
                 // Keep last known telemetry; surface soft error only if none yet.
                 if (!this.telemetry) {
                     this.error = "Failed to load microphone array telemetry.";
-                    this.cdr.markForCheck();
                 }
+                this.cdr.markForCheck();
             },
         });
     }
