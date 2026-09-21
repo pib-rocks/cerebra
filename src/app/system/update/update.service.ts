@@ -6,7 +6,8 @@ import {UrlConstants} from "src/app/shared/services/url.constants";
 export type UpdateAvailability = boolean | "unknown";
 
 export interface RepositoryRevision {
-    revision: string;
+    gitSha: string;
+    repository?: string;
     channel?: string;
     buildTime?: string;
 }
