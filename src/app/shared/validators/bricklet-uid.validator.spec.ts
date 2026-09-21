@@ -62,11 +62,31 @@ describe("patternOrOptionalValidator", () => {
         expect(result).toBeNull();
     });
 
-    it("should return null if the value matches the alphanumeric pattern", () => {
-        const control = new FormControl("Valid123");
+    it("should return null if the value is a valid Base58 UID", () => {
+        const control = new FormControl("A1b2C3");
         const result = patternOrOptionalValidator()(control);
 
         expect(result).toBeNull();
+    });
+
+    // Tinkerforge UIDs are Base58: 0, O, I and l cannot occur. A stored UID with one of
+    // them kills the motors container at import time (PR-1796).
+    ["E2E001", "DIFF99", "O12345", "I23456", "l23456"].forEach((invalidUid) => {
+        it(`should reject the Base58-invalid UID '${invalidUid}'`, () => {
+            const control = new FormControl(invalidUid);
+
+            expect(patternOrOptionalValidator()(control)).toEqual({
+                invalidUid: true,
+            });
+        });
+    });
+
+    it("should reject a UID longer than 6 characters", () => {
+        const control = new FormControl("ABCDEFG");
+
+        expect(patternOrOptionalValidator()(control)).toEqual({
+            invalidUid: true,
+        });
     });
 
     it("should return an error if the value does not match the alphanumeric pattern", () => {
