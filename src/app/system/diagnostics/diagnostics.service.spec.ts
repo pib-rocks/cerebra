@@ -140,7 +140,7 @@ describe("DiagnosticsService hardware-config", () => {
             {
                 version: 1,
                 bricklets: [
-                    {brickletNumber: 1, uid: "E2E001", type: "Servo Bricklet"},
+                    {brickletNumber: 1, uid: "TESTab", type: "Servo Bricklet"},
                     {brickletNumber: 2, uid: "", type: "Servo Bricklet"},
                     {brickletNumber: 3, uid: "", type: "Servo Bricklet"},
                     {
@@ -211,7 +211,7 @@ describe("DiagnosticsService hardware-config", () => {
         expect(result.warnings).toEqual([]);
         expect(result.valid).toBeTrue();
         expect(result.config?.bricklets?.length).toBe(7);
-        expect(result.config?.bricklets?.[0].uid).toBe("E2E001");
+        expect(result.config?.bricklets?.[0].uid).toBe("TESTab");
         expect(result.config?.motors.length).toBe(2);
     });
 

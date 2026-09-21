@@ -544,7 +544,7 @@ describe("HardwareIdComponent import preview (zoneless)", () => {
         {
             version: 1,
             bricklets: [
-                {brickletNumber: 1, uid: "E2E001", type: "Servo Bricklet"},
+                {brickletNumber: 1, uid: "TESTab", type: "Servo Bricklet"},
                 {brickletNumber: 2, uid: "", type: "Servo Bricklet"},
             ],
             motors: [
@@ -651,7 +651,7 @@ describe("HardwareIdComponent import preview (zoneless)", () => {
         const compiled = fixture.nativeElement as HTMLElement;
         const preview = compiled.querySelector(".import-preview");
         expect(preview).toBeTruthy();
-        expect(preview?.textContent).toContain("E2E001");
+        expect(preview?.textContent).toContain("TESTab");
 
         const confirmBtn = compiled.querySelector(
             '[data-test="BTN_Import_Hardware_IDs_Confirm"]',

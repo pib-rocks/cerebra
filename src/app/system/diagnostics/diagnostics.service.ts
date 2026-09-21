@@ -122,7 +122,9 @@ export interface HardwareConfigValidationResult {
 }
 
 const HARDWARE_CONFIG_VERSION = 2;
-const UID_PATTERN = /^[A-Za-z0-9]{1,6}$/;
+// Base58 (no 0, O, I, l), max 6 characters - Tinkerforge UIDs cannot contain those
+// characters; a stored invalid UID kills the motors container at import time (PR-1796).
+const UID_PATTERN = /^[1-9A-HJ-NP-Za-km-z]{1,6}$/;
 const VALID_BRICKLET_TYPES = new Set<string>([
     "Solid State Relay Bricklet",
     "Servo Bricklet",
@@ -286,7 +288,7 @@ export class DiagnosticsService {
                 uid = rawUid.trim();
                 if (uid && !UID_PATTERN.test(uid)) {
                     errors.push(
-                        `bricklets[${index}].uid has invalid format '${uid}' (expected alphanumeric, max 6 characters).`,
+                        `bricklets[${index}].uid has invalid format '${uid}' (expected a Base58 UID, max 6 characters, without 0, O, I or l).`,
                     );
                 }
                 if (uid) {
