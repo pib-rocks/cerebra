@@ -26,6 +26,7 @@ import {
 } from "../shared/ros-types/msg/detection-array";
 import {ModelListComponent} from "./model-list/model-list.component";
 import {
+    FACIAL_LANDMARKS_68_MODEL_ID,
     HEAD_POSE_MODEL_ID,
     modelDrawsSkeleton,
     topologyConnections,
@@ -244,6 +245,9 @@ export class CameraComponent implements OnInit, OnDestroy {
     }
 
     showsBox(modelId: string, detection: Detection): boolean {
+        if (modelId === FACIAL_LANDMARKS_68_MODEL_ID) {
+            return false;
+        }
         // Models whose overlay is a skeleton hide the box: the palm box is
         // computed from the axis-aligned palm square and ignores the hand's
         // rotation (hand_tracking.py bbox_pixels), so it lands off the hand while
