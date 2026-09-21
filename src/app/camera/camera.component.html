@@ -185,7 +185,26 @@
                         vector-effect="non-scaling-stroke">
                         {{ detectionLabel(detection) }}
                     </text>
-                    @for (connection of connections(layer.modelId, detection);
+                    @for (scalar of scalars(detection); track $index) {
+                    <text
+                        class="detection-scalar"
+                        [attr.x]="detection.x_min + 4"
+                        [attr.y]="detection.y_min + 38 + $index * 18"
+                        [attr.fill]="layer.color"
+                        vector-effect="non-scaling-stroke">
+                        {{ scalarLabel(scalar) }}
+                    </text>
+                    } @for (axis of headPoseAxes(layer.modelId, detection);
+                    track $index) {
+                    <line
+                        class="head-pose-axis"
+                        [attr.x1]="axis.x1"
+                        [attr.y1]="axis.y1"
+                        [attr.x2]="axis.x2"
+                        [attr.y2]="axis.y2"
+                        [attr.stroke]="axis.color"
+                        vector-effect="non-scaling-stroke" />
+                    } @for (connection of connections(layer.modelId, detection);
                     track $index) {
                     <line
                         class="detection-connection"

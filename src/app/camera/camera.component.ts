@@ -25,7 +25,11 @@ import {
     DetectionArray,
 } from "../shared/ros-types/msg/detection-array";
 import {ModelListComponent} from "./model-list/model-list.component";
-import {modelDrawsSkeleton, topologyConnections} from "./detection-topology";
+import {
+    HEAD_POSE_MODEL_ID,
+    modelDrawsSkeleton,
+    topologyConnections,
+} from "./detection-topology";
 
 interface DetectionLayer {
     modelId: string;
@@ -49,6 +53,15 @@ interface OverlayConnection {
     y1: number;
     x2: number;
     y2: number;
+}
+
+interface OverlayScalar {
+    name: string;
+    value: number;
+}
+
+interface OverlayAxis extends OverlayConnection {
+    color: string;
 }
 
 @Component({
@@ -256,6 +269,83 @@ export class CameraComponent implements OnInit, OnDestroy {
 
     connections(modelId: string, detection: Detection): OverlayConnection[] {
         return topologyConnections(modelId, this.keypoints(detection));
+    }
+
+    scalars(detection: Detection): OverlayScalar[] {
+        const count = Math.min(
+            detection.scalar_names.length,
+            detection.scalar_values.length,
+        );
+        return Array.from({length: count}, (_, index) => ({
+            name: detection.scalar_names[index],
+            value: detection.scalar_values[index],
+        })).filter(
+            (scalar) => scalar.name.length > 0 && Number.isFinite(scalar.value),
+        );
+    }
+
+    scalarLabel(scalar: OverlayScalar): string {
+        const unit = ["yaw", "pitch", "roll"].includes(scalar.name) ? "°" : "";
+        return `${scalar.name}: ${scalar.value.toFixed(1)}${unit}`;
+    }
+
+    headPoseAxes(modelId: string, detection: Detection): OverlayAxis[] {
+        if (modelId !== HEAD_POSE_MODEL_ID) return [];
+
+        const angles = new Map(
+            this.scalars(detection).map((scalar) => [
+                scalar.name,
+                scalar.value,
+            ]),
+        );
+        const yaw = angles.get("yaw");
+        const pitch = angles.get("pitch");
+        const roll = angles.get("roll");
+        if (yaw === undefined || pitch === undefined || roll === undefined) {
+            return [];
+        }
+
+        const originX = (detection.x_min + detection.x_max) / 2;
+        const originY = (detection.y_min + detection.y_max) / 2;
+        const size =
+            Math.min(
+                detection.x_max - detection.x_min,
+                detection.y_max - detection.y_min,
+            ) * 0.25;
+        if (!Number.isFinite(size) || size <= 0) return [];
+
+        const radians = Math.PI / 180;
+        const sinY = Math.sin(yaw * radians);
+        const sinP = Math.sin(pitch * radians);
+        const sinR = Math.sin(roll * radians);
+        const cosY = Math.cos(yaw * radians);
+        const cosP = Math.cos(pitch * radians);
+        const cosR = Math.cos(roll * radians);
+
+        // Projection from Luxonis' head-posture/gaze reference overlay.
+        return [
+            {
+                x1: originX,
+                y1: originY,
+                x2: originX + size * (cosR * cosY + sinY * sinP * sinR),
+                y2: originY + size * cosP * sinR,
+                color: "#ff0000",
+            },
+            {
+                x1: originX,
+                y1: originY,
+                x2: originX + size * (cosR * sinY * sinP + cosY * sinR),
+                y2: originY - size * cosP * cosR,
+                color: "#00ff00",
+            },
+            {
+                x1: originX,
+                y1: originY,
+                x2: originX + size * sinY * cosP,
+                y2: originY + size * sinP,
+                color: "#0000ff",
+            },
+        ];
     }
 
     detectionLabel(detection: Detection): string {

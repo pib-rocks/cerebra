@@ -322,6 +322,80 @@ describe("CameraComponent", () => {
         expect(label.attributes["y"]).toBe("66");
     }));
 
+    it("should render head-pose scalars and the Luxonis axis cross", fakeAsync(() => {
+        const message = detectionMessage("head_pose_estimation_crop");
+        message.detections[0].keypoint_names = [];
+        message.detections[0].keypoint_x = [];
+        message.detections[0].keypoint_y = [];
+        message.detections[0].keypoint_z = [];
+        message.detections[0].scalar_names = ["yaw", "pitch", "roll"];
+        message.detections[0].scalar_values = [0, 0, 0];
+
+        rosService.cameraReceiver$.next("camera-image");
+        rosService.detectionModelsReceiver$.next(["head_pose_estimation_crop"]);
+        rosService.detectionReceiver$.next(message);
+        tick(100);
+        fixture.detectChanges();
+
+        const scalars = fixture.debugElement.queryAll(
+            By.css(".detection-scalar"),
+        );
+        expect(scalars.map((scalar) => scalar.nativeElement.textContent.trim()))
+            .withContext("yaw, pitch, and roll text")
+            .toEqual(["yaw: 0.0°", "pitch: 0.0°", "roll: 0.0°"]);
+
+        const axes = fixture.debugElement.queryAll(By.css(".head-pose-axis"));
+        expect(axes.length).toBe(3);
+        // Box centre is (192, 144), and the axis length is 25% of its
+        // shortest side (48). At zero rotation: X points right, Y up, Z stays
+        // at the origin, matching the Luxonis projection.
+        expect(axes[0].attributes).toEqual(
+            jasmine.objectContaining({
+                x1: "192",
+                y1: "144",
+                x2: "240",
+                y2: "144",
+                stroke: "#ff0000",
+            }),
+        );
+        expect(axes[1].attributes).toEqual(
+            jasmine.objectContaining({
+                x2: "192",
+                y2: "96",
+                stroke: "#00ff00",
+            }),
+        );
+        expect(axes[2].attributes).toEqual(
+            jasmine.objectContaining({
+                x2: "192",
+                y2: "144",
+                stroke: "#0000ff",
+            }),
+        );
+        expect(
+            fixture.debugElement.query(By.css(".detection-box")),
+        ).not.toBeNull();
+    }));
+
+    it("should require all three named finite angles before drawing axes", () => {
+        const detection = detectionMessage("head_pose_estimation_crop")
+            .detections[0];
+        detection.scalar_names = ["pitch", "yaw"];
+        detection.scalar_values = [5, 10];
+
+        expect(
+            component.headPoseAxes("head_pose_estimation_crop", detection),
+        ).toEqual([]);
+
+        detection.scalar_names = ["roll", "yaw", "pitch"];
+        detection.scalar_values = [-3, 10, 5];
+        expect(
+            component.headPoseAxes("head_pose_estimation_crop", detection)
+                .length,
+        ).toBe(3);
+        expect(component.headPoseAxes("objects", detection)).toEqual([]);
+    });
+
     it("should decide box visibility and label anchor from the keypoints", () => {
         const hand = namedHandDetection();
 
@@ -498,6 +572,12 @@ describe("CameraComponent", () => {
         ).toBeTrue();
         expect(
             component.showsBox("facemesh_192x192", namedHandDetection()),
+        ).toBeTrue();
+        expect(
+            component.showsBox(
+                "head_pose_estimation_crop",
+                namedHandDetection(),
+            ),
         ).toBeTrue();
         expect(component.showsBox("hand_tracking_mp", boxOnly)).toBeTrue();
         expect(
