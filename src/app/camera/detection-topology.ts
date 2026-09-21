@@ -26,11 +26,47 @@ export const HAND_MODEL_IDS: ReadonlyArray<string> = [
     "imitation",
 ];
 export const FACEMESH_MODEL_ID = "facemesh_crop";
+export const FACIAL_LANDMARKS_68_MODEL_ID = "facial_landmarks_68_crop";
 export const HEAD_POSE_MODEL_ID = "head_pose_estimation_crop";
+
+/** Five canonical contour groups: jaw, brows, nose, eyes, and lips. */
+export const FACIAL_LANDMARKS_68_CONTOURS: ReadonlyArray<
+    ReadonlyArray<ReadonlyArray<number>>
+> = [
+    [Array.from({length: 17}, (_, index) => index)],
+    [
+        [17, 18, 19, 20, 21],
+        [22, 23, 24, 25, 26],
+    ],
+    [
+        [27, 28, 29, 30],
+        [31, 32, 33, 34, 35],
+    ],
+    [
+        [36, 37, 38, 39, 40, 41, 36],
+        [42, 43, 44, 45, 46, 47, 42],
+    ],
+    [
+        [48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 48],
+        [60, 61, 62, 63, 64, 65, 66, 67, 60],
+    ],
+];
+
+export const FACIAL_LANDMARKS_68_INDEX_PAIRS: ReadonlyArray<
+    readonly [number, number]
+> = FACIAL_LANDMARKS_68_CONTOURS.flatMap((contour) =>
+    contour.flatMap((path) =>
+        path.slice(1).map((point, index) => [path[index], point] as const),
+    ),
+);
 
 /** Models whose overlay draws a skeleton instead of a bounding box. */
 export function modelDrawsSkeleton(modelId: string): boolean {
-    return HAND_MODEL_IDS.includes(modelId) || modelId === FACEMESH_MODEL_ID;
+    return (
+        HAND_MODEL_IDS.includes(modelId) ||
+        modelId === FACEMESH_MODEL_ID ||
+        modelId === FACIAL_LANDMARKS_68_MODEL_ID
+    );
 }
 
 function segment(
@@ -92,6 +128,9 @@ export function topologyConnections(
     if (!modelDrawsSkeleton(modelId)) return [];
     if (modelId === FACEMESH_MODEL_ID) {
         return byIndexPairs(keypoints, FACEMESH_INDEX_PAIRS, 468);
+    }
+    if (modelId === FACIAL_LANDMARKS_68_MODEL_ID) {
+        return byIndexPairs(keypoints, FACIAL_LANDMARKS_68_INDEX_PAIRS, 68);
     }
     const byName = byNamePairs(keypoints, HAND_SKELETON_NAME_PAIRS);
     if (byName) return byName;

@@ -299,6 +299,38 @@ describe("CameraComponent", () => {
         expect(label.attributes["y"]).toBe("194");
     }));
 
+    it("should draw 68 facial landmarks and five contour groups without a box", fakeAsync(() => {
+        const message = detectionMessage("facial_landmarks_68_crop");
+        message.detections[0].keypoint_names = Array.from(
+            {length: 68},
+            (_, index) => `landmark_${index}`,
+        );
+        message.detections[0].keypoint_x = Array.from(
+            {length: 68},
+            (_, index) => 100 + index,
+        );
+        message.detections[0].keypoint_y = Array.from(
+            {length: 68},
+            (_, index) => 200 + index,
+        );
+        message.detections[0].keypoint_z = [];
+
+        rosService.cameraReceiver$.next("camera-image");
+        rosService.detectionModelsReceiver$.next(["facial_landmarks_68_crop"]);
+        rosService.detectionReceiver$.next(message);
+        tick(100);
+        fixture.detectChanges();
+
+        expect(
+            fixture.debugElement.queryAll(By.css(".detection-keypoint")).length,
+        ).toBe(68);
+        expect(
+            fixture.debugElement.queryAll(By.css(".detection-connection"))
+                .length,
+        ).toBe(63);
+        expect(fixture.debugElement.query(By.css(".detection-box"))).toBeNull();
+    }));
+
     it("should keep box and corner label for a detection without keypoints", fakeAsync(() => {
         const message = detectionMessage("objects");
         message.detections[0].keypoint_names = [];
@@ -579,6 +611,15 @@ describe("CameraComponent", () => {
                 namedHandDetection(),
             ),
         ).toBeTrue();
+        expect(
+            component.showsBox(
+                "facial_landmarks_68_crop",
+                namedHandDetection(),
+            ),
+        ).toBeFalse();
+        expect(
+            component.showsBox("facial_landmarks_68_crop", boxOnly),
+        ).toBeFalse();
         expect(component.showsBox("hand_tracking_mp", boxOnly)).toBeTrue();
         expect(
             component.showsBox("hand_tracking_mp", namedHandDetection()),

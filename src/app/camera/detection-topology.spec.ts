@@ -1,4 +1,7 @@
 import {
+    FACIAL_LANDMARKS_68_CONTOURS,
+    FACIAL_LANDMARKS_68_INDEX_PAIRS,
+    FACIAL_LANDMARKS_68_MODEL_ID,
     FACEMESH_MODEL_ID,
     modelDrawsSkeleton,
     topologyConnections,
@@ -34,6 +37,40 @@ describe("facemesh topology", () => {
         );
         expect(
             topologyConnections(FACEMESH_MODEL_ID, keypoints.slice(0, 467)),
+        ).toEqual([]);
+    });
+});
+
+describe("68-point facial-landmark topology", () => {
+    it("defines five contour groups with canonical open and closed paths", () => {
+        expect(FACIAL_LANDMARKS_68_CONTOURS.length).toBe(5);
+        expect(FACIAL_LANDMARKS_68_INDEX_PAIRS.length).toBe(63);
+        const hasPair = (from: number, to: number) =>
+            FACIAL_LANDMARKS_68_INDEX_PAIRS.some(
+                ([first, second]) => first === from && second === to,
+            );
+        expect(hasPair(0, 1)).toBeTrue();
+        expect(hasPair(16, 0)).toBeFalse();
+        expect(hasPair(41, 36)).toBeTrue();
+        expect(hasPair(67, 60)).toBeTrue();
+    });
+
+    it("draws all contours only when all 68 landmarks are present", () => {
+        const keypoints = Array.from({length: 68}, (_, index) => ({
+            name: `landmark_${index}`,
+            x: index,
+            y: index + 1,
+        }));
+
+        expect(modelDrawsSkeleton(FACIAL_LANDMARKS_68_MODEL_ID)).toBeTrue();
+        expect(
+            topologyConnections(FACIAL_LANDMARKS_68_MODEL_ID, keypoints).length,
+        ).toBe(FACIAL_LANDMARKS_68_INDEX_PAIRS.length);
+        expect(
+            topologyConnections(
+                FACIAL_LANDMARKS_68_MODEL_ID,
+                keypoints.slice(0, 67),
+            ),
         ).toEqual([]);
     });
 });
