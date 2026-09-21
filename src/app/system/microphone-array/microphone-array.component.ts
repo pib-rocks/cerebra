@@ -9,17 +9,13 @@ import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {
     MicrophoneArrayService,
-    MicrophoneArrayTelemetry,
-    MicrophoneArrayTuning,
+    MicrophoneArrayTelemetryViewModel,
+    MicrophoneArrayTuningUpdate,
+    MicrophoneArrayViewModel,
     MicrophoneArrayPreset,
     LedRingMode,
     HighPassFilterValue,
 } from "./microphone-array.service";
-
-export interface PresetOption {
-    value: MicrophoneArrayPreset;
-    label: string;
-}
 
 export interface LedModeOption {
     value: LedRingMode;
@@ -31,29 +27,6 @@ export interface HighPassOption {
     label: string;
 }
 
-const DEFAULT_TUNING: MicrophoneArrayTuning = {
-    preset: "standard",
-    agc_enabled: true,
-    agc_max_gain: 30,
-    agc_target_level: 0.005,
-    stationary_noise_suppression: true,
-    non_stationary_noise_suppression: true,
-    aec_enabled: true,
-    high_pass_filter: 1,
-    led_mode: "doa_trace",
-    led_brightness: 50,
-    led_color: "#e83e8c",
-};
-
-const DEFAULT_TELEMETRY: MicrophoneArrayTelemetry = {
-    doa_angle: 0,
-    voice_activity: false,
-    speech_detected: false,
-    audio_levels: [0, 0, 0, 0, 0],
-};
-
-const CHANNEL_LABELS = ["Master", "Mic 1", "Mic 2", "Mic 3", "Mic 4"];
-
 @Component({
     selector: "app-microphone-array",
     standalone: true,
@@ -63,30 +36,22 @@ const CHANNEL_LABELS = ["Master", "Mic 1", "Mic 2", "Mic 3", "Mic 4"];
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MicrophoneArrayComponent implements OnInit, OnDestroy {
-    telemetry: MicrophoneArrayTelemetry = {...DEFAULT_TELEMETRY};
-    tuning: MicrophoneArrayTuning = {...DEFAULT_TUNING};
+    telemetry: MicrophoneArrayTelemetryViewModel | null = null;
+    tuning: MicrophoneArrayViewModel | null = null;
 
     loading = false;
     saving = false;
     error: string | null = null;
     successMessage: string | null = null;
 
-    readonly channelLabels = CHANNEL_LABELS;
-
-    readonly presets: PresetOption[] = [
-        {value: "standard", label: "Standard"},
-        {value: "noisy_asr", label: "Noisy Environment / ASR"},
-        {value: "loud_speaker", label: "Loud Speaker Playback"},
-        {value: "raw", label: "Raw"},
-        {value: "custom", label: "Custom"},
-    ];
-
     readonly ledModes: LedModeOption[] = [
-        {value: "doa_trace", label: "DOA Trace"},
-        {value: "pulse", label: "Pulse"},
-        {value: "solid", label: "Solid Color"},
-        {value: "mute", label: "Mute"},
         {value: "off", label: "Off"},
+        {value: "listen", label: "Listen"},
+        {value: "speak", label: "Speak"},
+        {value: "think", label: "Think"},
+        {value: "spin", label: "Spin"},
+        {value: "trace", label: "DOA Trace"},
+        {value: "mono", label: "Solid Color"},
     ];
 
     readonly highPassOptions: HighPassOption[] = [
@@ -113,32 +78,49 @@ export class MicrophoneArrayComponent implements OnInit, OnDestroy {
         this.stopTelemetryPolling();
     }
 
-    get doaAngle(): number {
-        const angle = this.telemetry?.doa_angle ?? 0;
+    get doaAngle(): number | null {
+        const angle = this.telemetry?.doaAngle;
+        if (angle === undefined) {
+            return null;
+        }
         return ((angle % 360) + 360) % 360;
     }
 
     /** SVG needle rotation: 0° = up (north), clockwise. */
-    get doaNeedleTransform(): string {
+    get doaNeedleTransform(): string | null {
+        if (this.doaAngle === null) {
+            return null;
+        }
         return `rotate(${this.doaAngle} 100 100)`;
     }
 
-    getAudioLevelPercent(index: number): number {
-        const levels = this.telemetry?.audio_levels ?? [];
-        const raw = levels[index] ?? 0;
+    get audioLevels(): number[] {
+        return this.telemetry?.audioLevels ?? [];
+    }
+
+    channelLabel(index: number): string {
+        return index === 0 ? "Master" : `Mic ${index}`;
+    }
+
+    getAudioLevelPercent(raw: number): number {
         const clamped = Math.max(0, Math.min(1, raw));
         return Math.round(clamped * 100);
     }
 
-    getTargetLevelDbov(): number {
-        const linear = this.tuning.agc_target_level || 1e-8;
+    getTargetLevelDbov(): number | null {
+        const linear = this.tuning?.agcDesiredLevel;
+        if (linear === undefined) {
+            return null;
+        }
         return Math.round(10 * Math.log10(linear) * 10) / 10;
     }
 
     setTargetLevelDbov(dbov: number): void {
+        if (!this.tuning || this.tuning.agcDesiredLevel === undefined) {
+            return;
+        }
         const clamped = Math.max(-80, Math.min(0, Number(dbov)));
-        this.tuning.agc_target_level = Math.pow(10, clamped / 10);
-        this.markCustomIfNeeded();
+        this.tuning.agcDesiredLevel = Math.pow(10, clamped / 10);
         this.cdr.markForCheck();
     }
 
@@ -149,7 +131,7 @@ export class MicrophoneArrayComponent implements OnInit, OnDestroy {
 
         this.microphoneArrayService.getTuning().subscribe({
             next: (tuning) => {
-                this.tuning = {...DEFAULT_TUNING, ...tuning};
+                this.tuning = tuning;
                 this.loading = false;
                 this.cdr.markForCheck();
             },
@@ -164,35 +146,85 @@ export class MicrophoneArrayComponent implements OnInit, OnDestroy {
     }
 
     onPresetChange(preset: MicrophoneArrayPreset): void {
-        this.tuning.preset = preset;
+        if (this.tuning) {
+            this.tuning.preset = preset;
+        }
         this.applyTuningUpdate({preset});
     }
 
     onDspChange(): void {
-        this.markCustomIfNeeded();
-        this.applyTuningUpdate({
-            agc_enabled: this.tuning.agc_enabled,
-            agc_max_gain: this.tuning.agc_max_gain,
-            agc_target_level: this.tuning.agc_target_level,
-            stationary_noise_suppression:
-                this.tuning.stationary_noise_suppression,
-            non_stationary_noise_suppression:
-                this.tuning.non_stationary_noise_suppression,
-            aec_enabled: this.tuning.aec_enabled,
-            high_pass_filter: this.tuning.high_pass_filter,
-            preset: this.tuning.preset,
-        });
+        if (!this.tuning) {
+            return;
+        }
+
+        const parameters: NonNullable<
+            MicrophoneArrayTuningUpdate["parameters"]
+        > = {};
+        this.setReportedParameter(
+            parameters,
+            "HPFONOFF",
+            this.tuning.highPassFilter,
+        );
+        this.setReportedParameter(
+            parameters,
+            "AGCONOFF",
+            this.toApiBoolean(this.tuning.agcEnabled),
+        );
+        this.setReportedParameter(
+            parameters,
+            "AGCMAXGAIN",
+            this.tuning.agcMaxGain,
+        );
+        this.setReportedParameter(
+            parameters,
+            "AGCDESIREDLEVEL",
+            this.tuning.agcDesiredLevel,
+        );
+        this.setReportedParameter(parameters, "AGCTIME", this.tuning.agcTime);
+        this.setReportedParameter(
+            parameters,
+            "STATNOISEONOFF",
+            this.toApiBoolean(this.tuning.stationaryNoiseSuppression),
+        );
+        this.setReportedParameter(
+            parameters,
+            "NONSTATNOISEONOFF",
+            this.toApiBoolean(this.tuning.nonStationaryNoiseSuppression),
+        );
+        this.setReportedParameter(
+            parameters,
+            "ECHOONOFF",
+            this.toApiBoolean(this.tuning.echoEnabled),
+        );
+        this.setReportedParameter(
+            parameters,
+            "STATNOISEONOFF_SR",
+            this.toApiBoolean(this.tuning.stationaryNoiseSuppressionSr),
+        );
+        this.setReportedParameter(
+            parameters,
+            "NONSTATNOISEONOFF_SR",
+            this.toApiBoolean(this.tuning.nonStationaryNoiseSuppressionSr),
+        );
+
+        this.applyTuningUpdate({parameters});
     }
 
     onLedChange(): void {
+        if (!this.tuning) {
+            return;
+        }
         this.applyTuningUpdate({
-            led_mode: this.tuning.led_mode,
-            led_brightness: this.tuning.led_brightness,
-            led_color: this.tuning.led_color,
+            led_ring: {
+                mode: this.tuning.ledMode,
+                brightness: this.tuning.ledBrightness,
+                color: this.tuning.ledColor,
+                vad_led: this.tuning.vadLed ? 1 : 0,
+            },
         });
     }
 
-    applyTuningUpdate(update: Partial<MicrophoneArrayTuning>): void {
+    applyTuningUpdate(update: MicrophoneArrayTuningUpdate): void {
         this.saving = true;
         this.error = null;
         this.successMessage = null;
@@ -200,7 +232,7 @@ export class MicrophoneArrayComponent implements OnInit, OnDestroy {
 
         this.microphoneArrayService.updateTuning(update).subscribe({
             next: (tuning) => {
-                this.tuning = {...DEFAULT_TUNING, ...tuning};
+                this.tuning = tuning;
                 this.saving = false;
                 this.successMessage = "Tuning updated.";
                 this.cdr.markForCheck();
@@ -213,9 +245,19 @@ export class MicrophoneArrayComponent implements OnInit, OnDestroy {
         });
     }
 
-    private markCustomIfNeeded(): void {
-        if (this.tuning.preset !== "custom") {
-            this.tuning.preset = "custom";
+    private toApiBoolean(value: boolean | undefined): 0 | 1 | undefined {
+        return value === undefined ? undefined : value ? 1 : 0;
+    }
+
+    private setReportedParameter<
+        K extends keyof NonNullable<MicrophoneArrayTuningUpdate["parameters"]>,
+    >(
+        parameters: NonNullable<MicrophoneArrayTuningUpdate["parameters"]>,
+        name: K,
+        value: NonNullable<MicrophoneArrayTuningUpdate["parameters"]>[K],
+    ): void {
+        if (value !== undefined) {
+            parameters[name] = value;
         }
     }
 
@@ -236,14 +278,7 @@ export class MicrophoneArrayComponent implements OnInit, OnDestroy {
     private fetchTelemetry(): void {
         this.microphoneArrayService.getTelemetry().subscribe({
             next: (telemetry) => {
-                this.telemetry = {
-                    ...DEFAULT_TELEMETRY,
-                    ...telemetry,
-                    audio_levels:
-                        telemetry.audio_levels?.length === 5
-                            ? telemetry.audio_levels
-                            : DEFAULT_TELEMETRY.audio_levels,
-                };
+                this.telemetry = telemetry;
                 this.cdr.markForCheck();
             },
             error: () => {
