@@ -59,13 +59,23 @@ video {
     stroke-width: 1.5;
 }
 
-.detection-label {
+.detection-label,
+.detection-scalar {
     font-size: 18px;
     font-weight: 700;
     paint-order: stroke;
     stroke: #111;
     stroke-width: 3px;
     stroke-linejoin: round;
+}
+
+.detection-scalar {
+    font-size: 15px;
+}
+
+.head-pose-axis {
+    fill: none;
+    stroke-width: 3;
 }
 
 .camera-diagnostic {

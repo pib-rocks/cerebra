@@ -26,6 +26,7 @@ export const HAND_MODEL_IDS: ReadonlyArray<string> = [
     "imitation",
 ];
 export const FACEMESH_MODEL_ID = "facemesh_crop";
+export const HEAD_POSE_MODEL_ID = "head_pose_estimation_crop";
 
 /** Models whose overlay draws a skeleton instead of a bounding box. */
 export function modelDrawsSkeleton(modelId: string): boolean {
