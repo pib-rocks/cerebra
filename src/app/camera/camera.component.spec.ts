@@ -460,6 +460,80 @@ describe("CameraComponent", () => {
         expect(component.headPoseAxes("objects", detection)).toEqual([]);
     });
 
+    it("should render the gaze ray and its angles in degrees", fakeAsync(() => {
+        const message = detectionMessage("gaze_estimation_crop");
+        message.detections[0].keypoint_names = [];
+        message.detections[0].keypoint_x = [];
+        message.detections[0].keypoint_y = [];
+        message.detections[0].keypoint_z = [];
+        message.detections[0].scalar_names = ["gaze_yaw", "gaze_pitch"];
+        message.detections[0].scalar_values = [90, 0];
+
+        rosService.cameraReceiver$.next("camera-image");
+        rosService.detectionModelsReceiver$.next(["gaze_estimation_crop"]);
+        rosService.detectionReceiver$.next(message);
+        tick(100);
+        fixture.detectChanges();
+
+        const scalars = fixture.debugElement.queryAll(
+            By.css(".detection-scalar"),
+        );
+        expect(scalars.map((scalar) => scalar.nativeElement.textContent.trim()))
+            .withContext("gaze angles carry the degree sign")
+            .toEqual(["gaze_yaw: 90.0°", "gaze_pitch: 0.0°"]);
+
+        // Box centre is (192, 144) and the ray is 96 px long, half the box's
+        // shortest side, so a yaw of 90° points it right across the image.
+        const ray = fixture.debugElement.query(By.css(".gaze-ray"));
+        expect(ray.attributes).toEqual(
+            jasmine.objectContaining({
+                x1: "192",
+                y1: "144",
+                x2: "288",
+                y2: "144",
+            }),
+        );
+        const tip = fixture.debugElement.query(By.css(".gaze-ray-tip"));
+        expect(tip.attributes).toEqual(
+            jasmine.objectContaining({cx: "288", cy: "144"}),
+        );
+        expect(
+            fixture.debugElement.query(By.css(".detection-box")),
+        ).not.toBeNull();
+    }));
+
+    it("should point the gaze ray up the image for a positive pitch", () => {
+        const detection = detectionMessage("gaze_estimation_crop")
+            .detections[0];
+        detection.scalar_names = ["gaze_yaw", "gaze_pitch"];
+        detection.scalar_values = [0, 90];
+
+        expect(component.gazeRay("gaze_estimation_crop", detection)).toEqual({
+            x1: 192,
+            y1: 144,
+            x2: 192,
+            y2: 48,
+        });
+    });
+
+    it("should require both named gaze angles before drawing the ray", () => {
+        const detection = detectionMessage("gaze_estimation_crop")
+            .detections[0];
+        detection.scalar_names = ["gaze_yaw"];
+        detection.scalar_values = [10];
+
+        expect(
+            component.gazeRay("gaze_estimation_crop", detection),
+        ).toBeUndefined();
+
+        detection.scalar_names = ["gaze_yaw", "gaze_pitch"];
+        detection.scalar_values = [10, 5];
+        expect(
+            component.gazeRay("gaze_estimation_crop", detection),
+        ).toBeDefined();
+        expect(component.gazeRay("objects", detection)).toBeUndefined();
+    });
+
     it("should decide box visibility and label anchor from the keypoints", () => {
         const hand = namedHandDetection();
 

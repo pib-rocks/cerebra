@@ -28,6 +28,7 @@ export const HAND_MODEL_IDS: ReadonlyArray<string> = [
 export const FACEMESH_MODEL_ID = "facemesh_crop";
 export const FACIAL_LANDMARKS_68_MODEL_ID = "facial_landmarks_68_crop";
 export const HEAD_POSE_MODEL_ID = "head_pose_estimation_crop";
+export const GAZE_MODEL_ID = "gaze_estimation_crop";
 export const QR_CODE_MODEL_ID = "qr_code_detection_384x384";
 export const QR_CODE_INDEX_PAIRS: ReadonlyArray<readonly [number, number]> = [
     [0, 1],

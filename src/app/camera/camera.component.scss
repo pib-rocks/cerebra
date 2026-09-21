@@ -78,6 +78,16 @@ video {
     stroke-width: 3;
 }
 
+.gaze-ray {
+    fill: none;
+    stroke-width: 3;
+}
+
+.gaze-ray-tip {
+    stroke: #111;
+    stroke-width: 1.5;
+}
+
 .camera-diagnostic {
     position: absolute;
     right: 0.4rem;

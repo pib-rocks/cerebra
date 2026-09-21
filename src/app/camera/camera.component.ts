@@ -26,6 +26,7 @@ import {
 } from "../shared/ros-types/msg/detection-array";
 import {ModelListComponent} from "./model-list/model-list.component";
 import {
+    GAZE_MODEL_ID,
     boxRule,
     HEAD_POSE_MODEL_ID,
     LabelScalar,
@@ -66,6 +67,9 @@ interface OverlayAxis extends OverlayConnection {
     color: string;
 }
 
+/** Scalars the models publish in degrees: head pose angles and gaze angles. */
+const DEGREE_SCALAR_NAMES = ["yaw", "pitch", "roll", "gaze_yaw", "gaze_pitch"];
+
 @Component({
     selector: "app-camera",
     templateUrl: "./camera.component.html",
@@ -87,6 +91,11 @@ export class CameraComponent implements OnInit, OnDestroy {
     private static readonly DETECTION_STALE_MS = 1500;
     private static readonly DIAGNOSTIC_WINDOW_MS = 5000;
     private static readonly DEFAULT_REFRESH_RATE_SECONDS = 0.1;
+    /**
+     * Gaze ray length, as a share of the shortest side of the face box: long
+     * enough to read as a direction, short enough to stay next to the face.
+     */
+    private static readonly GAZE_RAY_SCALE = 0.5;
 
     @ViewChild("videobox") videoBox?: ElementRef;
     @ViewChild("refreshRate") refreshRateSlider!: ElementRef;
@@ -293,7 +302,7 @@ export class CameraComponent implements OnInit, OnDestroy {
     }
 
     scalarLabel(scalar: OverlayScalar): string {
-        const unit = ["yaw", "pitch", "roll"].includes(scalar.name) ? "°" : "";
+        const unit = DEGREE_SCALAR_NAMES.includes(scalar.name) ? "°" : "";
         return `${scalar.name}: ${scalar.value.toFixed(1)}${unit}`;
     }
 
@@ -354,6 +363,50 @@ export class CameraComponent implements OnInit, OnDestroy {
                 color: "#0000ff",
             },
         ];
+    }
+
+    /**
+     * Ray from the face centre along the gaze direction, in image pixels.
+     *
+     * The gaze model publishes no keypoints, only its face box and the gaze as
+     * yaw and pitch in degrees (face_crop.py translate_gaze), so the direction
+     * vector is rebuilt from the two angles and projected onto the image, whose
+     * y axis grows downwards while a positive pitch looks upwards.
+     */
+    gazeRay(
+        modelId: string,
+        detection: Detection,
+    ): OverlayConnection | undefined {
+        if (modelId !== GAZE_MODEL_ID) return undefined;
+
+        const angles = new Map(
+            this.scalars(modelId, detection).map((scalar) => [
+                scalar.name,
+                scalar.value,
+            ]),
+        );
+        const yaw = angles.get("gaze_yaw");
+        const pitch = angles.get("gaze_pitch");
+        if (yaw === undefined || pitch === undefined) return undefined;
+
+        const originX = (detection.x_min + detection.x_max) / 2;
+        const originY = (detection.y_min + detection.y_max) / 2;
+        const length =
+            Math.min(
+                detection.x_max - detection.x_min,
+                detection.y_max - detection.y_min,
+            ) * CameraComponent.GAZE_RAY_SCALE;
+        if (!Number.isFinite(length) || length <= 0) return undefined;
+
+        const radians = Math.PI / 180;
+        return {
+            x1: originX,
+            y1: originY,
+            x2:
+                originX +
+                length * Math.sin(yaw * radians) * Math.cos(pitch * radians),
+            y2: originY - length * Math.sin(pitch * radians),
+        };
     }
 
     detectionLabel(modelId: string, detection: Detection): string {

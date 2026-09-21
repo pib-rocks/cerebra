@@ -205,6 +205,22 @@
                         [attr.y2]="axis.y2"
                         [attr.stroke]="axis.color"
                         vector-effect="non-scaling-stroke" />
+                    } @if (gazeRay(layer.modelId, detection); as ray) {
+                    <line
+                        class="gaze-ray"
+                        [attr.x1]="ray.x1"
+                        [attr.y1]="ray.y1"
+                        [attr.x2]="ray.x2"
+                        [attr.y2]="ray.y2"
+                        [attr.stroke]="layer.color"
+                        vector-effect="non-scaling-stroke" />
+                    <circle
+                        class="gaze-ray-tip"
+                        [attr.cx]="ray.x2"
+                        [attr.cy]="ray.y2"
+                        r="5"
+                        [attr.fill]="layer.color"
+                        vector-effect="non-scaling-stroke" />
                     } @for (connection of connections(layer.modelId, detection);
                     track $index) {
                     <line
