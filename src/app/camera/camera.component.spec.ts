@@ -658,6 +658,72 @@ describe("CameraComponent", () => {
         ).toBeFalse();
     });
 
+    it("should label the hand with palm_score and z_source matched by name", fakeAsync(() => {
+        const message = detectionMessage("hand_tracking");
+        message.detections[0].scalar_names = ["z_source", "palm_score"];
+        message.detections[0].scalar_values = [1, 0.873];
+
+        rosService.cameraReceiver$.next("camera-image");
+        rosService.detectionModelsReceiver$.next(["hand_tracking"]);
+        rosService.detectionReceiver$.next(message);
+        tick(100);
+        fixture.detectChanges();
+
+        expect(
+            fixture.debugElement
+                .query(By.css(".detection-label"))
+                .nativeElement.textContent.trim(),
+        ).toBe("hand 90% | palm_score 0.87 | z_source 1");
+        // Both values ride on the wrist label, so no box-anchored line is left.
+        expect(
+            fixture.debugElement.queryAll(By.css(".detection-scalar")).length,
+        ).toBe(0);
+    }));
+
+    it("should omit hand scalars that are missing or not finite", () => {
+        const hand = namedHandDetection();
+
+        expect(component.detectionLabel("hand_tracking", hand)).toBe(
+            "hand 90%",
+        );
+
+        hand.scalar_names = ["palm_score", "z_source"];
+        hand.scalar_values = [Number.NaN, Number.POSITIVE_INFINITY];
+        expect(component.detectionLabel("hand_tracking", hand)).toBe(
+            "hand 90%",
+        );
+
+        hand.scalar_names = ["palm_score", "z_source"];
+        hand.scalar_values = [0.5];
+        expect(component.detectionLabel("hand_tracking", hand)).toBe(
+            "hand 90% | palm_score 0.50",
+        );
+    });
+
+    it("should leave the scalars of other models below their box", () => {
+        const detection = namedHandDetection();
+        detection.scalar_names = ["palm_score", "z_source"];
+        detection.scalar_values = [0.5, 2];
+
+        expect(component.detectionLabel("objects", detection)).toBe("hand 90%");
+        expect(
+            component.scalars("objects", detection).map((s) => s.name),
+        ).toEqual(["palm_score", "z_source"]);
+        expect(component.scalars("hand_tracking", detection)).toEqual([]);
+    });
+
+    it("should hide the box per model instead of for every skeleton", () => {
+        const hand = namedHandDetection();
+
+        expect(component.showsBox("hand_tracking", hand)).toBeFalse();
+        // qr_code draws connections through its keypoints and keeps its box:
+        // the rule is a per-model decision, not a consequence of a topology.
+        expect(
+            component.showsBox("qr_code_detection_384x384", hand),
+        ).toBeTrue();
+        expect(component.showsBox("some_future_model", hand)).toBeTrue();
+    });
+
     it("should suppress an empty box for a non-skeleton model", () => {
         const empty: Detection = {
             ...namedHandDetection(),

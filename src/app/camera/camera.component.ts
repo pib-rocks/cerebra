@@ -26,9 +26,10 @@ import {
 } from "../shared/ros-types/msg/detection-array";
 import {ModelListComponent} from "./model-list/model-list.component";
 import {
-    FACIAL_LANDMARKS_68_MODEL_ID,
+    boxRule,
     HEAD_POSE_MODEL_ID,
-    modelDrawsSkeleton,
+    LabelScalar,
+    labelScalars,
     topologyConnections,
 } from "./detection-topology";
 
@@ -245,17 +246,10 @@ export class CameraComponent implements OnInit, OnDestroy {
     }
 
     showsBox(modelId: string, detection: Detection): boolean {
-        if (modelId === FACIAL_LANDMARKS_68_MODEL_ID) {
+        const rule = boxRule(modelId);
+        if (rule === "none") return false;
+        if (rule === "skeleton" && this.keypoints(detection).length > 0) {
             return false;
-        }
-        // Models whose overlay is a skeleton hide the box: the palm box is
-        // computed from the axis-aligned palm square and ignores the hand's
-        // rotation (hand_tracking.py bbox_pixels), so it lands off the hand while
-        // the landmarks do not (PR-1781). Every other model keeps its box - for a
-        // box-only detector it is the only visual, and for a landmark model the
-        // box still says where the face is.
-        if (modelDrawsSkeleton(modelId)) {
-            return this.keypoints(detection).length === 0;
         }
         return (
             detection.x_max > detection.x_min &&
@@ -275,7 +269,17 @@ export class CameraComponent implements OnInit, OnDestroy {
         return topologyConnections(modelId, this.keypoints(detection));
     }
 
-    scalars(detection: Detection): OverlayScalar[] {
+    /** Scalars drawn below the box: the ones the label does not carry. */
+    scalars(modelId: string, detection: Detection): OverlayScalar[] {
+        const onLabel = new Set(
+            labelScalars(modelId).map((scalar) => scalar.name),
+        );
+        return this.allScalars(detection).filter(
+            (scalar) => !onLabel.has(scalar.name),
+        );
+    }
+
+    private allScalars(detection: Detection): OverlayScalar[] {
         const count = Math.min(
             detection.scalar_names.length,
             detection.scalar_values.length,
@@ -297,7 +301,7 @@ export class CameraComponent implements OnInit, OnDestroy {
         if (modelId !== HEAD_POSE_MODEL_ID) return [];
 
         const angles = new Map(
-            this.scalars(detection).map((scalar) => [
+            this.allScalars(detection).map((scalar) => [
                 scalar.name,
                 scalar.value,
             ]),
@@ -352,11 +356,34 @@ export class CameraComponent implements OnInit, OnDestroy {
         ];
     }
 
-    detectionLabel(detection: Detection): string {
+    detectionLabel(modelId: string, detection: Detection): string {
         const percentage = Number.isFinite(detection.score)
             ? ` ${Math.round(detection.score * 100)}%`
             : "";
-        return `${detection.label}${percentage}`;
+        const promoted = labelScalars(modelId)
+            .map((scalar) => this.labelScalarText(detection, scalar))
+            .filter((text): text is string => text !== undefined);
+        return [`${detection.label}${percentage}`, ...promoted].join(" | ");
+    }
+
+    private labelScalarText(
+        detection: Detection,
+        scalar: LabelScalar,
+    ): string | undefined {
+        const value = this.scalarValue(detection, scalar.name);
+        if (value === undefined) return undefined;
+        return `${scalar.name} ${value.toFixed(scalar.digits)}`;
+    }
+
+    /** Scalars are parallel arrays, so a value is only valid via its name. */
+    private scalarValue(
+        detection: Detection,
+        name: string,
+    ): number | undefined {
+        const index = detection.scalar_names.indexOf(name);
+        if (index < 0) return undefined;
+        const value = detection.scalar_values[index];
+        return Number.isFinite(value) ? value : undefined;
     }
 
     private updateDetectionModels(modelIds: string[]) {
