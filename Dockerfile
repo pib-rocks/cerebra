@@ -1,4 +1,10 @@
 FROM node:22 AS builder
+# Node needs more heap than the default on a 4 GB Raspberry Pi; without this
+# the Angular build is killed. Declared as an ARG so a machine with more RAM
+# can override it via build.args in its compose file, with the Pi's value as
+# the safe default for builds that pass nothing.
+ARG NODE_OPTIONS=--max-old-space-size=1536
+ENV NODE_OPTIONS=$NODE_OPTIONS
 
 WORKDIR /app
 
