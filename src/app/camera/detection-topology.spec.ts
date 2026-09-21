@@ -4,6 +4,8 @@ import {
     FACIAL_LANDMARKS_68_MODEL_ID,
     FACEMESH_MODEL_ID,
     modelDrawsSkeleton,
+    QR_CODE_INDEX_PAIRS,
+    QR_CODE_MODEL_ID,
     topologyConnections,
 } from "./detection-topology";
 import {FACEMESH_INDEX_PAIRS} from "./facemesh-topology";
@@ -71,6 +73,34 @@ describe("68-point facial-landmark topology", () => {
                 FACIAL_LANDMARKS_68_MODEL_ID,
                 keypoints.slice(0, 67),
             ),
+        ).toEqual([]);
+    });
+});
+
+describe("QR-code topology", () => {
+    it("closes the four detector-box corners without hiding the box", () => {
+        const keypoints = [
+            {name: "top_left", x: 10, y: 20},
+            {name: "top_right", x: 30, y: 20},
+            {name: "bottom_right", x: 30, y: 40},
+            {name: "bottom_left", x: 10, y: 40},
+        ];
+
+        expect(QR_CODE_INDEX_PAIRS).toEqual([
+            [0, 1],
+            [1, 2],
+            [2, 3],
+            [3, 0],
+        ]);
+        expect(modelDrawsSkeleton(QR_CODE_MODEL_ID)).toBeFalse();
+        expect(topologyConnections(QR_CODE_MODEL_ID, keypoints)).toEqual([
+            {x1: 10, y1: 20, x2: 30, y2: 20},
+            {x1: 30, y1: 20, x2: 30, y2: 40},
+            {x1: 30, y1: 40, x2: 10, y2: 40},
+            {x1: 10, y1: 40, x2: 10, y2: 20},
+        ]);
+        expect(
+            topologyConnections(QR_CODE_MODEL_ID, keypoints.slice(0, 3)),
         ).toEqual([]);
     });
 });
