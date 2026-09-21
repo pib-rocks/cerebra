@@ -331,6 +331,38 @@ describe("CameraComponent", () => {
         expect(fixture.debugElement.query(By.css(".detection-box"))).toBeNull();
     }));
 
+    it("should draw a closed QR polygon, decoded label, and box", fakeAsync(() => {
+        const message = detectionMessage("qr_code_detection_384x384");
+        message.detections[0].label = "decoded payload";
+        message.detections[0].keypoint_names = [
+            "top_left",
+            "top_right",
+            "bottom_right",
+            "bottom_left",
+        ];
+        message.detections[0].keypoint_x = [64, 320, 320, 64];
+        message.detections[0].keypoint_y = [48, 48, 240, 240];
+        message.detections[0].keypoint_z = [0, 0, 0, 0];
+
+        rosService.cameraReceiver$.next("camera-image");
+        rosService.detectionModelsReceiver$.next(["qr_code_detection_384x384"]);
+        rosService.detectionReceiver$.next(message);
+        tick(100);
+        fixture.detectChanges();
+
+        expect(
+            fixture.debugElement.queryAll(By.css(".detection-connection"))
+                .length,
+        ).toBe(4);
+        expect(
+            fixture.debugElement.query(By.css(".detection-box")),
+        ).not.toBeNull();
+        expect(
+            fixture.debugElement.query(By.css(".detection-label")).nativeElement
+                .textContent,
+        ).toContain("decoded payload");
+    }));
+
     it("should keep box and corner label for a detection without keypoints", fakeAsync(() => {
         const message = detectionMessage("objects");
         message.detections[0].keypoint_names = [];
