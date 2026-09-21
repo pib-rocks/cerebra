@@ -167,7 +167,7 @@
                     preserveAspectRatio="none"
                     [attr.aria-label]="layer.modelId + ' detections'">
                     @for ( detection of layer.message!.detections; track $index
-                    ) { @if (showsBox(detection)) {
+                    ) { @if (showsBox(layer.modelId, detection)) {
                     <rect
                         class="detection-box"
                         [attr.x]="detection.x_min"
@@ -185,7 +185,8 @@
                         vector-effect="non-scaling-stroke">
                         {{ detectionLabel(detection) }}
                     </text>
-                    @for (connection of connections(detection); track $index) {
+                    @for (connection of connections(layer.modelId, detection);
+                    track $index) {
                     <line
                         class="detection-connection"
                         [attr.x1]="connection.x1"
