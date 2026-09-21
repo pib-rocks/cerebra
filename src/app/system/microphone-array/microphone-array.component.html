@@ -26,23 +26,16 @@
         data-test="MSG_Microphone_Array_Success">
         {{ successMessage }}
     </div>
-    } @if (telemetry?.error) {
-    <div
-        class="alert alert-danger"
-        role="alert"
-        data-test="MSG_Microphone_Array_Telemetry_Error">
-        Telemetry error: {{ telemetry?.error }}
-    </div>
-    } @if (isSimulation) {
+    } @if (health?.simulation) {
     <div
         class="alert alert-warning simulation-banner"
         role="alert"
         data-test="MSG_Microphone_Array_Simulation">
-        <strong>Simulated microphone array values</strong>
+        <strong>Backend legacy/simulation answer</strong>
         <div>
-            The values shown are simulated, not live measurements. @if
-            (simulationReason) { Reason: {{ simulationReason }}. } Live device
-            owner: {{ simulationOwner }}.
+            These backend facts do not supply the live cockpit values. @if
+            (health?.simulationReason) { Reason: {{ health?.simulationReason }}.
+            } Live device owner: {{ health?.owner }}.
         </div>
     </div>
     }
@@ -51,6 +44,11 @@
         class="card p-3 shadow-sm mb-4"
         data-test="PANEL_Microphone_Array_Health">
         <h4 class="card-title text-white">Array Health</h4>
+        <div
+            class="source-label mb-2"
+            data-test="TXT_Health_Source">
+            Source: {{ legacySource }}
+        </div>
         @if (healthLoading && !health) {
         <div
             class="text-white-50"
@@ -120,6 +118,11 @@
         <div class="col-lg-5 mb-3 mb-lg-0">
             <div class="card p-3 shadow-sm h-100">
                 <h4 class="card-title text-white">DOA Compass</h4>
+                <div
+                    class="source-label"
+                    data-test="TXT_Telemetry_Source">
+                    Source: {{ rosbridgeSource }}
+                </div>
                 <div
                     class="doa-compass-wrapper d-flex flex-column align-items-center"
                     data-test="VIS_DOA_Compass">
@@ -260,28 +263,30 @@
                         class="badge"
                         data-test="BADGE_VAD"
                         [ngClass]="
-                            telemetry?.voiceActivity
+                            telemetry?.voiceActivity === true
                                 ? 'badge-success'
                                 : 'badge-secondary'
                         ">
-                        VAD: {{ telemetry?.voiceActivity ? "Active" : "Idle" }}
+                        VAD: {{ telemetry?.voiceActivity === undefined ? "not
+                        reported" : telemetry?.voiceActivity ? "Active" : "Idle"
+                        }}
                     </span>
                     <span
                         class="badge"
                         data-test="BADGE_Speech"
                         [ngClass]="
-                            telemetry?.speechDetected
+                            telemetry?.speechDetected === true
                                 ? 'badge-success'
                                 : 'badge-secondary'
                         ">
-                        Speech: {{ telemetry?.speechDetected ? "Detected" :
-                        "None" }}
+                        Speech: {{ telemetry?.speechDetected === undefined ?
+                        "not reported" : telemetry?.speechDetected ? "Detected"
+                        : "None" }}
                     </span>
                     <span
                         class="badge badge-secondary"
                         data-test="BADGE_Telemetry_Mode">
-                        {{ telemetry ? telemetry.simulation ? "Simulation" :
-                        "Hardware" : "not reported" }}
+                        {{ rosbridgeSource }}
                     </span>
                 </div>
             </div>
@@ -291,6 +296,9 @@
         <div class="col-lg-7">
             <div class="card p-3 shadow-sm h-100">
                 <h4 class="card-title text-white">Audio Level Meter</h4>
+                <div class="source-label mb-2">
+                    Source: {{ rosbridgeSource }}
+                </div>
                 <div
                     class="audio-levels"
                     data-test="VIS_Audio_Levels">
@@ -341,22 +349,22 @@
                     for="microphone-array-preset">
                     DSP Preset
                 </label>
-                <select
+                <input
                     id="microphone-array-preset"
-                    class="form-select"
+                    type="text"
+                    class="form-control"
                     data-test="SEL_Microphone_Array_Preset"
                     [(ngModel)]="tuning.preset"
                     [ngModelOptions]="{standalone: true}"
-                    [disabled]="saving"
-                    (ngModelChange)="onPresetChange($event)">
-                    @for (preset of tuning.presets; track preset) {
-                    <option [ngValue]="preset">{{ preset }}</option>
-                    }
-                </select>
+                    [disabled]="saving || tuning.preset === undefined"
+                    (change)="onPresetChange(tuning.preset!)" />
+                @if (tuning.preset === undefined) {
+                <span class="text-white-50 small">not reported</span>
+                }
                 <div
                     class="text-white-50 small mt-2"
                     data-test="TXT_Tuning_Mode">
-                    Source: {{ tuning.simulation ? "Simulation" : "Hardware" }}
+                    Source: {{ tuningSource }}
                 </div>
             </div>
         </div>
@@ -378,7 +386,7 @@
                                 [disabled]="
                                     saving || tuning.agcEnabled === undefined
                                 "
-                                (ngModelChange)="onDspChange()" />
+                                (ngModelChange)="onDspChange('AGCONOFF')" />
                             <label
                                 class="form-check-label text-white"
                                 for="agc-enabled">
@@ -412,7 +420,7 @@
                                 !tuning.agcEnabled ||
                                 tuning.agcMaxGain === undefined
                             "
-                            (change)="onDspChange()" />
+                            (change)="onDspChange('AGCMAXGAIN')" />
 
                         <label
                             class="text-white-50 small mt-2"
@@ -436,7 +444,7 @@
                                 tuning.agcDesiredLevel === undefined
                             "
                             (ngModelChange)="setTargetLevelDbov($event)"
-                            (change)="onDspChange()" />
+                            (change)="onDspChange('AGCDESIREDLEVEL')" />
 
                         <label
                             class="text-white-50 small mt-2"
@@ -460,7 +468,7 @@
                                 !tuning.agcEnabled ||
                                 tuning.agcTime === undefined
                             "
-                            (change)="onDspChange()" />
+                            (change)="onDspChange('AGCTIME')" />
                     </div>
 
                     <div class="col-md-6 mb-3">
@@ -479,7 +487,9 @@
                                     tuning.stationaryNoiseSuppression ===
                                         undefined
                                 "
-                                (ngModelChange)="onDspChange()" />
+                                (ngModelChange)="
+                                    onDspChange('STATNOISEONOFF')
+                                " />
                             <label
                                 class="form-check-label text-white"
                                 for="stat-noise">
@@ -506,7 +516,9 @@
                                     tuning.nonStationaryNoiseSuppression ===
                                         undefined
                                 "
-                                (ngModelChange)="onDspChange()" />
+                                (ngModelChange)="
+                                    onDspChange('NONSTATNOISEONOFF')
+                                " />
                             <label
                                 class="form-check-label text-white"
                                 for="nonstat-noise">
@@ -529,7 +541,7 @@
                                 [disabled]="
                                     saving || tuning.echoEnabled === undefined
                                 "
-                                (ngModelChange)="onDspChange()" />
+                                (ngModelChange)="onDspChange('ECHOONOFF')" />
                             <label
                                 class="form-check-label text-white"
                                 for="aec-enabled">
@@ -555,7 +567,9 @@
                                     tuning.stationaryNoiseSuppressionSr ===
                                         undefined
                                 "
-                                (ngModelChange)="onDspChange()" />
+                                (ngModelChange)="
+                                    onDspChange('STATNOISEONOFF_SR')
+                                " />
                             <label
                                 class="form-check-label text-white"
                                 for="stat-noise-sr">
@@ -582,7 +596,9 @@
                                     tuning.nonStationaryNoiseSuppressionSr ===
                                         undefined
                                 "
-                                (ngModelChange)="onDspChange()" />
+                                (ngModelChange)="
+                                    onDspChange('NONSTATNOISEONOFF_SR')
+                                " />
                             <label
                                 class="form-check-label text-white"
                                 for="nonstat-noise-sr">
@@ -609,7 +625,7 @@
                                 saving ||
                                 tuning.highPassFilter === undefined
                             "
-                            (ngModelChange)="onDspChange()">
+                            (ngModelChange)="onDspChange('HPFONOFF')">
                             @for (opt of highPassOptions; track opt) {
                             <option [ngValue]="opt.value">
                                 {{ opt.label }}
@@ -645,8 +661,8 @@
                     data-test="SEL_LED_Mode"
                     [(ngModel)]="tuning.ledMode"
                     [ngModelOptions]="{standalone: true}"
-                    [disabled]="saving"
-                    (ngModelChange)="onLedChange()">
+                    [disabled]="saving || tuning.ledMode === undefined"
+                    (ngModelChange)="onLedChange('mode')">
                     @for (mode of ledModes; track mode) {
                     <option [ngValue]="mode.value">{{ mode.label }}</option>
                     }
@@ -657,7 +673,8 @@
                 <label
                     class="text-white-50 small"
                     for="led-brightness">
-                    Brightness: {{ tuning.ledBrightness }}
+                    Brightness: {{ tuning.ledBrightness === undefined ? "not
+                    reported" : tuning.ledBrightness }}
                 </label>
                 <input
                     id="led-brightness"
@@ -669,8 +686,12 @@
                     data-test="SLD_LED_Brightness"
                     [(ngModel)]="tuning.ledBrightness"
                     [ngModelOptions]="{standalone: true}"
-                    [disabled]="saving || tuning.ledMode === 'off'"
-                    (change)="onLedChange()" />
+                    [disabled]="
+                        saving ||
+                        tuning.ledMode === 'off' ||
+                        tuning.ledBrightness === undefined
+                    "
+                    (change)="onLedChange('brightness')" />
             </div>
 
             <div class="col-md-4 mb-3">
@@ -691,9 +712,9 @@
                             saving ||
                             tuning.ledMode === 'off'
                         "
-                        (change)="onLedChange()" />
+                        (change)="onLedChange('color')" />
                     <span class="text-white-50 ml-2 small"
-                        >{{ tuning.ledColor }}</span
+                        >{{ tuning.ledColor ?? "not reported" }}</span
                     >
                 </div>
             </div>
@@ -707,8 +728,8 @@
                         data-test="CHK_VAD_LED"
                         [(ngModel)]="tuning.vadLed"
                         [ngModelOptions]="{standalone: true}"
-                        [disabled]="saving"
-                        (ngModelChange)="onLedChange()" />
+                        [disabled]="saving || tuning.vadLed === undefined"
+                        (ngModelChange)="onLedChange('vad_led')" />
                     <label
                         class="form-check-label text-white"
                         for="vad-led">
@@ -717,6 +738,14 @@
                 </div>
             </div>
         </div>
+    </div>
+    } @else {
+    <div
+        class="card p-3 shadow-sm"
+        data-test="PANEL_Tuning_Not_Reported">
+        <h4 class="card-title text-white">Array Parameters</h4>
+        <div class="source-label">Source: {{ tuningSource }}</div>
+        <span class="text-white-50">not reported</span>
     </div>
     }
 </div>

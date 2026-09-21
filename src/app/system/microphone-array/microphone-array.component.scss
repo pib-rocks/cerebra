@@ -37,6 +37,13 @@
         }
     }
 
+    .source-label {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
     .health-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));

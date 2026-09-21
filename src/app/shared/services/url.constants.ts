@@ -21,6 +21,7 @@ export enum UrlConstants {
     SYSTEM_UPDATE_AVAILABLE = "/system/update/available",
     MICROPHONE_ARRAY = "/system/microphone-array",
     MICROPHONE_ARRAY_HEALTH = "/system/microphone-array/health",
+    ROSBRIDGE_WEBSOCKET_PORT = "9090",
     HARDWARE_CONFIG = "/system/hardware-config",
     HARDWARE_VARIANT = "/system/hardware-variant",
     HARDWARE_CAPABILITIES = "/system/hardware-capabilities",
