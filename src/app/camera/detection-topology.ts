@@ -18,16 +18,18 @@ import {
     SkeletonConnection,
     SkeletonKeypoint,
 } from "./hand-skeleton";
+import {FACEMESH_INDEX_PAIRS} from "./facemesh-topology";
 
 export const HAND_MODEL_IDS: ReadonlyArray<string> = [
     "hand_tracking",
     "hand_tracking_mp",
     "imitation",
 ];
+export const FACEMESH_MODEL_ID = "facemesh_crop";
 
 /** Models whose overlay draws a skeleton instead of a bounding box. */
 export function modelDrawsSkeleton(modelId: string): boolean {
-    return HAND_MODEL_IDS.includes(modelId);
+    return HAND_MODEL_IDS.includes(modelId) || modelId === FACEMESH_MODEL_ID;
 }
 
 function segment(
@@ -87,6 +89,9 @@ export function topologyConnections(
     keypoints: ReadonlyArray<SkeletonKeypoint>,
 ): SkeletonConnection[] {
     if (!modelDrawsSkeleton(modelId)) return [];
+    if (modelId === FACEMESH_MODEL_ID) {
+        return byIndexPairs(keypoints, FACEMESH_INDEX_PAIRS, 468);
+    }
     const byName = byNamePairs(keypoints, HAND_SKELETON_NAME_PAIRS);
     if (byName) return byName;
     return byIndexPairs(
