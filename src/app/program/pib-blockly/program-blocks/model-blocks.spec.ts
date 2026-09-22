@@ -129,10 +129,11 @@ describe("model blocks", () => {
         expect(FakeWebSocket.instances).toEqual([]);
     });
 
-    it("keeps lifecycle model IDs as dropdowns", () => {
+    it("keeps lifecycle model IDs as dropdowns and detection model IDs as sockets", () => {
         const workspace = new Blockly.Workspace();
         const start = workspace.newBlock("start_model");
         const stop = workspace.newBlock("stop_model");
+        const detection = workspace.newBlock("get_detection_field");
 
         expect(start.getField("MODEL_ID")).toEqual(
             jasmine.any(Blockly.FieldDropdown),
@@ -142,6 +143,10 @@ describe("model blocks", () => {
             jasmine.any(Blockly.FieldDropdown),
         );
         expect(stop.getInput("MODEL_ID")).toBeNull();
+        expect(detection.getField("MODEL_ID")).toBeNull();
+        expect(detection.getInput("MODEL_ID")?.connection?.getCheck()).toEqual([
+            "String",
+        ]);
         expect(
             (start.getField("MODEL_ID") as Blockly.FieldDropdown).getOptions(
                 false,
