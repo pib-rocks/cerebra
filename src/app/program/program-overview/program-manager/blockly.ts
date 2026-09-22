@@ -388,13 +388,16 @@ export const toolbox: string = `<xml xmlns="http://www.w3.org/1999/xhtml" id="to
 </category>
 <category name="Visual Skills" colour="200">
     <block type="get_face_detections"></block>
+    <block type="get_object_detections"></block>
+    <block type="get_qr_detections"></block>
+    <block type="get_emotion_detections"></block>
+    <block type="get_head_pose_detections"></block>
     <block type="vision_object_detected"></block>
     <block type="vision_object_count"></block>
     <block type="vision_objects_different"></block>
     <block type="vision_describe_image"></block>
     <block type="start_model"></block>
     <block type="stop_model"></block>
-    <block type="get_detection_field"></block>
     <block type="camera_get_depth_frame"></block>
     <block type="camera_get_distance_at_px"></block>
     <block type="imu_get_acceleration"></block>
