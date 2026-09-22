@@ -387,8 +387,7 @@ export const toolbox: string = `<xml xmlns="http://www.w3.org/1999/xhtml" id="to
     <block type="get_sound_direction"></block>
 </category>
 <category name="Visual Skills" colour="200">
-    <block type="face_detector_start_stop"></block>
-    <block type="face_detector_running"></block>
+    <block type="get_face_detections"></block>
     <block type="vision_object_detected"></block>
     <block type="vision_object_count"></block>
     <block type="vision_objects_different"></block>
