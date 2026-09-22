@@ -286,7 +286,14 @@ def ${generator.FUNCTION_NAME_PLACEHOLDER_}(model_id) -> None:
         models.stop_model(str(model_id))
 `;
 
-export const GET_FACE_DETECTIONS_FUNCTION = (generator: CodeGenerator) => `
+function latestDetectionsFunction(
+    generator: CodeGenerator,
+    topic: string,
+    emptyWarning: string,
+    extraFields = "",
+    extraHelpers = "",
+) {
+    return `
 def ${generator.FUNCTION_NAME_PLACEHOLDER_}(timeout_sec=10.0):
     received = {}
 
@@ -295,7 +302,7 @@ def ${generator.FUNCTION_NAME_PLACEHOLDER_}(timeout_sec=10.0):
 
     subscription = node.create_subscription(
         DetectionArray,
-        "/detections/face_detection_yunet_160x120",
+        "${topic}",
         _on_detection,
         10,
     )
@@ -308,9 +315,9 @@ def ${generator.FUNCTION_NAME_PLACEHOLDER_}(timeout_sec=10.0):
 
     message = received.get("message")
     if message is None:
-        logging.warning("no face detections received")
+        logging.warning("${emptyWarning}")
         return []
-
+${extraHelpers}
     return [
         [
             detection.label,
@@ -318,73 +325,60 @@ def ${generator.FUNCTION_NAME_PLACEHOLDER_}(timeout_sec=10.0):
             detection.x_min,
             detection.y_min,
             detection.x_max,
-            detection.y_max,
+            detection.y_max,${extraFields}
         ]
         for detection in message.detections
     ]
 `;
+}
 
-export const GET_DETECTION_FIELD_FUNCTION = (generator: CodeGenerator) => `
-def ${generator.FUNCTION_NAME_PLACEHOLDER_}(
-    model_id, detection_index, field, name="", timeout_sec=10.0
-):
-    model_id = str(model_id)
-    received = {}
+export const GET_FACE_DETECTIONS_FUNCTION = (generator: CodeGenerator) =>
+    latestDetectionsFunction(
+        generator,
+        "/detections/face_detection_yunet_160x120",
+        "no face detections received",
+    );
 
-    def _on_detection(message):
-        received["message"] = message
+export const GET_OBJECT_DETECTIONS_FUNCTION = (generator: CodeGenerator) =>
+    latestDetectionsFunction(
+        generator,
+        "/detections/yolov6n_coco_640x640",
+        "no object detections received",
+    );
 
-    subscription = node.create_subscription(
-        DetectionArray,
-        f"/detections/{model_id}",
-        _on_detection,
-        10,
-    )
-    deadline = time.monotonic() + timeout_sec
-    try:
-        while "message" not in received and time.monotonic() < deadline:
-            rclpy.spin_once(node, timeout_sec=0.1)
-    finally:
-        node.destroy_subscription(subscription)
+export const GET_QR_DETECTIONS_FUNCTION = (generator: CodeGenerator) =>
+    latestDetectionsFunction(
+        generator,
+        "/detections/qr_code_detection_384x384",
+        "no qr detections received",
+    );
 
-    message = received.get("message")
-    index = int(detection_index)
-    if message is None or index < 0 or index >= len(message.detections):
-        logging.warning(
-            f"no detection {index} received from model '{model_id}'"
-        )
-        return 0
+export const GET_EMOTION_DETECTIONS_FUNCTION = (generator: CodeGenerator) =>
+    latestDetectionsFunction(
+        generator,
+        "/detections/emotion_recognition_crop",
+        "no emotion detections received",
+    );
 
-    detection = message.detections[index]
-    if field in ("label", "score", "x_min", "y_min", "x_max", "y_max"):
-        return getattr(detection, field)
-
-    name = str(name)
-    if field in ("keypoint_x", "keypoint_y", "keypoint_z"):
-        if name not in detection.keypoint_names:
-            logging.warning(
-                f"detection from '{model_id}' has no keypoint named '{name}'"
-            )
-            return 0
-        keypoint_index = detection.keypoint_names.index(name)
-        values = getattr(detection, field)
-        return values[keypoint_index] if keypoint_index < len(values) else 0
-
-    if field == "scalar_values":
-        if name not in detection.scalar_names:
-            logging.warning(
-                f"detection from '{model_id}' has no scalar named '{name}'"
-            )
-            return 0
-        scalar_index = detection.scalar_names.index(name)
-        return (
-            detection.scalar_values[scalar_index]
-            if scalar_index < len(detection.scalar_values)
-            else 0
-        )
-
-    raise ValueError(f"unsupported detection field: {field}")
-`;
+export const GET_HEAD_POSE_DETECTIONS_FUNCTION = (generator: CodeGenerator) =>
+    latestDetectionsFunction(
+        generator,
+        "/detections/head_pose_estimation_crop",
+        "no head pose detections received",
+        `
+            _scalar(detection, "yaw_deg", "yaw"),
+            _scalar(detection, "pitch_deg", "pitch"),
+            _scalar(detection, "roll_deg", "roll"),`,
+        `
+    def _scalar(detection, *names):
+        for name in names:
+            if name in detection.scalar_names:
+                index = detection.scalar_names.index(name)
+                if index < len(detection.scalar_values):
+                    return detection.scalar_values[index]
+        return 0.0
+`,
+    );
 
 // set-solid-state-relay
 
