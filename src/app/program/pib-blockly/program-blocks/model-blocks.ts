@@ -1,11 +1,5 @@
 import * as Blockly from "blockly";
 
-const DETECTION_MODEL_ID_INPUT = {
-    type: "input_value",
-    name: "MODEL_ID",
-    check: "String",
-};
-
 type ModelOption = [string, string];
 
 const FALLBACK_MODEL_OPTIONS: ModelOption[] = [
@@ -162,42 +156,39 @@ const detectionBlocks = Blockly.common.createBlockDefinitionsFromJsonArray([
         helpUrl: "",
     },
     {
-        type: "get_detection_field",
-        message0: "detection from model %1 item %2 field %3 name %4",
-        args0: [
-            DETECTION_MODEL_ID_INPUT,
-            {
-                type: "input_value",
-                name: "INDEX",
-                check: "Number",
-                extensions: "number_validation",
-            },
-            {
-                type: "field_dropdown",
-                name: "FIELD",
-                options: [
-                    ["label", "label"],
-                    ["score", "score"],
-                    ["x min", "x_min"],
-                    ["y min", "y_min"],
-                    ["x max", "x_max"],
-                    ["y max", "y_max"],
-                    ["keypoint x", "keypoint_x"],
-                    ["keypoint y", "keypoint_y"],
-                    ["keypoint z", "keypoint_z"],
-                    ["scalar value", "scalar_values"],
-                ],
-            },
-            {
-                type: "input_value",
-                name: "NAME",
-                check: "String",
-            },
-        ],
-        output: null,
+        type: "get_object_detections",
+        message0: "latest object detections",
+        output: "Array",
         colour: 200,
         tooltip:
-            "Reads a field from the latest detection. Name selects a named keypoint or scalar; it is ignored for label, score, and bounding-box fields.",
+            "Returns the latest object detections as a list. Each object is [label, score, x_min, y_min, x_max, y_max] (indices 0 through 5).",
+        helpUrl: "",
+    },
+    {
+        type: "get_qr_detections",
+        message0: "latest QR detections",
+        output: "Array",
+        colour: 200,
+        tooltip:
+            "Returns the latest QR detections as a list. Each code is [label, score, x_min, y_min, x_max, y_max] (indices 0 through 5).",
+        helpUrl: "",
+    },
+    {
+        type: "get_emotion_detections",
+        message0: "latest emotion detections",
+        output: "Array",
+        colour: 200,
+        tooltip:
+            "Returns the latest emotion detections as a list. Each face is [label, score, x_min, y_min, x_max, y_max] (indices 0 through 5).",
+        helpUrl: "",
+    },
+    {
+        type: "get_head_pose_detections",
+        message0: "latest head pose detections",
+        output: "Array",
+        colour: 200,
+        tooltip:
+            "Returns the latest head pose detections as a list. Each face is [label, score, x_min, y_min, x_max, y_max, yaw_deg, pitch_deg, roll_deg] (indices 0 through 8).",
         helpUrl: "",
     },
 ]);

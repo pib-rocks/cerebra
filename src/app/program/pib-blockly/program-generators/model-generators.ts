@@ -13,7 +13,10 @@ import {
 } from "./util/definitions";
 import {
     GET_FACE_DETECTIONS_FUNCTION,
-    GET_DETECTION_FIELD_FUNCTION,
+    GET_OBJECT_DETECTIONS_FUNCTION,
+    GET_QR_DETECTIONS_FUNCTION,
+    GET_EMOTION_DETECTIONS_FUNCTION,
+    GET_HEAD_POSE_DETECTIONS_FUNCTION,
     START_MODEL_FUNCTION,
     STOP_MODEL_FUNCTION,
 } from "./util/function-declarations";
@@ -52,57 +55,56 @@ export function stop_model(block: Block, generator: typeof pythonGenerator) {
     return `${functionName}(${modelIdFromDropdown(block, generator)})\n`;
 }
 
-export function get_detection_field(
-    block: Block,
-    generator: typeof pythonGenerator,
-): [string, Order] {
-    Object.assign(generator.definitions_, {
-        IMPORT_RCLPY,
-        IMPORT_TIME,
-        IMPORT_LOGGING,
-        IMPORT_SYS,
-        IMPORT_DETECTION_ARRAY,
-        CONFIGURE_LOGGING,
-        INIT_ROS,
-    });
+function latestDetectionsReporter(
+    functionName: string,
+    declaration: (generator: typeof pythonGenerator) => string,
+) {
+    return (
+        _block: Block,
+        generator: typeof pythonGenerator,
+    ): [string, Order] => {
+        Object.assign(generator.definitions_, {
+            IMPORT_RCLPY,
+            IMPORT_TIME,
+            IMPORT_LOGGING,
+            IMPORT_SYS,
+            IMPORT_DETECTION_ARRAY,
+            CONFIGURE_LOGGING,
+            INIT_ROS,
+        });
 
-    const functionName = generator.provideFunction_(
-        "get_detection_field",
-        GET_DETECTION_FIELD_FUNCTION(generator),
-    );
-    const modelId =
-        generator.valueToCode(block, "MODEL_ID", Order.NONE) ||
-        '"hand_tracking"';
-    const index = generator.valueToCode(block, "INDEX", Order.NONE) || "0";
-    const name = generator.valueToCode(block, "NAME", Order.NONE) || '""';
-    const field = generator.quote_(String(block.getFieldValue("FIELD") || ""));
+        const provided = generator.provideFunction_(
+            functionName,
+            declaration(generator),
+        );
 
-    return [
-        `${functionName}(${modelId}, ${index}, ${field}, ${name})`,
-        Order.FUNCTION_CALL,
-    ];
+        return [`${provided}()`, Order.FUNCTION_CALL];
+    };
 }
 
-export function get_face_detections(
-    _block: Block,
-    generator: typeof pythonGenerator,
-): [string, Order] {
-    Object.assign(generator.definitions_, {
-        IMPORT_RCLPY,
-        IMPORT_TIME,
-        IMPORT_LOGGING,
-        IMPORT_SYS,
-        IMPORT_DETECTION_ARRAY,
-        CONFIGURE_LOGGING,
-        INIT_ROS,
-    });
+export const get_face_detections = latestDetectionsReporter(
+    "get_face_detections",
+    GET_FACE_DETECTIONS_FUNCTION,
+);
 
-    const functionName = generator.provideFunction_(
-        "get_face_detections",
-        GET_FACE_DETECTIONS_FUNCTION(generator),
-    );
+export const get_object_detections = latestDetectionsReporter(
+    "get_object_detections",
+    GET_OBJECT_DETECTIONS_FUNCTION,
+);
 
-    return [`${functionName}()`, Order.FUNCTION_CALL];
-}
+export const get_qr_detections = latestDetectionsReporter(
+    "get_qr_detections",
+    GET_QR_DETECTIONS_FUNCTION,
+);
+
+export const get_emotion_detections = latestDetectionsReporter(
+    "get_emotion_detections",
+    GET_EMOTION_DETECTIONS_FUNCTION,
+);
+
+export const get_head_pose_detections = latestDetectionsReporter(
+    "get_head_pose_detections",
+    GET_HEAD_POSE_DETECTIONS_FUNCTION,
+);
 
 export {pythonGenerator};
