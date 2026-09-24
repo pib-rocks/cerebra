@@ -17,6 +17,12 @@ import {UrlConstants} from "./url.constants";
 import {MotorDTO} from "../types/motor-dto";
 import {MotorSettingsError} from "../error/motor-settings-error";
 import {MotorPosition, fromJointTrajectory} from "../types/motor-position";
+import {HardwareFeedback} from "../types/hardware-capabilities";
+
+export type DiagnosticMotorFeedback = Extract<
+    HardwareFeedback,
+    "actual_position" | "temperature"
+>;
 
 @Injectable({
     providedIn: "root",
@@ -46,6 +52,10 @@ export class MotorService {
         new Map();
     private motorNameToCurrentSubject: Map<string, BehaviorSubject<number>> =
         new Map();
+    private motorNameToFeedbackSubject: Map<
+        string,
+        BehaviorSubject<Partial<Record<DiagnosticMotorFeedback, string>>>
+    > = new Map();
 
     private publishToSubject<T>(
         motorName: string,
@@ -54,7 +64,7 @@ export class MotorService {
     ) {
         const subject = motorNameToSubject.get(motorName);
         if (subject) subject.next(value ?? subject.value);
-        else if (value)
+        else if (value !== undefined)
             motorNameToSubject.set(motorName, new BehaviorSubject(value as T));
     }
 
@@ -138,12 +148,49 @@ export class MotorService {
         this.rosService.currentReceiver$.subscribe(
             (status: DiagnosticStatus) => {
                 const motorName: string = status.name;
-                const current: number = Number(status.values[0].value);
-                this.publishToSubject(
-                    motorName,
-                    this.motorNameToCurrentSubject,
-                    current,
+                const values = new Map(
+                    status.values.map(({key, value}) => [
+                        key.toLowerCase(),
+                        value,
+                    ]),
                 );
+                const currentValue =
+                    values.get("current") ??
+                    values.get(motorName.toLowerCase()) ??
+                    (status.values.length === 1
+                        ? status.values[0].value
+                        : undefined);
+                if (currentValue !== undefined) {
+                    const current = Number(currentValue);
+                    if (Number.isFinite(current)) {
+                        this.publishToSubject(
+                            motorName,
+                            this.motorNameToCurrentSubject,
+                            current,
+                        );
+                    }
+                }
+
+                const feedback: Partial<
+                    Record<DiagnosticMotorFeedback, string>
+                > = {};
+                for (const key of [
+                    "actual_position",
+                    "temperature",
+                ] as DiagnosticMotorFeedback[]) {
+                    const value = values.get(key);
+                    if (value !== undefined) feedback[key] = value;
+                }
+                if (Object.keys(feedback).length > 0) {
+                    const previous =
+                        this.motorNameToFeedbackSubject.get(motorName)?.value ??
+                        {};
+                    this.publishToSubject(
+                        motorName,
+                        this.motorNameToFeedbackSubject,
+                        {...previous, ...feedback},
+                    );
+                }
             },
         );
     }
@@ -170,6 +217,17 @@ export class MotorService {
             this.motorNameToCurrentSubject,
             this.defaultCurrent,
         );
+    }
+
+    getFeedbackObservable(
+        motorName: string,
+        feedback: DiagnosticMotorFeedback,
+    ): Observable<string | undefined> {
+        return this.getObservable(
+            motorName,
+            this.motorNameToFeedbackSubject,
+            {},
+        ).pipe(map((values) => values[feedback]));
     }
 
     applySettings(motorName: string, settings: MotorSettings): void {

@@ -70,6 +70,11 @@ import {
     SetSolidStateRelayStateRequest,
     SetSolidStateRelayStateResponse,
 } from "../../ros-types/srv/set-solid-state-relay-state";
+import {DetectionArray} from "../../ros-types/msg/detection-array";
+import {ModelStatusArray} from "../../ros-types/msg/model-status";
+import {ListModelsResponse, ModelInfo} from "../../ros-types/srv/list-models";
+import {StartModelRequest} from "../../ros-types/srv/start-model";
+import {StopModelRequest} from "../../ros-types/srv/stop-model";
 
 @Injectable({
     providedIn: "root",
@@ -106,6 +111,10 @@ export class RosService implements IRosService {
     solidStateRelayStateReceiver$: BehaviorSubject<
         SolidStateRelayState | undefined
     > = new BehaviorSubject<SolidStateRelayState | undefined>(undefined);
+    detectionReceiver$ = new Subject<DetectionArray>();
+    detectionModelsReceiver$ = new BehaviorSubject<string[]>([]);
+    detectionClearReceiver$ = new Subject<string | undefined>();
+    modelStatusReceiver$ = new BehaviorSubject<ModelStatusArray>({models: []});
 
     private ros!: ROSLIB.Ros;
 
@@ -125,6 +134,14 @@ export class RosService implements IRosService {
     private voiceAssistantStateTopic!: ROSLIB.Topic<VoiceAssistantState>;
     private chatIsListeningTopic!: ROSLIB.Topic<ChatIsListening>;
     private solidStateRelayStateTopic!: ROSLIB.Topic<SolidStateRelayState>;
+    private modelStatusTopic!: ROSLIB.Topic<ModelStatusArray>;
+    private detectionTopics = new Map<string, ROSLIB.Topic<DetectionArray>>();
+    private detectionTopicRefreshTimer?: ReturnType<typeof setInterval>;
+    private detectionDiscoveryGeneration = 0;
+    private detectionDiscoveryInFlight = false;
+    private lastModelStatus?: string;
+    private cameraSubscriptionRequested = false;
+    private cameraTopicSubscribed = false;
 
     private existTokenService!: ROSLIB.Service<
         Record<string, never>,
@@ -171,6 +188,18 @@ export class RosService implements IRosService {
         SetSolidStateRelayStateRequest,
         SetSolidStateRelayStateResponse
     >;
+    private listModelsService!: ROSLIB.Service<
+        Record<string, never>,
+        ListModelsResponse
+    >;
+    private startModelService!: ROSLIB.Service<
+        StartModelRequest,
+        Record<string, never>
+    >;
+    private stopModelService!: ROSLIB.Service<
+        StopModelRequest,
+        Record<string, never>
+    >;
 
     private refreshColorsService!: ROSLIB.Service<
         Record<string, never>,
@@ -197,6 +226,17 @@ export class RosService implements IRosService {
 
         this.ros.on("close", () => {
             console.log("Disconnected from ROSBridge server.");
+            this.modelStatusTopic?.unsubscribe();
+            if (this.cameraTopicSubscribed) {
+                this.cameraTopic?.unsubscribe();
+                this.cameraTopicSubscribed = false;
+            }
+            this.stopDetectionTopicDiscovery();
+            this.detectionDiscoveryGeneration++;
+            this.detectionDiscoveryInFlight = false;
+            this.clearDetectionTopics();
+            this.lastModelStatus = undefined;
+            this.modelStatusReceiver$.next({models: []});
             this.connectionStatusSubject.next(false);
         });
     }
@@ -214,6 +254,7 @@ export class RosService implements IRosService {
     }
 
     private initTopicsAndServices() {
+        this.cameraTopicSubscribed = false;
         this.cameraTopic = this.createRosTopic(
             rosTopics.cameraTopicName,
             rosDataTypes.string,
@@ -278,6 +319,10 @@ export class RosService implements IRosService {
             rosTopics.solidStateRelayState,
             rosDataTypes.solidStateRelayState,
         );
+        this.modelStatusTopic = this.createRosTopic(
+            rosTopics.modelStatus,
+            rosDataTypes.modelStatusArray,
+        );
 
         this.applyMotorSettingsService = this.createRosService(
             rosServices.applyMotorSettings,
@@ -322,6 +367,18 @@ export class RosService implements IRosService {
         this.setSolidStateRelayStateService = this.createRosService(
             rosServices.setSolidStateRelayState,
             rosDataTypes.setSolidStateRelayState,
+        );
+        this.listModelsService = this.createRosService(
+            rosServices.listModels,
+            rosDataTypes.listModels,
+        );
+        this.startModelService = this.createRosService(
+            rosServices.startModel,
+            rosDataTypes.startModel,
+        );
+        this.stopModelService = this.createRosService(
+            rosServices.stopModel,
+            rosDataTypes.stopModel,
         );
         this.refreshColorsService = this.createRosService(
             rosServices.refreshColors,
@@ -372,6 +429,125 @@ export class RosService implements IRosService {
         this.subscribeProxyRunProgramResultTopic();
         this.subscribeProxyRunProgramStatusTopic();
         this.subscribeSolidStateRelayStateTopic();
+        this.subscribeModelStatusTopic();
+        this.startDetectionTopicDiscovery();
+        if (this.cameraSubscriptionRequested) this.subscribeCameraTopic();
+    }
+
+    private subscribeModelStatusTopic() {
+        this.modelStatusTopic.subscribe((message) => {
+            const serializedStatus = JSON.stringify(
+                [...message.models]
+                    .sort((left, right) =>
+                        left.model_id.localeCompare(right.model_id),
+                    )
+                    .map(({model_id, state, active}) => ({
+                        model_id,
+                        state,
+                        active,
+                    })),
+            );
+            if (
+                this.lastModelStatus !== undefined &&
+                serializedStatus !== this.lastModelStatus
+            ) {
+                this.detectionClearReceiver$.next(undefined);
+            }
+            this.lastModelStatus = serializedStatus;
+            this.modelStatusReceiver$.next(message);
+            this.refreshDetectionTopics();
+        });
+    }
+
+    private startDetectionTopicDiscovery() {
+        this.stopDetectionTopicDiscovery();
+        this.refreshDetectionTopics();
+        this.detectionTopicRefreshTimer = setInterval(
+            () => this.refreshDetectionTopics(),
+            1000,
+        );
+    }
+
+    private stopDetectionTopicDiscovery() {
+        if (this.detectionTopicRefreshTimer !== undefined) {
+            clearInterval(this.detectionTopicRefreshTimer);
+            this.detectionTopicRefreshTimer = undefined;
+        }
+    }
+
+    private refreshDetectionTopics() {
+        if (this.detectionDiscoveryInFlight) return;
+        this.detectionDiscoveryInFlight = true;
+        const generation = ++this.detectionDiscoveryGeneration;
+        this.ros.getTopics(
+            ({topics}: {topics: string[]}) => {
+                if (generation !== this.detectionDiscoveryGeneration) return;
+                this.detectionDiscoveryInFlight = false;
+                this.syncDetectionTopics(
+                    topics.filter((topic) => topic.startsWith("/detections/")),
+                );
+            },
+            (error) => {
+                if (generation === this.detectionDiscoveryGeneration) {
+                    this.detectionDiscoveryInFlight = false;
+                }
+                console.error("Could not discover detection topics:", error);
+            },
+        );
+    }
+
+    private syncDetectionTopics(topicNames: string[]) {
+        const currentTopicNames = new Set(topicNames);
+
+        for (const [topicName, topic] of this.detectionTopics) {
+            if (!currentTopicNames.has(topicName)) {
+                topic.unsubscribe();
+                this.detectionTopics.delete(topicName);
+                this.detectionClearReceiver$.next(
+                    this.modelIdFromTopic(topicName),
+                );
+            }
+        }
+
+        for (const topicName of currentTopicNames) {
+            if (this.detectionTopics.has(topicName)) continue;
+
+            const topic = this.createRosTopic<DetectionArray>(
+                topicName,
+                rosDataTypes.detectionArray,
+            );
+            topic.subscribe((message) => {
+                const detectionArray = message as DetectionArray;
+                if (!detectionArray.model_id) {
+                    detectionArray.model_id = this.modelIdFromTopic(topicName);
+                }
+                this.detectionReceiver$.next(detectionArray);
+            });
+            this.detectionTopics.set(topicName, topic);
+        }
+
+        const modelIds = [...currentTopicNames]
+            .map((topicName) => this.modelIdFromTopic(topicName))
+            .sort();
+        if (
+            modelIds.join("\0") !==
+            this.detectionModelsReceiver$.value.join("\0")
+        ) {
+            this.detectionModelsReceiver$.next(modelIds);
+        }
+    }
+
+    private clearDetectionTopics() {
+        for (const topic of this.detectionTopics.values()) {
+            topic.unsubscribe();
+        }
+        this.detectionTopics.clear();
+        this.detectionModelsReceiver$.next([]);
+        this.detectionClearReceiver$.next(undefined);
+    }
+
+    private modelIdFromTopic(topicName: string): string {
+        return topicName.slice("/detections/".length);
     }
 
     private subscribeDefaultRosMessageTopic(
@@ -385,14 +561,20 @@ export class RosService implements IRosService {
 
     //Has its own method to make it accessible by the camera components "startCamera" method
     subscribeCameraTopic() {
+        this.cameraSubscriptionRequested = true;
+        if (!this.cameraTopic || this.cameraTopicSubscribed) return;
         this.subscribeDefaultRosMessageTopic(
             this.cameraTopic,
             this.cameraReceiver$,
         );
+        this.cameraTopicSubscribed = true;
     }
 
     unsubscribeCameraTopic() {
+        this.cameraSubscriptionRequested = false;
+        if (!this.cameraTopic || !this.cameraTopicSubscribed) return;
         this.cameraTopic.unsubscribe();
+        this.cameraTopicSubscribed = false;
     }
 
     private subscribeJointTrajectoryTopic() {
@@ -601,6 +783,55 @@ export class RosService implements IRosService {
             errorCallback,
         );
         return subject;
+    }
+
+    listModels(): Observable<ModelInfo[]> {
+        return from(
+            new Promise<ModelInfo[]>((resolve, reject) => {
+                this.listModelsService.callService(
+                    {},
+                    (response) => resolve(response.models),
+                    (error) => reject(new Error(error)),
+                );
+            }),
+        );
+    }
+
+    startModel(model: ModelInfo, owner: string): Observable<void> {
+        this.clearModelPipelineState();
+        return this.callModelAction(this.startModelService, {
+            model_id: model.model_id,
+            shaves: model.shaves,
+            owner,
+        });
+    }
+
+    stopModel(modelId: string, owner: string): Observable<void> {
+        this.clearModelPipelineState();
+        return this.callModelAction(this.stopModelService, {
+            model_id: modelId,
+            owner,
+        });
+    }
+
+    private callModelAction<Request extends object>(
+        service: ROSLIB.Service<Request, Record<string, never>>,
+        request: Request,
+    ): Observable<void> {
+        return from(
+            new Promise<void>((resolve, reject) => {
+                service.callService(
+                    request,
+                    () => resolve(),
+                    (error) => reject(new Error(error)),
+                );
+            }),
+        );
+    }
+
+    private clearModelPipelineState() {
+        this.modelStatusReceiver$.next({models: []});
+        this.detectionClearReceiver$.next(undefined);
     }
 
     refreshButtonColors(): void {

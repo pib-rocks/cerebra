@@ -4,7 +4,10 @@ import {
     TemplateRef,
     ViewChild,
     ChangeDetectionStrategy,
+    DestroyRef,
+    inject,
 } from "@angular/core";
+import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 import {SidebarElement} from "../shared/interfaces/sidebar-element.interface";
 import {Observable} from "rxjs";
 import {VoiceAssistantService} from "../shared/services/voice-assistant.service";
@@ -36,6 +39,8 @@ import {NgClass} from "@angular/common";
     ],
 })
 export class VoiceAssistantComponent implements OnInit {
+    private readonly destroyRef = inject(DestroyRef);
+
     personalityForm!: FormGroup;
     uuid: string | undefined;
     thresholdString: string | undefined;
@@ -61,11 +66,11 @@ export class VoiceAssistantComponent implements OnInit {
     voiceAssistantActiveStatus = false;
 
     ngOnInit() {
-        this.voiceAssistantService.assistantModelsSubject.subscribe(
-            (models) => {
+        this.voiceAssistantService.assistantModelsSubject
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe((models) => {
                 this.models = models;
-            },
-        );
+            });
         this.button.enabled = true;
         this.button.func = this.openAddModal;
         this.subject = this.voiceAssistantService.getSubject();
@@ -104,9 +109,11 @@ export class VoiceAssistantComponent implements OnInit {
             }),
         });
 
-        this.voiceAssistantService.uuidSubject.subscribe((uuid: string) => {
-            this.openEditModal(uuid);
-        });
+        this.voiceAssistantService.uuidSubject
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe((uuid: string) => {
+                this.openEditModal(uuid);
+            });
     }
 
     showModal = () => {

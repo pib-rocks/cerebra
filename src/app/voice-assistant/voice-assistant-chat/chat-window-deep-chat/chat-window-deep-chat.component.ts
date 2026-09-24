@@ -43,6 +43,7 @@ export class ChatWindowDeepChatComponent
     private routeParamsSubscription?: Subscription;
     private chatMessagesSubscription?: Subscription;
     private tokenStatusSubscription?: Subscription;
+    private readonly sendChatMessageSubscriptions = new Subscription();
 
     readonly USER_ICON =
         "../../../../assets/voice-assistant-svgs/chat/user.svg";
@@ -102,6 +103,7 @@ export class ChatWindowDeepChatComponent
         this.routeParamsSubscription?.unsubscribe();
         this.chatMessagesSubscription?.unsubscribe();
         this.tokenStatusSubscription?.unsubscribe();
+        this.sendChatMessageSubscriptions.unsubscribe();
     }
 
     private wireConnect(el: any): void {
@@ -111,16 +113,20 @@ export class ChatWindowDeepChatComponent
                 const chatId = this.currentChatId!;
                 this.submitClickMs = performance.now();
                 console.log(
-                    `[PERF_TRACE_UI] SUBMIT_CLICK chatId=${chatId} t=${this.submitClickMs.toFixed(3)}ms`,
+                    `[PERF_TRACE_UI] SUBMIT_CLICK chatId=${chatId} t=${this.submitClickMs.toFixed(
+                        3,
+                    )}ms`,
                 );
                 this.pendingSignals = signals;
-                this.chatService.sendChatMessage(chatId, text).subscribe({
-                    error: (err) => {
-                        signals.onResponse({error: String(err)});
-                        this.pendingSignals = undefined;
-                        this.submitClickMs = undefined;
-                    },
-                });
+                this.sendChatMessageSubscriptions.add(
+                    this.chatService.sendChatMessage(chatId, text).subscribe({
+                        error: (err) => {
+                            signals.onResponse({error: String(err)});
+                            this.pendingSignals = undefined;
+                            this.submitClickMs = undefined;
+                        },
+                    }),
+                );
             },
         };
     }

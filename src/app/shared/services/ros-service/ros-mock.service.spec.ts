@@ -698,4 +698,37 @@ describe("RosMockService", () => {
 
         service.setSolidStateRelayState({turned_on: true});
     });
+
+    it("should include hand tracking with per-network SHAVEs", () => {
+        service.listModels().subscribe((models) => {
+            const handTracking = models.find(
+                ({model_id}) => model_id === "hand_tracking",
+            );
+            expect(handTracking?.shaves).toEqual([4, 1, 4]);
+        });
+    });
+
+    it("should simulate the hand tracking startup transition", fakeAsync(() => {
+        let models: any[] = [];
+        service.listModels().subscribe((value) => (models = value));
+
+        service.startModel(models[0], "cerebra-ui").subscribe();
+        expect(service.modelStatusReceiver$.value.models[0]).toEqual(
+            jasmine.objectContaining({
+                model_id: "hand_tracking",
+                state: "starting",
+                active: true,
+            }),
+        );
+
+        tick(2500);
+
+        expect(service.modelStatusReceiver$.value.models[0]).toEqual(
+            jasmine.objectContaining({
+                model_id: "hand_tracking",
+                state: "running",
+                active: true,
+            }),
+        );
+    }));
 });

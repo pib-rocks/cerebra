@@ -1,4 +1,5 @@
 import {
+    ChangeDetectorRef,
     Component,
     ElementRef,
     OnDestroy,
@@ -7,7 +8,7 @@ import {
     ChangeDetectionStrategy,
 } from "@angular/core";
 import {FormControl, ReactiveFormsModule} from "@angular/forms";
-import {Observable, map} from "rxjs";
+import {Observable, Subscription, map} from "rxjs";
 import {CameraSettings} from "../shared/types/camera-settings";
 import {CameraService} from "../shared/services/camera.service";
 import {
@@ -19,12 +20,61 @@ import {
 } from "@ng-bootstrap/ng-bootstrap/dropdown";
 import {NgbPopover} from "@ng-bootstrap/ng-bootstrap/popover";
 import {HorizontalSliderComponent} from "../sliders/horizontal-slider/horizontal-slider.component";
+import {
+    Detection,
+    DetectionArray,
+} from "../shared/ros-types/msg/detection-array";
+import {ModelListComponent} from "./model-list/model-list.component";
+import {
+    GAZE_MODEL_ID,
+    boxRule,
+    HEAD_POSE_MODEL_ID,
+    LabelScalar,
+    labelScalars,
+    topologyConnections,
+} from "./detection-topology";
+
+interface DetectionLayer {
+    modelId: string;
+    color: string;
+    message?: DetectionArray;
+}
+
+interface OverlayKeypoint {
+    name: string;
+    x: number;
+    y: number;
+}
+
+interface OverlayAnchor {
+    x: number;
+    y: number;
+}
+
+interface OverlayConnection {
+    x1: number;
+    y1: number;
+    x2: number;
+    y2: number;
+}
+
+interface OverlayScalar {
+    name: string;
+    value: number;
+}
+
+interface OverlayAxis extends OverlayConnection {
+    color: string;
+}
+
+/** Scalars the models publish in degrees: head pose angles and gaze angles. */
+const DEGREE_SCALAR_NAMES = ["yaw", "pitch", "roll", "gaze_yaw", "gaze_pitch"];
 
 @Component({
     selector: "app-camera",
     templateUrl: "./camera.component.html",
     styleUrls: ["./camera.component.scss"],
-    changeDetection: ChangeDetectionStrategy.Eager,
+    changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [
         ReactiveFormsModule,
         NgbDropdown,
@@ -34,9 +84,19 @@ import {HorizontalSliderComponent} from "../sliders/horizontal-slider/horizontal
         NgbDropdownItem,
         NgbPopover,
         HorizontalSliderComponent,
+        ModelListComponent,
     ],
 })
 export class CameraComponent implements OnInit, OnDestroy {
+    private static readonly DETECTION_STALE_MS = 1500;
+    private static readonly DIAGNOSTIC_WINDOW_MS = 5000;
+    private static readonly DEFAULT_REFRESH_RATE_SECONDS = 0.1;
+    /**
+     * Gaze ray length, as a share of the shortest side of the face box: long
+     * enough to read as a direction, short enough to stay next to the face.
+     */
+    private static readonly GAZE_RAY_SCALE = 0.5;
+
     @ViewChild("videobox") videoBox?: ElementRef;
     @ViewChild("refreshRate") refreshRateSlider!: ElementRef;
     @ViewChild("qualityFactor") qualityFactorSlider!: ElementRef;
@@ -50,33 +110,92 @@ export class CameraComponent implements OnInit, OnDestroy {
         "M880-275 720-435v111L244-800h416q24 0 42 18t18 42v215l160-160v410ZM848-27 39-836l42-42L890-69l-42 42ZM159-800l561 561v19q0 24-18 42t-42 18H140q-24 0-42-18t-18-42v-520q0-24 18-42t42-18h19Z";
 
     cameraSettings: CameraSettings | undefined;
+    cameraReceiverSubscription?: Subscription;
+    cameraSettingsSubscription?: Subscription;
+    detectionSubscription?: Subscription;
+    detectionModelsSubscription?: Subscription;
+    detectionClearSubscription?: Subscription;
+    connectionStatusSubscription?: Subscription;
+    detectionLayers = new Map<string, DetectionLayer>();
+    detectionModels: DetectionLayer[] = [];
+    cameraFramesLastWindow = 0;
+    detectionMessagesLastWindow = 0;
+    rosbridgeConnected = false;
+    private detectionExpiryTimers = new Map<
+        string,
+        ReturnType<typeof setTimeout>
+    >();
+    private cameraFrameTimes: number[] = [];
+    private detectionMessageTimes: number[] = [];
+    private diagnosticTimer?: ReturnType<typeof setTimeout>;
+    private displayRefreshTimer?: ReturnType<typeof setTimeout>;
+    private pendingCameraFrame?: string;
+    private pendingDetections = new Map<string, DetectionArray>();
+    private imageIsLive = false;
 
-    constructor(private cameraService: CameraService) {
+    get visibleDetectionLayers(): DetectionLayer[] {
+        if (!this.imageIsLive) return [];
+        return this.detectionModels.filter(
+            (layer) => layer.message !== undefined,
+        );
+    }
+
+    constructor(
+        private cameraService: CameraService,
+        private changeDetectorRef: ChangeDetectorRef,
+    ) {
         this.subscribeCameraSettings();
     }
 
     ngOnInit(): void {
-        this.subscribeCameraReseiver();
         this.imageSrc = "../../assets/camera-placeholder.jpg";
-        this.cameraService.cameraReciver$.subscribe((message) => {
-            this.imageSrc = "data:image/jpeg;base64," + message;
-            if (message.startsWith("Camera not available")) {
-                this.imageSrc = "../../assets/camera-error-image.svg";
-            }
-        });
+        this.startCamera();
+        this.cameraReceiverSubscription =
+            this.cameraService.cameraReciver$.subscribe((message) => {
+                this.receiveCameraFrame(message);
+            });
+        this.detectionModelsSubscription =
+            this.cameraService.detectionModelsReceiver$.subscribe((models) =>
+                this.updateDetectionModels(models),
+            );
+        this.detectionSubscription =
+            this.cameraService.detectionReceiver$.subscribe((message) =>
+                this.updateDetections(message),
+            );
+        this.detectionClearSubscription =
+            this.cameraService.detectionClearReceiver$.subscribe((modelId) =>
+                this.clearDetections(modelId),
+            );
         this.qualityReceiver$ =
             this.cameraService.rosCameraQualityFactorReceiver.pipe(
                 map((n) => [n]),
             );
-        this.refreshRateReceiver$ =
-            this.cameraService.rosCameraTimerPeriodReceiver.pipe(
-                map((n) => [n]),
-            );
+        this.refreshRateReceiver$ = this.cameraService.cameraSettings.pipe(
+            map((settings) => [
+                settings.refreshRate ??
+                    CameraComponent.DEFAULT_REFRESH_RATE_SECONDS,
+            ]),
+        );
+        this.connectionStatusSubscription =
+            this.cameraService.connectionStatus$.subscribe((connected) => {
+                this.rosbridgeConnected = connected;
+                this.changeDetectorRef.markForCheck();
+            });
     }
 
     ngOnDestroy(): void {
+        this.cameraReceiverSubscription?.unsubscribe();
+        this.cameraSettingsSubscription?.unsubscribe();
+        this.detectionSubscription?.unsubscribe();
+        this.detectionModelsSubscription?.unsubscribe();
+        this.detectionClearSubscription?.unsubscribe();
+        this.connectionStatusSubscription?.unsubscribe();
+        this.clearDisplayRefreshTimer();
+        this.pendingCameraFrame = undefined;
+        this.pendingDetections.clear();
+        this.clearDetections();
         this.stopCamera();
-        this.cameraSettings!.isActive = false;
+        if (this.cameraSettings) this.cameraSettings.isActive = false;
     }
 
     setSize(
@@ -99,6 +218,7 @@ export class CameraComponent implements OnInit, OnDestroy {
             this.cameraService.setPreviewSize(width, height);
             setTimeout(() => {
                 this.isLoading = false; // Stop the spinner
+                this.changeDetectorRef.markForCheck();
             }, 1500);
         }
         this.publishCameraSettings(this.cameraSettings!);
@@ -110,7 +230,277 @@ export class CameraComponent implements OnInit, OnDestroy {
 
     stopCamera() {
         this.cameraService.stopCamera();
+        this.pendingCameraFrame = undefined;
+        this.pendingDetections.clear();
+        this.clearDisplayRefreshTimer();
+        this.clearDiagnostics();
         this.imageSrc = "../../assets/camera-placeholder.jpg";
+        this.imageIsLive = false;
+        this.clearDetections();
+    }
+
+    keypoints(detection: Detection): OverlayKeypoint[] {
+        const count = Math.min(
+            detection.keypoint_x.length,
+            detection.keypoint_y.length,
+        );
+        return Array.from({length: count}, (_, index) => ({
+            name: detection.keypoint_names[index] ?? `Landmark ${index + 1}`,
+            x: detection.keypoint_x[index],
+            y: detection.keypoint_y[index],
+        })).filter(
+            (keypoint) =>
+                Number.isFinite(keypoint.x) && Number.isFinite(keypoint.y),
+        );
+    }
+
+    showsBox(modelId: string, detection: Detection): boolean {
+        const rule = boxRule(modelId);
+        if (rule === "none") return false;
+        if (rule === "skeleton" && this.keypoints(detection).length > 0) {
+            return false;
+        }
+        return (
+            detection.x_max > detection.x_min &&
+            detection.y_max > detection.y_min
+        );
+    }
+
+    labelAnchor(detection: Detection): OverlayAnchor {
+        const keypoint = this.keypoints(detection)[0];
+        if (keypoint) {
+            return {x: keypoint.x + 6, y: keypoint.y - 6};
+        }
+        return {x: detection.x_min + 4, y: detection.y_min + 18};
+    }
+
+    connections(modelId: string, detection: Detection): OverlayConnection[] {
+        return topologyConnections(modelId, this.keypoints(detection));
+    }
+
+    /** Scalars drawn below the box: the ones the label does not carry. */
+    scalars(modelId: string, detection: Detection): OverlayScalar[] {
+        const onLabel = new Set(
+            labelScalars(modelId).map((scalar) => scalar.name),
+        );
+        return this.allScalars(detection).filter(
+            (scalar) => !onLabel.has(scalar.name),
+        );
+    }
+
+    private allScalars(detection: Detection): OverlayScalar[] {
+        const count = Math.min(
+            detection.scalar_names.length,
+            detection.scalar_values.length,
+        );
+        return Array.from({length: count}, (_, index) => ({
+            name: detection.scalar_names[index],
+            value: detection.scalar_values[index],
+        })).filter(
+            (scalar) => scalar.name.length > 0 && Number.isFinite(scalar.value),
+        );
+    }
+
+    scalarLabel(scalar: OverlayScalar): string {
+        const unit = DEGREE_SCALAR_NAMES.includes(scalar.name) ? "°" : "";
+        return `${scalar.name}: ${scalar.value.toFixed(1)}${unit}`;
+    }
+
+    headPoseAxes(modelId: string, detection: Detection): OverlayAxis[] {
+        if (modelId !== HEAD_POSE_MODEL_ID) return [];
+
+        const angles = new Map(
+            this.allScalars(detection).map((scalar) => [
+                scalar.name,
+                scalar.value,
+            ]),
+        );
+        const yaw = angles.get("yaw");
+        const pitch = angles.get("pitch");
+        const roll = angles.get("roll");
+        if (yaw === undefined || pitch === undefined || roll === undefined) {
+            return [];
+        }
+
+        const originX = (detection.x_min + detection.x_max) / 2;
+        const originY = (detection.y_min + detection.y_max) / 2;
+        const size =
+            Math.min(
+                detection.x_max - detection.x_min,
+                detection.y_max - detection.y_min,
+            ) * 0.25;
+        if (!Number.isFinite(size) || size <= 0) return [];
+
+        const radians = Math.PI / 180;
+        const sinY = Math.sin(yaw * radians);
+        const sinP = Math.sin(pitch * radians);
+        const sinR = Math.sin(roll * radians);
+        const cosY = Math.cos(yaw * radians);
+        const cosP = Math.cos(pitch * radians);
+        const cosR = Math.cos(roll * radians);
+
+        // Projection from Luxonis' head-posture/gaze reference overlay.
+        return [
+            {
+                x1: originX,
+                y1: originY,
+                x2: originX + size * (cosR * cosY + sinY * sinP * sinR),
+                y2: originY + size * cosP * sinR,
+                color: "#ff0000",
+            },
+            {
+                x1: originX,
+                y1: originY,
+                x2: originX + size * (cosR * sinY * sinP + cosY * sinR),
+                y2: originY - size * cosP * cosR,
+                color: "#00ff00",
+            },
+            {
+                x1: originX,
+                y1: originY,
+                x2: originX + size * sinY * cosP,
+                y2: originY + size * sinP,
+                color: "#0000ff",
+            },
+        ];
+    }
+
+    /**
+     * Ray from the face centre along the gaze direction, in image pixels.
+     *
+     * The gaze model publishes no keypoints, only its face box and the gaze as
+     * yaw and pitch in degrees (face_crop.py translate_gaze), so the direction
+     * vector is rebuilt from the two angles and projected onto the image, whose
+     * y axis grows downwards while a positive pitch looks upwards.
+     */
+    gazeRay(
+        modelId: string,
+        detection: Detection,
+    ): OverlayConnection | undefined {
+        if (modelId !== GAZE_MODEL_ID) return undefined;
+
+        const angles = new Map(
+            this.scalars(modelId, detection).map((scalar) => [
+                scalar.name,
+                scalar.value,
+            ]),
+        );
+        const yaw = angles.get("gaze_yaw");
+        const pitch = angles.get("gaze_pitch");
+        if (yaw === undefined || pitch === undefined) return undefined;
+
+        const originX = (detection.x_min + detection.x_max) / 2;
+        const originY = (detection.y_min + detection.y_max) / 2;
+        const length =
+            Math.min(
+                detection.x_max - detection.x_min,
+                detection.y_max - detection.y_min,
+            ) * CameraComponent.GAZE_RAY_SCALE;
+        if (!Number.isFinite(length) || length <= 0) return undefined;
+
+        const radians = Math.PI / 180;
+        return {
+            x1: originX,
+            y1: originY,
+            x2:
+                originX +
+                length * Math.sin(yaw * radians) * Math.cos(pitch * radians),
+            y2: originY - length * Math.sin(pitch * radians),
+        };
+    }
+
+    detectionLabel(modelId: string, detection: Detection): string {
+        const percentage = Number.isFinite(detection.score)
+            ? ` ${Math.round(detection.score * 100)}%`
+            : "";
+        const promoted = labelScalars(modelId)
+            .map((scalar) => this.labelScalarText(detection, scalar))
+            .filter((text): text is string => text !== undefined);
+        return [`${detection.label}${percentage}`, ...promoted].join(" | ");
+    }
+
+    private labelScalarText(
+        detection: Detection,
+        scalar: LabelScalar,
+    ): string | undefined {
+        const value = this.scalarValue(detection, scalar.name);
+        if (value === undefined) return undefined;
+        return `${scalar.name} ${value.toFixed(scalar.digits)}`;
+    }
+
+    /** Scalars are parallel arrays, so a value is only valid via its name. */
+    private scalarValue(
+        detection: Detection,
+        name: string,
+    ): number | undefined {
+        const index = detection.scalar_names.indexOf(name);
+        if (index < 0) return undefined;
+        const value = detection.scalar_values[index];
+        return Number.isFinite(value) ? value : undefined;
+    }
+
+    private updateDetectionModels(modelIds: string[]) {
+        const availableModels = new Set(modelIds);
+        for (const modelId of modelIds) {
+            this.ensureDetectionLayer(modelId);
+        }
+        this.detectionModels = [...this.detectionLayers.values()].filter(
+            (layer) => availableModels.has(layer.modelId),
+        );
+        for (const modelId of this.pendingDetections.keys()) {
+            if (!availableModels.has(modelId)) {
+                this.pendingDetections.delete(modelId);
+            }
+        }
+        this.changeDetectorRef.markForCheck();
+    }
+
+    private updateDetections(message: DetectionArray) {
+        this.detectionMessageTimes.push(Date.now());
+        this.updateDiagnostics();
+        if (
+            !message.model_id ||
+            message.frame_width <= 0 ||
+            message.frame_height <= 0
+        ) {
+            return;
+        }
+
+        this.pendingDetections.set(message.model_id, message);
+        this.scheduleDisplayFlush();
+    }
+
+    private ensureDetectionLayer(modelId: string): DetectionLayer {
+        let layer = this.detectionLayers.get(modelId);
+        if (!layer) {
+            layer = {
+                modelId,
+                color: this.modelColor(modelId),
+            };
+            this.detectionLayers.set(modelId, layer);
+        }
+        return layer;
+    }
+
+    private clearDetections(modelId?: string) {
+        const modelIds = modelId ? [modelId] : [...this.detectionLayers.keys()];
+        for (const id of modelIds) {
+            this.pendingDetections.delete(id);
+            const layer = this.detectionLayers.get(id);
+            if (layer) layer.message = undefined;
+            const timer = this.detectionExpiryTimers.get(id);
+            if (timer !== undefined) clearTimeout(timer);
+            this.detectionExpiryTimers.delete(id);
+        }
+        this.changeDetectorRef.markForCheck();
+    }
+
+    private modelColor(modelId: string): string {
+        let hash = 0;
+        for (const character of modelId) {
+            hash = (hash * 31 + character.charCodeAt(0)) % 360;
+        }
+        return `hsl(${hash}, 85%, 55%)`;
     }
 
     toggleCameraState() {
@@ -136,6 +526,10 @@ export class CameraComponent implements OnInit, OnDestroy {
 
     updateRefreshRateLabel(sliderNumber: number) {
         this.cameraSettings!.refreshRate = sliderNumber;
+        this.clearDisplayRefreshTimer();
+        if (this.hasPendingDisplay()) {
+            this.scheduleDisplayFlush();
+        }
     }
 
     updateQualityFactorLabel(sliderNumber: number) {
@@ -152,16 +546,14 @@ export class CameraComponent implements OnInit, OnDestroy {
         videoSettingsButton?.classList.add("showPopover");
     }
 
-    subscribeCameraReseiver() {
-        this.cameraService.subscribeCameraReseiver();
-    }
-
     subscribeCameraSettings() {
-        this.cameraService.cameraSettings.subscribe(
-            (message: CameraSettings) => {
-                this.cameraSettings = message;
-            },
-        );
+        this.cameraSettingsSubscription =
+            this.cameraService.cameraSettings.subscribe(
+                (message: CameraSettings) => {
+                    this.cameraSettings = message;
+                    this.changeDetectorRef.markForCheck();
+                },
+            );
     }
 
     publishCameraSettings(cameraSettings: CameraSettings) {
@@ -175,4 +567,130 @@ export class CameraComponent implements OnInit, OnDestroy {
     refreshRatePublish = (formControlValue: number) => {
         this.cameraService.refreshRatePublish(formControlValue);
     };
+
+    private receiveCameraFrame(message: string) {
+        this.cameraFrameTimes.push(Date.now());
+        this.updateDiagnostics();
+
+        if (message.startsWith("Camera not available")) {
+            this.pendingCameraFrame = undefined;
+            this.pendingDetections.clear();
+            this.clearDisplayRefreshTimer();
+            this.imageSrc = "../../assets/camera-error-image.svg";
+            this.imageIsLive = false;
+            this.clearDetections();
+            return;
+        }
+
+        this.pendingCameraFrame = "data:image/jpeg;base64," + message;
+        this.scheduleDisplayFlush();
+    }
+
+    private scheduleDisplayFlush() {
+        if (this.displayRefreshTimer !== undefined) return;
+        this.flushPendingDisplay();
+        this.displayRefreshTimer = setTimeout(() => {
+            this.displayRefreshTimer = undefined;
+            if (this.hasPendingDisplay()) this.scheduleDisplayFlush();
+        }, this.displayRefreshDelayMs());
+    }
+
+    private flushPendingDisplay() {
+        if (this.pendingCameraFrame !== undefined) {
+            this.imageSrc = this.pendingCameraFrame;
+            this.pendingCameraFrame = undefined;
+            this.imageIsLive = true;
+        }
+
+        for (const [modelId, message] of this.pendingDetections) {
+            const layer = this.ensureDetectionLayer(modelId);
+            layer.message = message;
+            if (!this.detectionModels.includes(layer)) {
+                this.detectionModels = [...this.detectionModels, layer];
+            }
+            const oldTimer = this.detectionExpiryTimers.get(modelId);
+            if (oldTimer !== undefined) clearTimeout(oldTimer);
+            this.detectionExpiryTimers.set(
+                modelId,
+                setTimeout(
+                    () => this.clearDetections(modelId),
+                    CameraComponent.DETECTION_STALE_MS,
+                ),
+            );
+        }
+        this.pendingDetections.clear();
+        this.changeDetectorRef.markForCheck();
+    }
+
+    private hasPendingDisplay(): boolean {
+        return (
+            this.pendingCameraFrame !== undefined ||
+            this.pendingDetections.size > 0
+        );
+    }
+
+    private displayRefreshDelayMs(): number {
+        const refreshRate = this.cameraSettings?.refreshRate;
+        const seconds =
+            refreshRate !== undefined && refreshRate > 0
+                ? refreshRate
+                : CameraComponent.DEFAULT_REFRESH_RATE_SECONDS;
+        return seconds * 1000;
+    }
+
+    private clearDisplayRefreshTimer() {
+        if (this.displayRefreshTimer !== undefined) {
+            clearTimeout(this.displayRefreshTimer);
+            this.displayRefreshTimer = undefined;
+        }
+    }
+
+    private clearDiagnostics() {
+        if (this.diagnosticTimer !== undefined) {
+            clearTimeout(this.diagnosticTimer);
+            this.diagnosticTimer = undefined;
+        }
+        this.cameraFrameTimes = [];
+        this.detectionMessageTimes = [];
+        this.cameraFramesLastWindow = 0;
+        this.detectionMessagesLastWindow = 0;
+    }
+
+    private updateDiagnostics() {
+        const now = Date.now();
+        const cutoff = now - CameraComponent.DIAGNOSTIC_WINDOW_MS;
+        this.cameraFrameTimes = this.cameraFrameTimes.filter(
+            (timestamp) => timestamp >= cutoff,
+        );
+        this.detectionMessageTimes = this.detectionMessageTimes.filter(
+            (timestamp) => timestamp >= cutoff,
+        );
+        this.cameraFramesLastWindow = this.cameraFrameTimes.length;
+        this.detectionMessagesLastWindow = this.detectionMessageTimes.length;
+
+        if (
+            this.diagnosticTimer === undefined &&
+            (this.cameraFrameTimes.length > 0 ||
+                this.detectionMessageTimes.length > 0)
+        ) {
+            const oldestTimestamp = Math.min(
+                this.cameraFrameTimes[0] ?? Number.POSITIVE_INFINITY,
+                this.detectionMessageTimes[0] ?? Number.POSITIVE_INFINITY,
+            );
+            this.diagnosticTimer = setTimeout(
+                () => {
+                    this.diagnosticTimer = undefined;
+                    this.updateDiagnostics();
+                    this.changeDetectorRef.markForCheck();
+                },
+                Math.max(
+                    0,
+                    oldestTimestamp +
+                        CameraComponent.DIAGNOSTIC_WINDOW_MS -
+                        now +
+                        1,
+                ),
+            );
+        }
+    }
 }

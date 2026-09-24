@@ -3,7 +3,10 @@ import {
     OnInit,
     TemplateRef,
     ChangeDetectionStrategy,
+    DestroyRef,
+    inject,
 } from "@angular/core";
+import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {
     AbstractControl,
@@ -24,6 +27,8 @@ import {NgClass, NgOptimizedImage} from "@angular/common";
     imports: [NgClass, NgOptimizedImage, ReactiveFormsModule],
 })
 export class SmartConnectComponent implements OnInit {
+    private readonly destroyRef = inject(DestroyRef);
+
     // prevent user from opening modal multiple times in case of delay
     isLoadingModal: boolean = false;
     // decide password input field types
@@ -55,11 +60,13 @@ export class SmartConnectComponent implements OnInit {
     ) {}
 
     ngOnInit(): void {
-        this.tokenService.tokenStatus$.subscribe((response) => {
-            this.isTokenStored = response.tokenExists;
-            this.isTokenActive = response.tokenActive;
-            this.updatePasswordControlState();
-        });
+        this.tokenService.tokenStatus$
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe((response) => {
+                this.isTokenStored = response.tokenExists;
+                this.isTokenActive = response.tokenActive;
+                this.updatePasswordControlState();
+            });
     }
 
     passwordMatchValidator(form: AbstractControl): null {

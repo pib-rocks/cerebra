@@ -11,5 +11,8 @@ export enum rosServices {
     decryptToken = "/decrypt_token",
     applyJointTrajectory = "/apply_joint_trajectory",
     setSolidStateRelayState = "/set_solid_state_relay_state",
+    listModels = "/list_models",
+    startModel = "/start_model",
+    stopModel = "/stop_model",
     refreshColors = "/refresh_colors",
 }

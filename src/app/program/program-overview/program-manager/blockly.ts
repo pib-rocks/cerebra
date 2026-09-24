@@ -363,23 +363,47 @@ export const toolbox: string = `<xml xmlns="http://www.w3.org/1999/xhtml" id="to
     <block type="run_script"></block>
     <block type="set_solid_state_relay"></block>
     <block type="get_solid_state_relay"></block>
+    <block type="program_log"></block>
+    <block type="program_reset_log"></block>
 </category>
 <sep></sep>
 <category name="Motoric skills" colour="355">
     <block type="move_motor"></block>
     <block type="move_to_pose"></block>
+    <block type="save_current_pose"></block>
+    <block type="save_detection_as_pose"></block>
+    <block type="set_hand_position_xyz"></block>
+    <block type="get_all_poses"></block>
+    <block type="get_pose_joints"></block>
+    <block type="has_pose"></block>
+    <block type="pose_count"></block>
+    <block type="play_pose_sequence"></block>
+    <block type="motor_current"></block>
 </category>
 <category name="Audio skills" colour="260">
     <block type="play_audio_from_speech"></block>
     <block type="play_wav"></block>
+    <block type="set_volume"></block>
+    <block type="get_sound_direction"></block>
 </category>
 <category name="Visual Skills" colour="200">
-    <block type="face_detector_start_stop"></block>
-    <block type="face_detector_running"></block>
+    <block type="get_face_detections"></block>
+    <block type="get_object_detections"></block>
+    <block type="get_qr_detections"></block>
+    <block type="get_emotion_detections"></block>
+    <block type="get_head_pose_detections"></block>
     <block type="vision_object_detected"></block>
     <block type="vision_object_count"></block>
     <block type="vision_objects_different"></block>
     <block type="vision_describe_image"></block>
+    <block type="start_model"></block>
+    <block type="stop_model"></block>
+    <block type="camera_get_depth_frame"></block>
+    <block type="camera_get_distance_at_px"></block>
+    <block type="imu_get_acceleration"></block>
+    <block type="imu_get_angular_velocity"></block>
+    <block type="imu_is_data_available"></block>
+    <block type="imu_get_data_age"></block>
 </category>
 <category name="Expressions" colour="180">
     <block type="set_face_expression"></block>
@@ -389,5 +413,6 @@ export const toolbox: string = `<xml xmlns="http://www.w3.org/1999/xhtml" id="to
     <block type="tf_button_taster_to_variable"></block>
     <block type="tf_button_switch_to_variable"></block>
     <block type="tf_button_set_color"></block>
+    <block type="tf_button_set_color_from_var"></block>
 </category>
 </xml>`;

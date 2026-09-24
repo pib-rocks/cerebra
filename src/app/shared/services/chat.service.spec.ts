@@ -33,7 +33,8 @@ describe("ChatService", () => {
             ["sendChatMessage", "getChatIsListening"],
             {
                 chatMessageReceiver$: chatMessageReceiver$,
-                chatIsListeningReceiver$: voiceAssistantChatIsListeningReceiver$,
+                chatIsListeningReceiver$:
+                    voiceAssistantChatIsListeningReceiver$,
             },
         );
 
@@ -446,11 +447,7 @@ describe("ChatService", () => {
             chat_id: "other-chat-id",
             listening: false,
         });
-        expect(next.calls.allArgs()).toEqual([
-            [true],
-            [false],
-            [true],
-        ]);
+        expect(next.calls.allArgs()).toEqual([[true], [false], [true]]);
     });
 
     it("should get the correct listening-state if an inital status was already published", () => {

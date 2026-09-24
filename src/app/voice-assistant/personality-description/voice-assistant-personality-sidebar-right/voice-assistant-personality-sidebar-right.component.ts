@@ -1,4 +1,11 @@
-import {Component, OnInit, ChangeDetectionStrategy} from "@angular/core";
+import {
+    Component,
+    OnInit,
+    ChangeDetectionStrategy,
+    DestroyRef,
+    inject,
+} from "@angular/core";
+import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 import {VoiceAssistant} from "src/app/shared/types/voice-assistant";
 import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
 import {ActivatedRoute, Params} from "@angular/router";
@@ -18,6 +25,8 @@ import {AssistantModel} from "src/app/shared/types/assistantModel";
     imports: [ReactiveFormsModule, FormsModule],
 })
 export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
+    private readonly destroyRef = inject(DestroyRef);
+
     pauseThresholdMin = 0.1;
     pauseThresholdMax = 3.0;
     messageHistoryMin = 0;
@@ -36,20 +45,22 @@ export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
     ) {}
 
     ngOnInit() {
-        this.voiceAssistantService.assistantModelsSubject.subscribe(
-            (models) => {
+        this.voiceAssistantService.assistantModelsSubject
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe((models) => {
                 this.models = models;
-            },
-        );
-        this.route.params.subscribe((params: Params) => {
-            const temp = this.voiceAssistantService.getPersonality(
-                params["personalityUuid"],
-            );
-            if (temp !== undefined) {
-                this.personalityClone = temp;
-            }
-            this.updateForm();
-        });
+            });
+        this.route.params
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe((params: Params) => {
+                const temp = this.voiceAssistantService.getPersonality(
+                    params["personalityUuid"],
+                );
+                if (temp !== undefined) {
+                    this.personalityClone = temp;
+                }
+                this.updateForm();
+            });
     }
 
     updateForm() {

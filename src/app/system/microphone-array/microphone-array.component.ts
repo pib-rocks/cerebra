@@ -7,19 +7,17 @@ import {
 } from "@angular/core";
 import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
+import {Subscription} from "rxjs";
 import {
     MicrophoneArrayService,
-    MicrophoneArrayTelemetry,
-    MicrophoneArrayTuning,
+    MicrophoneArrayHealthViewModel,
+    MicrophoneArrayTelemetryViewModel,
+    MicrophoneArrayTuningUpdate,
+    MicrophoneArrayViewModel,
     MicrophoneArrayPreset,
     LedRingMode,
     HighPassFilterValue,
 } from "./microphone-array.service";
-
-export interface PresetOption {
-    value: MicrophoneArrayPreset;
-    label: string;
-}
 
 export interface LedModeOption {
     value: LedRingMode;
@@ -31,29 +29,6 @@ export interface HighPassOption {
     label: string;
 }
 
-const DEFAULT_TUNING: MicrophoneArrayTuning = {
-    preset: "standard",
-    agc_enabled: true,
-    agc_max_gain: 30,
-    agc_target_level: 0.005,
-    stationary_noise_suppression: true,
-    non_stationary_noise_suppression: true,
-    aec_enabled: true,
-    high_pass_filter: 1,
-    led_mode: "doa_trace",
-    led_brightness: 50,
-    led_color: "#e83e8c",
-};
-
-const DEFAULT_TELEMETRY: MicrophoneArrayTelemetry = {
-    doa_angle: 0,
-    voice_activity: false,
-    speech_detected: false,
-    audio_levels: [0, 0, 0, 0, 0],
-};
-
-const CHANNEL_LABELS = ["Master", "Mic 1", "Mic 2", "Mic 3", "Mic 4"];
-
 @Component({
     selector: "app-microphone-array",
     standalone: true,
@@ -63,30 +38,26 @@ const CHANNEL_LABELS = ["Master", "Mic 1", "Mic 2", "Mic 3", "Mic 4"];
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MicrophoneArrayComponent implements OnInit, OnDestroy {
-    telemetry: MicrophoneArrayTelemetry = {...DEFAULT_TELEMETRY};
-    tuning: MicrophoneArrayTuning = {...DEFAULT_TUNING};
+    health: MicrophoneArrayHealthViewModel | null = null;
+    telemetry: MicrophoneArrayTelemetryViewModel | null = null;
+    tuning: MicrophoneArrayViewModel | null = null;
 
     loading = false;
+    healthLoading = true;
+    telemetryLoading = true;
     saving = false;
+    healthError: string | null = null;
     error: string | null = null;
     successMessage: string | null = null;
 
-    readonly channelLabels = CHANNEL_LABELS;
-
-    readonly presets: PresetOption[] = [
-        {value: "standard", label: "Standard"},
-        {value: "noisy_asr", label: "Noisy Environment / ASR"},
-        {value: "loud_speaker", label: "Loud Speaker Playback"},
-        {value: "raw", label: "Raw"},
-        {value: "custom", label: "Custom"},
-    ];
-
     readonly ledModes: LedModeOption[] = [
-        {value: "doa_trace", label: "DOA Trace"},
-        {value: "pulse", label: "Pulse"},
-        {value: "solid", label: "Solid Color"},
-        {value: "mute", label: "Mute"},
         {value: "off", label: "Off"},
+        {value: "listen", label: "Listen"},
+        {value: "speak", label: "Speak"},
+        {value: "think", label: "Think"},
+        {value: "spin", label: "Spin"},
+        {value: "trace", label: "DOA Trace"},
+        {value: "mono", label: "Solid Color"},
     ];
 
     readonly highPassOptions: HighPassOption[] = [
@@ -96,8 +67,8 @@ export class MicrophoneArrayComponent implements OnInit, OnDestroy {
         {value: 3, label: "150Hz"},
     ];
 
-    private telemetryTimer: ReturnType<typeof setInterval> | null = null;
-    private readonly telemetryIntervalMs = 500;
+    private readonly subscriptions = new Subscription();
+    private lastConnectionState: string | null = null;
 
     constructor(
         private microphoneArrayService: MicrophoneArrayService,
@@ -105,156 +76,242 @@ export class MicrophoneArrayComponent implements OnInit, OnDestroy {
     ) {}
 
     ngOnInit(): void {
+        this.subscriptions.add(
+            this.microphoneArrayService
+                .getTelemetry()
+                .subscribe((telemetry) => {
+                    this.telemetry = telemetry;
+                    this.telemetryLoading = false;
+                    if (telemetry.connectionState !== "live") {
+                        this.tuning = null;
+                    }
+                    if (
+                        telemetry.connectionState === "live" &&
+                        this.lastConnectionState !== "live"
+                    ) {
+                        this.loadTuning();
+                    }
+                    this.lastConnectionState = telemetry.connectionState;
+                    this.cdr.markForCheck();
+                }),
+        );
+        this.microphoneArrayService.connect();
         this.refreshAll();
-        this.startTelemetryPolling();
     }
 
     ngOnDestroy(): void {
-        this.stopTelemetryPolling();
+        this.subscriptions.unsubscribe();
+        this.microphoneArrayService.disconnect();
     }
 
-    get doaAngle(): number {
-        const angle = this.telemetry?.doa_angle ?? 0;
-        return ((angle % 360) + 360) % 360;
+    get doaAngle(): number | null {
+        const angle = this.telemetry?.doaAngle;
+        return angle === undefined ? null : angle;
     }
 
     /** SVG needle rotation: 0° = up (north), clockwise. */
-    get doaNeedleTransform(): string {
+    get doaNeedleTransform(): string | null {
+        if (this.doaAngle === null) {
+            return null;
+        }
         return `rotate(${this.doaAngle} 100 100)`;
     }
 
-    getAudioLevelPercent(index: number): number {
-        const levels = this.telemetry?.audio_levels ?? [];
-        const raw = levels[index] ?? 0;
+    get audioLevels(): number[] {
+        return this.telemetry?.audioLevels ?? [];
+    }
+
+    get rosbridgeSource(): string {
+        switch (this.telemetry?.connectionState) {
+            case "live":
+                return "Live via rosbridge";
+            case "connecting":
+                return "Connecting to rosbridge";
+            default:
+                return "Rosbridge not reachable";
+        }
+    }
+
+    get tuningSource(): string {
+        return this.telemetry?.connectionState === "live"
+            ? "Live via rosbridge"
+            : "Rosbridge not reachable";
+    }
+
+    get legacySource(): string {
+        return this.health?.simulation
+            ? "Backend legacy/simulation answer"
+            : "Backend owner/legacy facts";
+    }
+
+    channelLabel(index: number): string {
+        return index === 0 ? "RMS" : "Peak";
+    }
+
+    getAudioLevelPercent(raw: number): number {
         const clamped = Math.max(0, Math.min(1, raw));
         return Math.round(clamped * 100);
     }
 
-    getTargetLevelDbov(): number {
-        const linear = this.tuning.agc_target_level || 1e-8;
+    getTargetLevelDbov(): number | null {
+        const linear = this.tuning?.agcDesiredLevel;
+        if (linear === undefined) {
+            return null;
+        }
         return Math.round(10 * Math.log10(linear) * 10) / 10;
     }
 
     setTargetLevelDbov(dbov: number): void {
+        if (!this.tuning || this.tuning.agcDesiredLevel === undefined) {
+            return;
+        }
         const clamped = Math.max(-80, Math.min(0, Number(dbov)));
-        this.tuning.agc_target_level = Math.pow(10, clamped / 10);
-        this.markCustomIfNeeded();
+        this.tuning.agcDesiredLevel = Math.pow(10, clamped / 10);
         this.cdr.markForCheck();
     }
 
     refreshAll(): void {
-        this.loading = true;
+        this.loading = this.telemetry?.connectionState === "live";
+        this.healthLoading = true;
+        this.healthError = null;
         this.error = null;
         this.cdr.markForCheck();
 
-        this.microphoneArrayService.getTuning().subscribe({
-            next: (tuning) => {
-                this.tuning = {...DEFAULT_TUNING, ...tuning};
-                this.loading = false;
-                this.cdr.markForCheck();
-            },
-            error: () => {
-                this.error = "Failed to load microphone array tuning.";
-                this.loading = false;
-                this.cdr.markForCheck();
-            },
-        });
+        this.subscriptions.add(
+            this.microphoneArrayService.getHealth().subscribe({
+                next: (health) => {
+                    this.health = health;
+                    this.healthLoading = false;
+                    this.cdr.markForCheck();
+                },
+                error: () => {
+                    this.health = null;
+                    this.healthLoading = false;
+                    this.healthError =
+                        "Failed to load microphone array health information.";
+                    this.cdr.markForCheck();
+                },
+            }),
+        );
 
-        this.fetchTelemetry();
+        if (this.telemetry?.connectionState === "live") {
+            this.loadTuning();
+        }
     }
 
     onPresetChange(preset: MicrophoneArrayPreset): void {
-        this.tuning.preset = preset;
+        if (this.tuning) {
+            this.tuning.preset = preset;
+        }
         this.applyTuningUpdate({preset});
     }
 
-    onDspChange(): void {
-        this.markCustomIfNeeded();
-        this.applyTuningUpdate({
-            agc_enabled: this.tuning.agc_enabled,
-            agc_max_gain: this.tuning.agc_max_gain,
-            agc_target_level: this.tuning.agc_target_level,
-            stationary_noise_suppression:
-                this.tuning.stationary_noise_suppression,
-            non_stationary_noise_suppression:
-                this.tuning.non_stationary_noise_suppression,
-            aec_enabled: this.tuning.aec_enabled,
-            high_pass_filter: this.tuning.high_pass_filter,
-            preset: this.tuning.preset,
-        });
-    }
-
-    onLedChange(): void {
-        this.applyTuningUpdate({
-            led_mode: this.tuning.led_mode,
-            led_brightness: this.tuning.led_brightness,
-            led_color: this.tuning.led_color,
-        });
-    }
-
-    applyTuningUpdate(
-        update: Partial<MicrophoneArrayTuning>,
+    onDspChange(
+        name: keyof NonNullable<MicrophoneArrayTuningUpdate["parameters"]>,
     ): void {
+        if (!this.tuning) {
+            return;
+        }
+        const values: Record<
+            keyof NonNullable<MicrophoneArrayTuningUpdate["parameters"]>,
+            number | undefined
+        > = {
+            HPFONOFF: this.tuning.highPassFilter,
+            AGCONOFF: this.toApiBoolean(this.tuning.agcEnabled),
+            AGCMAXGAIN: this.tuning.agcMaxGain,
+            AGCDESIREDLEVEL: this.tuning.agcDesiredLevel,
+            AGCTIME: this.tuning.agcTime,
+            STATNOISEONOFF: this.toApiBoolean(
+                this.tuning.stationaryNoiseSuppression,
+            ),
+            NONSTATNOISEONOFF: this.toApiBoolean(
+                this.tuning.nonStationaryNoiseSuppression,
+            ),
+            ECHOONOFF: this.toApiBoolean(this.tuning.echoEnabled),
+            STATNOISEONOFF_SR: this.toApiBoolean(
+                this.tuning.stationaryNoiseSuppressionSr,
+            ),
+            NONSTATNOISEONOFF_SR: this.toApiBoolean(
+                this.tuning.nonStationaryNoiseSuppressionSr,
+            ),
+        };
+        const value = values[name];
+        if (value !== undefined) {
+            this.applyTuningUpdate({parameters: {[name]: value}});
+        }
+    }
+
+    onLedChange(
+        name: keyof NonNullable<MicrophoneArrayTuningUpdate["led_ring"]>,
+    ): void {
+        if (!this.tuning) {
+            return;
+        }
+        const values = {
+            mode: this.tuning.ledMode,
+            brightness: this.tuning.ledBrightness,
+            color: this.tuning.ledColor,
+            vad_led:
+                this.tuning.vadLed === undefined
+                    ? undefined
+                    : this.tuning.vadLed
+                    ? 1
+                    : 0,
+        };
+        const value = values[name];
+        if (value !== undefined) {
+            this.applyTuningUpdate({led_ring: {[name]: value}});
+        }
+    }
+
+    applyTuningUpdate(update: MicrophoneArrayTuningUpdate): void {
         this.saving = true;
         this.error = null;
         this.successMessage = null;
         this.cdr.markForCheck();
 
-        this.microphoneArrayService.updateTuning(update).subscribe({
-            next: (tuning) => {
-                this.tuning = {...DEFAULT_TUNING, ...tuning};
-                this.saving = false;
-                this.successMessage = "Tuning updated.";
-                this.cdr.markForCheck();
-            },
-            error: () => {
-                this.saving = false;
-                this.error = "Failed to update microphone array tuning.";
-                this.cdr.markForCheck();
-            },
-        });
-    }
-
-    private markCustomIfNeeded(): void {
-        if (this.tuning.preset !== "custom") {
-            this.tuning.preset = "custom";
-        }
-    }
-
-    private startTelemetryPolling(): void {
-        this.stopTelemetryPolling();
-        this.telemetryTimer = setInterval(() => {
-            this.fetchTelemetry();
-        }, this.telemetryIntervalMs);
-    }
-
-    private stopTelemetryPolling(): void {
-        if (this.telemetryTimer) {
-            clearInterval(this.telemetryTimer);
-            this.telemetryTimer = null;
-        }
-    }
-
-    private fetchTelemetry(): void {
-        this.microphoneArrayService.getTelemetry().subscribe({
-            next: (telemetry) => {
-                this.telemetry = {
-                    ...DEFAULT_TELEMETRY,
-                    ...telemetry,
-                    audio_levels:
-                        telemetry.audio_levels?.length === 5
-                            ? telemetry.audio_levels
-                            : DEFAULT_TELEMETRY.audio_levels,
-                };
-                this.cdr.markForCheck();
-            },
-            error: () => {
-                // Keep last known telemetry; surface soft error only if none yet.
-                if (!this.telemetry) {
-                    this.error = "Failed to load microphone array telemetry.";
+        this.subscriptions.add(
+            this.microphoneArrayService.updateTuning(update).subscribe({
+                next: (tuning) => {
+                    this.tuning = tuning;
+                    this.saving = false;
+                    this.successMessage = "Tuning updated.";
                     this.cdr.markForCheck();
-                }
-            },
-        });
+                },
+                error: (error: Error) => {
+                    this.saving = false;
+                    this.error = error.message;
+                    if (this.telemetry?.connectionState === "live") {
+                        this.loadTuning(true);
+                    }
+                    this.cdr.markForCheck();
+                },
+            }),
+        );
+    }
+
+    private toApiBoolean(value: boolean | undefined): 0 | 1 | undefined {
+        return value === undefined ? undefined : value ? 1 : 0;
+    }
+
+    private loadTuning(preserveError = false): void {
+        this.loading = true;
+        this.subscriptions.add(
+            this.microphoneArrayService.getTuning().subscribe({
+                next: (tuning) => {
+                    this.tuning = tuning;
+                    this.loading = false;
+                    this.cdr.markForCheck();
+                },
+                error: (error: Error) => {
+                    this.tuning = null;
+                    this.loading = false;
+                    if (!preserveError) {
+                        this.error = error.message;
+                    }
+                    this.cdr.markForCheck();
+                },
+            }),
+        );
     }
 }

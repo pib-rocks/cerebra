@@ -1,145 +1,195 @@
 @import "src/styles";
 
 .microphone-array-container {
-  color: #ffffff;
-
-  h3 {
     color: #ffffff;
-    font-weight: 700;
-  }
 
-  h4,
-  .card-title {
-    color: #ffffff !important;
-    font-weight: 700 !important;
-    font-size: 1.25rem;
-    margin-bottom: 1rem;
-    border-bottom: 2px solid #e83e8c;
-    padding-bottom: 0.4rem;
-    display: inline-block;
-    letter-spacing: 0.5px;
-  }
+    h3 {
+        color: #ffffff;
+        font-weight: 700;
+    }
 
-  .card {
-    background-color: rgba(30, 30, 40, 0.7) !important;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 8px;
-  }
+    h4,
+    .card-title {
+        color: #ffffff !important;
+        font-weight: 700 !important;
+        font-size: 1.25rem;
+        margin-bottom: 1rem;
+        border-bottom: 2px solid #e83e8c;
+        padding-bottom: 0.4rem;
+        display: inline-block;
+        letter-spacing: 0.5px;
+    }
 
-  .badge-success {
-    background-color: #28a745;
-    color: #fff;
-    font-size: 14px;
-    padding: 6px 12px;
-  }
+    .card {
+        background-color: rgba(30, 30, 40, 0.7) !important;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 8px;
+    }
 
-  .badge-secondary {
-    background-color: #6c757d;
-    color: #fff;
-    font-size: 14px;
-    padding: 6px 12px;
-  }
+    .simulation-banner {
+        border-width: 2px;
+        font-size: 1rem;
 
-  .badge-warning {
-    background-color: #ffc107;
-    color: #212529;
-    font-size: 14px;
-    padding: 6px 12px;
-  }
+        strong {
+            display: block;
+            font-size: 1.15rem;
+            margin-bottom: 0.25rem;
+        }
+    }
 
-  .doa-compass {
-    width: min(280px, 100%);
-    height: auto;
-  }
+    .source-label {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
 
-  .doa-outer {
-    fill: rgba(20, 20, 30, 0.9);
-    stroke: #e83e8c;
-    stroke-width: 2;
-  }
+    .health-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
 
-  .doa-ring {
-    fill: none;
-    stroke: rgba(255, 255, 255, 0.2);
-    stroke-width: 1;
-  }
+        div {
+            min-width: 0;
+        }
 
-  .doa-center {
-    fill: #e83e8c;
-  }
+        dt {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
 
-  .doa-tick {
-    stroke: rgba(255, 255, 255, 0.55);
-    stroke-width: 2;
-  }
+        dd {
+            color: #ffffff;
+            margin-bottom: 0;
+            overflow-wrap: anywhere;
+        }
 
-  .doa-label {
-    fill: rgba(255, 255, 255, 0.7);
-    font-size: 10px;
-  }
+        .health-note {
+            grid-column: 1 / -1;
+        }
+    }
 
-  .doa-needle {
-    stroke: #e83e8c;
-    stroke-width: 3;
-    stroke-linecap: round;
-  }
+    .badge-success {
+        background-color: #28a745;
+        color: #fff;
+        font-size: 14px;
+        padding: 6px 12px;
+    }
 
-  .doa-needle-tip {
-    fill: #ff7eb3;
-  }
+    .badge-secondary {
+        background-color: #6c757d;
+        color: #fff;
+        font-size: 14px;
+        padding: 6px 12px;
+    }
 
-  .doa-angle-readout {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #e83e8c;
-  }
+    .badge-warning {
+        background-color: #ffc107;
+        color: #212529;
+        font-size: 14px;
+        padding: 6px 12px;
+    }
 
-  .audio-level-bar {
-    height: 14px;
-    background-color: rgba(0, 0, 0, 0.35);
-    border-radius: 6px;
-    overflow: hidden;
-  }
+    .doa-compass {
+        width: min(280px, 100%);
+        height: auto;
+    }
 
-  .audio-level-bar .progress-bar {
-    background: linear-gradient(90deg, #28a745 0%, #ffc107 70%, #dc3545 100%);
-    transition: width 0.15s ease-out;
-  }
+    .doa-outer {
+        fill: rgba(20, 20, 30, 0.9);
+        stroke: #e83e8c;
+        stroke-width: 2;
+    }
 
-  .form-select,
-  .form-control,
-  .form-control-color {
-    background-color: rgba(20, 20, 30, 0.85);
-    border-color: rgba(255, 255, 255, 0.2);
-    color: #ffffff;
-  }
+    .doa-ring {
+        fill: none;
+        stroke: rgba(255, 255, 255, 0.2);
+        stroke-width: 1;
+    }
 
-  .form-select:disabled,
-  .form-control:disabled,
-  .form-range:disabled,
-  .form-control-color:disabled {
-    opacity: 0.55;
-  }
+    .doa-center {
+        fill: #e83e8c;
+    }
 
-  .form-check-label {
-    color: #ffffff;
-  }
+    .doa-tick {
+        stroke: rgba(255, 255, 255, 0.55);
+        stroke-width: 2;
+    }
 
-  .form-range {
-    accent-color: #e83e8c;
-  }
+    .doa-label {
+        fill: rgba(255, 255, 255, 0.7);
+        font-size: 10px;
+    }
 
-  .form-control-color {
-    width: 3rem;
-    height: 2.4rem;
-    padding: 0.2rem;
-  }
+    .doa-needle {
+        stroke: #e83e8c;
+        stroke-width: 3;
+        stroke-linecap: round;
+    }
 
-  .gap-2 {
-    gap: 0.5rem;
-  }
+    .doa-needle-tip {
+        fill: #ff7eb3;
+    }
 
-  .ml-2 {
-    margin-left: 0.5rem;
-  }
+    .doa-angle-readout {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #e83e8c;
+    }
+
+    .audio-level-bar {
+        height: 14px;
+        background-color: rgba(0, 0, 0, 0.35);
+        border-radius: 6px;
+        overflow: hidden;
+    }
+
+    .audio-level-bar .progress-bar {
+        background: linear-gradient(
+            90deg,
+            #28a745 0%,
+            #ffc107 70%,
+            #dc3545 100%
+        );
+        transition: width 0.15s ease-out;
+    }
+
+    .form-select,
+    .form-control,
+    .form-control-color {
+        background-color: rgba(20, 20, 30, 0.85);
+        border-color: rgba(255, 255, 255, 0.2);
+        color: #ffffff;
+    }
+
+    .form-select:disabled,
+    .form-control:disabled,
+    .form-range:disabled,
+    .form-control-color:disabled {
+        opacity: 0.55;
+    }
+
+    .form-check-label {
+        color: #ffffff;
+    }
+
+    .form-range {
+        accent-color: #e83e8c;
+    }
+
+    .form-control-color {
+        width: 3rem;
+        height: 2.4rem;
+        padding: 0.2rem;
+    }
+
+    .gap-2 {
+        gap: 0.5rem;
+    }
+
+    .ml-2 {
+        margin-left: 0.5rem;
+    }
 }

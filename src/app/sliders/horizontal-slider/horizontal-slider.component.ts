@@ -16,7 +16,7 @@ import {
     ChangeDetectionStrategy,
 } from "@angular/core";
 import {FormControl, ReactiveFormsModule} from "@angular/forms";
-import {Observable, asyncScheduler, fromEvent} from "rxjs";
+import {Observable, Subscription, asyncScheduler, fromEvent} from "rxjs";
 import {SliderThumb} from "./slider-thumb";
 import {NgClass} from "@angular/common";
 
@@ -48,6 +48,8 @@ export class HorizontalSliderComponent
     @Input() active: boolean = true;
 
     resizeObservable$ = fromEvent(window, "resize");
+    resizeSubscription?: Subscription;
+    messageReceiverSubscription?: Subscription;
 
     screenHeight = window.innerHeight;
     screenWidth = window.innerWidth;
@@ -117,7 +119,7 @@ export class HorizontalSliderComponent
         this.trackHeightSave = this.trackHeight;
         this.thumbRadiusSave = this.thumbRadius;
         this.resizeSliderAndThumbRaduis();
-        this.resizeObservable$.subscribe((_evt) => {
+        this.resizeSubscription = this.resizeObservable$.subscribe((_evt) => {
             this.resizeSliderAndThumbRaduis();
         });
 
@@ -134,11 +136,13 @@ export class HorizontalSliderComponent
             });
         }
         this.setAllThumbValues(this.defaultValues);
-        this.messageReceiver$?.subscribe((values: number[] | number) => {
-            this.setAllThumbValues(
-                typeof values === "number" ? [values] : values,
-            );
-        });
+        this.messageReceiverSubscription = this.messageReceiver$?.subscribe(
+            (values: number[] | number) => {
+                this.setAllThumbValues(
+                    typeof values === "number" ? [values] : values,
+                );
+            },
+        );
         this.ref.detectChanges();
     }
 
@@ -152,6 +156,8 @@ export class HorizontalSliderComponent
     }
 
     ngOnDestroy() {
+        this.resizeSubscription?.unsubscribe();
+        this.messageReceiverSubscription?.unsubscribe();
         this.sliderResizeObserver.disconnect();
     }
 

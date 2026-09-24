@@ -72,7 +72,21 @@
             </div>
         </div>
     </div>
-    @if (displayExtended) {
+    @if (showActualPosition || showTemperature) {
+    <div class="row justify-content-center mb-3">
+        @if (showActualPosition) {
+        <app-motor-feedback
+            class="col-4"
+            [motor]="motor"
+            feedback="actual_position"></app-motor-feedback>
+        } @if (showTemperature) {
+        <app-motor-feedback
+            class="col-4"
+            [motor]="motor"
+            feedback="temperature"></app-motor-feedback>
+        }
+    </div>
+    } @if (displayExtended) {
     <div class="row justify-content-center">
         <div class="col-9">
             <app-horizontal-slider

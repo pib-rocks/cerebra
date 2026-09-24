@@ -17,6 +17,7 @@ import {SetVoiceAssistantStateResponse} from "../../ros-types/srv/set-voice-assi
 import {Observable, Subject} from "rxjs";
 import {SolidStateRelayState} from "../../ros-types/msg/solid-state-relay-state";
 import {SetSolidStateRelayStateResponse} from "../../ros-types/srv/set-solid-state-relay-state";
+import {DetectionArray} from "../../ros-types/msg/detection-array";
 
 describe("RosService", () => {
     let rosService: RosService;
@@ -80,6 +81,203 @@ describe("RosService", () => {
         expect(rosService["deleteTokenTopic"]).toBeTruthy();
         expect(rosService["solidStateRelayStateTopic"]).toBeTruthy();
         expect(rosService["setSolidStateRelayStateService"]).toBeTruthy();
+        expect(rosService["modelStatusTopic"]).toBeTruthy();
+        expect(rosService["listModelsService"]).toBeTruthy();
+        expect(rosService["startModelService"]).toBeTruthy();
+        expect(rosService["stopModelService"]).toBeTruthy();
+    });
+
+    it("should make the camera subscription lifecycle idempotent", () => {
+        const subscribe = spyOn(rosService["cameraTopic"], "subscribe");
+        const unsubscribe = spyOn(rosService["cameraTopic"], "unsubscribe");
+
+        rosService.subscribeCameraTopic();
+        rosService.subscribeCameraTopic();
+        expect(subscribe).toHaveBeenCalledTimes(1);
+
+        rosService.unsubscribeCameraTopic();
+        rosService.unsubscribeCameraTopic();
+        expect(unsubscribe).toHaveBeenCalledTimes(1);
+    });
+
+    it("should subscribe to multiple discovered detection topics", () => {
+        const callbacks = new Map<string, (message: DetectionArray) => void>();
+        const topics = new Map<string, jasmine.SpyObj<any>>();
+        spyOn<any>(rosService, "createRosTopic").and.callFake(
+            (topicName: string) => {
+                const topic = jasmine.createSpyObj<any>("topic", [
+                    "subscribe",
+                    "unsubscribe",
+                ]);
+                topic.subscribe.and.callFake(
+                    (callback: (message: DetectionArray) => void) => {
+                        callbacks.set(topicName, callback);
+                    },
+                );
+                topics.set(topicName, topic);
+                return topic;
+            },
+        );
+        const received: DetectionArray[] = [];
+        rosService.detectionReceiver$.subscribe((message) =>
+            received.push(message),
+        );
+
+        rosService["syncDetectionTopics"]([
+            "/detections/hands",
+            "/detections/objects",
+        ]);
+        callbacks.get("/detections/hands")?.({
+            model_id: "hands",
+            frame_width: 640,
+            frame_height: 480,
+            detections: [],
+        });
+        callbacks.get("/detections/objects")?.({
+            model_id: "objects",
+            frame_width: 1280,
+            frame_height: 720,
+            detections: [],
+        });
+
+        expect(rosService.detectionModelsReceiver$.value).toEqual([
+            "hands",
+            "objects",
+        ]);
+        expect(received.map((message) => message.model_id)).toEqual([
+            "hands",
+            "objects",
+        ]);
+
+        rosService["syncDetectionTopics"](["/detections/hands"]);
+        expect(
+            topics.get("/detections/objects")?.unsubscribe,
+        ).toHaveBeenCalled();
+    });
+
+    it("should clear detections when model status changes", () => {
+        let statusCallback: (message: any) => void = () => {};
+        spyOn(rosService["modelStatusTopic"], "subscribe").and.callFake(
+            (callback) => {
+                statusCallback = callback;
+            },
+        );
+        spyOn<any>(rosService, "refreshDetectionTopics");
+        const clearSpy = spyOn(rosService.detectionClearReceiver$, "next");
+
+        rosService["subscribeModelStatusTopic"]();
+        statusCallback({
+            models: [
+                {
+                    model_id: "hands",
+                    state: "running",
+                    fps: 20,
+                    active: true,
+                },
+            ],
+        });
+        statusCallback({
+            models: [
+                {
+                    model_id: "hands",
+                    state: "running",
+                    fps: 21,
+                    active: true,
+                },
+            ],
+        });
+        statusCallback({
+            models: [
+                {
+                    model_id: "hands",
+                    state: "idle",
+                    fps: 0,
+                    active: false,
+                },
+            ],
+        });
+
+        expect(clearSpy).toHaveBeenCalledOnceWith(undefined);
+    });
+
+    it("should publish complete model status snapshots", () => {
+        let statusCallback: (message: any) => void = () => {};
+        spyOn(rosService["modelStatusTopic"], "subscribe").and.callFake(
+            (callback) => {
+                statusCallback = callback;
+            },
+        );
+        spyOn<any>(rosService, "refreshDetectionTopics");
+        const status = {
+            models: [
+                {
+                    model_id: "hand_tracking",
+                    state: "starting" as const,
+                    fps: 0,
+                    active: true,
+                },
+            ],
+        };
+
+        rosService["subscribeModelStatusTopic"]();
+        statusCallback(status);
+
+        expect(rosService.modelStatusReceiver$.value).toEqual(status);
+    });
+
+    it("should list models from the ROS service", (done) => {
+        const models = [
+            {
+                model_id: "hand_tracking",
+                task: "hand tracking",
+                licence: "Apache-2.0",
+                shaves: [4, 1, 4],
+                size_bytes: 100,
+                available: true,
+                active: false,
+            },
+        ];
+        spyOn(rosService["listModelsService"], "callService").and.callFake(
+            (_request, callback) => callback!({models}),
+        );
+
+        rosService.listModels().subscribe((response) => {
+            expect(response).toEqual(models);
+            done();
+        });
+    });
+
+    it("should send the verified start and stop model requests", () => {
+        const model = {
+            model_id: "hand_tracking",
+            task: "hand tracking",
+            licence: "Apache-2.0",
+            shaves: [4, 1, 4],
+            size_bytes: 100,
+            available: true,
+            active: false,
+        };
+        const startSpy = spyOn(rosService["startModelService"], "callService");
+        const stopSpy = spyOn(rosService["stopModelService"], "callService");
+
+        rosService.startModel(model, "cerebra-ui").subscribe();
+        rosService.stopModel(model.model_id, "cerebra-ui").subscribe();
+
+        expect(startSpy).toHaveBeenCalledOnceWith(
+            {
+                model_id: "hand_tracking",
+                shaves: [4, 1, 4],
+                owner: "cerebra-ui",
+            },
+            jasmine.any(Function),
+            jasmine.any(Function),
+        );
+        expect(stopSpy).toHaveBeenCalledOnceWith(
+            {model_id: "hand_tracking", owner: "cerebra-ui"},
+            jasmine.any(Function),
+            jasmine.any(Function),
+        );
+        expect(rosService.modelStatusReceiver$.value.models).toEqual([]);
     });
 
     it("should call the set_voice_assistant_state ros service", () => {
@@ -640,6 +838,7 @@ describe("RosService", () => {
             "on",
             "callOnConnection",
             "once",
+            "getTopics",
         ]);
         mockRos.on.and.callFake(
             (
@@ -653,6 +852,7 @@ describe("RosService", () => {
         );
         mockRos.callOnConnection.and.callFake(() => {});
         mockRos.once.and.callFake(() => {});
+        mockRos.getTopics.and.callFake(() => {});
 
         spyOn<any>(RosService.prototype, "setUpRos").and.returnValue(mockRos);
 

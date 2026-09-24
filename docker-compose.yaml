@@ -11,6 +11,7 @@ services:
             dockerfile: Dockerfile
             args:
                 NODE_ENV: production # or 'development' for dev build
+                APP_VERSION: ${APP_VERSION:-v0.6.2}
         ports:
             - "80:80"
         networks:
