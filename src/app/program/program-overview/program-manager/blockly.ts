@@ -408,6 +408,8 @@ export const toolbox: string = `<xml xmlns="http://www.w3.org/1999/xhtml" id="to
 <category name="Expressions" colour="180">
     <block type="set_face_expression"></block>
     <block type="show_face_text"></block>
+    <block type="open_cerebra_fullscreen"></block>
+    <block type="close_cerebra_fullscreen"></block>
 </category>
 <category name="Buttons" colour="20">
     <block type="tf_button_taster_to_variable"></block>
