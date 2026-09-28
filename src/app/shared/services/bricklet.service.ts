@@ -1,5 +1,6 @@
 import {Injectable} from "@angular/core";
 import {Bricklet} from "../types/bricklet";
+import {ConnectedBricklet} from "../types/connected-bricklet";
 import {
     BehaviorSubject,
     catchError,
@@ -125,5 +126,21 @@ export class BrickletService {
 
     public getBricklet(brickletNumber: number): Bricklet | undefined {
         return this.bricklets.find((b) => b.brickletNumber === brickletNumber);
+    }
+
+    /**
+     * Reads the Bricklets the hardware actually reports. This is a plain read
+     * of the current enumeration and does not touch the configured Bricklets
+     * held by this service.
+     */
+    public getConnectedBricklets(): Observable<ConnectedBricklet[]> {
+        return this.apiService
+            .get(UrlConstants.BRICKLET_CONNECTED)
+            .pipe(
+                map(
+                    (response): ConnectedBricklet[] =>
+                        response?.["bricklets"] ?? [],
+                ),
+            );
     }
 }

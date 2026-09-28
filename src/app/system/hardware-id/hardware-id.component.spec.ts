@@ -6,8 +6,9 @@ import {
     DiagnosticsService,
     HardwareConfig,
 } from "../diagnostics/diagnostics.service";
-import {BehaviorSubject, of, throwError} from "rxjs";
+import {BehaviorSubject, of, Subject, throwError} from "rxjs";
 import {Bricklet} from "src/app/shared/types/bricklet";
+import {ConnectedBricklet} from "src/app/shared/types/connected-bricklet";
 import {AbstractControl, ReactiveFormsModule} from "@angular/forms";
 import {provideZonelessChangeDetection} from "@angular/core";
 import {ApiService} from "src/app/shared/services/api.service";
@@ -28,6 +29,39 @@ describe("HardwareIdComponent", () => {
     const bricklet1 = new Bricklet("AAA", 1, "Servo Bricklet");
     const bricklet2 = new Bricklet("BBB", 2, "Servo Bricklet");
     const bricklet3 = new Bricklet("CCC", 3, "Solid State Relay Bricklet");
+
+    // Shape of GET /bricklet/connected: ports lowercase, carrier board last
+    // with an empty port. Mirrors the devices measured on the robot.
+    const connectedDevices: ConnectedBricklet[] = [
+        {
+            name: "RGB LED Button Bricklet",
+            uid: "2dye",
+            port: "a",
+            parentUid: "2iLa",
+            deviceIdentifier: 282,
+        },
+        {
+            name: "Servo Bricklet 2.0",
+            uid: "2h4Z",
+            port: "c",
+            parentUid: "2iLa",
+            deviceIdentifier: 2157,
+        },
+        {
+            name: "Solid State Relay Bricklet 2.0",
+            uid: "27FV",
+            port: "d",
+            parentUid: "2iLa",
+            deviceIdentifier: 296,
+        },
+        {
+            name: "HAT Brick",
+            uid: "2iLa",
+            port: "",
+            parentUid: "",
+            deviceIdentifier: 111,
+        },
+    ];
 
     const sampleHardwareConfig: HardwareConfig = {
         version: 1,
@@ -54,10 +88,14 @@ describe("HardwareIdComponent", () => {
             "renameBrickletUid",
             "getBricklet",
             "reloadBrickletsFromDb",
+            "getConnectedBricklets",
         ]);
 
         brickletServiceSpy.getBrickletObservable.and.returnValue(
             of([bricklet1, bricklet2, bricklet3]),
+        );
+        brickletServiceSpy.getConnectedBricklets.and.returnValue(
+            of(connectedDevices),
         );
 
         brickletServiceSpy.getBricklet.and.callFake((number: number) => {
@@ -488,6 +526,195 @@ describe("HardwareIdComponent", () => {
         ]);
         expect(component.showImportModal).toBeTrue();
     });
+
+    describe("connected Bricklets table", () => {
+        const cellsOf = (compiled: HTMLElement, name: string): string[] =>
+            Array.from(
+                compiled.querySelectorAll(
+                    `[data-test="TBL_Connected_Bricklets"] [data-test="${name}"]`,
+                ),
+            ).map((cell) => (cell.textContent ?? "").trim());
+
+        it("loads the connected Bricklets when the tab opens", () => {
+            expect(
+                brickletServiceSpy.getConnectedBricklets,
+            ).toHaveBeenCalledTimes(1);
+        });
+
+        it("renders one row per reported device with name, UID and printed port letter, below the UID fields", () => {
+            const compiled = fixture.nativeElement as HTMLElement;
+            const table = compiled.querySelector(
+                '[data-test="TBL_Connected_Bricklets"]',
+            ) as HTMLTableElement;
+            expect(table).toBeTruthy();
+            expect(table.querySelectorAll("tbody tr").length).toBe(4);
+
+            expect(cellsOf(compiled, "TXT_Connected_Bricklet_Name")).toEqual([
+                "RGB LED Button Bricklet",
+                "Servo Bricklet 2.0",
+                "Solid State Relay Bricklet 2.0",
+                "HAT Brick",
+            ]);
+            expect(cellsOf(compiled, "TXT_Connected_Bricklet_UID")).toEqual([
+                "2dye",
+                "2h4Z",
+                "27FV",
+                "2iLa",
+            ]);
+            // The board prints uppercase letters; the backend sends lowercase.
+            expect(
+                cellsOf(compiled, "TXT_Connected_Bricklet_Port").slice(0, 3),
+            ).toEqual(["A", "C", "D"]);
+
+            // The table sits under the form; the form and its fields are intact.
+            const form = compiled.querySelector("form") as HTMLElement;
+            expect(form).toBeTruthy();
+            expect(
+                form.querySelectorAll('[data-test^="TXT_Bricklet_UID_"]')
+                    .length,
+            ).toBe(3);
+            expect(form.contains(table)).toBeFalse();
+            expect(
+                form.compareDocumentPosition(table) &
+                    Node.DOCUMENT_POSITION_FOLLOWING,
+            ).toBeTruthy();
+        });
+
+        it("shows the port tooltip with the letter and the carrier board it sits on", () => {
+            const compiled = fixture.nativeElement as HTMLElement;
+            const portCells = compiled.querySelectorAll(
+                '[data-test="TXT_Connected_Bricklet_Port"]',
+            );
+            expect(portCells[0].getAttribute("title")).toBe(
+                "Port A on HAT Brick 2iLa",
+            );
+        });
+
+        it("never renders the portless carrier board as an empty cell", () => {
+            const compiled = fixture.nativeElement as HTMLElement;
+            const carrierRow = compiled.querySelector(
+                '[data-test="ROW_Connected_Bricklet_2iLa"]',
+            ) as HTMLTableRowElement;
+            expect(carrierRow).toBeTruthy();
+            const portCell = carrierRow.querySelector(
+                '[data-test="TXT_Connected_Bricklet_Port"]',
+            ) as HTMLTableCellElement;
+            const text = (portCell.textContent ?? "").trim();
+            expect(text).not.toBe("");
+            expect(text).toContain("—");
+            expect(text.toLowerCase()).toContain("carrier board");
+            expect(portCell.getAttribute("title")).toContain("Carrier board");
+
+            // No cell anywhere in the table is empty.
+            const allCells = Array.from(
+                compiled.querySelectorAll(
+                    '[data-test="TBL_Connected_Bricklets"] tbody td',
+                ),
+            );
+            expect(allCells.length).toBe(12);
+            allCells.forEach((cell) =>
+                expect((cell.textContent ?? "").trim()).not.toBe(""),
+            );
+        });
+
+        it("renders the error message and no table when the read fails", () => {
+            brickletServiceSpy.getConnectedBricklets.and.returnValue(
+                throwError(() => ({
+                    error: {error: "Tinkerforge daemon is not reachable."},
+                })),
+            );
+            const failingFixture = TestBed.createComponent(HardwareIdComponent);
+            failingFixture.detectChanges();
+
+            const compiled = failingFixture.nativeElement as HTMLElement;
+            const errorBox = compiled.querySelector(
+                '[data-test="TXT_Connected_Bricklets_Error"]',
+            );
+            expect(errorBox).toBeTruthy();
+            expect(errorBox?.textContent).toContain(
+                "Tinkerforge daemon is not reachable.",
+            );
+            expect(
+                compiled.querySelector('[data-test="TBL_Connected_Bricklets"]'),
+            ).toBeNull();
+            expect(
+                compiled.querySelector(
+                    '[data-test="TXT_Connected_Bricklets_Empty"]',
+                ),
+            ).toBeNull();
+            // The failure is confined to the table; the form is still there.
+            expect(
+                compiled.querySelectorAll('[data-test^="TXT_Bricklet_UID_"]')
+                    .length,
+            ).toBe(3);
+        });
+
+        it("falls back to a generic message when the error carries no text", () => {
+            brickletServiceSpy.getConnectedBricklets.and.returnValue(
+                throwError(() => new Error("network")),
+            );
+            const failingFixture = TestBed.createComponent(HardwareIdComponent);
+            failingFixture.detectChanges();
+
+            expect(
+                failingFixture.componentInstance.connectedBrickletsError,
+            ).toBe("Failed to load the connected Bricklets.");
+        });
+
+        it("renders an explicit empty row, not a blank table, when nothing is attached", () => {
+            brickletServiceSpy.getConnectedBricklets.and.returnValue(of([]));
+            const emptyFixture = TestBed.createComponent(HardwareIdComponent);
+            emptyFixture.detectChanges();
+
+            const compiled = emptyFixture.nativeElement as HTMLElement;
+            expect(
+                compiled.querySelector('[data-test="TBL_Connected_Bricklets"]'),
+            ).toBeTruthy();
+            expect(
+                compiled.querySelector(
+                    '[data-test="TXT_Connected_Bricklets_Empty"]',
+                )?.textContent,
+            ).toContain("No Bricklets connected.");
+            expect(
+                compiled.querySelector(
+                    '[data-test="TXT_Connected_Bricklets_Error"]',
+                ),
+            ).toBeNull();
+        });
+
+        it("reads again when the refresh button is clicked and replaces the rows", () => {
+            const compiled = fixture.nativeElement as HTMLElement;
+            const refreshBtn = compiled.querySelector(
+                '[data-test="BTN_Refresh_Connected_Bricklets"]',
+            ) as HTMLButtonElement;
+            expect(refreshBtn).toBeTruthy();
+            expect(
+                brickletServiceSpy.getConnectedBricklets,
+            ).toHaveBeenCalledTimes(1);
+
+            brickletServiceSpy.getConnectedBricklets.and.returnValue(
+                of([connectedDevices[1], connectedDevices[3]]),
+            );
+            refreshBtn.click();
+            fixture.detectChanges();
+
+            expect(
+                brickletServiceSpy.getConnectedBricklets,
+            ).toHaveBeenCalledTimes(2);
+            expect(cellsOf(compiled, "TXT_Connected_Bricklet_UID")).toEqual([
+                "2h4Z",
+                "2iLa",
+            ]);
+        });
+
+        it("does not write to the UID form when the table loads or refreshes", () => {
+            const before = component.brickletUidForm.getRawValue();
+            component.refreshConnectedBricklets();
+            fixture.detectChanges();
+            expect(component.brickletUidForm.getRawValue()).toEqual(before);
+            expect(brickletServiceSpy.renameBrickletUid).not.toHaveBeenCalled();
+        });
+    });
 });
 
 function controller(
@@ -538,6 +765,9 @@ function contextFor(
 describe("HardwareIdComponent import preview (zoneless)", () => {
     let component: HardwareIdComponent;
     let fixture: ComponentFixture<HardwareIdComponent>;
+    // Emits later than ngOnInit, so the rows can only appear if the component
+    // notifies change detection itself on the async path.
+    let connectedBricklets$: Subject<ConnectedBricklet[]>;
 
     // Payload shape produced by pib-backend export_hardware_config().
     const exportedFileContent = JSON.stringify(
@@ -575,9 +805,14 @@ describe("HardwareIdComponent import preview (zoneless)", () => {
             "renameBrickletUid",
             "getBricklet",
             "reloadBrickletsFromDb",
+            "getConnectedBricklets",
         ]);
         brickletServiceSpy.getBrickletObservable.and.returnValue(
             of([new Bricklet("AAA", 1, "Servo Bricklet")]),
+        );
+        connectedBricklets$ = new Subject<ConnectedBricklet[]>();
+        brickletServiceSpy.getConnectedBricklets.and.returnValue(
+            connectedBricklets$.asObservable(),
         );
         const variantServiceSpy = jasmine.createSpyObj("VariantService", [
             "getContextObservable",
@@ -657,5 +892,62 @@ describe("HardwareIdComponent import preview (zoneless)", () => {
             '[data-test="BTN_Import_Hardware_IDs_Confirm"]',
         ) as HTMLButtonElement;
         expect(confirmBtn.disabled).toBeFalse();
+    });
+
+    it("renders the connected Bricklets rows after an asynchronous response without a manual change detection run", async () => {
+        const compiled = fixture.nativeElement as HTMLElement;
+        expect(
+            compiled.querySelector('[data-test="TBL_Connected_Bricklets"]'),
+        ).toBeNull();
+        expect(
+            compiled.querySelector(
+                '[data-test="TXT_Connected_Bricklets_Loading"]',
+            ),
+        ).toBeTruthy();
+
+        connectedBricklets$.next([
+            {
+                name: "Servo Bricklet 2.0",
+                uid: "2jtj",
+                port: "h",
+                parentUid: "2iLa",
+                deviceIdentifier: 2157,
+            },
+            {
+                name: "HAT Brick",
+                uid: "2iLa",
+                port: "",
+                parentUid: "",
+                deviceIdentifier: 111,
+            },
+        ]);
+        await fixture.whenStable();
+
+        const rows = compiled.querySelectorAll(
+            '[data-test="TBL_Connected_Bricklets"] tbody tr',
+        );
+        expect(rows.length).toBe(2);
+        expect(rows[0].textContent).toContain("Servo Bricklet 2.0");
+        expect(rows[0].textContent).toContain("2jtj");
+        expect(rows[0].textContent).toContain("H");
+        expect(rows[1].textContent).toContain("HAT Brick");
+        expect(rows[1].textContent).toContain("carrier board");
+    });
+
+    it("renders the error and no table after an asynchronous failure without a manual change detection run", async () => {
+        connectedBricklets$.error({
+            error: {error: "Tinkerforge daemon is not reachable."},
+        });
+        await fixture.whenStable();
+
+        const compiled = fixture.nativeElement as HTMLElement;
+        expect(
+            compiled.querySelector(
+                '[data-test="TXT_Connected_Bricklets_Error"]',
+            )?.textContent,
+        ).toContain("Tinkerforge daemon is not reachable.");
+        expect(
+            compiled.querySelector('[data-test="TBL_Connected_Bricklets"]'),
+        ).toBeNull();
     });
 });

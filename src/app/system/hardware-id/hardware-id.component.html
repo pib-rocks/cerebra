@@ -129,6 +129,89 @@
         }
     </form>
 
+    <!-- Connected Bricklets: what the hardware reports right now. Read-only;
+         it never fills the UID fields above. -->
+    <section
+        class="controller-section connected-bricklets"
+        data-test="GRP_Connected_Bricklets">
+        <div
+            class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <h3 class="mb-0">Connected Bricklets</h3>
+            <button
+                type="button"
+                id="btn-refresh-connected-bricklets"
+                data-test="BTN_Refresh_Connected_Bricklets"
+                class="btn btn-outline-light"
+                [disabled]="connectedBrickletsLoading"
+                (click)="refreshConnectedBricklets()">
+                <i
+                    class="fas fa-sync-alt mr-1"
+                    [class.fa-spin]="connectedBrickletsLoading"></i>
+                {{ connectedBrickletsLoading ? 'Loading...' : 'Refresh' }}
+            </button>
+        </div>
+        <p class="controller-documentation">
+            Devices reported by the hardware, with the port letter printed on
+            the board. This list only displays; the fields above are not changed
+            by it.
+        </p>
+
+        @if (connectedBrickletsError) {
+        <div
+            class="alert alert-danger"
+            data-test="TXT_Connected_Bricklets_Error">
+            {{ connectedBrickletsError }}
+        </div>
+        } @else if (connectedBrickletsLoaded) {
+        <div class="table-responsive">
+            <table
+                class="table table-dark table-sm table-striped mb-0"
+                id="table-connected-bricklets"
+                data-test="TBL_Connected_Bricklets">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>UID</th>
+                        <th>Port</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (device of connectedBricklets; track device.uid) {
+                    <tr
+                        [attr.data-test]="'ROW_Connected_Bricklet_' + device.uid">
+                        <td data-test="TXT_Connected_Bricklet_Name">
+                            {{ device.name }}
+                        </td>
+                        <td data-test="TXT_Connected_Bricklet_UID">
+                            <code>{{ device.uid }}</code>
+                        </td>
+                        <td
+                            data-test="TXT_Connected_Bricklet_Port"
+                            [title]="portTooltip(device)">
+                            {{ portLabel(device) }}
+                        </td>
+                    </tr>
+                    } @empty {
+                    <tr>
+                        <td
+                            colspan="3"
+                            data-test="TXT_Connected_Bricklets_Empty">
+                            No Bricklets connected.
+                        </td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        } @else {
+        <p
+            class="controller-documentation"
+            data-test="TXT_Connected_Bricklets_Loading">
+            Loading connected Bricklets...
+        </p>
+        }
+    </section>
+
     <!-- Import Hardware-IDs Modal -->
     @if (showImportModal) {
     <div class="modal-backdrop fade show"></div>
