@@ -22,6 +22,7 @@ import {
     VariantService,
 } from "src/app/shared/services/variant.service";
 import {Bricklet} from "src/app/shared/types/bricklet";
+import {ConnectedBricklet} from "src/app/shared/types/connected-bricklet";
 import {
     patternOrOptionalValidator,
     uniqueValuesValidator,
@@ -68,6 +69,17 @@ export class HardwareIdComponent implements OnInit {
     importSuccessMessage: string | null = null;
     error: string | null = null;
 
+    // Devices the hardware really reports (GET /bricklet/connected). This is
+    // read-only display and never feeds the UID form above it.
+    connectedBricklets: ConnectedBricklet[] = [];
+    connectedBrickletsLoading = false;
+    // True once a read has succeeded, so "not loaded yet" and "loaded, nothing
+    // attached" render differently.
+    connectedBrickletsLoaded = false;
+    // Kept separate from `error`, which belongs to export/import: a failed
+    // enumeration must not be cleared by an export and vice versa.
+    connectedBrickletsError: string | null = null;
+
     get hasEditableControllers(): boolean {
         return Object.keys(this.brickletUidForm.controls).length > 0;
     }
@@ -104,6 +116,66 @@ export class HardwareIdComponent implements OnInit {
                 this.hardwareContext = context;
                 this.rebuildControllerView();
                 this.cdr.markForCheck();
+            });
+
+        this.loadConnectedBricklets();
+    }
+
+    refreshConnectedBricklets(): void {
+        if (this.connectedBrickletsLoading) return;
+        this.loadConnectedBricklets();
+    }
+
+    /**
+     * Port column text. The backend reports the lowercase port letter; the
+     * label printed on the board is uppercase, so that is what is shown. A
+     * device without a port is the carrier board and must never render as an
+     * empty cell.
+     */
+    portLabel(device: ConnectedBricklet): string {
+        return device.port ? device.port.toUpperCase() : "— carrier board";
+    }
+
+    portTooltip(device: ConnectedBricklet): string {
+        if (!device.port) {
+            return "Carrier board: the other Bricklets are plugged into this device, it has no port of its own.";
+        }
+        const parent = this.connectedBricklets.find(
+            (candidate) => candidate.uid === device.parentUid,
+        );
+        const parentLabel = parent
+            ? `${parent.name} ${parent.uid}`
+            : device.parentUid
+            ? `board ${device.parentUid}`
+            : "an unknown board";
+        return `Port ${device.port.toUpperCase()} on ${parentLabel}`;
+    }
+
+    private loadConnectedBricklets(): void {
+        this.connectedBrickletsLoading = true;
+        this.connectedBrickletsError = null;
+
+        this.brickletService
+            .getConnectedBricklets()
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe({
+                next: (devices) => {
+                    this.connectedBricklets = devices;
+                    this.connectedBrickletsLoaded = true;
+                    this.connectedBrickletsLoading = false;
+                    this.cdr.markForCheck();
+                },
+                error: (err) => {
+                    this.connectedBrickletsLoading = false;
+                    // A failed read is not an empty list: drop stale rows so the
+                    // error is the only thing shown.
+                    this.connectedBricklets = [];
+                    this.connectedBrickletsLoaded = false;
+                    this.connectedBrickletsError =
+                        err?.error?.error ||
+                        "Failed to load the connected Bricklets.";
+                    this.cdr.markForCheck();
+                },
             });
     }
 
