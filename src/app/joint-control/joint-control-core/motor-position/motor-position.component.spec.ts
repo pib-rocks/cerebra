@@ -83,18 +83,14 @@ describe("MotorPositionComponent", () => {
     });
 
     it("should get the data from the route", () => {
-        const settingsSubject = jasmine.createSpyObj("settings-subject", [
-            "subscribe",
-        ]);
-        const positionSubject = jasmine.createSpyObj("position-subject", [
-            "subscribe",
-        ]);
+        const nextSettingsSubject = new Subject<MotorSettings>();
+        const nextPositionSubject = new Subject<number>();
         motorService.getSettingsObservable = jasmine
             .createSpy()
-            .and.returnValue(settingsSubject);
+            .and.returnValue(nextSettingsSubject);
         motorService.getPositionObservable = jasmine
             .createSpy()
-            .and.returnValue(positionSubject);
+            .and.returnValue(nextPositionSubject);
 
         const nextConfig: MotorConfiguration = {
             motorName: "next_motor",
@@ -119,8 +115,11 @@ describe("MotorPositionComponent", () => {
         expect(motorService.getPositionObservable).toHaveBeenCalledOnceWith(
             "next_motor",
         );
-        expect(settingsSubject.subscribe).toHaveBeenCalledTimes(1);
-        expect(positionSubject.subscribe).toHaveBeenCalledTimes(1);
+        expect(nextSettingsSubject.observers.length).toBe(1);
+        expect(nextPositionSubject.observers.length).toBe(1);
+
+        nextPositionSubject.next(4200);
+        expect(component.positionReceiver$.value).toEqual([42]);
     });
 
     it("should set the position", () => {

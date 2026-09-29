@@ -46,5 +46,33 @@ export const displayBlocks = Blockly.common.createBlockDefinitionsFromJsonArray(
             tooltip: "Shows short text on Pib's face. Max 40 characters.",
             helpUrl: "",
         },
+        {
+            type: "open_cerebra_fullscreen",
+            message0: "Open Cerebra fullscreen %1",
+            args0: [
+                {
+                    type: "field_input",
+                    name: "URL",
+                    text: "http://localhost",
+                    spellcheck: false,
+                },
+            ],
+            previousStatement: null,
+            nextStatement: null,
+            colour: 180,
+            tooltip:
+                "Opens the given URL fullscreen on pib's display. Opening again with a different URL replaces the page; the same URL is left as it is.",
+            helpUrl: "",
+        },
+        {
+            type: "close_cerebra_fullscreen",
+            message0: "Close Cerebra fullscreen",
+            previousStatement: null,
+            nextStatement: null,
+            colour: 180,
+            tooltip:
+                "Closes the fullscreen page on pib's display and shows the face again. The program keeps running.",
+            helpUrl: "",
+        },
     ],
 );

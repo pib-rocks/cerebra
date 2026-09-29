@@ -1,12 +1,13 @@
 <div class="row full-height mx-0">
     <div class="main col-sm-9 col-xl-10 p-0">
+        @if (marimoUrl) {
         <iframe
-            *ngIf="marimoUrl"
             [src]="marimoUrl"
             class="w-100 h-100 border-0 bg-dark-editor"
             style="min-height: 720px;"
             title="Marimo Reactive Notebook Editor">
         </iframe>
+        }
     </div>
     <div class="col-sm-3 col-xl-2 p-0">
         <app-sidebar-right

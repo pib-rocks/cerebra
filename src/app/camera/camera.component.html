@@ -118,7 +118,10 @@
                     [rightValue]="1"
                     [step]="0.1"
                     [defaultValues]="[cameraSettings?.refreshRate ?? 0.1]"
-                    (sliderEvent)="updateRefreshRateLabel($event[0]); refreshRatePublish($event[0])"></app-horizontal-slider>
+                    (sliderEvent)="
+                        updateRefreshRateLabel($event[0]);
+                        refreshRatePublish($event[0])
+                    "></app-horizontal-slider>
                 <label
                     for="qualityFactor"
                     id="qualityFactor_label"
@@ -135,19 +138,129 @@
                     [rightValue]="10"
                     [step]="10"
                     [defaultValues]="[cameraSettings?.qualityFactor ?? 90]"
-                    (sliderEvent)="updateQualityFactorLabel($event[0]); qualityControlPublish($event[0])"></app-horizontal-slider>
+                    (sliderEvent)="
+                        updateQualityFactorLabel($event[0]);
+                        qualityControlPublish($event[0])
+                    "></app-horizontal-slider>
             </ng-template>
         </div>
     </div>
-    <div class="row justify-content-center pb-5 mb-5">
+    <div class="camera-workspace px-3 pb-5 mb-5">
         <div
-            class="col-auto pb-5 d-flex justify-content-center"
+            class="d-flex justify-content-center"
             id="cameraColumn"
             #videobox>
-            <img
-                [src]="imageSrc"
-                alt="camera"
-                width="auto" />
+            <div class="camera-image">
+                <img
+                    [src]="imageSrc"
+                    alt="camera"
+                    width="auto" />
+                @for (layer of visibleDetectionLayers; track layer.modelId) {
+                <svg
+                    class="detection-overlay"
+                    [attr.viewBox]="
+                        '0 0 ' +
+                        layer.message!.frame_width +
+                        ' ' +
+                        layer.message!.frame_height
+                    "
+                    preserveAspectRatio="none"
+                    [attr.aria-label]="layer.modelId + ' detections'">
+                    @for ( detection of layer.message!.detections; track $index
+                    ) { @if (showsBox(layer.modelId, detection)) {
+                    <rect
+                        class="detection-box"
+                        [attr.x]="detection.x_min"
+                        [attr.y]="detection.y_min"
+                        [attr.width]="detection.x_max - detection.x_min"
+                        [attr.height]="detection.y_max - detection.y_min"
+                        [attr.stroke]="layer.color"
+                        vector-effect="non-scaling-stroke" />
+                    }
+                    <text
+                        class="detection-label"
+                        [attr.x]="labelAnchor(detection).x"
+                        [attr.y]="labelAnchor(detection).y"
+                        [attr.fill]="layer.color"
+                        vector-effect="non-scaling-stroke">
+                        {{ detectionLabel(layer.modelId, detection) }}
+                    </text>
+                    @for (scalar of scalars(layer.modelId, detection); track
+                    $index) {
+                    <text
+                        class="detection-scalar"
+                        [attr.x]="detection.x_min + 4"
+                        [attr.y]="detection.y_min + 38 + $index * 18"
+                        [attr.fill]="layer.color"
+                        vector-effect="non-scaling-stroke">
+                        {{ scalarLabel(scalar) }}
+                    </text>
+                    } @for (axis of headPoseAxes(layer.modelId, detection);
+                    track $index) {
+                    <line
+                        class="head-pose-axis"
+                        [attr.x1]="axis.x1"
+                        [attr.y1]="axis.y1"
+                        [attr.x2]="axis.x2"
+                        [attr.y2]="axis.y2"
+                        [attr.stroke]="axis.color"
+                        vector-effect="non-scaling-stroke" />
+                    } @if (gazeRay(layer.modelId, detection); as ray) {
+                    <line
+                        class="gaze-ray"
+                        [attr.x1]="ray.x1"
+                        [attr.y1]="ray.y1"
+                        [attr.x2]="ray.x2"
+                        [attr.y2]="ray.y2"
+                        [attr.stroke]="layer.color"
+                        vector-effect="non-scaling-stroke" />
+                    <circle
+                        class="gaze-ray-tip"
+                        [attr.cx]="ray.x2"
+                        [attr.cy]="ray.y2"
+                        r="5"
+                        [attr.fill]="layer.color"
+                        vector-effect="non-scaling-stroke" />
+                    } @for (connection of connections(layer.modelId, detection);
+                    track $index) {
+                    <line
+                        class="detection-connection"
+                        [attr.x1]="connection.x1"
+                        [attr.y1]="connection.y1"
+                        [attr.x2]="connection.x2"
+                        [attr.y2]="connection.y2"
+                        [attr.stroke]="layer.color"
+                        vector-effect="non-scaling-stroke" />
+                    } @for (keypoint of keypoints(detection); track $index) {
+                    <circle
+                        class="detection-keypoint"
+                        [attr.cx]="keypoint.x"
+                        [attr.cy]="keypoint.y"
+                        r="4"
+                        [attr.fill]="layer.color"
+                        vector-effect="non-scaling-stroke">
+                        <title>{{ keypoint.name }}</title>
+                    </circle>
+                    } }
+                </svg>
+                }
+                <div
+                    class="camera-diagnostic"
+                    role="status"
+                    aria-live="polite">
+                    <span>5s: {{ cameraFramesLastWindow }} frames</span>
+                    <span>{{ detectionMessagesLastWindow }} detections</span>
+                    <span
+                        class="connection-state"
+                        [class.connected]="rosbridgeConnected">
+                        rosbridge {{ rosbridgeConnected ? "connected" :
+                        "disconnected" }}
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="model-column">
+            <app-model-list></app-model-list>
         </div>
     </div>
 </div>

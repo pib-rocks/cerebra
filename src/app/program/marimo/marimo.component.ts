@@ -1,13 +1,21 @@
-import { Component, OnInit, ViewChild, TemplateRef } from "@angular/core";
-import { CommonModule } from "@angular/common";
-import { FormControl, Validators, ReactiveFormsModule } from "@angular/forms";
-import { DomSanitizer, SafeResourceUrl } from "@angular/platform-browser";
-import { ActivatedRoute, Router, NavigationEnd } from "@angular/router";
-import { Observable, Subject, filter, startWith } from "rxjs";
-import { NgbModal } from "@ng-bootstrap/ng-bootstrap";
-import { MarimoNotebook, MarimoService } from "./marimo.service";
-import { SidebarElement } from "../../shared/interfaces/sidebar-element.interface";
-import { SideBarRightComponent } from "../../ui-components/sidebar-right/sidebar-right.component";
+import {
+    Component,
+    DestroyRef,
+    inject,
+    OnInit,
+    TemplateRef,
+    ViewChild,
+} from "@angular/core";
+import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
+import {CommonModule} from "@angular/common";
+import {FormControl, Validators, ReactiveFormsModule} from "@angular/forms";
+import {DomSanitizer, SafeResourceUrl} from "@angular/platform-browser";
+import {ActivatedRoute, Router, NavigationEnd} from "@angular/router";
+import {Observable, Subject, filter, startWith} from "rxjs";
+import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
+import {MarimoNotebook, MarimoService} from "./marimo.service";
+import {SidebarElement} from "../../shared/interfaces/sidebar-element.interface";
+import {SideBarRightComponent} from "../../ui-components/sidebar-right/sidebar-right.component";
 
 @Component({
     selector: "app-marimo",
@@ -17,6 +25,8 @@ import { SideBarRightComponent } from "../../ui-components/sidebar-right/sidebar
     styleUrls: ["./marimo.component.scss"],
 })
 export class MarimoComponent implements OnInit {
+    private readonly destroyRef = inject(DestroyRef);
+
     @ViewChild("modalContent") modalContent: TemplateRef<any> | undefined;
     subject!: Observable<SidebarElement[]>;
     selected: Subject<string> = new Subject();
@@ -36,7 +46,7 @@ export class MarimoComponent implements OnInit {
         private sanitizer: DomSanitizer,
         private modalService: NgbModal,
         private route: ActivatedRoute,
-        private router: Router
+        private router: Router,
     ) {}
 
     ngOnInit(): void {
@@ -50,10 +60,12 @@ export class MarimoComponent implements OnInit {
         this.router.events
             .pipe(
                 filter((e) => e instanceof NavigationEnd),
-                startWith(null)
+                startWith(null),
+                takeUntilDestroyed(this.destroyRef),
             )
             .subscribe(() => {
-                const notebook = this.route.firstChild?.snapshot.paramMap.get("notebook");
+                const notebook =
+                    this.route.firstChild?.snapshot.paramMap.get("notebook");
                 if (notebook) {
                     this.selectedFilename = notebook;
                     this.setIframeUrl(notebook);
@@ -61,10 +73,12 @@ export class MarimoComponent implements OnInit {
             });
 
         this.marimoService.getNotebooks().subscribe({
-            next: (res: { notebooks?: MarimoNotebook[] } | null) => {
+            next: (res: {notebooks?: MarimoNotebook[]} | null) => {
                 const notebooks = res?.notebooks;
                 const firstName =
-                    notebooks && notebooks.length > 0 ? notebooks[0]?.name : undefined;
+                    notebooks && notebooks.length > 0
+                        ? notebooks[0]?.name
+                        : undefined;
                 if (firstName) {
                     this.selectNotebook(firstName);
                 } else {
@@ -122,10 +136,14 @@ export class MarimoComponent implements OnInit {
         this.showModal().then(() => {
             if (this.nameFormControl.valid && this.nameFormControl.value) {
                 const newName = this.nameFormControl.value.trim();
-                this.marimoService.renameNotebook(uuid, newName).subscribe(() => {
-                    const filename = newName.endsWith(".py") ? newName : `${newName}.py`;
-                    this.selectNotebook(filename);
-                });
+                this.marimoService
+                    .renameNotebook(uuid, newName)
+                    .subscribe(() => {
+                        const filename = newName.endsWith(".py")
+                            ? newName
+                            : `${newName}.py`;
+                        this.selectNotebook(filename);
+                    });
             }
         });
     }

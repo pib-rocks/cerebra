@@ -1,0 +1,65 @@
+<section
+    class="model-panel"
+    aria-labelledby="model-panel-title">
+    <div class="model-panel-header">
+        <h2 id="model-panel-title">Models</h2>
+        @if (actionsInFlight.size > 0) {
+        <span
+            class="camera-restarting"
+            role="status"
+            aria-live="polite">
+            <span
+                class="spinner-border spinner-border-sm"
+                aria-hidden="true"></span>
+            Camera restarting
+        </span>
+        }
+    </div>
+
+    @if (error) {
+    <div
+        class="alert alert-danger py-2"
+        role="alert">
+        {{ error }}
+    </div>
+    }
+
+    <div
+        class="model-list"
+        aria-live="polite">
+        @for (model of models; track model.model_id) {
+        <div
+            class="model-item"
+            [attr.data-model-id]="model.model_id">
+            <div class="model-copy">
+                <label [for]="'model-' + model.model_id">
+                    {{ model.task || model.model_id }}
+                </label>
+                <span class="model-id">{{ model.model_id }}</span>
+                <span [class]="'model-state state-' + stateFor(model)">
+                    {{ statusText(model) }}
+                </span>
+            </div>
+            <div class="form-check form-switch mb-0">
+                <input
+                    #modelToggle
+                    class="form-check-input"
+                    type="checkbox"
+                    role="switch"
+                    [id]="'model-' + model.model_id"
+                    [checked]="isActive(model)"
+                    [disabled]="
+                        !model.available ||
+                        actionsInFlight.has(model.model_id)
+                    "
+                    [attr.aria-label]="'Run ' + (model.task || model.model_id)"
+                    (change)="setModelActive(model, modelToggle.checked)" />
+            </div>
+        </div>
+        } @empty {
+        <p class="model-empty mb-0">
+            {{ loading ? "Loading models…" : "No models available." }}
+        </p>
+        }
+    </div>
+</section>

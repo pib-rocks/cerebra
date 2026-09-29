@@ -6,9 +6,17 @@ import {
     DiagnosticsService,
     HardwareConfig,
 } from "../diagnostics/diagnostics.service";
-import {of, throwError} from "rxjs";
+import {BehaviorSubject, of, Subject, throwError} from "rxjs";
 import {Bricklet} from "src/app/shared/types/bricklet";
+import {ConnectedBricklet} from "src/app/shared/types/connected-bricklet";
 import {AbstractControl, ReactiveFormsModule} from "@angular/forms";
+import {provideZonelessChangeDetection} from "@angular/core";
+import {ApiService} from "src/app/shared/services/api.service";
+import {
+    HardwareContext,
+    VariantService,
+} from "src/app/shared/services/variant.service";
+import {HardwareFeedback} from "src/app/shared/types/hardware-capabilities";
 
 describe("HardwareIdComponent", () => {
     let component: HardwareIdComponent;
@@ -16,10 +24,44 @@ describe("HardwareIdComponent", () => {
 
     let brickletServiceSpy: jasmine.SpyObj<BrickletService>;
     let diagnosticsServiceSpy: jasmine.SpyObj<DiagnosticsService>;
+    let hardwareContext: BehaviorSubject<HardwareContext>;
 
     const bricklet1 = new Bricklet("AAA", 1, "Servo Bricklet");
     const bricklet2 = new Bricklet("BBB", 2, "Servo Bricklet");
     const bricklet3 = new Bricklet("CCC", 3, "Solid State Relay Bricklet");
+
+    // Shape of GET /bricklet/connected: ports lowercase, carrier board last
+    // with an empty port. Mirrors the devices measured on the robot.
+    const connectedDevices: ConnectedBricklet[] = [
+        {
+            name: "RGB LED Button Bricklet",
+            uid: "2dye",
+            port: "a",
+            parentUid: "2iLa",
+            deviceIdentifier: 282,
+        },
+        {
+            name: "Servo Bricklet 2.0",
+            uid: "2h4Z",
+            port: "c",
+            parentUid: "2iLa",
+            deviceIdentifier: 2157,
+        },
+        {
+            name: "Solid State Relay Bricklet 2.0",
+            uid: "27FV",
+            port: "d",
+            parentUid: "2iLa",
+            deviceIdentifier: 296,
+        },
+        {
+            name: "HAT Brick",
+            uid: "2iLa",
+            port: "",
+            parentUid: "",
+            deviceIdentifier: 111,
+        },
+    ];
 
     const sampleHardwareConfig: HardwareConfig = {
         version: 1,
@@ -46,10 +88,14 @@ describe("HardwareIdComponent", () => {
             "renameBrickletUid",
             "getBricklet",
             "reloadBrickletsFromDb",
+            "getConnectedBricklets",
         ]);
 
         brickletServiceSpy.getBrickletObservable.and.returnValue(
             of([bricklet1, bricklet2, bricklet3]),
+        );
+        brickletServiceSpy.getConnectedBricklets.and.returnValue(
+            of(connectedDevices),
         );
 
         brickletServiceSpy.getBricklet.and.callFake((number: number) => {
@@ -65,6 +111,23 @@ describe("HardwareIdComponent", () => {
             "parseHardwareConfigFileContent",
             "validateHardwareConfig",
         ]);
+        hardwareContext = new BehaviorSubject<HardwareContext>({
+            variant: {
+                variant: "pib5edu",
+                source: "fallback",
+                supported: [],
+                implementedVariants: [],
+                seedProfileImplemented: false,
+            },
+            capabilities: [],
+            controllers: [],
+            fallback: true,
+        });
+        const variantServiceSpy = jasmine.createSpyObj("VariantService", [
+            "getContextObservable",
+            "reload",
+        ]);
+        variantServiceSpy.getContextObservable.and.returnValue(hardwareContext);
 
         diagnosticsServiceSpy.exportHardwareConfig.and.returnValue(
             of(sampleHardwareConfig),
@@ -90,6 +153,7 @@ describe("HardwareIdComponent", () => {
                     provide: DiagnosticsService,
                     useValue: diagnosticsServiceSpy,
                 },
+                {provide: VariantService, useValue: variantServiceSpy},
             ],
         }).compileComponents();
 
@@ -202,13 +266,154 @@ describe("HardwareIdComponent", () => {
         expect(importBtn.textContent).toContain("Import IDs");
     });
 
+    it("renders the three pib4edu servo controllers reported by the backend", () => {
+        hardwareContext.next(
+            contextFor("pib4edu", [
+                controller(1, "tinkerforge_bricklet", "Servo Bricklet", 7.5),
+                controller(2, "tinkerforge_bricklet", "Servo Bricklet", 7.5),
+                controller(3, "tinkerforge_bricklet", "Servo Bricklet", 7.5),
+                controller(
+                    4,
+                    "tinkerforge_bricklet",
+                    "Solid State Relay Bricklet",
+                    null,
+                ),
+                controller(
+                    5,
+                    "tinkerforge_bricklet",
+                    "RGB LED Button Bricklet",
+                    null,
+                ),
+                controller(
+                    6,
+                    "tinkerforge_bricklet",
+                    "RGB LED Button Bricklet",
+                    null,
+                ),
+                controller(
+                    7,
+                    "tinkerforge_bricklet",
+                    "RGB LED Button Bricklet",
+                    null,
+                ),
+            ]),
+        );
+        fixture.detectChanges();
+
+        expect(
+            component.servoGroups.flatMap((group) => group.controllers).length,
+        ).toBe(3);
+        expect(component.relayControllers.length).toBe(1);
+        expect(component.rgbControllers.length).toBe(3);
+        expect(fixture.nativeElement.textContent).toContain("7.5 V");
+    });
+
+    it("groups pib5edu servo controllers by their reported 7.5 V and 12 V supplies", () => {
+        hardwareContext.next(
+            contextFor("pib5edu", [
+                controller(1, "tinkerforge_bricklet", "Servo Bricklet", 7.5),
+                controller(2, "tinkerforge_bricklet", "Servo Bricklet", 7.5),
+                controller(3, "tinkerforge_bricklet", "Servo Bricklet", 7.5),
+                controller(4, "tinkerforge_bricklet", "Servo Bricklet", 12),
+                controller(
+                    5,
+                    "tinkerforge_bricklet",
+                    "Solid State Relay Bricklet",
+                    null,
+                ),
+                controller(
+                    6,
+                    "tinkerforge_bricklet",
+                    "RGB LED Button Bricklet",
+                    null,
+                ),
+                controller(
+                    7,
+                    "tinkerforge_bricklet",
+                    "RGB LED Button Bricklet",
+                    null,
+                ),
+                controller(
+                    8,
+                    "tinkerforge_bricklet",
+                    "RGB LED Button Bricklet",
+                    null,
+                ),
+            ]),
+        );
+        fixture.detectChanges();
+
+        expect(
+            component.servoGroups.flatMap((group) => group.controllers).length,
+        ).toBe(4);
+        expect(fixture.nativeElement.textContent).toContain("7.5 V");
+        expect(fixture.nativeElement.textContent).toContain("12 V");
+    });
+
+    it("renders advanced serial device names without Bricklet UID fields", () => {
+        hardwareContext.next(
+            contextFor("pib5advanced", [
+                controller(1, "feetech_st_serial", null, null, "/dev/pib-head"),
+                controller(2, "feetech_st_serial", null, null, "/dev/pib-left"),
+                controller(
+                    3,
+                    "feetech_st_serial",
+                    null,
+                    null,
+                    "/dev/pib-right",
+                ),
+                controller(4, "feetech_st_serial", null, null, "/dev/pib-body"),
+            ]),
+        );
+        fixture.detectChanges();
+
+        expect(
+            fixture.nativeElement.querySelectorAll(
+                '[data-test^="TXT_Serial_Controller_"]',
+            ).length,
+        ).toBe(4);
+        expect(
+            fixture.nativeElement.querySelector(
+                '[data-test^="TXT_Bricklet_UID_"]',
+            ),
+        ).toBeNull();
+        expect(Object.keys(component.brickletUidForm.controls).length).toBe(0);
+        expect(component.brickletUidForm.valid).toBeTrue();
+        expect(fixture.nativeElement.textContent).toContain("/dev/pib-head");
+    });
+
+    it("shows the documented museum CAN interface before hardware is available", () => {
+        const museumContext = contextFor("pib5museum", []);
+        museumContext.capabilities.push({
+            kind: "robstride_can",
+            installedControllers: 0,
+            feedback: [
+                "current",
+                "target_position",
+                "actual_position",
+                "temperature",
+            ],
+            meaningfulSettings: [],
+        });
+        hardwareContext.next(museumContext);
+        fixture.detectChanges();
+
+        const canGroup = fixture.nativeElement.querySelector(
+            '[data-test="GRP_CAN_Interface"]',
+        );
+        expect(canGroup).toBeTruthy();
+        expect(canGroup.textContent).toContain("SocketCAN");
+        expect(canGroup.textContent).toContain("1 Mbit/s");
+        expect(canGroup.textContent).toContain("120 Ω");
+    });
+
     it("should export Hardware-IDs and trigger a JSON download", () => {
         component.exportHardwareIds();
 
         expect(diagnosticsServiceSpy.exportHardwareConfig).toHaveBeenCalled();
-        expect(diagnosticsServiceSpy.downloadHardwareConfig).toHaveBeenCalledWith(
-            sampleHardwareConfig,
-        );
+        expect(
+            diagnosticsServiceSpy.downloadHardwareConfig,
+        ).toHaveBeenCalledWith(sampleHardwareConfig);
         expect(component.importSuccessMessage).toBe(
             "Hardware-IDs exported successfully.",
         );
@@ -224,7 +429,9 @@ describe("HardwareIdComponent", () => {
         fixture.detectChanges();
 
         expect(component.showImportModal).toBeTrue();
-        expect(compiled.querySelector("#hardware-ids-import-modal")).toBeTruthy();
+        expect(
+            compiled.querySelector("#hardware-ids-import-modal"),
+        ).toBeTruthy();
     });
 
     it("should validate selected JSON and show import preview", () => {
@@ -241,7 +448,9 @@ describe("HardwareIdComponent", () => {
                 this.onload?.({} as ProgressEvent<FileReader>);
             }
         }
-        spyOn(window as any, "FileReader").and.returnValue(new MockFileReader());
+        spyOn(window as any, "FileReader").and.returnValue(
+            new MockFileReader(),
+        );
 
         const file = new File([fileContent], "hardware-config.json", {
             type: "application/json",
@@ -272,7 +481,8 @@ describe("HardwareIdComponent", () => {
             warnings: [],
         });
 
-        const result = diagnosticsServiceSpy.parseHardwareConfigFileContent("{}");
+        const result =
+            diagnosticsServiceSpy.parseHardwareConfigFileContent("{}");
         component.importErrors = result.errors;
         component.importWarnings = result.warnings;
         component.importPreview = result.valid ? result.config ?? null : null;
@@ -315,5 +525,429 @@ describe("HardwareIdComponent", () => {
             "Duplicate Bricklet UID assignment: '29FA'",
         ]);
         expect(component.showImportModal).toBeTrue();
+    });
+
+    describe("connected Bricklets table", () => {
+        const cellsOf = (compiled: HTMLElement, name: string): string[] =>
+            Array.from(
+                compiled.querySelectorAll(
+                    `[data-test="TBL_Connected_Bricklets"] [data-test="${name}"]`,
+                ),
+            ).map((cell) => (cell.textContent ?? "").trim());
+
+        it("loads the connected Bricklets when the tab opens", () => {
+            expect(
+                brickletServiceSpy.getConnectedBricklets,
+            ).toHaveBeenCalledTimes(1);
+        });
+
+        it("renders one row per reported device with name, UID and printed port letter, below the UID fields", () => {
+            const compiled = fixture.nativeElement as HTMLElement;
+            const table = compiled.querySelector(
+                '[data-test="TBL_Connected_Bricklets"]',
+            ) as HTMLTableElement;
+            expect(table).toBeTruthy();
+            expect(table.querySelectorAll("tbody tr").length).toBe(4);
+
+            expect(cellsOf(compiled, "TXT_Connected_Bricklet_Name")).toEqual([
+                "RGB LED Button Bricklet",
+                "Servo Bricklet 2.0",
+                "Solid State Relay Bricklet 2.0",
+                "HAT Brick",
+            ]);
+            expect(cellsOf(compiled, "TXT_Connected_Bricklet_UID")).toEqual([
+                "2dye",
+                "2h4Z",
+                "27FV",
+                "2iLa",
+            ]);
+            // The board prints uppercase letters; the backend sends lowercase.
+            expect(
+                cellsOf(compiled, "TXT_Connected_Bricklet_Port").slice(0, 3),
+            ).toEqual(["A", "C", "D"]);
+
+            // The table sits under the form; the form and its fields are intact.
+            const form = compiled.querySelector("form") as HTMLElement;
+            expect(form).toBeTruthy();
+            expect(
+                form.querySelectorAll('[data-test^="TXT_Bricklet_UID_"]')
+                    .length,
+            ).toBe(3);
+            expect(form.contains(table)).toBeFalse();
+            expect(
+                form.compareDocumentPosition(table) &
+                    Node.DOCUMENT_POSITION_FOLLOWING,
+            ).toBeTruthy();
+        });
+
+        it("shows the port tooltip with the letter and the carrier board it sits on", () => {
+            const compiled = fixture.nativeElement as HTMLElement;
+            const portCells = compiled.querySelectorAll(
+                '[data-test="TXT_Connected_Bricklet_Port"]',
+            );
+            expect(portCells[0].getAttribute("title")).toBe(
+                "Port A on HAT Brick 2iLa",
+            );
+        });
+
+        it("never renders the portless carrier board as an empty cell", () => {
+            const compiled = fixture.nativeElement as HTMLElement;
+            const carrierRow = compiled.querySelector(
+                '[data-test="ROW_Connected_Bricklet_2iLa"]',
+            ) as HTMLTableRowElement;
+            expect(carrierRow).toBeTruthy();
+            const portCell = carrierRow.querySelector(
+                '[data-test="TXT_Connected_Bricklet_Port"]',
+            ) as HTMLTableCellElement;
+            const text = (portCell.textContent ?? "").trim();
+            expect(text).not.toBe("");
+            expect(text).toContain("—");
+            expect(text.toLowerCase()).toContain("carrier board");
+            expect(portCell.getAttribute("title")).toContain("Carrier board");
+
+            // No cell anywhere in the table is empty.
+            const allCells = Array.from(
+                compiled.querySelectorAll(
+                    '[data-test="TBL_Connected_Bricklets"] tbody td',
+                ),
+            );
+            expect(allCells.length).toBe(12);
+            allCells.forEach((cell) =>
+                expect((cell.textContent ?? "").trim()).not.toBe(""),
+            );
+        });
+
+        it("renders the error message and no table when the read fails", () => {
+            brickletServiceSpy.getConnectedBricklets.and.returnValue(
+                throwError(() => ({
+                    error: {error: "Tinkerforge daemon is not reachable."},
+                })),
+            );
+            const failingFixture = TestBed.createComponent(HardwareIdComponent);
+            failingFixture.detectChanges();
+
+            const compiled = failingFixture.nativeElement as HTMLElement;
+            const errorBox = compiled.querySelector(
+                '[data-test="TXT_Connected_Bricklets_Error"]',
+            );
+            expect(errorBox).toBeTruthy();
+            expect(errorBox?.textContent).toContain(
+                "Tinkerforge daemon is not reachable.",
+            );
+            expect(
+                compiled.querySelector('[data-test="TBL_Connected_Bricklets"]'),
+            ).toBeNull();
+            expect(
+                compiled.querySelector(
+                    '[data-test="TXT_Connected_Bricklets_Empty"]',
+                ),
+            ).toBeNull();
+            // The failure is confined to the table; the form is still there.
+            expect(
+                compiled.querySelectorAll('[data-test^="TXT_Bricklet_UID_"]')
+                    .length,
+            ).toBe(3);
+        });
+
+        it("falls back to a generic message when the error carries no text", () => {
+            brickletServiceSpy.getConnectedBricklets.and.returnValue(
+                throwError(() => new Error("network")),
+            );
+            const failingFixture = TestBed.createComponent(HardwareIdComponent);
+            failingFixture.detectChanges();
+
+            expect(
+                failingFixture.componentInstance.connectedBrickletsError,
+            ).toBe("Failed to load the connected Bricklets.");
+        });
+
+        it("renders an explicit empty row, not a blank table, when nothing is attached", () => {
+            brickletServiceSpy.getConnectedBricklets.and.returnValue(of([]));
+            const emptyFixture = TestBed.createComponent(HardwareIdComponent);
+            emptyFixture.detectChanges();
+
+            const compiled = emptyFixture.nativeElement as HTMLElement;
+            expect(
+                compiled.querySelector('[data-test="TBL_Connected_Bricklets"]'),
+            ).toBeTruthy();
+            expect(
+                compiled.querySelector(
+                    '[data-test="TXT_Connected_Bricklets_Empty"]',
+                )?.textContent,
+            ).toContain("No Bricklets connected.");
+            expect(
+                compiled.querySelector(
+                    '[data-test="TXT_Connected_Bricklets_Error"]',
+                ),
+            ).toBeNull();
+        });
+
+        it("reads again when the refresh button is clicked and replaces the rows", () => {
+            const compiled = fixture.nativeElement as HTMLElement;
+            const refreshBtn = compiled.querySelector(
+                '[data-test="BTN_Refresh_Connected_Bricklets"]',
+            ) as HTMLButtonElement;
+            expect(refreshBtn).toBeTruthy();
+            expect(
+                brickletServiceSpy.getConnectedBricklets,
+            ).toHaveBeenCalledTimes(1);
+
+            brickletServiceSpy.getConnectedBricklets.and.returnValue(
+                of([connectedDevices[1], connectedDevices[3]]),
+            );
+            refreshBtn.click();
+            fixture.detectChanges();
+
+            expect(
+                brickletServiceSpy.getConnectedBricklets,
+            ).toHaveBeenCalledTimes(2);
+            expect(cellsOf(compiled, "TXT_Connected_Bricklet_UID")).toEqual([
+                "2h4Z",
+                "2iLa",
+            ]);
+        });
+
+        it("does not write to the UID form when the table loads or refreshes", () => {
+            const before = component.brickletUidForm.getRawValue();
+            component.refreshConnectedBricklets();
+            fixture.detectChanges();
+            expect(component.brickletUidForm.getRawValue()).toEqual(before);
+            expect(brickletServiceSpy.renameBrickletUid).not.toHaveBeenCalled();
+        });
+    });
+});
+
+function controller(
+    number: number,
+    kind: string,
+    deviceType: string | null,
+    supplyVoltage: number | null,
+    address = `UID${number}`,
+) {
+    return {number, kind, deviceType, supplyVoltage, address};
+}
+
+function contextFor(
+    variant: string,
+    controllers: ReturnType<typeof controller>[],
+): HardwareContext {
+    const counts = new Map<string, number>();
+    controllers.forEach((item) =>
+        counts.set(item.kind, (counts.get(item.kind) ?? 0) + 1),
+    );
+    return {
+        variant: {
+            variant,
+            source: "database",
+            supported: [variant],
+            implementedVariants: [variant],
+            seedProfileImplemented: true,
+        },
+        capabilities: Array.from(counts, ([kind, installedControllers]) => ({
+            kind,
+            installedControllers,
+            feedback:
+                kind === "tinkerforge_bricklet"
+                    ? (["current", "target_position"] as HardwareFeedback[])
+                    : ([
+                          "current",
+                          "target_position",
+                          "actual_position",
+                          "temperature",
+                      ] as HardwareFeedback[]),
+            meaningfulSettings: [],
+        })),
+        controllers,
+        fallback: false,
+    };
+}
+
+describe("HardwareIdComponent import preview (zoneless)", () => {
+    let component: HardwareIdComponent;
+    let fixture: ComponentFixture<HardwareIdComponent>;
+    // Emits later than ngOnInit, so the rows can only appear if the component
+    // notifies change detection itself on the async path.
+    let connectedBricklets$: Subject<ConnectedBricklet[]>;
+
+    // Payload shape produced by pib-backend export_hardware_config().
+    const exportedFileContent = JSON.stringify(
+        {
+            version: 1,
+            bricklets: [
+                {brickletNumber: 1, uid: "TESTab", type: "Servo Bricklet"},
+                {brickletNumber: 2, uid: "", type: "Servo Bricklet"},
+            ],
+            motors: [
+                {
+                    name: "elbow_left",
+                    pulseWidthMin: 700,
+                    pulseWidthMax: 2500,
+                    rotationRangeMin: -9000,
+                    rotationRangeMax: 9000,
+                    velocity: 16000,
+                    acceleration: 10000,
+                    deceleration: 5000,
+                    period: 19500,
+                    turnedOn: true,
+                    visible: true,
+                    invert: false,
+                    brickletPins: [{brickletNumber: 1, pin: 8, invert: false}],
+                },
+            ],
+        },
+        null,
+        2,
+    );
+
+    beforeEach(async () => {
+        const brickletServiceSpy = jasmine.createSpyObj("BrickletService", [
+            "getBrickletObservable",
+            "renameBrickletUid",
+            "getBricklet",
+            "reloadBrickletsFromDb",
+            "getConnectedBricklets",
+        ]);
+        brickletServiceSpy.getBrickletObservable.and.returnValue(
+            of([new Bricklet("AAA", 1, "Servo Bricklet")]),
+        );
+        connectedBricklets$ = new Subject<ConnectedBricklet[]>();
+        brickletServiceSpy.getConnectedBricklets.and.returnValue(
+            connectedBricklets$.asObservable(),
+        );
+        const variantServiceSpy = jasmine.createSpyObj("VariantService", [
+            "getContextObservable",
+            "reload",
+        ]);
+        variantServiceSpy.getContextObservable.and.returnValue(
+            of({
+                variant: {
+                    variant: "pib5edu",
+                    source: "fallback",
+                    supported: [],
+                    implementedVariants: [],
+                    seedProfileImplemented: false,
+                },
+                capabilities: [],
+                controllers: [],
+                fallback: true,
+            }),
+        );
+
+        await TestBed.configureTestingModule({
+            imports: [ReactiveFormsModule, HardwareIdComponent],
+            providers: [
+                provideZonelessChangeDetection(),
+                {provide: BrickletService, useValue: brickletServiceSpy},
+                {provide: VariantService, useValue: variantServiceSpy},
+                // Real DiagnosticsService so the exported JSON is really parsed.
+                DiagnosticsService,
+                {
+                    provide: ApiService,
+                    useValue: jasmine.createSpyObj("ApiService", [
+                        "get",
+                        "post",
+                    ]),
+                },
+            ],
+        }).compileComponents();
+
+        fixture = TestBed.createComponent(HardwareIdComponent);
+        component = fixture.componentInstance;
+        await fixture.whenStable();
+    });
+
+    it("renders the import preview for a re-imported export without an extra change detection run", async () => {
+        component.openImportModal();
+        await fixture.whenStable();
+
+        class MockFileReader {
+            result: string | null = null;
+            onload: ((ev: ProgressEvent<FileReader>) => void) | null = null;
+            onerror: ((ev: ProgressEvent<FileReader>) => void) | null = null;
+            readAsText(): void {
+                this.result = exportedFileContent;
+                this.onload?.({} as ProgressEvent<FileReader>);
+            }
+        }
+        spyOn(
+            window as unknown as {FileReader: unknown},
+            "FileReader" as never,
+        ).and.returnValue(new MockFileReader() as never);
+
+        const file = new File([exportedFileContent], "hardware-config.json", {
+            type: "application/json",
+        });
+        component.onHardwareImportFileSelected({
+            target: {files: [file], value: "hardware-config.json"},
+        } as unknown as Event);
+
+        await fixture.whenStable();
+
+        const compiled = fixture.nativeElement as HTMLElement;
+        const preview = compiled.querySelector(".import-preview");
+        expect(preview).toBeTruthy();
+        expect(preview?.textContent).toContain("TESTab");
+
+        const confirmBtn = compiled.querySelector(
+            '[data-test="BTN_Import_Hardware_IDs_Confirm"]',
+        ) as HTMLButtonElement;
+        expect(confirmBtn.disabled).toBeFalse();
+    });
+
+    it("renders the connected Bricklets rows after an asynchronous response without a manual change detection run", async () => {
+        const compiled = fixture.nativeElement as HTMLElement;
+        expect(
+            compiled.querySelector('[data-test="TBL_Connected_Bricklets"]'),
+        ).toBeNull();
+        expect(
+            compiled.querySelector(
+                '[data-test="TXT_Connected_Bricklets_Loading"]',
+            ),
+        ).toBeTruthy();
+
+        connectedBricklets$.next([
+            {
+                name: "Servo Bricklet 2.0",
+                uid: "2jtj",
+                port: "h",
+                parentUid: "2iLa",
+                deviceIdentifier: 2157,
+            },
+            {
+                name: "HAT Brick",
+                uid: "2iLa",
+                port: "",
+                parentUid: "",
+                deviceIdentifier: 111,
+            },
+        ]);
+        await fixture.whenStable();
+
+        const rows = compiled.querySelectorAll(
+            '[data-test="TBL_Connected_Bricklets"] tbody tr',
+        );
+        expect(rows.length).toBe(2);
+        expect(rows[0].textContent).toContain("Servo Bricklet 2.0");
+        expect(rows[0].textContent).toContain("2jtj");
+        expect(rows[0].textContent).toContain("H");
+        expect(rows[1].textContent).toContain("HAT Brick");
+        expect(rows[1].textContent).toContain("carrier board");
+    });
+
+    it("renders the error and no table after an asynchronous failure without a manual change detection run", async () => {
+        connectedBricklets$.error({
+            error: {error: "Tinkerforge daemon is not reachable."},
+        });
+        await fixture.whenStable();
+
+        const compiled = fixture.nativeElement as HTMLElement;
+        expect(
+            compiled.querySelector(
+                '[data-test="TXT_Connected_Bricklets_Error"]',
+            )?.textContent,
+        ).toContain("Tinkerforge daemon is not reachable.");
+        expect(
+            compiled.querySelector('[data-test="TBL_Connected_Bricklets"]'),
+        ).toBeNull();
     });
 });

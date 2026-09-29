@@ -112,9 +112,8 @@ export class VoiceAssistantService implements SidebarService {
             .get(UrlConstants.PERSONALITY)
             .pipe(
                 catchError((err) => {
-                    return throwError(() => {
-                        console.log(err);
-                    });
+                    console.log(err);
+                    return throwError(() => err);
                 }),
             )
             .subscribe((response) => {
@@ -129,9 +128,8 @@ export class VoiceAssistantService implements SidebarService {
             .get(UrlConstants.ASSISTANT_MODEL)
             .pipe(
                 catchError((err) => {
-                    return throwError(() => {
-                        console.log(err);
-                    });
+                    console.log(err);
+                    return throwError(() => err);
                 }),
             )
             .subscribe((response) => {
@@ -157,9 +155,8 @@ export class VoiceAssistantService implements SidebarService {
             )
             .pipe(
                 catchError((err) => {
-                    return throwError(() => {
-                        console.log(err);
-                    });
+                    console.log(err);
+                    return throwError(() => err);
                 }),
             )
             .subscribe((response) => {
@@ -181,9 +178,8 @@ export class VoiceAssistantService implements SidebarService {
             )
             .pipe(
                 catchError((err) => {
-                    return throwError(() => {
-                        console.log(err);
-                    });
+                    console.log(err);
+                    return throwError(() => err);
                 }),
             )
             .subscribe((response) => {
@@ -198,9 +194,8 @@ export class VoiceAssistantService implements SidebarService {
             .delete(UrlConstants.PERSONALITY + `/${id}`)
             .pipe(
                 catchError((err) => {
-                    return throwError(() => {
-                        console.log(err);
-                    });
+                    console.log(err);
+                    return throwError(() => err);
                 }),
             )
             .subscribe(() => {

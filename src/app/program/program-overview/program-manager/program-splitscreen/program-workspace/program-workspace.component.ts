@@ -33,6 +33,7 @@ export class ProgramWorkspaceComponent
     implements OnInit, AfterViewInit, OnDestroy, OnChanges
 {
     routerEventSubscription!: Subscription;
+    poseSubscription?: Subscription;
     observer!: ResizeObserver;
     @ViewChild("blocklyDiv") blocklyDiv!: ElementRef<HTMLDivElement>;
 
@@ -100,15 +101,17 @@ export class ProgramWorkspaceComponent
             }
         });
 
-        this.poseService.getPosesObservable().subscribe((poses) => {
-            if (poses.length > 0) {
-                this.updatePoseBlockDropdown(poses);
-            } else {
-                this.updatePoseBlockDropdown([
-                    new Pose("no pose available", "NO POSE"),
-                ]);
-            }
-        });
+        this.poseSubscription = this.poseService
+            .getPosesObservable()
+            .subscribe((poses) => {
+                if (poses.length > 0) {
+                    this.updatePoseBlockDropdown(poses);
+                } else {
+                    this.updatePoseBlockDropdown([
+                        new Pose("no pose available", "NO POSE"),
+                    ]);
+                }
+            });
 
         this.workspace = Blockly.inject("blocklyDiv", {
             toolbox: this.toolbox,
@@ -170,6 +173,7 @@ export class ProgramWorkspaceComponent
         this.observer.unobserve(this.blocklyDiv.nativeElement);
         Blockly.registry.unregister("theme", "customtheme");
         this.routerEventSubscription.unsubscribe();
+        this.poseSubscription?.unsubscribe();
     }
 
     resizeBlockly() {

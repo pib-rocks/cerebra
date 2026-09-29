@@ -54,6 +54,9 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
     currentChatId: string | null = "";
     voiceAssistantActivationToggle = new FormControl(false);
     chatSubjectSubscription!: Subscription;
+    voiceAssistantStateSubscription?: Subscription;
+    tokenStatusSubscription?: Subscription;
+    routeParamMapSubscription?: Subscription;
     smartConnectActive = false;
 
     constructor(
@@ -73,51 +76,60 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
 
     ngOnInit() {
         // set current state of VA (in case another user is using it)
-        this.voiceAssistantService.voiceAssistantStateObservable.subscribe(
-            (state: VoiceAssistantState) => {
-                this.voiceAssistantActivationToggle.setValue(state.turnedOn);
-                this.turnedOn = state.turnedOn;
-                const deleteChat = this.dropdownCallbackMethods.find(
-                    (e) => e.label === "Delete chat",
-                );
-                if (deleteChat) {
-                    deleteChat.disabled = this.turnedOn;
-                }
-                this.chatService.getChatById(state.chatId).subscribe((chat) => {
-                    this.activePersonalityId = chat.personalityId;
-                });
+        this.voiceAssistantStateSubscription =
+            this.voiceAssistantService.voiceAssistantStateObservable.subscribe(
+                (state: VoiceAssistantState) => {
+                    this.voiceAssistantActivationToggle.setValue(
+                        state.turnedOn,
+                    );
+                    this.turnedOn = state.turnedOn;
+                    const deleteChat = this.dropdownCallbackMethods.find(
+                        (e) => e.label === "Delete chat",
+                    );
+                    if (deleteChat) {
+                        deleteChat.disabled = this.turnedOn;
+                    }
+                    this.chatService
+                        .getChatById(state.chatId)
+                        .subscribe((chat) => {
+                            this.activePersonalityId = chat.personalityId;
+                        });
+                },
+            );
+        this.tokenStatusSubscription = this.tokenService.tokenStatus$.subscribe(
+            (response) => {
+                this.smartConnectActive = response.tokenActive;
             },
         );
-        this.tokenService.tokenStatus$.subscribe((response) => {
-            this.smartConnectActive = response.tokenActive;
-        });
-        this.route.paramMap.subscribe((_params) => {
-            const routeParts: string[] = this.router.url.split("/");
-            this.currentChatId = routeParts[routeParts.length - 1];
+        this.routeParamMapSubscription = this.route.paramMap.subscribe(
+            (_params) => {
+                const routeParts: string[] = this.router.url.split("/");
+                this.currentChatId = routeParts[routeParts.length - 1];
 
-            this.personalityId = this.router.url
-                .split("/")
-                .find((segment) => RegExp(CerebraRegex.UUID).test(segment));
-            this.personality = this.personalityId
-                ? this.voiceAssistantService.getPersonality(
-                      this.personalityId,
-                  ) ?? this.route.snapshot.params["personality"]
-                : this.route.snapshot.params["personality"];
-            if (this.personality) {
-                this.subject = this.chatService.getSubject(
-                    this.personality.personalityId,
-                );
-            } else {
-                throw Error("undefined personality and subject");
-            }
-            localStorage.setItem("voice-assistant-tab", "chat");
-            this.topicFormControl.setValidators([
-                Validators.required,
-                Validators.minLength(2),
-                Validators.maxLength(255),
-            ]);
-            this.toggleDeleteChat(this.chatService.chats);
-        });
+                this.personalityId = this.router.url
+                    .split("/")
+                    .find((segment) => RegExp(CerebraRegex.UUID).test(segment));
+                this.personality = this.personalityId
+                    ? this.voiceAssistantService.getPersonality(
+                          this.personalityId,
+                      ) ?? this.route.snapshot.params["personality"]
+                    : this.route.snapshot.params["personality"];
+                if (this.personality) {
+                    this.subject = this.chatService.getSubject(
+                        this.personality.personalityId,
+                    );
+                } else {
+                    throw Error("undefined personality and subject");
+                }
+                localStorage.setItem("voice-assistant-tab", "chat");
+                this.topicFormControl.setValidators([
+                    Validators.required,
+                    Validators.minLength(2),
+                    Validators.maxLength(255),
+                ]);
+                this.toggleDeleteChat(this.chatService.chats);
+            },
+        );
 
         this.chatSubjectSubscription = this.chatService.chatSubject.subscribe(
             (chats) => {
@@ -237,6 +249,9 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
 
     ngOnDestroy(): void {
         this.chatSubjectSubscription.unsubscribe();
+        this.voiceAssistantStateSubscription?.unsubscribe();
+        this.tokenStatusSubscription?.unsubscribe();
+        this.routeParamMapSubscription?.unsubscribe();
     }
 
     optionCallbackMethods = [

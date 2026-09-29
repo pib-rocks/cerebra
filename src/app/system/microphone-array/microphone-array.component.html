@@ -14,25 +14,115 @@
         </button>
     </div>
 
+    @if (error) {
     <div
-        *ngIf="error"
         class="alert alert-danger"
         data-test="MSG_Microphone_Array_Error">
         {{ error }}
     </div>
-
+    } @if (successMessage) {
     <div
-        *ngIf="successMessage"
         class="alert alert-success"
         data-test="MSG_Microphone_Array_Success">
         {{ successMessage }}
     </div>
+    } @if (health?.simulation) {
+    <div
+        class="alert alert-warning simulation-banner"
+        role="alert"
+        data-test="MSG_Microphone_Array_Simulation">
+        <strong>Backend legacy/simulation answer</strong>
+        <div>
+            These backend facts do not supply the live cockpit values. @if
+            (health?.simulationReason) { Reason: {{ health?.simulationReason }}.
+            } Live device owner: {{ health?.owner }}.
+        </div>
+    </div>
+    }
 
+    <div
+        class="card p-3 shadow-sm mb-4"
+        data-test="PANEL_Microphone_Array_Health">
+        <h4 class="card-title text-white">Array Health</h4>
+        <div
+            class="source-label mb-2"
+            data-test="TXT_Health_Source">
+            Source: {{ legacySource }}
+        </div>
+        @if (healthLoading && !health) {
+        <div
+            class="text-white-50"
+            data-test="TXT_Microphone_Array_Health_Loading">
+            Loading microphone array health...
+        </div>
+        } @else if (healthError) {
+        <div
+            class="alert alert-danger mb-0"
+            role="alert"
+            data-test="MSG_Microphone_Array_Health_Error">
+            {{ healthError }}
+        </div>
+        } @else if (health; as health) {
+        <dl class="health-grid mb-0">
+            <div>
+                <dt>Device access</dt>
+                <dd data-test="TXT_Microphone_Array_Device_Access">
+                    {{ health.deviceAccess ? "Yes" : "No" }}
+                </dd>
+            </div>
+            <div>
+                <dt>Owner</dt>
+                <dd data-test="TXT_Microphone_Array_Owner">
+                    {{ health.owner }}
+                </dd>
+            </div>
+            <div>
+                <dt>Vendor ID</dt>
+                <dd data-test="TXT_Microphone_Array_Vendor_Id">
+                    {{ health.vendorId }}
+                </dd>
+            </div>
+            <div>
+                <dt>Product ID</dt>
+                <dd data-test="TXT_Microphone_Array_Product_Id">
+                    {{ health.productId }}
+                </dd>
+            </div>
+            <div class="health-note">
+                <dt>Note</dt>
+                <dd data-test="TXT_Microphone_Array_Health_Note">
+                    {{ health.note }}
+                </dd>
+            </div>
+        </dl>
+        } @else {
+        <div
+            class="alert alert-danger mb-0"
+            role="alert"
+            data-test="MSG_Microphone_Array_Health_Error">
+            Microphone array health information is unavailable.
+        </div>
+        }
+    </div>
+
+    @if (telemetryLoading && !telemetry) {
+    <div
+        class="alert alert-info"
+        role="status"
+        data-test="TXT_Microphone_Array_Telemetry_Loading">
+        Loading microphone array telemetry...
+    </div>
+    } @else if (telemetry) {
     <div class="row mb-4">
         <!-- DOA Compass -->
         <div class="col-lg-5 mb-3 mb-lg-0">
             <div class="card p-3 shadow-sm h-100">
                 <h4 class="card-title text-white">DOA Compass</h4>
+                <div
+                    class="source-label"
+                    data-test="TXT_Telemetry_Source">
+                    Source: {{ rosbridgeSource }}
+                </div>
                 <div
                     class="doa-compass-wrapper d-flex flex-column align-items-center"
                     data-test="VIS_DOA_Compass">
@@ -143,6 +233,7 @@
                         </text>
 
                         <!-- Direction needle -->
+                        @if (doaAngle !== null) {
                         <g [attr.transform]="doaNeedleTransform">
                             <line
                                 class="doa-needle"
@@ -157,11 +248,13 @@
                                 cy="28"
                                 r="5" />
                         </g>
+                        }
                     </svg>
                     <div
                         class="doa-angle-readout mt-2"
                         data-test="TXT_DOA_Angle">
-                        {{ doaAngle }}°
+                        {{ doaAngle === null ? "not reported" : doaAngle + "°"
+                        }}
                     </div>
                 </div>
 
@@ -170,27 +263,30 @@
                         class="badge"
                         data-test="BADGE_VAD"
                         [ngClass]="
-                            telemetry.voice_activity
+                            telemetry?.voiceActivity === true
                                 ? 'badge-success'
                                 : 'badge-secondary'
                         ">
-                        VAD:
-                        {{ telemetry.voice_activity ? "Active" : "Idle" }}
+                        VAD: {{ telemetry?.voiceActivity === undefined ? "not
+                        reported" : telemetry?.voiceActivity ? "Active" : "Idle"
+                        }}
                     </span>
                     <span
                         class="badge"
                         data-test="BADGE_Speech"
                         [ngClass]="
-                            telemetry.speech_detected
+                            telemetry?.speechDetected === true
                                 ? 'badge-success'
                                 : 'badge-secondary'
                         ">
-                        Speech:
-                        {{
-                            telemetry.speech_detected
-                                ? "Detected"
-                                : "None"
-                        }}
+                        Speech: {{ telemetry?.speechDetected === undefined ?
+                        "not reported" : telemetry?.speechDetected ? "Detected"
+                        : "None" }}
+                    </span>
+                    <span
+                        class="badge badge-secondary"
+                        data-test="BADGE_Telemetry_Mode">
+                        {{ rosbridgeSource }}
                     </span>
                 </div>
             </div>
@@ -200,39 +296,49 @@
         <div class="col-lg-7">
             <div class="card p-3 shadow-sm h-100">
                 <h4 class="card-title text-white">Audio Level Meter</h4>
+                <div class="source-label mb-2">
+                    Source: {{ rosbridgeSource }}
+                </div>
                 <div
                     class="audio-levels"
                     data-test="VIS_Audio_Levels">
-                    <div
-                        *ngFor="let label of channelLabels; let i = index"
-                        class="audio-level-row mb-3">
-                        <div
-                            class="d-flex justify-content-between mb-1">
-                            <span class="text-white-50">{{ label }}</span>
+                    @for (level of audioLevels; track $index; let i = $index) {
+                    <div class="audio-level-row mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-white-50"
+                                >{{ channelLabel(i) }}</span
+                            >
                             <span
                                 class="text-white small"
                                 [attr.data-test]="'TXT_Audio_Level_' + i">
-                                {{ getAudioLevelPercent(i) }}%
+                                {{ getAudioLevelPercent(level) }}%
                             </span>
                         </div>
                         <div class="progress audio-level-bar">
                             <div
                                 class="progress-bar"
                                 role="progressbar"
-                                [style.width.%]="getAudioLevelPercent(i)"
+                                [style.width.%]="getAudioLevelPercent(level)"
                                 [attr.aria-valuenow]="
-                                    getAudioLevelPercent(i)
-                                "
+                                        getAudioLevelPercent(level)
+                                    "
                                 aria-valuemin="0"
                                 aria-valuemax="100"
                                 [attr.data-test]="'BAR_Audio_Level_' + i"></div>
                         </div>
                     </div>
+                    } @empty {
+                    <span
+                        class="text-white-50"
+                        data-test="TXT_Audio_Levels_Not_Reported"
+                        >not reported</span
+                    >
+                    }
                 </div>
             </div>
         </div>
     </div>
-
+    } @if (tuning; as tuning) {
     <!-- Presets + DSP -->
     <div class="row mb-4">
         <div class="col-lg-4 mb-3 mb-lg-0">
@@ -243,20 +349,23 @@
                     for="microphone-array-preset">
                     DSP Preset
                 </label>
-                <select
+                <input
                     id="microphone-array-preset"
-                    class="form-select"
+                    type="text"
+                    class="form-control"
                     data-test="SEL_Microphone_Array_Preset"
                     [(ngModel)]="tuning.preset"
                     [ngModelOptions]="{standalone: true}"
-                    [disabled]="saving"
-                    (ngModelChange)="onPresetChange($event)">
-                    <option
-                        *ngFor="let preset of presets"
-                        [ngValue]="preset.value">
-                        {{ preset.label }}
-                    </option>
-                </select>
+                    [disabled]="saving || tuning.preset === undefined"
+                    (change)="onPresetChange(tuning.preset!)" />
+                @if (tuning.preset === undefined) {
+                <span class="text-white-50 small">not reported</span>
+                }
+                <div
+                    class="text-white-50 small mt-2"
+                    data-test="TXT_Tuning_Mode">
+                    Source: {{ tuningSource }}
+                </div>
             </div>
         </div>
 
@@ -272,40 +381,52 @@
                                 type="checkbox"
                                 id="agc-enabled"
                                 data-test="CHK_AGC_Enabled"
-                                [(ngModel)]="tuning.agc_enabled"
+                                [(ngModel)]="tuning.agcEnabled"
                                 [ngModelOptions]="{standalone: true}"
-                                [disabled]="saving"
-                                (ngModelChange)="onDspChange()" />
+                                [disabled]="
+                                    saving || tuning.agcEnabled === undefined
+                                "
+                                (ngModelChange)="onDspChange('AGCONOFF')" />
                             <label
                                 class="form-check-label text-white"
                                 for="agc-enabled">
-                                AGC (Automatic Gain Control)
+                                AGC (Automatic Gain Control) @if
+                                (tuning.agcEnabled === undefined) {
+                                <span data-test="TXT_AGC_Not_Reported"
+                                    >— not reported</span
+                                >
+                                }
                             </label>
                         </div>
 
                         <label
                             class="text-white-50 small"
                             for="agc-max-gain">
-                            Max Gain: {{ tuning.agc_max_gain }} dB
+                            Max Gain: {{ tuning.agcMaxGain === undefined ? "not
+                            reported" : tuning.agcMaxGain }}
                         </label>
                         <input
                             id="agc-max-gain"
                             type="range"
                             class="form-range"
-                            min="0"
-                            max="60"
-                            step="1"
+                            min="1"
+                            max="1000"
+                            step="0.1"
                             data-test="SLD_AGC_Max_Gain"
-                            [(ngModel)]="tuning.agc_max_gain"
+                            [(ngModel)]="tuning.agcMaxGain"
                             [ngModelOptions]="{standalone: true}"
-                            [disabled]="saving || !tuning.agc_enabled"
-                            (change)="onDspChange()" />
+                            [disabled]="
+                                saving ||
+                                !tuning.agcEnabled ||
+                                tuning.agcMaxGain === undefined
+                            "
+                            (change)="onDspChange('AGCMAXGAIN')" />
 
                         <label
                             class="text-white-50 small mt-2"
                             for="agc-target-level">
-                            Target Power Level: {{ getTargetLevelDbov() }}
-                            dBov
+                            Target Power Level: {{ getTargetLevelDbov() === null
+                            ? "not reported" : getTargetLevelDbov() + " dBov" }}
                         </label>
                         <input
                             id="agc-target-level"
@@ -317,9 +438,37 @@
                             data-test="SLD_AGC_Target_Level"
                             [ngModel]="getTargetLevelDbov()"
                             [ngModelOptions]="{standalone: true}"
-                            [disabled]="saving || !tuning.agc_enabled"
+                            [disabled]="
+                                saving ||
+                                !tuning.agcEnabled ||
+                                tuning.agcDesiredLevel === undefined
+                            "
                             (ngModelChange)="setTargetLevelDbov($event)"
-                            (change)="onDspChange()" />
+                            (change)="onDspChange('AGCDESIREDLEVEL')" />
+
+                        <label
+                            class="text-white-50 small mt-2"
+                            data-test="TXT_AGC_Time_Value"
+                            for="agc-time">
+                            AGC Time: {{ tuning.agcTime === undefined ? "not
+                            reported" : tuning.agcTime + " s" }}
+                        </label>
+                        <input
+                            id="agc-time"
+                            type="range"
+                            class="form-range"
+                            min="0.1"
+                            max="1"
+                            step="0.1"
+                            data-test="SLD_AGC_Time"
+                            [(ngModel)]="tuning.agcTime"
+                            [ngModelOptions]="{standalone: true}"
+                            [disabled]="
+                                saving ||
+                                !tuning.agcEnabled ||
+                                tuning.agcTime === undefined
+                            "
+                            (change)="onDspChange('AGCTIME')" />
                     </div>
 
                     <div class="col-md-6 mb-3">
@@ -330,15 +479,25 @@
                                 id="stat-noise"
                                 data-test="CHK_Stationary_Noise"
                                 [(ngModel)]="
-                                    tuning.stationary_noise_suppression
+                                    tuning.stationaryNoiseSuppression
                                 "
                                 [ngModelOptions]="{standalone: true}"
-                                [disabled]="saving"
-                                (ngModelChange)="onDspChange()" />
+                                [disabled]="
+                                    saving ||
+                                    tuning.stationaryNoiseSuppression ===
+                                        undefined
+                                "
+                                (ngModelChange)="
+                                    onDspChange('STATNOISEONOFF')
+                                " />
                             <label
                                 class="form-check-label text-white"
                                 for="stat-noise">
-                                Stationary Noise Suppression
+                                Stationary Noise Suppression @if
+                                (tuning.stationaryNoiseSuppression ===
+                                undefined) {
+                                <span>— not reported</span>
+                                }
                             </label>
                         </div>
 
@@ -349,15 +508,25 @@
                                 id="nonstat-noise"
                                 data-test="CHK_Non_Stationary_Noise"
                                 [(ngModel)]="
-                                    tuning.non_stationary_noise_suppression
+                                    tuning.nonStationaryNoiseSuppression
                                 "
                                 [ngModelOptions]="{standalone: true}"
-                                [disabled]="saving"
-                                (ngModelChange)="onDspChange()" />
+                                [disabled]="
+                                    saving ||
+                                    tuning.nonStationaryNoiseSuppression ===
+                                        undefined
+                                "
+                                (ngModelChange)="
+                                    onDspChange('NONSTATNOISEONOFF')
+                                " />
                             <label
                                 class="form-check-label text-white"
                                 for="nonstat-noise">
-                                Non-Stationary Noise Suppression
+                                Non-Stationary Noise Suppression @if
+                                (tuning.nonStationaryNoiseSuppression ===
+                                undefined) {
+                                <span>— not reported</span>
+                                }
                             </label>
                         </div>
 
@@ -367,14 +536,77 @@
                                 type="checkbox"
                                 id="aec-enabled"
                                 data-test="CHK_AEC_Enabled"
-                                [(ngModel)]="tuning.aec_enabled"
+                                [(ngModel)]="tuning.echoEnabled"
                                 [ngModelOptions]="{standalone: true}"
-                                [disabled]="saving"
-                                (ngModelChange)="onDspChange()" />
+                                [disabled]="
+                                    saving || tuning.echoEnabled === undefined
+                                "
+                                (ngModelChange)="onDspChange('ECHOONOFF')" />
                             <label
                                 class="form-check-label text-white"
                                 for="aec-enabled">
-                                AEC Echo Cancellation
+                                AEC Echo Cancellation @if (tuning.echoEnabled
+                                === undefined) {
+                                <span>— not reported</span>
+                                }
+                            </label>
+                        </div>
+
+                        <div class="form-check mb-2">
+                            <input
+                                class="form-check-input"
+                                type="checkbox"
+                                id="stat-noise-sr"
+                                data-test="CHK_Stationary_Noise_SR"
+                                [(ngModel)]="
+                                    tuning.stationaryNoiseSuppressionSr
+                                "
+                                [ngModelOptions]="{standalone: true}"
+                                [disabled]="
+                                    saving ||
+                                    tuning.stationaryNoiseSuppressionSr ===
+                                        undefined
+                                "
+                                (ngModelChange)="
+                                    onDspChange('STATNOISEONOFF_SR')
+                                " />
+                            <label
+                                class="form-check-label text-white"
+                                for="stat-noise-sr">
+                                Stationary Noise Suppression (ASR) @if
+                                (tuning.stationaryNoiseSuppressionSr ===
+                                undefined) {
+                                <span>— not reported</span>
+                                }
+                            </label>
+                        </div>
+
+                        <div class="form-check mb-3">
+                            <input
+                                class="form-check-input"
+                                type="checkbox"
+                                id="nonstat-noise-sr"
+                                data-test="CHK_Non_Stationary_Noise_SR"
+                                [(ngModel)]="
+                                    tuning.nonStationaryNoiseSuppressionSr
+                                "
+                                [ngModelOptions]="{standalone: true}"
+                                [disabled]="
+                                    saving ||
+                                    tuning.nonStationaryNoiseSuppressionSr ===
+                                        undefined
+                                "
+                                (ngModelChange)="
+                                    onDspChange('NONSTATNOISEONOFF_SR')
+                                " />
+                            <label
+                                class="form-check-label text-white"
+                                for="nonstat-noise-sr">
+                                Non-Stationary Noise Suppression (ASR) @if
+                                (tuning.nonStationaryNoiseSuppressionSr ===
+                                undefined) {
+                                <span>— not reported</span>
+                                }
                             </label>
                         </div>
 
@@ -387,16 +619,26 @@
                             id="high-pass-filter"
                             class="form-select"
                             data-test="SEL_High_Pass_Filter"
-                            [(ngModel)]="tuning.high_pass_filter"
+                            [(ngModel)]="tuning.highPassFilter"
                             [ngModelOptions]="{standalone: true}"
-                            [disabled]="saving"
-                            (ngModelChange)="onDspChange()">
-                            <option
-                                *ngFor="let opt of highPassOptions"
-                                [ngValue]="opt.value">
+                            [disabled]="
+                                saving ||
+                                tuning.highPassFilter === undefined
+                            "
+                            (ngModelChange)="onDspChange('HPFONOFF')">
+                            @for (opt of highPassOptions; track opt) {
+                            <option [ngValue]="opt.value">
                                 {{ opt.label }}
                             </option>
+                            }
                         </select>
+                        @if (tuning.highPassFilter === undefined) {
+                        <span
+                            class="text-white-50 small"
+                            data-test="TXT_HPF_Not_Reported"
+                            >not reported</span
+                        >
+                        }
                     </div>
                 </div>
             </div>
@@ -417,15 +659,13 @@
                     id="led-mode"
                     class="form-select"
                     data-test="SEL_LED_Mode"
-                    [(ngModel)]="tuning.led_mode"
+                    [(ngModel)]="tuning.ledMode"
                     [ngModelOptions]="{standalone: true}"
-                    [disabled]="saving"
-                    (ngModelChange)="onLedChange()">
-                    <option
-                        *ngFor="let mode of ledModes"
-                        [ngValue]="mode.value">
-                        {{ mode.label }}
-                    </option>
+                    [disabled]="saving || tuning.ledMode === undefined"
+                    (ngModelChange)="onLedChange('mode')">
+                    @for (mode of ledModes; track mode) {
+                    <option [ngValue]="mode.value">{{ mode.label }}</option>
+                    }
                 </select>
             </div>
 
@@ -433,20 +673,25 @@
                 <label
                     class="text-white-50 small"
                     for="led-brightness">
-                    Brightness: {{ tuning.led_brightness }}%
+                    Brightness: {{ tuning.ledBrightness === undefined ? "not
+                    reported" : tuning.ledBrightness }}
                 </label>
                 <input
                     id="led-brightness"
                     type="range"
                     class="form-range"
                     min="0"
-                    max="100"
+                    max="31"
                     step="1"
                     data-test="SLD_LED_Brightness"
-                    [(ngModel)]="tuning.led_brightness"
+                    [(ngModel)]="tuning.ledBrightness"
                     [ngModelOptions]="{standalone: true}"
-                    [disabled]="saving || tuning.led_mode === 'off'"
-                    (change)="onLedChange()" />
+                    [disabled]="
+                        saving ||
+                        tuning.ledMode === 'off' ||
+                        tuning.ledBrightness === undefined
+                    "
+                    (change)="onLedChange('brightness')" />
             </div>
 
             <div class="col-md-4 mb-3">
@@ -461,19 +706,46 @@
                         type="color"
                         class="form-control form-control-color"
                         data-test="CLR_LED_Color"
-                        [(ngModel)]="tuning.led_color"
+                        [(ngModel)]="tuning.ledColor"
                         [ngModelOptions]="{standalone: true}"
                         [disabled]="
                             saving ||
-                            tuning.led_mode === 'off' ||
-                            tuning.led_mode === 'mute'
+                            tuning.ledMode === 'off'
                         "
-                        (change)="onLedChange()" />
-                    <span class="text-white-50 ml-2 small">{{
-                        tuning.led_color
-                    }}</span>
+                        (change)="onLedChange('color')" />
+                    <span class="text-white-50 ml-2 small"
+                        >{{ tuning.ledColor ?? "not reported" }}</span
+                    >
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <div class="form-check">
+                    <input
+                        class="form-check-input"
+                        type="checkbox"
+                        id="vad-led"
+                        data-test="CHK_VAD_LED"
+                        [(ngModel)]="tuning.vadLed"
+                        [ngModelOptions]="{standalone: true}"
+                        [disabled]="saving || tuning.vadLed === undefined"
+                        (ngModelChange)="onLedChange('vad_led')" />
+                    <label
+                        class="form-check-label text-white"
+                        for="vad-led">
+                        Voice activity LED
+                    </label>
                 </div>
             </div>
         </div>
     </div>
+    } @else {
+    <div
+        class="card p-3 shadow-sm"
+        data-test="PANEL_Tuning_Not_Reported">
+        <h4 class="card-title text-white">Array Parameters</h4>
+        <div class="source-label">Source: {{ tuningSource }}</div>
+        <span class="text-white-50">not reported</span>
+    </div>
+    }
 </div>

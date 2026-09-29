@@ -9,7 +9,10 @@ import {
     Output,
     Renderer2,
     ChangeDetectionStrategy,
+    DestroyRef,
+    inject,
 } from "@angular/core";
+import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 import {FormControl, ReactiveFormsModule} from "@angular/forms";
 import {Observable} from "rxjs";
 
@@ -21,6 +24,8 @@ import {Observable} from "rxjs";
     imports: [ReactiveFormsModule],
 })
 export class VerticalSliderComponent implements OnInit, AfterViewInit {
+    private readonly destroyRef = inject(DestroyRef);
+
     @ViewChild("slider") slider?: ElementRef;
     @ViewChild("sliderticks") sliderTicks?: ElementRef;
     @Input() step: number = 1;
@@ -45,34 +50,38 @@ export class VerticalSliderComponent implements OnInit, AfterViewInit {
 
     ngOnInit(): void {
         this.rangeFormControl.setValue(this.defaultValue);
-        this.messageReceiver$.subscribe((value: number) => {
-            this.rangeFormControl.setValue(value);
-        });
+        this.messageReceiver$
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe((value: number) => {
+                this.rangeFormControl.setValue(value);
+            });
     }
 
     ngAfterViewInit(): void {
-        this.rangeFormControl.valueChanges.subscribe(() => {
-            if (this.valueSanitized) {
-                this.valueSanitized = false;
-                const slider: ElementRef["nativeElement"] =
-                    this.slider?.nativeElement;
-                const sliderPercentage: number =
-                    (100 * (this.rangeFormControl.value - this.minValue)) /
-                    (this.maxValue - this.minValue);
-                slider.style.setProperty(
-                    "--pos-relative",
-                    sliderPercentage.toString() + "%",
-                );
-            } else {
-                const sanitizedValue = this.sanitizedSliderValue(
-                    this.rangeFormControl.value,
-                );
-                if (!isNaN(sanitizedValue)) {
-                    this.valueSanitized = true;
-                    this.rangeFormControl.setValue(sanitizedValue);
+        this.rangeFormControl.valueChanges
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe(() => {
+                if (this.valueSanitized) {
+                    this.valueSanitized = false;
+                    const slider: ElementRef["nativeElement"] =
+                        this.slider?.nativeElement;
+                    const sliderPercentage: number =
+                        (100 * (this.rangeFormControl.value - this.minValue)) /
+                        (this.maxValue - this.minValue);
+                    slider.style.setProperty(
+                        "--pos-relative",
+                        sliderPercentage.toString() + "%",
+                    );
+                } else {
+                    const sanitizedValue = this.sanitizedSliderValue(
+                        this.rangeFormControl.value,
+                    );
+                    if (!isNaN(sanitizedValue)) {
+                        this.valueSanitized = true;
+                        this.rangeFormControl.setValue(sanitizedValue);
+                    }
                 }
-            }
-        });
+            });
         this.rangeFormControl.setValue(this.rangeFormControl.value);
         this.renderer.setStyle(
             this.slider!.nativeElement,

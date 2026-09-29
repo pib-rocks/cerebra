@@ -1,4 +1,11 @@
-import {Component, OnInit, ChangeDetectionStrategy} from "@angular/core";
+import {
+    Component,
+    OnInit,
+    ChangeDetectionStrategy,
+    DestroyRef,
+    inject,
+} from "@angular/core";
+import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 import {ActivatedRoute} from "@angular/router";
 import {Observable} from "rxjs";
 import {ProgramService} from "src/app/shared/services/program.service";
@@ -24,6 +31,8 @@ import {ConsoleComponent} from "./console/console.component";
     ],
 })
 export class ProgramSplitscreenComponent implements OnInit {
+    private readonly destroyRef = inject(DestroyRef);
+
     ExecutionState = ExecutionState;
 
     codePython: string = "";
@@ -55,23 +64,29 @@ export class ProgramSplitscreenComponent implements OnInit {
     ) {}
 
     ngOnInit(): void {
-        this.activatedRoute.data.subscribe((data) => {
-            this.codeVisualOld = (data["code"] as ProgramCode).codeVisual;
-            this.codeVisualNew = this.codeVisualOld;
-        });
-        this.activatedRoute.params.subscribe((params) => {
-            this.programNumber = params["program-number"];
-            this.resolveProgramName(this.programNumber);
-            this.programLogs$ = this.programService.getProgramLogs(
-                this.programNumber,
-            );
-            this.programState$ = this.programService.getProgramState(
-                this.programNumber,
-            );
-            this.programState$.subscribe(
-                (state) => (this.executionState = state.executionState),
-            );
-        });
+        this.activatedRoute.data
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe((data) => {
+                this.codeVisualOld = (data["code"] as ProgramCode).codeVisual;
+                this.codeVisualNew = this.codeVisualOld;
+            });
+        this.activatedRoute.params
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe((params) => {
+                this.programNumber = params["program-number"];
+                this.resolveProgramName(this.programNumber);
+                this.programLogs$ = this.programService.getProgramLogs(
+                    this.programNumber,
+                );
+                this.programState$ = this.programService.getProgramState(
+                    this.programNumber,
+                );
+                this.programState$
+                    .pipe(takeUntilDestroyed(this.destroyRef))
+                    .subscribe(
+                        (state) => (this.executionState = state.executionState),
+                    );
+            });
     }
 
     saveCode() {

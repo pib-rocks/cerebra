@@ -1,4 +1,12 @@
-import {Component, Input, OnInit, ChangeDetectionStrategy} from "@angular/core";
+import {
+    Component,
+    Input,
+    OnInit,
+    ChangeDetectionStrategy,
+    DestroyRef,
+    inject,
+} from "@angular/core";
+import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 import {
     ActivatedRoute,
     NavigationStart,
@@ -18,6 +26,8 @@ import {NgClass} from "@angular/common";
     imports: [NgClass, RouterLink],
 })
 export class VoiceAssistantNavComponent implements OnInit {
+    private readonly destroyRef = inject(DestroyRef);
+
     sidebarElements?: SidebarElement[];
     @Input() subject?: Observable<SidebarElement[]>;
     @Input() button?: {enabled: boolean; func: () => void};
@@ -29,56 +39,61 @@ export class VoiceAssistantNavComponent implements OnInit {
     ) {}
 
     ngOnInit(): void {
-        this.router.events.subscribe((event) => {
-            if (event instanceof NavigationStart) {
-                if (
-                    RegExp("/voice-assistant/" + CerebraRegex.UUID).test(
-                        this.router.url,
-                    ) &&
-                    event.url === "/voice-assistant"
-                ) {
+        this.router.events
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe((event) => {
+                if (event instanceof NavigationStart) {
                     if (
-                        this.sidebarElements &&
-                        this.sidebarElements.length > 0
+                        RegExp("/voice-assistant/" + CerebraRegex.UUID).test(
+                            this.router.url,
+                        ) &&
+                        event.url === "/voice-assistant"
                     ) {
-                        this.router.navigate(
-                            [this.sidebarElements[0].getUUID(), "chat"],
-                            {relativeTo: this.route},
-                        );
+                        if (
+                            this.sidebarElements &&
+                            this.sidebarElements.length > 0
+                        ) {
+                            this.router.navigate(
+                                [this.sidebarElements[0].getUUID(), "chat"],
+                                {relativeTo: this.route},
+                            );
+                        }
                     }
                 }
-            }
-        });
+            });
 
-        this.subject?.subscribe((elements) => {
-            const diff = elements.length - (this.sidebarElements?.length ?? 0);
-            const len = this.sidebarElements?.length ?? 0;
-            this.sidebarElements = elements;
-            if (len == 0 && elements.length > 0) {
-                this.router.navigate(
-                    [this.sidebarElements[0].getUUID(), "chat"],
-                    {
+        this.subject
+            ?.pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe((elements) => {
+                const diff =
+                    elements.length - (this.sidebarElements?.length ?? 0);
+                const len = this.sidebarElements?.length ?? 0;
+                this.sidebarElements = elements;
+                if (len == 0 && elements.length > 0) {
+                    this.router.navigate(
+                        [this.sidebarElements[0].getUUID(), "chat"],
+                        {
+                            relativeTo: this.route,
+                        },
+                    );
+                } else if (diff > 0 && len != 0) {
+                    this.router.navigate(
+                        [
+                            this.sidebarElements[
+                                this.sidebarElements.length - 1
+                            ].getUUID(),
+                            "chat",
+                        ],
+                        {relativeTo: this.route},
+                    );
+                } else if (this.getRedirectRoute()) {
+                    this.router.navigate([this.getRedirectRoute()], {
                         relativeTo: this.route,
-                    },
-                );
-            } else if (diff > 0 && len != 0) {
-                this.router.navigate(
-                    [
-                        this.sidebarElements[
-                            this.sidebarElements.length - 1
-                        ].getUUID(),
-                        "chat",
-                    ],
-                    {relativeTo: this.route},
-                );
-            } else if (this.getRedirectRoute()) {
-                this.router.navigate([this.getRedirectRoute()], {
-                    relativeTo: this.route,
-                });
-            } else {
-                this.router.navigate([this.defaultRoute]);
-            }
-        });
+                    });
+                } else {
+                    this.router.navigate([this.defaultRoute]);
+                }
+            });
     }
 
     getRedirectRoute(): string | undefined {

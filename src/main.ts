@@ -1,9 +1,7 @@
 /// <reference types="@angular/localize" />
 
-import {platformBrowserDynamic} from "@angular/platform-browser-dynamic";
-
 import {
-    provideZoneChangeDetection,
+    provideZonelessChangeDetection,
     ErrorHandler,
     importProvidersFrom,
 } from "@angular/core";
@@ -42,7 +40,7 @@ bootstrapApplication(AppComponent, {
             NgOptimizedImage,
             MarkdownModule.forRoot(),
         ),
-        provideZoneChangeDetection(),
+        provideZonelessChangeDetection(),
         {
             provide: HIGHLIGHT_OPTIONS,
             useValue: {

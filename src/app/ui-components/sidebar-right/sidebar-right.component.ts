@@ -58,7 +58,8 @@ export class SideBarRightComponent implements OnInit, OnDestroy, OnChanges {
     @Input() lStorage!: string;
     @Input() selectedObservable?: Observable<string | undefined>;
     sidebarElements!: SidebarElement[];
-    subscription!: Subscription;
+    subscription?: Subscription;
+    selectedSubscription?: Subscription;
 
     constructor(
         private router: Router,
@@ -67,14 +68,17 @@ export class SideBarRightComponent implements OnInit, OnDestroy, OnChanges {
     ) {}
 
     ngOnDestroy(): void {
-        this.subscription.unsubscribe();
+        this.subscription?.unsubscribe();
+        this.selectedSubscription?.unsubscribe();
     }
 
     ngOnInit() {
         this._updateSidebar();
-        this.selectedObservable?.subscribe((uuid?: string) => {
-            this.router.navigate([uuid ?? "."], {relativeTo: this.route});
-        });
+        this.selectedSubscription = this.selectedObservable?.subscribe(
+            (uuid?: string) => {
+                this.router.navigate([uuid ?? "."], {relativeTo: this.route});
+            },
+        );
     }
 
     // if subject is modified, routing won't update in VA
@@ -86,6 +90,7 @@ export class SideBarRightComponent implements OnInit, OnDestroy, OnChanges {
     }
 
     _updateSidebar() {
+        this.subscription?.unsubscribe();
         this.subscription = this.subject.subscribe(
             (serviceElements: SidebarElement[]) => {
                 this.sidebarElements = serviceElements;
