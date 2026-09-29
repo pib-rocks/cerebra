@@ -381,7 +381,13 @@ export const toolbox: string = `<xml xmlns="http://www.w3.org/1999/xhtml" id="to
     <block type="motor_current"></block>
 </category>
 <category name="Audio skills" colour="260">
-    <block type="play_audio_from_speech"></block>
+    <block type="play_audio_from_speech">
+        <value name="TEXT_INPUT">
+            <shadow type="text">
+                <field name="TEXT"></field>
+            </shadow>
+        </value>
+    </block>
     <block type="play_wav"></block>
     <block type="set_volume"></block>
     <block type="get_sound_direction"></block>
