@@ -24,7 +24,7 @@ describe("VoiceAssistantPersonalitySidebarRightComponent", () => {
     let paramsSubject: Subject<{chatUuid: string}>;
     const models = [
         new AssistantModel(1, "gpt-3", "GPT-3", false),
-        new AssistantModel(1, "gpt-4", "GPT-4", true),
+        new AssistantModel(2, "gpt-4", "GPT-4", true),
     ];
 
     beforeEach(async () => {

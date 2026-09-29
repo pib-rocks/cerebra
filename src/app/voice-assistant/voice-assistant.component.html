@@ -81,8 +81,14 @@
                 class="form-select"
                 data-test="DDN_Voice_Assistant_Model"
                 aria-label="Voice-assistant language model">
-                @for (model of models; track model) {
-                <option [value]="model.id ">{{model.visualName}}</option>
+                @for (model of selectionModels; track model.id) {
+                <option
+                    [value]="providerOptionValue(model)"
+                    [disabled]="
+                        isCapabilityControlDisabled(model, 'images')
+                    ">
+                    {{ model.visualName }}
+                </option>
                 }
             </select>
         </div>

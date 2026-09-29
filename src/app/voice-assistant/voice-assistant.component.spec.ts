@@ -12,6 +12,10 @@ import {HttpClientTestingModule} from "@angular/common/http/testing";
 import {VoiceAssistant} from "../shared/types/voice-assistant";
 import {BehaviorSubject} from "rxjs";
 import {AssistantModel} from "../shared/types/assistantModel";
+import {
+    DEFAULT_PROVIDER_REF,
+    ProviderCapabilities,
+} from "../shared/types/provider-registry";
 export class MockNgbModalRef {
     componentInstance = {
         prompt: undefined,
@@ -27,7 +31,7 @@ describe("VoiceAssistantComponent", () => {
     let _router: Router;
     const models = [
         new AssistantModel(1, "gpt-3", "GPT-3", false),
-        new AssistantModel(1, "gpt-4", "GPT-4", true),
+        new AssistantModel(2, "gpt-4", "GPT-4", true),
     ];
 
     const mockModalRef: MockNgbModalRef = new MockNgbModalRef();
@@ -175,5 +179,81 @@ describe("VoiceAssistantComponent", () => {
         component.savePersonality();
         expect(spyOnEditPersonality).toHaveBeenCalled();
         expect(spyOnSavePersonality).toHaveBeenCalled();
+    });
+
+    it("stores the default provider pointer on a new personality", () => {
+        component.personalityForm.patchValue({
+            "name-input": "Ada",
+            gender: "Female",
+            pausethreshold: 0.8,
+            messageHistory: 10,
+            assistantModel: DEFAULT_PROVIDER_REF,
+        });
+        component.addPersonality();
+        const created =
+            voiceAssistantService.createPersonality.calls.mostRecent()
+                .args[0] as VoiceAssistant;
+        expect(created.providerRef).toBe(DEFAULT_PROVIDER_REF);
+        expect(created.assistantModelId).toBeNull();
+    });
+
+    it("stores an explicit provider id when that row is selected", () => {
+        component.personalityForm.patchValue({
+            "name-input": "Ada",
+            gender: "Female",
+            pausethreshold: 0.8,
+            messageHistory: 10,
+            assistantModel: "9",
+        });
+        component.addPersonality();
+        const created =
+            voiceAssistantService.createPersonality.calls.mostRecent()
+                .args[0] as VoiceAssistant;
+        expect(created.providerRef).toBe("9");
+        expect(created.assistantModelId).toBe(9);
+    });
+
+    it("offers only rows with the images capability and disables the rest by that flag", () => {
+        const flags = (images: boolean): ProviderCapabilities => ({
+            tools: true,
+            images,
+            live: false,
+            stt: false,
+            tts: false,
+        });
+        const text = new AssistantModel(
+            8,
+            "shared-api",
+            "Text row",
+            false,
+            null,
+            flags(false),
+            null,
+            false,
+        );
+        const vision = new AssistantModel(
+            9,
+            "shared-api",
+            "Vision row",
+            true,
+            "https://example.test/v1",
+            flags(true),
+            "provider-key",
+            true,
+        );
+        voiceAssistantService.assistantModelsSubject.next([text, vision]);
+        expect(component.selectionModels.map((model) => model.id)).toEqual([
+            vision.id,
+        ]);
+        expect(component.providerOptionValue(vision)).toBe(
+            DEFAULT_PROVIDER_REF,
+        );
+        expect(
+            component.isCapabilityControlDisabled(text, "images"),
+        ).toBeTrue();
+        expect(
+            component.isCapabilityControlDisabled(vision, "images"),
+        ).toBeFalse();
+        expect(text.apiName).toBe(vision.apiName);
     });
 });

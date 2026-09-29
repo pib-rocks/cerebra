@@ -40,6 +40,31 @@ server.get("/voice-assistant/personality/:personalityId", (req, res, next) => {
     return res.status(200).send(Personality.getPersonality(response[0]));
 });
 
+function assignProvider(personality, body, creating) {
+    const ref = body.providerRef;
+    if (ref === "default") {
+        personality.providerRef = "default";
+        personality.assistantModelId = null;
+        return;
+    }
+    if (ref != null && ref !== "") {
+        const id = Number(ref);
+        personality.providerRef = String(id);
+        personality.assistantModelId = id;
+        return;
+    }
+    if (body.assistantModelId != null && body.assistantModelId !== "") {
+        const id = Number(body.assistantModelId);
+        personality.providerRef = String(id);
+        personality.assistantModelId = id;
+        return;
+    }
+    if (creating) {
+        personality.providerRef = "default";
+        personality.assistantModelId = null;
+    }
+}
+
 //postPersonality
 server.post("/voice-assistant/personality", (req, res, next) => {
     const newPersonality = Personality.newPersonality(
@@ -48,8 +73,9 @@ server.post("/voice-assistant/personality", (req, res, next) => {
         req.body.pauseThreshold,
         req.body.messageHistory,
     );
+    assignProvider(newPersonality, req.body, true);
     mockData.personality.push(newPersonality);
-    return res.status(201).send(newPersonality);
+    return res.status(201).send(Personality.getPersonality(newPersonality));
 });
 
 //putPersonalityByPersonalityId
@@ -62,6 +88,7 @@ server.put("/voice-assistant/personality/:personalityId", (req, res, next) => {
             personality.pauseThreshold = req.body.pauseThreshold;
             personality.description = req.body.description;
             personality.messageHistory = req.body.messageHistory;
+            assignProvider(personality, req.body, false);
             updated = true;
             return res
                 .status(200)
@@ -559,10 +586,9 @@ server.put("/program/:programNumber/code", (req, res, next) => {
 
 //getAssistantModel
 server.get("/assistant-model", (req, res, next) => {
-    let response = [];
-    mockData.assistantModel.forEach((model) => {
-        response.push(AssistantModel.getAssistantModel(model));
-    });
+    const response = mockData.assistantModel
+        .map((model) => AssistantModel.getAssistantModel(model))
+        .filter((model) => model.capabilities.images === true);
     return res.status(200).send({assistantModels: response});
 });
 

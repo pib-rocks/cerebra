@@ -6,6 +6,8 @@ import {ApiService} from "./api.service";
 import {BehaviorSubject} from "rxjs";
 import {RosService} from "./ros-service/ros.service";
 import {AssistantModel} from "../types/assistantModel";
+import {DEFAULT_PROVIDER_REF} from "../types/provider-registry";
+import {UrlConstants} from "./url.constants";
 import {ChatService} from "./chat.service";
 
 describe("VoiceAssistantService", () => {
@@ -177,4 +179,65 @@ describe("VoiceAssistantService", () => {
         expect(apiService.get).toHaveBeenCalled();
         expect(service.assistantModelsSubject.getValue().length).toBe(2);
     }));
+
+    it("parses registry fields and keeps rows the ui still has to filter", () => {
+        const registry = new BehaviorSubject({
+            assistantModels: [
+                {
+                    id: 8,
+                    apiName: "shared-api",
+                    visualName: "Text row",
+                    hasImageSupport: false,
+                    endpointBase: "https://example.test/v1",
+                    capabilities: {
+                        tools: true,
+                        images: false,
+                        live: false,
+                        stt: false,
+                        tts: false,
+                    },
+                    credentialRef: "provider-key",
+                    isDefault: false,
+                },
+                {
+                    id: 9,
+                    apiName: "shared-api",
+                    visualName: "Vision row",
+                    hasImageSupport: true,
+                    endpointBase: "https://example.test/v1",
+                    capabilities: {
+                        tools: true,
+                        images: true,
+                        live: true,
+                        stt: false,
+                        tts: false,
+                    },
+                    credentialRef: "provider-key",
+                    isDefault: true,
+                },
+            ],
+        });
+        apiService.get.and.returnValue(registry);
+        service.getAllAssistantModels();
+        const parsed = service.assistantModelsSubject.getValue();
+        expect(parsed.length).toBe(2);
+        expect(parsed[0].capabilities.images).toBeFalse();
+        expect(parsed[0].endpointBase).toBe("https://example.test/v1");
+        expect(parsed[0].credentialRef).toBe("provider-key");
+        expect(parsed[1].isDefault).toBeTrue();
+        expect(parsed[1].capabilities.live).toBeTrue();
+        expect(parsed[0].apiName).toBe(parsed[1].apiName);
+    });
+
+    it("sends the default provider pointer when a personality has no model id", () => {
+        apiService.post.and.returnValue(observableOfKlaus);
+        service.createPersonality(klaus);
+        expect(apiService.post).toHaveBeenCalledWith(
+            UrlConstants.PERSONALITY,
+            jasmine.objectContaining({
+                providerRef: DEFAULT_PROVIDER_REF,
+                assistantModelId: null,
+            }),
+        );
+    });
 });

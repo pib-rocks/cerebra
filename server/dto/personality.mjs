@@ -17,10 +17,11 @@ export class Personality {
         this.pauseThreshold = pauseThreshold;
         this.assistantModelId = assistantModelId;
         this.messageHistory = messageHistory;
+        this.providerRef = null;
     }
 
     static getPersonality(personality) {
-        return new Personality(
+        const row = new Personality(
             personality.personalityId,
             personality.name,
             personality.description,
@@ -29,6 +30,17 @@ export class Personality {
             personality.assistantModelId,
             personality.messageHistory,
         );
+        if (personality.providerRef != null && personality.providerRef !== "") {
+            row.providerRef = personality.providerRef;
+        } else if (
+            personality.assistantModelId != null &&
+            personality.assistantModelId !== ""
+        ) {
+            row.providerRef = String(personality.assistantModelId);
+        } else {
+            row.providerRef = "default";
+        }
+        return row;
     }
 
     static newPersonality(name, gender, pauseThreshold, messageHistory) {

@@ -1,4 +1,8 @@
 import {SidebarElement} from "../interfaces/sidebar-element.interface";
+import {
+    DEFAULT_PROVIDER_REF,
+    providerRefFromSelection,
+} from "./provider-registry";
 
 export class VoiceAssistant implements SidebarElement {
     personalityId: string;
@@ -6,8 +10,9 @@ export class VoiceAssistant implements SidebarElement {
     description: string | undefined;
     gender: string;
     pauseThreshold: number;
-    assistantModelId: number;
+    assistantModelId: number | null;
     messageHistory: number;
+    providerRef: string;
 
     constructor(
         personalityId: string,
@@ -15,16 +20,27 @@ export class VoiceAssistant implements SidebarElement {
         gender: string,
         pauseThreshold: number,
         description?: string,
-        assistantModelId?: number,
+        assistantModelId?: number | null,
         messageHistory?: number,
+        providerRef?: string | null,
     ) {
         this.personalityId = personalityId;
         this.name = name;
         this.description = description ?? "";
         this.gender = gender;
         this.pauseThreshold = pauseThreshold;
-        this.assistantModelId = assistantModelId ?? -1;
+        this.assistantModelId =
+            assistantModelId == null || assistantModelId < 1
+                ? null
+                : assistantModelId;
         this.messageHistory = messageHistory ?? 10;
+        if (providerRef != null && providerRef !== "") {
+            this.providerRef = providerRef;
+        } else if (this.assistantModelId != null) {
+            this.providerRef = String(this.assistantModelId);
+        } else {
+            this.providerRef = DEFAULT_PROVIDER_REF;
+        }
     }
     getName(): string {
         return this.name;
@@ -40,42 +56,36 @@ export class VoiceAssistant implements SidebarElement {
             String(this.gender),
             Number(this.pauseThreshold),
             String(this.description),
-            Number(this.assistantModelId),
+            this.assistantModelId,
             Number(this.messageHistory),
+            this.providerRef,
         );
     }
 }
 
-export class VoiceAssistantDto {
+export interface VoiceAssistantDto {
     name: string;
-    description: string | null;
+    description: string | null | undefined;
     gender: string;
     pauseThreshold: number;
-
-    constructor(
-        name: string,
-        description: string,
-        gender: string,
-        pauseThreshold: number,
-    ) {
-        this.name = name;
-        this.description = description;
-        this.gender = gender;
-        this.pauseThreshold = pauseThreshold;
-    }
+    assistantModelId: number | null;
+    messageHistory: number;
+    providerRef: string;
 }
 
 export function parseVoiceAssistantToDto(
     voiceAssistant: VoiceAssistant,
 ): VoiceAssistantDto {
+    const choice = providerRefFromSelection(voiceAssistant.providerRef);
     return {
         name: voiceAssistant.name,
         description: voiceAssistant.description,
         gender: voiceAssistant.gender,
         pauseThreshold: voiceAssistant.pauseThreshold,
-        assistantModelId: voiceAssistant.assistantModelId,
+        assistantModelId: choice.assistantModelId,
         messageHistory: voiceAssistant.messageHistory,
-    } as VoiceAssistantDto;
+        providerRef: choice.providerRef,
+    };
 }
 
 export function parseDtoToVoiceAssistant(
@@ -89,5 +99,6 @@ export function parseDtoToVoiceAssistant(
         dummyVoiceAssistant.description,
         dummyVoiceAssistant.assistantModelId,
         dummyVoiceAssistant.messageHistory,
+        dummyVoiceAssistant.providerRef,
     );
 }

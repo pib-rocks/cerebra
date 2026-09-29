@@ -81,6 +81,7 @@ export class VoiceAssistantService implements SidebarService {
                     m.description,
                     m.assistantModelId,
                     m.messageHistory,
+                    m.providerRef,
                 ),
             );
         });

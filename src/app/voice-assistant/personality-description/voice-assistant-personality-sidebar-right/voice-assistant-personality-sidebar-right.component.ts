@@ -17,6 +17,13 @@ import {
     FormsModule,
 } from "@angular/forms";
 import {AssistantModel} from "src/app/shared/types/assistantModel";
+import {
+    DEFAULT_PROVIDER_REF,
+    isCapabilityControlDisabled,
+    providerOptionValue as providerOptionValueFor,
+    providerRefFromSelection,
+    providersForSelection,
+} from "src/app/shared/types/provider-registry";
 @Component({
     selector: "app-va-personality-sidebar-right",
     templateUrl: "./voice-assistant-personality-sidebar-right.component.html",
@@ -37,7 +44,9 @@ export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
     thresholdString: string = "";
     messageHistoryNumber: number = 10;
     personalityFormSidebar!: FormGroup;
-    models!: AssistantModel[];
+    models: AssistantModel[] = [];
+    selectionModels: AssistantModel[] = [];
+    readonly isCapabilityControlDisabled = isCapabilityControlDisabled;
 
     constructor(
         private voiceAssistantService: VoiceAssistantService,
@@ -49,6 +58,7 @@ export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe((models) => {
                 this.models = models;
+                this.rebuildSelection();
             });
         this.route.params
             .pipe(takeUntilDestroyed(this.destroyRef))
@@ -59,6 +69,7 @@ export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
                 if (temp !== undefined) {
                     this.personalityClone = temp;
                 }
+                this.rebuildSelection();
                 this.updateForm();
             });
     }
@@ -100,7 +111,7 @@ export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
                 },
             ),
             assistantModel: new FormControl(
-                this.personalityClone?.assistantModelId ?? this.models[0].id,
+                this.personalityClone?.providerRef ?? DEFAULT_PROVIDER_REF,
                 {
                     nonNullable: true,
                     validators: [Validators.required],
@@ -223,13 +234,33 @@ export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
                 this.personalityFormSidebar.controls["persona-name"].value;
             this.personalityClone.gender =
                 this.personalityFormSidebar.controls["gender"].value;
-            this.personalityClone.assistantModelId =
-                this.personalityFormSidebar.controls["assistantModel"].value;
+            const choice = providerRefFromSelection(
+                String(
+                    this.personalityFormSidebar.controls["assistantModel"]
+                        .value,
+                ),
+            );
+            this.personalityClone.providerRef = choice.providerRef;
+            this.personalityClone.assistantModelId = choice.assistantModelId;
             this.voiceAssistantService.updatePersonalityById(
                 this.personalityClone!,
             );
         } else {
             console.log("Persona could not be saved, invalid input");
         }
+    }
+
+    providerOptionValue(model: AssistantModel): string {
+        return providerOptionValueFor(
+            model,
+            this.personalityClone?.providerRef ?? null,
+        );
+    }
+
+    private rebuildSelection() {
+        this.selectionModels = providersForSelection(
+            this.models,
+            this.personalityClone?.providerRef ?? null,
+        );
     }
 }

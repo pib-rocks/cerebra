@@ -21,6 +21,13 @@ import {
 import {NgbModal, NgbModalRef} from "@ng-bootstrap/ng-bootstrap";
 import {VoiceAssistant} from "../shared/types/voice-assistant";
 import {AssistantModel} from "../shared/types/assistantModel";
+import {
+    DEFAULT_PROVIDER_REF,
+    isCapabilityControlDisabled,
+    providerOptionValue as providerOptionValueFor,
+    providerRefFromSelection,
+    providersForSelection,
+} from "../shared/types/provider-registry";
 import {VoiceAssistantNavComponent} from "./voice-assistant-nav/voice-assistant-nav.component";
 import {RouterOutlet} from "@angular/router";
 import {NgClass} from "@angular/common";
@@ -49,7 +56,10 @@ export class VoiceAssistantComponent implements OnInit {
     ngbModalRef?: NgbModalRef;
     imgSrc: string = "../../assets/toggle-switch-left.png";
     subject!: Observable<SidebarElement[]>;
-    models!: AssistantModel[];
+    models: AssistantModel[] = [];
+    selectionModels: AssistantModel[] = [];
+    storedProviderRef: string | null = null;
+    readonly isCapabilityControlDisabled = isCapabilityControlDisabled;
     button: {enabled: boolean; func: () => void} = {
         enabled: true,
         func: () => {
@@ -70,6 +80,7 @@ export class VoiceAssistantComponent implements OnInit {
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe((models) => {
                 this.models = models;
+                this.rebuildSelection();
             });
         this.button.enabled = true;
         this.button.func = this.openAddModal;
@@ -103,7 +114,7 @@ export class VoiceAssistantComponent implements OnInit {
                     Validators.max(20),
                 ],
             }),
-            assistantModel: new FormControl(1, {
+            assistantModel: new FormControl(DEFAULT_PROVIDER_REF, {
                 nonNullable: true,
                 validators: [Validators.required],
             }),
@@ -188,11 +199,13 @@ export class VoiceAssistantComponent implements OnInit {
 
     openAddModal = () => {
         this.uuid = undefined;
+        this.storedProviderRef = null;
+        this.rebuildSelection();
         this.personalityForm.reset({
             gender: "Female",
             pausethreshold: 0.8,
             messageHistory: 10,
-            assistantModel: this.models[0]?.id ?? 1,
+            assistantModel: DEFAULT_PROVIDER_REF,
         });
         this.thresholdString =
             this.personalityForm.controls["pausethreshold"].value + "s";
@@ -207,10 +220,14 @@ export class VoiceAssistantComponent implements OnInit {
             const updatePersonality = this.voiceAssistantService.getPersonality(
                 this.uuid,
             );
+            this.storedProviderRef = updatePersonality?.providerRef ?? null;
+            this.rebuildSelection();
             this.personalityForm.patchValue({
                 "name-input": updatePersonality?.name,
                 gender: updatePersonality?.gender,
                 pausethreshold: updatePersonality?.pauseThreshold,
+                assistantModel:
+                    updatePersonality?.providerRef ?? DEFAULT_PROVIDER_REF,
             });
             this.thresholdString =
                 this.personalityForm.controls["pausethreshold"].value + "s";
@@ -222,6 +239,9 @@ export class VoiceAssistantComponent implements OnInit {
 
     addPersonality() {
         if (this.personalityForm.valid) {
+            const choice = providerRefFromSelection(
+                String(this.personalityForm.controls["assistantModel"].value),
+            );
             this.voiceAssistantService.createPersonality(
                 new VoiceAssistant(
                     "",
@@ -229,8 +249,9 @@ export class VoiceAssistantComponent implements OnInit {
                     this.personalityForm.controls["gender"].value,
                     this.personalityForm.controls["pausethreshold"].value,
                     "",
-                    this.personalityForm.controls["assistantModel"].value,
+                    choice.assistantModelId,
                     this.personalityForm.controls["messageHistory"].value,
+                    choice.providerRef,
                 ),
             );
         }
@@ -247,10 +268,26 @@ export class VoiceAssistantComponent implements OnInit {
                 this.personalityForm.controls["gender"].value;
             updatePersonality.pauseThreshold =
                 this.personalityForm.controls["pausethreshold"].value;
-            this.voiceAssistantService.updatePersonalityById(updatePersonality);
             updatePersonality.messageHistory =
                 this.personalityForm.controls["messageHistory"].value;
+            const choice = providerRefFromSelection(
+                String(this.personalityForm.controls["assistantModel"].value),
+            );
+            updatePersonality.providerRef = choice.providerRef;
+            updatePersonality.assistantModelId = choice.assistantModelId;
+            this.voiceAssistantService.updatePersonalityById(updatePersonality);
         }
         this.uuid = undefined;
     };
+
+    providerOptionValue(model: AssistantModel): string {
+        return providerOptionValueFor(model, this.storedProviderRef);
+    }
+
+    private rebuildSelection() {
+        this.selectionModels = providersForSelection(
+            this.models,
+            this.storedProviderRef,
+        );
+    }
 }
