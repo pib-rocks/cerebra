@@ -571,6 +571,10 @@ export class RosService implements IRosService {
         console.info(JSON.stringify({input, mpid}));
     }
 
+    publishExpression(_expression: string): void {}
+
+    publishDisplayText(_text: string): void {}
+
     sleep(ms: number) {
         return new Promise((resolve) => setTimeout(resolve, ms));
     }

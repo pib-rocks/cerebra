@@ -7,11 +7,22 @@ import {RelayControlComponent} from "./ui-components/relay-control/relay-control
 import {IpRetrieverComponent} from "./ui-components/ip-retriever/ip-retriever.component";
 import {DEGRADED_MODE, PROMPT_MODE} from "./system/speech/key-store-session";
 import {routes} from "./app-routing.module";
+import {VisibleStateService} from "./shared/services/visible-state.service";
+import {visibleConversation} from "./shared/types/visible-state";
+import {BehaviorSubject} from "rxjs";
 
 describe("AppComponent", () => {
     let fixture: ComponentFixture<AppComponent>;
 
     beforeEach(async () => {
+        const idle = visibleConversation({
+            voiceTurnedOn: false,
+            listening: false,
+            assistantSpeaking: false,
+            holderName: null,
+            keyStoreDegraded: false,
+            liveUnavailable: false,
+        });
         await TestBed.configureTestingModule({
             imports: [
                 RouterTestingModule,
@@ -20,6 +31,15 @@ describe("AppComponent", () => {
                 RelayControlComponent,
                 IpRetrieverComponent,
                 AppComponent,
+            ],
+            providers: [
+                {
+                    provide: VisibleStateService,
+                    useValue: {
+                        snapshot: idle,
+                        snapshot$: new BehaviorSubject(idle),
+                    },
+                },
             ],
         }).compileComponents();
 
@@ -42,6 +62,14 @@ describe("AppComponent", () => {
         expect(app.session.mode).toBe(DEGRADED_MODE);
         expect(app.session.error).toBeNull();
         expect(app.showStartupPassword()).toBeFalse();
+    });
+
+    it("shows who holds the voice in the header", () => {
+        fixture.detectChanges();
+        expect(
+            fixture.nativeElement.querySelector("#voice-channel-holder")
+                .textContent,
+        ).toContain("Nobody holds the voice");
     });
 
     it("hides the startup modal on the display path", () => {

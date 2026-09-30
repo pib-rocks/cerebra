@@ -7,6 +7,9 @@ import {DisplayUnlockComponent} from "./display-unlock.component";
 import {KeyStoreSessionService} from "./key-store-session.service";
 import {DEGRADED_MODE, UNLOCKED_MODE} from "./key-store-session";
 import {routes} from "src/app/app-routing.module";
+import {VisibleStateService} from "src/app/shared/services/visible-state.service";
+import {visibleConversation} from "src/app/shared/types/visible-state";
+import {BehaviorSubject} from "rxjs";
 
 describe("DisplayUnlockComponent", () => {
     let fixture: ComponentFixture<DisplayUnlockComponent>;
@@ -14,8 +17,25 @@ describe("DisplayUnlockComponent", () => {
     let http: HttpTestingController;
 
     beforeEach(async () => {
+        const listening = visibleConversation({
+            voiceTurnedOn: true,
+            listening: true,
+            assistantSpeaking: false,
+            holderName: "Ada",
+            keyStoreDegraded: false,
+            liveUnavailable: false,
+        });
         await TestBed.configureTestingModule({
             imports: [HttpClientTestingModule, DisplayUnlockComponent],
+            providers: [
+                {
+                    provide: VisibleStateService,
+                    useValue: {
+                        snapshot: listening,
+                        snapshot$: new BehaviorSubject(listening),
+                    },
+                },
+            ],
         }).compileComponents();
         session = TestBed.inject(KeyStoreSessionService);
         http = TestBed.inject(HttpTestingController);
@@ -25,6 +45,23 @@ describe("DisplayUnlockComponent", () => {
 
     afterEach(() => {
         http.verify();
+    });
+
+    it("shows the voice holder and the animated face on the display", () => {
+        expect(
+            fixture.nativeElement.querySelector("#display-voice-holder")
+                .textContent,
+        ).toContain("Ada holds the voice");
+        expect(
+            fixture.nativeElement.querySelector(
+                "#display-conversation-activity",
+            ).textContent,
+        ).toContain("Listening");
+        expect(
+            fixture.nativeElement
+                .querySelector("#animated-face")
+                .getAttribute("data-activity"),
+        ).toBe("listening");
     });
 
     it("is the display route", () => {

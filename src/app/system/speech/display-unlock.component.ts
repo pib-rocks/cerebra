@@ -10,13 +10,14 @@ import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 import {DEGRADED_MODE, UNLOCKED_MODE} from "./key-store-session";
 import {KeyStoreSessionService} from "./key-store-session.service";
 import {StartupPasswordComponent} from "./startup-password.component";
+import {ConversationStatusComponent} from "src/app/voice-assistant/visible-state/conversation-status.component";
 
 @Component({
     selector: "app-display-unlock",
     templateUrl: "./display-unlock.component.html",
     styleUrls: ["./display-unlock.component.scss"],
     changeDetection: ChangeDetectionStrategy.Eager,
-    imports: [StartupPasswordComponent],
+    imports: [StartupPasswordComponent, ConversationStatusComponent],
 })
 export class DisplayUnlockComponent implements OnInit {
     private readonly destroyRef = inject(DestroyRef);
