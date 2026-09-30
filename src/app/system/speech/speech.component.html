@@ -35,6 +35,7 @@
 
     <div class="speech-password">
         <div class="speech-card-title">Operator password</div>
+        @if (encryptKeyStorage) {
         <label
             class="speech-label"
             for="speech-operator-password">
@@ -46,49 +47,25 @@
             autocomplete="current-password"
             [value]="password"
             (input)="onPasswordInput($event)" />
-        @if (encryptKeyStorage) {
         <button
             id="speech-change-password"
+            data-test="BTN_Change_Operator_Password"
             type="button"
             class="btn btn-outline-light"
-            (click)="togglePasswordChange()">
+            [disabled]="busy"
+            (click)="openPasswordDialog('change')">
             Change
         </button>
-        } @if (changingPassword || !encryptKeyStorage) {
-        <div class="speech-password-change">
-            <label
-                class="speech-label"
-                for="speech-new-password">
-                New password
-            </label>
-            <input
-                id="speech-new-password"
-                type="password"
-                autocomplete="new-password"
-                [value]="newPassword"
-                (input)="onNewPasswordInput($event)" />
-            <label
-                class="speech-label"
-                for="speech-confirm-password">
-                Confirm password
-            </label>
-            <input
-                id="speech-confirm-password"
-                type="password"
-                autocomplete="new-password"
-                [value]="confirmPassword"
-                (input)="onConfirmPasswordInput($event)" />
-            @if (encryptKeyStorage) {
-            <button
-                id="speech-save-password"
-                type="button"
-                class="btn btn-outline-light"
-                [disabled]="busy"
-                (click)="changePassword()">
-                Save password
-            </button>
-            }
-        </div>
+        } @else {
+        <button
+            id="speech-enable-encryption"
+            data-test="BTN_Turn_Encryption_On"
+            type="button"
+            class="btn btn-outline-light"
+            [disabled]="busy"
+            (click)="openPasswordDialog('enable')">
+            Set a password to turn encryption on
+        </button>
         }
     </div>
 
@@ -163,3 +140,93 @@
     </div>
     }
 </div>
+@if (passwordDialog) {
+<div
+    id="speech-password-modal"
+    class="modal d-block cerebra-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="speech-password-modal-title">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4
+                    class="modal-title"
+                    id="speech-password-modal-title">
+                    {{ passwordDialogTitle() }}
+                </h4>
+            </div>
+            <div class="modal-body speech-password-fields">
+                @if (passwordDialog === "change") {
+                <label
+                    class="speech-label"
+                    for="speech-current-password">
+                    Current password
+                </label>
+                <input
+                    id="speech-current-password"
+                    data-test="TXT_Current_Password"
+                    type="password"
+                    autocomplete="current-password"
+                    [value]="dialogPassword"
+                    (input)="onDialogPasswordInput($event)" />
+                }
+                <label
+                    class="speech-label"
+                    for="speech-new-password">
+                    New password
+                </label>
+                <input
+                    id="speech-new-password"
+                    data-test="TXT_New_Password"
+                    type="password"
+                    autocomplete="new-password"
+                    [value]="newPassword"
+                    (input)="onNewPasswordInput($event)" />
+                <label
+                    class="speech-label"
+                    for="speech-confirm-password">
+                    Confirm password
+                </label>
+                <input
+                    id="speech-confirm-password"
+                    data-test="TXT_Confirm_Password"
+                    type="password"
+                    autocomplete="new-password"
+                    [value]="confirmPassword"
+                    (input)="onConfirmPasswordInput($event)" />
+                @if (passwordDialogError) {
+                <div
+                    class="alert alert-danger"
+                    id="speech-password-modal-error"
+                    data-test="LBL_Operator_Password_Error">
+                    {{ passwordDialogError }}
+                </div>
+                }
+            </div>
+            <div class="modal-footer">
+                <button
+                    id="speech-password-ok"
+                    data-test="BTN_Operator_Password_OK"
+                    type="button"
+                    class="btn btn-outline-light"
+                    [disabled]="busy"
+                    (click)="confirmPasswordDialog()">
+                    OK
+                </button>
+                <button
+                    id="speech-password-cancel"
+                    data-test="BTN_Operator_Password_Cancel"
+                    type="button"
+                    class="btn btn-outline-light"
+                    (click)="cancelPasswordDialog()">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<div
+    id="speech-password-backdrop"
+    class="modal-backdrop fade show cerebra-modal-backdrop"></div>
+}

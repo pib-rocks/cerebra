@@ -167,6 +167,20 @@ describe("SpeechComponent", () => {
         fixture.detectChanges();
     }
 
+    function click(selector: string): void {
+        (fixture.nativeElement.querySelector(selector) as HTMLElement).click();
+        fixture.detectChanges();
+    }
+
+    function setPassword(selector: string, value: string): void {
+        const input = fixture.nativeElement.querySelector(
+            selector,
+        ) as HTMLInputElement;
+        input.value = value;
+        input.dispatchEvent(new Event("input"));
+        fixture.detectChanges();
+    }
+
     function loadKeyStore(status: {
         encryptKeyStorage: boolean;
         credentialRefs: string[];
@@ -189,6 +203,22 @@ describe("SpeechComponent", () => {
         expect(text("[data-test=LBL_Key_Storage]")).toBe(
             "Provider keys are encrypted. The operator password is asked at robot start.",
         );
+        expect(
+            fixture.nativeElement.querySelector("#speech-operator-password"),
+        ).not.toBeNull();
+        expect(
+            fixture.nativeElement.querySelector("#speech-change-password"),
+        ).not.toBeNull();
+        expect(text("[data-test=BTN_Change_Operator_Password]")).toBe("Change");
+        expect(
+            fixture.nativeElement.querySelector("#speech-new-password"),
+        ).toBeNull();
+        expect(
+            fixture.nativeElement.querySelector("#speech-confirm-password"),
+        ).toBeNull();
+        expect(
+            fixture.nativeElement.querySelector("#speech-password-modal"),
+        ).toBeNull();
     });
 
     it("shows cleartext when the key store has encryption off", () => {
@@ -203,6 +233,18 @@ describe("SpeechComponent", () => {
         expect(box.disabled).toBeFalse();
         expect(text("[data-test=LBL_Key_Storage]")).toBe(
             "Provider keys are stored in cleartext on the robot. No operator password is asked at robot start.",
+        );
+        expect(
+            fixture.nativeElement.querySelector("#speech-operator-password"),
+        ).toBeNull();
+        expect(
+            fixture.nativeElement.querySelector("#speech-new-password"),
+        ).toBeNull();
+        expect(
+            fixture.nativeElement.querySelector("#speech-confirm-password"),
+        ).toBeNull();
+        expect(text("[data-test=BTN_Turn_Encryption_On]")).toBe(
+            "Set a password to turn encryption on",
         );
         expect(TestBed.inject(KeyStoreSessionService).mode).toBe(UNLOCKED_MODE);
         expect(
@@ -284,24 +326,32 @@ describe("SpeechComponent", () => {
             credentialRefs: [],
             mode: "unlocked",
         });
+        toggleEncryption(true);
+        expect(keyStore.setEncryption).not.toHaveBeenCalled();
+        expect(encryptionBox().checked).toBeFalse();
         expect(
             fixture.nativeElement.querySelector("#speech-new-password"),
         ).not.toBeNull();
         expect(
             fixture.nativeElement.querySelector("#speech-confirm-password"),
         ).not.toBeNull();
+        expect(
+            fixture.nativeElement.querySelector("#speech-current-password"),
+        ).toBeNull();
 
-        toggleEncryption(true);
+        click("#speech-password-ok");
         expect(keyStore.setEncryption).not.toHaveBeenCalled();
         expect(encryptionBox().checked).toBeFalse();
-        expect(text("#speech-error")).toBe("Enter the new password twice.");
+        expect(text("#speech-password-modal-error")).toBe(
+            "Enter the new password twice.",
+        );
 
         component.newPassword = "new-secret";
         component.confirmPassword = "other-secret";
-        toggleEncryption(true);
+        click("#speech-password-ok");
         expect(keyStore.setEncryption).not.toHaveBeenCalled();
         expect(encryptionBox().checked).toBeFalse();
-        expect(text("#speech-error")).toBe(
+        expect(text("#speech-password-modal-error")).toBe(
             "Enter the new password twice. The two entries do not match.",
         );
 
@@ -312,10 +362,178 @@ describe("SpeechComponent", () => {
         keyStore.status.and.returnValue(
             of({encryptKeyStorage: true, credentialRefs: [], mode: "unlocked"}),
         );
-        toggleEncryption(true);
+        click("#speech-password-ok");
 
         expect(keyStore.setEncryption).toHaveBeenCalledWith(true, "new-secret");
         expect(encryptionBox().checked).toBeTrue();
+        expect(
+            fixture.nativeElement.querySelector("#speech-password-modal"),
+        ).toBeNull();
+    });
+
+    it("changes the operator password in a modal and leaves it alone on cancel", () => {
+        component.password = "operator-secret";
+        fixture.detectChanges();
+        expect(
+            fixture.nativeElement.querySelector("#speech-operator-password"),
+        ).not.toBeNull();
+        expect(text("#speech-change-password")).toBe("Change");
+        expect(
+            fixture.nativeElement.querySelector("#speech-new-password"),
+        ).toBeNull();
+
+        click("#speech-change-password");
+        const modal = fixture.nativeElement.querySelector(
+            "#speech-password-modal",
+        ) as HTMLElement;
+        expect(modal.classList.contains("modal")).toBeTrue();
+        expect(modal.classList.contains("d-block")).toBeTrue();
+        expect(modal.classList.contains("cerebra-modal")).toBeTrue();
+        expect(
+            modal
+                .querySelector(".modal-content")
+                ?.classList.contains("cerebra-modal"),
+        ).toBeFalse();
+        expect(
+            fixture.nativeElement.querySelector("#speech-current-password"),
+        ).not.toBeNull();
+        expect(text("#speech-password-modal-title")).toBe(
+            "Change operator password",
+        );
+
+        setPassword("#speech-current-password", "operator-secret");
+        setPassword("#speech-new-password", "new-secret");
+        setPassword("#speech-confirm-password", "new-secret");
+        click("#speech-password-cancel");
+
+        expect(
+            fixture.nativeElement.querySelector("#speech-password-modal"),
+        ).toBeNull();
+        expect(keyStore.changePassword).not.toHaveBeenCalled();
+        expect(component.password).toBe("operator-secret");
+        expect(
+            (
+                fixture.nativeElement.querySelector(
+                    "#speech-operator-password",
+                ) as HTMLInputElement
+            ).value,
+        ).toBe("operator-secret");
+
+        click("#speech-change-password");
+        setPassword("#speech-current-password", "operator-secret");
+        setPassword("#speech-confirm-password", "new-secret");
+        click("#speech-password-ok");
+        expect(keyStore.changePassword).not.toHaveBeenCalled();
+        expect(text("#speech-password-modal-error")).toBe(
+            "Enter the new password twice.",
+        );
+        expect(fixture.nativeElement.querySelector("#speech-error")).toBeNull();
+
+        keyStore.changePassword.and.returnValue(
+            throwError(
+                () =>
+                    new HttpErrorResponse({
+                        status: 400,
+                        error: {
+                            error: "Password must be at least 8 characters.",
+                        },
+                    }),
+            ),
+        );
+        setPassword("#speech-current-password", "operator-secret");
+        setPassword("#speech-new-password", "new-secret");
+        setPassword("#speech-confirm-password", "new-secret");
+        click("#speech-password-ok");
+
+        expect(keyStore.changePassword).toHaveBeenCalledWith(
+            "operator-secret",
+            "new-secret",
+            "new-secret",
+        );
+        expect(text("#speech-password-modal-error")).toBe(
+            "Password must be at least 8 characters.",
+        );
+        expect(
+            fixture.nativeElement.querySelector("#speech-password-modal"),
+        ).not.toBeNull();
+        expect(component.password).toBe("operator-secret");
+        expect(fixture.nativeElement.querySelector("#speech-error")).toBeNull();
+
+        keyStore.changePassword.and.returnValue(of({successful: true}));
+        click("#speech-password-ok");
+        expect(component.password).toBe("new-secret");
+        expect(text("#speech-notice")).toBe("Operator password changed.");
+        expect(
+            fixture.nativeElement.querySelector("#speech-password-modal"),
+        ).toBeNull();
+        expect(
+            (
+                fixture.nativeElement.querySelector(
+                    "#speech-operator-password",
+                ) as HTMLInputElement
+            ).value,
+        ).toBe("new-secret");
+    });
+
+    it("turns encryption on from a modal without a current password", () => {
+        loadKeyStore({
+            encryptKeyStorage: false,
+            credentialRefs: [],
+            mode: "unlocked",
+        });
+        expect(
+            fixture.nativeElement.querySelector("#speech-operator-password"),
+        ).toBeNull();
+        expect(
+            fixture.nativeElement.querySelectorAll(
+                "[data-test=BTN_Turn_Encryption_On]",
+            ).length,
+        ).toBe(1);
+
+        click("[data-test=BTN_Turn_Encryption_On]");
+        expect(
+            fixture.nativeElement.querySelector("#speech-current-password"),
+        ).toBeNull();
+        expect(text("#speech-password-modal-title")).toBe(
+            "Set a password to turn encryption on",
+        );
+        setPassword("#speech-new-password", "new-secret");
+        setPassword("#speech-confirm-password", "new-secret");
+        keyStore.setEncryption.and.returnValue(
+            of({
+                successful: false,
+                error: "Password must be at least 8 characters.",
+            }),
+        );
+        click("#speech-password-ok");
+
+        expect(keyStore.setEncryption).toHaveBeenCalledWith(true, "new-secret");
+        expect(text("#speech-password-modal-error")).toBe(
+            "Password must be at least 8 characters.",
+        );
+        expect(encryptionBox().checked).toBeFalse();
+        expect(
+            fixture.nativeElement.querySelector("#speech-password-modal"),
+        ).not.toBeNull();
+        expect(fixture.nativeElement.querySelector("#speech-error")).toBeNull();
+    });
+
+    it("stores a provider key in cleartext without an operator password", () => {
+        loadKeyStore({
+            encryptKeyStorage: false,
+            credentialRefs: [],
+            mode: "unlocked",
+        });
+        keyStore.putSecret.and.returnValue(
+            of({successful: true, credentialRef: "provider-4"}),
+        );
+        component.drafts = {4: "sk-clear"};
+        component.saveKey(openai);
+        fixture.detectChanges();
+
+        expect(keyStore.putSecret).toHaveBeenCalledWith(4, "", "sk-clear");
+        expect(fixture.nativeElement.querySelector("#speech-error")).toBeNull();
+        expect(text("#speech-notice")).toBe("Key stored for GPT-4o.");
     });
 
     it("shows each provider endpoint next to its key", () => {
