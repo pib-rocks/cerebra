@@ -107,10 +107,10 @@
                 "tools": true,
                 "images": true,
                 "live": false,
-                "stt": false,
-                "tts": false
+            "stt": false,
+            "tts": false
             },
-            "credentialRef": null,
+            "credentialRef": "provider-10",
             "isDefault": true,
             "status": "active"
         }

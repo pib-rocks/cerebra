@@ -14,7 +14,7 @@ const CATALOGUE = [
     {
         apiName: "hermes-agent",
         visualName: "Hermes Agent (selbstlernend)",
-        isDefault: true,
+        isDefault: false,
     },
     {
         apiName: "gemini-3.8-flash",
@@ -30,6 +30,11 @@ const CATALOGUE = [
         apiName: "claude-sonnet-5-5",
         visualName: "Claude Sonnet 5.5",
         isDefault: false,
+    },
+    {
+        apiName: "pib-cloud",
+        visualName: "pib.Cloud",
+        isDefault: true,
     },
 ];
 
@@ -64,7 +69,17 @@ describe("shipped personalities", () => {
         ).toEqual(CATALOGUE);
         expect(models.every((model) => model.retired === false)).toBeTrue();
         const cloud = models.find((model) => model.isDefault);
-        expect(cloud?.apiName).toBe(CLOUD_TOKEN_API_NAME);
+        expect(cloud?.apiName).toBe("pib-cloud");
+        expect(cloud?.credentialRef).toBe("provider-10");
+        expect(
+            models
+                .filter(
+                    (model) =>
+                        model.credentialRef != null &&
+                        model.credentialRef !== "",
+                )
+                .map((model) => model.apiName),
+        ).toEqual(["pib-cloud"]);
     });
 
     it("loads Eva and Tom on pib.Cloud, which is the default route", () => {
@@ -86,7 +101,7 @@ describe("shipped personalities", () => {
             expect(persona.assistantModelId).toBeNull();
             expect(persona.needsNewModel).toBeFalse();
             const model = resolveProvider(persona.providerRef, models);
-            expect(model?.apiName).toBe(CLOUD_TOKEN_API_NAME);
+            expect(model?.apiName).toBe("pib-cloud");
             expect(
                 personalityAttention(
                     persona.providerRef,
@@ -101,7 +116,7 @@ describe("shipped personalities", () => {
                 providersForSelection(models, persona.providerRef, true).map(
                     (offered) => offered.apiName,
                 ),
-            ).toEqual([CLOUD_TOKEN_API_NAME]);
+            ).toEqual([CLOUD_TOKEN_API_NAME, "pib-cloud"]);
         }
     });
 });

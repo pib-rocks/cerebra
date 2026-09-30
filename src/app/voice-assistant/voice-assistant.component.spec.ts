@@ -15,7 +15,6 @@ import {BehaviorSubject, Subject} from "rxjs";
 import {TokenService} from "../shared/services/token.service";
 import {AssistantModel} from "../shared/types/assistantModel";
 import {
-    CLOUD_TOKEN_API_NAME,
     DEFAULT_PROVIDER_REF,
     ProviderCapabilities,
     retiredModelNotice,
@@ -661,14 +660,14 @@ describe("VoiceAssistantComponent", () => {
             "provider-5",
             false,
         );
-        const hermes = new AssistantModel(
+        const cloud = new AssistantModel(
             6,
-            CLOUD_TOKEN_API_NAME,
-            "Hermes Agent (selbstlernend)",
+            "pib-cloud",
+            "pib.Cloud",
             true,
             null,
             flags(false),
-            null,
+            "provider-6",
             true,
         );
         const retired = new AssistantModel(
@@ -686,7 +685,7 @@ describe("VoiceAssistantComponent", () => {
             gemini,
             gpt,
             claude,
-            hermes,
+            cloud,
             retired,
         ]);
         fixture.detectChanges();
@@ -709,7 +708,7 @@ describe("VoiceAssistantComponent", () => {
             "Gemini 3.8 Flash",
             "GPT-6",
             "Claude Sonnet 5.5",
-            "Hermes Agent (selbstlernend)",
+            "pib.Cloud",
         ]);
         expect(selectable).not.toContain(retired.visualName);
         expect(
@@ -813,12 +812,12 @@ describe("VoiceAssistantComponent", () => {
             ),
             new AssistantModel(
                 6,
-                CLOUD_TOKEN_API_NAME,
-                "Hermes Agent (selbstlernend)",
+                "pib-cloud",
+                "pib.Cloud",
                 true,
                 null,
                 flags(false),
-                null,
+                "provider-6",
                 true,
             ),
         ]);
@@ -867,7 +866,7 @@ describe("VoiceAssistantComponent", () => {
                 options
                     .filter((option) => !option.disabled)
                     .map((option) => option.textContent?.trim()),
-            ).toEqual(["Hermes Agent (selbstlernend)"]);
+            ).toEqual(["pib.Cloud"]);
             expect(select.value).toBe(DEFAULT_PROVIDER_REF);
             const selected = options.find(
                 (option) => option.value === select.value,
