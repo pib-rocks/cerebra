@@ -73,6 +73,25 @@ describe("KeyStoreService", () => {
         expect(completed).toBeTrue();
     });
 
+    it("unlocks the store with the operator password and returns no secrets", () => {
+        let body: unknown;
+        service.unlock("operator-secret").subscribe((result) => {
+            body = result;
+        });
+        const req = http.expectOne("/api/system/key-store/unlock");
+        expect(req.request.method).toBe("POST");
+        expect(req.request.body).toEqual({password: "operator-secret"});
+        req.flush({
+            successful: true,
+            credentials: [{credentialRef: "provider-4"}],
+        });
+        expect(body).toEqual({
+            successful: true,
+            credentials: [{credentialRef: "provider-4"}],
+        });
+        expect(JSON.stringify(body)).not.toContain("sk-");
+    });
+
     it("reads the key-store error message", () => {
         const response = new HttpErrorResponse({
             status: 401,

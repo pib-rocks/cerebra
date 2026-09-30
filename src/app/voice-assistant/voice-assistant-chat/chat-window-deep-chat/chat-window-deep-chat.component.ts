@@ -20,6 +20,8 @@ import {
     MISSING_KEY_TURN,
     personalityNeedsAttention,
 } from "src/app/shared/types/provider-registry";
+import {degradedChatReply} from "src/app/system/speech/key-store-session";
+import {KeyStoreSessionService} from "src/app/system/speech/key-store-session.service";
 import "deep-chat";
 
 @Component({
@@ -60,6 +62,7 @@ export class ChatWindowDeepChatComponent
         private readonly voiceAssistantService: VoiceAssistantService,
         private readonly route: ActivatedRoute,
         private readonly tokenService: TokenService,
+        private readonly keyStoreSession: KeyStoreSessionService,
     ) {}
 
     ngOnInit(): void {
@@ -116,6 +119,13 @@ export class ChatWindowDeepChatComponent
             handler: (body: any, signals: any) => {
                 const text = extractText(body);
                 const chatId = this.currentChatId!;
+                if (!this.keyStoreSession.chatsAvailable) {
+                    signals.onResponse({
+                        role: "ai",
+                        text: degradedChatReply(this.personalityName),
+                    });
+                    return;
+                }
                 if (this.personalityKeyMissing()) {
                     signals.onResponse({text: MISSING_KEY_TURN});
                     return;

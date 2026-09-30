@@ -208,6 +208,14 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
         }
     }
 
+    /**
+     * faster-whisper and Supertone do not use the key store.
+     * Degraded mode leaves this control on.
+     */
+    localVoiceEnabled(): boolean {
+        return this.smartConnectActive;
+    }
+
     toggleVoiceAssistant() {
         const turnedOn = !this.voiceAssistantActivationToggle.value;
         const nextState: VoiceAssistantState = {turnedOn, chatId: ""};

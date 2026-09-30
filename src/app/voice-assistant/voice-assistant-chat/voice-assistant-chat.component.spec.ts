@@ -17,6 +17,8 @@ import {VoiceAssistant} from "src/app/shared/types/voice-assistant";
 import {RouterTestingModule} from "@angular/router/testing";
 import {SideBarRightComponent} from "src/app/ui-components/sidebar-right/sidebar-right.component";
 import {TokenService} from "src/app/shared/services/token.service";
+import {DEGRADED_MODE} from "src/app/system/speech/key-store-session";
+import {KeyStoreSessionService} from "src/app/system/speech/key-store-session.service";
 export class MockNgbModalRef {
     componentInstance = {
         prompt: undefined,
@@ -251,5 +253,20 @@ describe("VoiceAssistantChatComponent", () => {
         tokenStatusSubject.next({tokenExists: true, tokenActive: false});
 
         expect(component.smartConnectActive).toBeFalse();
+    });
+
+    it("keeps local voice available in degraded mode", () => {
+        const session = TestBed.inject(KeyStoreSessionService);
+        session.cancel();
+        tokenStatusSubject.next({tokenExists: true, tokenActive: true});
+        fixture.detectChanges();
+
+        const button = fixture.nativeElement.querySelector(
+            "#sidebar-right-toggle-voice-assistant",
+        ) as HTMLButtonElement;
+        expect(session.mode).toBe(DEGRADED_MODE);
+        expect(session.error).toBeNull();
+        expect(component.localVoiceEnabled()).toBeTrue();
+        expect(button.disabled).toBeFalse();
     });
 });

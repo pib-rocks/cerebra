@@ -28,7 +28,7 @@
                                 type="button"
                                 value="{{turnedOn}}"
                                 (click)="toggleVoiceAssistant()"
-                                [disabled]="!smartConnectActive">
+                                [disabled]="!localVoiceEnabled()">
                                 <img
                                     [src]="turnedOn ? '../../assets/toggle-switch-right.png' : '../../assets/toggle-switch-left.png' "
                                     alt="Toggle for turning the Voice Assistant on and off" />

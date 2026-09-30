@@ -14,6 +14,12 @@ import {Chat} from "src/app/shared/types/chat.class";
 import {VoiceAssistant} from "src/app/shared/types/voice-assistant";
 import {AssistantModel} from "src/app/shared/types/assistantModel";
 import {MISSING_KEY_TURN} from "src/app/shared/types/provider-registry";
+import {
+    DEGRADED_MODE,
+    UNLOCKED_MODE,
+    degradedChatReply,
+} from "src/app/system/speech/key-store-session";
+import {KeyStoreSessionService} from "src/app/system/speech/key-store-session.service";
 
 describe("ChatWindowDeepChatComponent", () => {
     let component: ChatWindowDeepChatComponent;
@@ -111,6 +117,9 @@ describe("ChatWindowDeepChatComponent", () => {
         chatService.getMessagesByChatId.and.returnValue(of([]));
         chatService.sendChatMessage.and.returnValue(of(undefined));
         chatService.getChat.and.returnValue(undefined);
+
+        const session = TestBed.inject(KeyStoreSessionService);
+        session.mode = UNLOCKED_MODE;
 
         mockDeepChat = {
             addMessage: jasmine.createSpy("addMessage"),
@@ -450,6 +459,39 @@ describe("ChatWindowDeepChatComponent", () => {
                 text: "Enable SmartConnect to start the Voice-Assistant",
             },
         });
+    });
+
+    it("answers in the personality's voice when the key store is in degraded mode", () => {
+        const session = TestBed.inject(KeyStoreSessionService);
+        session.cancel();
+        const voiceAssistant = TestBed.inject(
+            VoiceAssistantService,
+        ) as jasmine.SpyObj<VoiceAssistantService>;
+        voiceAssistant.getPersonality.and.returnValue(
+            new VoiceAssistant("persona-1", "Ada", "Female", 0.8, "", 4),
+        );
+        chatService.getChat.and.returnValue(
+            new Chat("topic", "persona-1", chatId),
+        );
+        paramsSubject.next({chatUuid: chatId});
+
+        const signals = {onResponse: jasmine.createSpy("onResponse")};
+        mockDeepChat.connect!.handler(
+            {messages: [{role: "user", text: "hello there"}]},
+            signals,
+        );
+
+        expect(session.mode).toBe(DEGRADED_MODE);
+        expect(session.error).toBeNull();
+        expect(chatService.sendChatMessage).not.toHaveBeenCalled();
+        expect(signals.onResponse).toHaveBeenCalledOnceWith({
+            role: "ai",
+            text: degradedChatReply("Ada"),
+        });
+        expect(degradedChatReply("Ada")).toContain("I'm Ada.");
+        expect(degradedChatReply("Ada")).toContain("Smart chat");
+        expect(degradedChatReply("Ada")).toContain("Direct chat");
+        expect(degradedChatReply("Ada")).toContain("provider keys");
     });
 
     it("marks a personality whose key was deleted instead of sending the turn", () => {

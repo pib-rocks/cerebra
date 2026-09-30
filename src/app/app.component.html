@@ -1,4 +1,7 @@
-<div class="wrapper">
+<div
+    class="wrapper"
+    [class.display-path]="onDisplayPath">
+    @if (!onDisplayPath) {
     <div class="sidebar-wrapper">
         <aside
             class="main-sidebar elevation-4 sidebar justify-content-between d-flex flex-column">
@@ -189,6 +192,7 @@
             </div>
         </aside>
     </div>
+    }
     <div class="content-wrapper">
         <div class="container-fluid">
             <div class="d-flex flex-row">
@@ -205,4 +209,21 @@
             </div>
         </div>
     </div>
+    @if (showStartupPassword()) {
+    <div
+        id="startup-password-modal"
+        class="modal d-block"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="startup-password-title">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content cerebra-modal">
+                <app-startup-password></app-startup-password>
+            </div>
+        </div>
+    </div>
+    <div
+        id="startup-password-backdrop"
+        class="modal-backdrop fade show cerebra-modal-backdrop"></div>
+    }
 </div>

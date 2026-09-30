@@ -15,6 +15,16 @@ export interface KeyStoreWriteResult {
     error?: string;
 }
 
+export interface KeyStoreCredential {
+    credentialRef: string;
+}
+
+export interface KeyStoreUnlockResult {
+    successful: boolean;
+    credentials: KeyStoreCredential[];
+    error?: string;
+}
+
 @Injectable({
     providedIn: "root",
 })
@@ -26,6 +36,12 @@ export class KeyStoreService {
 
     status(): Observable<KeyStoreStatus> {
         return this.apiService.get(UrlConstants.KEY_STORE);
+    }
+
+    unlock(password: string): Observable<KeyStoreUnlockResult> {
+        return this.apiService.post(`${UrlConstants.KEY_STORE}/unlock`, {
+            password,
+        });
     }
 
     putSecret(
