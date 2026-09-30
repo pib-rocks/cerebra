@@ -11,7 +11,13 @@ import {usesCloudToken} from "src/app/shared/types/provider-registry";
 import {TokenService} from "src/app/shared/services/token.service";
 import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
 import {RosService} from "src/app/shared/services/ros-service/ros.service";
-import {KeyStoreService, keyStoreErrorMessage} from "./key-store.service";
+import {KeyStoreSessionService} from "./key-store-session.service";
+import {
+    KeyStoreEncryptionResult,
+    KeyStoreService,
+    KeyStoreStatus,
+    keyStoreErrorMessage,
+} from "./key-store.service";
 
 @Component({
     selector: "app-speech",
@@ -23,6 +29,7 @@ export class SpeechComponent implements OnInit {
     private readonly destroyRef = inject(DestroyRef);
 
     encryptKeyStorage = true;
+    credentialRefs: string[] = [];
     cloudTokenStored = false;
     cloudTokenActive = false;
     cloudProvider: AssistantModel | null = null;
@@ -38,6 +45,7 @@ export class SpeechComponent implements OnInit {
 
     constructor(
         private readonly keyStore: KeyStoreService,
+        private readonly session: KeyStoreSessionService,
         private readonly tokenService: TokenService,
         private readonly voiceAssistantService: VoiceAssistantService,
         private readonly rosService: RosService,
@@ -61,6 +69,13 @@ export class SpeechComponent implements OnInit {
             });
         this.voiceAssistantService.getAllAssistantModels();
         this.loadStatus();
+    }
+
+    keyStorageHint(): string {
+        if (this.encryptKeyStorage) {
+            return "Provider keys are encrypted. The operator password is asked at robot start.";
+        }
+        return "Provider keys are stored in cleartext on the robot. No operator password is asked at robot start.";
     }
 
     endpointText(model: AssistantModel | null): string {
@@ -168,6 +183,20 @@ export class SpeechComponent implements OnInit {
         this.error = null;
     }
 
+    onEncryptionToggle(event: Event): void {
+        const input = event.target as HTMLInputElement;
+        const enabled = input.checked;
+        input.checked = this.encryptKeyStorage;
+        if (enabled === this.encryptKeyStorage || this.busy) {
+            return;
+        }
+        if (enabled) {
+            this.turnEncryptionOn();
+            return;
+        }
+        this.turnEncryptionOff();
+    }
+
     togglePasswordChange(): void {
         this.changingPassword = !this.changingPassword;
         this.newPassword = "";
@@ -201,18 +230,104 @@ export class SpeechComponent implements OnInit {
             });
     }
 
+    private turnEncryptionOff(): void {
+        if (this.credentialRefs.length > 0 && this.password === "") {
+            this.error = "Enter the operator password.";
+            this.notice = null;
+            return;
+        }
+        this.postEncryption(false, this.password);
+    }
+
+    private turnEncryptionOn(): void {
+        const mismatch = this.encryptionPasswordError();
+        if (mismatch != null) {
+            this.changingPassword = true;
+            this.error = mismatch;
+            this.notice = null;
+            return;
+        }
+        this.postEncryption(true, this.newPassword);
+    }
+
+    private encryptionPasswordError(): string | null {
+        if (this.newPassword === "" && this.confirmPassword === "") {
+            return "Enter the new password twice.";
+        }
+        if (this.newPassword !== this.confirmPassword) {
+            return "Enter the new password twice. The two entries do not match.";
+        }
+        return null;
+    }
+
+    private postEncryption(enabled: boolean, password: string): void {
+        this.busy = true;
+        this.error = null;
+        this.notice = null;
+        this.keyStore
+            .setEncryption(enabled, password)
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe({
+                next: (result) => {
+                    if (result?.successful === false) {
+                        this.encryptionRefused(
+                            result.error != null && result.error !== ""
+                                ? result.error
+                                : "Key store request failed.",
+                        );
+                        return;
+                    }
+                    if (enabled) {
+                        this.password = this.newPassword;
+                        this.newPassword = "";
+                        this.confirmPassword = "";
+                        this.changingPassword = false;
+                    }
+                    this.encryptionApplied(enabled, result);
+                },
+                error: (err: unknown) => this.encryptionRefused(err),
+            });
+    }
+
+    private encryptionApplied(
+        enabled: boolean,
+        result: KeyStoreEncryptionResult,
+    ): void {
+        this.busy = false;
+        this.encryptKeyStorage = enabled;
+        this.error = null;
+        this.notice = enabled
+            ? "Key storage is encrypted."
+            : "Provider keys are stored in cleartext on the robot.";
+        this.session.noteStatus({
+            encryptKeyStorage: enabled,
+            mode: result?.mode,
+        });
+        this.loadStatus();
+    }
+
+    private encryptionRefused(err: unknown): void {
+        this.busy = false;
+        this.notice = null;
+        this.error = typeof err === "string" ? err : keyStoreErrorMessage(err);
+    }
+
     private loadStatus(): void {
         this.keyStore
             .status()
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({
-                next: (status) => {
-                    this.encryptKeyStorage = status.encryptKeyStorage;
-                },
+                next: (status) => this.applyStatus(status),
                 error: () => {
                     this.encryptKeyStorage = true;
                     this.error = "Key store status could not be loaded.";
                 },
             });
+    }
+
+    private applyStatus(status: KeyStoreStatus): void {
+        this.encryptKeyStorage = status.encryptKeyStorage;
+        this.credentialRefs = status.credentialRefs ?? [];
+        this.session.noteStatus(status);
     }
 }
