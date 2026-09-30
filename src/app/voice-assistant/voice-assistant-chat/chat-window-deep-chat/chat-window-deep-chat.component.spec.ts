@@ -10,6 +10,10 @@ import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.ser
 import {ChatMessage} from "src/app/shared/types/chat-message";
 import {toDeepChat} from "src/app/shared/util/deep-chat-mapper";
 import {ChatWindowDeepChatComponent} from "./chat-window-deep-chat.component";
+import {Chat} from "src/app/shared/types/chat.class";
+import {VoiceAssistant} from "src/app/shared/types/voice-assistant";
+import {AssistantModel} from "src/app/shared/types/assistantModel";
+import {MISSING_KEY_TURN} from "src/app/shared/types/provider-registry";
 
 describe("ChatWindowDeepChatComponent", () => {
     let component: ChatWindowDeepChatComponent;
@@ -445,6 +449,47 @@ describe("ChatWindowDeepChatComponent", () => {
             placeholder: {
                 text: "Enable SmartConnect to start the Voice-Assistant",
             },
+        });
+    });
+
+    it("marks a personality whose key was deleted instead of sending the turn", () => {
+        const voiceAssistant = TestBed.inject(
+            VoiceAssistantService,
+        ) as jasmine.SpyObj<VoiceAssistantService>;
+        const model = new AssistantModel(
+            4,
+            "gpt-4o",
+            "GPT-4o",
+            true,
+            "https://api.openai.example/v1",
+            {
+                tools: true,
+                images: true,
+                live: false,
+                stt: false,
+                tts: false,
+            },
+            null,
+            false,
+        );
+        voiceAssistant.assistantModelsSubject = new BehaviorSubject([model]);
+        voiceAssistant.getPersonality.and.returnValue(
+            new VoiceAssistant("persona-1", "Ada", "Female", 0.8, "", 4),
+        );
+        chatService.getChat.and.returnValue(
+            new Chat("topic", "persona-1", chatId),
+        );
+        paramsSubject.next({chatUuid: chatId});
+
+        const signals = {onResponse: jasmine.createSpy("onResponse")};
+        mockDeepChat.connect!.handler(
+            {messages: [{role: "user", text: "hello there"}]},
+            signals,
+        );
+
+        expect(chatService.sendChatMessage).not.toHaveBeenCalled();
+        expect(signals.onResponse).toHaveBeenCalledOnceWith({
+            text: MISSING_KEY_TURN,
         });
     });
 

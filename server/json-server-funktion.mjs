@@ -631,6 +631,133 @@ server.put("/button-programs", (req, res, next) => {
     return res.status(200).send({buttonPrograms: updatedButtonPrograms});
 });
 
+const KEY_STORE_WRONG_PASSWORD = "Wrong password. No keys are available.";
+const KEY_STORE_PASSWORD_MISMATCH =
+    "Enter the new password twice. The two entries do not match.";
+const KEY_STORE_PASSWORD_SHORT = "Password must be at least 8 characters.";
+const KEY_STORE_MISSING = "No encrypted key store exists yet.";
+const KEY_STORE_MIN_PASSWORD = 8;
+
+let keyStorePassword = null;
+const keyStoreSecrets = new Map();
+
+function keyStoreFailure(res, status, error) {
+    return res.status(status).send({
+        successful: false,
+        credentials: [],
+        error,
+    });
+}
+
+function keyStoreModel(providerId) {
+    return mockData.assistantModel.find((model) => model.id == providerId);
+}
+
+server.get("/system/key-store", (req, res) => {
+    const credentialRefs = mockData.assistantModel
+        .map((model) => model.credentialRef)
+        .filter((ref) => ref != null && ref !== "");
+    return res.status(200).send({
+        encryptKeyStorage: true,
+        credentialRefs,
+    });
+});
+
+server.post("/system/key-store/unlock", (req, res) => {
+    const password = req.body?.password;
+    if (typeof password !== "string" || password === "") {
+        return keyStoreFailure(res, 400, "Bad request.");
+    }
+    if (keyStorePassword == null) {
+        return res.status(200).send({successful: true, credentials: []});
+    }
+    if (password !== keyStorePassword) {
+        return keyStoreFailure(res, 401, KEY_STORE_WRONG_PASSWORD);
+    }
+    return res.status(200).send({
+        successful: true,
+        credentials: [...keyStoreSecrets.keys()]
+            .sort()
+            .map((credentialRef) => ({credentialRef})),
+    });
+});
+
+server.post("/system/key-store/password", (req, res) => {
+    const oldPassword = req.body?.oldPassword;
+    const newPassword = req.body?.newPassword;
+    const confirmPassword = req.body?.confirmPassword;
+    if (
+        typeof oldPassword !== "string" ||
+        typeof newPassword !== "string" ||
+        typeof confirmPassword !== "string" ||
+        oldPassword === "" ||
+        newPassword === "" ||
+        confirmPassword === ""
+    ) {
+        return keyStoreFailure(res, 400, "Bad request.");
+    }
+    if (keyStorePassword == null) {
+        return keyStoreFailure(res, 404, KEY_STORE_MISSING);
+    }
+    if (oldPassword !== keyStorePassword) {
+        return keyStoreFailure(res, 401, KEY_STORE_WRONG_PASSWORD);
+    }
+    if (newPassword !== confirmPassword) {
+        return keyStoreFailure(res, 400, KEY_STORE_PASSWORD_MISMATCH);
+    }
+    if (newPassword.length < KEY_STORE_MIN_PASSWORD) {
+        return keyStoreFailure(res, 400, KEY_STORE_PASSWORD_SHORT);
+    }
+    keyStorePassword = newPassword;
+    return res.status(200).send({successful: true});
+});
+
+server.put("/system/key-store/:providerId", (req, res) => {
+    const password = req.body?.password;
+    const secret = req.body?.secret;
+    if (typeof password !== "string" || typeof secret !== "string") {
+        return keyStoreFailure(res, 400, "Bad request.");
+    }
+    const model = keyStoreModel(req.params.providerId);
+    if (model == undefined) {
+        return keyStoreFailure(res, 404, "Provider not found.");
+    }
+    if (secret.trim() === "") {
+        return keyStoreFailure(res, 400, "A provider secret is required.");
+    }
+    if (keyStorePassword == null) {
+        if (password.length < KEY_STORE_MIN_PASSWORD) {
+            return keyStoreFailure(res, 400, KEY_STORE_PASSWORD_SHORT);
+        }
+        keyStorePassword = password;
+    } else if (password !== keyStorePassword) {
+        return keyStoreFailure(res, 401, KEY_STORE_WRONG_PASSWORD);
+    }
+    const credentialRef = `provider-${model.id}`;
+    keyStoreSecrets.set(credentialRef, secret);
+    model.credentialRef = credentialRef;
+    return res.status(200).send({successful: true, credentialRef});
+});
+
+server.delete("/system/key-store/:providerId", (req, res) => {
+    const password = req.body?.password;
+    if (typeof password !== "string" || password === "") {
+        return keyStoreFailure(res, 400, "Bad request.");
+    }
+    const model = keyStoreModel(req.params.providerId);
+    if (model == undefined) {
+        return keyStoreFailure(res, 404, "Provider not found.");
+    }
+    if (keyStorePassword != null && password !== keyStorePassword) {
+        return keyStoreFailure(res, 401, KEY_STORE_WRONG_PASSWORD);
+    }
+    if (model.credentialRef) {
+        keyStoreSecrets.delete(model.credentialRef);
+    }
+    model.credentialRef = null;
+    return res.status(204).send();
+});
+
 server.use(router);
 
 const port = 5000;

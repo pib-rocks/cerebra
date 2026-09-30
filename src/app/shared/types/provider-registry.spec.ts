@@ -1,6 +1,9 @@
 import {
+    CLOUD_TOKEN_API_NAME,
     DEFAULT_PROVIDER_REF,
     isCapabilityControlDisabled,
+    isProviderConfigured,
+    personalityNeedsAttention,
     providerOptionValue,
     providerRefFromSelection,
     providersForSelection,
@@ -12,11 +15,13 @@ function row(
     images: boolean,
     isDefault: boolean,
     apiName = "shared-api",
+    credentialRef: string | null = `provider-${id}`,
 ): ProviderSelectionRow & {apiName: string} {
     return {
         id,
         apiName,
         isDefault,
+        credentialRef,
         capabilities: {
             tools: true,
             images,
@@ -89,5 +94,51 @@ describe("provider registry selection", () => {
         expect(providerOptionValue(fallback, String(fallback.id))).toBe(
             String(fallback.id),
         );
+    });
+
+    it("offers a provider only while its key is stored", () => {
+        const keyed = row(4, true, false, "openai");
+        const missing = row(5, true, false, "gemini", null);
+        expect(
+            providersForSelection([keyed, missing], null).map(
+                (model) => model.id,
+            ),
+        ).toEqual([keyed.id]);
+        expect(
+            providersForSelection([keyed, missing], String(missing.id)).map(
+                (model) => model.id,
+            ),
+        ).toEqual([keyed.id, missing.id]);
+    });
+
+    it("treats the cloud row as the SmartConnect token, not a pasted key", () => {
+        const cloud = row(6, true, true, CLOUD_TOKEN_API_NAME, null);
+        expect(isProviderConfigured(cloud, false)).toBeFalse();
+        expect(isProviderConfigured(cloud, true)).toBeTrue();
+        cloud.credentialRef = "provider-6";
+        expect(isProviderConfigured(cloud, false)).toBeFalse();
+        expect(
+            providersForSelection([cloud], null, true).map((m) => m.id),
+        ).toEqual([cloud.id]);
+        expect(providersForSelection([cloud], null, false)).toEqual([]);
+    });
+
+    it("marks a personality when its provider key is deleted and clears the mark when the key returns", () => {
+        const model = row(7, true, false, "mistral");
+        expect(
+            personalityNeedsAttention(String(model.id), [model], false),
+        ).toBeFalse();
+        model.credentialRef = null;
+        expect(
+            personalityNeedsAttention(String(model.id), [model], false),
+        ).toBeTrue();
+        expect(providersForSelection([model], null)).toEqual([]);
+        model.credentialRef = "provider-7";
+        expect(
+            personalityNeedsAttention(String(model.id), [model], false),
+        ).toBeFalse();
+        expect(providersForSelection([model], null).map((m) => m.id)).toEqual([
+            model.id,
+        ]);
     });
 });

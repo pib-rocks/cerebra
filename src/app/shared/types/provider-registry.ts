@@ -5,6 +5,17 @@
  */
 export const DEFAULT_PROVIDER_REF = "default";
 
+/**
+ * Registry row whose credential is the SmartConnect token. The Speech tab
+ * shows that token as pib.Cloud and does not ask for a second key.
+ */
+export const CLOUD_TOKEN_API_NAME = "hermes-agent";
+
+export const MISSING_KEY_MARK = "Needs a key";
+
+export const MISSING_KEY_TURN =
+    "This personality needs a provider key. It is marked until a key is stored in the Speech tab.";
+
 export interface ProviderCapabilities {
     tools: boolean;
     images: boolean;
@@ -16,7 +27,9 @@ export interface ProviderCapabilities {
 export interface ProviderSelectionRow {
     id: number;
     isDefault: boolean;
+    apiName?: string;
     capabilities?: Partial<ProviderCapabilities> | null;
+    credentialRef?: string | null;
 }
 
 export function capabilitiesFrom(
@@ -40,24 +53,97 @@ export function hasImagesCapability(model: ProviderSelectionRow): boolean {
     return model.capabilities?.images === true;
 }
 
+export function usesCloudToken(model: ProviderSelectionRow): boolean {
+    return model.apiName === CLOUD_TOKEN_API_NAME;
+}
+
+/** A pasted key, or the SmartConnect token for the pib.Cloud row. */
+export function isProviderConfigured(
+    model: ProviderSelectionRow,
+    cloudTokenStored: boolean,
+): boolean {
+    if (usesCloudToken(model)) {
+        return cloudTokenStored;
+    }
+    return model.credentialRef != null && model.credentialRef !== "";
+}
+
+export function isProviderOptionDisabled(
+    model: ProviderSelectionRow,
+    cloudTokenStored: boolean,
+): boolean {
+    return (
+        isCapabilityControlDisabled(model, "images") ||
+        !isProviderConfigured(model, cloudTokenStored)
+    );
+}
+
+export function resolveProvider<T extends ProviderSelectionRow>(
+    providerRef: string | null | undefined,
+    models: T[],
+): T | null {
+    if (
+        providerRef == null ||
+        providerRef === "" ||
+        providerRef === DEFAULT_PROVIDER_REF
+    ) {
+        return models.find((model) => model.isDefault) ?? null;
+    }
+    return models.find((model) => String(model.id) === providerRef) ?? null;
+}
+
+/**
+ * True when the personality still points at a provider whose key is gone.
+ * An empty model list means the registry has not loaded, so nothing is marked.
+ */
+export function personalityNeedsAttention(
+    providerRef: string | null | undefined,
+    models: ProviderSelectionRow[],
+    cloudTokenStored: boolean,
+): boolean {
+    if (models.length === 0) {
+        return false;
+    }
+    const model = resolveProvider(providerRef, models);
+    if (model == null) {
+        return true;
+    }
+    return !isProviderConfigured(model, cloudTokenStored);
+}
+
 /**
  * Rows a personality may be pointed at. A row without the images capability
- * is not offered. The current reference is kept, disabled, so an existing id
- * is not dropped when the form is saved.
+ * is not offered, and neither is a row with no stored key. The current
+ * reference is kept so an existing id is not dropped when the form is saved.
  */
 export function providersForSelection<T extends ProviderSelectionRow>(
     models: T[],
     storedRef: string | null,
+    cloudTokenStored = false,
 ): T[] {
-    const offered = models.filter((model) => hasImagesCapability(model));
-    if (storedRef == null || storedRef === DEFAULT_PROVIDER_REF) {
-        return offered;
-    }
-    const current = models.find((model) => String(model.id) === storedRef);
-    if (current != null && !hasImagesCapability(current)) {
+    const offered = models.filter(
+        (model) =>
+            hasImagesCapability(model) &&
+            isProviderConfigured(model, cloudTokenStored),
+    );
+    const current = currentSelection(models, storedRef);
+    if (current != null && !offered.includes(current)) {
         return offered.concat([current]);
     }
     return offered;
+}
+
+function currentSelection<T extends ProviderSelectionRow>(
+    models: T[],
+    storedRef: string | null,
+): T | null {
+    if (storedRef == null) {
+        return null;
+    }
+    if (storedRef === DEFAULT_PROVIDER_REF) {
+        return models.find((model) => model.isDefault) ?? null;
+    }
+    return models.find((model) => String(model.id) === storedRef) ?? null;
 }
 
 export function providerOptionValue(

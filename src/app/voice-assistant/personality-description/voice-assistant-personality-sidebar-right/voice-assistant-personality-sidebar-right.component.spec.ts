@@ -16,6 +16,7 @@ import {
 import {VoiceAssistant} from "src/app/shared/types/voice-assistant";
 import {VoiceAssistantService} from "../../../shared/services/voice-assistant.service";
 import {AssistantModel} from "src/app/shared/types/assistantModel";
+import {TokenService} from "src/app/shared/services/token.service";
 
 describe("VoiceAssistantPersonalitySidebarRightComponent", () => {
     let component: VoiceAssistantPersonalitySidebarRightComponent;
@@ -62,6 +63,15 @@ describe("VoiceAssistantPersonalitySidebarRightComponent", () => {
                 {
                     provide: VoiceAssistantService,
                     useValue: voiceAssistantServiceSpy,
+                },
+                {
+                    provide: TokenService,
+                    useValue: {
+                        tokenStatus$: new BehaviorSubject({
+                            tokenExists: true,
+                            tokenActive: true,
+                        }),
+                    },
                 },
             ],
         }).compileComponents();

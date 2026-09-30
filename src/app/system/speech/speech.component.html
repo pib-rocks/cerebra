@@ -1,0 +1,158 @@
+<div class="speech-tab">
+    <div class="form-headline mb-3">Speech</div>
+
+    <div class="speech-row">
+        <input
+            id="encrypt-key-storage"
+            type="checkbox"
+            [checked]="encryptKeyStorage"
+            disabled />
+        <label for="encrypt-key-storage">
+            Encrypt Key Storage (requires password at robot start)
+        </label>
+    </div>
+    <p class="speech-hint">
+        The key store keeps encryption on. There is no control to turn it off.
+    </p>
+
+    @if (error) {
+    <div
+        class="alert alert-danger"
+        id="speech-error">
+        {{ error }}
+    </div>
+    } @if (notice) {
+    <div
+        class="alert alert-success"
+        id="speech-notice">
+        {{ notice }}
+    </div>
+    }
+
+    <div class="speech-password">
+        <div class="speech-card-title">Operator password</div>
+        <label
+            class="speech-label"
+            for="speech-operator-password">
+            One password for every provider key
+        </label>
+        <input
+            id="speech-operator-password"
+            type="password"
+            autocomplete="current-password"
+            [value]="password"
+            (input)="onPasswordInput($event)" />
+        <button
+            id="speech-change-password"
+            type="button"
+            class="btn btn-outline-light"
+            (click)="togglePasswordChange()">
+            Change
+        </button>
+        @if (changingPassword) {
+        <div class="speech-password-change">
+            <label
+                class="speech-label"
+                for="speech-new-password">
+                New password
+            </label>
+            <input
+                id="speech-new-password"
+                type="password"
+                autocomplete="new-password"
+                [value]="newPassword"
+                (input)="onNewPasswordInput($event)" />
+            <label
+                class="speech-label"
+                for="speech-confirm-password">
+                Confirm password
+            </label>
+            <input
+                id="speech-confirm-password"
+                type="password"
+                autocomplete="new-password"
+                [value]="confirmPassword"
+                (input)="onConfirmPasswordInput($event)" />
+            <button
+                id="speech-save-password"
+                type="button"
+                class="btn btn-outline-light"
+                [disabled]="busy"
+                (click)="changePassword()">
+                Save password
+            </button>
+        </div>
+        }
+    </div>
+
+    <div
+        class="speech-card"
+        id="speech-cloud-entry">
+        <div class="speech-card-title">pib.Cloud</div>
+        <p class="speech-hint">
+            This is the SmartConnect token, not a key to type in here.
+        </p>
+        <div class="speech-pair">
+            <span class="speech-label">Endpoint</span>
+            <span id="speech-cloud-endpoint"
+                >{{ endpointText(cloudProvider) }}</span
+            >
+        </div>
+        <p id="speech-cloud-status">{{ cloudStatus() }}</p>
+        <p class="speech-hint">Re-enter the token in SmartConnect.</p>
+        <button
+            id="speech-cloud-delete"
+            type="button"
+            class="btn btn-outline-light"
+            [disabled]="!cloudTokenStored"
+            (click)="deleteCloudToken()">
+            Delete token
+        </button>
+    </div>
+
+    @for (model of providers; track model.id) {
+    <div
+        class="speech-card"
+        [id]="'speech-provider-' + model.id">
+        <div class="speech-card-title">{{ model.visualName }}</div>
+        <div class="speech-pair">
+            <span class="speech-label">Endpoint</span>
+            <span [id]="'speech-provider-endpoint-' + model.id">
+                {{ endpointText(model) }}
+            </span>
+        </div>
+        <div class="speech-pair">
+            <label
+                class="speech-label"
+                [for]="'speech-provider-key-' + model.id">
+                Key
+            </label>
+            <input
+                [id]="'speech-provider-key-' + model.id"
+                type="password"
+                autocomplete="off"
+                [value]="drafts[model.id] ?? ''"
+                (input)="onDraft(model.id, $event)" />
+        </div>
+        <p [id]="'speech-provider-state-' + model.id">
+            {{ model.credentialRef ? "Key stored" : "No key" }}
+        </p>
+        <button
+            type="button"
+            class="btn btn-outline-light"
+            [id]="'speech-provider-save-' + model.id"
+            [disabled]="busy"
+            (click)="saveKey(model)">
+            Save key
+        </button>
+        <button
+            type="button"
+            class="btn btn-outline-light"
+            [id]="'speech-provider-delete-' + model.id"
+            [disabled]="busy || !model.credentialRef"
+            (click)="deleteKey(model)">
+            Delete key
+        </button>
+    </div>
+    }
+</div>

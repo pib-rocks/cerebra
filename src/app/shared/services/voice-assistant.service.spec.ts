@@ -229,6 +229,21 @@ describe("VoiceAssistantService", () => {
         expect(parsed[0].apiName).toBe(parsed[1].apiName);
     });
 
+    it("publishes a credential change on the model list immediately", () => {
+        service.assistantModelsSubject.next(models.assistantModels);
+        service.setProviderCredential(2, null);
+        expect(
+            service.assistantModelsSubject.getValue()[1].credentialRef,
+        ).toBeNull();
+        service.setProviderCredential(2, "provider-2");
+        expect(service.assistantModelsSubject.getValue()[1].credentialRef).toBe(
+            "provider-2",
+        );
+        expect(
+            service.assistantModelsSubject.getValue()[0].credentialRef,
+        ).toBeNull();
+    });
+
     it("sends the default provider pointer when a personality has no model id", () => {
         apiService.post.and.returnValue(observableOfKlaus);
         service.createPersonality(klaus);

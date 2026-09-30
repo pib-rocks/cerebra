@@ -16,6 +16,7 @@ import {VoiceAssistantPersonalitySidebarRightComponent} from "./voice-assistant-
 import {VoiceAssistantNavComponent} from "../voice-assistant-nav/voice-assistant-nav.component";
 import {MarkdownModule} from "ngx-markdown";
 import {AssistantModel} from "src/app/shared/types/assistantModel";
+import {TokenService} from "src/app/shared/services/token.service";
 
 describe("PersonalityDescriptionComponent", () => {
     let component: PersonalityDescriptionComponent;
@@ -79,6 +80,15 @@ describe("PersonalityDescriptionComponent", () => {
                 {
                     provide: VoiceAssistantService,
                     useValue: voiceAssistantServiceSpy,
+                },
+                {
+                    provide: TokenService,
+                    useValue: {
+                        tokenStatus$: new BehaviorSubject({
+                            tokenExists: true,
+                            tokenActive: true,
+                        }),
+                    },
                 },
                 {
                     provide: Router,

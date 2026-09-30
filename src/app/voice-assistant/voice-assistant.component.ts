@@ -23,11 +23,15 @@ import {VoiceAssistant} from "../shared/types/voice-assistant";
 import {AssistantModel} from "../shared/types/assistantModel";
 import {
     DEFAULT_PROVIDER_REF,
-    isCapabilityControlDisabled,
+    MISSING_KEY_MARK,
+    isProviderConfigured,
+    isProviderOptionDisabled,
+    personalityNeedsAttention,
     providerOptionValue as providerOptionValueFor,
     providerRefFromSelection,
     providersForSelection,
 } from "../shared/types/provider-registry";
+import {TokenService} from "../shared/services/token.service";
 import {VoiceAssistantNavComponent} from "./voice-assistant-nav/voice-assistant-nav.component";
 import {RouterOutlet} from "@angular/router";
 import {NgClass} from "@angular/common";
@@ -59,7 +63,10 @@ export class VoiceAssistantComponent implements OnInit {
     models: AssistantModel[] = [];
     selectionModels: AssistantModel[] = [];
     storedProviderRef: string | null = null;
-    readonly isCapabilityControlDisabled = isCapabilityControlDisabled;
+    cloudTokenStored = false;
+    readonly missingKeyMark = MISSING_KEY_MARK;
+    readonly isProviderConfigured = isProviderConfigured;
+    readonly isProviderOptionDisabled = isProviderOptionDisabled;
     button: {enabled: boolean; func: () => void} = {
         enabled: true,
         func: () => {
@@ -70,6 +77,7 @@ export class VoiceAssistantComponent implements OnInit {
     constructor(
         private voiceAssistantService: VoiceAssistantService,
         private modalService: NgbModal,
+        private tokenService: TokenService,
     ) {}
 
     voiceAssistantActivationToggle = new FormControl(false);
@@ -80,6 +88,12 @@ export class VoiceAssistantComponent implements OnInit {
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe((models) => {
                 this.models = models;
+                this.rebuildSelection();
+            });
+        this.tokenService.tokenStatus$
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe((status) => {
+                this.cloudTokenStored = status.tokenExists;
                 this.rebuildSelection();
             });
         this.button.enabled = true;
@@ -284,10 +298,24 @@ export class VoiceAssistantComponent implements OnInit {
         return providerOptionValueFor(model, this.storedProviderRef);
     }
 
+    needsAttention = (personalityId: string): boolean => {
+        const personality =
+            this.voiceAssistantService.getPersonality(personalityId);
+        if (personality == null) {
+            return false;
+        }
+        return personalityNeedsAttention(
+            personality.providerRef,
+            this.models,
+            this.cloudTokenStored,
+        );
+    };
+
     private rebuildSelection() {
         this.selectionModels = providersForSelection(
             this.models,
             this.storedProviderRef,
+            this.cloudTokenStored,
         );
     }
 }

@@ -36,12 +36,16 @@
                     <option
                         [value]="providerOptionValue(model)"
                         [disabled]="
-                            isCapabilityControlDisabled(model, 'images')
+                            isProviderOptionDisabled(model, cloudTokenStored)
                         ">
-                        {{ model.visualName }}
+                        {{ model.visualName }} @if (!isProviderConfigured(model,
+                        cloudTokenStored)) { ({{ missingKeyMark }}) }
                     </option>
                     }
                 </select>
+                @if (needsKey) {
+                <p id="personality-key-missing">{{ missingKeyMark }}</p>
+                }
             </div>
         </div>
         <div class="row pl-1 mt-sm-3 mt-xl-4">

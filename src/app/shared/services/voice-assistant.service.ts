@@ -124,6 +124,25 @@ export class VoiceAssistantService implements SidebarService {
             });
     }
 
+    setProviderCredential(providerId: number, credentialRef: string | null) {
+        const next = this.assistantModelsSubject.getValue().map((model) => {
+            if (model.id !== providerId) {
+                return model;
+            }
+            return new AssistantModel(
+                model.id,
+                model.apiName,
+                model.visualName,
+                model.hasImageSupport,
+                model.endpointBase,
+                model.capabilities,
+                credentialRef,
+                model.isDefault,
+            );
+        });
+        this.assistantModelsSubject.next(next);
+    }
+
     getAllAssistantModels() {
         this.apiService
             .get(UrlConstants.ASSISTANT_MODEL)

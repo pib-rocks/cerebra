@@ -16,6 +16,10 @@ import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.ser
 import {ChatMessage} from "src/app/shared/types/chat-message";
 import {Chat} from "src/app/shared/types/chat.class";
 import {extractText, toDeepChat} from "src/app/shared/util/deep-chat-mapper";
+import {
+    MISSING_KEY_TURN,
+    personalityNeedsAttention,
+} from "src/app/shared/types/provider-registry";
 import "deep-chat";
 
 @Component({
@@ -35,6 +39,7 @@ export class ChatWindowDeepChatComponent
     currentChatId: string | undefined;
     personalityName: string | undefined;
 
+    private cloudTokenStored = true;
     private pendingSignals?: {onResponse: (response: unknown) => void};
     private lastStreamedMessageId: string | undefined;
     /** Timestamp of the latest user submit, used to measure TTFT. */
@@ -111,6 +116,10 @@ export class ChatWindowDeepChatComponent
             handler: (body: any, signals: any) => {
                 const text = extractText(body);
                 const chatId = this.currentChatId!;
+                if (this.personalityKeyMissing()) {
+                    signals.onResponse({text: MISSING_KEY_TURN});
+                    return;
+                }
                 this.submitClickMs = performance.now();
                 console.log(
                     `[PERF_TRACE_UI] SUBMIT_CLICK chatId=${chatId} t=${this.submitClickMs.toFixed(
@@ -150,6 +159,7 @@ export class ChatWindowDeepChatComponent
         this.tokenStatusSubscription?.unsubscribe();
         this.tokenStatusSubscription = this.tokenService.tokenStatus$.subscribe(
             ({tokenExists, tokenActive}) => {
+                this.cloudTokenStored = tokenExists;
                 const enabled = tokenExists && tokenActive;
                 el.textInput = {
                     disabled: !enabled,
@@ -163,6 +173,25 @@ export class ChatWindowDeepChatComponent
                     el.disableSubmitButton(!enabled);
                 }
             },
+        );
+    }
+
+    private personalityKeyMissing(): boolean {
+        const personalityId = this.chat?.personalityId;
+        if (personalityId == null) {
+            return false;
+        }
+        const personality =
+            this.voiceAssistantService.getPersonality(personalityId);
+        if (personality == null) {
+            return false;
+        }
+        const models =
+            this.voiceAssistantService.assistantModelsSubject?.getValue() ?? [];
+        return personalityNeedsAttention(
+            personality.providerRef,
+            models,
+            this.cloudTokenStored,
         );
     }
 

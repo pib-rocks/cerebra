@@ -73,6 +73,13 @@ const routes: Routes = [
                         "./system/microphone-array/microphone-array.component"
                     ).then((m) => m.MicrophoneArrayComponent),
             },
+            {
+                path: "speech",
+                loadComponent: () =>
+                    import("./system/speech/speech.component").then(
+                        (m) => m.SpeechComponent,
+                    ),
+            },
             {path: "", redirectTo: "diagnostics", pathMatch: "full"},
         ],
     },

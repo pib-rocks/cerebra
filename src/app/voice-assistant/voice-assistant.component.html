@@ -4,6 +4,7 @@
             <app-voice-assistant-nav
                 [subject]="subject"
                 [button]="button"
+                [needsAttention]="needsAttention"
                 [defaultRoute]="'/voice-assistant'"></app-voice-assistant-nav>
         </div>
     </div>
@@ -85,9 +86,10 @@
                 <option
                     [value]="providerOptionValue(model)"
                     [disabled]="
-                        isCapabilityControlDisabled(model, 'images')
+                        isProviderOptionDisabled(model, cloudTokenStored)
                     ">
-                    {{ model.visualName }}
+                    {{ model.visualName }} @if (!isProviderConfigured(model,
+                    cloudTokenStored)) { ({{ missingKeyMark }}) }
                 </option>
                 }
             </select>

@@ -11,6 +11,7 @@ import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {HttpClientTestingModule} from "@angular/common/http/testing";
 import {VoiceAssistant} from "../shared/types/voice-assistant";
 import {BehaviorSubject} from "rxjs";
+import {TokenService} from "../shared/services/token.service";
 import {AssistantModel} from "../shared/types/assistantModel";
 import {
     DEFAULT_PROVIDER_REF,
@@ -73,6 +74,15 @@ describe("VoiceAssistantComponent", () => {
                         get url() {
                             return "/test-url";
                         },
+                    },
+                },
+                {
+                    provide: TokenService,
+                    useValue: {
+                        tokenStatus$: new BehaviorSubject({
+                            tokenExists: true,
+                            tokenActive: true,
+                        }),
                     },
                 },
             ],
@@ -249,11 +259,62 @@ describe("VoiceAssistantComponent", () => {
             DEFAULT_PROVIDER_REF,
         );
         expect(
-            component.isCapabilityControlDisabled(text, "images"),
+            component.isProviderOptionDisabled(
+                text,
+                component.cloudTokenStored,
+            ),
         ).toBeTrue();
         expect(
-            component.isCapabilityControlDisabled(vision, "images"),
+            component.isProviderOptionDisabled(
+                vision,
+                component.cloudTokenStored,
+            ),
         ).toBeFalse();
         expect(text.apiName).toBe(vision.apiName);
+    });
+
+    it("drops a provider from the list as soon as its key is removed", () => {
+        const flags = (images: boolean): ProviderCapabilities => ({
+            tools: true,
+            images,
+            live: false,
+            stt: false,
+            tts: false,
+        });
+        const keyed = new AssistantModel(
+            4,
+            "gpt-4o",
+            "GPT-4o",
+            true,
+            "https://api.openai.example/v1",
+            flags(true),
+            "provider-4",
+            false,
+        );
+        voiceAssistantService.assistantModelsSubject.next([keyed]);
+        expect(component.selectionModels.map((model) => model.id)).toEqual([4]);
+        const cleared = new AssistantModel(
+            4,
+            "gpt-4o",
+            "GPT-4o",
+            true,
+            "https://api.openai.example/v1",
+            flags(true),
+            null,
+            false,
+        );
+        voiceAssistantService.assistantModelsSubject.next([cleared]);
+        expect(component.selectionModels).toEqual([]);
+        const personality = new VoiceAssistant(
+            "persona-1",
+            "Ada",
+            "Female",
+            0.8,
+            "",
+            4,
+        );
+        voiceAssistantService.getPersonality.and.returnValue(personality);
+        component.models = [cleared];
+        expect(component.needsAttention("persona-1")).toBeTrue();
     });
 });

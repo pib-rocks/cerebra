@@ -19,11 +19,15 @@ import {
 import {AssistantModel} from "src/app/shared/types/assistantModel";
 import {
     DEFAULT_PROVIDER_REF,
-    isCapabilityControlDisabled,
+    MISSING_KEY_MARK,
+    isProviderConfigured,
+    isProviderOptionDisabled,
+    personalityNeedsAttention,
     providerOptionValue as providerOptionValueFor,
     providerRefFromSelection,
     providersForSelection,
 } from "src/app/shared/types/provider-registry";
+import {TokenService} from "src/app/shared/services/token.service";
 @Component({
     selector: "app-va-personality-sidebar-right",
     templateUrl: "./voice-assistant-personality-sidebar-right.component.html",
@@ -46,11 +50,16 @@ export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
     personalityFormSidebar!: FormGroup;
     models: AssistantModel[] = [];
     selectionModels: AssistantModel[] = [];
-    readonly isCapabilityControlDisabled = isCapabilityControlDisabled;
+    cloudTokenStored = false;
+    needsKey = false;
+    readonly missingKeyMark = MISSING_KEY_MARK;
+    readonly isProviderConfigured = isProviderConfigured;
+    readonly isProviderOptionDisabled = isProviderOptionDisabled;
 
     constructor(
         private voiceAssistantService: VoiceAssistantService,
         private route: ActivatedRoute,
+        private tokenService: TokenService,
     ) {}
 
     ngOnInit() {
@@ -58,6 +67,12 @@ export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe((models) => {
                 this.models = models;
+                this.rebuildSelection();
+            });
+        this.tokenService.tokenStatus$
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe((status) => {
+                this.cloudTokenStored = status.tokenExists;
                 this.rebuildSelection();
             });
         this.route.params
@@ -258,9 +273,19 @@ export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
     }
 
     private rebuildSelection() {
+        const storedRef = this.personalityClone?.providerRef ?? null;
         this.selectionModels = providersForSelection(
             this.models,
-            this.personalityClone?.providerRef ?? null,
+            storedRef,
+            this.cloudTokenStored,
         );
+        this.needsKey =
+            this.personalityClone == null
+                ? false
+                : personalityNeedsAttention(
+                      storedRef,
+                      this.models,
+                      this.cloudTokenStored,
+                  );
     }
 }
