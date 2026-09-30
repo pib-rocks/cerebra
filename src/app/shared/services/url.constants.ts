@@ -1,6 +1,7 @@
 export enum UrlConstants {
     PERSONALITY = "/voice-assistant/personality",
     CHAT = "/voice-assistant/chat",
+    CHAT_CHANNEL = "/voice-assistant/channel",
     MOTOR = "/motor",
     CAMERA = "/camera-settings",
     PROGRAM = "/program",
@@ -20,6 +21,7 @@ export enum UrlConstants {
     SYSTEM_UPDATE_CANCEL = "/system/update/cancel",
     SYSTEM_UPDATE_CHECK = "/system/update/check",
     SYSTEM_UPDATE_AVAILABLE = "/system/update/available",
+    KEY_STORE = "/system/key-store",
     MICROPHONE_ARRAY = "/system/microphone-array",
     MICROPHONE_ARRAY_HEALTH = "/system/microphone-array/health",
     ROSBRIDGE_WEBSOCKET_PORT = "9090",

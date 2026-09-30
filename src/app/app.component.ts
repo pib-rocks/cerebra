@@ -2,6 +2,7 @@ import {
     Component,
     OnInit,
     ChangeDetectionStrategy,
+    ChangeDetectorRef,
     DestroyRef,
     inject,
 } from "@angular/core";
@@ -17,6 +18,10 @@ import {RelayControlComponent} from "./ui-components/relay-control/relay-control
 import {SmartConnectComponent} from "./ui-components/smart-connect/smart-connect.component";
 import {IpRetrieverComponent} from "./ui-components/ip-retriever/ip-retriever.component";
 import {APP_VERSION} from "./shared/util/version";
+import {PROMPT_MODE} from "./system/speech/key-store-session";
+import {KeyStoreSessionService} from "./system/speech/key-store-session.service";
+import {StartupPasswordComponent} from "./system/speech/startup-password.component";
+import {ConversationStatusComponent} from "./voice-assistant/visible-state/conversation-status.component";
 
 @Component({
     selector: "app-root",
@@ -30,6 +35,8 @@ import {APP_VERSION} from "./shared/util/version";
         SmartConnectComponent,
         IpRetrieverComponent,
         RouterOutlet,
+        StartupPasswordComponent,
+        ConversationStatusComponent,
     ],
 })
 export class AppComponent implements OnInit {
@@ -37,6 +44,7 @@ export class AppComponent implements OnInit {
 
     currentRoute: string = "";
     isActiveRoute = false;
+    onDisplayPath = false;
     appVersion: string = APP_VERSION;
     jointControlNavItemGroup = [
         "/joint-control/",
@@ -47,16 +55,38 @@ export class AppComponent implements OnInit {
         "/joint-control/right-arm",
     ];
 
-    constructor(private router: Router) {}
+    constructor(
+        private router: Router,
+        readonly session: KeyStoreSessionService,
+        private readonly changeDetector: ChangeDetectorRef,
+    ) {}
 
     ngOnInit(): void {
+        this.onDisplayPath = this.isDisplayUrl(this.router.url);
+        this.session.changes
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe(() => {
+                this.changeDetector.markForCheck();
+            });
         this.router.events
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe((event) => {
                 if (event instanceof NavigationEnd) {
                     this.isActiveRoute =
                         event.urlAfterRedirects.includes("joint-control");
+                    this.onDisplayPath = this.isDisplayUrl(
+                        event.urlAfterRedirects,
+                    );
                 }
             });
+    }
+
+    showStartupPassword(): boolean {
+        return this.session.mode === PROMPT_MODE && !this.onDisplayPath;
+    }
+
+    private isDisplayUrl(url: string): boolean {
+        const path = url.split("?")[0];
+        return path === "/display" || path.startsWith("/display/");
     }
 }

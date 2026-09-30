@@ -16,6 +16,12 @@ import {VoiceAssistantPersonalitySidebarRightComponent} from "./voice-assistant-
 import {VoiceAssistantNavComponent} from "../voice-assistant-nav/voice-assistant-nav.component";
 import {MarkdownModule} from "ngx-markdown";
 import {AssistantModel} from "src/app/shared/types/assistantModel";
+import {TokenService} from "src/app/shared/services/token.service";
+import {ChannelCapabilityService} from "src/app/shared/services/channel-capability.service";
+import {
+    DIRECT_CHANNEL,
+    SMART_CHANNEL,
+} from "src/app/shared/types/channel-router";
 
 describe("PersonalityDescriptionComponent", () => {
     let component: PersonalityDescriptionComponent;
@@ -79,6 +85,15 @@ describe("PersonalityDescriptionComponent", () => {
                 {
                     provide: VoiceAssistantService,
                     useValue: voiceAssistantServiceSpy,
+                },
+                {
+                    provide: TokenService,
+                    useValue: {
+                        tokenStatus$: new BehaviorSubject({
+                            tokenExists: true,
+                            tokenActive: true,
+                        }),
+                    },
                 },
                 {
                     provide: Router,
@@ -150,4 +165,74 @@ describe("PersonalityDescriptionComponent", () => {
         expect(_voiceAssistantService.updatePersonalityById).toHaveBeenCalled();
         expect(personality.description).toBe("Du bist pib.");
     }));
+
+    it("keeps the same identity text when the channel switches", () => {
+        const personality = new VoiceAssistant(
+            "1234",
+            "fakePersonality",
+            "Female",
+            0.8,
+            "Du bist pib.",
+        );
+        component.personality = personality;
+        component.textAreaContent = "Du bist pib.";
+        fixture.detectChanges();
+        expect(
+            fixture.nativeElement.querySelector(
+                "[data-test=LBL_Memory_Smart_Only]",
+            ),
+        ).not.toBeNull();
+
+        personality.channel = DIRECT_CHANNEL;
+        fixture.detectChanges();
+
+        expect(component.textAreaContent).toBe("Du bist pib.");
+        expect(personality.description).toBe("Du bist pib.");
+        expect(
+            fixture.nativeElement.querySelector("[data-test=LBL_Identity_Hint]")
+                .textContent,
+        ).toContain("system prompt");
+        expect(
+            fixture.nativeElement.querySelector(
+                "[data-test=LBL_Memory_Smart_Only]",
+            ),
+        ).toBeNull();
+
+        personality.channel = SMART_CHANNEL;
+        fixture.detectChanges();
+        expect(component.textAreaContent).toBe("Du bist pib.");
+        expect(
+            fixture.nativeElement.querySelector(
+                "[data-test=LBL_Memory_Smart_Only]",
+            ),
+        ).not.toBeNull();
+    });
+
+    it("hides the Smart memory note when the installer disabled Hermes", () => {
+        const capability = TestBed.inject(ChannelCapabilityService);
+        capability.applyInstallerFlag(false);
+        component.personality = new VoiceAssistant(
+            "1234",
+            "fakePersonality",
+            "Female",
+            0.8,
+            "Du bist pib.",
+            null,
+            10,
+            undefined,
+            SMART_CHANNEL,
+        );
+        fixture.detectChanges();
+        expect(component.currentChannel()).toBe(DIRECT_CHANNEL);
+        expect(component.textAreaContent).not.toBe("");
+        expect(
+            fixture.nativeElement.querySelector(
+                "[data-test=LBL_Memory_Smart_Only]",
+            ),
+        ).toBeNull();
+        expect(
+            fixture.nativeElement.querySelector("[data-test=LBL_Identity_Hint]")
+                .textContent,
+        ).toContain("system prompt");
+    });
 });
