@@ -1,3 +1,4 @@
+import {ApplicationRef} from "@angular/core";
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 
 import {VoiceAssistantComponent} from "./voice-assistant.component";
@@ -19,6 +20,14 @@ import {
 } from "../shared/types/provider-registry";
 import {ChannelCapabilityService} from "../shared/services/channel-capability.service";
 import {DIRECT_CHANNEL, SMART_CHANNEL} from "../shared/types/channel-router";
+import {
+    DEFAULT_IDLE_TIMEOUT_SECONDS,
+    IMAGES_NEED_MCP,
+    IMAGES_NEED_TOOL_CALLING,
+    LIVE_NO_CAPABILITY,
+    LOCAL_VOICE_INPUT,
+    LOCAL_VOICE_OUTPUT,
+} from "../shared/types/personality-dialog";
 export class MockNgbModalRef {
     componentInstance = {
         prompt: undefined,
@@ -113,6 +122,9 @@ describe("VoiceAssistantComponent", () => {
     });
 
     afterEach(() => {
+        if (typeof component.ngbModalRef?.close === "function") {
+            component.ngbModalRef.close();
+        }
         fixture.destroy();
     });
 
@@ -353,6 +365,7 @@ describe("VoiceAssistantComponent", () => {
         fixture.detectChanges();
         expect(component.showSmartChannelControl).toBeFalse();
         component.openAddModal();
+        component.advancedOpen = true;
         fixture.detectChanges();
         expect(
             document.body.querySelector("[data-test=RBN_Channel_Smart]"),
@@ -391,5 +404,220 @@ describe("VoiceAssistantComponent", () => {
         expect(updated.channel).toBe(SMART_CHANNEL);
         expect(updated.description).toBe("Du bist pib.");
         component.ngbModalRef?.close();
+    });
+
+    it("saves Smart and pib.Cloud from the name alone", () => {
+        fixture.detectChanges();
+        component.openAddModal();
+        fixture.detectChanges();
+        expect(document.body.querySelector("#name-input")).not.toBeNull();
+        expect(
+            document.body.querySelector("[data-test=SEC_Advanced]"),
+        ).toBeNull();
+        expect(
+            document.body.querySelector("#voice-assistant-model-select"),
+        ).toBeNull();
+        const save = document.body.querySelector(
+            "#modal-save-button",
+        ) as HTMLButtonElement;
+        expect(save.disabled).toBeTrue();
+        component.personalityForm.patchValue({"name-input": "Ada"});
+        fixture.detectChanges();
+        expect(
+            (
+                document.body.querySelector(
+                    "#modal-save-button",
+                ) as HTMLButtonElement
+            ).disabled,
+        ).toBeFalse();
+        component.addPersonality();
+        const created =
+            voiceAssistantService.createPersonality.calls.mostRecent()
+                .args[0] as VoiceAssistant;
+        expect(created.channel).toBe(SMART_CHANNEL);
+        expect(created.providerRef).toBe(DEFAULT_PROVIDER_REF);
+        expect(created.assistantModelId).toBeNull();
+        expect(created.voiceInput).toBe(LOCAL_VOICE_INPUT);
+        expect(created.voiceOutput).toBe(LOCAL_VOICE_OUTPUT);
+        expect(created.toolCalling).toBeTrue();
+        expect(created.images).toBeFalse();
+        expect(created.live).toBeFalse();
+        expect(created.mcp).toBeTrue();
+        expect(created.idleTimeoutSeconds).toBe(DEFAULT_IDLE_TIMEOUT_SECONDS);
+    });
+
+    it("keeps channel, model, voice, and switches inside Advanced", () => {
+        const speech = new AssistantModel(
+            6,
+            "openai",
+            "OpenAI",
+            true,
+            "https://api.openai.example/v1",
+            {
+                tools: true,
+                images: true,
+                live: true,
+                stt: true,
+                tts: true,
+            },
+            "provider-6",
+            true,
+        );
+        voiceAssistantService.assistantModelsSubject.next([speech]);
+        fixture.detectChanges();
+        component.openAddModal();
+        component.advancedOpen = true;
+        fixture.detectChanges();
+        expect(
+            document.body.querySelector("[data-test=RBN_Channel_Smart]"),
+        ).not.toBeNull();
+        expect(
+            document.body.querySelector(
+                "[data-test=DDN_Voice_Assistant_Model]",
+            ),
+        ).not.toBeNull();
+        expect(
+            document.body.querySelector("[data-test=DDN_Voice_Input]"),
+        ).not.toBeNull();
+        expect(
+            document.body.querySelector("[data-test=DDN_Voice_Output]"),
+        ).not.toBeNull();
+        expect(
+            document.body.querySelector("[data-test=TXT_Threshold]"),
+        ).not.toBeNull();
+        expect(
+            document.body.querySelector("[data-test=CHK_Tool_Calling]"),
+        ).not.toBeNull();
+        expect(
+            document.body.querySelector("[data-test=CHK_Images]"),
+        ).not.toBeNull();
+        expect(
+            document.body.querySelector("[data-test=CHK_Live]"),
+        ).not.toBeNull();
+        expect(
+            document.body.querySelector("[data-test=CHK_Mcp]"),
+        ).not.toBeNull();
+        expect(
+            document.body.querySelector("[data-test=TXT_Idle_Timeout]"),
+        ).toBeNull();
+        const voiceInput = document.body.querySelector(
+            "#voice-input-select",
+        ) as HTMLSelectElement;
+        const labels = Array.from(voiceInput.options).map(
+            (option) => option.value,
+        );
+        expect(labels).toContain(LOCAL_VOICE_INPUT);
+        expect(labels).toContain("6");
+        const live = document.body.querySelector(
+            "#live-input",
+        ) as HTMLInputElement;
+        expect(live.disabled).toBeFalse();
+        live.click();
+        TestBed.inject(ApplicationRef).tick();
+        expect(
+            document.body.querySelector("[data-test=TXT_Idle_Timeout]"),
+        ).not.toBeNull();
+        live.click();
+        TestBed.inject(ApplicationRef).tick();
+        expect(
+            document.body.querySelector("[data-test=TXT_Idle_Timeout]"),
+        ).toBeNull();
+    });
+
+    it("greys out images when tool calling or the MCP server is off", () => {
+        const capable = new AssistantModel(
+            7,
+            "openai",
+            "OpenAI",
+            true,
+            "https://api.openai.example/v1",
+            {
+                tools: true,
+                images: true,
+                live: true,
+                stt: false,
+                tts: false,
+            },
+            "provider-7",
+            true,
+        );
+        voiceAssistantService.assistantModelsSubject.next([capable]);
+        fixture.detectChanges();
+        component.openAddModal();
+        component.advancedOpen = true;
+        fixture.detectChanges();
+        const images = () =>
+            document.body.querySelector("#images-input") as HTMLInputElement;
+        const reason = () =>
+            document.body.querySelector("[data-test=LBL_Images_Reason]")
+                ?.textContent ?? "";
+        expect(images().disabled).toBeFalse();
+        expect(
+            document.body.querySelector("[data-test=LBL_Images_Reason]"),
+        ).toBeNull();
+        (
+            document.body.querySelector(
+                "#tool-calling-input",
+            ) as HTMLInputElement
+        ).click();
+        TestBed.inject(ApplicationRef).tick();
+        expect(images().disabled).toBeTrue();
+        expect(reason()).toContain(IMAGES_NEED_TOOL_CALLING);
+        (
+            document.body.querySelector(
+                "#tool-calling-input",
+            ) as HTMLInputElement
+        ).click();
+        TestBed.inject(ApplicationRef).tick();
+        expect(images().disabled).toBeFalse();
+        (document.body.querySelector("#mcp-input") as HTMLInputElement).click();
+        TestBed.inject(ApplicationRef).tick();
+        expect(images().disabled).toBeTrue();
+        expect(reason()).toContain(IMAGES_NEED_MCP);
+    });
+
+    it("greys out live when the provider has no live capability and hides the idle timeout", () => {
+        const text = new AssistantModel(
+            8,
+            "anthropic",
+            "Claude",
+            true,
+            "https://api.anthropic.example/v1",
+            {
+                tools: true,
+                images: true,
+                live: false,
+                stt: false,
+                tts: false,
+            },
+            "provider-8",
+            true,
+        );
+        voiceAssistantService.assistantModelsSubject.next([text]);
+        fixture.detectChanges();
+        component.openAddModal();
+        component.advancedOpen = true;
+        fixture.detectChanges();
+        const live = document.body.querySelector(
+            "#live-input",
+        ) as HTMLInputElement;
+        expect(live.disabled).toBeTrue();
+        expect(
+            document.body.querySelector("[data-test=LBL_Live_Reason]")
+                ?.textContent,
+        ).toContain(LIVE_NO_CAPABILITY);
+        expect(
+            document.body.querySelector("[data-test=TXT_Idle_Timeout]"),
+        ).toBeNull();
+        const offered = Array.from(
+            (
+                document.body.querySelector(
+                    "#voice-assistant-model-select",
+                ) as HTMLSelectElement
+            ).options,
+        ).filter((option) => !option.disabled);
+        expect(offered.map((option) => option.textContent?.trim())).toEqual([
+            "Claude",
+        ]);
     });
 });

@@ -19,6 +19,13 @@ export class Personality {
         this.messageHistory = messageHistory;
         this.providerRef = null;
         this.channel = "smart";
+        this.voiceInput = "faster-whisper";
+        this.voiceOutput = "supertone";
+        this.toolCalling = true;
+        this.images = false;
+        this.live = false;
+        this.idleTimeoutSeconds = 60;
+        this.mcp = true;
     }
 
     static getPersonality(personality) {
@@ -42,6 +49,26 @@ export class Personality {
             row.providerRef = "default";
         }
         row.channel = personality.channel === "direct" ? "direct" : "smart";
+        if (
+            typeof personality.voiceInput === "string" &&
+            personality.voiceInput !== ""
+        ) {
+            row.voiceInput = personality.voiceInput;
+        }
+        if (
+            typeof personality.voiceOutput === "string" &&
+            personality.voiceOutput !== ""
+        ) {
+            row.voiceOutput = personality.voiceOutput;
+        }
+        row.toolCalling = personality.toolCalling !== false;
+        row.images = personality.images === true;
+        row.live = personality.live === true;
+        row.mcp = personality.mcp !== false;
+        const idle = Number(personality.idleTimeoutSeconds);
+        if (Number.isFinite(idle) && idle >= 1) {
+            row.idleTimeoutSeconds = idle;
+        }
         return row;
     }
 

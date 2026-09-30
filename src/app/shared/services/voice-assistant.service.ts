@@ -1,5 +1,6 @@
 import {Injectable} from "@angular/core";
 import {ApiService} from "./api.service";
+import {readPersonalityDialog} from "../types/personality-dialog";
 import {
     VoiceAssistant,
     parseDtoToVoiceAssistant,
@@ -83,6 +84,7 @@ export class VoiceAssistantService implements SidebarService {
                     m.messageHistory,
                     m.providerRef,
                     m.channel,
+                    readPersonalityDialog(m),
                 ),
             );
         });

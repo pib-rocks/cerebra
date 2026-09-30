@@ -1,6 +1,10 @@
 import {SidebarElement} from "../interfaces/sidebar-element.interface";
 import {ChatChannel, parseChatChannel} from "./channel-router";
 import {
+    PersonalityDialogValues,
+    readPersonalityDialog,
+} from "./personality-dialog";
+import {
     DEFAULT_PROVIDER_REF,
     providerRefFromSelection,
 } from "./provider-registry";
@@ -15,6 +19,13 @@ export class VoiceAssistant implements SidebarElement {
     messageHistory: number;
     providerRef: string;
     channel: ChatChannel;
+    voiceInput: string;
+    voiceOutput: string;
+    toolCalling: boolean;
+    images: boolean;
+    live: boolean;
+    idleTimeoutSeconds: number;
+    mcp: boolean;
 
     constructor(
         personalityId: string,
@@ -26,6 +37,7 @@ export class VoiceAssistant implements SidebarElement {
         messageHistory?: number,
         providerRef?: string | null,
         channel?: string | null,
+        dialog?: Partial<PersonalityDialogValues> | null,
     ) {
         this.personalityId = personalityId;
         this.name = name;
@@ -45,6 +57,25 @@ export class VoiceAssistant implements SidebarElement {
             this.providerRef = DEFAULT_PROVIDER_REF;
         }
         this.channel = parseChatChannel(channel);
+        const settings = readPersonalityDialog(dialog);
+        this.voiceInput = settings.voiceInput;
+        this.voiceOutput = settings.voiceOutput;
+        this.toolCalling = settings.toolCalling;
+        this.images = settings.images;
+        this.live = settings.live;
+        this.idleTimeoutSeconds = settings.idleTimeoutSeconds;
+        this.mcp = settings.mcp;
+    }
+
+    assignDialog(settings: PersonalityDialogValues): void {
+        const next = readPersonalityDialog(settings);
+        this.voiceInput = next.voiceInput;
+        this.voiceOutput = next.voiceOutput;
+        this.toolCalling = next.toolCalling;
+        this.images = next.images;
+        this.live = next.live;
+        this.idleTimeoutSeconds = next.idleTimeoutSeconds;
+        this.mcp = next.mcp;
     }
     getName(): string {
         return this.name;
@@ -64,6 +95,7 @@ export class VoiceAssistant implements SidebarElement {
             Number(this.messageHistory),
             this.providerRef,
             this.channel,
+            readPersonalityDialog(this),
         );
     }
 }
@@ -77,6 +109,13 @@ export interface VoiceAssistantDto {
     messageHistory: number;
     providerRef: string;
     channel: ChatChannel;
+    voiceInput: string;
+    voiceOutput: string;
+    toolCalling: boolean;
+    images: boolean;
+    live: boolean;
+    idleTimeoutSeconds: number;
+    mcp: boolean;
 }
 
 export function parseVoiceAssistantToDto(
@@ -92,6 +131,13 @@ export function parseVoiceAssistantToDto(
         messageHistory: voiceAssistant.messageHistory,
         providerRef: choice.providerRef,
         channel: voiceAssistant.channel,
+        voiceInput: voiceAssistant.voiceInput,
+        voiceOutput: voiceAssistant.voiceOutput,
+        toolCalling: voiceAssistant.toolCalling,
+        images: voiceAssistant.images,
+        live: voiceAssistant.live,
+        idleTimeoutSeconds: voiceAssistant.idleTimeoutSeconds,
+        mcp: voiceAssistant.mcp,
     };
 }
 
@@ -108,5 +154,6 @@ export function parseDtoToVoiceAssistant(
         dummyVoiceAssistant.messageHistory,
         dummyVoiceAssistant.providerRef,
         dummyVoiceAssistant.channel,
+        readPersonalityDialog(dummyVoiceAssistant),
     );
 }

@@ -75,193 +75,269 @@
                 formControlName="name-input"
                 id="name-input" />
         </div>
-        <div class="row ml-3 m-2 mt-3 pr-2">
-            <select
-                id="voice-assistant-model-select"
-                formControlName="assistantModel"
-                class="form-select"
-                data-test="DDN_Voice_Assistant_Model"
-                aria-label="Voice-assistant language model">
-                @for (model of selectionModels; track model.id) {
-                <option
-                    [value]="providerOptionValue(model)"
-                    [disabled]="
-                        isProviderOptionDisabled(model, cloudTokenStored)
-                    ">
-                    {{ model.visualName }} @if (!isProviderConfigured(model,
-                    cloudTokenStored)) { ({{ missingKeyMark }}) }
-                </option>
+        <div class="row m-2">
+            <button
+                type="button"
+                class="btn btn-regular"
+                id="advanced-toggle"
+                data-test="BTN_Advanced"
+                [attr.aria-expanded]="advancedOpen"
+                (click)="toggleAdvanced()">
+                Advanced
+            </button>
+        </div>
+        @if (advancedOpen) {
+        <div
+            id="personality-advanced"
+            data-test="SEC_Advanced">
+            @if (showSmartChannelControl) {
+            <div
+                class="row mt-3 m-2 ml-3"
+                id="row-channel">
+                <label
+                    id="label-channel"
+                    class="col-12"
+                    >Channel</label
+                >
+                <div
+                    class="col-4 pointer"
+                    id="channel-radio-smart">
+                    <input
+                        value="smart"
+                        data-test="RBN_Channel_Smart"
+                        formControlName="channel"
+                        type="radio"
+                        id="channel-smart" />
+                    <label
+                        for="channel-smart"
+                        id="label-channel-smart"
+                        >Smart</label
+                    >
+                </div>
+                <div
+                    class="col-4 pointer"
+                    id="channel-radio-direct">
+                    <input
+                        value="direct"
+                        data-test="RBN_Channel_Direct"
+                        formControlName="channel"
+                        type="radio"
+                        id="channel-direct" />
+                    <label
+                        for="channel-direct"
+                        id="label-channel-direct"
+                        >Direct</label
+                    >
+                </div>
+            </div>
+            } @else {
+            <p
+                class="m-2 ml-3"
+                id="channel-direct-only"
+                data-test="LBL_Channel_Direct">
+                Direct
+            </p>
+            }
+            <div class="row ml-3 m-2 mt-3 pr-2">
+                <label
+                    for="voice-assistant-model-select"
+                    id="label-model"
+                    >Model</label
+                >
+                <select
+                    id="voice-assistant-model-select"
+                    formControlName="assistantModel"
+                    class="form-select"
+                    data-test="DDN_Voice_Assistant_Model"
+                    aria-label="Voice-assistant language model">
+                    @for (model of selectionModels; track model.id) {
+                    <option
+                        [value]="providerOptionValue(model)"
+                        [disabled]="
+                            isProviderOptionDisabled(model, cloudTokenStored)
+                        ">
+                        {{ model.visualName }} @if (!isProviderConfigured(model,
+                        cloudTokenStored)) { ({{ missingKeyMark }}) }
+                    </option>
+                    }
+                </select>
+            </div>
+            <div class="row ml-3 m-2 mt-3 pr-2">
+                <label
+                    for="voice-input-select"
+                    id="label-voice-input"
+                    >Voice input</label
+                >
+                <select
+                    id="voice-input-select"
+                    formControlName="voiceInput"
+                    class="form-select"
+                    data-test="DDN_Voice_Input"
+                    aria-label="Voice input">
+                    @for (option of voiceInputs; track option.id) {
+                    <option [value]="option.id">{{ option.label }}</option>
+                    }
+                </select>
+            </div>
+            <div class="row ml-3 m-2 mt-3 pr-2">
+                <label
+                    for="voice-output-select"
+                    id="label-voice-output"
+                    >Voice output</label
+                >
+                <select
+                    id="voice-output-select"
+                    formControlName="voiceOutput"
+                    class="form-select"
+                    data-test="DDN_Voice_Output"
+                    aria-label="Voice output">
+                    @for (option of voiceOutputs; track option.id) {
+                    <option [value]="option.id">{{ option.label }}</option>
+                    }
+                </select>
+            </div>
+            <div
+                class="row m-2"
+                id="row-pause-threshold"
+                lang="en-US">
+                <label
+                    for="pause-threshold-input"
+                    class="col-6 mt-1"
+                    id="label-pause-threshold"
+                    >Pause threshold</label
+                >
+                <div class="col-3">
+                    <div class="row">
+                        <div class="col-10 p-0">
+                            <input
+                                type="text"
+                                id="pause-threshold-input"
+                                data-test="TXT_Threshold"
+                                [(ngModel)]="thresholdString"
+                                [ngModelOptions]="{standalone: true}"
+                                readonly />
+                        </div>
+                        <div class="col-2 p-0">
+                            <div class="row mt-1 p-0">
+                                <button
+                                    id="up"
+                                    data-test="BTN_Threshold_up"
+                                    type="button"
+                                    (click)="adjustThreshold('0.1')">
+                                    &#9650;
+                                </button>
+                            </div>
+                            <div class="row p-0">
+                                <button
+                                    id="down"
+                                    data-test="BTN_Threshold_down"
+                                    type="button"
+                                    (click)="adjustThreshold('-0.1')">
+                                    &#9660;
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div
+                class="row m-2"
+                id="row-tool-calling">
+                <input
+                    type="checkbox"
+                    id="tool-calling-input"
+                    data-test="CHK_Tool_Calling"
+                    formControlName="toolCalling" />
+                <label
+                    for="tool-calling-input"
+                    id="label-tool-calling"
+                    >Tool calling</label
+                >
+                @if (toolCallingReason) {
+                <p
+                    class="advanced-reason"
+                    data-test="LBL_Tool_Calling_Reason">
+                    {{ toolCallingReason }}
+                </p>
                 }
-            </select>
-        </div>
-        @if (showSmartChannelControl) {
-        <div
-            class="row mt-3 m-2 ml-3"
-            id="row-channel">
-            <label
-                id="label-channel"
-                class="col-12"
-                >Channel</label
-            >
-            <div
-                class="col-4 pointer"
-                id="channel-radio-smart">
-                <input
-                    value="smart"
-                    data-test="RBN_Channel_Smart"
-                    formControlName="channel"
-                    type="radio"
-                    id="channel-smart" />
-                <label
-                    for="channel-smart"
-                    id="label-channel-smart"
-                    >Smart</label
-                >
             </div>
             <div
-                class="col-4 pointer"
-                id="channel-radio-direct">
+                class="row m-2"
+                id="row-images">
                 <input
-                    value="direct"
-                    data-test="RBN_Channel_Direct"
-                    formControlName="channel"
-                    type="radio"
-                    id="channel-direct" />
+                    type="checkbox"
+                    id="images-input"
+                    data-test="CHK_Images"
+                    formControlName="images" />
                 <label
-                    for="channel-direct"
-                    id="label-channel-direct"
-                    >Direct</label
+                    for="images-input"
+                    id="label-images"
+                    >Images</label
+                >
+                @if (imageReason) {
+                <p
+                    class="advanced-reason"
+                    data-test="LBL_Images_Reason">
+                    {{ imageReason }}
+                </p>
+                }
+            </div>
+            <div
+                class="row m-2"
+                id="row-live">
+                <input
+                    type="checkbox"
+                    id="live-input"
+                    data-test="CHK_Live"
+                    formControlName="live" />
+                <label
+                    for="live-input"
+                    id="label-live"
+                    >Live</label
+                >
+                @if (liveReason) {
+                <p
+                    class="advanced-reason"
+                    data-test="LBL_Live_Reason">
+                    {{ liveReason }}
+                </p>
+                }
+            </div>
+            @if (showIdleTimeout) {
+            <div
+                class="row m-2"
+                id="row-idle-timeout">
+                <label
+                    for="idle-timeout-input"
+                    class="col-6 mt-1"
+                    id="label-idle-timeout"
+                    >Idle timeout (s)</label
+                >
+                <input
+                    type="number"
+                    id="idle-timeout-input"
+                    class="col-3"
+                    data-test="TXT_Idle_Timeout"
+                    formControlName="idleTimeoutSeconds"
+                    min="1" />
+            </div>
+            }
+            <div
+                class="row m-2"
+                id="row-mcp">
+                <input
+                    type="checkbox"
+                    id="mcp-input"
+                    data-test="CHK_Mcp"
+                    formControlName="mcp" />
+                <label
+                    for="mcp-input"
+                    id="label-mcp"
+                    >MCP server</label
                 >
             </div>
         </div>
-        } @else {
-        <p
-            class="m-2 ml-3"
-            id="channel-direct-only"
-            data-test="LBL_Channel_Direct">
-            Direct
-        </p>
         }
-        <div class="row mt-3 m-2 ml-3">
-            <div
-                class="col-4 pointer"
-                id="new-radio-button-female">
-                <input
-                    value="Female"
-                    data-test="RBN_Female"
-                    formControlName="gender"
-                    type="radio"
-                    id="new-radio-female" />
-                <label
-                    for="new-radio-female"
-                    id="new-label-radio-female"
-                    >Female</label
-                >
-            </div>
-            <div
-                class="col-4 pointer"
-                id="new-radio-button-male">
-                <input
-                    value="Male"
-                    data-test="RBN_Male"
-                    formControlName="gender"
-                    type="radio"
-                    id="new-radio-male" />
-                <label
-                    for="new-radio-male"
-                    id="new-label-radio-male"
-                    >Male</label
-                >
-            </div>
-        </div>
-        <div
-            class="row m-2"
-            id="row-pause-threshold"
-            lang="en-US">
-            <label
-                for="name-input"
-                class="col-6 mt-1"
-                id="label-pause-threshold"
-                >Pause threshold</label
-            >
-            <div class="col-3">
-                <div class="row">
-                    <div class="col-10 p-0">
-                        <input
-                            type="text"
-                            id="pause-threshold-input"
-                            data-test="TXT_Threshold"
-                            [(ngModel)]="thresholdString"
-                            [ngModelOptions]="{standalone: true}"
-                            readonly />
-                    </div>
-                    <div class="col-2 p-0">
-                        <div class="row mt-1 p-0">
-                            <button
-                                id="up"
-                                data-test="BTN_Threshold_up"
-                                type="button"
-                                (click)="adjustThreshold('0.1')">
-                                &#9650;
-                            </button>
-                        </div>
-                        <div class="row p-0">
-                            <button
-                                id="down"
-                                data-test="BTN_Threshold_down"
-                                type="button"
-                                (click)="adjustThreshold('-0.1')">
-                                &#9660;
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div
-            class="row m-2"
-            id="row-message-history"
-            lang="en-US">
-            <label
-                for="name-input"
-                class="col-6 mt-1"
-                id="label-message-history"
-                >Message history</label
-            >
-            <div class="col-3">
-                <div class="row">
-                    <div class="col-10 p-0">
-                        <input
-                            type="text"
-                            id="message-history-input"
-                            data-test="TXT_Message_history"
-                            [(ngModel)]="messageHistory"
-                            [ngModelOptions]="{standalone: true}"
-                            readonly />
-                    </div>
-                    <div class="col-2 p-0">
-                        <div class="row mt-1 p-0">
-                            <button
-                                id="up"
-                                data-test="BTN_History_up"
-                                type="button"
-                                (click)="adjustHistory('1')">
-                                &#9650;
-                            </button>
-                        </div>
-                        <div class="row p-0">
-                            <button
-                                id="down"
-                                data-test="BTN_History_down"
-                                type="button"
-                                (click)="adjustHistory('-1')">
-                                &#9660;
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
         <div class="row justify-content-center mt-2 mb-3">
             <div class="col-3 align-self-center">
                 <button

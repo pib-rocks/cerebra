@@ -46,6 +46,23 @@ server.get("/voice-assistant/personality/:personalityId", (req, res, next) => {
     return res.status(200).send(Personality.getPersonality(response[0]));
 });
 
+function assignDialog(personality, body) {
+    if (typeof body.voiceInput === "string" && body.voiceInput !== "") {
+        personality.voiceInput = body.voiceInput;
+    }
+    if (typeof body.voiceOutput === "string" && body.voiceOutput !== "") {
+        personality.voiceOutput = body.voiceOutput;
+    }
+    personality.toolCalling = body.toolCalling !== false;
+    personality.images = body.images === true;
+    personality.live = body.live === true;
+    personality.mcp = body.mcp !== false;
+    const idle = Number(body.idleTimeoutSeconds);
+    if (Number.isFinite(idle) && idle >= 1) {
+        personality.idleTimeoutSeconds = idle;
+    }
+}
+
 function assignChannel(personality, body) {
     if (body.channel === "direct" || body.channel === "smart") {
         personality.channel = body.channel;
@@ -87,6 +104,7 @@ server.post("/voice-assistant/personality", (req, res, next) => {
     );
     assignProvider(newPersonality, req.body, true);
     assignChannel(newPersonality, req.body);
+    assignDialog(newPersonality, req.body);
     mockData.personality.push(newPersonality);
     return res.status(201).send(Personality.getPersonality(newPersonality));
 });
@@ -103,6 +121,7 @@ server.put("/voice-assistant/personality/:personalityId", (req, res, next) => {
             personality.messageHistory = req.body.messageHistory;
             assignProvider(personality, req.body, false);
             assignChannel(personality, req.body);
+            assignDialog(personality, req.body);
             updated = true;
             return res
                 .status(200)
