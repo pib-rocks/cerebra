@@ -1,7 +1,10 @@
+import {HttpErrorResponse} from "@angular/common/http";
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {BehaviorSubject, of, throwError} from "rxjs";
 import {SpeechComponent} from "./speech.component";
 import {KeyStoreService} from "./key-store.service";
+import {KeyStoreSessionService} from "./key-store-session.service";
+import {UNLOCKED_MODE} from "./key-store-session";
 import {TokenService} from "src/app/shared/services/token.service";
 import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
 import {RosService} from "src/app/shared/services/ros-service/ros.service";
@@ -66,6 +69,7 @@ describe("SpeechComponent", () => {
             "putSecret",
             "deleteSecret",
             "changePassword",
+            "setEncryption",
         ]);
         keyStore.status.and.returnValue(
             of({encryptKeyStorage: true, credentialRefs: ["provider-4"]}),
@@ -149,15 +153,168 @@ describe("SpeechComponent", () => {
         );
     });
 
-    it("shows the encryption toggle on from the key store", () => {
-        const box = fixture.nativeElement.querySelector(
+    function encryptionBox(): HTMLInputElement {
+        return fixture.nativeElement.querySelector(
             "#encrypt-key-storage",
         ) as HTMLInputElement;
+    }
+
+    function toggleEncryption(checked: boolean): void {
+        const box = encryptionBox();
+        box.checked = checked;
+        box.dispatchEvent(new Event("change"));
+        fixture.detectChanges();
+    }
+
+    function loadKeyStore(status: {
+        encryptKeyStorage: boolean;
+        credentialRefs: string[];
+        mode?: string;
+    }): void {
+        keyStore.status.and.returnValue(of(status));
+        fixture = TestBed.createComponent(SpeechComponent);
+        component = fixture.componentInstance;
+        fixture.detectChanges();
+    }
+
+    it("shows the encryption toggle on from the key store", () => {
+        const box = encryptionBox();
         expect(box.checked).toBeTrue();
-        expect(box.disabled).toBeTrue();
+        expect(box.disabled).toBeFalse();
+        expect(box.getAttribute("data-test")).toBe("CHK_Encrypt_Key_Storage");
         expect(text("label[for='encrypt-key-storage']")).toBe(
             "Encrypt Key Storage (requires password at robot start)",
         );
+        expect(text("[data-test=LBL_Key_Storage]")).toBe(
+            "Provider keys are encrypted. The operator password is asked at robot start.",
+        );
+    });
+
+    it("shows cleartext when the key store has encryption off", () => {
+        loadKeyStore({
+            encryptKeyStorage: false,
+            credentialRefs: [],
+            mode: "unlocked",
+        });
+
+        const box = encryptionBox();
+        expect(box.checked).toBeFalse();
+        expect(box.disabled).toBeFalse();
+        expect(text("[data-test=LBL_Key_Storage]")).toBe(
+            "Provider keys are stored in cleartext on the robot. No operator password is asked at robot start.",
+        );
+        expect(TestBed.inject(KeyStoreSessionService).mode).toBe(UNLOCKED_MODE);
+        expect(
+            fixture.nativeElement.querySelector("#startup-password-input"),
+        ).toBeNull();
+    });
+
+    it("turns encryption off with the entered operator password", () => {
+        keyStore.setEncryption.and.returnValue(
+            of({successful: true, mode: "unlocked"}),
+        );
+        keyStore.status.and.returnValue(
+            of({
+                encryptKeyStorage: false,
+                credentialRefs: [],
+                mode: "unlocked",
+            }),
+        );
+        component.password = "operator-secret";
+        toggleEncryption(false);
+
+        expect(keyStore.setEncryption).toHaveBeenCalledWith(
+            false,
+            "operator-secret",
+        );
+        expect(encryptionBox().checked).toBeFalse();
+        expect(text("[data-test=LBL_Key_Storage]")).toContain("cleartext");
+        expect(TestBed.inject(KeyStoreSessionService).mode).toBe(UNLOCKED_MODE);
+    });
+
+    it("leaves the checkbox on and shows the backend error when the switch is refused", () => {
+        keyStore.setEncryption.and.returnValue(
+            throwError(
+                () =>
+                    new HttpErrorResponse({
+                        status: 400,
+                        error: {
+                            error: "Password must be at least 8 characters.",
+                        },
+                    }),
+            ),
+        );
+        component.password = "short";
+        toggleEncryption(false);
+
+        expect(keyStore.setEncryption).toHaveBeenCalledWith(false, "short");
+        expect(encryptionBox().checked).toBeTrue();
+        expect(encryptionBox().disabled).toBeFalse();
+        expect(text("#speech-error")).toBe(
+            "Password must be at least 8 characters.",
+        );
+    });
+
+    it("asks for the operator password only when an encrypted store has keys", () => {
+        component.password = "";
+        toggleEncryption(false);
+
+        expect(keyStore.setEncryption).not.toHaveBeenCalled();
+        expect(encryptionBox().checked).toBeTrue();
+        expect(text("#speech-error")).toBe("Enter the operator password.");
+
+        component.credentialRefs = [];
+        keyStore.setEncryption.and.returnValue(of({successful: true}));
+        keyStore.status.and.returnValue(
+            of({
+                encryptKeyStorage: false,
+                credentialRefs: [],
+                mode: "unlocked",
+            }),
+        );
+        toggleEncryption(false);
+
+        expect(keyStore.setEncryption).toHaveBeenCalledWith(false, "");
+    });
+
+    it("requires the new password twice before encryption is turned on", () => {
+        loadKeyStore({
+            encryptKeyStorage: false,
+            credentialRefs: [],
+            mode: "unlocked",
+        });
+        expect(
+            fixture.nativeElement.querySelector("#speech-new-password"),
+        ).not.toBeNull();
+        expect(
+            fixture.nativeElement.querySelector("#speech-confirm-password"),
+        ).not.toBeNull();
+
+        toggleEncryption(true);
+        expect(keyStore.setEncryption).not.toHaveBeenCalled();
+        expect(encryptionBox().checked).toBeFalse();
+        expect(text("#speech-error")).toBe("Enter the new password twice.");
+
+        component.newPassword = "new-secret";
+        component.confirmPassword = "other-secret";
+        toggleEncryption(true);
+        expect(keyStore.setEncryption).not.toHaveBeenCalled();
+        expect(encryptionBox().checked).toBeFalse();
+        expect(text("#speech-error")).toBe(
+            "Enter the new password twice. The two entries do not match.",
+        );
+
+        component.confirmPassword = "new-secret";
+        keyStore.setEncryption.and.returnValue(
+            of({successful: true, mode: "unlocked"}),
+        );
+        keyStore.status.and.returnValue(
+            of({encryptKeyStorage: true, credentialRefs: [], mode: "unlocked"}),
+        );
+        toggleEncryption(true);
+
+        expect(keyStore.setEncryption).toHaveBeenCalledWith(true, "new-secret");
+        expect(encryptionBox().checked).toBeTrue();
     });
 
     it("shows each provider endpoint next to its key", () => {

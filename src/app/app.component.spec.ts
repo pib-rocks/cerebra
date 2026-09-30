@@ -1,11 +1,19 @@
 import {TestBed, ComponentFixture} from "@angular/core/testing";
 import {RouterTestingModule} from "@angular/router/testing";
 import {AppComponent} from "./app.component";
-import {HttpClientTestingModule} from "@angular/common/http/testing";
+import {
+    HttpClientTestingModule,
+    HttpTestingController,
+} from "@angular/common/http/testing";
 import {SmartConnectComponent} from "./ui-components/smart-connect/smart-connect.component";
 import {RelayControlComponent} from "./ui-components/relay-control/relay-control.component";
 import {IpRetrieverComponent} from "./ui-components/ip-retriever/ip-retriever.component";
-import {DEGRADED_MODE, PROMPT_MODE} from "./system/speech/key-store-session";
+import {
+    DEGRADED_MODE,
+    PROMPT_MODE,
+    STARTING_MODE,
+    UNLOCKED_MODE,
+} from "./system/speech/key-store-session";
 import {routes} from "./app-routing.module";
 import {VisibleStateService} from "./shared/services/visible-state.service";
 import {visibleConversation} from "./shared/types/visible-state";
@@ -46,14 +54,55 @@ describe("AppComponent", () => {
         fixture = TestBed.createComponent(AppComponent);
     });
 
+    afterEach(() => {
+        const http = TestBed.inject(HttpTestingController);
+        for (const req of http.match("/api/system/key-store")) {
+            req.flush({
+                encryptKeyStorage: true,
+                credentialRefs: [],
+                mode: "degraded",
+            });
+        }
+    });
+
     it("should create the app", () => {
         const app = fixture.componentInstance;
         expect(app).toBeTruthy();
     });
 
-    it("opens on the password prompt and cancel enters degraded mode", () => {
+    it("never opens the password dialog while the key store is cleartext", () => {
         const app = fixture.componentInstance;
         app.ngOnInit();
+        expect(app.session.mode).toBe(STARTING_MODE);
+        expect(app.showStartupPassword()).toBeFalse();
+
+        TestBed.inject(HttpTestingController)
+            .expectOne("/api/system/key-store")
+            .flush({
+                encryptKeyStorage: false,
+                credentialRefs: [],
+                mode: "unlocked",
+            });
+
+        expect(app.session.mode).toBe(UNLOCKED_MODE);
+        expect(app.showStartupPassword()).toBeFalse();
+    });
+
+    it("asks once the backend reports a locked store, and cancel enters degraded mode", () => {
+        const app = fixture.componentInstance;
+        app.ngOnInit();
+        // Nothing is asked before the backend has answered: asking first and
+        // correcting afterwards would flash the dialog on a cleartext robot.
+        expect(app.session.mode).toBe(STARTING_MODE);
+        expect(app.showStartupPassword()).toBeFalse();
+
+        TestBed.inject(HttpTestingController)
+            .expectOne("/api/system/key-store")
+            .flush({
+                encryptKeyStorage: true,
+                credentialRefs: [],
+                mode: "degraded",
+            });
         expect(app.session.mode).toBe(PROMPT_MODE);
         expect(app.showStartupPassword()).toBeTrue();
 
@@ -70,6 +119,21 @@ describe("AppComponent", () => {
             fixture.nativeElement.querySelector("#voice-channel-holder")
                 .textContent,
         ).toContain("Nobody holds the voice");
+    });
+
+    it("does not open the password dialog when the store is in cleartext", () => {
+        const app = fixture.componentInstance;
+        app.ngOnInit();
+        TestBed.inject(HttpTestingController)
+            .expectOne("/api/system/key-store")
+            .flush({
+                encryptKeyStorage: false,
+                credentialRefs: [],
+                mode: "unlocked",
+            });
+
+        expect(app.session.mode).toBe(UNLOCKED_MODE);
+        expect(app.showStartupPassword()).toBeFalse();
     });
 
     it("hides the startup modal on the display path", () => {

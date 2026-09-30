@@ -68,6 +68,7 @@ export class AppComponent implements OnInit {
             .subscribe(() => {
                 this.changeDetector.markForCheck();
             });
+        this.session.refresh();
         this.router.events
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe((event) => {

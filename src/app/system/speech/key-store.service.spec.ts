@@ -92,6 +92,21 @@ describe("KeyStoreService", () => {
         expect(JSON.stringify(body)).not.toContain("sk-");
     });
 
+    it("switches encryption with the operator password", () => {
+        let body: unknown;
+        service.setEncryption(false, "operator-secret").subscribe((result) => {
+            body = result;
+        });
+        const req = http.expectOne("/api/system/key-store/encryption");
+        expect(req.request.method).toBe("POST");
+        expect(req.request.body).toEqual({
+            enabled: false,
+            password: "operator-secret",
+        });
+        req.flush({successful: true, mode: "unlocked"});
+        expect(body).toEqual({successful: true, mode: "unlocked"});
+    });
+
     it("reads the key-store error message", () => {
         const response = new HttpErrorResponse({
             status: 401,

@@ -4,15 +4,19 @@
     <div class="speech-row">
         <input
             id="encrypt-key-storage"
+            data-test="CHK_Encrypt_Key_Storage"
             type="checkbox"
             [checked]="encryptKeyStorage"
-            disabled />
+            [disabled]="busy"
+            (change)="onEncryptionToggle($event)" />
         <label for="encrypt-key-storage">
             Encrypt Key Storage (requires password at robot start)
         </label>
     </div>
-    <p class="speech-hint">
-        The key store keeps encryption on. There is no control to turn it off.
+    <p
+        class="speech-hint"
+        data-test="LBL_Key_Storage">
+        {{ keyStorageHint() }}
     </p>
 
     @if (error) {
@@ -42,6 +46,7 @@
             autocomplete="current-password"
             [value]="password"
             (input)="onPasswordInput($event)" />
+        @if (encryptKeyStorage) {
         <button
             id="speech-change-password"
             type="button"
@@ -49,7 +54,7 @@
             (click)="togglePasswordChange()">
             Change
         </button>
-        @if (changingPassword) {
+        } @if (changingPassword || !encryptKeyStorage) {
         <div class="speech-password-change">
             <label
                 class="speech-label"
@@ -73,6 +78,7 @@
                 autocomplete="new-password"
                 [value]="confirmPassword"
                 (input)="onConfirmPasswordInput($event)" />
+            @if (encryptKeyStorage) {
             <button
                 id="speech-save-password"
                 type="button"
@@ -81,6 +87,7 @@
                 (click)="changePassword()">
                 Save password
             </button>
+            }
         </div>
         }
     </div>
