@@ -146,9 +146,9 @@ describe("provider registry selection", () => {
 
     it("does not offer a retired model for a new selection and marks one that still uses it", () => {
         const current = row(2, true, false, "gpt-6");
-        const gone = row(4, true, false, "gpt-4o");
+        const gone = row(4, true, false, "retired-entry");
         gone.retired = true;
-        gone.visualName = "GPT-4o";
+        gone.visualName = "Retired entry";
         expect(
             providersForSelection([current, gone], null).map(
                 (model) => model.id,
@@ -165,7 +165,7 @@ describe("provider registry selection", () => {
             personalityNeedsAttention(String(gone.id), [current, gone], true),
         ).toBeTrue();
         expect(retiredModelNotice(gone)).toBe(
-            "GPT-4o is gone. Choose a new one.",
+            "Retired entry is gone. Choose a new one.",
         );
         expect(
             personalityNeedsAttention(

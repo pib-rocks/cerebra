@@ -44,8 +44,8 @@ describe("VoiceAssistantComponent", () => {
     let modalService: NgbModal;
     let _router: Router;
     const models = [
-        new AssistantModel(1, "gpt-3", "GPT-3", false),
-        new AssistantModel(2, "gpt-4", "GPT-4", true),
+        new AssistantModel(1, "gemini-3.8-flash", "Gemini 3.8 Flash", false),
+        new AssistantModel(2, "gpt-6", "GPT-6", true),
     ];
 
     const mockModalRef: MockNgbModalRef = new MockNgbModalRef();
@@ -302,8 +302,8 @@ describe("VoiceAssistantComponent", () => {
         });
         const keyed = new AssistantModel(
             4,
-            "gpt-4o",
-            "GPT-4o",
+            "gpt-6",
+            "GPT-6",
             true,
             "https://api.openai.example/v1",
             flags(true),
@@ -314,8 +314,8 @@ describe("VoiceAssistantComponent", () => {
         expect(component.selectionModels.map((model) => model.id)).toEqual([4]);
         const cleared = new AssistantModel(
             4,
-            "gpt-4o",
-            "GPT-4o",
+            "gpt-6",
+            "GPT-6",
             true,
             "https://api.openai.example/v1",
             flags(true),
@@ -673,8 +673,8 @@ describe("VoiceAssistantComponent", () => {
         );
         const retired = new AssistantModel(
             1,
-            "gpt-4o",
-            "GPT-4o",
+            "retired-entry",
+            "Retired entry",
             true,
             null,
             flags(false),
@@ -711,7 +711,7 @@ describe("VoiceAssistantComponent", () => {
             "Claude Sonnet 5.5",
             "Hermes Agent (selbstlernend)",
         ]);
-        expect(selectable).not.toContain("GPT-4o");
+        expect(selectable).not.toContain(retired.visualName);
         expect(
             document.body.querySelector("[data-test=LBL_Retired_Model]"),
         ).toBeNull();
@@ -770,5 +770,116 @@ describe("VoiceAssistantComponent", () => {
         persona.providerRef = String(gemini.id);
         expect(component.needsAttention(persona.personalityId)).toBeFalse();
         component.ngbModalRef?.close();
+    });
+
+    it("loads the example personalities on pib.Cloud with the model enabled", () => {
+        const flags = (live: boolean): ProviderCapabilities => ({
+            tools: true,
+            images: true,
+            live,
+            stt: false,
+            tts: false,
+        });
+        voiceAssistantService.assistantModelsSubject.next([
+            new AssistantModel(
+                7,
+                "gemini-3.8-flash",
+                "Gemini 3.8 Flash",
+                true,
+                null,
+                flags(true),
+                null,
+                false,
+            ),
+            new AssistantModel(
+                8,
+                "gpt-6",
+                "GPT-6",
+                true,
+                null,
+                flags(false),
+                null,
+                false,
+            ),
+            new AssistantModel(
+                9,
+                "claude-sonnet-5-5",
+                "Claude Sonnet 5.5",
+                true,
+                null,
+                flags(false),
+                null,
+                false,
+            ),
+            new AssistantModel(
+                6,
+                CLOUD_TOKEN_API_NAME,
+                "Hermes Agent (selbstlernend)",
+                true,
+                null,
+                flags(false),
+                null,
+                true,
+            ),
+        ]);
+        fixture.detectChanges();
+        const examples = [
+            new VoiceAssistant(
+                "66ed525d-42bb-41a2-8a52-f2c1b6e989ad",
+                "Eva",
+                "Female",
+                0.5,
+                "You are a helpful assistant.",
+                null,
+                15,
+                DEFAULT_PROVIDER_REF,
+                SMART_CHANNEL,
+            ),
+            new VoiceAssistant(
+                "2cb257e4-d173-44a6-869c-6488c98e8edb",
+                "Tom",
+                "Male",
+                0.9,
+                "You are a helpful assistant.",
+                null,
+                5,
+                DEFAULT_PROVIDER_REF,
+                DIRECT_CHANNEL,
+            ),
+        ];
+        for (const persona of examples) {
+            voiceAssistantService.personalities.length = 0;
+            voiceAssistantService.personalities.push(persona);
+            voiceAssistantService.getPersonality.and.returnValue(persona);
+            expect(component.needsAttention(persona.personalityId)).toBeFalse();
+            component.openEditModal(persona.personalityId);
+            component.advancedOpen = true;
+            fixture.detectChanges();
+            TestBed.inject(ApplicationRef).tick();
+            expect(
+                document.body.querySelector("[data-test=LBL_Retired_Model]"),
+            ).toBeNull();
+            const select = document.body.querySelector(
+                "#voice-assistant-model-select",
+            ) as HTMLSelectElement;
+            const options = Array.from(select.options);
+            expect(
+                options
+                    .filter((option) => !option.disabled)
+                    .map((option) => option.textContent?.trim()),
+            ).toEqual(["Hermes Agent (selbstlernend)"]);
+            expect(select.value).toBe(DEFAULT_PROVIDER_REF);
+            const selected = options.find(
+                (option) => option.value === select.value,
+            );
+            expect(selected?.disabled).toBeFalse();
+            expect(component.personalityForm.controls["name-input"].value).toBe(
+                persona.name,
+            );
+            expect(component.personalityForm.controls["channel"].value).toBe(
+                persona.channel,
+            );
+            component.ngbModalRef?.close();
+        }
     });
 });

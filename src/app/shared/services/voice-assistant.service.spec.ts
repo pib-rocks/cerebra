@@ -6,7 +6,11 @@ import {ApiService} from "./api.service";
 import {BehaviorSubject} from "rxjs";
 import {RosService} from "./ros-service/ros.service";
 import {AssistantModel} from "../types/assistantModel";
-import {DEFAULT_PROVIDER_REF} from "../types/provider-registry";
+import {
+    DEFAULT_PROVIDER_REF,
+    isProviderOptionDisabled,
+    providersForSelection,
+} from "../types/provider-registry";
 import {
     DIRECT_CHANNEL,
     SMART_CHANNEL,
@@ -50,8 +54,13 @@ describe("VoiceAssistantService", () => {
     }>(res);
     const models = {
         assistantModels: [
-            new AssistantModel(1, "gpt-3.5-turbo", "GPT-3.5 Turbo", false),
-            new AssistantModel(2, "claude-3-sonnet", "Claude 3 Sonnet", true),
+            new AssistantModel(
+                1,
+                "gemini-3.8-flash",
+                "Gemini 3.8 Flash",
+                false,
+            ),
+            new AssistantModel(2, "gpt-6", "GPT-6", true),
         ],
     };
     const observableModels = new BehaviorSubject<{
@@ -242,8 +251,8 @@ describe("VoiceAssistantService", () => {
                 assistantModels: [
                     {
                         id: 1,
-                        apiName: "gpt-4o",
-                        visualName: "GPT-4o",
+                        apiName: "gemini-3.8-flash",
+                        visualName: "Gemini 3.8 Flash",
                         hasImageSupport: true,
                         capabilities: {
                             tools: true,
@@ -278,10 +287,13 @@ describe("VoiceAssistantService", () => {
         service.getAllAssistantModels();
         const parsed = service.assistantModelsSubject.getValue();
         expect(parsed.map((model) => model.visualName)).toEqual([
-            "GPT-4o",
+            "Gemini 3.8 Flash",
             "Claude Sonnet 5.5",
         ]);
         expect(parsed.every((model) => model.retired)).toBeTrue();
+        expect(providersForSelection(parsed, null, true)).toEqual([]);
+        expect(isProviderOptionDisabled(parsed[0], true)).toBeTrue();
+        expect(isProviderOptionDisabled(parsed[1], true)).toBeTrue();
         service.setProviderCredential(1, null);
         expect(service.assistantModelsSubject.getValue()[0].retired).toBeTrue();
     });

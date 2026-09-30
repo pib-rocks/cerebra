@@ -11,7 +11,8 @@
       "gender": "Female",
       "pauseThreshold": 0.5,
       "messageHistory": 15,
-      "assistantModelId": 2,
+      "assistantModelId": null,
+      "providerRef": "default",
       "channel": "smart"
     },
     {
@@ -22,96 +23,12 @@
       "gender": "Male",
       "pauseThreshold": 0.9,
       "messageHistory": 5,
-      "assistantModelId": 1,
+      "assistantModelId": null,
+      "providerRef": "default",
       "channel": "direct"
     }
   ],
   "assistantModel": [
-    {
-      "id": 1,
-      "apiName": "gpt-3.5-turbo",
-      "hasImageSupport": false,
-      "visualName": "GPT-3.5 [Text]",
-      "endpointBase": null,
-      "capabilities": {
-        "tools": true,
-        "images": false,
-        "live": false,
-        "stt": false,
-        "tts": false
-      },
-      "credentialRef": null,
-      "isDefault": false,
-      "status": "retired"
-    },
-    {
-      "id": 2,
-      "apiName": "anthropic.claude-3-sonnet-20240229-v1:0",
-      "hasImageSupport": true,
-      "visualName": "Claude 3 Sonnet [Vision]",
-      "endpointBase": null,
-      "capabilities": {
-        "tools": true,
-        "images": true,
-        "live": false,
-        "stt": false,
-        "tts": false
-      },
-      "credentialRef": null,
-      "isDefault": false,
-      "status": "retired"
-    },
-    {
-      "id": 3,
-      "apiName": "gpt-4o",
-      "hasImageSupport": false,
-      "visualName": "GPT-4o [Text]",
-      "endpointBase": null,
-      "capabilities": {
-        "tools": true,
-        "images": false,
-        "live": false,
-        "stt": false,
-        "tts": false
-      },
-      "credentialRef": null,
-      "isDefault": false,
-      "status": "retired"
-    },
-    {
-      "id": 4,
-      "apiName": "gpt-4o",
-      "hasImageSupport": true,
-      "visualName": "GPT-4o [Vision]",
-      "endpointBase": null,
-      "capabilities": {
-        "tools": true,
-        "images": true,
-        "live": false,
-        "stt": false,
-        "tts": false
-      },
-      "credentialRef": null,
-      "isDefault": false,
-      "status": "retired"
-    },
-    {
-      "id": 5,
-      "apiName": "gemini-3.5-flash",
-      "hasImageSupport": false,
-      "visualName": "Gemini 3.5 Flash",
-      "endpointBase": null,
-      "capabilities": {
-        "tools": true,
-        "images": false,
-        "live": true,
-        "stt": false,
-        "tts": false
-      },
-      "credentialRef": null,
-      "isDefault": false,
-      "status": "retired"
-    },
     {
       "id": 6,
       "apiName": "hermes-agent",

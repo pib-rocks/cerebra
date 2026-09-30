@@ -27,8 +27,8 @@ describe("VoiceAssistantPersonalitySidebarRightComponent", () => {
     let voiceAssistantService: jasmine.SpyObj<VoiceAssistantService>;
     let paramsSubject: Subject<{chatUuid: string}>;
     const models = [
-        new AssistantModel(1, "gpt-3", "GPT-3", false),
-        new AssistantModel(2, "gpt-4", "GPT-4", true),
+        new AssistantModel(1, "gemini-3.8-flash", "Gemini 3.8 Flash", false),
+        new AssistantModel(2, "gpt-6", "GPT-6", true),
     ];
 
     beforeEach(async () => {
@@ -200,8 +200,8 @@ describe("VoiceAssistantPersonalitySidebarRightComponent", () => {
         };
         const retired = new AssistantModel(
             1,
-            "gpt-4o",
-            "GPT-4o",
+            "retired-entry",
+            "Retired entry",
             true,
             null,
             flags,

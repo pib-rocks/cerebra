@@ -44,10 +44,10 @@ describe("SpeechComponent", () => {
         null,
         true,
     );
-    const openai = new AssistantModel(
+    const gpt = new AssistantModel(
         4,
-        "gpt-4o",
-        "GPT-4o",
+        "gpt-6",
+        "GPT-6",
         true,
         "https://api.openai.example/v1",
         flags,
@@ -63,7 +63,7 @@ describe("SpeechComponent", () => {
             tokenExists: true,
             tokenActive: true,
         });
-        models = new BehaviorSubject<AssistantModel[]>([cloud, openai]);
+        models = new BehaviorSubject<AssistantModel[]>([cloud, gpt]);
         keyStore = jasmine.createSpyObj("KeyStoreService", [
             "status",
             "putSecret",
@@ -150,7 +150,10 @@ describe("SpeechComponent", () => {
             fixture.nativeElement.querySelectorAll(".speech-card-title"),
         ).map((node) => (node as HTMLElement).textContent?.trim());
         expect(titles.indexOf("pib.Cloud")).toBeLessThan(
-            titles.indexOf("GPT-4o"),
+            titles.indexOf("GPT-6"),
+        );
+        expect(titles.filter((title) => title !== "Operator password")).toEqual(
+            ["pib.Cloud", "GPT-6"],
         );
     });
 
@@ -528,12 +531,12 @@ describe("SpeechComponent", () => {
             of({successful: true, credentialRef: "provider-4"}),
         );
         component.drafts = {4: "sk-clear"};
-        component.saveKey(openai);
+        component.saveKey(gpt);
         fixture.detectChanges();
 
         expect(keyStore.putSecret).toHaveBeenCalledWith(4, "", "sk-clear");
         expect(fixture.nativeElement.querySelector("#speech-error")).toBeNull();
-        expect(text("#speech-notice")).toBe("Key stored for GPT-4o.");
+        expect(text("#speech-notice")).toBe("Key stored for GPT-6.");
     });
 
     it("shows each provider endpoint next to its key", () => {
@@ -550,8 +553,8 @@ describe("SpeechComponent", () => {
     it("does not list a retired catalogue model as a key to store", () => {
         const retired = new AssistantModel(
             9,
-            "gpt-4o",
-            "GPT-4o retired",
+            "retired-entry",
+            "Retired entry",
             true,
             "https://api.openai.example/v1",
             flags,
@@ -561,6 +564,11 @@ describe("SpeechComponent", () => {
         );
         models.next([...models.getValue(), retired]);
         fixture.detectChanges();
+        const titles = Array.from(
+            fixture.nativeElement.querySelectorAll(".speech-card-title"),
+        ).map((node) => (node as HTMLElement).textContent?.trim());
+        expect(titles).not.toContain(retired.visualName);
+        expect(titles).toContain("GPT-6");
         expect(
             fixture.nativeElement.querySelector("#speech-provider-9"),
         ).toBeNull();
@@ -572,7 +580,7 @@ describe("SpeechComponent", () => {
     it("deletes a key and lets it be entered again, marking personalities that used the model", () => {
         keyStore.deleteSecret.and.returnValue(of(""));
         component.password = "operator-secret";
-        component.deleteKey(openai);
+        component.deleteKey(gpt);
         fixture.detectChanges();
 
         expect(keyStore.deleteSecret).toHaveBeenCalledWith(
@@ -645,7 +653,7 @@ describe("SpeechComponent", () => {
             ),
         );
         component.password = "nope";
-        component.deleteKey(openai);
+        component.deleteKey(gpt);
         fixture.detectChanges();
         expect(text("#speech-error")).toBe(
             "Wrong password. No keys are available.",
