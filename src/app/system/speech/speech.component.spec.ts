@@ -95,6 +95,7 @@ describe("SpeechComponent", () => {
                             model.capabilities,
                             credentialRef,
                             model.isDefault,
+                            model.retired,
                         );
                     }),
                 );
@@ -326,6 +327,28 @@ describe("SpeechComponent", () => {
         ) as HTMLInputElement;
         expect(key.type).toBe("password");
         expect(text("#speech-provider-state-4")).toBe("Key stored");
+    });
+
+    it("does not list a retired catalogue model as a key to store", () => {
+        const retired = new AssistantModel(
+            9,
+            "gpt-4o",
+            "GPT-4o retired",
+            true,
+            "https://api.openai.example/v1",
+            flags,
+            "provider-9",
+            false,
+            true,
+        );
+        models.next([...models.getValue(), retired]);
+        fixture.detectChanges();
+        expect(
+            fixture.nativeElement.querySelector("#speech-provider-9"),
+        ).toBeNull();
+        expect(
+            fixture.nativeElement.querySelector("#speech-provider-4"),
+        ).not.toBeNull();
     });
 
     it("deletes a key and lets it be entered again, marking personalities that used the model", () => {

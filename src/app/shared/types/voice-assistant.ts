@@ -26,6 +26,8 @@ export class VoiceAssistant implements SidebarElement {
     live: boolean;
     idleTimeoutSeconds: number;
     mcp: boolean;
+    /** Set by the API when the selected catalogue row is retired. */
+    needsNewModel = false;
 
     constructor(
         personalityId: string,
@@ -85,7 +87,7 @@ export class VoiceAssistant implements SidebarElement {
     }
 
     clone(): VoiceAssistant {
-        return new VoiceAssistant(
+        const copy = new VoiceAssistant(
             String(this.personalityId),
             String(this.name),
             String(this.gender),
@@ -97,6 +99,8 @@ export class VoiceAssistant implements SidebarElement {
             this.channel,
             readPersonalityDialog(this),
         );
+        copy.needsNewModel = this.needsNewModel;
+        return copy;
     }
 }
 
@@ -162,7 +166,7 @@ export function personalityWriteBody(
 export function parseDtoToVoiceAssistant(
     dummyVoiceAssistant: VoiceAssistant,
 ): VoiceAssistant {
-    return new VoiceAssistant(
+    const parsed = new VoiceAssistant(
         dummyVoiceAssistant.personalityId,
         dummyVoiceAssistant.name,
         dummyVoiceAssistant.gender,
@@ -176,4 +180,6 @@ export function parseDtoToVoiceAssistant(
         dummyVoiceAssistant.channel,
         readPersonalityDialog(dummyVoiceAssistant),
     );
+    parsed.needsNewModel = dummyVoiceAssistant.needsNewModel === true;
+    return parsed;
 }

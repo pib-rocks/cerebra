@@ -43,7 +43,13 @@
                     </option>
                     }
                 </select>
-                @if (needsKey) {
+                @if (retiredNotice) {
+                <p
+                    id="retired-model-notice"
+                    data-test="LBL_Retired_Model">
+                    {{ retiredNotice }}
+                </p>
+                } @else if (needsKey) {
                 <p id="personality-key-missing">{{ missingKeyMark }}</p>
                 }
             </div>

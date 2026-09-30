@@ -19,6 +19,7 @@ import {AssistantModel} from "src/app/shared/types/assistantModel";
 import {TokenService} from "src/app/shared/services/token.service";
 import {ChannelCapabilityService} from "src/app/shared/services/channel-capability.service";
 import {DIRECT_CHANNEL} from "src/app/shared/types/channel-router";
+import {retiredModelNotice} from "src/app/shared/types/provider-registry";
 
 describe("VoiceAssistantPersonalitySidebarRightComponent", () => {
     let component: VoiceAssistantPersonalitySidebarRightComponent;
@@ -187,5 +188,63 @@ describe("VoiceAssistantPersonalitySidebarRightComponent", () => {
                 .args[0] as VoiceAssistant;
         expect(updated.channel).toBe(component.personalityClone.channel);
         expect(updated.description).toBe(description);
+    });
+
+    it("names a retired model and clears the prompt when a new one is chosen", () => {
+        const flags = {
+            tools: true,
+            images: true,
+            live: false,
+            stt: false,
+            tts: false,
+        };
+        const retired = new AssistantModel(
+            1,
+            "gpt-4o",
+            "GPT-4o",
+            true,
+            null,
+            flags,
+            "provider-1",
+            false,
+            true,
+        );
+        const replacement = new AssistantModel(
+            4,
+            "gpt-6",
+            "GPT-6",
+            true,
+            null,
+            flags,
+            "provider-4",
+            false,
+        );
+        voiceAssistantService.getPersonality.and.returnValue(
+            component.personalityClone,
+        );
+        voiceAssistantService.assistantModelsSubject.next([
+            retired,
+            replacement,
+        ]);
+        fixture.detectChanges();
+        const notice = fixture.nativeElement.querySelector(
+            "[data-test=LBL_Retired_Model]",
+        );
+        expect(notice?.textContent?.trim()).toBe(retiredModelNotice(retired));
+        const retiredOption = fixture.nativeElement.querySelector(
+            "#voice-assistant-model-select-right-sidebar option[value='1']",
+        ) as HTMLOptionElement;
+        expect(retiredOption.disabled).toBeTrue();
+        component.personalityFormSidebar.controls["assistantModel"].setValue(
+            "4",
+        );
+        component.updatePersonality();
+        fixture.detectChanges();
+        expect(
+            fixture.nativeElement.querySelector(
+                "[data-test=LBL_Retired_Model]",
+            ),
+        ).toBeNull();
+        expect(component.personalityClone.providerRef).toBe("4");
     });
 });

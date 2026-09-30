@@ -48,7 +48,8 @@ import {
     MISSING_KEY_MARK,
     isProviderConfigured,
     isProviderOptionDisabled,
-    personalityNeedsAttention,
+    personalityAttention,
+    retiredModelNotice,
     providerOptionValue as providerOptionValueFor,
     providerRefFromSelection,
     providersForSelection,
@@ -93,6 +94,7 @@ export class VoiceAssistantComponent implements OnInit {
     storedProviderRef: string | null = null;
     cloudTokenStored = false;
     smartChatsEnabled = true;
+    retiredNotice: string | null = null;
     readonly missingKeyMark = MISSING_KEY_MARK;
     readonly isProviderConfigured = isProviderConfigured;
     readonly isProviderOptionDisabled = isProviderOptionDisabled;
@@ -370,16 +372,11 @@ export class VoiceAssistantComponent implements OnInit {
     }
 
     needsAttention = (personalityId: string): boolean => {
-        const personality =
-            this.voiceAssistantService.getPersonality(personalityId);
-        if (personality == null) {
-            return false;
-        }
-        return personalityNeedsAttention(
-            personality.providerRef,
-            this.models,
-            this.cloudTokenStored,
-        );
+        return this.attentionFor(personalityId) != null;
+    };
+
+    attentionLabel = (personalityId: string): string => {
+        return this.attentionFor(personalityId)?.notice ?? MISSING_KEY_MARK;
     };
 
     get showSmartChannelControl(): boolean {
@@ -479,6 +476,29 @@ export class VoiceAssistantComponent implements OnInit {
         this.toolCallingReason = tools.reason;
         this.imageReason = images.reason;
         this.liveReason = live.reason;
+        this.retiredNotice = this.retiredNoticeForSelection();
+    }
+
+    private attentionFor(personalityId: string) {
+        const personality =
+            this.voiceAssistantService.getPersonality(personalityId);
+        if (personality == null) {
+            return null;
+        }
+        return personalityAttention(
+            personality.providerRef,
+            this.models,
+            this.cloudTokenStored,
+            personality.needsNewModel,
+        );
+    }
+
+    private retiredNoticeForSelection(): string | null {
+        const model = this.resolvedModel();
+        if (model == null || model.retired !== true) {
+            return null;
+        }
+        return retiredModelNotice(model);
     }
 
     private keepVoiceSelection(

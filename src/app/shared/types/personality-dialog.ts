@@ -1,4 +1,8 @@
-import {isProviderConfigured, ProviderSelectionRow} from "./provider-registry";
+import {
+    isProviderConfigured,
+    isRetired,
+    ProviderSelectionRow,
+} from "./provider-registry";
 
 /** Local speech engines. They need no provider key. */
 export const LOCAL_VOICE_INPUT = "faster-whisper";
@@ -158,6 +162,7 @@ function speechOptions(
     const cloud = models
         .filter(
             (model) =>
+                !isRetired(model) &&
                 model.capabilities?.[capability] === true &&
                 isProviderConfigured(model, cloudTokenStored),
         )

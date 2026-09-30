@@ -23,6 +23,7 @@ export class AssistantModel {
         capabilities,
         credentialRef,
         isDefault,
+        retired,
     ) {
         this.id = id;
         this.apiName = apiName;
@@ -32,11 +33,14 @@ export class AssistantModel {
         this.capabilities = capabilities;
         this.credentialRef = credentialRef;
         this.isDefault = isDefault;
+        this.status = retired === true ? "retired" : "active";
+        this.retired = this.status === "retired";
     }
 
     static getAssistantModel(model) {
         const capabilities = capabilitiesFrom(model);
-        return new AssistantModel(
+        const retired = model.retired === true || model.status === "retired";
+        const row = new AssistantModel(
             model.id,
             model.apiName,
             capabilities.images,
@@ -45,7 +49,13 @@ export class AssistantModel {
             capabilities,
             model.credentialRef ?? null,
             Boolean(model.isDefault),
+            retired,
         );
+        if (typeof model.status === "string" && model.status !== "") {
+            row.status = model.status;
+            row.retired = model.status === "retired";
+        }
+        return row;
     }
 }
 export default AssistantModel;

@@ -233,6 +233,57 @@ describe("VoiceAssistantService", () => {
         expect(parsed[1].isDefault).toBeTrue();
         expect(parsed[1].capabilities.live).toBeTrue();
         expect(parsed[0].apiName).toBe(parsed[1].apiName);
+        expect(parsed[0].retired).toBeFalse();
+    });
+
+    it("keeps a retired catalogue row so settings can name it", () => {
+        apiService.get.and.returnValue(
+            new BehaviorSubject({
+                assistantModels: [
+                    {
+                        id: 1,
+                        apiName: "gpt-4o",
+                        visualName: "GPT-4o",
+                        hasImageSupport: true,
+                        capabilities: {
+                            tools: true,
+                            images: true,
+                            live: false,
+                            stt: false,
+                            tts: false,
+                        },
+                        credentialRef: "provider-1",
+                        isDefault: false,
+                        retired: true,
+                    },
+                    {
+                        id: 2,
+                        apiName: "claude-sonnet-5-5",
+                        visualName: "Claude Sonnet 5.5",
+                        hasImageSupport: true,
+                        capabilities: {
+                            tools: true,
+                            images: true,
+                            live: false,
+                            stt: false,
+                            tts: false,
+                        },
+                        credentialRef: null,
+                        isDefault: false,
+                        status: "retired",
+                    },
+                ],
+            }),
+        );
+        service.getAllAssistantModels();
+        const parsed = service.assistantModelsSubject.getValue();
+        expect(parsed.map((model) => model.visualName)).toEqual([
+            "GPT-4o",
+            "Claude Sonnet 5.5",
+        ]);
+        expect(parsed.every((model) => model.retired)).toBeTrue();
+        service.setProviderCredential(1, null);
+        expect(service.assistantModelsSubject.getValue()[0].retired).toBeTrue();
     });
 
     it("publishes a credential change on the model list immediately", () => {

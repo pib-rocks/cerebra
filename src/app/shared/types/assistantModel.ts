@@ -13,6 +13,7 @@ export class AssistantModel {
         ),
         public credentialRef: string | null = null,
         public isDefault: boolean = false,
+        public retired: boolean = false,
     ) {}
 
     getId(): number {
@@ -37,6 +38,7 @@ export class AssistantModel {
             capabilities,
             model.credentialRef ?? null,
             Boolean(model.isDefault),
+            model.retired === true || model.status === "retired",
         );
     }
 }
@@ -50,4 +52,7 @@ export interface AssistantModelDto {
     capabilities?: Partial<ProviderCapabilities> | null;
     credentialRef?: string | null;
     isDefault?: boolean;
+    retired?: boolean;
+    /** Catalogue status. "retired" is the same fact as retired: true. */
+    status?: string;
 }

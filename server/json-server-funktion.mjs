@@ -33,11 +33,25 @@ function channelDocument() {
     };
 }
 
+function modelForPersonality(personality) {
+    if (personality.providerRef === "default") {
+        return mockData.assistantModel.find((model) => model.isDefault === true);
+    }
+    const id =
+        personality.assistantModelId != null && personality.assistantModelId !== ""
+            ? personality.assistantModelId
+            : Number(personality.providerRef);
+    return mockData.assistantModel.find((model) => model.id == id);
+}
+
 function presentPersonality(row) {
     const personality = Personality.getPersonality(row);
     const enabled = smartChatsEnabled();
     personality.smartChatsEnabled = enabled;
     personality.effectiveChannel = enabled ? personality.channel : "direct";
+    const model = modelForPersonality(personality);
+    personality.needsNewModel =
+        model?.status === "retired" || model?.retired === true;
     return personality;
 }
 
@@ -656,7 +670,10 @@ server.put("/program/:programNumber/code", (req, res, next) => {
 server.get("/assistant-model", (req, res, next) => {
     const response = mockData.assistantModel
         .map((model) => AssistantModel.getAssistantModel(model))
-        .filter((model) => model.capabilities.images === true);
+        .filter(
+            (model) =>
+                model.retired === true || model.capabilities.images === true,
+        );
     return res.status(200).send({assistantModels: response});
 });
 

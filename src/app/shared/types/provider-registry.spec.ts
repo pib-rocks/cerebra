@@ -3,7 +3,9 @@ import {
     DEFAULT_PROVIDER_REF,
     isCapabilityControlDisabled,
     isProviderConfigured,
+    isProviderOptionDisabled,
     personalityNeedsAttention,
+    retiredModelNotice,
     providerOptionValue,
     providerRefFromSelection,
     providersForSelection,
@@ -140,5 +142,39 @@ describe("provider registry selection", () => {
         expect(providersForSelection([model], null).map((m) => m.id)).toEqual([
             model.id,
         ]);
+    });
+
+    it("does not offer a retired model for a new selection and marks one that still uses it", () => {
+        const current = row(2, true, false, "gpt-6");
+        const gone = row(4, true, false, "gpt-4o");
+        gone.retired = true;
+        gone.visualName = "GPT-4o";
+        expect(
+            providersForSelection([current, gone], null).map(
+                (model) => model.id,
+            ),
+        ).toEqual([current.id]);
+        expect(
+            providersForSelection([current, gone], String(gone.id)).map(
+                (model) => model.id,
+            ),
+        ).toEqual([current.id, gone.id]);
+        expect(isProviderOptionDisabled(gone, true)).toBeTrue();
+        expect(isProviderOptionDisabled(current, true)).toBeFalse();
+        expect(
+            personalityNeedsAttention(String(gone.id), [current, gone], true),
+        ).toBeTrue();
+        expect(retiredModelNotice(gone)).toBe(
+            "GPT-4o is gone. Choose a new one.",
+        );
+        expect(
+            personalityNeedsAttention(
+                String(current.id),
+                [current, gone],
+                true,
+            ),
+        ).toBeFalse();
+        expect(personalityNeedsAttention("9", [], false, true)).toBeTrue();
+        expect(personalityNeedsAttention("9", [], false, false)).toBeFalse();
     });
 });

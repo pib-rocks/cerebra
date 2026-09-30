@@ -14,7 +14,8 @@
             <span
                 class="speech-attention"
                 [id]="'personality-needs-key-' + sidebarElement.getUUID()">
-                Needs a key
+                {{ attentionLabel?.(sidebarElement.getUUID()) || "Needs a key"
+                }}
             </span>
             }
         </a>

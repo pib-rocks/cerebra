@@ -31,7 +31,7 @@
       "id": 1,
       "apiName": "gpt-3.5-turbo",
       "hasImageSupport": false,
-      "visualName": "GPT-3.5 Turbo",
+      "visualName": "GPT-3.5 [Text]",
       "endpointBase": null,
       "capabilities": {
         "tools": true,
@@ -41,13 +41,14 @@
         "tts": false
       },
       "credentialRef": null,
-      "isDefault": false
+      "isDefault": false,
+      "status": "retired"
     },
     {
       "id": 2,
-      "apiName": "claude-3-sonnet",
+      "apiName": "anthropic.claude-3-sonnet-20240229-v1:0",
       "hasImageSupport": true,
-      "visualName": "Claude 3 Sonnet",
+      "visualName": "Claude 3 Sonnet [Vision]",
       "endpointBase": null,
       "capabilities": {
         "tools": true,
@@ -57,13 +58,14 @@
         "tts": false
       },
       "credentialRef": null,
-      "isDefault": true
+      "isDefault": false,
+      "status": "retired"
     },
     {
       "id": 3,
-      "apiName": "gpt-4.0-turbo",
+      "apiName": "gpt-4o",
       "hasImageSupport": false,
-      "visualName": "GPT-4.0 Turbo",
+      "visualName": "GPT-4o [Text]",
       "endpointBase": null,
       "capabilities": {
         "tools": true,
@@ -73,7 +75,110 @@
         "tts": false
       },
       "credentialRef": null,
-      "isDefault": false
+      "isDefault": false,
+      "status": "retired"
+    },
+    {
+      "id": 4,
+      "apiName": "gpt-4o",
+      "hasImageSupport": true,
+      "visualName": "GPT-4o [Vision]",
+      "endpointBase": null,
+      "capabilities": {
+        "tools": true,
+        "images": true,
+        "live": false,
+        "stt": false,
+        "tts": false
+      },
+      "credentialRef": null,
+      "isDefault": false,
+      "status": "retired"
+    },
+    {
+      "id": 5,
+      "apiName": "gemini-3.5-flash",
+      "hasImageSupport": false,
+      "visualName": "Gemini 3.5 Flash",
+      "endpointBase": null,
+      "capabilities": {
+        "tools": true,
+        "images": false,
+        "live": true,
+        "stt": false,
+        "tts": false
+      },
+      "credentialRef": null,
+      "isDefault": false,
+      "status": "retired"
+    },
+    {
+      "id": 6,
+      "apiName": "hermes-agent",
+      "hasImageSupport": true,
+      "visualName": "Hermes Agent (selbstlernend)",
+      "endpointBase": null,
+      "capabilities": {
+        "tools": true,
+        "images": true,
+        "live": false,
+        "stt": false,
+        "tts": false
+      },
+      "credentialRef": null,
+      "isDefault": true,
+      "status": "active"
+    },
+    {
+      "id": 7,
+      "apiName": "gemini-3.8-flash",
+      "hasImageSupport": true,
+      "visualName": "Gemini 3.8 Flash",
+      "endpointBase": null,
+      "capabilities": {
+        "tools": true,
+        "images": true,
+        "live": true,
+        "stt": false,
+        "tts": false
+      },
+      "credentialRef": null,
+      "isDefault": false,
+      "status": "active"
+    },
+    {
+      "id": 8,
+      "apiName": "gpt-6",
+      "hasImageSupport": true,
+      "visualName": "GPT-6",
+      "endpointBase": null,
+      "capabilities": {
+        "tools": true,
+        "images": true,
+        "live": false,
+        "stt": false,
+        "tts": false
+      },
+      "credentialRef": null,
+      "isDefault": false,
+      "status": "active"
+    },
+    {
+      "id": 9,
+      "apiName": "claude-sonnet-5-5",
+      "hasImageSupport": true,
+      "visualName": "Claude Sonnet 5.5",
+      "endpointBase": null,
+      "capabilities": {
+        "tools": true,
+        "images": true,
+        "live": false,
+        "stt": false,
+        "tts": false
+      },
+      "credentialRef": null,
+      "isDefault": false,
+      "status": "active"
     }
   ],
   "chats": [

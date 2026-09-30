@@ -64,7 +64,7 @@ export class SpeechComponent implements OnInit {
                 this.cloudProvider =
                     models.find((model) => usesCloudToken(model)) ?? null;
                 this.providers = models.filter(
-                    (model) => !usesCloudToken(model),
+                    (model) => !usesCloudToken(model) && !model.retired,
                 );
             });
         this.voiceAssistantService.getAllAssistantModels();

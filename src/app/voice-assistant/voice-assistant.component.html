@@ -5,6 +5,7 @@
                 [subject]="subject"
                 [button]="button"
                 [needsAttention]="needsAttention"
+                [attentionLabel]="attentionLabel"
                 [defaultRoute]="'/voice-assistant'"></app-voice-assistant-nav>
         </div>
     </div>
@@ -161,6 +162,14 @@
                     </option>
                     }
                 </select>
+                @if (retiredNotice) {
+                <p
+                    class="advanced-reason"
+                    id="retired-model-notice"
+                    data-test="LBL_Retired_Model">
+                    {{ retiredNotice }}
+                </p>
+                }
             </div>
             <div class="row ml-3 m-2 mt-3 pr-2">
                 <label
