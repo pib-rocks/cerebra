@@ -1,15 +1,19 @@
 import {Injectable} from "@angular/core";
 import {ButtonProgram} from "../types/button-program";
-import {Observable} from "rxjs";
+import {Observable, tap} from "rxjs";
 import {UtilService} from "./util.service";
 import {UrlConstants} from "./url.constants";
 import {ApiService} from "./api.service";
+import {RosService} from "./ros-service/ros.service";
 
 @Injectable({
     providedIn: "root",
 })
 export class RgbLedButtonService {
-    constructor(private apiService: ApiService) {}
+    constructor(
+        private apiService: ApiService,
+        private rosService: RosService,
+    ) {}
 
     getButtonPrograms(): Observable<ButtonProgram[]> {
         return UtilService.createResultObservable(
@@ -30,6 +34,6 @@ export class RgbLedButtonService {
             (response) => {
                 return response.buttonPrograms;
             },
-        );
+        ).pipe(tap(() => this.rosService.refreshButtonColors()));
     }
 }

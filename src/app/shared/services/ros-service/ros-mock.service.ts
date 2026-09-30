@@ -574,4 +574,8 @@ export class RosService implements IRosService {
     sleep(ms: number) {
         return new Promise((resolve) => setTimeout(resolve, ms));
     }
+
+    refreshButtonColors(): void {
+        console.info("refreshButtonColors called");
+    }
 }
