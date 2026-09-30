@@ -33,6 +33,25 @@ describe("ChannelCapabilityService", () => {
     it("hides Smart only when the installer reports the channel disabled", () => {
         http.expectOne("/api" + UrlConstants.CHAT_CHANNEL).flush({
             smartChatsEnabled: false,
+            channels: ["direct"],
+            defaultChannel: "direct",
+        });
+        expect(service.smartChatsEnabled).toBeFalse();
+    });
+
+    it("hides Smart when the channel list omits it", () => {
+        http.expectOne("/api" + UrlConstants.CHAT_CHANNEL).flush({
+            channels: ["direct"],
+            defaultChannel: "direct",
+        });
+        expect(service.smartChatsEnabled).toBeFalse();
+    });
+
+    it("does not turn Smart back on when the channel document is missing", () => {
+        service.applyInstallerFlag(false);
+        http.expectOne("/api" + UrlConstants.CHAT_CHANNEL).flush("missing", {
+            status: 404,
+            statusText: "Not Found",
         });
         expect(service.smartChatsEnabled).toBeFalse();
     });

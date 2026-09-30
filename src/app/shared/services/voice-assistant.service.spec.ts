@@ -7,9 +7,14 @@ import {BehaviorSubject} from "rxjs";
 import {RosService} from "./ros-service/ros.service";
 import {AssistantModel} from "../types/assistantModel";
 import {DEFAULT_PROVIDER_REF} from "../types/provider-registry";
-import {SMART_CHANNEL} from "../types/channel-router";
+import {
+    DIRECT_CHANNEL,
+    SMART_CHANNEL,
+    effectiveChannel,
+} from "../types/channel-router";
 import {UrlConstants} from "./url.constants";
 import {ChatService} from "./chat.service";
+import {ChannelCapabilityService} from "./channel-capability.service";
 
 describe("VoiceAssistantService", () => {
     let service: VoiceAssistantService;
@@ -256,5 +261,70 @@ describe("VoiceAssistantService", () => {
                 channel: SMART_CHANNEL,
             }),
         );
+    });
+
+    it("shows an existing Smart personality as Direct without rewriting its channel", () => {
+        const capability = TestBed.inject(ChannelCapabilityService);
+        const stored = {
+            personalityId: "persona-smart",
+            name: "Ada",
+            gender: "Female",
+            description: "Du bist pib.",
+            pauseThreshold: 0.8,
+            messageHistory: 10,
+            providerRef: DEFAULT_PROVIDER_REF,
+            channel: SMART_CHANNEL,
+            effectiveChannel: DIRECT_CHANNEL,
+            smartChatsEnabled: false,
+        };
+        apiService.get.and.returnValue(
+            new BehaviorSubject({voiceAssistantPersonalities: [stored]}),
+        );
+        service.getAllPersonalities();
+
+        expect(capability.smartChatsEnabled).toBeFalse();
+        const loaded = service.getPersonality("persona-smart");
+        expect(loaded?.channel).toBe(SMART_CHANNEL);
+        expect(loaded?.description).toBe("Du bist pib.");
+        expect(
+            effectiveChannel(loaded?.channel, capability.smartChatsEnabled),
+        ).toBe(DIRECT_CHANNEL);
+
+        apiService.put.and.returnValue(
+            new BehaviorSubject({
+                ...stored,
+                name: "Ada renamed",
+            }),
+        );
+        loaded!.name = "Ada renamed";
+        service.updatePersonalityById(loaded!);
+        const body = apiService.put.calls.mostRecent().args[1] as {
+            channel?: string;
+            description?: string;
+            name?: string;
+        };
+        expect(body.channel).toBeUndefined();
+        expect(body.description).toBe("Du bist pib.");
+        expect(body.name).toBe("Ada renamed");
+        expect(service.getPersonality("persona-smart")?.channel).toBe(
+            SMART_CHANNEL,
+        );
+
+        capability.applyInstallerFlag(true);
+        expect(
+            effectiveChannel(
+                service.getPersonality("persona-smart")?.channel,
+                capability.smartChatsEnabled,
+            ),
+        ).toBe(SMART_CHANNEL);
+        apiService.put.and.returnValue(new BehaviorSubject(stored));
+        service.updatePersonalityById(service.getPersonality("persona-smart")!);
+        expect(
+            (
+                apiService.put.calls.mostRecent().args[1] as {
+                    channel?: string;
+                }
+            ).channel,
+        ).toBe(SMART_CHANNEL);
     });
 });

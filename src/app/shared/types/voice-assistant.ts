@@ -141,6 +141,24 @@ export function parseVoiceAssistantToDto(
     };
 }
 
+/**
+ * Body for create and update. With Hermes disabled the stored channel is
+ * left off the request: sending Smart is rejected, and sending Direct would
+ * rewrite the row, so turning the flag back on would not restore it.
+ */
+export function personalityWriteBody(
+    voiceAssistant: VoiceAssistant,
+    smartChatsEnabled: boolean,
+): VoiceAssistantDto | Omit<VoiceAssistantDto, "channel"> {
+    const body = parseVoiceAssistantToDto(voiceAssistant);
+    if (smartChatsEnabled) {
+        return body;
+    }
+    const {channel, ...withoutChannel} = body;
+    void channel;
+    return withoutChannel;
+}
+
 export function parseDtoToVoiceAssistant(
     dummyVoiceAssistant: VoiceAssistant,
 ): VoiceAssistant {
@@ -153,6 +171,8 @@ export function parseDtoToVoiceAssistant(
         dummyVoiceAssistant.assistantModelId,
         dummyVoiceAssistant.messageHistory,
         dummyVoiceAssistant.providerRef,
+        // Stored channel, not effectiveChannel. The installer flag only
+        // changes how the personality is shown and run.
         dummyVoiceAssistant.channel,
         readPersonalityDialog(dummyVoiceAssistant),
     );

@@ -20,17 +20,37 @@ const middlewares = jsonServer.defaults();
 server.use(middlewares);
 server.use(jsonServer.bodyParser);
 
+function smartChatsEnabled() {
+    return mockData.chatChannel?.smartChatsEnabled !== false;
+}
+
+function channelDocument() {
+    const enabled = smartChatsEnabled();
+    return {
+        smartChatsEnabled: enabled,
+        channels: enabled ? ["smart", "direct"] : ["direct"],
+        defaultChannel: enabled ? "smart" : "direct",
+    };
+}
+
+function presentPersonality(row) {
+    const personality = Personality.getPersonality(row);
+    const enabled = smartChatsEnabled();
+    personality.smartChatsEnabled = enabled;
+    personality.effectiveChannel = enabled ? personality.channel : "direct";
+    return personality;
+}
+
 // Installation fact. Not a switch: the UI only reads it.
 server.get("/voice-assistant/channel", (req, res) => {
-    const enabled = mockData.chatChannel?.smartChatsEnabled !== false;
-    return res.status(200).send({smartChatsEnabled: enabled});
+    return res.status(200).send(channelDocument());
 });
 
 //getAllPersonalities
 server.get("/voice-assistant/personality", (req, res, next) => {
     let response = [];
     mockData.personality.forEach((personality) => {
-        response.push(Personality.getPersonality(personality));
+        response.push(presentPersonality(personality));
     });
     return res.status(200).send({voiceAssistantPersonalities: response});
 });
@@ -43,7 +63,7 @@ server.get("/voice-assistant/personality/:personalityId", (req, res, next) => {
     if (response[0] == undefined) {
         return res.status(404).send();
     }
-    return res.status(200).send(Personality.getPersonality(response[0]));
+    return res.status(200).send(presentPersonality(response[0]));
 });
 
 function assignDialog(personality, body) {
@@ -63,10 +83,18 @@ function assignDialog(personality, body) {
     }
 }
 
-function assignChannel(personality, body) {
+function assignChannel(personality, body, creating) {
+    if (body.channel === "smart" && !smartChatsEnabled()) {
+        return false;
+    }
     if (body.channel === "direct" || body.channel === "smart") {
         personality.channel = body.channel;
+        return true;
     }
+    if (creating && !smartChatsEnabled()) {
+        personality.channel = "direct";
+    }
+    return true;
 }
 
 function assignProvider(personality, body, creating) {
@@ -103,14 +131,23 @@ server.post("/voice-assistant/personality", (req, res, next) => {
         req.body.messageHistory,
     );
     assignProvider(newPersonality, req.body, true);
-    assignChannel(newPersonality, req.body);
+    if (!assignChannel(newPersonality, req.body, true)) {
+        return res.status(400).send({
+            channel: ["Smart chats are not available on this robot."],
+        });
+    }
     assignDialog(newPersonality, req.body);
     mockData.personality.push(newPersonality);
-    return res.status(201).send(Personality.getPersonality(newPersonality));
+    return res.status(201).send(presentPersonality(newPersonality));
 });
 
 //putPersonalityByPersonalityId
 server.put("/voice-assistant/personality/:personalityId", (req, res, next) => {
+    if (req.body.channel === "smart" && !smartChatsEnabled()) {
+        return res.status(400).send({
+            channel: ["Smart chats are not available on this robot."],
+        });
+    }
     let updated = false;
     mockData.personality.forEach((personality) => {
         if (personality.personalityId == req.params.personalityId) {
@@ -120,12 +157,10 @@ server.put("/voice-assistant/personality/:personalityId", (req, res, next) => {
             personality.description = req.body.description;
             personality.messageHistory = req.body.messageHistory;
             assignProvider(personality, req.body, false);
-            assignChannel(personality, req.body);
+            assignChannel(personality, req.body, false);
             assignDialog(personality, req.body);
             updated = true;
-            return res
-                .status(200)
-                .send(Personality.getPersonality(personality));
+            return res.status(200).send(presentPersonality(personality));
         }
     });
     if (!updated) {
