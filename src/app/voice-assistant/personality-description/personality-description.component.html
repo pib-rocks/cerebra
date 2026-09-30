@@ -25,22 +25,29 @@
                     <label
                         for="textarea-personality"
                         class="soul-label">
-                        SOUL.md
+                        Identity
                     </label>
-                    <p class="soul-hint">
-                        This text defines pib's identity and is loaded by the
-                        agent.
+                    <p
+                        class="soul-hint"
+                        data-test="LBL_Identity_Hint">
+                        {{ identityHint() }}
                     </p>
+                    @if (showMemoryNote()) {
+                    <p
+                        class="soul-hint"
+                        data-test="LBL_Memory_Smart_Only">
+                        MEMORY.md is part of the Smart channel only. It is not a
+                        second identity.
+                    </p>
+                    }
                     <textarea
                         id="textarea-personality"
                         data-test="TXT_Peronality"
                         class="form-control p-3 mb-4"
                         rows="16"
-                        placeholder="Edit SOUL.md — pib's identity for the agent..."
+                        placeholder="The personality's identity"
                         [(ngModel)]="textAreaContent"
-                        (input)="updateDescription()">
-                        {{personality?.description ?? "ERROR: Personality not found"}}
-                    </textarea>
+                        (input)="updateDescription()"></textarea>
                 </div>
             </div>
         </div>

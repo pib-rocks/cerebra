@@ -20,6 +20,12 @@ import {
     degradedChatReply,
 } from "src/app/system/speech/key-store-session";
 import {KeyStoreSessionService} from "src/app/system/speech/key-store-session.service";
+import {ChannelCapabilityService} from "src/app/shared/services/channel-capability.service";
+import {
+    DIRECT_CHANNEL,
+    SMART_CHANNEL,
+    transportRequest,
+} from "src/app/shared/types/channel-router";
 
 describe("ChatWindowDeepChatComponent", () => {
     let component: ChatWindowDeepChatComponent;
@@ -161,6 +167,105 @@ describe("ChatWindowDeepChatComponent", () => {
             chatId,
             "hello there",
         );
+    });
+
+    it("sends Direct and Smart through the same chat message call", () => {
+        const soul = "Du bist pib.";
+        const personality = new VoiceAssistant(
+            "persona-1",
+            "Ada",
+            "Female",
+            0.8,
+            soul,
+        );
+        personality.channel = DIRECT_CHANNEL;
+        const voiceAssistant = TestBed.inject(
+            VoiceAssistantService,
+        ) as jasmine.SpyObj<VoiceAssistantService>;
+        voiceAssistant.getPersonality.and.returnValue(personality);
+        chatService.getChat.and.returnValue(
+            new Chat("topic", "persona-1", chatId),
+        );
+        paramsSubject.next({chatUuid: chatId});
+
+        const direct = component.turnForMessage("hello there");
+        expect(direct.channel).toBe(DIRECT_CHANNEL);
+        expect(direct.systemPrompt).toBe(soul);
+        expect(direct.memory).toBeNull();
+
+        const signals = {onResponse: jasmine.createSpy("onResponse")};
+        mockDeepChat.connect!.handler(
+            {messages: [{role: "user", text: "hello there"}]},
+            signals,
+        );
+        expect(chatService.sendChatMessage).toHaveBeenCalledOnceWith(
+            chatId,
+            "hello there",
+        );
+
+        personality.channel = SMART_CHANNEL;
+        const smart = component.turnForMessage("hello there");
+        expect(smart.systemPrompt).toBeNull();
+        expect(transportRequest(chatId, smart)).toEqual(
+            transportRequest(chatId, direct),
+        );
+
+        messagesSubject.next([
+            {
+                messageId: "ai-1",
+                timestamp: "2",
+                isUser: false,
+                content: "Hel",
+            },
+        ]);
+        mockDeepChat.addMessage.calls.reset();
+        personality.channel = DIRECT_CHANNEL;
+        messagesSubject.next([
+            {
+                messageId: "ai-1",
+                timestamp: "2",
+                isUser: false,
+                content: "Hello",
+            },
+        ]);
+        expect(mockDeepChat.addMessage).toHaveBeenCalledWith({
+            role: "ai",
+            text: "Hello",
+            overwrite: true,
+        });
+    });
+
+    it("uses the SOUL text as the Direct system prompt when Hermes is disabled", () => {
+        const capability = TestBed.inject(ChannelCapabilityService);
+        capability.applyInstallerFlag(false);
+        const personality = new VoiceAssistant(
+            "persona-1",
+            "Ada",
+            "Female",
+            0.8,
+            "Du bist pib.",
+            null,
+            10,
+            undefined,
+            SMART_CHANNEL,
+        );
+        const voiceAssistant = TestBed.inject(
+            VoiceAssistantService,
+        ) as jasmine.SpyObj<VoiceAssistantService>;
+        voiceAssistant.getPersonality.and.returnValue(personality);
+        chatService.getChat.and.returnValue(
+            new Chat("topic", "persona-1", chatId),
+        );
+        paramsSubject.next({chatUuid: chatId});
+
+        const turn = component.turnForMessage("hello there");
+        expect(turn.channel).toBe(DIRECT_CHANNEL);
+        expect(turn.systemPrompt).toBe("Du bist pib.");
+        expect(turn.memory).toBeNull();
+        expect(transportRequest(chatId, turn)).toEqual({
+            chat_id: chatId,
+            content: "hello there",
+        });
     });
 
     it("handler logs PERF_TRACE_UI SUBMIT_CLICK", () => {

@@ -94,6 +94,54 @@
                 }
             </select>
         </div>
+        @if (showSmartChannelControl) {
+        <div
+            class="row mt-3 m-2 ml-3"
+            id="row-channel">
+            <label
+                id="label-channel"
+                class="col-12"
+                >Channel</label
+            >
+            <div
+                class="col-4 pointer"
+                id="channel-radio-smart">
+                <input
+                    value="smart"
+                    data-test="RBN_Channel_Smart"
+                    formControlName="channel"
+                    type="radio"
+                    id="channel-smart" />
+                <label
+                    for="channel-smart"
+                    id="label-channel-smart"
+                    >Smart</label
+                >
+            </div>
+            <div
+                class="col-4 pointer"
+                id="channel-radio-direct">
+                <input
+                    value="direct"
+                    data-test="RBN_Channel_Direct"
+                    formControlName="channel"
+                    type="radio"
+                    id="channel-direct" />
+                <label
+                    for="channel-direct"
+                    id="label-channel-direct"
+                    >Direct</label
+                >
+            </div>
+        </div>
+        } @else {
+        <p
+            class="m-2 ml-3"
+            id="channel-direct-only"
+            data-test="LBL_Channel_Direct">
+            Direct
+        </p>
+        }
         <div class="row mt-3 m-2 ml-3">
             <div
                 class="col-4 pointer"

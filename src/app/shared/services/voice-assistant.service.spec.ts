@@ -7,6 +7,7 @@ import {BehaviorSubject} from "rxjs";
 import {RosService} from "./ros-service/ros.service";
 import {AssistantModel} from "../types/assistantModel";
 import {DEFAULT_PROVIDER_REF} from "../types/provider-registry";
+import {SMART_CHANNEL} from "../types/channel-router";
 import {UrlConstants} from "./url.constants";
 import {ChatService} from "./chat.service";
 
@@ -252,6 +253,7 @@ describe("VoiceAssistantService", () => {
             jasmine.objectContaining({
                 providerRef: DEFAULT_PROVIDER_REF,
                 assistantModelId: null,
+                channel: SMART_CHANNEL,
             }),
         );
     });

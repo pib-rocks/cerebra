@@ -10,13 +10,15 @@ import {VoiceAssistantService} from "../shared/services/voice-assistant.service"
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {HttpClientTestingModule} from "@angular/common/http/testing";
 import {VoiceAssistant} from "../shared/types/voice-assistant";
-import {BehaviorSubject} from "rxjs";
+import {BehaviorSubject, Subject} from "rxjs";
 import {TokenService} from "../shared/services/token.service";
 import {AssistantModel} from "../shared/types/assistantModel";
 import {
     DEFAULT_PROVIDER_REF,
     ProviderCapabilities,
 } from "../shared/types/provider-registry";
+import {ChannelCapabilityService} from "../shared/services/channel-capability.service";
+import {DIRECT_CHANNEL, SMART_CHANNEL} from "../shared/types/channel-router";
 export class MockNgbModalRef {
     componentInstance = {
         prompt: undefined,
@@ -71,6 +73,8 @@ describe("VoiceAssistantComponent", () => {
                 {
                     provide: Router,
                     useValue: {
+                        events: new Subject(),
+                        navigate: jasmine.createSpy("navigate"),
                         get url() {
                             return "/test-url";
                         },
@@ -205,6 +209,7 @@ describe("VoiceAssistantComponent", () => {
                 .args[0] as VoiceAssistant;
         expect(created.providerRef).toBe(DEFAULT_PROVIDER_REF);
         expect(created.assistantModelId).toBeNull();
+        expect(created.channel).toBe(SMART_CHANNEL);
     });
 
     it("stores an explicit provider id when that row is selected", () => {
@@ -316,5 +321,75 @@ describe("VoiceAssistantComponent", () => {
         voiceAssistantService.getPersonality.and.returnValue(personality);
         component.models = [cleared];
         expect(component.needsAttention("persona-1")).toBeTrue();
+    });
+
+    it("keeps the identity text when the channel switches to Direct", () => {
+        const existing = new VoiceAssistant(
+            "persona-1",
+            "Ada",
+            "Female",
+            0.8,
+            "Du bist pib.",
+        );
+        voiceAssistantService.getPersonality.and.returnValue(existing);
+        component.personalityForm.patchValue({
+            "name-input": "Ada",
+            gender: "Female",
+            pausethreshold: 0.8,
+            messageHistory: 10,
+            channel: DIRECT_CHANNEL,
+        });
+        component.editPersonality("persona-1");
+        const updated =
+            voiceAssistantService.updatePersonalityById.calls.mostRecent()
+                .args[0] as VoiceAssistant;
+        expect(updated.channel).toBe(DIRECT_CHANNEL);
+        expect(updated.description).toBe("Du bist pib.");
+    });
+
+    it("stores Direct and shows no Smart control when Hermes is disabled", () => {
+        const capability = TestBed.inject(ChannelCapabilityService);
+        capability.applyInstallerFlag(false);
+        fixture.detectChanges();
+        expect(component.showSmartChannelControl).toBeFalse();
+        component.openAddModal();
+        fixture.detectChanges();
+        expect(
+            document.body.querySelector("[data-test=RBN_Channel_Smart]"),
+        ).toBeNull();
+        expect(
+            document.body.querySelector("[data-test=LBL_Channel_Direct]"),
+        ).not.toBeNull();
+        component.personalityForm.patchValue({
+            "name-input": "Ada",
+            gender: "Female",
+            pausethreshold: 0.8,
+            messageHistory: 10,
+            channel: SMART_CHANNEL,
+        });
+        component.addPersonality();
+        const created =
+            voiceAssistantService.createPersonality.calls.mostRecent()
+                .args[0] as VoiceAssistant;
+        expect(created.channel).toBe(DIRECT_CHANNEL);
+        const stored = new VoiceAssistant(
+            "persona-1",
+            "Ada",
+            "Female",
+            0.8,
+            "Du bist pib.",
+            null,
+            10,
+            DEFAULT_PROVIDER_REF,
+            SMART_CHANNEL,
+        );
+        voiceAssistantService.getPersonality.and.returnValue(stored);
+        component.editPersonality("persona-1");
+        const updated =
+            voiceAssistantService.updatePersonalityById.calls.mostRecent()
+                .args[0] as VoiceAssistant;
+        expect(updated.channel).toBe(SMART_CHANNEL);
+        expect(updated.description).toBe("Du bist pib.");
+        component.ngbModalRef?.close();
     });
 });

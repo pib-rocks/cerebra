@@ -48,6 +48,46 @@
                 }
             </div>
         </div>
+        @if (showSmartChannelControl) {
+        <div
+            class="row pl-1 mt-sm-3 mt-xl-4"
+            id="personality-sidebar-channel">
+            <label id="personality-sidebar-label-channel">Channel</label>
+            <div class="col-sm-6 col-xl-12 pl-0">
+                <input
+                    value="smart"
+                    formControlName="channel"
+                    type="radio"
+                    data-test="RBN_Channel_Smart"
+                    id="personality-sidebar-channel-smart" />
+                <label
+                    class="pl-4"
+                    for="personality-sidebar-channel-smart"
+                    >Smart</label
+                >
+            </div>
+            <div class="col-sm-6 col-xl-12 pl-0">
+                <input
+                    value="direct"
+                    formControlName="channel"
+                    type="radio"
+                    data-test="RBN_Channel_Direct"
+                    id="personality-sidebar-channel-direct" />
+                <label
+                    class="pl-4"
+                    for="personality-sidebar-channel-direct"
+                    >Direct</label
+                >
+            </div>
+        </div>
+        } @else {
+        <p
+            class="mt-sm-3 mt-xl-4"
+            id="personality-sidebar-channel-direct-only"
+            data-test="LBL_Channel_Direct">
+            Direct
+        </p>
+        }
         <div class="row pl-1 mt-sm-3 mt-xl-4">
             <label id="personality-sidebar-label-name">Voice gender</label>
             <div class="col-sm-6 col-xl-12 pl-0">

@@ -22,6 +22,13 @@ import {NgbModal, NgbModalRef} from "@ng-bootstrap/ng-bootstrap";
 import {VoiceAssistant} from "../shared/types/voice-assistant";
 import {AssistantModel} from "../shared/types/assistantModel";
 import {
+    DIRECT_CHANNEL,
+    SMART_CHANNEL,
+    parseChatChannel,
+    showSmartChannelControl,
+} from "../shared/types/channel-router";
+import {ChannelCapabilityService} from "../shared/services/channel-capability.service";
+import {
     DEFAULT_PROVIDER_REF,
     MISSING_KEY_MARK,
     isProviderConfigured,
@@ -64,6 +71,7 @@ export class VoiceAssistantComponent implements OnInit {
     selectionModels: AssistantModel[] = [];
     storedProviderRef: string | null = null;
     cloudTokenStored = false;
+    smartChatsEnabled = true;
     readonly missingKeyMark = MISSING_KEY_MARK;
     readonly isProviderConfigured = isProviderConfigured;
     readonly isProviderOptionDisabled = isProviderOptionDisabled;
@@ -78,6 +86,7 @@ export class VoiceAssistantComponent implements OnInit {
         private voiceAssistantService: VoiceAssistantService,
         private modalService: NgbModal,
         private tokenService: TokenService,
+        private channelCapability: ChannelCapabilityService,
     ) {}
 
     voiceAssistantActivationToggle = new FormControl(false);
@@ -95,6 +104,11 @@ export class VoiceAssistantComponent implements OnInit {
             .subscribe((status) => {
                 this.cloudTokenStored = status.tokenExists;
                 this.rebuildSelection();
+            });
+        this.channelCapability.smartChatsEnabled$
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe((enabled) => {
+                this.smartChatsEnabled = enabled;
             });
         this.button.enabled = true;
         this.button.func = this.openAddModal;
@@ -129,6 +143,10 @@ export class VoiceAssistantComponent implements OnInit {
                 ],
             }),
             assistantModel: new FormControl(DEFAULT_PROVIDER_REF, {
+                nonNullable: true,
+                validators: [Validators.required],
+            }),
+            channel: new FormControl(SMART_CHANNEL, {
                 nonNullable: true,
                 validators: [Validators.required],
             }),
@@ -220,6 +238,7 @@ export class VoiceAssistantComponent implements OnInit {
             pausethreshold: 0.8,
             messageHistory: 10,
             assistantModel: DEFAULT_PROVIDER_REF,
+            channel: this.defaultChannel(),
         });
         this.thresholdString =
             this.personalityForm.controls["pausethreshold"].value + "s";
@@ -242,6 +261,7 @@ export class VoiceAssistantComponent implements OnInit {
                 pausethreshold: updatePersonality?.pauseThreshold,
                 assistantModel:
                     updatePersonality?.providerRef ?? DEFAULT_PROVIDER_REF,
+                channel: updatePersonality?.channel ?? SMART_CHANNEL,
             });
             this.thresholdString =
                 this.personalityForm.controls["pausethreshold"].value + "s";
@@ -256,6 +276,11 @@ export class VoiceAssistantComponent implements OnInit {
             const choice = providerRefFromSelection(
                 String(this.personalityForm.controls["assistantModel"].value),
             );
+            const channel = this.showSmartChannelControl
+                ? parseChatChannel(
+                      String(this.personalityForm.controls["channel"].value),
+                  )
+                : DIRECT_CHANNEL;
             this.voiceAssistantService.createPersonality(
                 new VoiceAssistant(
                     "",
@@ -266,6 +291,7 @@ export class VoiceAssistantComponent implements OnInit {
                     choice.assistantModelId,
                     this.personalityForm.controls["messageHistory"].value,
                     choice.providerRef,
+                    channel,
                 ),
             );
         }
@@ -289,6 +315,11 @@ export class VoiceAssistantComponent implements OnInit {
             );
             updatePersonality.providerRef = choice.providerRef;
             updatePersonality.assistantModelId = choice.assistantModelId;
+            if (this.showSmartChannelControl) {
+                updatePersonality.channel = parseChatChannel(
+                    String(this.personalityForm.controls["channel"].value),
+                );
+            }
             this.voiceAssistantService.updatePersonalityById(updatePersonality);
         }
         this.uuid = undefined;
@@ -310,6 +341,14 @@ export class VoiceAssistantComponent implements OnInit {
             this.cloudTokenStored,
         );
     };
+
+    get showSmartChannelControl(): boolean {
+        return showSmartChannelControl(this.smartChatsEnabled);
+    }
+
+    private defaultChannel() {
+        return this.showSmartChannelControl ? SMART_CHANNEL : DIRECT_CHANNEL;
+    }
 
     private rebuildSelection() {
         this.selectionModels = providersForSelection(

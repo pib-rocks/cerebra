@@ -17,6 +17,8 @@ import {VoiceAssistant} from "src/app/shared/types/voice-assistant";
 import {VoiceAssistantService} from "../../../shared/services/voice-assistant.service";
 import {AssistantModel} from "src/app/shared/types/assistantModel";
 import {TokenService} from "src/app/shared/services/token.service";
+import {ChannelCapabilityService} from "src/app/shared/services/channel-capability.service";
+import {DIRECT_CHANNEL} from "src/app/shared/types/channel-router";
 
 describe("VoiceAssistantPersonalitySidebarRightComponent", () => {
     let component: VoiceAssistantPersonalitySidebarRightComponent;
@@ -38,6 +40,7 @@ describe("VoiceAssistantPersonalitySidebarRightComponent", () => {
                 "getAllPersonalities",
                 "updatePersonalityById",
                 "getAllAssistantModels",
+                "getPersonality",
             ]);
 
         await TestBed.configureTestingModule({
@@ -148,5 +151,41 @@ describe("VoiceAssistantPersonalitySidebarRightComponent", () => {
     it("should update personality", () => {
         component.updatePersonality();
         expect(voiceAssistantService.updatePersonalityById).toHaveBeenCalled();
+    });
+
+    it("keeps the identity text when the channel switches to Direct", () => {
+        component.personalityClone.description = "Du bist pib.";
+        component.personalityFormSidebar.controls["channel"].setValue(
+            DIRECT_CHANNEL,
+        );
+        component.updatePersonality();
+        const updated =
+            voiceAssistantService.updatePersonalityById.calls.mostRecent()
+                .args[0] as VoiceAssistant;
+        expect(updated.channel).toBe(DIRECT_CHANNEL);
+        expect(updated.description).toBe("Du bist pib.");
+    });
+
+    it("shows no Smart control when Hermes is disabled", () => {
+        const capability = TestBed.inject(ChannelCapabilityService);
+        capability.applyInstallerFlag(false);
+        fixture.detectChanges();
+        expect(
+            fixture.nativeElement.querySelector(
+                "[data-test=RBN_Channel_Smart]",
+            ),
+        ).toBeNull();
+        expect(
+            fixture.nativeElement.querySelector(
+                "[data-test=LBL_Channel_Direct]",
+            ),
+        ).not.toBeNull();
+        const description = component.personalityClone.description;
+        component.updatePersonality();
+        const updated =
+            voiceAssistantService.updatePersonalityById.calls.mostRecent()
+                .args[0] as VoiceAssistant;
+        expect(updated.channel).toBe(component.personalityClone.channel);
+        expect(updated.description).toBe(description);
     });
 });

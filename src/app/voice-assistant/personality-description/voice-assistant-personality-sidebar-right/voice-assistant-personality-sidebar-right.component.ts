@@ -28,6 +28,12 @@ import {
     providersForSelection,
 } from "src/app/shared/types/provider-registry";
 import {TokenService} from "src/app/shared/services/token.service";
+import {ChannelCapabilityService} from "src/app/shared/services/channel-capability.service";
+import {
+    SMART_CHANNEL,
+    parseChatChannel,
+    showSmartChannelControl,
+} from "src/app/shared/types/channel-router";
 @Component({
     selector: "app-va-personality-sidebar-right",
     templateUrl: "./voice-assistant-personality-sidebar-right.component.html",
@@ -51,6 +57,7 @@ export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
     models: AssistantModel[] = [];
     selectionModels: AssistantModel[] = [];
     cloudTokenStored = false;
+    smartChatsEnabled = true;
     needsKey = false;
     readonly missingKeyMark = MISSING_KEY_MARK;
     readonly isProviderConfigured = isProviderConfigured;
@@ -60,6 +67,7 @@ export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
         private voiceAssistantService: VoiceAssistantService,
         private route: ActivatedRoute,
         private tokenService: TokenService,
+        private channelCapability: ChannelCapabilityService,
     ) {}
 
     ngOnInit() {
@@ -74,6 +82,11 @@ export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
             .subscribe((status) => {
                 this.cloudTokenStored = status.tokenExists;
                 this.rebuildSelection();
+            });
+        this.channelCapability.smartChatsEnabled$
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe((enabled) => {
+                this.smartChatsEnabled = enabled;
             });
         this.route.params
             .pipe(takeUntilDestroyed(this.destroyRef))
@@ -127,6 +140,13 @@ export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
             ),
             assistantModel: new FormControl(
                 this.personalityClone?.providerRef ?? DEFAULT_PROVIDER_REF,
+                {
+                    nonNullable: true,
+                    validators: [Validators.required],
+                },
+            ),
+            channel: new FormControl(
+                this.personalityClone?.channel ?? SMART_CHANNEL,
                 {
                     nonNullable: true,
                     validators: [Validators.required],
@@ -257,12 +277,23 @@ export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
             );
             this.personalityClone.providerRef = choice.providerRef;
             this.personalityClone.assistantModelId = choice.assistantModelId;
+            if (this.showSmartChannelControl) {
+                this.personalityClone.channel = parseChatChannel(
+                    String(
+                        this.personalityFormSidebar.controls["channel"].value,
+                    ),
+                );
+            }
             this.voiceAssistantService.updatePersonalityById(
                 this.personalityClone!,
             );
         } else {
             console.log("Persona could not be saved, invalid input");
         }
+    }
+
+    get showSmartChannelControl(): boolean {
+        return showSmartChannelControl(this.smartChatsEnabled);
     }
 
     providerOptionValue(model: AssistantModel): string {

@@ -18,6 +18,7 @@ export class Personality {
         this.assistantModelId = assistantModelId;
         this.messageHistory = messageHistory;
         this.providerRef = null;
+        this.channel = "smart";
     }
 
     static getPersonality(personality) {
@@ -40,6 +41,7 @@ export class Personality {
         } else {
             row.providerRef = "default";
         }
+        row.channel = personality.channel === "direct" ? "direct" : "smart";
         return row;
     }
 

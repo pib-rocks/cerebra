@@ -1,4 +1,7 @@
 {
+  "chatChannel": {
+    "smartChatsEnabled": true
+  },
   "personality": [
     {
       "id": 1,
@@ -8,7 +11,8 @@
       "gender": "Female",
       "pauseThreshold": 0.5,
       "messageHistory": 15,
-      "assistantModelId": 2
+      "assistantModelId": 2,
+      "channel": "smart"
     },
     {
       "id": 2,
@@ -18,7 +22,8 @@
       "gender": "Male",
       "pauseThreshold": 0.9,
       "messageHistory": 5,
-      "assistantModelId": 1
+      "assistantModelId": 1,
+      "channel": "direct"
     }
   ],
   "assistantModel": [

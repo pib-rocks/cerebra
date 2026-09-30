@@ -1,6 +1,7 @@
 export enum UrlConstants {
     PERSONALITY = "/voice-assistant/personality",
     CHAT = "/voice-assistant/chat",
+    CHAT_CHANNEL = "/voice-assistant/channel",
     MOTOR = "/motor",
     CAMERA = "/camera-settings",
     PROGRAM = "/program",

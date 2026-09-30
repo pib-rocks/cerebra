@@ -20,6 +20,12 @@ const middlewares = jsonServer.defaults();
 server.use(middlewares);
 server.use(jsonServer.bodyParser);
 
+// Installation fact. Not a switch: the UI only reads it.
+server.get("/voice-assistant/channel", (req, res) => {
+    const enabled = mockData.chatChannel?.smartChatsEnabled !== false;
+    return res.status(200).send({smartChatsEnabled: enabled});
+});
+
 //getAllPersonalities
 server.get("/voice-assistant/personality", (req, res, next) => {
     let response = [];
@@ -39,6 +45,12 @@ server.get("/voice-assistant/personality/:personalityId", (req, res, next) => {
     }
     return res.status(200).send(Personality.getPersonality(response[0]));
 });
+
+function assignChannel(personality, body) {
+    if (body.channel === "direct" || body.channel === "smart") {
+        personality.channel = body.channel;
+    }
+}
 
 function assignProvider(personality, body, creating) {
     const ref = body.providerRef;
@@ -74,6 +86,7 @@ server.post("/voice-assistant/personality", (req, res, next) => {
         req.body.messageHistory,
     );
     assignProvider(newPersonality, req.body, true);
+    assignChannel(newPersonality, req.body);
     mockData.personality.push(newPersonality);
     return res.status(201).send(Personality.getPersonality(newPersonality));
 });
@@ -89,6 +102,7 @@ server.put("/voice-assistant/personality/:personalityId", (req, res, next) => {
             personality.description = req.body.description;
             personality.messageHistory = req.body.messageHistory;
             assignProvider(personality, req.body, false);
+            assignChannel(personality, req.body);
             updated = true;
             return res
                 .status(200)

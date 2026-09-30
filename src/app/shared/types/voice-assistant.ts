@@ -1,4 +1,5 @@
 import {SidebarElement} from "../interfaces/sidebar-element.interface";
+import {ChatChannel, parseChatChannel} from "./channel-router";
 import {
     DEFAULT_PROVIDER_REF,
     providerRefFromSelection,
@@ -13,6 +14,7 @@ export class VoiceAssistant implements SidebarElement {
     assistantModelId: number | null;
     messageHistory: number;
     providerRef: string;
+    channel: ChatChannel;
 
     constructor(
         personalityId: string,
@@ -23,6 +25,7 @@ export class VoiceAssistant implements SidebarElement {
         assistantModelId?: number | null,
         messageHistory?: number,
         providerRef?: string | null,
+        channel?: string | null,
     ) {
         this.personalityId = personalityId;
         this.name = name;
@@ -41,6 +44,7 @@ export class VoiceAssistant implements SidebarElement {
         } else {
             this.providerRef = DEFAULT_PROVIDER_REF;
         }
+        this.channel = parseChatChannel(channel);
     }
     getName(): string {
         return this.name;
@@ -59,6 +63,7 @@ export class VoiceAssistant implements SidebarElement {
             this.assistantModelId,
             Number(this.messageHistory),
             this.providerRef,
+            this.channel,
         );
     }
 }
@@ -71,6 +76,7 @@ export interface VoiceAssistantDto {
     assistantModelId: number | null;
     messageHistory: number;
     providerRef: string;
+    channel: ChatChannel;
 }
 
 export function parseVoiceAssistantToDto(
@@ -85,6 +91,7 @@ export function parseVoiceAssistantToDto(
         assistantModelId: choice.assistantModelId,
         messageHistory: voiceAssistant.messageHistory,
         providerRef: choice.providerRef,
+        channel: voiceAssistant.channel,
     };
 }
 
@@ -100,5 +107,6 @@ export function parseDtoToVoiceAssistant(
         dummyVoiceAssistant.assistantModelId,
         dummyVoiceAssistant.messageHistory,
         dummyVoiceAssistant.providerRef,
+        dummyVoiceAssistant.channel,
     );
 }

@@ -22,6 +22,12 @@ import {
 } from "src/app/shared/types/provider-registry";
 import {degradedChatReply} from "src/app/system/speech/key-store-session";
 import {KeyStoreSessionService} from "src/app/system/speech/key-store-session.service";
+import {ChannelCapabilityService} from "src/app/shared/services/channel-capability.service";
+import {
+    RoutedTurn,
+    routeTurn,
+    transportRequest,
+} from "src/app/shared/types/channel-router";
 import "deep-chat";
 
 @Component({
@@ -63,6 +69,7 @@ export class ChatWindowDeepChatComponent
         private readonly route: ActivatedRoute,
         private readonly tokenService: TokenService,
         private readonly keyStoreSession: KeyStoreSessionService,
+        private readonly channelCapability: ChannelCapabilityService,
     ) {}
 
     ngOnInit(): void {
@@ -137,14 +144,20 @@ export class ChatWindowDeepChatComponent
                     )}ms`,
                 );
                 this.pendingSignals = signals;
+                const request = transportRequest(
+                    chatId,
+                    this.turnForMessage(text),
+                );
                 this.sendChatMessageSubscriptions.add(
-                    this.chatService.sendChatMessage(chatId, text).subscribe({
-                        error: (err) => {
-                            signals.onResponse({error: String(err)});
-                            this.pendingSignals = undefined;
-                            this.submitClickMs = undefined;
-                        },
-                    }),
+                    this.chatService
+                        .sendChatMessage(request.chat_id, request.content)
+                        .subscribe({
+                            error: (err) => {
+                                signals.onResponse({error: String(err)});
+                                this.pendingSignals = undefined;
+                                this.submitClickMs = undefined;
+                            },
+                        }),
                 );
             },
         };
@@ -184,6 +197,29 @@ export class ChatWindowDeepChatComponent
                 }
             },
         );
+    }
+
+    /**
+     * Direct turns carry the personality identity as the system prompt.
+     * MEMORY stays on Smart. The ROS request stays chat id plus user text.
+     */
+    turnForMessage(content: string): RoutedTurn {
+        const personality = this.personalityForTurn();
+        return routeTurn({
+            channel: personality?.channel,
+            smartChatsEnabled: this.channelCapability.smartChatsEnabled,
+            soul: personality?.description,
+            memory: null,
+            content,
+        });
+    }
+
+    private personalityForTurn() {
+        const personalityId = this.chat?.personalityId;
+        if (personalityId == null) {
+            return undefined;
+        }
+        return this.voiceAssistantService.getPersonality(personalityId);
     }
 
     private personalityKeyMissing(): boolean {
