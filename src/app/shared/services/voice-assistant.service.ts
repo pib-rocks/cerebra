@@ -1,9 +1,9 @@
 import {Injectable} from "@angular/core";
 import {ApiService} from "./api.service";
-import {readPersonalityDialog} from "../types/personality-dialog";
 import {
     VoiceAssistant,
     parseDtoToVoiceAssistant,
+    personalityDialogFromRecord,
     personalityWriteBody,
 } from "../types/voice-assistant";
 import {ChannelCapabilityService} from "./channel-capability.service";
@@ -85,7 +85,7 @@ export class VoiceAssistantService implements SidebarService {
                 m.messageHistory,
                 m.providerRef,
                 m.channel,
-                readPersonalityDialog(m),
+                personalityDialogFromRecord(m),
             );
             personality.needsNewModel = m.needsNewModel === true;
             newPersonalities.push(personality);

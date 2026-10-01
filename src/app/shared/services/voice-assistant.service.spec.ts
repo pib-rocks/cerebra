@@ -1,7 +1,7 @@
 import {TestBed, waitForAsync} from "@angular/core/testing";
 import {VoiceAssistantService} from "./voice-assistant.service";
 import {HttpClientTestingModule} from "@angular/common/http/testing";
-import {VoiceAssistant} from "../types/voice-assistant";
+import {VOICE_MODE_TURN_BASED, VoiceAssistant} from "../types/voice-assistant";
 import {ApiService} from "./api.service";
 import {BehaviorSubject} from "rxjs";
 import {RosService} from "./ros-service/ros.service";
@@ -313,17 +313,42 @@ describe("VoiceAssistantService", () => {
         ).toBeNull();
     });
 
-    it("sends the default provider pointer when a personality has no model id", () => {
+    it("sends the personality columns on create and the same columns on update", () => {
         apiService.post.and.returnValue(observableOfKlaus);
+        apiService.put.and.returnValue(observableOfKlaus);
         service.createPersonality(klaus);
-        expect(apiService.post).toHaveBeenCalledWith(
-            UrlConstants.PERSONALITY,
-            jasmine.objectContaining({
-                providerRef: DEFAULT_PROVIDER_REF,
-                assistantModelId: null,
-                channel: SMART_CHANNEL,
-            }),
+        const created = apiService.post.calls.mostRecent().args[1] as Record<
+            string,
+            unknown
+        >;
+        expect(Object.keys(created).sort()).toEqual([
+            "channel",
+            "description",
+            "gender",
+            "liveIdleTimeout",
+            "messageHistory",
+            "name",
+            "pauseThreshold",
+            "providerRef",
+            "sttEngine",
+            "toolCalling",
+            "ttsEngine",
+            "voiceMode",
+        ]);
+        expect(created["providerRef"]).toBe(DEFAULT_PROVIDER_REF);
+        expect(created["channel"]).toBe(SMART_CHANNEL);
+        expect(created["voiceMode"]).toBe(VOICE_MODE_TURN_BASED);
+        service.updatePersonalityById(klaus);
+        const updated = apiService.put.calls.mostRecent().args[1] as Record<
+            string,
+            unknown
+        >;
+        expect(Object.keys(updated).sort()).toEqual(
+            Object.keys(created).sort(),
         );
+        expect(updated["channel"]).toBe(created["channel"]);
+        expect(updated["providerRef"]).toBe(created["providerRef"]);
+        expect(updated["voiceMode"]).toBe(created["voiceMode"]);
     });
 
     it("shows an existing Smart personality as Direct without rewriting its channel", () => {
