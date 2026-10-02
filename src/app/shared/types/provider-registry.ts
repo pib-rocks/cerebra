@@ -8,8 +8,9 @@ export const DEFAULT_PROVIDER_REF = "default";
 /**
  * Registry row whose credential is the SmartConnect token. The Speech tab
  * shows that token as pib.Cloud and does not ask for a second key.
+ * A personality on this row needs no provider key.
  */
-export const CLOUD_TOKEN_API_NAME = "hermes-agent";
+export const CLOUD_TOKEN_API_NAME = "pib-cloud";
 
 export const MISSING_KEY_MARK = "Needs a key";
 

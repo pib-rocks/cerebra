@@ -112,11 +112,12 @@ describe("shipped personalities", () => {
             ).toBeNull();
             expect(model).not.toBeNull();
             expect(isProviderOptionDisabled(model!, true)).toBeFalse();
+            expect(CLOUD_TOKEN_API_NAME).toBe("pib-cloud");
             expect(
                 providersForSelection(models, persona.providerRef, true).map(
                     (offered) => offered.apiName,
                 ),
-            ).toEqual([CLOUD_TOKEN_API_NAME, "pib-cloud"]);
+            ).toEqual([CLOUD_TOKEN_API_NAME]);
         }
     });
 });

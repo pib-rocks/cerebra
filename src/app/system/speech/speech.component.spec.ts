@@ -37,7 +37,7 @@ describe("SpeechComponent", () => {
     const cloud = new AssistantModel(
         1,
         CLOUD_TOKEN_API_NAME,
-        "Hermes Agent",
+        "pib.Cloud",
         true,
         "https://cloud.example/v1",
         flags,
