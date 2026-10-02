@@ -243,6 +243,12 @@ describe("VoiceAssistantService", () => {
         expect(parsed[1].capabilities.live).toBeTrue();
         expect(parsed[0].apiName).toBe(parsed[1].apiName);
         expect(parsed[0].retired).toBeFalse();
+
+        service.setProviderCredential(8, null);
+        const cleared = service.assistantModelsSubject.getValue();
+        expect(cleared[0].credentialRef).toBeNull();
+        expect(cleared[0].endpointBase).toBe("https://example.test/v1");
+        expect(cleared[1].endpointBase).toBe("https://example.test/v1");
     });
 
     it("keeps a retired catalogue row so settings can name it", () => {

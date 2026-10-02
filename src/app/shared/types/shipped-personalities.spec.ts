@@ -12,11 +12,6 @@ import {
 
 const CATALOGUE = [
     {
-        apiName: "hermes-agent",
-        visualName: "Hermes Agent (selbstlernend)",
-        isDefault: false,
-    },
-    {
         apiName: "gemini-3.8-flash",
         visualName: "Gemini 3.8 Flash",
         isDefault: false,
@@ -67,6 +62,9 @@ describe("shipped personalities", () => {
                 isDefault: model.isDefault,
             })),
         ).toEqual(CATALOGUE);
+        expect(models.map((model) => model.apiName)).not.toContain(
+            "hermes-agent",
+        );
         expect(models.every((model) => model.retired === false)).toBeTrue();
         const cloud = models.find((model) => model.isDefault);
         expect(cloud?.apiName).toBe("pib-cloud");

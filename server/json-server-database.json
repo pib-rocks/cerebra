@@ -30,23 +30,6 @@
     ],
     "assistantModel": [
         {
-            "id": 6,
-            "apiName": "hermes-agent",
-            "hasImageSupport": true,
-            "visualName": "Hermes Agent (selbstlernend)",
-            "endpointBase": null,
-            "capabilities": {
-                "tools": true,
-                "images": true,
-                "live": false,
-                "stt": false,
-                "tts": false
-            },
-            "credentialRef": null,
-            "isDefault": false,
-            "status": "active"
-        },
-        {
             "id": 7,
             "apiName": "gemini-3.8-flash",
             "hasImageSupport": true,

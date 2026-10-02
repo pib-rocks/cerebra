@@ -32,7 +32,6 @@ export class SpeechComponent implements OnInit {
     credentialRefs: string[] = [];
     cloudTokenStored = false;
     cloudTokenActive = false;
-    cloudProvider: AssistantModel | null = null;
     providers: AssistantModel[] = [];
     password = "";
     newPassword = "";
@@ -64,8 +63,6 @@ export class SpeechComponent implements OnInit {
         this.voiceAssistantService.assistantModelsSubject
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe((models) => {
-                this.cloudProvider =
-                    models.find((model) => usesCloudToken(model)) ?? null;
                 this.providers = models.filter(
                     (model) => !usesCloudToken(model) && !model.retired,
                 );
@@ -79,11 +76,6 @@ export class SpeechComponent implements OnInit {
             return "Provider keys are encrypted. The operator password is asked at robot start.";
         }
         return "Provider keys are stored in cleartext on the robot. No operator password is asked at robot start.";
-    }
-
-    endpointText(model: AssistantModel | null): string {
-        const endpoint = model?.endpointBase?.trim() ?? "";
-        return endpoint === "" ? "—" : endpoint;
     }
 
     cloudStatus(): string {

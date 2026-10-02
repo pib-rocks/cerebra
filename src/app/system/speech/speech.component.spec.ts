@@ -145,7 +145,9 @@ describe("SpeechComponent", () => {
             fixture.nativeElement.querySelector("#speech-cloud-key"),
         ).toBeNull();
         expect(text("#speech-cloud-status")).toContain("SmartConnect token");
-        expect(text("#speech-cloud-endpoint")).toBe("https://cloud.example/v1");
+        expect(
+            fixture.nativeElement.querySelector("#speech-cloud-endpoint"),
+        ).toBeNull();
         const titles = Array.from(
             fixture.nativeElement.querySelectorAll(".speech-card-title"),
         ).map((node) => (node as HTMLElement).textContent?.trim());
@@ -539,15 +541,50 @@ describe("SpeechComponent", () => {
         expect(text("#speech-notice")).toBe("Key stored for GPT-6.");
     });
 
-    it("shows each provider endpoint next to its key", () => {
-        expect(text("#speech-provider-endpoint-4")).toBe(
-            "https://api.openai.example/v1",
-        );
+    it("offers a key field per provider and no endpoint control", () => {
         const key = fixture.nativeElement.querySelector(
             "#speech-provider-key-4",
         ) as HTMLInputElement;
         expect(key.type).toBe("password");
         expect(text("#speech-provider-state-4")).toBe("Key stored");
+        expect(
+            fixture.nativeElement.querySelector("#speech-provider-endpoint-4"),
+        ).toBeNull();
+        expect(
+            fixture.nativeElement.querySelector("[id*='endpoint']"),
+        ).toBeNull();
+        expect(fixture.nativeElement.textContent).not.toContain("Endpoint");
+        expect(fixture.nativeElement.textContent).not.toContain(
+            "https://api.openai.example/v1",
+        );
+        expect(fixture.nativeElement.textContent).not.toContain(
+            "https://cloud.example/v1",
+        );
+        const inputs = Array.from(
+            fixture.nativeElement.querySelectorAll("input"),
+        ) as HTMLInputElement[];
+        expect(inputs.map((input) => input.id)).toEqual([
+            "encrypt-key-storage",
+            "speech-operator-password",
+            "speech-provider-key-4",
+        ]);
+    });
+
+    it("keeps the stored endpoint on the row a key is saved for", () => {
+        expect(gpt.endpointBase).toBe("https://api.openai.example/v1");
+        keyStore.putSecret.and.returnValue(
+            of({successful: true, credentialRef: "provider-4"}),
+        );
+        component.password = "operator-secret";
+        component.drafts = {4: "sk-new"};
+        component.saveKey(gpt);
+        fixture.detectChanges();
+
+        const stored = models.getValue().find((model) => model.id === 4)!;
+        expect(stored.endpointBase).toBe("https://api.openai.example/v1");
+        expect(component.providers.map((model) => model.endpointBase)).toEqual([
+            "https://api.openai.example/v1",
+        ]);
     });
 
     it("does not list a retired catalogue model as a key to store", () => {
