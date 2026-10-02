@@ -149,4 +149,30 @@ describe("personality dialog rules", () => {
             ),
         ).toEqual([LOCAL_VOICE_OUTPUT, "4"]);
     });
+
+    it("does not offer a retired model as a voice engine", () => {
+        const retired = new AssistantModel(
+            8,
+            "gpt-6",
+            "GPT-6",
+            true,
+            null,
+            flags({stt: true, tts: true, tools: true}),
+            "provider-8",
+            false,
+            true,
+        );
+        expect(
+            voiceInputOptions([retired], false).map((option) => option.id),
+        ).toEqual([LOCAL_VOICE_INPUT]);
+        expect(
+            voiceOutputOptions([retired], false).map((option) => option.id),
+        ).toEqual([LOCAL_VOICE_OUTPUT]);
+        expect(
+            voiceInputOptions([retired], false).map((option) => option.label),
+        ).not.toContain(retired.visualName);
+        expect(
+            voiceOutputOptions([retired], false).map((option) => option.label),
+        ).not.toContain(retired.visualName);
+    });
 });

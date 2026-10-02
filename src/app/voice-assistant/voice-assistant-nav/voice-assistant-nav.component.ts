@@ -33,6 +33,7 @@ export class VoiceAssistantNavComponent implements OnInit {
     @Input() button?: {enabled: boolean; func: () => void};
     @Input() defaultRoute?: string;
     @Input() needsAttention?: (id: string) => boolean;
+    @Input() attentionLabel?: (id: string) => string;
 
     constructor(
         private router: Router,

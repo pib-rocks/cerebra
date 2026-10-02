@@ -3,7 +3,10 @@ import {
     DEFAULT_PROVIDER_REF,
     isCapabilityControlDisabled,
     isProviderConfigured,
+    isProviderOptionDisabled,
+    personalityAttention,
     personalityNeedsAttention,
+    retiredModelNotice,
     providerOptionValue,
     providerRefFromSelection,
     providersForSelection,
@@ -113,6 +116,7 @@ describe("provider registry selection", () => {
 
     it("treats the cloud row as the SmartConnect token, not a pasted key", () => {
         const cloud = row(6, true, true, CLOUD_TOKEN_API_NAME, null);
+        expect(CLOUD_TOKEN_API_NAME).toBe("pib-cloud");
         expect(isProviderConfigured(cloud, false)).toBeFalse();
         expect(isProviderConfigured(cloud, true)).toBeTrue();
         cloud.credentialRef = "provider-6";
@@ -121,6 +125,47 @@ describe("provider registry selection", () => {
             providersForSelection([cloud], null, true).map((m) => m.id),
         ).toEqual([cloud.id]);
         expect(providersForSelection([cloud], null, false)).toEqual([]);
+    });
+
+    it("does not mark a default personality on pib.Cloud as needing a provider key", () => {
+        const cloud = row(10, true, true, "pib-cloud", null);
+        const keyed = row(7, true, false, "gemini", "provider-7");
+        const missing = row(8, true, false, "gpt-6", null);
+        expect(
+            personalityNeedsAttention(
+                DEFAULT_PROVIDER_REF,
+                [cloud, keyed, missing],
+                true,
+            ),
+        ).toBeFalse();
+        expect(
+            personalityAttention(
+                DEFAULT_PROVIDER_REF,
+                [cloud, keyed, missing],
+                true,
+            ),
+        ).toBeNull();
+        expect(
+            personalityNeedsAttention(
+                String(keyed.id),
+                [cloud, keyed, missing],
+                true,
+            ),
+        ).toBeFalse();
+        expect(
+            personalityNeedsAttention(
+                String(missing.id),
+                [cloud, keyed, missing],
+                true,
+            ),
+        ).toBeTrue();
+        expect(
+            personalityAttention(
+                String(missing.id),
+                [cloud, keyed, missing],
+                true,
+            )?.reason,
+        ).toBe("missing-key");
     });
 
     it("marks a personality when its provider key is deleted and clears the mark when the key returns", () => {
@@ -140,5 +185,42 @@ describe("provider registry selection", () => {
         expect(providersForSelection([model], null).map((m) => m.id)).toEqual([
             model.id,
         ]);
+    });
+
+    it("does not offer a retired model for a new selection and marks one that still uses it", () => {
+        const current = row(2, true, false, "gpt-6");
+        const gone = row(4, true, false, "retired-entry");
+        gone.retired = true;
+        gone.visualName = "Retired entry";
+        expect(
+            providersForSelection([current, gone], null).map(
+                (model) => model.id,
+            ),
+        ).toEqual([current.id]);
+        expect(
+            providersForSelection([current, gone], String(gone.id)).map(
+                (model) => model.id,
+            ),
+        ).toEqual([current.id, gone.id]);
+        expect(isProviderOptionDisabled(gone, true)).toBeTrue();
+        expect(isProviderOptionDisabled(current, true)).toBeFalse();
+        expect(
+            personalityNeedsAttention(String(gone.id), [current, gone], true),
+        ).toBeTrue();
+        expect(retiredModelNotice(gone)).toBe(
+            "Retired entry is gone. Choose a new one.",
+        );
+        expect(
+            personalityNeedsAttention(
+                String(current.id),
+                [current, gone],
+                true,
+            ),
+        ).toBeFalse();
+        expect(personalityNeedsAttention("9", [], false, true)).toBeTrue();
+        expect(personalityNeedsAttention("9", [], false, false)).toBeFalse();
+        const removed = personalityAttention("9", [current], true, true);
+        expect(removed?.reason).toBe("retired");
+        expect(removed?.notice).toBe("This model is gone. Choose a new one.");
     });
 });

@@ -605,8 +605,8 @@ describe("ChatWindowDeepChatComponent", () => {
         ) as jasmine.SpyObj<VoiceAssistantService>;
         const model = new AssistantModel(
             4,
-            "gpt-4o",
-            "GPT-4o",
+            "gpt-6",
+            "GPT-6",
             true,
             "https://api.openai.example/v1",
             {

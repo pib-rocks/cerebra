@@ -43,8 +43,19 @@
     margin-bottom: 0;
 }
 
-.speech-password-change {
+.speech-password-fields .speech-label,
+.speech-password-fields input {
+    display: block;
+    width: 100%;
+}
+
+.speech-password-fields .speech-label {
     margin-top: 0.75rem;
+}
+
+.speech-password-fields .alert {
+    margin-top: 0.75rem;
+    margin-bottom: 0;
 }
 
 input {

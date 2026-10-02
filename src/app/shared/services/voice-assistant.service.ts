@@ -1,9 +1,9 @@
 import {Injectable} from "@angular/core";
 import {ApiService} from "./api.service";
-import {readPersonalityDialog} from "../types/personality-dialog";
 import {
     VoiceAssistant,
     parseDtoToVoiceAssistant,
+    personalityDialogFromRecord,
     personalityWriteBody,
 } from "../types/voice-assistant";
 import {ChannelCapabilityService} from "./channel-capability.service";
@@ -75,20 +75,20 @@ export class VoiceAssistantService implements SidebarService {
         const newPersonalities: VoiceAssistant[] = [];
 
         personalities.forEach((m) => {
-            newPersonalities.push(
-                new VoiceAssistant(
-                    m.personalityId,
-                    m.name,
-                    m.gender,
-                    m.pauseThreshold,
-                    m.description,
-                    m.assistantModelId,
-                    m.messageHistory,
-                    m.providerRef,
-                    m.channel,
-                    readPersonalityDialog(m),
-                ),
+            const personality = new VoiceAssistant(
+                m.personalityId,
+                m.name,
+                m.gender,
+                m.pauseThreshold,
+                m.description,
+                m.assistantModelId,
+                m.messageHistory,
+                m.providerRef,
+                m.channel,
+                personalityDialogFromRecord(m),
             );
+            personality.needsNewModel = m.needsNewModel === true;
+            newPersonalities.push(personality);
         });
         this.personalities = newPersonalities;
         this.personalitiesSubject.next(this.personalities.slice());
@@ -156,6 +156,7 @@ export class VoiceAssistantService implements SidebarService {
                 model.capabilities,
                 credentialRef,
                 model.isDefault,
+                model.retired,
             );
         });
         this.assistantModelsSubject.next(next);

@@ -8,8 +8,9 @@ export const DEFAULT_PROVIDER_REF = "default";
 /**
  * Registry row whose credential is the SmartConnect token. The Speech tab
  * shows that token as pib.Cloud and does not ask for a second key.
+ * A personality on this row needs no provider key.
  */
-export const CLOUD_TOKEN_API_NAME = "hermes-agent";
+export const CLOUD_TOKEN_API_NAME = "pib-cloud";
 
 export const MISSING_KEY_MARK = "Needs a key";
 
@@ -28,8 +29,11 @@ export interface ProviderSelectionRow {
     id: number;
     isDefault: boolean;
     apiName?: string;
+    visualName?: string;
     capabilities?: Partial<ProviderCapabilities> | null;
     credentialRef?: string | null;
+    /** Set by the catalogue. A retired row is kept so a personality can be named, not chosen. */
+    retired?: boolean;
 }
 
 export function capabilitiesFrom(
@@ -68,11 +72,23 @@ export function isProviderConfigured(
     return model.credentialRef != null && model.credentialRef !== "";
 }
 
+export function isRetired(model: ProviderSelectionRow): boolean {
+    return model.retired === true;
+}
+
+/** Names the catalogue row that is gone and asks for a replacement. */
+export function retiredModelNotice(model: ProviderSelectionRow): string {
+    const name =
+        model.visualName?.trim() || model.apiName?.trim() || "This model";
+    return `${name} is gone. Choose a new one.`;
+}
+
 export function isProviderOptionDisabled(
     model: ProviderSelectionRow,
     cloudTokenStored: boolean,
 ): boolean {
     return (
+        isRetired(model) ||
         isCapabilityControlDisabled(model, "images") ||
         !isProviderConfigured(model, cloudTokenStored)
     );
@@ -92,29 +108,76 @@ export function resolveProvider<T extends ProviderSelectionRow>(
     return models.find((model) => String(model.id) === providerRef) ?? null;
 }
 
+export interface PersonalityAttention {
+    reason: "retired" | "missing-key";
+    notice: string;
+}
+
 /**
- * True when the personality still points at a provider whose key is gone.
- * An empty model list means the registry has not loaded, so nothing is marked.
+ * Why a personality needs attention, or null when its provider is usable.
+ * An empty model list means the catalogue has not loaded, so a missing key
+ * is not marked. needsNewModel still is: the API already reported the row
+ * retired. A loaded retired row is named from the catalogue. The selection
+ * is not rewritten.
+ */
+export function personalityAttention(
+    providerRef: string | null | undefined,
+    models: ProviderSelectionRow[],
+    cloudTokenStored: boolean,
+    needsNewModel = false,
+): PersonalityAttention | null {
+    if (models.length === 0) {
+        if (needsNewModel) {
+            return {
+                reason: "retired",
+                notice: retiredModelNotice({id: 0, isDefault: false}),
+            };
+        }
+        return null;
+    }
+    const model = resolveProvider(providerRef, models);
+    if (model != null && isRetired(model)) {
+        return {reason: "retired", notice: retiredModelNotice(model)};
+    }
+    if (needsNewModel && model == null) {
+        return {
+            reason: "retired",
+            notice: retiredModelNotice({id: 0, isDefault: false}),
+        };
+    }
+    if (model == null || !isProviderConfigured(model, cloudTokenStored)) {
+        return {reason: "missing-key", notice: MISSING_KEY_MARK};
+    }
+    return null;
+}
+
+/**
+ * True when the personality still points at a provider whose key is gone,
+ * or at a catalogue row that has been retired.
+ * An empty model list means the registry has not loaded, so a missing key
+ * is not marked. needsNewModel is still marked.
  */
 export function personalityNeedsAttention(
     providerRef: string | null | undefined,
     models: ProviderSelectionRow[],
     cloudTokenStored: boolean,
+    needsNewModel = false,
 ): boolean {
-    if (models.length === 0) {
-        return false;
-    }
-    const model = resolveProvider(providerRef, models);
-    if (model == null) {
-        return true;
-    }
-    return !isProviderConfigured(model, cloudTokenStored);
+    return (
+        personalityAttention(
+            providerRef,
+            models,
+            cloudTokenStored,
+            needsNewModel,
+        ) != null
+    );
 }
 
 /**
- * Rows a personality may be pointed at. A row without the images capability
- * is not offered, and neither is a row with no stored key. The current
- * reference is kept so an existing id is not dropped when the form is saved.
+ * Rows a personality may be pointed at. Retired rows are not offered for a
+ * new selection. A row without the images capability is not offered, and
+ * neither is a row with no stored key. The current reference is kept so an
+ * existing id is not dropped when the form is saved.
  */
 export function providersForSelection<T extends ProviderSelectionRow>(
     models: T[],
@@ -123,6 +186,7 @@ export function providersForSelection<T extends ProviderSelectionRow>(
 ): T[] {
     const offered = models.filter(
         (model) =>
+            !isRetired(model) &&
             hasImagesCapability(model) &&
             isProviderConfigured(model, cloudTokenStored),
     );
