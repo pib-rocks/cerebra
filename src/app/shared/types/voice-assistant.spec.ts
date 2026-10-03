@@ -7,7 +7,6 @@ import {
 } from "./personality-dialog";
 import {
     VOICE_MODE_LIVE,
-    VOICE_MODE_TURN_BASED,
     VoiceAssistant,
     parseDtoToVoiceAssistant,
     personalityWriteBody,
@@ -26,7 +25,6 @@ const PERSONALITY_WRITE_KEYS = [
     "sttEngine",
     "toolCalling",
     "ttsEngine",
-    "voiceMode",
 ];
 
 describe("personality write body", () => {
@@ -57,7 +55,7 @@ describe("personality write body", () => {
         expect(Object.keys(created).sort()).toEqual(PERSONALITY_WRITE_KEYS);
         expect(created.channel).toBe(SMART_CHANNEL);
         expect(created.providerRef).toBe("7");
-        expect(created.voiceMode).toBe(VOICE_MODE_LIVE);
+        expect("voiceMode" in created).toBeFalse();
         expect(created.sttEngine).toBe("6");
         expect(created.ttsEngine).toBe(LOCAL_VOICE_OUTPUT);
         expect(created.liveIdleTimeout).toBe(45);
@@ -65,7 +63,7 @@ describe("personality write body", () => {
         expect(created.description).toBe("Du bist pib.");
     });
 
-    it("keeps channel, providerRef, and voiceMode on the personality that was saved", () => {
+    it("keeps channel and providerRef, and reads a derived voice mode without sending one", () => {
         const persona = new VoiceAssistant(
             "",
             "Ada",
@@ -90,13 +88,16 @@ describe("personality write body", () => {
         const saved = parseDtoToVoiceAssistant({
             personalityId: "persona-1",
             ...created,
+            voiceMode: VOICE_MODE_LIVE,
         });
         const carried = personalityWriteBody(saved, true);
 
         expect(saved.channel).toBe(DIRECT_CHANNEL);
         expect(saved.providerRef).toBe("7");
+        expect(saved.live).toBeTrue();
+        expect("voiceMode" in created).toBeFalse();
+        expect("voiceMode" in carried).toBeFalse();
         expect(carried).toEqual(created);
-        expect(carried.voiceMode).toBe(VOICE_MODE_LIVE);
     });
 
     it("uses the same columns when the personality is updated", () => {
@@ -109,7 +110,7 @@ describe("personality write body", () => {
         );
         const created = personalityWriteBody(persona, true);
 
-        expect(created.voiceMode).toBe(VOICE_MODE_TURN_BASED);
+        expect("voiceMode" in created).toBeFalse();
         expect(created.providerRef).toBe(DEFAULT_PROVIDER_REF);
         expect(created.sttEngine).toBe(LOCAL_VOICE_INPUT);
         expect(created.ttsEngine).toBe(LOCAL_VOICE_OUTPUT);
@@ -124,7 +125,7 @@ describe("personality write body", () => {
         );
         expect(updated.channel).toBe(created.channel);
         expect(updated.providerRef).toBe(created.providerRef);
-        expect(updated.voiceMode).toBe(created.voiceMode);
+        expect("voiceMode" in updated).toBeFalse();
         expect(updated.name).toBe("Ada renamed");
     });
 });

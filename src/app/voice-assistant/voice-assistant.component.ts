@@ -37,7 +37,6 @@ import {
     VoiceBackendOption,
     enforcePersonalityDialog,
     imageSwitchAvailability,
-    liveSwitchAvailability,
     readPersonalityDialog,
     toolCallingAvailability,
     voiceInputOptions,
@@ -84,7 +83,6 @@ export class VoiceAssistantComponent implements OnInit {
     voiceOutputs: VoiceBackendOption[] = [];
     toolCallingReason: string | null = null;
     imageReason: string | null = null;
-    liveReason: string | null = null;
     @ViewChild("modalContent") modalContent: TemplateRef<any> | undefined;
     ngbModalRef?: NgbModalRef;
     imgSrc: string = "../../assets/toggle-switch-left.png";
@@ -389,7 +387,7 @@ export class VoiceAssistantComponent implements OnInit {
 
     get showIdleTimeout(): boolean {
         const live = this.personalityForm?.controls["live"];
-        return live != null && live.enabled && live.value === true;
+        return live != null && live.value === true;
     }
 
     private rebuildSelection() {
@@ -461,8 +459,7 @@ export class VoiceAssistantComponent implements OnInit {
             this.personalityForm.controls["images"],
             images.disabled,
         );
-        const live = liveSwitchAvailability(model, loaded);
-        this.setBlocked(this.personalityForm.controls["live"], live.disabled);
+        this.applyDerivedLive(model, loaded);
         this.keepVoiceSelection(
             "voiceInput",
             this.voiceInputs,
@@ -475,8 +472,25 @@ export class VoiceAssistantComponent implements OnInit {
         );
         this.toolCallingReason = tools.reason;
         this.imageReason = images.reason;
-        this.liveReason = live.reason;
         this.retiredNotice = this.retiredNoticeForSelection();
+    }
+
+    /** The Live control is not a switch. It follows the chosen model. */
+    private applyDerivedLive(
+        model: AssistantModel | null,
+        registryLoaded: boolean,
+    ): void {
+        if (!registryLoaded) {
+            return;
+        }
+        const live = this.personalityForm.controls["live"];
+        const derived = model?.capabilities?.live === true;
+        if (live.value !== derived) {
+            live.setValue(derived, {emitEvent: false});
+        }
+        if (live.enabled) {
+            live.disable({emitEvent: false});
+        }
     }
 
     private attentionFor(personalityId: string) {

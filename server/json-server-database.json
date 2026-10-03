@@ -36,7 +36,7 @@
             "capabilities": {
                 "tools": true,
                 "images": true,
-                "live": true,
+                "live": false,
                 "stt": false,
                 "tts": false
             },
@@ -89,6 +89,22 @@
             "apiName": "gemini-3.8-flash",
             "hasImageSupport": true,
             "visualName": "Gemini 3.8 Flash",
+            "capabilities": {
+                "tools": true,
+                "images": true,
+                "live": false,
+                "stt": false,
+                "tts": false
+            },
+            "isDefault": false,
+            "status": "active"
+        },
+        {
+            "id": 11,
+            "providerId": 1,
+            "apiName": "gemini-3.8-live",
+            "hasImageSupport": true,
+            "visualName": "Gemini 3.8 Live",
             "capabilities": {
                 "tools": true,
                 "images": true,

@@ -291,27 +291,6 @@
                 </p>
                 }
             </div>
-            <div
-                class="row m-2"
-                id="row-live">
-                <input
-                    type="checkbox"
-                    id="live-input"
-                    data-test="CHK_Live"
-                    formControlName="live" />
-                <label
-                    for="live-input"
-                    id="label-live"
-                    >Live</label
-                >
-                @if (liveReason) {
-                <p
-                    class="advanced-reason"
-                    data-test="LBL_Live_Reason">
-                    {{ liveReason }}
-                </p>
-                }
-            </div>
             @if (showIdleTimeout) {
             <div
                 class="row m-2"

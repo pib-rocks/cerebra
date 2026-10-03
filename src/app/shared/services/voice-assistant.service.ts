@@ -20,8 +20,12 @@ import {SidebarService} from "../interfaces/sidebar-service.interface";
 import {SidebarElement} from "../interfaces/sidebar-element.interface";
 import {RosService} from "./ros-service/ros.service";
 import {VoiceAssistantState} from "../types/voice-assistant-state";
-import {AssistantModel, AssistantModelDto} from "../types/assistantModel";
-import {providerIdOf} from "../types/provider-registry";
+import {AssistantModel} from "../types/assistantModel";
+import {
+    CatalogueProviderRecord,
+    flattenProviderCatalogue,
+    providerIdOf,
+} from "../types/provider-registry";
 import {ChatService} from "./chat.service";
 
 @Injectable({
@@ -167,7 +171,7 @@ export class VoiceAssistantService implements SidebarService {
 
     getAllAssistantModels() {
         this.apiService
-            .get(UrlConstants.ASSISTANT_MODEL)
+            .get(UrlConstants.PROVIDER)
             .pipe(
                 catchError((err) => {
                     console.log(err);
@@ -175,14 +179,14 @@ export class VoiceAssistantService implements SidebarService {
                 }),
             )
             .subscribe((response) => {
-                const assistantModelDto = response[
-                    "assistantModels"
-                ] as AssistantModelDto[];
-                if (undefined == assistantModelDto) {
+                const providers = response["providers"] as
+                    | CatalogueProviderRecord[]
+                    | undefined;
+                if (providers == null) {
                     return;
                 }
                 this.assistantModelsSubject.next(
-                    assistantModelDto.map((dto) =>
+                    flattenProviderCatalogue(providers).map((dto) =>
                         AssistantModel.parseDtoToAssistantModel(dto),
                     ),
                 );

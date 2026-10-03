@@ -105,7 +105,10 @@ export class VoiceAssistant implements SidebarElement {
     }
 }
 
-/** Stored voiceMode. The dialog's Live switch selects this or turn_based. */
+/**
+ * Derived voice mode. The chosen model's live flag selects this or
+ * turn_based. The client reads it and does not send it.
+ */
 export const VOICE_MODE_LIVE = "live";
 export const VOICE_MODE_TURN_BASED = "turn_based";
 
@@ -123,7 +126,6 @@ export interface VoiceAssistantDto {
     providerRef: string;
     sttEngine: string;
     ttsEngine: string;
-    voiceMode: typeof VOICE_MODE_LIVE | typeof VOICE_MODE_TURN_BASED;
     liveIdleTimeout: number;
     toolCalling: boolean;
     messageHistory: number;
@@ -169,7 +171,6 @@ export function parseVoiceAssistantToDto(
         providerRef: choice.providerRef,
         sttEngine: dialog.voiceInput,
         ttsEngine: dialog.voiceOutput,
-        voiceMode: dialog.live ? VOICE_MODE_LIVE : VOICE_MODE_TURN_BASED,
         liveIdleTimeout: dialog.idleTimeoutSeconds,
         toolCalling: dialog.toolCalling,
         messageHistory: voiceAssistant.messageHistory ?? 10,

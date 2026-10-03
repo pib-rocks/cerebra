@@ -9,6 +9,7 @@ import {
     providerIdOf,
     providerKeyAccounts,
     attachProvider,
+    flattenProviderCatalogue,
     retiredModelNotice,
     providerOptionValue,
     providerRefFromSelection,
@@ -311,5 +312,66 @@ describe("provider registry selection", () => {
         expect(providerRefFromSelection(String(selected!.id)).providerRef).toBe(
             "8",
         );
+    });
+
+    it("lists a live model beside its chat model from the provider document", () => {
+        const models = flattenProviderCatalogue([
+            {
+                id: 1,
+                name: "Google",
+                endpointBase: null,
+                credentialRef: "provider-1",
+                capabilities: {
+                    tools: true,
+                    images: true,
+                    live: false,
+                    stt: false,
+                    tts: false,
+                },
+                models: [
+                    {
+                        id: 7,
+                        apiName: "gemini-3.8-flash",
+                        visualName: "Gemini 3.8 Flash",
+                        isDefault: false,
+                        capabilities: {
+                            tools: true,
+                            images: true,
+                            live: false,
+                            stt: false,
+                            tts: false,
+                        },
+                    },
+                    {
+                        id: 11,
+                        apiName: "gemini-3.8-live",
+                        visualName: "Gemini 3.8 Live",
+                        isDefault: false,
+                        capabilities: {
+                            tools: true,
+                            images: true,
+                            live: true,
+                            stt: false,
+                            tts: false,
+                        },
+                    },
+                ],
+            },
+        ]);
+        expect(models.map((model) => model.visualName)).toEqual([
+            "Gemini 3.8 Flash",
+            "Gemini 3.8 Live",
+        ]);
+        expect(models.map((model) => model.capabilities?.live)).toEqual([
+            false,
+            true,
+        ]);
+        expect(
+            models.every((model) => model.credentialRef === "provider-1"),
+        ).toBeTrue();
+        expect(
+            models.every((model) => model.providerName === "Google"),
+        ).toBeTrue();
+        expect(models[0].capabilities).not.toEqual(models[1].capabilities);
     });
 });

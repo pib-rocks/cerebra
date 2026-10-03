@@ -21,7 +21,6 @@ export const IMAGES_NEED_MCP =
     "Images stay off while the MCP server is off. The image tool is an MCP tool.";
 export const IMAGES_NEED_TOOL_CALLING_AND_MCP =
     "Images stay off while tool calling and the MCP server are off.";
-export const LIVE_NO_CAPABILITY = "This provider has no live capability.";
 export const TOOLS_NO_CAPABILITY = "This provider cannot call tools.";
 
 export interface PersonalityDialogValues {
@@ -102,17 +101,19 @@ export function imageSwitchAvailability(
     return OPEN;
 }
 
-export function liveSwitchAvailability(
+/**
+ * Live is the chosen model's own flag. Before the catalogue has loaded,
+ * the stored value is the one the provider endpoint already derived.
+ */
+export function liveFromChosenModel(
     model: ProviderSelectionRow | null,
     registryLoaded: boolean,
-): DialogBlock {
-    if (!registryLoaded || model == null) {
-        return OPEN;
+    storedLive: boolean,
+): boolean {
+    if (!registryLoaded) {
+        return storedLive;
     }
-    if (model.capabilities?.live === true) {
-        return OPEN;
-    }
-    return {disabled: true, reason: LIVE_NO_CAPABILITY};
+    return model?.capabilities?.live === true;
 }
 
 export function enforcePersonalityDialog(
@@ -127,9 +128,7 @@ export function enforcePersonalityDialog(
     if (imageSwitchAvailability(next.toolCalling, next.mcp).disabled) {
         next.images = false;
     }
-    if (liveSwitchAvailability(model, registryLoaded).disabled) {
-        next.live = false;
-    }
+    next.live = liveFromChosenModel(model, registryLoaded, next.live);
     return next;
 }
 

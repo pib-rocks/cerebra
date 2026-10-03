@@ -7,6 +7,7 @@ export enum UrlConstants {
     PROGRAM = "/program",
     CODE = "code",
     ASSISTANT_MODEL = "/assistant-model",
+    PROVIDER = "/provider",
     POSE = "/pose",
     BRICKLET = "/bricklet",
     BRICKLET_CONNECTED = "/bricklet/connected",

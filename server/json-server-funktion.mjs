@@ -55,7 +55,16 @@ function presentPersonality(row) {
     const model = modelForPersonality(personality);
     personality.needsNewModel =
         model?.status === "retired" || model?.retired === true;
+    applyDerivedLive(personality);
     return personality;
+}
+
+/** Live is the chosen model's own flag. A request cannot switch a mode beside it. */
+function applyDerivedLive(personality) {
+    const model = modelForPersonality(personality);
+    const live = model?.capabilities?.live === true;
+    personality.live = live;
+    personality.voiceMode = live ? "live" : "turn_based";
 }
 
 // Installation fact. Not a switch: the UI only reads it.
@@ -92,8 +101,8 @@ function assignDialog(personality, body) {
     }
     personality.toolCalling = body.toolCalling !== false;
     personality.images = body.images === true;
-    personality.live = body.live === true;
     personality.mcp = body.mcp !== false;
+    applyDerivedLive(personality);
     const idle = Number(body.idleTimeoutSeconds);
     if (Number.isFinite(idle) && idle >= 1) {
         personality.idleTimeoutSeconds = idle;
@@ -702,6 +711,39 @@ server.get("/assistant-model/:id", (req, res, next) => {
         return res.status(404).send();
     }
     return res.status(200).send(presentAssistantModel(response));
+});
+
+function presentCatalogueModel(model, provider) {
+    const row = AssistantModel.getAssistantModel({
+        ...model,
+        providerId: provider.id,
+        providerName: provider.name,
+    });
+    delete row.credentialRef;
+    delete row.endpointBase;
+    return row;
+}
+
+function presentProvider(provider) {
+    return {
+        id: provider.id,
+        name: provider.name,
+        endpointBase: provider.endpointBase ?? null,
+        credentialRef: provider.credentialRef ?? null,
+        capabilities: provider.capabilities ?? null,
+        models: mockData.assistantModel
+            .filter((model) => model.providerId == provider.id)
+            .map((model) => presentCatalogueModel(model, provider)),
+    };
+}
+
+// Each provider, with the models that belong to it. Live is one of those models.
+server.get("/provider", (req, res) => {
+    return res.status(200).send({
+        providers: mockData.provider.map((provider) =>
+            presentProvider(provider),
+        ),
+    });
 });
 
 //getButtonPrograms

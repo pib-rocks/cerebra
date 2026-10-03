@@ -1,7 +1,7 @@
 import {TestBed, waitForAsync} from "@angular/core/testing";
 import {VoiceAssistantService} from "./voice-assistant.service";
 import {HttpClientTestingModule} from "@angular/common/http/testing";
-import {VOICE_MODE_TURN_BASED, VoiceAssistant} from "../types/voice-assistant";
+import {VoiceAssistant} from "../types/voice-assistant";
 import {ApiService} from "./api.service";
 import {BehaviorSubject} from "rxjs";
 import {RosService} from "./ros-service/ros.service";
@@ -63,9 +63,15 @@ describe("VoiceAssistantService", () => {
             new AssistantModel(2, "gpt-6", "GPT-6", true),
         ],
     };
-    const observableModels = new BehaviorSubject<{
-        assistantModels: AssistantModel[];
-    }>(models);
+    const observableModels = new BehaviorSubject({
+        providers: [
+            {
+                id: 1,
+                name: "Catalogue",
+                models: models.assistantModels,
+            },
+        ],
+    });
 
     beforeEach(() => {
         const rosServiceSpy: jasmine.SpyObj<RosService> = jasmine.createSpyObj(
@@ -191,44 +197,48 @@ describe("VoiceAssistantService", () => {
     it("should save a behavior subject to a local var", waitForAsync(() => {
         apiService.get.and.returnValue(observableModels);
         service.getAllAssistantModels();
-        expect(apiService.get).toHaveBeenCalled();
+        expect(apiService.get).toHaveBeenCalledWith(UrlConstants.PROVIDER);
         expect(service.assistantModelsSubject.getValue().length).toBe(2);
     }));
 
     it("parses registry fields and keeps rows the ui still has to filter", () => {
         const registry = new BehaviorSubject({
-            assistantModels: [
+            providers: [
                 {
                     id: 8,
-                    apiName: "shared-api",
-                    visualName: "Text row",
-                    hasImageSupport: false,
+                    name: "Shared",
                     endpointBase: "https://example.test/v1",
-                    capabilities: {
-                        tools: true,
-                        images: false,
-                        live: false,
-                        stt: false,
-                        tts: false,
-                    },
                     credentialRef: "provider-key",
-                    isDefault: false,
-                },
-                {
-                    id: 9,
-                    apiName: "shared-api",
-                    visualName: "Vision row",
-                    hasImageSupport: true,
-                    endpointBase: "https://example.test/v1",
-                    capabilities: {
-                        tools: true,
-                        images: true,
-                        live: true,
-                        stt: false,
-                        tts: false,
-                    },
-                    credentialRef: "provider-key",
-                    isDefault: true,
+                    models: [
+                        {
+                            id: 8,
+                            apiName: "shared-api",
+                            visualName: "Text row",
+                            hasImageSupport: false,
+                            capabilities: {
+                                tools: true,
+                                images: false,
+                                live: false,
+                                stt: false,
+                                tts: false,
+                            },
+                            isDefault: false,
+                        },
+                        {
+                            id: 9,
+                            apiName: "shared-api",
+                            visualName: "Vision row",
+                            hasImageSupport: true,
+                            capabilities: {
+                                tools: true,
+                                images: true,
+                                live: true,
+                                stt: false,
+                                tts: false,
+                            },
+                            isDefault: true,
+                        },
+                    ],
                 },
             ],
         });
@@ -247,6 +257,7 @@ describe("VoiceAssistantService", () => {
         service.setProviderCredential(8, null);
         const cleared = service.assistantModelsSubject.getValue();
         expect(cleared[0].credentialRef).toBeNull();
+        expect(cleared[1].credentialRef).toBeNull();
         expect(cleared[0].endpointBase).toBe("https://example.test/v1");
         expect(cleared[1].endpointBase).toBe("https://example.test/v1");
     });
@@ -254,59 +265,63 @@ describe("VoiceAssistantService", () => {
     it("applies one provider credential to every model of that provider", () => {
         apiService.get.and.returnValue(
             new BehaviorSubject({
-                assistantModels: [
+                providers: [
                     {
-                        id: 8,
-                        providerId: 2,
-                        providerName: "OpenAI",
-                        apiName: "gpt-6",
-                        visualName: "GPT-6",
-                        hasImageSupport: true,
+                        id: 2,
+                        name: "OpenAI",
                         endpointBase: "https://api.openai.example/v1",
-                        capabilities: {
-                            tools: true,
-                            images: true,
-                            live: false,
-                            stt: false,
-                            tts: false,
-                        },
                         credentialRef: null,
-                        isDefault: false,
+                        models: [
+                            {
+                                id: 8,
+                                apiName: "gpt-6",
+                                visualName: "GPT-6",
+                                hasImageSupport: true,
+                                capabilities: {
+                                    tools: true,
+                                    images: true,
+                                    live: false,
+                                    stt: false,
+                                    tts: false,
+                                },
+                                isDefault: false,
+                            },
+                            {
+                                id: 11,
+                                apiName: "gpt-realtime",
+                                visualName: "GPT Realtime",
+                                hasImageSupport: false,
+                                capabilities: {
+                                    tools: false,
+                                    images: false,
+                                    live: true,
+                                    stt: false,
+                                    tts: false,
+                                },
+                                isDefault: false,
+                            },
+                        ],
                     },
                     {
-                        id: 11,
-                        providerId: 2,
-                        providerName: "OpenAI",
-                        apiName: "gpt-realtime",
-                        visualName: "GPT Realtime",
-                        hasImageSupport: false,
-                        endpointBase: "https://api.openai.example/v1",
-                        capabilities: {
-                            tools: false,
-                            images: false,
-                            live: true,
-                            stt: false,
-                            tts: false,
-                        },
+                        id: 1,
+                        name: "Google",
                         credentialRef: null,
-                        isDefault: false,
-                    },
-                    {
-                        id: 7,
-                        providerId: 1,
-                        providerName: "Google",
-                        apiName: "gemini-3.8-flash",
-                        visualName: "Gemini 3.8 Flash",
-                        hasImageSupport: true,
-                        capabilities: {
-                            tools: true,
-                            images: true,
-                            live: true,
-                            stt: false,
-                            tts: false,
-                        },
-                        credentialRef: null,
-                        isDefault: false,
+                        models: [
+                            {
+                                id: 7,
+                                apiName: "gemini-3.8-flash",
+                                visualName: "Gemini 3.8 Flash",
+                                hasImageSupport: true,
+                                capabilities: {
+                                    tools: true,
+                                    images: true,
+                                    live: false,
+                                    stt: false,
+                                    tts: false,
+                                },
+                                isDefault: false,
+                            },
+                        ],
                     },
                 ],
             }),
@@ -338,38 +353,50 @@ describe("VoiceAssistantService", () => {
     it("keeps a retired catalogue row so settings can name it", () => {
         apiService.get.and.returnValue(
             new BehaviorSubject({
-                assistantModels: [
+                providers: [
                     {
                         id: 1,
-                        apiName: "gemini-3.8-flash",
-                        visualName: "Gemini 3.8 Flash",
-                        hasImageSupport: true,
-                        capabilities: {
-                            tools: true,
-                            images: true,
-                            live: false,
-                            stt: false,
-                            tts: false,
-                        },
+                        name: "Google",
                         credentialRef: "provider-1",
-                        isDefault: false,
-                        retired: true,
+                        models: [
+                            {
+                                id: 1,
+                                apiName: "gemini-3.8-flash",
+                                visualName: "Gemini 3.8 Flash",
+                                hasImageSupport: true,
+                                capabilities: {
+                                    tools: true,
+                                    images: true,
+                                    live: false,
+                                    stt: false,
+                                    tts: false,
+                                },
+                                isDefault: false,
+                                retired: true,
+                            },
+                        ],
                     },
                     {
                         id: 2,
-                        apiName: "claude-sonnet-5-5",
-                        visualName: "Claude Sonnet 5.5",
-                        hasImageSupport: true,
-                        capabilities: {
-                            tools: true,
-                            images: true,
-                            live: false,
-                            stt: false,
-                            tts: false,
-                        },
+                        name: "Anthropic",
                         credentialRef: null,
-                        isDefault: false,
-                        status: "retired",
+                        models: [
+                            {
+                                id: 2,
+                                apiName: "claude-sonnet-5-5",
+                                visualName: "Claude Sonnet 5.5",
+                                hasImageSupport: true,
+                                capabilities: {
+                                    tools: true,
+                                    images: true,
+                                    live: false,
+                                    stt: false,
+                                    tts: false,
+                                },
+                                isDefault: false,
+                                status: "retired",
+                            },
+                        ],
                     },
                 ],
             }),
@@ -423,11 +450,10 @@ describe("VoiceAssistantService", () => {
             "sttEngine",
             "toolCalling",
             "ttsEngine",
-            "voiceMode",
         ]);
         expect(created["providerRef"]).toBe(DEFAULT_PROVIDER_REF);
         expect(created["channel"]).toBe(SMART_CHANNEL);
-        expect(created["voiceMode"]).toBe(VOICE_MODE_TURN_BASED);
+        expect("voiceMode" in created).toBeFalse();
         service.updatePersonalityById(klaus);
         const updated = apiService.put.calls.mostRecent().args[1] as Record<
             string,
@@ -438,7 +464,7 @@ describe("VoiceAssistantService", () => {
         );
         expect(updated["channel"]).toBe(created["channel"]);
         expect(updated["providerRef"]).toBe(created["providerRef"]);
-        expect(updated["voiceMode"]).toBe(created["voiceMode"]);
+        expect("voiceMode" in updated).toBeFalse();
     });
 
     it("shows an existing Smart personality as Direct without rewriting its channel", () => {

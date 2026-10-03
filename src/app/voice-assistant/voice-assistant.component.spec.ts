@@ -25,7 +25,6 @@ import {
     DEFAULT_IDLE_TIMEOUT_SECONDS,
     IMAGES_NEED_MCP,
     IMAGES_NEED_TOOL_CALLING,
-    LIVE_NO_CAPABILITY,
     LOCAL_VOICE_INPUT,
     LOCAL_VOICE_OUTPUT,
 } from "../shared/types/personality-dialog";
@@ -492,15 +491,13 @@ describe("VoiceAssistantComponent", () => {
         expect(
             document.body.querySelector("[data-test=CHK_Images]"),
         ).not.toBeNull();
-        expect(
-            document.body.querySelector("[data-test=CHK_Live]"),
-        ).not.toBeNull();
+        expect(document.body.querySelector("[data-test=CHK_Live]")).toBeNull();
         expect(
             document.body.querySelector("[data-test=CHK_Mcp]"),
         ).not.toBeNull();
         expect(
             document.body.querySelector("[data-test=TXT_Idle_Timeout]"),
-        ).toBeNull();
+        ).not.toBeNull();
         const voiceInput = document.body.querySelector(
             "#voice-input-select",
         ) as HTMLSelectElement;
@@ -509,20 +506,41 @@ describe("VoiceAssistantComponent", () => {
         );
         expect(labels).toContain(LOCAL_VOICE_INPUT);
         expect(labels).toContain("6");
-        const live = document.body.querySelector(
-            "#live-input",
-        ) as HTMLInputElement;
-        expect(live.disabled).toBeFalse();
-        live.click();
+        const plain = new AssistantModel(
+            8,
+            "gpt-6",
+            "GPT-6",
+            true,
+            null,
+            {
+                tools: true,
+                images: true,
+                live: false,
+                stt: false,
+                tts: false,
+            },
+            "provider-8",
+            false,
+        );
+        voiceAssistantService.assistantModelsSubject.next([speech, plain]);
+        fixture.detectChanges();
         TestBed.inject(ApplicationRef).tick();
-        expect(
-            document.body.querySelector("[data-test=TXT_Idle_Timeout]"),
-        ).not.toBeNull();
-        live.click();
+        component.personalityForm.controls["assistantModel"].setValue("8");
+        fixture.detectChanges();
         TestBed.inject(ApplicationRef).tick();
         expect(
             document.body.querySelector("[data-test=TXT_Idle_Timeout]"),
         ).toBeNull();
+        expect(component.personalityForm.getRawValue()["live"]).toBeFalse();
+        component.personalityForm.controls["assistantModel"].setValue(
+            DEFAULT_PROVIDER_REF,
+        );
+        fixture.detectChanges();
+        TestBed.inject(ApplicationRef).tick();
+        expect(
+            document.body.querySelector("[data-test=TXT_Idle_Timeout]"),
+        ).not.toBeNull();
+        expect(component.personalityForm.getRawValue()["live"]).toBeTrue();
     });
 
     it("greys out images when tool calling or the MCP server is off", () => {
@@ -577,7 +595,7 @@ describe("VoiceAssistantComponent", () => {
         expect(reason()).toContain(IMAGES_NEED_MCP);
     });
 
-    it("greys out live when the provider has no live capability and hides the idle timeout", () => {
+    it("hides the idle timeout when the chosen model is not a live model", () => {
         const text = new AssistantModel(
             8,
             "anthropic",
@@ -599,14 +617,11 @@ describe("VoiceAssistantComponent", () => {
         component.openAddModal();
         component.advancedOpen = true;
         fixture.detectChanges();
-        const live = document.body.querySelector(
-            "#live-input",
-        ) as HTMLInputElement;
-        expect(live.disabled).toBeTrue();
+        expect(document.body.querySelector("#live-input")).toBeNull();
         expect(
-            document.body.querySelector("[data-test=LBL_Live_Reason]")
-                ?.textContent,
-        ).toContain(LIVE_NO_CAPABILITY);
+            document.body.querySelector("[data-test=LBL_Live_Reason]"),
+        ).toBeNull();
+        expect(component.personalityForm.getRawValue()["live"]).toBeFalse();
         expect(
             document.body.querySelector("[data-test=TXT_Idle_Timeout]"),
         ).toBeNull();
@@ -634,6 +649,16 @@ describe("VoiceAssistantComponent", () => {
             3,
             "gemini-3.8-flash",
             "Gemini 3.8 Flash",
+            true,
+            null,
+            flags(false),
+            "provider-3",
+            false,
+        );
+        const geminiLive = new AssistantModel(
+            11,
+            "gemini-3.8-live",
+            "Gemini 3.8 Live",
             true,
             null,
             flags(true),
@@ -683,6 +708,7 @@ describe("VoiceAssistantComponent", () => {
         );
         voiceAssistantService.assistantModelsSubject.next([
             gemini,
+            geminiLive,
             gpt,
             claude,
             cloud,
@@ -706,6 +732,7 @@ describe("VoiceAssistantComponent", () => {
             .map((option) => option.textContent?.trim());
         expect(selectable).toEqual([
             "Gemini 3.8 Flash",
+            "Gemini 3.8 Live",
             "GPT-6",
             "Claude Sonnet 5.5",
             "pib.Cloud",

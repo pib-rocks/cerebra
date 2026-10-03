@@ -6,6 +6,7 @@ import {
     DEFAULT_PROVIDER_REF,
     attachProvider,
     capabilitiesHeldByAll,
+    flattenProviderCatalogue,
     isProviderOptionDisabled,
     personalityAttention,
     providerIdOf,
@@ -17,6 +18,11 @@ const CATALOGUE = [
     {
         apiName: "gemini-3.8-flash",
         visualName: "Gemini 3.8 Flash",
+        isDefault: false,
+    },
+    {
+        apiName: "gemini-3.8-live",
+        visualName: "Gemini 3.8 Live",
         isDefault: false,
     },
     {
@@ -71,6 +77,16 @@ describe("shipped personalities", () => {
             "hermes-agent",
         );
         expect(models.every((model) => model.retired === false)).toBeTrue();
+        const flash = models.find(
+            (model) => model.apiName === "gemini-3.8-flash",
+        );
+        const live = models.find(
+            (model) => model.apiName === "gemini-3.8-live",
+        );
+        expect(flash?.capabilities.live).toBeFalse();
+        expect(live?.visualName).toBe("Gemini 3.8 Live");
+        expect(live?.capabilities.live).toBeTrue();
+        expect(providerIdOf(flash!)).toBe(providerIdOf(live!));
         const cloud = models.find((model) => model.isDefault);
         expect(cloud?.apiName).toBe("pib-cloud");
         expect(cloud?.credentialRef).toBe("provider-10");
@@ -124,17 +140,51 @@ describe("shipped personalities", () => {
         }
     });
 
-    it("maps each flat catalogue row onto one provider and one model", () => {
-        expect(mockData.provider.length).toBe(mockData.assistantModel.length);
-        expect(models.map((model) => model.id)).toEqual([7, 8, 9, 10]);
+    it("lists Gemini 3.8 Live beside Flash under the same provider", () => {
+        expect(models.map((model) => model.id)).toEqual([7, 11, 8, 9, 10]);
         expect(mockData.provider.map((provider) => provider.id)).toEqual([
             1, 2, 3, 4,
         ]);
+        const document = mockData.provider.map((provider) => ({
+            ...provider,
+            models: mockData.assistantModel.filter(
+                (row) => row.providerId === provider.id,
+            ),
+        }));
+        const listed = flattenProviderCatalogue(document).map((row) =>
+            AssistantModel.parseDtoToAssistantModel(row),
+        );
+        expect(listed.map((model) => model.visualName)).toEqual([
+            "Gemini 3.8 Flash",
+            "Gemini 3.8 Live",
+            "GPT-6",
+            "Claude Sonnet 5.5",
+            "pib.Cloud",
+        ]);
+        expect(
+            listed.find((model) => model.apiName === "gemini-3.8-flash")
+                ?.capabilities.live,
+        ).toBeFalse();
+        expect(
+            listed.find((model) => model.apiName === "gemini-3.8-live")
+                ?.capabilities.live,
+        ).toBeTrue();
+        const google = mockData.provider.find((provider) => provider.id === 1);
+        const googleModels = mockData.assistantModel.filter(
+            (row) => row.providerId === google?.id,
+        );
+        expect(googleModels.map((row) => row.visualName)).toEqual([
+            "Gemini 3.8 Flash",
+            "Gemini 3.8 Live",
+        ]);
+        expect(google?.capabilities).toEqual(
+            capabilitiesHeldByAll(googleModels.map((row) => row.capabilities)),
+        );
         for (const provider of mockData.provider) {
             const owned = mockData.assistantModel.filter(
                 (row) => row.providerId === provider.id,
             );
-            expect(owned.length).toBe(1);
+            expect(owned.length).toBe(provider.id === 1 ? 2 : 1);
             expect(provider.capabilities).toEqual(
                 capabilitiesHeldByAll(owned.map((row) => row.capabilities)),
             );

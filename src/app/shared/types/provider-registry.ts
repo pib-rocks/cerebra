@@ -289,6 +289,26 @@ export interface RegistryProviderRecord {
     credentialRef?: string | null;
 }
 
+/** One model inside a provider document. The credential stays on the provider. */
+export interface CatalogueModelRecord {
+    id: number;
+    apiName: string;
+    visualName: string;
+    hasImageSupport?: boolean;
+    capabilities?: Partial<ProviderCapabilities> | null;
+    isDefault?: boolean;
+    retired?: boolean;
+    status?: string;
+    providerId?: number | null;
+    providerName?: string | null;
+    credentialRef?: string | null;
+    endpointBase?: string | null;
+}
+
+export interface CatalogueProviderRecord extends RegistryProviderRecord {
+    models?: readonly CatalogueModelRecord[];
+}
+
 export type ModelWithProvider<T> = T & {
     providerId: number;
     providerName: string | null;
@@ -405,6 +425,30 @@ function sharedCredential(
         (model) => model.credentialRef != null && model.credentialRef !== "",
     );
     return credential?.credentialRef ?? null;
+}
+
+/**
+ * The provider endpoint's models, with the credential and the endpoint
+ * copied from the provider. Each model keeps its own capability flags.
+ */
+export function flattenProviderCatalogue(
+    providers: readonly CatalogueProviderRecord[],
+): ModelWithProvider<CatalogueModelRecord>[] {
+    const models: ModelWithProvider<CatalogueModelRecord>[] = [];
+    for (const provider of providers) {
+        for (const model of provider.models ?? []) {
+            models.push(
+                attachProvider(
+                    {
+                        ...model,
+                        providerId: provider.id,
+                    },
+                    [provider],
+                ),
+            );
+        }
+    }
+    return models;
 }
 
 /** The stored reference is a model id. The provider follows from that model. */
