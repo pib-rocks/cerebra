@@ -155,10 +155,14 @@
                     <option
                         [value]="providerOptionValue(model)"
                         [disabled]="
-                            isProviderOptionDisabled(model, cloudTokenStored)
+                            isProviderOptionDisabled(
+                                model,
+                                cloudTokenStored,
+                                models
+                            )
                         ">
                         {{ model.visualName }} @if (!isProviderConfigured(model,
-                        cloudTokenStored)) { ({{ missingKeyMark }}) }
+                        cloudTokenStored, models)) { ({{ missingKeyMark }}) }
                     </option>
                     }
                 </select>

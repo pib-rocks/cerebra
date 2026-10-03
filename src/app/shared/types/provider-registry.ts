@@ -70,15 +70,25 @@ export function usesCloudToken(model: ProviderSelectionRow): boolean {
     return model.apiName === CLOUD_TOKEN_API_NAME;
 }
 
-/** A pasted key, or the SmartConnect token for the pib.Cloud row. */
+/**
+ * A pasted key, or the SmartConnect token for the pib.Cloud row.
+ * When the catalogue is passed, the key is the provider's one credential,
+ * shared by every model of that provider. A model row is not a second key,
+ * and an empty provider is not filled from another provider.
+ */
 export function isProviderConfigured(
     model: ProviderSelectionRow,
     cloudTokenStored: boolean,
+    models?: readonly ProviderSelectionRow[],
 ): boolean {
     if (usesCloudToken(model)) {
         return cloudTokenStored;
     }
-    return model.credentialRef != null && model.credentialRef !== "";
+    const credential =
+        models == null
+            ? model.credentialRef
+            : credentialOnProvider(model, models);
+    return credential != null && credential !== "";
 }
 
 export function isRetired(model: ProviderSelectionRow): boolean {
@@ -95,11 +105,12 @@ export function retiredModelNotice(model: ProviderSelectionRow): string {
 export function isProviderOptionDisabled(
     model: ProviderSelectionRow,
     cloudTokenStored: boolean,
+    models?: readonly ProviderSelectionRow[],
 ): boolean {
     return (
         isRetired(model) ||
         !isListedModel(model) ||
-        !isProviderConfigured(model, cloudTokenStored)
+        !isProviderConfigured(model, cloudTokenStored, models)
     );
 }
 
@@ -154,7 +165,10 @@ export function personalityAttention(
             notice: retiredModelNotice({id: 0, isDefault: false}),
         };
     }
-    if (model == null || !isProviderConfigured(model, cloudTokenStored)) {
+    if (
+        model == null ||
+        !isProviderConfigured(model, cloudTokenStored, models)
+    ) {
         return {reason: "missing-key", notice: MISSING_KEY_MARK};
     }
     return null;
@@ -197,7 +211,7 @@ export function providersForSelection<T extends ProviderSelectionRow>(
         (model) =>
             !isRetired(model) &&
             isListedModel(model) &&
-            isProviderConfigured(model, cloudTokenStored),
+            isProviderConfigured(model, cloudTokenStored, models),
     );
     const current = currentSelection(models, storedRef);
     if (current != null && !offered.includes(current)) {
@@ -423,6 +437,12 @@ function sharedEndpoint(group: readonly ProviderSelectionRow[]): string | null {
     return endpoint?.endpointBase ?? null;
 }
 
+/**
+ * The one credential of this provider. Model rows do not keep their own
+ * keys: the first stored ref in the group is the provider's, and a group
+ * with none has none. Callers pass only that provider's models, so a
+ * missing key is never taken from another provider.
+ */
 function sharedCredential(
     group: readonly ProviderSelectionRow[],
 ): string | null {
@@ -430,6 +450,16 @@ function sharedCredential(
         (model) => model.credentialRef != null && model.credentialRef !== "",
     );
     return credential?.credentialRef ?? null;
+}
+
+function credentialOnProvider(
+    model: ProviderSelectionRow,
+    models: readonly ProviderSelectionRow[],
+): string | null {
+    const providerId = providerIdOf(model);
+    return sharedCredential(
+        models.filter((row) => providerIdOf(row) === providerId),
+    );
 }
 
 /**

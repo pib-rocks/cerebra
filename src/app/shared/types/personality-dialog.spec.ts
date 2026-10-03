@@ -157,6 +157,58 @@ describe("personality dialog rules", () => {
         ).toEqual([LOCAL_VOICE_OUTPUT, "4"]);
     });
 
+    it("offers every speech model of a provider from that provider's one key", () => {
+        const flash = new AssistantModel(
+            7,
+            "gemini-3.8-flash",
+            "Gemini 3.8 Flash",
+            true,
+            null,
+            flags({stt: true, tts: true, tools: true}),
+            null,
+            false,
+            false,
+            1,
+            "Google",
+        );
+        const live = new AssistantModel(
+            11,
+            "gemini-3.8-live",
+            "Gemini 3.8 Live",
+            false,
+            null,
+            flags({stt: true, tts: true, tools: true, images: false}),
+            "provider-1",
+            false,
+            false,
+            1,
+            "Google",
+        );
+        const gpt = new AssistantModel(
+            8,
+            "gpt-6",
+            "GPT-6",
+            true,
+            null,
+            flags({stt: true, tts: true, tools: true}),
+            null,
+            false,
+            false,
+            2,
+            "OpenAI",
+        );
+        expect(
+            voiceInputOptions([flash, live, gpt], false).map(
+                (option) => option.id,
+            ),
+        ).toEqual([LOCAL_VOICE_INPUT, "7", "11"]);
+        expect(
+            voiceOutputOptions([flash, live, gpt], false).map(
+                (option) => option.id,
+            ),
+        ).toEqual([LOCAL_VOICE_OUTPUT, "7", "11"]);
+    });
+
     it("does not offer a retired model as a voice engine", () => {
         const retired = new AssistantModel(
             8,

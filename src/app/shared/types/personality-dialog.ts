@@ -163,7 +163,7 @@ function speechOptions(
             (model) =>
                 !isRetired(model) &&
                 model.capabilities?.[capability] === true &&
-                isProviderConfigured(model, cloudTokenStored),
+                isProviderConfigured(model, cloudTokenStored, models),
         )
         .map((model) => ({
             id: String(model.id),

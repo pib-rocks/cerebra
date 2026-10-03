@@ -333,6 +333,63 @@ describe("provider registry selection", () => {
         );
     });
 
+    it("uses one provider credential for every model and does not borrow another provider's key", () => {
+        const flash = row(7, true, false, "gemini-3.8-flash", null);
+        flash.providerId = 1;
+        flash.providerName = "Google";
+        flash.visualName = "Gemini 3.8 Flash";
+        const live = row(11, false, false, "gemini-3.8-live", "provider-1");
+        live.providerId = 1;
+        live.providerName = "Google";
+        live.visualName = "Gemini 3.8 Live";
+        live.capabilities = {
+            tools: true,
+            images: false,
+            live: true,
+            stt: false,
+            tts: false,
+        };
+        const gpt = row(8, true, false, "gpt-6", null);
+        gpt.providerId = 2;
+        gpt.providerName = "OpenAI";
+        gpt.visualName = "GPT-6";
+        const catalogue = [flash, live, gpt];
+
+        expect(isProviderConfigured(flash, false, catalogue)).toBeTrue();
+        expect(isProviderConfigured(live, false, catalogue)).toBeTrue();
+        expect(isProviderConfigured(gpt, false, catalogue)).toBeFalse();
+        expect(personalityNeedsAttention("7", catalogue, false)).toBeFalse();
+        expect(personalityNeedsAttention("11", catalogue, false)).toBeFalse();
+        expect(personalityNeedsAttention("8", catalogue, false)).toBeTrue();
+        expect(personalityAttention("8", catalogue, false)?.reason).toBe(
+            "missing-key",
+        );
+        expect(
+            providersForSelection(catalogue, null).map((model) => model.id),
+        ).toEqual([flash.id, live.id]);
+        expect(
+            providerKeyAccounts(catalogue).map((account) => ({
+                id: account.id,
+                credentialRef: account.credentialRef,
+                modelIds: account.modelIds,
+            })),
+        ).toEqual([
+            {id: 1, credentialRef: "provider-1", modelIds: [7, 11]},
+            {id: 2, credentialRef: null, modelIds: [8]},
+        ]);
+
+        flash.credentialRef = "provider-7";
+        live.credentialRef = "provider-11";
+        expect(
+            providerKeyAccounts(catalogue).map(
+                (account) => account.credentialRef,
+            ),
+        ).toEqual(["provider-7", null]);
+        expect(isProviderConfigured(live, false, catalogue)).toBeTrue();
+        expect(isProviderConfigured(gpt, false, catalogue)).toBeFalse();
+        expect(personalityNeedsAttention("8", catalogue, false)).toBeTrue();
+    });
+
     it("lists a live model beside its chat model from the provider document", () => {
         const models = flattenProviderCatalogue([
             {
