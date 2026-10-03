@@ -251,6 +251,90 @@ describe("VoiceAssistantService", () => {
         expect(cleared[1].endpointBase).toBe("https://example.test/v1");
     });
 
+    it("applies one provider credential to every model of that provider", () => {
+        apiService.get.and.returnValue(
+            new BehaviorSubject({
+                assistantModels: [
+                    {
+                        id: 8,
+                        providerId: 2,
+                        providerName: "OpenAI",
+                        apiName: "gpt-6",
+                        visualName: "GPT-6",
+                        hasImageSupport: true,
+                        endpointBase: "https://api.openai.example/v1",
+                        capabilities: {
+                            tools: true,
+                            images: true,
+                            live: false,
+                            stt: false,
+                            tts: false,
+                        },
+                        credentialRef: null,
+                        isDefault: false,
+                    },
+                    {
+                        id: 11,
+                        providerId: 2,
+                        providerName: "OpenAI",
+                        apiName: "gpt-realtime",
+                        visualName: "GPT Realtime",
+                        hasImageSupport: false,
+                        endpointBase: "https://api.openai.example/v1",
+                        capabilities: {
+                            tools: false,
+                            images: false,
+                            live: true,
+                            stt: false,
+                            tts: false,
+                        },
+                        credentialRef: null,
+                        isDefault: false,
+                    },
+                    {
+                        id: 7,
+                        providerId: 1,
+                        providerName: "Google",
+                        apiName: "gemini-3.8-flash",
+                        visualName: "Gemini 3.8 Flash",
+                        hasImageSupport: true,
+                        capabilities: {
+                            tools: true,
+                            images: true,
+                            live: true,
+                            stt: false,
+                            tts: false,
+                        },
+                        credentialRef: null,
+                        isDefault: false,
+                    },
+                ],
+            }),
+        );
+        service.getAllAssistantModels();
+        const parsed = service.assistantModelsSubject.getValue();
+        expect(parsed[0].providerId).toBe(2);
+        expect(parsed[0].providerName).toBe("OpenAI");
+        expect(parsed[0].capabilities.images).toBeTrue();
+        expect(parsed[1].capabilities.live).toBeTrue();
+        expect(parsed[1].capabilities.images).toBeFalse();
+        expect(parsed[2].providerId).toBe(1);
+
+        service.setProviderCredential(2, "provider-2");
+        const next = service.assistantModelsSubject.getValue();
+        expect(next.map((model) => model.credentialRef)).toEqual([
+            "provider-2",
+            "provider-2",
+            null,
+        ]);
+        expect(next[0].endpointBase).toBe("https://api.openai.example/v1");
+        expect(next[1].endpointBase).toBe("https://api.openai.example/v1");
+        expect(next[0].capabilities.images).toBeTrue();
+        expect(next[1].capabilities.live).toBeTrue();
+        expect(next[0].id).toBe(8);
+        expect(next[1].id).toBe(11);
+    });
+
     it("keeps a retired catalogue row so settings can name it", () => {
         apiService.get.and.returnValue(
             new BehaviorSubject({

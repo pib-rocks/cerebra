@@ -28,12 +28,10 @@
             "channel": "direct"
         }
     ],
-    "assistantModel": [
+    "provider": [
         {
-            "id": 7,
-            "apiName": "gemini-3.8-flash",
-            "hasImageSupport": true,
-            "visualName": "Gemini 3.8 Flash",
+            "id": 1,
+            "name": "Google",
             "endpointBase": null,
             "capabilities": {
                 "tools": true,
@@ -42,16 +40,71 @@
                 "stt": false,
                 "tts": false
             },
-            "credentialRef": null,
+            "credentialRef": null
+        },
+        {
+            "id": 2,
+            "name": "OpenAI",
+            "endpointBase": null,
+            "capabilities": {
+                "tools": true,
+                "images": true,
+                "live": false,
+                "stt": false,
+                "tts": false
+            },
+            "credentialRef": null
+        },
+        {
+            "id": 3,
+            "name": "Anthropic",
+            "endpointBase": null,
+            "capabilities": {
+                "tools": true,
+                "images": true,
+                "live": false,
+                "stt": false,
+                "tts": false
+            },
+            "credentialRef": null
+        },
+        {
+            "id": 4,
+            "name": "pib.Cloud",
+            "endpointBase": null,
+            "capabilities": {
+                "tools": true,
+                "images": true,
+                "live": false,
+                "stt": false,
+                "tts": false
+            },
+            "credentialRef": "provider-10"
+        }
+    ],
+    "assistantModel": [
+        {
+            "id": 7,
+            "providerId": 1,
+            "apiName": "gemini-3.8-flash",
+            "hasImageSupport": true,
+            "visualName": "Gemini 3.8 Flash",
+            "capabilities": {
+                "tools": true,
+                "images": true,
+                "live": true,
+                "stt": false,
+                "tts": false
+            },
             "isDefault": false,
             "status": "active"
         },
         {
             "id": 8,
+            "providerId": 2,
             "apiName": "gpt-6",
             "hasImageSupport": true,
             "visualName": "GPT-6",
-            "endpointBase": null,
             "capabilities": {
                 "tools": true,
                 "images": true,
@@ -59,16 +112,15 @@
                 "stt": false,
                 "tts": false
             },
-            "credentialRef": null,
             "isDefault": false,
             "status": "active"
         },
         {
             "id": 9,
+            "providerId": 3,
             "apiName": "claude-sonnet-5-5",
             "hasImageSupport": true,
             "visualName": "Claude Sonnet 5.5",
-            "endpointBase": null,
             "capabilities": {
                 "tools": true,
                 "images": true,
@@ -76,24 +128,22 @@
                 "stt": false,
                 "tts": false
             },
-            "credentialRef": null,
             "isDefault": false,
             "status": "active"
         },
         {
             "id": 10,
+            "providerId": 4,
             "apiName": "pib-cloud",
             "hasImageSupport": true,
             "visualName": "pib.Cloud",
-            "endpointBase": null,
             "capabilities": {
                 "tools": true,
                 "images": true,
                 "live": false,
-            "stt": false,
-            "tts": false
+                "stt": false,
+                "tts": false
             },
-            "credentialRef": "provider-10",
             "isDefault": true,
             "status": "active"
         }

@@ -17,6 +17,7 @@ export class VoiceAssistant implements SidebarElement {
     pauseThreshold: number;
     assistantModelId: number | null;
     messageHistory: number;
+    /** Model id as text, or "default". The provider follows from that model. */
     providerRef: string;
     channel: ChatChannel;
     voiceInput: string;

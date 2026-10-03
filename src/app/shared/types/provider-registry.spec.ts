@@ -6,10 +6,14 @@ import {
     isProviderOptionDisabled,
     personalityAttention,
     personalityNeedsAttention,
+    providerIdOf,
+    providerKeyAccounts,
+    attachProvider,
     retiredModelNotice,
     providerOptionValue,
     providerRefFromSelection,
     providersForSelection,
+    resolveProvider,
     ProviderSelectionRow,
 } from "./provider-registry";
 
@@ -222,5 +226,90 @@ describe("provider registry selection", () => {
         const removed = personalityAttention("9", [current], true, true);
         expect(removed?.reason).toBe("retired");
         expect(removed?.notice).toBe("This model is gone. Choose a new one.");
+    });
+
+    it("keeps the credential and the endpoint on the provider and the flags on the model", () => {
+        const gpt = {
+            id: 8,
+            providerId: 2,
+            providerName: "OpenAI",
+            apiName: "gpt-6",
+            visualName: "GPT-6",
+            isDefault: false,
+            endpointBase: "https://api.openai.example/v1",
+            credentialRef: "provider-2",
+            capabilities: {
+                tools: true,
+                images: true,
+                live: false,
+                stt: false,
+                tts: false,
+            },
+        };
+        const realtime = {
+            id: 11,
+            providerId: 2,
+            providerName: "OpenAI",
+            apiName: "gpt-realtime",
+            visualName: "GPT Realtime",
+            isDefault: false,
+            endpointBase: "https://api.openai.example/v1",
+            credentialRef: "provider-2",
+            capabilities: {
+                tools: false,
+                images: false,
+                live: true,
+                stt: false,
+                tts: false,
+            },
+        };
+        expect(providerKeyAccounts([gpt, realtime])).toEqual([
+            {
+                id: 2,
+                name: "OpenAI",
+                endpointBase: "https://api.openai.example/v1",
+                credentialRef: "provider-2",
+                capabilities: {
+                    tools: false,
+                    images: false,
+                    live: false,
+                    stt: false,
+                    tts: false,
+                },
+                modelIds: [8, 11],
+            },
+        ]);
+        const selected = resolveProvider("8", [gpt, realtime]);
+        expect(selected?.id).toBe(8);
+        expect(providerIdOf(selected!)).toBe(2);
+        expect(selected?.capabilities?.images).toBeTrue();
+        expect(realtime.capabilities.live).toBeTrue();
+
+        const joined = attachProvider(
+            {
+                id: 10,
+                providerId: 4,
+                apiName: "pib-cloud",
+                visualName: "pib.Cloud",
+                capabilities: gpt.capabilities,
+            },
+            [
+                {
+                    id: 4,
+                    name: "pib.Cloud",
+                    endpointBase: null,
+                    credentialRef: "provider-10",
+                    capabilities: gpt.capabilities,
+                },
+            ],
+        );
+        expect(joined.credentialRef).toBe("provider-10");
+        expect(joined.endpointBase).toBeNull();
+        expect(joined.providerName).toBe("pib.Cloud");
+        expect(joined.capabilities).toEqual(gpt.capabilities);
+        expect(providerIdOf(joined)).toBe(4);
+        expect(providerRefFromSelection(String(selected!.id)).providerRef).toBe(
+            "8",
+        );
     });
 });

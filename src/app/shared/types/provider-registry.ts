@@ -1,7 +1,7 @@
 /**
  * A new personality stores this pointer. Resolving it is a lookup of
- * whichever registry row is currently the default, so changing the default
- * does not rewrite personalities.
+ * whichever model row is currently the default, so changing the default
+ * does not rewrite personalities. The provider follows from that model.
  */
 export const DEFAULT_PROVIDER_REF = "default";
 
@@ -34,6 +34,10 @@ export interface ProviderSelectionRow {
     credentialRef?: string | null;
     /** Set by the catalogue. A retired row is kept so a personality can be named, not chosen. */
     retired?: boolean;
+    /** Account this model belongs to. Absent when the row is its own provider. */
+    providerId?: number | null;
+    providerName?: string | null;
+    endpointBase?: string | null;
 }
 
 export function capabilitiesFrom(
@@ -227,6 +231,183 @@ export function providerOptionValue(
     return String(model.id);
 }
 
+const CAPABILITY_KEYS: (keyof ProviderCapabilities)[] = [
+    "tools",
+    "images",
+    "live",
+    "stt",
+    "tts",
+];
+
+/**
+ * Flags that are true on every model of one provider.
+ * One model means its own flags. A provider with none stores every flag off.
+ */
+export function capabilitiesHeldByAll(
+    rows: ReadonlyArray<Partial<ProviderCapabilities> | null | undefined>,
+): ProviderCapabilities {
+    if (rows.length === 0) {
+        return {
+            tools: false,
+            images: false,
+            live: false,
+            stt: false,
+            tts: false,
+        };
+    }
+    const shared: ProviderCapabilities = {
+        tools: true,
+        images: true,
+        live: true,
+        stt: true,
+        tts: true,
+    };
+    for (const row of rows) {
+        for (const key of CAPABILITY_KEYS) {
+            shared[key] = shared[key] && row?.[key] === true;
+        }
+    }
+    return shared;
+}
+
+/** The provider of a model. A row without one is its own provider. */
+export function providerIdOf(model: {
+    id: number;
+    providerId?: number | null;
+}): number {
+    if (model.providerId != null && model.providerId > 0) {
+        return model.providerId;
+    }
+    return model.id;
+}
+
+export interface RegistryProviderRecord {
+    id: number;
+    name: string;
+    endpointBase?: string | null;
+    capabilities?: Partial<ProviderCapabilities> | null;
+    credentialRef?: string | null;
+}
+
+export type ModelWithProvider<T> = T & {
+    providerId: number;
+    providerName: string | null;
+    credentialRef: string | null;
+    endpointBase: string | null;
+};
+
+/**
+ * The credential and the endpoint live on the provider. The model's own
+ * flags stay on the model.
+ */
+export function attachProvider<
+    T extends {
+        id: number;
+        providerId?: number | null;
+        credentialRef?: string | null;
+        endpointBase?: string | null;
+        providerName?: string | null;
+    },
+>(
+    model: T,
+    providers: readonly RegistryProviderRecord[],
+): ModelWithProvider<T> {
+    const provider = providers.find((row) => row.id === model.providerId);
+    if (provider == null) {
+        return {
+            ...model,
+            providerId: providerIdOf(model),
+            providerName: model.providerName ?? null,
+            credentialRef: model.credentialRef ?? null,
+            endpointBase: model.endpointBase ?? null,
+        };
+    }
+    return {
+        ...model,
+        providerId: provider.id,
+        providerName: provider.name,
+        credentialRef: provider.credentialRef ?? null,
+        endpointBase: provider.endpointBase ?? null,
+    };
+}
+
+/** One key card. Several models of one provider share it. */
+export interface ProviderKeyAccount {
+    id: number;
+    name: string;
+    endpointBase: string | null;
+    credentialRef: string | null;
+    capabilities: ProviderCapabilities;
+    modelIds: number[];
+}
+
+export function providerKeyAccounts<T extends ProviderSelectionRow>(
+    models: readonly T[],
+): ProviderKeyAccount[] {
+    const groups = new Map<number, T[]>();
+    for (const model of models) {
+        const id = providerIdOf(model);
+        const group = groups.get(id);
+        if (group == null) {
+            groups.set(id, [model]);
+        } else {
+            group.push(model);
+        }
+    }
+    const accounts: ProviderKeyAccount[] = [];
+    for (const [id, group] of groups) {
+        accounts.push({
+            id,
+            name: providerAccountName(group),
+            endpointBase: sharedEndpoint(group),
+            credentialRef: sharedCredential(group),
+            capabilities: capabilitiesHeldByAll(
+                group.map((model) => model.capabilities),
+            ),
+            modelIds: group.map((model) => model.id),
+        });
+    }
+    return accounts;
+}
+
+function providerAccountName(group: readonly ProviderSelectionRow[]): string {
+    const named = group.find(
+        (model) =>
+            model.providerName != null && model.providerName.trim() !== "",
+    );
+    if (named?.providerName != null && named.providerName.trim() !== "") {
+        return named.providerName.trim();
+    }
+    if (group.length === 1) {
+        return (
+            group[0].visualName?.trim() ||
+            group[0].apiName?.trim() ||
+            "Provider"
+        );
+    }
+    const labels = group
+        .map((model) => model.visualName?.trim() || model.apiName?.trim())
+        .filter((label): label is string => label != null && label !== "");
+    return labels.join(", ") || "Provider";
+}
+
+function sharedEndpoint(group: readonly ProviderSelectionRow[]): string | null {
+    const endpoint = group.find(
+        (model) => model.endpointBase != null && model.endpointBase !== "",
+    );
+    return endpoint?.endpointBase ?? null;
+}
+
+function sharedCredential(
+    group: readonly ProviderSelectionRow[],
+): string | null {
+    const credential = group.find(
+        (model) => model.credentialRef != null && model.credentialRef !== "",
+    );
+    return credential?.credentialRef ?? null;
+}
+
+/** The stored reference is a model id. The provider follows from that model. */
 export function providerRefFromSelection(selection: string): {
     providerRef: string;
     assistantModelId: number | null;

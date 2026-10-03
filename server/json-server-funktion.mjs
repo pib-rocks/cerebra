@@ -35,10 +35,13 @@ function channelDocument() {
 
 function modelForPersonality(personality) {
     if (personality.providerRef === "default") {
-        return mockData.assistantModel.find((model) => model.isDefault === true);
+        return mockData.assistantModel.find(
+            (model) => model.isDefault === true,
+        );
     }
     const id =
-        personality.assistantModelId != null && personality.assistantModelId !== ""
+        personality.assistantModelId != null &&
+        personality.assistantModelId !== ""
             ? personality.assistantModelId
             : Number(personality.providerRef);
     return mockData.assistantModel.find((model) => model.id == id);
@@ -666,10 +669,23 @@ server.put("/program/:programNumber/code", (req, res, next) => {
     }
 });
 
+function presentAssistantModel(model) {
+    const provider = mockData.provider.find(
+        (row) => row.id == model.providerId,
+    );
+    return AssistantModel.getAssistantModel({
+        ...model,
+        providerId: provider?.id ?? model.providerId ?? model.id,
+        providerName: provider?.name ?? null,
+        credentialRef: provider?.credentialRef ?? null,
+        endpointBase: provider?.endpointBase ?? null,
+    });
+}
+
 //getAssistantModel
 server.get("/assistant-model", (req, res, next) => {
     const response = mockData.assistantModel
-        .map((model) => AssistantModel.getAssistantModel(model))
+        .map((model) => presentAssistantModel(model))
         .filter(
             (model) =>
                 model.retired === true || model.capabilities.images === true,
@@ -685,7 +701,7 @@ server.get("/assistant-model/:id", (req, res, next) => {
     if (response == undefined) {
         return res.status(404).send();
     }
-    return res.status(200).send(response);
+    return res.status(200).send(presentAssistantModel(response));
 });
 
 //getButtonPrograms
@@ -734,13 +750,13 @@ function keyStoreFailure(res, status, error) {
     });
 }
 
-function keyStoreModel(providerId) {
-    return mockData.assistantModel.find((model) => model.id == providerId);
+function keyStoreProvider(providerId) {
+    return mockData.provider.find((provider) => provider.id == providerId);
 }
 
 server.get("/system/key-store", (req, res) => {
-    const credentialRefs = mockData.assistantModel
-        .map((model) => model.credentialRef)
+    const credentialRefs = mockData.provider
+        .map((provider) => provider.credentialRef)
         .filter((ref) => ref != null && ref !== "");
     return res.status(200).send({
         encryptKeyStorage: true,
@@ -803,8 +819,8 @@ server.put("/system/key-store/:providerId", (req, res) => {
     if (typeof password !== "string" || typeof secret !== "string") {
         return keyStoreFailure(res, 400, "Bad request.");
     }
-    const model = keyStoreModel(req.params.providerId);
-    if (model == undefined) {
+    const provider = keyStoreProvider(req.params.providerId);
+    if (provider == undefined) {
         return keyStoreFailure(res, 404, "Provider not found.");
     }
     if (secret.trim() === "") {
@@ -818,9 +834,12 @@ server.put("/system/key-store/:providerId", (req, res) => {
     } else if (password !== keyStorePassword) {
         return keyStoreFailure(res, 401, KEY_STORE_WRONG_PASSWORD);
     }
-    const credentialRef = `provider-${model.id}`;
+    const credentialRef = `provider-${provider.id}`;
+    if (provider.credentialRef && provider.credentialRef !== credentialRef) {
+        keyStoreSecrets.delete(provider.credentialRef);
+    }
     keyStoreSecrets.set(credentialRef, secret);
-    model.credentialRef = credentialRef;
+    provider.credentialRef = credentialRef;
     return res.status(200).send({successful: true, credentialRef});
 });
 
@@ -829,17 +848,17 @@ server.delete("/system/key-store/:providerId", (req, res) => {
     if (typeof password !== "string" || password === "") {
         return keyStoreFailure(res, 400, "Bad request.");
     }
-    const model = keyStoreModel(req.params.providerId);
-    if (model == undefined) {
+    const provider = keyStoreProvider(req.params.providerId);
+    if (provider == undefined) {
         return keyStoreFailure(res, 404, "Provider not found.");
     }
     if (keyStorePassword != null && password !== keyStorePassword) {
         return keyStoreFailure(res, 401, KEY_STORE_WRONG_PASSWORD);
     }
-    if (model.credentialRef) {
-        keyStoreSecrets.delete(model.credentialRef);
+    if (provider.credentialRef) {
+        keyStoreSecrets.delete(provider.credentialRef);
     }
-    model.credentialRef = null;
+    provider.credentialRef = null;
     return res.status(204).send();
 });
 

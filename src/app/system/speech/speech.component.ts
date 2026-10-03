@@ -7,7 +7,11 @@ import {
 } from "@angular/core";
 import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 import {AssistantModel} from "src/app/shared/types/assistantModel";
-import {usesCloudToken} from "src/app/shared/types/provider-registry";
+import {
+    ProviderKeyAccount,
+    providerKeyAccounts,
+    usesCloudToken,
+} from "src/app/shared/types/provider-registry";
 import {TokenService} from "src/app/shared/services/token.service";
 import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
 import {RosService} from "src/app/shared/services/ros-service/ros.service";
@@ -33,6 +37,7 @@ export class SpeechComponent implements OnInit {
     cloudTokenStored = false;
     cloudTokenActive = false;
     providers: AssistantModel[] = [];
+    keyProviders: ProviderKeyAccount[] = [];
     password = "";
     newPassword = "";
     confirmPassword = "";
@@ -66,6 +71,7 @@ export class SpeechComponent implements OnInit {
                 this.providers = models.filter(
                     (model) => !usesCloudToken(model) && !model.retired,
                 );
+                this.keyProviders = providerKeyAccounts(this.providers);
             });
         this.voiceAssistantService.getAllAssistantModels();
         this.loadStatus();
@@ -107,8 +113,8 @@ export class SpeechComponent implements OnInit {
         };
     }
 
-    saveKey(model: AssistantModel): void {
-        const secret = (this.drafts[model.id] ?? "").trim();
+    saveKey(account: ProviderKeyAccount): void {
+        const secret = (this.drafts[account.id] ?? "").trim();
         if (secret === "" || (this.encryptKeyStorage && this.password === "")) {
             this.error = "Enter the operator password and the provider key.";
             this.notice = null;
@@ -117,18 +123,18 @@ export class SpeechComponent implements OnInit {
         this.busy = true;
         this.error = null;
         this.keyStore
-            .putSecret(model.id, this.password, secret)
+            .putSecret(account.id, this.password, secret)
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({
                 next: (result) => {
                     this.busy = false;
-                    this.drafts = {...this.drafts, [model.id]: ""};
+                    this.drafts = {...this.drafts, [account.id]: ""};
                     this.voiceAssistantService.setProviderCredential(
-                        model.id,
-                        result.credentialRef ?? `provider-${model.id}`,
+                        account.id,
+                        result.credentialRef ?? `provider-${account.id}`,
                     );
                     this.voiceAssistantService.getAllAssistantModels();
-                    this.notice = `Key stored for ${model.visualName}.`;
+                    this.notice = `Key stored for ${account.name}.`;
                     this.loadStatus();
                 },
                 error: (err: unknown) => {
@@ -139,7 +145,7 @@ export class SpeechComponent implements OnInit {
             });
     }
 
-    deleteKey(model: AssistantModel): void {
+    deleteKey(account: ProviderKeyAccount): void {
         if (this.encryptKeyStorage && this.password === "") {
             this.error = "Enter the operator password to delete a key.";
             this.notice = null;
@@ -148,18 +154,18 @@ export class SpeechComponent implements OnInit {
         this.busy = true;
         this.error = null;
         this.keyStore
-            .deleteSecret(model.id, this.password)
+            .deleteSecret(account.id, this.password)
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe({
                 next: () => {
                     this.busy = false;
-                    this.drafts = {...this.drafts, [model.id]: ""};
+                    this.drafts = {...this.drafts, [account.id]: ""};
                     this.voiceAssistantService.setProviderCredential(
-                        model.id,
+                        account.id,
                         null,
                     );
                     this.voiceAssistantService.getAllAssistantModels();
-                    this.notice = `Key deleted for ${model.visualName}. Personalities that use it need a key.`;
+                    this.notice = `Key deleted for ${account.name}. Personalities that use it need a key.`;
                     this.loadStatus();
                 },
                 error: (err: unknown) => {

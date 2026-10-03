@@ -14,6 +14,8 @@ export class AssistantModel {
         public credentialRef: string | null = null,
         public isDefault: boolean = false,
         public retired: boolean = false,
+        public providerId: number | null = null,
+        public providerName: string | null = null,
     ) {}
 
     getId(): number {
@@ -39,6 +41,12 @@ export class AssistantModel {
             model.credentialRef ?? null,
             Boolean(model.isDefault),
             model.retired === true || model.status === "retired",
+            model.providerId != null && model.providerId > 0
+                ? model.providerId
+                : null,
+            model.providerName != null && model.providerName.trim() !== ""
+                ? model.providerName.trim()
+                : null,
         );
     }
 }
@@ -55,4 +63,7 @@ export interface AssistantModelDto {
     retired?: boolean;
     /** Catalogue status. "retired" is the same fact as retired: true. */
     status?: string;
+    /** Account this model belongs to. The credential and the endpoint live there. */
+    providerId?: number | null;
+    providerName?: string | null;
 }

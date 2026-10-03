@@ -12,6 +12,7 @@ import {AssistantModel} from "src/app/shared/types/assistantModel";
 import {
     CLOUD_TOKEN_API_NAME,
     personalityNeedsAttention,
+    providerIdOf,
     providersForSelection,
 } from "src/app/shared/types/provider-registry";
 
@@ -83,7 +84,7 @@ describe("SpeechComponent", () => {
             (providerId: number, credentialRef: string | null) => {
                 models.next(
                     models.getValue().map((model) => {
-                        if (model.id !== providerId) {
+                        if (providerIdOf(model) !== providerId) {
                             return model;
                         }
                         return new AssistantModel(
@@ -96,6 +97,8 @@ describe("SpeechComponent", () => {
                             credentialRef,
                             model.isDefault,
                             model.retired,
+                            model.providerId,
+                            model.providerName,
                         );
                     }),
                 );
@@ -533,7 +536,7 @@ describe("SpeechComponent", () => {
             of({successful: true, credentialRef: "provider-4"}),
         );
         component.drafts = {4: "sk-clear"};
-        component.saveKey(gpt);
+        component.saveKey(component.keyProviders[0]);
         fixture.detectChanges();
 
         expect(keyStore.putSecret).toHaveBeenCalledWith(4, "", "sk-clear");
@@ -577,7 +580,7 @@ describe("SpeechComponent", () => {
         );
         component.password = "operator-secret";
         component.drafts = {4: "sk-new"};
-        component.saveKey(gpt);
+        component.saveKey(component.keyProviders[0]);
         fixture.detectChanges();
 
         const stored = models.getValue().find((model) => model.id === 4)!;
@@ -617,7 +620,7 @@ describe("SpeechComponent", () => {
     it("deletes a key and lets it be entered again, marking personalities that used the model", () => {
         keyStore.deleteSecret.and.returnValue(of(""));
         component.password = "operator-secret";
-        component.deleteKey(gpt);
+        component.deleteKey(component.keyProviders[0]);
         fixture.detectChanges();
 
         expect(keyStore.deleteSecret).toHaveBeenCalledWith(
@@ -647,7 +650,7 @@ describe("SpeechComponent", () => {
             of({successful: true, credentialRef: "provider-4"}),
         );
         component.drafts = {4: "sk-again"};
-        component.saveKey(cleared);
+        component.saveKey(component.keyProviders[0]);
         fixture.detectChanges();
 
         expect(keyStore.putSecret).toHaveBeenCalledWith(
@@ -690,11 +693,109 @@ describe("SpeechComponent", () => {
             ),
         );
         component.password = "nope";
-        component.deleteKey(gpt);
+        component.deleteKey(component.keyProviders[0]);
         fixture.detectChanges();
         expect(text("#speech-error")).toBe(
             "Wrong password. No keys are available.",
         );
         expect(models.getValue()[1].credentialRef).toBe("provider-4");
+    });
+
+    it("stores one key for every model of a provider", () => {
+        const gptModel = new AssistantModel(
+            8,
+            "gpt-6",
+            "GPT-6",
+            true,
+            "https://api.openai.example/v1",
+            {
+                tools: true,
+                images: true,
+                live: false,
+                stt: false,
+                tts: false,
+            },
+            null,
+            false,
+            false,
+            2,
+            "OpenAI",
+        );
+        const realtime = new AssistantModel(
+            11,
+            "gpt-realtime",
+            "GPT Realtime",
+            false,
+            "https://api.openai.example/v1",
+            {
+                tools: false,
+                images: false,
+                live: true,
+                stt: false,
+                tts: false,
+            },
+            null,
+            false,
+            false,
+            2,
+            "OpenAI",
+        );
+        models.next([gptModel, realtime]);
+        fixture.detectChanges();
+
+        const titles = Array.from(
+            fixture.nativeElement.querySelectorAll(".speech-card-title"),
+        ).map((node) => (node as HTMLElement).textContent?.trim());
+        expect(titles.filter((title) => title !== "Operator password")).toEqual(
+            ["pib.Cloud", "OpenAI"],
+        );
+        expect(
+            fixture.nativeElement.querySelector("#speech-provider-key-2"),
+        ).not.toBeNull();
+        expect(
+            fixture.nativeElement.querySelector("#speech-provider-key-8"),
+        ).toBeNull();
+        expect(
+            fixture.nativeElement.querySelector("#speech-provider-key-11"),
+        ).toBeNull();
+        expect(component.keyProviders[0].capabilities).toEqual({
+            tools: false,
+            images: false,
+            live: false,
+            stt: false,
+            tts: false,
+        });
+        expect(component.keyProviders[0].modelIds).toEqual([8, 11]);
+        expect(component.keyProviders[0].endpointBase).toBe(
+            "https://api.openai.example/v1",
+        );
+
+        keyStore.putSecret.and.returnValue(
+            of({successful: true, credentialRef: "provider-2"}),
+        );
+        component.password = "operator-secret";
+        component.drafts = {2: "sk-shared"};
+        component.saveKey(component.keyProviders[0]);
+        fixture.detectChanges();
+
+        expect(keyStore.putSecret).toHaveBeenCalledWith(
+            2,
+            "operator-secret",
+            "sk-shared",
+        );
+        expect(models.getValue().map((model) => model.credentialRef)).toEqual([
+            "provider-2",
+            "provider-2",
+        ]);
+        expect(models.getValue()[0].capabilities.images).toBeTrue();
+        expect(models.getValue()[1].capabilities.live).toBeTrue();
+        expect(models.getValue()[0].endpointBase).toBe(
+            "https://api.openai.example/v1",
+        );
+        expect(models.getValue()[1].endpointBase).toBe(
+            "https://api.openai.example/v1",
+        );
+        expect(text("#speech-provider-state-2")).toBe("Key stored");
+        expect(text("#speech-notice")).toBe("Key stored for OpenAI.");
     });
 });

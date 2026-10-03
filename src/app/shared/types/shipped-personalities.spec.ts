@@ -4,8 +4,11 @@ import {VoiceAssistant} from "./voice-assistant";
 import {
     CLOUD_TOKEN_API_NAME,
     DEFAULT_PROVIDER_REF,
+    attachProvider,
+    capabilitiesHeldByAll,
     isProviderOptionDisabled,
     personalityAttention,
+    providerIdOf,
     providersForSelection,
     resolveProvider,
 } from "./provider-registry";
@@ -35,7 +38,9 @@ const CATALOGUE = [
 
 describe("shipped personalities", () => {
     const models = mockData.assistantModel.map((row) =>
-        AssistantModel.parseDtoToAssistantModel(row),
+        AssistantModel.parseDtoToAssistantModel(
+            attachProvider(row, mockData.provider),
+        ),
     );
 
     function shipped(
@@ -117,5 +122,37 @@ describe("shipped personalities", () => {
                 ),
             ).toEqual([CLOUD_TOKEN_API_NAME]);
         }
+    });
+
+    it("maps each flat catalogue row onto one provider and one model", () => {
+        expect(mockData.provider.length).toBe(mockData.assistantModel.length);
+        expect(models.map((model) => model.id)).toEqual([7, 8, 9, 10]);
+        expect(mockData.provider.map((provider) => provider.id)).toEqual([
+            1, 2, 3, 4,
+        ]);
+        for (const provider of mockData.provider) {
+            const owned = mockData.assistantModel.filter(
+                (row) => row.providerId === provider.id,
+            );
+            expect(owned.length).toBe(1);
+            expect(provider.capabilities).toEqual(
+                capabilitiesHeldByAll(owned.map((row) => row.capabilities)),
+            );
+            expect(owned.every((row) => !("credentialRef" in row))).toBeTrue();
+            expect(owned.every((row) => !("endpointBase" in row))).toBeTrue();
+        }
+        const cloud = models.find((model) => model.isDefault);
+        expect(cloud?.providerName).toBe("pib.Cloud");
+        expect(providerIdOf(cloud!)).toBe(4);
+        expect(providerIdOf(cloud!)).not.toBe(cloud!.id);
+        const account = mockData.provider.find(
+            (provider) => provider.id === cloud!.providerId,
+        );
+        expect(account?.name).toBe("pib.Cloud");
+        expect(account?.credentialRef).toBe("provider-10");
+        expect(account?.endpointBase).toBeNull();
+        const resolved = resolveProvider(DEFAULT_PROVIDER_REF, models);
+        expect(resolved?.id).toBe(cloud!.id);
+        expect(providerIdOf(resolved!)).toBe(account!.id);
     });
 });

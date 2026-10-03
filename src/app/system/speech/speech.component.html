@@ -88,41 +88,41 @@
         </button>
     </div>
 
-    @for (model of providers; track model.id) {
+    @for (account of keyProviders; track account.id) {
     <div
         class="speech-card"
-        [id]="'speech-provider-' + model.id">
-        <div class="speech-card-title">{{ model.visualName }}</div>
+        [id]="'speech-provider-' + account.id">
+        <div class="speech-card-title">{{ account.name }}</div>
         <div class="speech-pair">
             <label
                 class="speech-label"
-                [for]="'speech-provider-key-' + model.id">
+                [for]="'speech-provider-key-' + account.id">
                 Key
             </label>
             <input
-                [id]="'speech-provider-key-' + model.id"
+                [id]="'speech-provider-key-' + account.id"
                 type="password"
                 autocomplete="off"
-                [value]="drafts[model.id] ?? ''"
-                (input)="onDraft(model.id, $event)" />
+                [value]="drafts[account.id] ?? ''"
+                (input)="onDraft(account.id, $event)" />
         </div>
-        <p [id]="'speech-provider-state-' + model.id">
-            {{ model.credentialRef ? "Key stored" : "No key" }}
+        <p [id]="'speech-provider-state-' + account.id">
+            {{ account.credentialRef ? "Key stored" : "No key" }}
         </p>
         <button
             type="button"
             class="btn btn-outline-light"
-            [id]="'speech-provider-save-' + model.id"
+            [id]="'speech-provider-save-' + account.id"
             [disabled]="busy"
-            (click)="saveKey(model)">
+            (click)="saveKey(account)">
             Save key
         </button>
         <button
             type="button"
             class="btn btn-outline-light"
-            [id]="'speech-provider-delete-' + model.id"
-            [disabled]="busy || !model.credentialRef"
-            (click)="deleteKey(model)">
+            [id]="'speech-provider-delete-' + account.id"
+            [disabled]="busy || !account.credentialRef"
+            (click)="deleteKey(account)">
             Delete key
         </button>
     </div>

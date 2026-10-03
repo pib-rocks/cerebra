@@ -21,6 +21,7 @@ import {SidebarElement} from "../interfaces/sidebar-element.interface";
 import {RosService} from "./ros-service/ros.service";
 import {VoiceAssistantState} from "../types/voice-assistant-state";
 import {AssistantModel, AssistantModelDto} from "../types/assistantModel";
+import {providerIdOf} from "../types/provider-registry";
 import {ChatService} from "./chat.service";
 
 @Injectable({
@@ -144,7 +145,7 @@ export class VoiceAssistantService implements SidebarService {
 
     setProviderCredential(providerId: number, credentialRef: string | null) {
         const next = this.assistantModelsSubject.getValue().map((model) => {
-            if (model.id !== providerId) {
+            if (providerIdOf(model) !== providerId) {
                 return model;
             }
             return new AssistantModel(
@@ -157,6 +158,8 @@ export class VoiceAssistantService implements SidebarService {
                 credentialRef,
                 model.isDefault,
                 model.retired,
+                model.providerId,
+                model.providerName,
             );
         });
         this.assistantModelsSubject.next(next);

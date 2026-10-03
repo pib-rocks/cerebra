@@ -24,6 +24,8 @@ export class AssistantModel {
         credentialRef,
         isDefault,
         retired,
+        providerId,
+        providerName,
     ) {
         this.id = id;
         this.apiName = apiName;
@@ -35,6 +37,8 @@ export class AssistantModel {
         this.isDefault = isDefault;
         this.status = retired === true ? "retired" : "active";
         this.retired = this.status === "retired";
+        this.providerId = providerId ?? id;
+        this.providerName = providerName ?? null;
     }
 
     static getAssistantModel(model) {
@@ -50,6 +54,8 @@ export class AssistantModel {
             model.credentialRef ?? null,
             Boolean(model.isDefault),
             retired,
+            model.providerId ?? null,
+            model.providerName ?? null,
         );
         if (typeof model.status === "string" && model.status !== "") {
             row.status = model.status;
