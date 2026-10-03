@@ -14,6 +14,7 @@ import {
     Router,
 } from "@angular/router";
 import {VoiceAssistant} from "src/app/shared/types/voice-assistant";
+import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
 import {RouterTestingModule} from "@angular/router/testing";
 import {SideBarRightComponent} from "src/app/ui-components/sidebar-right/sidebar-right.component";
 import {TokenService} from "src/app/shared/services/token.service";
@@ -162,6 +163,46 @@ describe("VoiceAssistantChatComponent", () => {
         expect(
             chatService.chats.find((m) => m.topic === "TestValue"),
         ).not.toBeUndefined();
+    });
+
+    it("refuses to start a chat or the voice when the model row is gone", () => {
+        const service = TestBed.inject(VoiceAssistantService);
+        const gone = new VoiceAssistant(
+            "1234",
+            "Ada",
+            "Female",
+            0.8,
+            "",
+            null,
+            10,
+            "12",
+        );
+        gone.needsNewModel = true;
+        service.personalities = [gone];
+        component.personalityId = gone.personalityId;
+        component.personality = gone;
+        const create = spyOn(chatService, "createChat");
+        component.topicFormControl.setValue("Removed");
+        component.addChat();
+        expect(create).not.toHaveBeenCalled();
+
+        const start = spyOn(service, "setVoiceAssistantState").and.returnValue(
+            of(undefined),
+        );
+        const router = TestBed.inject(Router);
+        const previous = Object.getOwnPropertyDescriptor(router, "url");
+        Object.defineProperty(router, "url", {
+            configurable: true,
+            get: () =>
+                "/voice-assistant/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee/chat/ffffffff-1111-2222-3333-444444444444",
+        });
+        component.voiceAssistantActivationToggle.setValue(false);
+        component.toggleVoiceAssistant();
+        expect(start).not.toHaveBeenCalled();
+        expect(component.turnedOn).toBeFalse();
+        if (previous != null) {
+            Object.defineProperty(router, "url", previous);
+        }
     });
 
     it("should edit a chat when calling editChat", () => {

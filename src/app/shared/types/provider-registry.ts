@@ -197,6 +197,65 @@ export function personalityNeedsAttention(
 }
 
 /**
+ * Sentence that stands in for a chat start the personality cannot make.
+ * A gone row uses the retirement notice, including before the catalogue
+ * has loaded. The stored reference is not the reason to start on another
+ * model. A missing key keeps its own sentence.
+ */
+export function chatStartRefusal(
+    providerRef: string | null | undefined,
+    models: ProviderSelectionRow[],
+    cloudTokenStored: boolean,
+    needsNewModel = false,
+): string | null {
+    const attention = personalityAttention(
+        providerRef,
+        models,
+        cloudTokenStored,
+        needsNewModel,
+    );
+    if (attention == null) {
+        return null;
+    }
+    if (attention.reason === "retired") {
+        return attention.notice;
+    }
+    return MISSING_KEY_TURN;
+}
+
+/**
+ * Keeps a dangling model id in the list, disabled, so a select cannot
+ * fall onto a sibling or the default. The row is gone, so the only name
+ * left is the retirement prompt's own.
+ */
+export function retainGoneReference<T extends ProviderSelectionRow>(
+    models: readonly T[],
+    storedRef: string | null,
+    needsNewModel: boolean,
+): T[] {
+    if (needsNewModel !== true || storedRef == null || storedRef === "") {
+        return models.slice();
+    }
+    if (
+        storedRef === DEFAULT_PROVIDER_REF ||
+        models.some((model) => String(model.id) === storedRef)
+    ) {
+        return models.slice();
+    }
+    const id = Number(storedRef);
+    if (!Number.isInteger(id) || id < 1) {
+        return models.slice();
+    }
+    const placeholder: ProviderSelectionRow = {
+        id,
+        isDefault: false,
+        visualName: "This model",
+        retired: true,
+    };
+    return models.concat([placeholder as T]);
+}
+
+/**
  * Rows a personality may be pointed at. Retired rows are not offered for a
  * new selection. A row is offered when it is an image model or a named live
  * model, and only while its key is stored. The current reference is kept so

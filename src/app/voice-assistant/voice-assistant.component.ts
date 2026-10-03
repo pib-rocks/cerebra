@@ -48,11 +48,11 @@ import {
     isProviderConfigured,
     isProviderOptionDisabled,
     personalityAttention,
-    retiredModelNotice,
     providerOptionValue as providerOptionValueFor,
     providerRefFromSelection,
     providersForSelection,
     resolveProvider,
+    retainGoneReference,
 } from "../shared/types/provider-registry";
 import {TokenService} from "../shared/services/token.service";
 import {VoiceAssistantNavComponent} from "./voice-assistant-nav/voice-assistant-nav.component";
@@ -391,8 +391,16 @@ export class VoiceAssistantComponent implements OnInit {
     }
 
     private rebuildSelection() {
+        const personality =
+            this.uuid == null
+                ? undefined
+                : this.voiceAssistantService.getPersonality(this.uuid);
         this.selectionModels = providersForSelection(
-            this.models,
+            retainGoneReference(
+                this.models,
+                this.storedProviderRef,
+                personality?.needsNewModel === true,
+            ),
             this.storedProviderRef,
             this.cloudTokenStored,
         );
@@ -508,11 +516,30 @@ export class VoiceAssistantComponent implements OnInit {
     }
 
     private retiredNoticeForSelection(): string | null {
-        const model = this.resolvedModel();
-        if (model == null || model.retired !== true) {
+        if (this.personalityForm == null) {
             return null;
         }
-        return retiredModelNotice(model);
+        const personality =
+            this.uuid == null
+                ? undefined
+                : this.voiceAssistantService.getPersonality(this.uuid);
+        const selection = providerRefFromSelection(
+            String(this.personalityForm.controls["assistantModel"].value),
+        ).providerRef;
+        const attention = personalityAttention(
+            selection,
+            retainGoneReference(
+                this.models,
+                this.storedProviderRef,
+                personality?.needsNewModel === true,
+            ),
+            this.cloudTokenStored,
+            personality?.needsNewModel === true,
+        );
+        if (attention?.reason !== "retired") {
+            return null;
+        }
+        return attention.notice;
     }
 
     private keepVoiceSelection(

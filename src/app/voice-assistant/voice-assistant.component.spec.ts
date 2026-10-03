@@ -869,6 +869,92 @@ describe("VoiceAssistantComponent", () => {
         component.ngbModalRef?.close();
     });
 
+    it("asks for a choice when the model row is gone and keeps the stored reference", () => {
+        const flags = (live: boolean): ProviderCapabilities => ({
+            tools: true,
+            images: !live,
+            live,
+            stt: false,
+            tts: false,
+        });
+        const flash = new AssistantModel(
+            7,
+            "gemini-3.8-flash",
+            "Gemini 3.8 Flash",
+            true,
+            null,
+            flags(false),
+            "provider-1",
+            false,
+        );
+        const live = new AssistantModel(
+            11,
+            "gemini-3.8-live",
+            "Gemini 3.8 Live",
+            false,
+            null,
+            flags(true),
+            "provider-1",
+            false,
+        );
+        voiceAssistantService.assistantModelsSubject.next([flash, live]);
+        fixture.detectChanges();
+        const persona = new VoiceAssistant(
+            "persona-gone",
+            "Ada",
+            "Female",
+            0.8,
+            "",
+            null,
+            10,
+            "12",
+        );
+        persona.needsNewModel = true;
+        voiceAssistantService.personalities.push(persona);
+        voiceAssistantService.getPersonality.and.returnValue(persona);
+        component.openEditModal(persona.personalityId);
+        component.advancedOpen = true;
+        fixture.detectChanges();
+        TestBed.inject(ApplicationRef).tick();
+
+        expect(component.personalityForm.controls["assistantModel"].value).toBe(
+            "12",
+        );
+        const goneOption = Array.from(
+            (
+                document.body.querySelector(
+                    "#voice-assistant-model-select",
+                ) as HTMLSelectElement
+            ).options,
+        ).find((option) => option.value === "12");
+        expect(goneOption?.disabled).toBeTrue();
+        expect(
+            document.body.querySelector("[data-test=LBL_Retired_Model]")
+                ?.textContent,
+        ).toContain("This model is gone. Choose a new one.");
+
+        component.editPersonality(persona.personalityId);
+        const kept =
+            voiceAssistantService.updatePersonalityById.calls.mostRecent()
+                .args[0] as VoiceAssistant;
+        expect(kept.providerRef).toBe("12");
+        expect(kept.assistantModelId).toBe(12);
+
+        component.personalityForm.controls["assistantModel"].setValue("7");
+        fixture.detectChanges();
+        TestBed.inject(ApplicationRef).tick();
+        expect(
+            document.body.querySelector("[data-test=LBL_Retired_Model]"),
+        ).toBeNull();
+        component.editPersonality(persona.personalityId);
+        const chosen =
+            voiceAssistantService.updatePersonalityById.calls.mostRecent()
+                .args[0] as VoiceAssistant;
+        expect(chosen.providerRef).toBe("7");
+        expect(chosen.assistantModelId).toBe(7);
+        component.ngbModalRef?.close();
+    });
+
     it("loads the example personalities on pib.Cloud with the model enabled", () => {
         const flags = (live: boolean): ProviderCapabilities => ({
             tools: true,

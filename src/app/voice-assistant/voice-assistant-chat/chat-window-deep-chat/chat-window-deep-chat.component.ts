@@ -16,10 +16,7 @@ import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.ser
 import {ChatMessage} from "src/app/shared/types/chat-message";
 import {Chat} from "src/app/shared/types/chat.class";
 import {extractText, toDeepChat} from "src/app/shared/util/deep-chat-mapper";
-import {
-    MISSING_KEY_TURN,
-    personalityNeedsAttention,
-} from "src/app/shared/types/provider-registry";
+import {chatStartRefusal} from "src/app/shared/types/provider-registry";
 import {degradedChatReply} from "src/app/system/speech/key-store-session";
 import {KeyStoreSessionService} from "src/app/system/speech/key-store-session.service";
 import {ChannelCapabilityService} from "src/app/shared/services/channel-capability.service";
@@ -144,8 +141,9 @@ export class ChatWindowDeepChatComponent
                     });
                     return;
                 }
-                if (this.personalityKeyMissing()) {
-                    signals.onResponse({text: MISSING_KEY_TURN});
+                const refusal = this.turnRefusal();
+                if (refusal != null) {
+                    signals.onResponse({text: refusal});
                     return;
                 }
                 this.submitClickMs = performance.now();
@@ -255,22 +253,23 @@ export class ChatWindowDeepChatComponent
         }).join;
     }
 
-    private personalityKeyMissing(): boolean {
+    private turnRefusal(): string | null {
         const personalityId = this.chat?.personalityId;
         if (personalityId == null) {
-            return false;
+            return null;
         }
         const personality =
             this.voiceAssistantService.getPersonality(personalityId);
         if (personality == null) {
-            return false;
+            return null;
         }
         const models =
             this.voiceAssistantService.assistantModelsSubject?.getValue() ?? [];
-        return personalityNeedsAttention(
+        return chatStartRefusal(
             personality.providerRef,
             models,
             this.cloudTokenStored,
+            personality.needsNewModel,
         );
     }
 

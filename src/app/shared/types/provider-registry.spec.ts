@@ -5,8 +5,10 @@ import {
     isProviderConfigured,
     isListedModel,
     isProviderOptionDisabled,
+    chatStartRefusal,
     personalityAttention,
     personalityNeedsAttention,
+    retainGoneReference,
     providerIdOf,
     providerKeyAccounts,
     attachProvider,
@@ -246,6 +248,57 @@ describe("provider registry selection", () => {
         const removed = personalityAttention("9", [current], true, true);
         expect(removed?.reason).toBe("retired");
         expect(removed?.notice).toBe("This model is gone. Choose a new one.");
+    });
+
+    it("keeps each personality on its model and refuses a chat when that row is gone", () => {
+        const flash = row(7, true, false, "gemini-3.8-flash");
+        const live = row(11, false, false, "gemini-3.8-live");
+        live.capabilities = {
+            tools: true,
+            images: false,
+            live: true,
+            stt: false,
+            tts: false,
+        };
+        const cloud = row(10, true, true, "pib-cloud", null);
+        const catalogue = [flash, live, cloud];
+
+        expect(resolveProvider("7", catalogue)?.id).toBe(flash.id);
+        expect(resolveProvider("11", catalogue)?.id).toBe(live.id);
+        expect(resolveProvider(DEFAULT_PROVIDER_REF, catalogue)?.id).toBe(
+            cloud.id,
+        );
+        expect(resolveProvider("12", catalogue)).toBeNull();
+        expect(chatStartRefusal("7", catalogue, true, false)).toBeNull();
+        expect(chatStartRefusal("11", catalogue, true, false)).toBeNull();
+        expect(
+            chatStartRefusal(DEFAULT_PROVIDER_REF, catalogue, true, false),
+        ).toBeNull();
+
+        const notice = "This model is gone. Choose a new one.";
+        expect(chatStartRefusal("12", catalogue, true, true)).toBe(notice);
+        expect(chatStartRefusal("12", [], false, true)).toBe(notice);
+        expect(providerRefFromSelection("12").providerRef).toBe("12");
+        expect(providerRefFromSelection("12").assistantModelId).toBe(12);
+
+        const retained = retainGoneReference(catalogue, "12", true);
+        expect(retained.map((model) => model.id)).toEqual([7, 11, 10, 12]);
+        const offered = providersForSelection(retained, "12", true);
+        const placeholder = offered.find((model) => model.id === 12);
+        expect(placeholder?.retired).toBeTrue();
+        expect(placeholder?.visualName).toBe("This model");
+        expect(
+            isProviderOptionDisabled(placeholder!, true, retained),
+        ).toBeTrue();
+        expect(
+            offered.filter((model) => !model.retired).map((model) => model.id),
+        ).toEqual([flash.id, live.id, cloud.id]);
+        expect(
+            retainGoneReference(catalogue, "7", false).map((model) => model.id),
+        ).toEqual([7, 11, 10]);
+        expect(
+            retainGoneReference(catalogue, "7", true).map((model) => model.id),
+        ).toEqual([7, 11, 10]);
     });
 
     it("keeps the credential and the endpoint on the provider and the flags on the model", () => {

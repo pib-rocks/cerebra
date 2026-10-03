@@ -26,6 +26,7 @@ import {
     providerOptionValue as providerOptionValueFor,
     providerRefFromSelection,
     providersForSelection,
+    retainGoneReference,
 } from "src/app/shared/types/provider-registry";
 import {TokenService} from "src/app/shared/services/token.service";
 import {ChannelCapabilityService} from "src/app/shared/services/channel-capability.service";
@@ -308,7 +309,11 @@ export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
     private rebuildSelection() {
         const storedRef = this.personalityClone?.providerRef ?? null;
         this.selectionModels = providersForSelection(
-            this.models,
+            retainGoneReference(
+                this.models,
+                storedRef,
+                this.personalityClone?.needsNewModel === true,
+            ),
             storedRef,
             this.cloudTokenStored,
         );
