@@ -61,6 +61,11 @@ export function hasImagesCapability(model: ProviderSelectionRow): boolean {
     return model.capabilities?.images === true;
 }
 
+/** A personality may choose an image model or a named live model. */
+export function isListedModel(model: ProviderSelectionRow): boolean {
+    return hasImagesCapability(model) || model.capabilities?.live === true;
+}
+
 export function usesCloudToken(model: ProviderSelectionRow): boolean {
     return model.apiName === CLOUD_TOKEN_API_NAME;
 }
@@ -93,7 +98,7 @@ export function isProviderOptionDisabled(
 ): boolean {
     return (
         isRetired(model) ||
-        isCapabilityControlDisabled(model, "images") ||
+        !isListedModel(model) ||
         !isProviderConfigured(model, cloudTokenStored)
     );
 }
@@ -179,9 +184,9 @@ export function personalityNeedsAttention(
 
 /**
  * Rows a personality may be pointed at. Retired rows are not offered for a
- * new selection. A row without the images capability is not offered, and
- * neither is a row with no stored key. The current reference is kept so an
- * existing id is not dropped when the form is saved.
+ * new selection. A row is offered when it is an image model or a named live
+ * model, and only while its key is stored. The current reference is kept so
+ * an existing id is not dropped when the form is saved.
  */
 export function providersForSelection<T extends ProviderSelectionRow>(
     models: T[],
@@ -191,7 +196,7 @@ export function providersForSelection<T extends ProviderSelectionRow>(
     const offered = models.filter(
         (model) =>
             !isRetired(model) &&
-            hasImagesCapability(model) &&
+            isListedModel(model) &&
             isProviderConfigured(model, cloudTokenStored),
     );
     const current = currentSelection(models, storedRef);

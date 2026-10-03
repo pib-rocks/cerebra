@@ -86,6 +86,8 @@ describe("shipped personalities", () => {
         expect(flash?.capabilities.live).toBeFalse();
         expect(live?.visualName).toBe("Gemini 3.8 Live");
         expect(live?.capabilities.live).toBeTrue();
+        expect(live?.capabilities.images).toBeFalse();
+        expect(live?.hasImageSupport).toBeFalse();
         expect(providerIdOf(flash!)).toBe(providerIdOf(live!));
         const cloud = models.find((model) => model.isDefault);
         expect(cloud?.apiName).toBe("pib-cloud");

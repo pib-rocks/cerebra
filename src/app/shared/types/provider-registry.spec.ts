@@ -3,6 +3,7 @@ import {
     DEFAULT_PROVIDER_REF,
     isCapabilityControlDisabled,
     isProviderConfigured,
+    isListedModel,
     isProviderOptionDisabled,
     personalityAttention,
     personalityNeedsAttention,
@@ -48,6 +49,24 @@ describe("provider registry selection", () => {
     it("does not offer a row without the images capability", () => {
         const offered = providersForSelection([text, vision, fallback], null);
         expect(offered.map((model) => model.id)).toEqual([2, 3]);
+    });
+
+    it("offers a named live model that has no images", () => {
+        const live = row(4, false, false, "gemini-3.8-live");
+        live.capabilities = {
+            tools: true,
+            images: false,
+            live: true,
+            stt: false,
+            tts: false,
+        };
+        live.visualName = "Gemini 3.8 Live";
+        expect(isListedModel(live)).toBeTrue();
+        expect(isListedModel(text)).toBeFalse();
+        const offered = providersForSelection([text, vision, live], null);
+        expect(offered.map((model) => model.id)).toEqual([vision.id, live.id]);
+        expect(isProviderOptionDisabled(live, true)).toBeFalse();
+        expect(isProviderOptionDisabled(text, true)).toBeTrue();
     });
 
     it("filters by the images flag when two rows share an api name", () => {

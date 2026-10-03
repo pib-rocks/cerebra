@@ -595,6 +595,77 @@ describe("VoiceAssistantComponent", () => {
         expect(reason()).toContain(IMAGES_NEED_MCP);
     });
 
+    it("offers a live model in the list, and choosing it is the whole statement", () => {
+        const flash = new AssistantModel(
+            3,
+            "gemini-3.8-flash",
+            "Gemini 3.8 Flash",
+            true,
+            null,
+            {
+                tools: true,
+                images: true,
+                live: false,
+                stt: false,
+                tts: false,
+            },
+            "provider-3",
+            false,
+        );
+        const live = new AssistantModel(
+            11,
+            "gemini-3.8-live",
+            "Gemini 3.8 Live",
+            false,
+            null,
+            {
+                tools: true,
+                images: false,
+                live: true,
+                stt: false,
+                tts: false,
+            },
+            "provider-3",
+            false,
+        );
+        voiceAssistantService.assistantModelsSubject.next([flash, live]);
+        fixture.detectChanges();
+        component.openAddModal();
+        component.advancedOpen = true;
+        fixture.detectChanges();
+        TestBed.inject(ApplicationRef).tick();
+        expect(document.body.querySelector("[data-test=CHK_Live]")).toBeNull();
+        const options = Array.from(
+            (
+                document.body.querySelector(
+                    "#voice-assistant-model-select",
+                ) as HTMLSelectElement
+            ).options,
+        );
+        const liveOption = options.find(
+            (option) => option.textContent?.includes("Gemini 3.8 Live"),
+        );
+        expect(liveOption).toBeDefined();
+        expect(liveOption?.disabled).toBeFalse();
+        component.personalityForm.controls["assistantModel"].setValue(
+            String(live.id),
+        );
+        fixture.detectChanges();
+        TestBed.inject(ApplicationRef).tick();
+        expect(component.personalityForm.getRawValue()["live"]).toBeTrue();
+        expect(
+            document.body.querySelector("[data-test=TXT_Idle_Timeout]"),
+        ).not.toBeNull();
+        component.personalityForm.patchValue({"name-input": "Ada"});
+        component.addPersonality();
+        const created =
+            voiceAssistantService.createPersonality.calls.mostRecent()
+                .args[0] as VoiceAssistant;
+        expect(created.providerRef).toBe(String(live.id));
+        expect(created.live).toBeTrue();
+        component.ngbModalRef?.close();
+    });
+
     it("hides the idle timeout when the chosen model is not a live model", () => {
         const text = new AssistantModel(
             8,

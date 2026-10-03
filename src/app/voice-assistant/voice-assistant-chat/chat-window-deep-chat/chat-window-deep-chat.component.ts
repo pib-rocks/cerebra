@@ -28,6 +28,8 @@ import {
     routeTurn,
     transportRequest,
 } from "src/app/shared/types/channel-router";
+import {typedTextJoinsLive} from "src/app/shared/types/live-interaction";
+import {VoiceAssistantState} from "src/app/shared/types/voice-assistant-state";
 import "deep-chat";
 
 @Component({
@@ -56,6 +58,8 @@ export class ChatWindowDeepChatComponent
     private routeParamsSubscription?: Subscription;
     private chatMessagesSubscription?: Subscription;
     private tokenStatusSubscription?: Subscription;
+    private voiceStateSubscription?: Subscription;
+    private voiceState: VoiceAssistantState = {turnedOn: false, chatId: ""};
     private readonly sendChatMessageSubscriptions = new Subscription();
 
     readonly USER_ICON =
@@ -73,6 +77,12 @@ export class ChatWindowDeepChatComponent
     ) {}
 
     ngOnInit(): void {
+        this.voiceStateSubscription =
+            this.voiceAssistantService.voiceAssistantStateObservable?.subscribe(
+                (state) => {
+                    this.voiceState = state;
+                },
+            );
         this.routeParamsSubscription = this.route.params.subscribe(
             (params: Params) => {
                 this.chatMessagesSubscription?.unsubscribe();
@@ -118,6 +128,7 @@ export class ChatWindowDeepChatComponent
         this.routeParamsSubscription?.unsubscribe();
         this.chatMessagesSubscription?.unsubscribe();
         this.tokenStatusSubscription?.unsubscribe();
+        this.voiceStateSubscription?.unsubscribe();
         this.sendChatMessageSubscriptions.unsubscribe();
     }
 
@@ -143,10 +154,17 @@ export class ChatWindowDeepChatComponent
                         3,
                     )}ms`,
                 );
-                this.pendingSignals = signals;
+                const joining = this.typedLineJoinsOpenLive(text);
+                // A line for the open live chat joins that session. Release
+                // the composer so another line can interrupt, and let the
+                // transcript arrive as chat text.
+                this.pendingSignals = joining ? undefined : signals;
+                if (joining) {
+                    signals.onClose();
+                }
                 const request = transportRequest(
                     chatId,
-                    this.turnForMessage(text),
+                    this.turnForMessage(joining ? text.trim() : text),
                 );
                 this.sendChatMessageSubscriptions.add(
                     this.chatService
@@ -220,6 +238,21 @@ export class ChatWindowDeepChatComponent
             return undefined;
         }
         return this.voiceAssistantService.getPersonality(personalityId);
+    }
+
+    /**
+     * The open live session of this chat. Choosing the live model is what
+     * makes the session live; a typed line joins it instead of starting
+     * a second turn.
+     */
+    private typedLineJoinsOpenLive(text: string): boolean {
+        const personality = this.personalityForTurn();
+        return typedTextJoinsLive({
+            liveOpen: this.voiceState.turnedOn && personality?.live === true,
+            liveChatId: this.voiceState.chatId,
+            messageChatId: this.currentChatId,
+            text,
+        }).join;
     }
 
     private personalityKeyMissing(): boolean {

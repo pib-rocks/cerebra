@@ -35,7 +35,7 @@
             "endpointBase": null,
             "capabilities": {
                 "tools": true,
-                "images": true,
+                "images": false,
                 "live": false,
                 "stt": false,
                 "tts": false
@@ -103,11 +103,11 @@
             "id": 11,
             "providerId": 1,
             "apiName": "gemini-3.8-live",
-            "hasImageSupport": true,
+            "hasImageSupport": false,
             "visualName": "Gemini 3.8 Live",
             "capabilities": {
                 "tools": true,
-                "images": true,
+                "images": false,
                 "live": true,
                 "stt": false,
                 "tts": false

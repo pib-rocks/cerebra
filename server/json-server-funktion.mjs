@@ -697,7 +697,9 @@ server.get("/assistant-model", (req, res, next) => {
         .map((model) => presentAssistantModel(model))
         .filter(
             (model) =>
-                model.retired === true || model.capabilities.images === true,
+                model.retired === true ||
+                model.capabilities.images === true ||
+                model.capabilities.live === true,
         );
     return res.status(200).send({assistantModels: response});
 });
