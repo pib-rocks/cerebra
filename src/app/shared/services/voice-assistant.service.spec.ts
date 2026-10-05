@@ -6,7 +6,15 @@ import {ApiService} from "./api.service";
 import {BehaviorSubject} from "rxjs";
 import {RosService} from "./ros-service/ros.service";
 import {AssistantModel} from "../types/assistantModel";
+import {DEFAULT_PROVIDER_REF} from "../types/provider-registry";
+import {
+    DIRECT_CHANNEL,
+    SMART_CHANNEL,
+    effectiveChannel,
+} from "../types/channel-router";
+import {UrlConstants} from "./url.constants";
 import {ChatService} from "./chat.service";
+import {ChannelCapabilityService} from "./channel-capability.service";
 
 describe("VoiceAssistantService", () => {
     let service: VoiceAssistantService;
@@ -177,4 +185,146 @@ describe("VoiceAssistantService", () => {
         expect(apiService.get).toHaveBeenCalled();
         expect(service.assistantModelsSubject.getValue().length).toBe(2);
     }));
+
+    it("parses registry fields and keeps rows the ui still has to filter", () => {
+        const registry = new BehaviorSubject({
+            assistantModels: [
+                {
+                    id: 8,
+                    apiName: "shared-api",
+                    visualName: "Text row",
+                    hasImageSupport: false,
+                    endpointBase: "https://example.test/v1",
+                    capabilities: {
+                        tools: true,
+                        images: false,
+                        live: false,
+                        stt: false,
+                        tts: false,
+                    },
+                    credentialRef: "provider-key",
+                    isDefault: false,
+                },
+                {
+                    id: 9,
+                    apiName: "shared-api",
+                    visualName: "Vision row",
+                    hasImageSupport: true,
+                    endpointBase: "https://example.test/v1",
+                    capabilities: {
+                        tools: true,
+                        images: true,
+                        live: true,
+                        stt: false,
+                        tts: false,
+                    },
+                    credentialRef: "provider-key",
+                    isDefault: true,
+                },
+            ],
+        });
+        apiService.get.and.returnValue(registry);
+        service.getAllAssistantModels();
+        const parsed = service.assistantModelsSubject.getValue();
+        expect(parsed.length).toBe(2);
+        expect(parsed[0].capabilities.images).toBeFalse();
+        expect(parsed[0].endpointBase).toBe("https://example.test/v1");
+        expect(parsed[0].credentialRef).toBe("provider-key");
+        expect(parsed[1].isDefault).toBeTrue();
+        expect(parsed[1].capabilities.live).toBeTrue();
+        expect(parsed[0].apiName).toBe(parsed[1].apiName);
+    });
+
+    it("publishes a credential change on the model list immediately", () => {
+        service.assistantModelsSubject.next(models.assistantModels);
+        service.setProviderCredential(2, null);
+        expect(
+            service.assistantModelsSubject.getValue()[1].credentialRef,
+        ).toBeNull();
+        service.setProviderCredential(2, "provider-2");
+        expect(service.assistantModelsSubject.getValue()[1].credentialRef).toBe(
+            "provider-2",
+        );
+        expect(
+            service.assistantModelsSubject.getValue()[0].credentialRef,
+        ).toBeNull();
+    });
+
+    it("sends the default provider pointer when a personality has no model id", () => {
+        apiService.post.and.returnValue(observableOfKlaus);
+        service.createPersonality(klaus);
+        expect(apiService.post).toHaveBeenCalledWith(
+            UrlConstants.PERSONALITY,
+            jasmine.objectContaining({
+                providerRef: DEFAULT_PROVIDER_REF,
+                assistantModelId: null,
+                channel: SMART_CHANNEL,
+            }),
+        );
+    });
+
+    it("shows an existing Smart personality as Direct without rewriting its channel", () => {
+        const capability = TestBed.inject(ChannelCapabilityService);
+        const stored = {
+            personalityId: "persona-smart",
+            name: "Ada",
+            gender: "Female",
+            description: "Du bist pib.",
+            pauseThreshold: 0.8,
+            messageHistory: 10,
+            providerRef: DEFAULT_PROVIDER_REF,
+            channel: SMART_CHANNEL,
+            effectiveChannel: DIRECT_CHANNEL,
+            smartChatsEnabled: false,
+        };
+        apiService.get.and.returnValue(
+            new BehaviorSubject({voiceAssistantPersonalities: [stored]}),
+        );
+        service.getAllPersonalities();
+
+        expect(capability.smartChatsEnabled).toBeFalse();
+        const loaded = service.getPersonality("persona-smart");
+        expect(loaded?.channel).toBe(SMART_CHANNEL);
+        expect(loaded?.description).toBe("Du bist pib.");
+        expect(
+            effectiveChannel(loaded?.channel, capability.smartChatsEnabled),
+        ).toBe(DIRECT_CHANNEL);
+
+        apiService.put.and.returnValue(
+            new BehaviorSubject({
+                ...stored,
+                name: "Ada renamed",
+            }),
+        );
+        loaded!.name = "Ada renamed";
+        service.updatePersonalityById(loaded!);
+        const body = apiService.put.calls.mostRecent().args[1] as {
+            channel?: string;
+            description?: string;
+            name?: string;
+        };
+        expect(body.channel).toBeUndefined();
+        expect(body.description).toBe("Du bist pib.");
+        expect(body.name).toBe("Ada renamed");
+        expect(service.getPersonality("persona-smart")?.channel).toBe(
+            SMART_CHANNEL,
+        );
+
+        capability.applyInstallerFlag(true);
+        expect(
+            effectiveChannel(
+                service.getPersonality("persona-smart")?.channel,
+                capability.smartChatsEnabled,
+            ),
+        ).toBe(SMART_CHANNEL);
+        apiService.put.and.returnValue(new BehaviorSubject(stored));
+        service.updatePersonalityById(service.getPersonality("persona-smart")!);
+        expect(
+            (
+                apiService.put.calls.mostRecent().args[1] as {
+                    channel?: string;
+                }
+            ).channel,
+        ).toBe(SMART_CHANNEL);
+    });
 });

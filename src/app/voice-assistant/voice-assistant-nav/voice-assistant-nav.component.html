@@ -9,7 +9,14 @@
             [attr.data-test]="'LNK_' + sidebarElement.getName()"
             [routerLink]="[sidebarElement.getUUID(), 'chat']"
             [ngClass]="{'navbar-ref-active': isRouteActive(sidebarElement.getUUID())}">
-            {{sidebarElement.getName()}}
+            {{sidebarElement.getName()}} @if
+            (needsAttention?.(sidebarElement.getUUID())) {
+            <span
+                class="speech-attention"
+                [id]="'personality-needs-key-' + sidebarElement.getUUID()">
+                Needs a key
+            </span>
+            }
         </a>
     </li>
     } @if (button?.enabled ?? false) {

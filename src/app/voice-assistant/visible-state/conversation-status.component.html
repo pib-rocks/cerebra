@@ -1,0 +1,31 @@
+<div
+    class="conversation-state"
+    [id]="surface === 'display' ? 'display-conversation-state' : 'header-conversation-state'">
+    @if (surface === "display") {
+    <app-animated-face
+        [activity]="state.activity"
+        [mouthOpen]="state.mouthOpen"></app-animated-face>
+    }
+    <p
+        [id]="surface === 'display' ? 'display-voice-holder' : 'voice-channel-holder'">
+        {{ state.holderLine }}
+    </p>
+    @if (state.activity !== idle) {
+    <p
+        class="activity"
+        [id]="surface === 'display' ? 'display-conversation-activity' : 'header-conversation-activity'"
+        [attr.data-activity]="state.activity">
+        {{ state.activityLabel }}
+    </p>
+    } @if (state.degraded) {
+    <p
+        [id]="surface === 'display' ? 'display-conversation-degraded' : 'header-conversation-degraded'">
+        Degraded
+    </p>
+    } @if (state.fallback) {
+    <p
+        [id]="surface === 'display' ? 'display-conversation-fallback' : 'header-conversation-fallback'">
+        Fallback
+    </p>
+    }
+</div>

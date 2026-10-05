@@ -16,6 +16,18 @@ import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.ser
 import {ChatMessage} from "src/app/shared/types/chat-message";
 import {Chat} from "src/app/shared/types/chat.class";
 import {extractText, toDeepChat} from "src/app/shared/util/deep-chat-mapper";
+import {
+    MISSING_KEY_TURN,
+    personalityNeedsAttention,
+} from "src/app/shared/types/provider-registry";
+import {degradedChatReply} from "src/app/system/speech/key-store-session";
+import {KeyStoreSessionService} from "src/app/system/speech/key-store-session.service";
+import {ChannelCapabilityService} from "src/app/shared/services/channel-capability.service";
+import {
+    RoutedTurn,
+    routeTurn,
+    transportRequest,
+} from "src/app/shared/types/channel-router";
 import "deep-chat";
 
 @Component({
@@ -35,6 +47,7 @@ export class ChatWindowDeepChatComponent
     currentChatId: string | undefined;
     personalityName: string | undefined;
 
+    private cloudTokenStored = true;
     private pendingSignals?: {onResponse: (response: unknown) => void};
     private lastStreamedMessageId: string | undefined;
     /** Timestamp of the latest user submit, used to measure TTFT. */
@@ -55,6 +68,8 @@ export class ChatWindowDeepChatComponent
         private readonly voiceAssistantService: VoiceAssistantService,
         private readonly route: ActivatedRoute,
         private readonly tokenService: TokenService,
+        private readonly keyStoreSession: KeyStoreSessionService,
+        private readonly channelCapability: ChannelCapabilityService,
     ) {}
 
     ngOnInit(): void {
@@ -111,6 +126,17 @@ export class ChatWindowDeepChatComponent
             handler: (body: any, signals: any) => {
                 const text = extractText(body);
                 const chatId = this.currentChatId!;
+                if (!this.keyStoreSession.chatsAvailable) {
+                    signals.onResponse({
+                        role: "ai",
+                        text: degradedChatReply(this.personalityName),
+                    });
+                    return;
+                }
+                if (this.personalityKeyMissing()) {
+                    signals.onResponse({text: MISSING_KEY_TURN});
+                    return;
+                }
                 this.submitClickMs = performance.now();
                 console.log(
                     `[PERF_TRACE_UI] SUBMIT_CLICK chatId=${chatId} t=${this.submitClickMs.toFixed(
@@ -118,14 +144,20 @@ export class ChatWindowDeepChatComponent
                     )}ms`,
                 );
                 this.pendingSignals = signals;
+                const request = transportRequest(
+                    chatId,
+                    this.turnForMessage(text),
+                );
                 this.sendChatMessageSubscriptions.add(
-                    this.chatService.sendChatMessage(chatId, text).subscribe({
-                        error: (err) => {
-                            signals.onResponse({error: String(err)});
-                            this.pendingSignals = undefined;
-                            this.submitClickMs = undefined;
-                        },
-                    }),
+                    this.chatService
+                        .sendChatMessage(request.chat_id, request.content)
+                        .subscribe({
+                            error: (err) => {
+                                signals.onResponse({error: String(err)});
+                                this.pendingSignals = undefined;
+                                this.submitClickMs = undefined;
+                            },
+                        }),
                 );
             },
         };
@@ -150,6 +182,7 @@ export class ChatWindowDeepChatComponent
         this.tokenStatusSubscription?.unsubscribe();
         this.tokenStatusSubscription = this.tokenService.tokenStatus$.subscribe(
             ({tokenExists, tokenActive}) => {
+                this.cloudTokenStored = tokenExists;
                 const enabled = tokenExists && tokenActive;
                 el.textInput = {
                     disabled: !enabled,
@@ -163,6 +196,48 @@ export class ChatWindowDeepChatComponent
                     el.disableSubmitButton(!enabled);
                 }
             },
+        );
+    }
+
+    /**
+     * Direct turns carry the personality identity as the system prompt.
+     * MEMORY stays on Smart. The ROS request stays chat id plus user text.
+     */
+    turnForMessage(content: string): RoutedTurn {
+        const personality = this.personalityForTurn();
+        return routeTurn({
+            channel: personality?.channel,
+            smartChatsEnabled: this.channelCapability.smartChatsEnabled,
+            soul: personality?.description,
+            memory: null,
+            content,
+        });
+    }
+
+    private personalityForTurn() {
+        const personalityId = this.chat?.personalityId;
+        if (personalityId == null) {
+            return undefined;
+        }
+        return this.voiceAssistantService.getPersonality(personalityId);
+    }
+
+    private personalityKeyMissing(): boolean {
+        const personalityId = this.chat?.personalityId;
+        if (personalityId == null) {
+            return false;
+        }
+        const personality =
+            this.voiceAssistantService.getPersonality(personalityId);
+        if (personality == null) {
+            return false;
+        }
+        const models =
+            this.voiceAssistantService.assistantModelsSubject?.getValue() ?? [];
+        return personalityNeedsAttention(
+            personality.providerRef,
+            models,
+            this.cloudTokenStored,
         );
     }
 
