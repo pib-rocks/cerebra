@@ -74,9 +74,9 @@ export class DiagnosticsComponent implements OnInit {
     }
 
     getStatusBadgeClass(status: string | undefined): string {
-        if (status === "ok" || status === "healthy") return "badge-success";
-        if (status === "warning") return "badge-warning";
-        return "badge-danger";
+        if (status === "ok" || status === "healthy") return "text-bg-success";
+        if (status === "warning") return "text-bg-warning";
+        return "text-bg-danger";
     }
 
     getCpuUsagePercent(): number | undefined {

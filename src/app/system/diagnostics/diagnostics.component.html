@@ -10,7 +10,7 @@
                 [disabled]="loading"
                 (click)="refreshDiagnostics()">
                 <i
-                    class="fas fa-sync-alt mr-1"
+                    class="fas fa-sync-alt me-1"
                     [class.fa-spin]="loading"></i>
                 {{ loading ? 'Loading...' : 'Refresh' }}
             </button>
@@ -181,7 +181,7 @@
                                 <td>
                                     @if (b.color) {
                                     <span
-                                        class="d-inline-block rounded-circle border mr-1"
+                                        class="d-inline-block rounded-circle border me-1"
                                         [style.background-color]="b.color"
                                         style="width: 14px; height: 14px; vertical-align: middle;"></span>
                                     } {{ b.color || 'N/A' }}

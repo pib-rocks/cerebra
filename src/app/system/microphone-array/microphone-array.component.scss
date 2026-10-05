@@ -71,23 +71,23 @@
         }
     }
 
-    .badge-success {
-        background-color: #28a745;
-        color: #fff;
+    .text-bg-success {
+        background-color: #28a745 !important;
+        color: #fff !important;
         font-size: 14px;
         padding: 6px 12px;
     }
 
-    .badge-secondary {
-        background-color: #6c757d;
-        color: #fff;
+    .text-bg-secondary {
+        background-color: #6c757d !important;
+        color: #fff !important;
         font-size: 14px;
         padding: 6px 12px;
     }
 
-    .badge-warning {
-        background-color: #ffc107;
-        color: #212529;
+    .text-bg-warning {
+        background-color: #ffc107 !important;
+        color: #212529 !important;
         font-size: 14px;
         padding: 6px 12px;
     }
@@ -189,7 +189,7 @@
         gap: 0.5rem;
     }
 
-    .ml-2 {
+    .ms-2 {
         margin-left: 0.5rem;
     }
 }
