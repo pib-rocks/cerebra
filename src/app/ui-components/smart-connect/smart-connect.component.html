@@ -58,7 +58,7 @@
         <form
             [formGroup]="decryptTokenForm"
             (ngSubmit)="onSubmitDecryptToken()">
-            <div class="form-group w-100">
+            <div class="mb-3 w-100">
                 <label
                     for="password"
                     [ngClass]="{disabled: isTokenActive}"
@@ -128,7 +128,7 @@
             [formGroup]="encryptTokenForm"
             (ngSubmit)="onSubmitEncryptToken()">
             <div class="input-group w-100">
-                <div class="form-group w-100">
+                <div class="mb-3 w-100">
                     <label for="token">Token</label>
                     <input
                         id="token"
@@ -139,7 +139,7 @@
                         formControlName="token"
                         ngbAutofocus />
                 </div>
-                <div class="form-group w-100">
+                <div class="mb-3 w-100">
                     <label for="encrypt-password">Password</label>
                     <div class="input-group">
                         <input
@@ -165,7 +165,7 @@
                     </div>
                     }
                 </div>
-                <div class="form-group w-100">
+                <div class="mb-3 w-100">
                     <label for="confirmPassword">Confirm password</label>
                     <div class="input-group">
                         <input

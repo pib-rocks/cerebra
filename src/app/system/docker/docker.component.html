@@ -56,9 +56,7 @@
                 <tbody>
                     @for (c of containers; track c) {
                     <tr>
-                        <td class="align-middle font-weight-bold">
-                            {{ c.name }}
-                        </td>
+                        <td class="align-middle fw-bold">{{ c.name }}</td>
                         <td class="align-middle text-muted">
                             <code>{{ c.image || 'N/A' }}</code>
                         </td>
@@ -137,7 +135,7 @@
                 class="modal-content bg-dark text-white border-secondary shadow-lg">
                 <div
                     class="modal-header border-secondary d-flex justify-content-between align-items-center">
-                    <h5 class="modal-title font-weight-bold">
+                    <h5 class="modal-title fw-bold">
                         <i class="fas fa-terminal me-2 text-info"></i>
                         Live Logs: {{ activeContainerName }}
                         <span class="badge badge-info ms-2">1s Refresh</span>
