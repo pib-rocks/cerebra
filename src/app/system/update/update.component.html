@@ -222,16 +222,17 @@
             </small>
         </div>
 
-        <div class="custom-control custom-switch mb-3">
+        <div class="form-check form-switch mb-3">
             <input
                 id="update-force"
                 data-test="SWT_Update_Force"
-                class="custom-control-input"
+                class="form-check-input"
                 type="checkbox"
+                role="switch"
                 [disabled]="isActive || starting"
                 [(ngModel)]="force" />
             <label
-                class="custom-control-label text-light"
+                class="form-check-label text-light"
                 for="update-force">
                 Force update and discard local changes
             </label>
