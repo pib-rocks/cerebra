@@ -264,8 +264,8 @@
                         data-test="BADGE_VAD"
                         [ngClass]="
                             telemetry?.voiceActivity === true
-                                ? 'badge-success'
-                                : 'badge-secondary'
+                                ? 'text-bg-success'
+                                : 'text-bg-secondary'
                         ">
                         VAD: {{ telemetry?.voiceActivity === undefined ? "not
                         reported" : telemetry?.voiceActivity ? "Active" : "Idle"
@@ -276,15 +276,15 @@
                         data-test="BADGE_Speech"
                         [ngClass]="
                             telemetry?.speechDetected === true
-                                ? 'badge-success'
-                                : 'badge-secondary'
+                                ? 'text-bg-success'
+                                : 'text-bg-secondary'
                         ">
                         Speech: {{ telemetry?.speechDetected === undefined ?
                         "not reported" : telemetry?.speechDetected ? "Detected"
                         : "None" }}
                     </span>
                     <span
-                        class="badge badge-secondary"
+                        class="badge text-bg-secondary"
                         data-test="BADGE_Telemetry_Mode">
                         {{ rosbridgeSource }}
                     </span>

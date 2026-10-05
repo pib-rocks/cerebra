@@ -252,11 +252,11 @@ export class DockerManagementComponent implements OnInit, OnDestroy {
     }
 
     getStatusBadgeClass(status: string | undefined): string {
-        if (!status) return "badge-secondary";
+        if (!status) return "text-bg-secondary";
         const st = status.toLowerCase();
-        if (st === "running" || st === "healthy") return "badge-success";
+        if (st === "running" || st === "healthy") return "text-bg-success";
         if (st === "exited" || st === "stopped" || st === "unhealthy")
-            return "badge-danger";
-        return "badge-warning";
+            return "text-bg-danger";
+        return "text-bg-warning";
     }
 }
