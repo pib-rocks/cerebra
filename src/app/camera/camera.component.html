@@ -165,7 +165,6 @@
                         ' ' +
                         layer.message!.frame_height
                     "
-                    preserveAspectRatio="none"
                     [attr.aria-label]="layer.modelId + ' detections'">
                     @for ( detection of layer.message!.detections; track $index
                     ) { @if (showsBox(layer.modelId, detection)) {
