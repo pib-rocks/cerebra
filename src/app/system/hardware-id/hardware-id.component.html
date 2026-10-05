@@ -1,6 +1,6 @@
 <div>
     <div
-        class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2 pl-2">
+        class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2 ps-2">
         <div class="form-headline mb-0">Hardware controllers</div>
         <div class="d-flex flex-wrap gap-2">
             <button
@@ -10,7 +10,7 @@
                 class="btn btn-outline-light"
                 [disabled]="exportingHardwareIds"
                 (click)="exportHardwareIds()">
-                <i class="fas fa-download mr-1"></i>
+                <i class="fas fa-download me-1"></i>
                 {{ exportingHardwareIds ? 'Exporting...' : 'Export IDs' }}
             </button>
             <button
@@ -19,7 +19,7 @@
                 data-test="BTN_Import_Hardware_IDs"
                 class="btn btn-outline-light"
                 (click)="openImportModal()">
-                <i class="fas fa-upload mr-1"></i>
+                <i class="fas fa-upload me-1"></i>
                 Import IDs
             </button>
         </div>
@@ -108,7 +108,7 @@
         </section>
         } @if (hasEditableControllers) {
         <div class="row">
-            <div class="col-auto mt-4 mb-3 pl-2">
+            <div class="col-auto mt-4 mb-3 ps-2">
                 <button
                     id="update-bricklet-uids-button"
                     data-test="BTN_Update_bricklet_UIDs"
@@ -118,7 +118,7 @@
                 </button>
             </div>
             @if (brickletUidForm.invalid) {
-            <div class="col-auto mt-4 ml-4 mb-3 pl-2 align-self-center">
+            <div class="col-auto mt-4 ms-4 mb-3 ps-2 align-self-center">
                 <span class="validation-error"
                     >IDs must be unique, up to 6 characters long, and contain
                     only letters and numbers.</span
@@ -145,7 +145,7 @@
                 [disabled]="connectedBrickletsLoading"
                 (click)="refreshConnectedBricklets()">
                 <i
-                    class="fas fa-sync-alt mr-1"
+                    class="fas fa-sync-alt me-1"
                     [class.fa-spin]="connectedBrickletsLoading"></i>
                 {{ connectedBrickletsLoading ? 'Loading...' : 'Refresh' }}
             </button>
@@ -259,15 +259,15 @@
                             type="button"
                             id="btn-choose-hardware-import-file"
                             data-test="BTN_Choose_Hardware_IDs_File"
-                            class="btn btn-outline-light mr-2 mb-2"
+                            class="btn btn-outline-light me-2 mb-2"
                             (click)="openHardwareImportFileDialog()">
-                            <i class="fas fa-file-upload mr-1"></i>
+                            <i class="fas fa-file-upload me-1"></i>
                             Choose JSON file
                         </button>
 
                         <button
                             type="button"
-                            class="btn btn-primary mr-2 mb-2"
+                            class="btn btn-primary me-2 mb-2"
                             data-test="BTN_Import_Hardware_IDs_Confirm"
                             [disabled]="!importPreview || importingHardwareIds || importErrors.length > 0"
                             (click)="confirmHardwareImport()">

@@ -5,11 +5,11 @@
             <button
                 id="btn-purge-docker"
                 data-test="BTN_Purge_Docker"
-                class="btn btn-danger mr-2"
+                class="btn btn-danger me-2"
                 [disabled]="purging || loading"
                 (click)="purgeDocker()">
                 <i
-                    class="fas fa-trash-alt mr-1"
+                    class="fas fa-trash-alt me-1"
                     [class.fa-spin]="purging"></i>
                 {{ purging ? 'Purging...' : 'Purge Docker' }}
             </button>
@@ -20,7 +20,7 @@
                 [disabled]="loading"
                 (click)="refreshContainers()">
                 <i
-                    class="fas fa-sync-alt mr-1"
+                    class="fas fa-sync-alt me-1"
                     [class.fa-spin]="loading"></i>
                 {{ loading ? 'Loading...' : 'Refresh' }}
             </button>
@@ -79,21 +79,21 @@
                         </td>
                         <td class="align-middle text-right">
                             <button
-                                class="btn btn-sm btn-success mr-1"
+                                class="btn btn-sm btn-success me-1"
                                 [disabled]="actionLoading[c.name] || c.status === 'running'"
                                 (click)="startContainer(c.name)"
                                 title="Start Container">
                                 <i class="fas fa-play"></i> Start
                             </button>
                             <button
-                                class="btn btn-sm btn-warning mr-1"
+                                class="btn btn-sm btn-warning me-1"
                                 [disabled]="actionLoading[c.name] || c.status !== 'running'"
                                 (click)="stopContainer(c.name)"
                                 title="Stop Container">
                                 <i class="fas fa-stop"></i> Stop
                             </button>
                             <button
-                                class="btn btn-sm btn-info mr-1"
+                                class="btn btn-sm btn-info me-1"
                                 [disabled]="actionLoading[c.name]"
                                 (click)="restartContainer(c.name)"
                                 title="Restart Container">
@@ -138,27 +138,27 @@
                 <div
                     class="modal-header border-secondary d-flex justify-content-between align-items-center">
                     <h5 class="modal-title font-weight-bold">
-                        <i class="fas fa-terminal mr-2 text-info"></i>
+                        <i class="fas fa-terminal me-2 text-info"></i>
                         Live Logs: {{ activeContainerName }}
-                        <span class="badge badge-info ml-2">1s Refresh</span>
+                        <span class="badge badge-info ms-2">1s Refresh</span>
                     </h5>
                     <div class="d-flex align-items-center">
                         <button
                             id="btn-auto-scroll"
-                            class="btn btn-sm mr-2"
+                            class="btn btn-sm me-2"
                             [ngClass]="autoScroll ? 'btn-outline-info active' : 'btn-outline-secondary'"
                             (click)="toggleAutoScroll()"
                             title="Toggle Auto-Scroll">
-                            <i class="fas fa-arrow-down mr-1"></i>
+                            <i class="fas fa-arrow-down me-1"></i>
                             Auto-Scroll: {{ autoScroll ? 'ON' : 'OFF' }}
                         </button>
                         <button
                             id="btn-clear-logs"
                             data-test="BTN_Clear_Logs"
-                            class="btn btn-sm btn-danger mr-3"
+                            class="btn btn-sm btn-danger me-3"
                             (click)="clearLogs()"
                             title="Clear Container Logs">
-                            <i class="fas fa-eraser mr-1"></i> Clear Logs
+                            <i class="fas fa-eraser me-1"></i> Clear Logs
                         </button>
                         <button
                             type="button"

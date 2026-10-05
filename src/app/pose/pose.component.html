@@ -1,6 +1,6 @@
 <div class="background-image pink-corner-frame mt-5">
-    <div class="d-flex flex-row m-3 pb-2 bt-0 pl-1 pr-1">
-        <div class="flex-grow-1 pl-2">Poses</div>
+    <div class="d-flex flex-row m-3 pb-2 bt-0 ps-1 pe-1">
+        <div class="flex-grow-1 ps-2">Poses</div>
 
         <input
             #poseImportInput
@@ -14,7 +14,7 @@
             type="button"
             id="import-pose-button"
             data-test="BTN_Pose_Import"
-            class="btn btn-regular mr-2"
+            class="btn btn-regular me-2"
             (click)="openPoseImportFileDialog()">
             Import pose
         </button>
@@ -64,7 +64,7 @@
         <div class="d-flex flex-row mt-3">
             <button
                 type="button"
-                class="btn btn-regular mr-2"
+                class="btn btn-regular me-2"
                 data-test="BTN_Pose_Import_Confirm"
                 (click)="confirmPoseImport()">
                 Confirm import
@@ -97,7 +97,7 @@
                     alt="apply-pose" />
             </button>
             <button
-                class="pose-label flex-grow-1 flex-shrink-1 pl-3"
+                class="pose-label flex-grow-1 flex-shrink-1 ps-3"
                 [attr.data-test]="'BTN_Pose_Select_' + pose.name"
                 (click)="selectPose(pose)"
                 (dblclick)="renamePose(pose)">
@@ -187,7 +187,7 @@
             </div>
         </div>
         <div
-            class="row m-2 mt-4 pr-2"
+            class="row m-2 mt-4 pe-2"
             id="row-name">
             <label
                 for="name-input"

@@ -1,7 +1,7 @@
 <link
     rel="stylesheet"
     href="voice-assistant-personality-sidebar-right.component.scss" />
-<div class="sidebar-right-wrapper bg-sidebar h-100 pl-xl-4 pl-sm-3">
+<div class="sidebar-right-wrapper bg-sidebar h-100 ps-xl-4 ps-sm-3">
     <form
         (keydown.enter)="$event.preventDefault()"
         [formGroup]="personalityFormSidebar"
@@ -16,7 +16,7 @@
                 >Persona name</label
             >
             <input
-                class="row input col-11 ml-0"
+                class="row input col-11 ms-0"
                 type="text"
                 data-test="TXT_Persona_Name"
                 formControlName="persona-name"
@@ -24,7 +24,7 @@
                 id="personality-sidebar-persona-name-input" />
         </div>
         <div class="row mt-sm-3 mt-xl-4">
-            <div class="col-11 pl-0">
+            <div class="col-11 ps-0">
                 <label id="model">Assistant Model</label>
                 <select
                     formControlName="assistantModel"
@@ -60,10 +60,10 @@
         </div>
         @if (showSmartChannelControl) {
         <div
-            class="row pl-1 mt-sm-3 mt-xl-4"
+            class="row ps-1 mt-sm-3 mt-xl-4"
             id="personality-sidebar-channel">
             <label id="personality-sidebar-label-channel">Channel</label>
-            <div class="col-sm-6 col-xl-12 pl-0">
+            <div class="col-sm-6 col-xl-12 ps-0">
                 <input
                     value="smart"
                     formControlName="channel"
@@ -71,12 +71,12 @@
                     data-test="RBN_Channel_Smart"
                     id="personality-sidebar-channel-smart" />
                 <label
-                    class="pl-4"
+                    class="ps-4"
                     for="personality-sidebar-channel-smart"
                     >Smart</label
                 >
             </div>
-            <div class="col-sm-6 col-xl-12 pl-0">
+            <div class="col-sm-6 col-xl-12 ps-0">
                 <input
                     value="direct"
                     formControlName="channel"
@@ -84,7 +84,7 @@
                     data-test="RBN_Channel_Direct"
                     id="personality-sidebar-channel-direct" />
                 <label
-                    class="pl-4"
+                    class="ps-4"
                     for="personality-sidebar-channel-direct"
                     >Direct</label
                 >
@@ -98,9 +98,9 @@
             Direct
         </p>
         }
-        <div class="row pl-1 mt-sm-3 mt-xl-4">
+        <div class="row ps-1 mt-sm-3 mt-xl-4">
             <label id="personality-sidebar-label-name">Voice gender</label>
-            <div class="col-sm-6 col-xl-12 pl-0">
+            <div class="col-sm-6 col-xl-12 ps-0">
                 <div
                     class="col-4"
                     id="personality-sidebar-radio-button-female">
@@ -111,14 +111,14 @@
                         data-test="RBN_Female"
                         id="personality-sidebar-radio-female" />
                     <label
-                        class="pl-4 radioHover marginFemale"
+                        class="ps-4 radioHover marginFemale"
                         for="personality-sidebar-radio-female"
                         id="personality-sidebar-label-radio-female"
                         >Female</label
                     >
                 </div>
             </div>
-            <div class="col-sm-6 col-xl-12 pl-0">
+            <div class="col-sm-6 col-xl-12 ps-0">
                 <div
                     class="col-4"
                     id="personality-sidebar-radio-button-male">
@@ -129,7 +129,7 @@
                         data-test="RBN_Male"
                         id="personality-sidebar-radio-male" />
                     <label
-                        class="pl-4 radioHover marginMale"
+                        class="ps-4 radioHover marginMale"
                         for="personality-sidebar-radio-male"
                         id="personality-sidebar-label-radio-male"
                         >Male</label
@@ -142,16 +142,16 @@
             id="personality-sidebar-row-pause-threshold">
             <label
                 for="personality-sidebar-pause-threshold-input"
-                class="row pr-3"
+                class="row pe-3"
                 id="personality-sidebar-label-pause-threshold"
                 >Pause threshold<br />(in s)</label
             >
-            <div class="row pl-0">
-                <div class="col pl-0 number-input">
+            <div class="row ps-0">
+                <div class="col ps-0 number-input">
                     <input
                         readonly
                         type="text"
-                        class="input w-50 pl-2"
+                        class="input w-50 ps-2"
                         id="personality-sidebar-pause-threshold-input"
                         data-test="TXT_Threshold"
                         step="0.1"
@@ -163,7 +163,7 @@
                         type="button"
                         id="personality-sidebar-up"
                         data-test="BTN_Threshold_up"
-                        class="h-auto w-25 ml-1"
+                        class="h-auto w-25 ms-1"
                         (click)="adjustThresholdViaButton(true)">
                         &#9650;
                     </button>
@@ -171,7 +171,7 @@
                         type="button"
                         id="personality-sidebar-down"
                         data-test="BTN_Threshold_down"
-                        class="h-auto w-25 ml-1"
+                        class="h-auto w-25 ms-1"
                         (click)="adjustThresholdViaButton(false)">
                         &#9660;
                     </button>
@@ -183,16 +183,16 @@
             id="personality-sidebar-row-message-history">
             <label
                 for="personality-sidebar-message-history-input"
-                class="row pr-3"
+                class="row pe-3"
                 id="personality-sidebar-label-message-history"
                 >Message history<br />(in messages)</label
             >
-            <div class="row pl-0">
-                <div class="col pl-0 number-input">
+            <div class="row ps-0">
+                <div class="col ps-0 number-input">
                     <input
                         readonly
                         type="text"
-                        class="input w-50 pl-2"
+                        class="input w-50 ps-2"
                         id="personality-sidebar-message-history-input"
                         data-test="TXT_Message_history"
                         step="0.1"
@@ -204,7 +204,7 @@
                         type="button"
                         id="personality-sidebar-up-2"
                         data-test="BTN_History_up"
-                        class="h-auto w-25 ml-1"
+                        class="h-auto w-25 ms-1"
                         (click)="adjustHistoryViaButton(true)">
                         &#9650;
                     </button>
@@ -212,7 +212,7 @@
                         type="button"
                         id="personality-sidebar-down-2"
                         data-test="BTN_History_down"
-                        class="h-auto w-25 ml-1"
+                        class="h-auto w-25 ms-1"
                         (click)="adjustHistoryViaButton(false)">
                         &#9660;
                     </button>
@@ -220,7 +220,7 @@
             </div>
         </div>
         <div
-            class="row position-relative bottom-0 start-50 translate-middle-x mb-4 mt-3 mr-3">
+            class="row position-relative bottom-0 start-50 translate-middle-x mb-4 mt-3 me-3">
             <button
                 id="personality-sidebar-delete-persona-button"
                 data-test="BTN_Delete_Persona"

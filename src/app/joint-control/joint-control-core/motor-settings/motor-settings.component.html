@@ -58,7 +58,7 @@
             </div>
             <div class="col col-md-auto d-flex justify-content-center">
                 <button
-                    class="btn pr-0 pl-0 "
+                    class="btn pe-0 ps-0 "
                     (click)="displayExtended = !displayExtended"
                     id="toggle-settings"
                     data-test="BTN_Motor_Settings_Toggle_Extended">
@@ -144,11 +144,11 @@
     } @if (displayExtended) {
     <div class="row display-flex justify-content-center">
         <div class="col-9">
-            <div class="d-flex mb-3 ml-1">
+            <div class="d-flex mb-3 ms-1">
                 <input
                     type="checkbox"
                     [formControl]="invertFormControl"
-                    class="active-check mr-2 mt-1"
+                    class="active-check me-2 mt-1"
                     id="invertMotor"
                     data-test="CHK_Motor_Settings_Invert_Motor"
                     (click)="setInvert()" />
@@ -164,7 +164,7 @@
     <div
         class="row modal-body d-flex align-items-start justify-content-center"
         style="height: 500px;">
-        <div class="col-3 h-100 ml-2 mr-2 ">
+        <div class="col-3 h-100 ms-2 me-2 ">
             <app-vertical-slider
                 name="Velocity"
                 data-test="SLD_Motor_Settings_Velocity"
@@ -175,7 +175,7 @@
                 [maxValue]="500000"
                 [defaultValue]="settings.velocity"></app-vertical-slider>
         </div>
-        <div class="col-3 h-100 ml-2 mr-2">
+        <div class="col-3 h-100 ms-2 me-2">
             <app-vertical-slider
                 name="Acceleration"
                 data-test="SLD_Motor_Settings_Acceleration"
@@ -185,7 +185,7 @@
                 [maxValue]="500000"
                 [defaultValue]="settings.acceleration"></app-vertical-slider>
         </div>
-        <div class="col-3 h-100 ml-2 mr-2">
+        <div class="col-3 h-100 ms-2 me-2">
             <app-vertical-slider
                 name="Deceleration"
                 data-test="SLD_Motor_Settings_Deceleration"

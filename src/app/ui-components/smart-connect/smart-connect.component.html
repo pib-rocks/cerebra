@@ -21,7 +21,7 @@
     let-modal
     id="smart-connect-modal">
     <div class="modal-header">
-        <span class="modal-title ml-4">Smart Connect</span>
+        <span class="modal-title ms-4">Smart Connect</span>
         <button
             id="modal-close-button"
             data-test="BTN_Close"
@@ -46,7 +46,7 @@
 
     <!-- Decrypt Token Form -->
     @if (isTokenStored) {
-    <div class="mt-4 mb-4 mr-5 ml-5">
+    <div class="mt-4 mb-4 me-5 ms-5">
         @if (isTokenActive) {
         <div class="d-flex justify-content-center mb-3">
             <span class="text-success">Token already decrypted.</span>
@@ -99,7 +99,7 @@
                     id="decrypt-form-btn"
                     data-test="BTN_Connect"
                     type="submit"
-                    class="btn btn-primary btn-lg w-100 mr-2"
+                    class="btn btn-primary btn-lg w-100 me-2"
                     [disabled]="decryptTokenForm.invalid || isTokenActive">
                     Connect
                 </button>
@@ -107,7 +107,7 @@
                     id="decrypt-form-ok-btn"
                     data-test="BTN_OK"
                     type="button"
-                    class="btn btn-secondary btn-lg w-100 ml-2"
+                    class="btn btn-secondary btn-lg w-100 ms-2"
                     (click)="onCloseModal()">
                     OK
                 </button>
@@ -115,7 +115,7 @@
         </form>
     </div>
     } @else {
-    <div class="mt-4 mb-4 mr-5 ml-5">
+    <div class="mt-4 mb-4 me-5 ms-5">
         <p>
             <b
                 >To connect to the smart API, enter the token you have received
@@ -203,7 +203,7 @@
                     id="encrypt-form-btn"
                     data-test="BTN_Encrypt"
                     type="submit"
-                    class="btn btn-primary btn-lg w-100 mr-2"
+                    class="btn btn-primary btn-lg w-100 me-2"
                     [disabled]="encryptTokenForm.invalid">
                     Encrypt
                 </button>
@@ -211,7 +211,7 @@
                     id="encrypt-form-cancel-btn"
                     data-test="BTN_Cancel"
                     type="button"
-                    class="btn btn-secondary btn-lg w-100 ml-2"
+                    class="btn btn-secondary btn-lg w-100 ms-2"
                     (click)="onCloseModal()">
                     Cancel
                 </button>

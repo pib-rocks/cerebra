@@ -14,7 +14,7 @@
             [disabled]="statusLoading"
             (click)="refreshStatus()">
             <i
-                class="fas fa-sync-alt mr-1"
+                class="fas fa-sync-alt me-1"
                 [class.fa-spin]="statusLoading"></i>
             Refresh status
         </button>
@@ -110,7 +110,7 @@
                 [disabled]="availabilityLoading || isActive"
                 (click)="checkForUpdates()">
                 <i
-                    class="fas fa-search mr-1"
+                    class="fas fa-search me-1"
                     [class.fa-spin]="availabilityLoading"></i>
                 {{ availabilityLoading ? 'Checking...' : 'Check again' }}
             </button>
@@ -256,7 +256,7 @@
         <button
             id="btn-start-update"
             data-test="BTN_Start_Update"
-            class="btn btn-danger mr-2"
+            class="btn btn-danger me-2"
             [disabled]="!canStart"
             (click)="startUpdate()">
             {{ starting ? 'Starting...' : 'Start update' }}
@@ -353,7 +353,7 @@
         <div class="alert alert-danger">
             {{ logError }}
             <button
-                class="btn btn-sm btn-outline-light ml-2"
+                class="btn btn-sm btn-outline-light ms-2"
                 (click)="retryLog()">
                 Retry log
             </button>
@@ -425,7 +425,7 @@
         <div class="alert alert-danger">
             {{ logError }}
             <button
-                class="btn btn-sm btn-outline-light ml-2"
+                class="btn btn-sm btn-outline-light ms-2"
                 (click)="retryLog()">
                 Retry log
             </button>
