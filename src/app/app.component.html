@@ -1,6 +1,7 @@
 <div
     class="wrapper"
-    [class.display-path]="onDisplayPath">
+    [class.display-path]="onDisplayPath"
+    [class.sidebar-collapse]="sidebarCollapsed">
     @if (!onDisplayPath) {
     <div class="sidebar-wrapper">
         <aside
@@ -25,7 +26,6 @@
                     <nav class="mt-12">
                         <ul
                             class="nav nav-pills nav-sidebar flex-column"
-                            data-widget="treeview"
                             role="menu"
                             routerLinkActive="show">
                             <li
@@ -201,7 +201,7 @@
                         id="hamburger-button"
                         data-test="BTN_Hamburger"
                         class="btn bi bi-list"
-                        data-widget="pushmenu"></button>
+                        (click)="toggleSidebar()"></button>
                 </div>
                 <div class="flex-shrink-1 flex-grow-1 overflow-hidden">
                     <app-conversation-status

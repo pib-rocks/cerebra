@@ -31,14 +31,12 @@
 							"@angular/material/prebuilt-themes/indigo-pink.css",
 							"node_modules/bootstrap/dist/css/bootstrap.min.css",
 							"node_modules/bootstrap-icons/font/bootstrap-icons.css",
-							"node_modules/admin-lte/dist/css/adminlte.min.css",
+							"src/bootstrap4-compat.scss",
 							"node_modules/highlight.js/styles/atom-one-dark.css",
 							"src/styles.scss"
 						],
 						"scripts": [
-							"node_modules/jquery/dist/jquery.min.js",
-							"node_modules/bootstrap/dist/js/bootstrap.min.js",
-							"node_modules/admin-lte/dist/js/adminlte.min.js"
+							"node_modules/bootstrap/dist/js/bootstrap.min.js"
 						]
 					},
 					"configurations": {
