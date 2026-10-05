@@ -1,9 +1,9 @@
 import {Injectable} from "@angular/core";
 import {ApiService} from "./api.service";
-import {readPersonalityDialog} from "../types/personality-dialog";
 import {
     VoiceAssistant,
     parseDtoToVoiceAssistant,
+    personalityDialogFromRecord,
     personalityWriteBody,
 } from "../types/voice-assistant";
 import {ChannelCapabilityService} from "./channel-capability.service";
@@ -20,7 +20,12 @@ import {SidebarService} from "../interfaces/sidebar-service.interface";
 import {SidebarElement} from "../interfaces/sidebar-element.interface";
 import {RosService} from "./ros-service/ros.service";
 import {VoiceAssistantState} from "../types/voice-assistant-state";
-import {AssistantModel, AssistantModelDto} from "../types/assistantModel";
+import {AssistantModel} from "../types/assistantModel";
+import {
+    CatalogueProviderRecord,
+    flattenProviderCatalogue,
+    providerIdOf,
+} from "../types/provider-registry";
 import {ChatService} from "./chat.service";
 
 @Injectable({
@@ -75,20 +80,20 @@ export class VoiceAssistantService implements SidebarService {
         const newPersonalities: VoiceAssistant[] = [];
 
         personalities.forEach((m) => {
-            newPersonalities.push(
-                new VoiceAssistant(
-                    m.personalityId,
-                    m.name,
-                    m.gender,
-                    m.pauseThreshold,
-                    m.description,
-                    m.assistantModelId,
-                    m.messageHistory,
-                    m.providerRef,
-                    m.channel,
-                    readPersonalityDialog(m),
-                ),
+            const personality = new VoiceAssistant(
+                m.personalityId,
+                m.name,
+                m.gender,
+                m.pauseThreshold,
+                m.description,
+                m.assistantModelId,
+                m.messageHistory,
+                m.providerRef,
+                m.channel,
+                personalityDialogFromRecord(m),
             );
+            personality.needsNewModel = m.needsNewModel === true;
+            newPersonalities.push(personality);
         });
         this.personalities = newPersonalities;
         this.personalitiesSubject.next(this.personalities.slice());
@@ -144,7 +149,7 @@ export class VoiceAssistantService implements SidebarService {
 
     setProviderCredential(providerId: number, credentialRef: string | null) {
         const next = this.assistantModelsSubject.getValue().map((model) => {
-            if (model.id !== providerId) {
+            if (providerIdOf(model) !== providerId) {
                 return model;
             }
             return new AssistantModel(
@@ -156,6 +161,9 @@ export class VoiceAssistantService implements SidebarService {
                 model.capabilities,
                 credentialRef,
                 model.isDefault,
+                model.retired,
+                model.providerId,
+                model.providerName,
             );
         });
         this.assistantModelsSubject.next(next);
@@ -163,7 +171,7 @@ export class VoiceAssistantService implements SidebarService {
 
     getAllAssistantModels() {
         this.apiService
-            .get(UrlConstants.ASSISTANT_MODEL)
+            .get(UrlConstants.PROVIDER)
             .pipe(
                 catchError((err) => {
                     console.log(err);
@@ -171,14 +179,14 @@ export class VoiceAssistantService implements SidebarService {
                 }),
             )
             .subscribe((response) => {
-                const assistantModelDto = response[
-                    "assistantModels"
-                ] as AssistantModelDto[];
-                if (undefined == assistantModelDto) {
+                const providers = response["providers"] as
+                    | CatalogueProviderRecord[]
+                    | undefined;
+                if (providers == null) {
                     return;
                 }
                 this.assistantModelsSubject.next(
-                    assistantModelDto.map((dto) =>
+                    flattenProviderCatalogue(providers).map((dto) =>
                         AssistantModel.parseDtoToAssistantModel(dto),
                     ),
                 );

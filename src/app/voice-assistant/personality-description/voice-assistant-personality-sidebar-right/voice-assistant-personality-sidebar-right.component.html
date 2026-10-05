@@ -36,14 +36,24 @@
                     <option
                         [value]="providerOptionValue(model)"
                         [disabled]="
-                            isProviderOptionDisabled(model, cloudTokenStored)
+                            isProviderOptionDisabled(
+                                model,
+                                cloudTokenStored,
+                                models
+                            )
                         ">
                         {{ model.visualName }} @if (!isProviderConfigured(model,
-                        cloudTokenStored)) { ({{ missingKeyMark }}) }
+                        cloudTokenStored, models)) { ({{ missingKeyMark }}) }
                     </option>
                     }
                 </select>
-                @if (needsKey) {
+                @if (retiredNotice) {
+                <p
+                    id="retired-model-notice"
+                    data-test="LBL_Retired_Model">
+                    {{ retiredNotice }}
+                </p>
+                } @else if (needsKey) {
                 <p id="personality-key-missing">{{ missingKeyMark }}</p>
                 }
             </div>

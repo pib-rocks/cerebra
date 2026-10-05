@@ -4,13 +4,12 @@ import {
     IMAGES_NEED_MCP,
     IMAGES_NEED_TOOL_CALLING,
     IMAGES_NEED_TOOL_CALLING_AND_MCP,
-    LIVE_NO_CAPABILITY,
     LOCAL_VOICE_INPUT,
     LOCAL_VOICE_OUTPUT,
     TOOLS_NO_CAPABILITY,
     enforcePersonalityDialog,
     imageSwitchAvailability,
-    liveSwitchAvailability,
+    liveFromChosenModel,
     readPersonalityDialog,
     toolCallingAvailability,
     voiceInputOptions,
@@ -61,36 +60,44 @@ describe("personality dialog rules", () => {
         });
     });
 
-    it("greys out live only when the resolved provider has no live capability", () => {
+    it("derives live from the chosen model and does not keep a separate mode", () => {
         const live = new AssistantModel(
             1,
-            "gemini",
-            "Gemini",
+            "gemini-3.8-live",
+            "Gemini 3.8 Live",
             true,
             null,
             flags({tools: true, live: true}),
             "provider-1",
-            true,
+            false,
         );
         const plain = new AssistantModel(
             2,
-            "anthropic",
-            "Claude",
+            "gemini-3.8-flash",
+            "Gemini 3.8 Flash",
             true,
             null,
             flags({tools: true, live: false}),
-            "provider-2",
+            "provider-1",
             false,
         );
-        expect(liveSwitchAvailability(live, true)).toEqual({
-            disabled: false,
-            reason: null,
-        });
-        expect(liveSwitchAvailability(plain, true)).toEqual({
-            disabled: true,
-            reason: LIVE_NO_CAPABILITY,
-        });
-        expect(liveSwitchAvailability(null, false).disabled).toBeFalse();
+        expect(liveFromChosenModel(live, true, false)).toBeTrue();
+        expect(liveFromChosenModel(plain, true, true)).toBeFalse();
+        expect(liveFromChosenModel(null, false, true)).toBeTrue();
+        expect(
+            enforcePersonalityDialog(
+                readPersonalityDialog({live: false}),
+                live,
+                true,
+            ).live,
+        ).toBeTrue();
+        expect(
+            enforcePersonalityDialog(
+                readPersonalityDialog({live: true}),
+                plain,
+                true,
+            ).live,
+        ).toBeFalse();
     });
 
     it("forces tool calling off when the provider cannot call tools", () => {
@@ -148,5 +155,83 @@ describe("personality dialog rules", () => {
                 (option) => option.id,
             ),
         ).toEqual([LOCAL_VOICE_OUTPUT, "4"]);
+    });
+
+    it("offers every speech model of a provider from that provider's one key", () => {
+        const flash = new AssistantModel(
+            7,
+            "gemini-3.8-flash",
+            "Gemini 3.8 Flash",
+            true,
+            null,
+            flags({stt: true, tts: true, tools: true}),
+            null,
+            false,
+            false,
+            1,
+            "Google",
+        );
+        const live = new AssistantModel(
+            11,
+            "gemini-3.8-live",
+            "Gemini 3.8 Live",
+            false,
+            null,
+            flags({stt: true, tts: true, tools: true, images: false}),
+            "provider-1",
+            false,
+            false,
+            1,
+            "Google",
+        );
+        const gpt = new AssistantModel(
+            8,
+            "gpt-6",
+            "GPT-6",
+            true,
+            null,
+            flags({stt: true, tts: true, tools: true}),
+            null,
+            false,
+            false,
+            2,
+            "OpenAI",
+        );
+        expect(
+            voiceInputOptions([flash, live, gpt], false).map(
+                (option) => option.id,
+            ),
+        ).toEqual([LOCAL_VOICE_INPUT, "7", "11"]);
+        expect(
+            voiceOutputOptions([flash, live, gpt], false).map(
+                (option) => option.id,
+            ),
+        ).toEqual([LOCAL_VOICE_OUTPUT, "7", "11"]);
+    });
+
+    it("does not offer a retired model as a voice engine", () => {
+        const retired = new AssistantModel(
+            8,
+            "gpt-6",
+            "GPT-6",
+            true,
+            null,
+            flags({stt: true, tts: true, tools: true}),
+            "provider-8",
+            false,
+            true,
+        );
+        expect(
+            voiceInputOptions([retired], false).map((option) => option.id),
+        ).toEqual([LOCAL_VOICE_INPUT]);
+        expect(
+            voiceOutputOptions([retired], false).map((option) => option.id),
+        ).toEqual([LOCAL_VOICE_OUTPUT]);
+        expect(
+            voiceInputOptions([retired], false).map((option) => option.label),
+        ).not.toContain(retired.visualName);
+        expect(
+            voiceOutputOptions([retired], false).map((option) => option.label),
+        ).not.toContain(retired.visualName);
     });
 });

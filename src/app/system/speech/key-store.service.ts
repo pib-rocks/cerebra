@@ -7,6 +7,13 @@ import {UrlConstants} from "src/app/shared/services/url.constants";
 export interface KeyStoreStatus {
     encryptKeyStorage: boolean;
     credentialRefs: string[];
+    mode?: string;
+}
+
+export interface KeyStoreEncryptionResult {
+    successful?: boolean;
+    mode?: string;
+    error?: string;
 }
 
 export interface KeyStoreWriteResult {
@@ -74,6 +81,16 @@ export class KeyStoreService {
             oldPassword,
             newPassword,
             confirmPassword,
+        });
+    }
+
+    setEncryption(
+        enabled: boolean,
+        password: string,
+    ): Observable<KeyStoreEncryptionResult> {
+        return this.apiService.post(`${UrlConstants.KEY_STORE}/encryption`, {
+            enabled,
+            password,
         });
     }
 }

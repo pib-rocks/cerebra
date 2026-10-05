@@ -4,15 +4,19 @@
     <div class="speech-row">
         <input
             id="encrypt-key-storage"
+            data-test="CHK_Encrypt_Key_Storage"
             type="checkbox"
             [checked]="encryptKeyStorage"
-            disabled />
+            [disabled]="busy"
+            (change)="onEncryptionToggle($event)" />
         <label for="encrypt-key-storage">
             Encrypt Key Storage (requires password at robot start)
         </label>
     </div>
-    <p class="speech-hint">
-        The key store keeps encryption on. There is no control to turn it off.
+    <p
+        class="speech-hint"
+        data-test="LBL_Key_Storage">
+        {{ keyStorageHint() }}
     </p>
 
     @if (error) {
@@ -31,6 +35,7 @@
 
     <div class="speech-password">
         <div class="speech-card-title">Operator password</div>
+        @if (encryptKeyStorage) {
         <label
             class="speech-label"
             for="speech-operator-password">
@@ -44,44 +49,23 @@
             (input)="onPasswordInput($event)" />
         <button
             id="speech-change-password"
+            data-test="BTN_Change_Operator_Password"
             type="button"
             class="btn btn-outline-light"
-            (click)="togglePasswordChange()">
+            [disabled]="busy"
+            (click)="openPasswordDialog('change')">
             Change
         </button>
-        @if (changingPassword) {
-        <div class="speech-password-change">
-            <label
-                class="speech-label"
-                for="speech-new-password">
-                New password
-            </label>
-            <input
-                id="speech-new-password"
-                type="password"
-                autocomplete="new-password"
-                [value]="newPassword"
-                (input)="onNewPasswordInput($event)" />
-            <label
-                class="speech-label"
-                for="speech-confirm-password">
-                Confirm password
-            </label>
-            <input
-                id="speech-confirm-password"
-                type="password"
-                autocomplete="new-password"
-                [value]="confirmPassword"
-                (input)="onConfirmPasswordInput($event)" />
-            <button
-                id="speech-save-password"
-                type="button"
-                class="btn btn-outline-light"
-                [disabled]="busy"
-                (click)="changePassword()">
-                Save password
-            </button>
-        </div>
+        } @else {
+        <button
+            id="speech-enable-encryption"
+            data-test="BTN_Turn_Encryption_On"
+            type="button"
+            class="btn btn-outline-light"
+            [disabled]="busy"
+            (click)="openPasswordDialog('enable')">
+            Set a password to turn encryption on
+        </button>
         }
     </div>
 
@@ -92,12 +76,6 @@
         <p class="speech-hint">
             This is the SmartConnect token, not a key to type in here.
         </p>
-        <div class="speech-pair">
-            <span class="speech-label">Endpoint</span>
-            <span id="speech-cloud-endpoint"
-                >{{ endpointText(cloudProvider) }}</span
-            >
-        </div>
         <p id="speech-cloud-status">{{ cloudStatus() }}</p>
         <p class="speech-hint">Re-enter the token in SmartConnect.</p>
         <button
@@ -110,49 +88,133 @@
         </button>
     </div>
 
-    @for (model of providers; track model.id) {
+    @for (account of keyProviders; track account.id) {
     <div
         class="speech-card"
-        [id]="'speech-provider-' + model.id">
-        <div class="speech-card-title">{{ model.visualName }}</div>
-        <div class="speech-pair">
-            <span class="speech-label">Endpoint</span>
-            <span [id]="'speech-provider-endpoint-' + model.id">
-                {{ endpointText(model) }}
-            </span>
-        </div>
+        [id]="'speech-provider-' + account.id">
+        <div class="speech-card-title">{{ account.name }}</div>
         <div class="speech-pair">
             <label
                 class="speech-label"
-                [for]="'speech-provider-key-' + model.id">
+                [for]="'speech-provider-key-' + account.id">
                 Key
             </label>
             <input
-                [id]="'speech-provider-key-' + model.id"
+                [id]="'speech-provider-key-' + account.id"
                 type="password"
                 autocomplete="off"
-                [value]="drafts[model.id] ?? ''"
-                (input)="onDraft(model.id, $event)" />
+                [value]="drafts[account.id] ?? ''"
+                (input)="onDraft(account.id, $event)" />
         </div>
-        <p [id]="'speech-provider-state-' + model.id">
-            {{ model.credentialRef ? "Key stored" : "No key" }}
+        <p [id]="'speech-provider-state-' + account.id">
+            {{ account.credentialRef ? "Key stored" : "No key" }}
         </p>
         <button
             type="button"
             class="btn btn-outline-light"
-            [id]="'speech-provider-save-' + model.id"
+            [id]="'speech-provider-save-' + account.id"
             [disabled]="busy"
-            (click)="saveKey(model)">
+            (click)="saveKey(account)">
             Save key
         </button>
         <button
             type="button"
             class="btn btn-outline-light"
-            [id]="'speech-provider-delete-' + model.id"
-            [disabled]="busy || !model.credentialRef"
-            (click)="deleteKey(model)">
+            [id]="'speech-provider-delete-' + account.id"
+            [disabled]="busy || !account.credentialRef"
+            (click)="deleteKey(account)">
             Delete key
         </button>
     </div>
     }
 </div>
+@if (passwordDialog) {
+<div
+    id="speech-password-modal"
+    class="modal d-block cerebra-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="speech-password-modal-title">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4
+                    class="modal-title"
+                    id="speech-password-modal-title">
+                    {{ passwordDialogTitle() }}
+                </h4>
+            </div>
+            <div class="modal-body speech-password-fields">
+                @if (passwordDialog === "change") {
+                <label
+                    class="speech-label"
+                    for="speech-current-password">
+                    Current password
+                </label>
+                <input
+                    id="speech-current-password"
+                    data-test="TXT_Current_Password"
+                    type="password"
+                    autocomplete="current-password"
+                    [value]="dialogPassword"
+                    (input)="onDialogPasswordInput($event)" />
+                }
+                <label
+                    class="speech-label"
+                    for="speech-new-password">
+                    New password
+                </label>
+                <input
+                    id="speech-new-password"
+                    data-test="TXT_New_Password"
+                    type="password"
+                    autocomplete="new-password"
+                    [value]="newPassword"
+                    (input)="onNewPasswordInput($event)" />
+                <label
+                    class="speech-label"
+                    for="speech-confirm-password">
+                    Confirm password
+                </label>
+                <input
+                    id="speech-confirm-password"
+                    data-test="TXT_Confirm_Password"
+                    type="password"
+                    autocomplete="new-password"
+                    [value]="confirmPassword"
+                    (input)="onConfirmPasswordInput($event)" />
+                @if (passwordDialogError) {
+                <div
+                    class="alert alert-danger"
+                    id="speech-password-modal-error"
+                    data-test="LBL_Operator_Password_Error">
+                    {{ passwordDialogError }}
+                </div>
+                }
+            </div>
+            <div class="modal-footer">
+                <button
+                    id="speech-password-ok"
+                    data-test="BTN_Operator_Password_OK"
+                    type="button"
+                    class="btn btn-outline-light"
+                    [disabled]="busy"
+                    (click)="confirmPasswordDialog()">
+                    OK
+                </button>
+                <button
+                    id="speech-password-cancel"
+                    data-test="BTN_Operator_Password_Cancel"
+                    type="button"
+                    class="btn btn-outline-light"
+                    (click)="cancelPasswordDialog()">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<div
+    id="speech-password-backdrop"
+    class="modal-backdrop fade show cerebra-modal-backdrop"></div>
+}

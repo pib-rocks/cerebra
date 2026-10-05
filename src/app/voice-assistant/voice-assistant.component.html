@@ -5,6 +5,7 @@
                 [subject]="subject"
                 [button]="button"
                 [needsAttention]="needsAttention"
+                [attentionLabel]="attentionLabel"
                 [defaultRoute]="'/voice-assistant'"></app-voice-assistant-nav>
         </div>
     </div>
@@ -154,13 +155,25 @@
                     <option
                         [value]="providerOptionValue(model)"
                         [disabled]="
-                            isProviderOptionDisabled(model, cloudTokenStored)
+                            isProviderOptionDisabled(
+                                model,
+                                cloudTokenStored,
+                                models
+                            )
                         ">
                         {{ model.visualName }} @if (!isProviderConfigured(model,
-                        cloudTokenStored)) { ({{ missingKeyMark }}) }
+                        cloudTokenStored, models)) { ({{ missingKeyMark }}) }
                     </option>
                     }
                 </select>
+                @if (retiredNotice) {
+                <p
+                    class="advanced-reason"
+                    id="retired-model-notice"
+                    data-test="LBL_Retired_Model">
+                    {{ retiredNotice }}
+                </p>
+                }
             </div>
             <div class="row ml-3 m-2 mt-3 pr-2">
                 <label
@@ -279,27 +292,6 @@
                     class="advanced-reason"
                     data-test="LBL_Images_Reason">
                     {{ imageReason }}
-                </p>
-                }
-            </div>
-            <div
-                class="row m-2"
-                id="row-live">
-                <input
-                    type="checkbox"
-                    id="live-input"
-                    data-test="CHK_Live"
-                    formControlName="live" />
-                <label
-                    for="live-input"
-                    id="label-live"
-                    >Live</label
-                >
-                @if (liveReason) {
-                <p
-                    class="advanced-reason"
-                    data-test="LBL_Live_Reason">
-                    {{ liveReason }}
                 </p>
                 }
             </div>

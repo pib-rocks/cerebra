@@ -26,6 +26,7 @@ import {
     SMART_CHANNEL,
     transportRequest,
 } from "src/app/shared/types/channel-router";
+import {VoiceAssistantState} from "src/app/shared/types/voice-assistant-state";
 
 describe("ChatWindowDeepChatComponent", () => {
     let component: ChatWindowDeepChatComponent;
@@ -46,6 +47,7 @@ describe("ChatWindowDeepChatComponent", () => {
         textInput?: unknown;
         [key: string]: unknown;
     };
+    let voiceStateSubject: BehaviorSubject<VoiceAssistantState>;
 
     const chatId = "chat-id";
 
@@ -73,9 +75,16 @@ describe("ChatWindowDeepChatComponent", () => {
             tokenStatus$: tokenStatusSubject.asObservable(),
         });
 
+        voiceStateSubject = new BehaviorSubject<VoiceAssistantState>({
+            turnedOn: false,
+            chatId: "",
+        });
         const voiceAssistantSpy = jasmine.createSpyObj(
             "VoiceAssistantService",
             ["getPersonality"],
+            {
+                voiceAssistantStateObservable: voiceStateSubject.asObservable(),
+            },
         );
 
         await TestBed.configureTestingModule({
@@ -534,6 +543,76 @@ describe("ChatWindowDeepChatComponent", () => {
         );
     });
 
+    it("keeps typed input working while a live model holds this chat", () => {
+        const personality = new VoiceAssistant(
+            "persona-1",
+            "Ada",
+            "Female",
+            0.8,
+            "Du bist pib.",
+            11,
+            10,
+            "11",
+            SMART_CHANNEL,
+            {live: true},
+        );
+        const voiceAssistant = TestBed.inject(
+            VoiceAssistantService,
+        ) as jasmine.SpyObj<VoiceAssistantService>;
+        voiceAssistant.getPersonality.and.returnValue(personality);
+        chatService.getChat.and.returnValue(
+            new Chat("topic", "persona-1", chatId),
+        );
+        paramsSubject.next({chatUuid: chatId});
+        voiceStateSubject.next({turnedOn: true, chatId});
+
+        const signals = {
+            onResponse: jasmine.createSpy("onResponse"),
+            onClose: jasmine.createSpy("onClose"),
+        };
+        mockDeepChat.connect!.handler(
+            {messages: [{role: "user", text: "  hello there  "}]},
+            signals,
+        );
+
+        expect(mockDeepChat.textInput).toEqual({
+            disabled: false,
+            placeholder: {text: "Enter a message"},
+        });
+        expect(chatService.sendChatMessage).toHaveBeenCalledOnceWith(
+            chatId,
+            "hello there",
+        );
+        expect(signals.onClose).toHaveBeenCalled();
+        expect(signals.onResponse).not.toHaveBeenCalled();
+
+        messagesSubject.next([
+            {
+                messageId: "ai-live",
+                timestamp: "2",
+                isUser: false,
+                content: "I heard you",
+            },
+        ]);
+        expect(mockDeepChat.addMessage).toHaveBeenCalledWith({
+            role: "ai",
+            text: "I heard you",
+        });
+
+        mockDeepChat.connect!.handler(
+            {messages: [{role: "user", text: "stop now please"}]},
+            signals,
+        );
+        expect(chatService.sendChatMessage).toHaveBeenCalledWith(
+            chatId,
+            "stop now please",
+        );
+        expect(signals.onClose).toHaveBeenCalledTimes(2);
+        expect(mockDeepChat.textInput).toEqual(
+            jasmine.objectContaining({disabled: false}),
+        );
+    });
+
     it("isUser messages are ignored", () => {
         const signals = {onResponse: jasmine.createSpy("onResponse")};
         mockDeepChat.connect!.handler(
@@ -605,8 +684,8 @@ describe("ChatWindowDeepChatComponent", () => {
         ) as jasmine.SpyObj<VoiceAssistantService>;
         const model = new AssistantModel(
             4,
-            "gpt-4o",
-            "GPT-4o",
+            "gpt-6",
+            "GPT-6",
             true,
             "https://api.openai.example/v1",
             {
@@ -637,6 +716,164 @@ describe("ChatWindowDeepChatComponent", () => {
         expect(chatService.sendChatMessage).not.toHaveBeenCalled();
         expect(signals.onResponse).toHaveBeenCalledOnceWith({
             text: MISSING_KEY_TURN,
+        });
+    });
+
+    it("starts a turn when the personality still has the model it used", () => {
+        const voiceAssistant = TestBed.inject(
+            VoiceAssistantService,
+        ) as jasmine.SpyObj<VoiceAssistantService>;
+        const flags = {
+            tools: true,
+            images: true,
+            live: false,
+            stt: false,
+            tts: false,
+        };
+        const flash = new AssistantModel(
+            7,
+            "gemini-3.8-flash",
+            "Gemini 3.8 Flash",
+            true,
+            null,
+            flags,
+            "provider-1",
+            false,
+        );
+        const live = new AssistantModel(
+            11,
+            "gemini-3.8-live",
+            "Gemini 3.8 Live",
+            false,
+            null,
+            {...flags, images: false, live: true},
+            "provider-1",
+            false,
+        );
+        voiceAssistant.assistantModelsSubject = new BehaviorSubject([
+            flash,
+            live,
+        ]);
+        const persona = new VoiceAssistant(
+            "persona-1",
+            "Ada",
+            "Female",
+            0.8,
+            "",
+            7,
+            10,
+            "7",
+        );
+        voiceAssistant.getPersonality.and.returnValue(persona);
+        chatService.getChat.and.returnValue(
+            new Chat("topic", "persona-1", chatId),
+        );
+        paramsSubject.next({chatUuid: chatId});
+
+        const signals = {onResponse: jasmine.createSpy("onResponse")};
+        mockDeepChat.connect!.handler(
+            {messages: [{role: "user", text: "hello there"}]},
+            signals,
+        );
+
+        expect(chatService.sendChatMessage).toHaveBeenCalledOnceWith(
+            chatId,
+            "hello there",
+        );
+    });
+
+    it("refuses the turn when the model row is gone and does not start it on another model", () => {
+        const voiceAssistant = TestBed.inject(
+            VoiceAssistantService,
+        ) as jasmine.SpyObj<VoiceAssistantService>;
+        const persona = new VoiceAssistant(
+            "persona-1",
+            "Ada",
+            "Female",
+            0.8,
+            "",
+            null,
+            10,
+            "12",
+        );
+        persona.needsNewModel = true;
+        voiceAssistant.getPersonality.and.returnValue(persona);
+        chatService.getChat.and.returnValue(
+            new Chat("topic", "persona-1", chatId),
+        );
+        paramsSubject.next({chatUuid: chatId});
+
+        const signals = {onResponse: jasmine.createSpy("onResponse")};
+        mockDeepChat.connect!.handler(
+            {messages: [{role: "user", text: "hello there"}]},
+            signals,
+        );
+
+        expect(chatService.sendChatMessage).not.toHaveBeenCalled();
+        expect(signals.onResponse).toHaveBeenCalledOnceWith({
+            text: "This model is gone. Choose a new one.",
+        });
+    });
+
+    it("asks for a new model when the catalogue is loaded and the row is not in it", () => {
+        const voiceAssistant = TestBed.inject(
+            VoiceAssistantService,
+        ) as jasmine.SpyObj<VoiceAssistantService>;
+        const flags = {
+            tools: true,
+            images: true,
+            live: false,
+            stt: false,
+            tts: false,
+        };
+        voiceAssistant.assistantModelsSubject = new BehaviorSubject([
+            new AssistantModel(
+                7,
+                "gemini-3.8-flash",
+                "Gemini 3.8 Flash",
+                true,
+                null,
+                flags,
+                "provider-1",
+                false,
+            ),
+            new AssistantModel(
+                11,
+                "gemini-3.8-live",
+                "Gemini 3.8 Live",
+                false,
+                null,
+                {...flags, images: false, live: true},
+                "provider-1",
+                false,
+            ),
+        ]);
+        const persona = new VoiceAssistant(
+            "persona-1",
+            "Ada",
+            "Female",
+            0.8,
+            "",
+            null,
+            10,
+            "12",
+        );
+        persona.needsNewModel = true;
+        voiceAssistant.getPersonality.and.returnValue(persona);
+        chatService.getChat.and.returnValue(
+            new Chat("topic", "persona-1", chatId),
+        );
+        paramsSubject.next({chatUuid: chatId});
+
+        const signals = {onResponse: jasmine.createSpy("onResponse")};
+        mockDeepChat.connect!.handler(
+            {messages: [{role: "user", text: "hello there"}]},
+            signals,
+        );
+
+        expect(chatService.sendChatMessage).not.toHaveBeenCalled();
+        expect(signals.onResponse).toHaveBeenCalledOnceWith({
+            text: "This model is gone. Choose a new one.",
         });
     });
 

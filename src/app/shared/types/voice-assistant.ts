@@ -17,6 +17,7 @@ export class VoiceAssistant implements SidebarElement {
     pauseThreshold: number;
     assistantModelId: number | null;
     messageHistory: number;
+    /** Model id as text, or "default". The provider follows from that model. */
     providerRef: string;
     channel: ChatChannel;
     voiceInput: string;
@@ -26,6 +27,8 @@ export class VoiceAssistant implements SidebarElement {
     live: boolean;
     idleTimeoutSeconds: number;
     mcp: boolean;
+    /** Set by the API when the selected catalogue row is retired. */
+    needsNewModel = false;
 
     constructor(
         personalityId: string,
@@ -85,7 +88,7 @@ export class VoiceAssistant implements SidebarElement {
     }
 
     clone(): VoiceAssistant {
-        return new VoiceAssistant(
+        const copy = new VoiceAssistant(
             String(this.personalityId),
             String(this.name),
             String(this.gender),
@@ -97,47 +100,81 @@ export class VoiceAssistant implements SidebarElement {
             this.channel,
             readPersonalityDialog(this),
         );
+        copy.needsNewModel = this.needsNewModel;
+        return copy;
     }
 }
 
+/**
+ * Derived voice mode. The chosen model's live flag selects this or
+ * turn_based. The client reads it and does not send it.
+ */
+export const VOICE_MODE_LIVE = "live";
+export const VOICE_MODE_TURN_BASED = "turn_based";
+
+/**
+ * Columns the Add and Edit dialog writes. images and mcp stay on the form:
+ * a personality has no column for either, and the MCP switch is a separate
+ * control from toolCalling. memory and thinkingFiller are columns the
+ * dialog does not collect, so an update leaves them as stored.
+ */
 export interface VoiceAssistantDto {
     name: string;
     description: string | null | undefined;
     gender: string;
-    pauseThreshold: number;
-    assistantModelId: number | null;
-    messageHistory: number;
-    providerRef: string;
     channel: ChatChannel;
-    voiceInput: string;
-    voiceOutput: string;
+    providerRef: string;
+    sttEngine: string;
+    ttsEngine: string;
+    liveIdleTimeout: number;
     toolCalling: boolean;
-    images: boolean;
-    live: boolean;
-    idleTimeoutSeconds: number;
-    mcp: boolean;
+    messageHistory: number;
+    pauseThreshold: number;
+}
+
+export interface StoredPersonalityDialog
+    extends Partial<PersonalityDialogValues> {
+    sttEngine?: string | null;
+    ttsEngine?: string | null;
+    voiceMode?: string | null;
+    liveIdleTimeout?: number | null;
+}
+
+/**
+ * Dialog values from a stored personality. The wire names are the columns;
+ * the form still uses its own control names.
+ */
+export function personalityDialogFromRecord(
+    source: StoredPersonalityDialog | null | undefined,
+): PersonalityDialogValues {
+    return readPersonalityDialog({
+        voiceInput: firstText(source?.sttEngine, source?.voiceInput),
+        voiceOutput: firstText(source?.ttsEngine, source?.voiceOutput),
+        toolCalling: source?.toolCalling,
+        images: source?.images,
+        live: liveFromStored(source),
+        idleTimeoutSeconds: idleFromStored(source),
+        mcp: source?.mcp,
+    });
 }
 
 export function parseVoiceAssistantToDto(
     voiceAssistant: VoiceAssistant,
 ): VoiceAssistantDto {
-    const choice = providerRefFromSelection(voiceAssistant.providerRef);
+    const dialog = readPersonalityDialog(voiceAssistant);
+    const choice = providerRefFromSelection(voiceAssistant.providerRef ?? "");
     return {
         name: voiceAssistant.name,
-        description: voiceAssistant.description,
+        description: voiceAssistant.description ?? "",
         gender: voiceAssistant.gender,
-        pauseThreshold: voiceAssistant.pauseThreshold,
-        assistantModelId: choice.assistantModelId,
-        messageHistory: voiceAssistant.messageHistory,
+        channel: parseChatChannel(voiceAssistant.channel),
         providerRef: choice.providerRef,
-        channel: voiceAssistant.channel,
-        voiceInput: voiceAssistant.voiceInput,
-        voiceOutput: voiceAssistant.voiceOutput,
-        toolCalling: voiceAssistant.toolCalling,
-        images: voiceAssistant.images,
-        live: voiceAssistant.live,
-        idleTimeoutSeconds: voiceAssistant.idleTimeoutSeconds,
-        mcp: voiceAssistant.mcp,
+        sttEngine: dialog.voiceInput,
+        ttsEngine: dialog.voiceOutput,
+        liveIdleTimeout: dialog.idleTimeoutSeconds,
+        toolCalling: dialog.toolCalling,
+        messageHistory: voiceAssistant.messageHistory ?? 10,
+        pauseThreshold: voiceAssistant.pauseThreshold,
     };
 }
 
@@ -146,6 +183,18 @@ export function parseVoiceAssistantToDto(
  * left off the request: sending Smart is rejected, and sending Direct would
  * rewrite the row, so turning the flag back on would not restore it.
  */
+export function personalityWriteBody(
+    voiceAssistant: VoiceAssistant,
+    smartChatsEnabled: true,
+): VoiceAssistantDto;
+export function personalityWriteBody(
+    voiceAssistant: VoiceAssistant,
+    smartChatsEnabled: false,
+): Omit<VoiceAssistantDto, "channel">;
+export function personalityWriteBody(
+    voiceAssistant: VoiceAssistant,
+    smartChatsEnabled: boolean,
+): VoiceAssistantDto | Omit<VoiceAssistantDto, "channel">;
 export function personalityWriteBody(
     voiceAssistant: VoiceAssistant,
     smartChatsEnabled: boolean,
@@ -159,21 +208,67 @@ export function personalityWriteBody(
     return withoutChannel;
 }
 
+export interface PersonalityRecord extends StoredPersonalityDialog {
+    personalityId: string;
+    name: string;
+    gender: string;
+    pauseThreshold: number;
+    description?: string | null;
+    assistantModelId?: number | null;
+    messageHistory?: number;
+    providerRef?: string | null;
+    channel?: string | null;
+    needsNewModel?: boolean;
+}
+
 export function parseDtoToVoiceAssistant(
-    dummyVoiceAssistant: VoiceAssistant,
+    dummyVoiceAssistant: PersonalityRecord,
 ): VoiceAssistant {
-    return new VoiceAssistant(
+    const parsed = new VoiceAssistant(
         dummyVoiceAssistant.personalityId,
         dummyVoiceAssistant.name,
         dummyVoiceAssistant.gender,
         dummyVoiceAssistant.pauseThreshold,
-        dummyVoiceAssistant.description,
+        dummyVoiceAssistant.description ?? "",
         dummyVoiceAssistant.assistantModelId,
         dummyVoiceAssistant.messageHistory,
         dummyVoiceAssistant.providerRef,
         // Stored channel, not effectiveChannel. The installer flag only
         // changes how the personality is shown and run.
         dummyVoiceAssistant.channel,
-        readPersonalityDialog(dummyVoiceAssistant),
+        personalityDialogFromRecord(dummyVoiceAssistant),
     );
+    parsed.needsNewModel = dummyVoiceAssistant.needsNewModel === true;
+    return parsed;
+}
+
+function firstText(
+    wire: string | null | undefined,
+    dialog: string | null | undefined,
+): string | undefined {
+    const primary = wire?.trim();
+    if (primary) {
+        return primary;
+    }
+    const secondary = dialog?.trim();
+    return secondary ? secondary : undefined;
+}
+
+function liveFromStored(
+    source: StoredPersonalityDialog | null | undefined,
+): boolean {
+    const mode = source?.voiceMode?.trim();
+    if (mode) {
+        return mode === VOICE_MODE_LIVE;
+    }
+    return source?.live === true;
+}
+
+function idleFromStored(
+    source: StoredPersonalityDialog | null | undefined,
+): number | undefined {
+    if (typeof source?.liveIdleTimeout === "number") {
+        return source.liveIdleTimeout;
+    }
+    return source?.idleTimeoutSeconds;
 }

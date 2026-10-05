@@ -37,7 +37,6 @@ import {
     VoiceBackendOption,
     enforcePersonalityDialog,
     imageSwitchAvailability,
-    liveSwitchAvailability,
     readPersonalityDialog,
     toolCallingAvailability,
     voiceInputOptions,
@@ -48,11 +47,12 @@ import {
     MISSING_KEY_MARK,
     isProviderConfigured,
     isProviderOptionDisabled,
-    personalityNeedsAttention,
+    personalityAttention,
     providerOptionValue as providerOptionValueFor,
     providerRefFromSelection,
     providersForSelection,
     resolveProvider,
+    retainGoneReference,
 } from "../shared/types/provider-registry";
 import {TokenService} from "../shared/services/token.service";
 import {VoiceAssistantNavComponent} from "./voice-assistant-nav/voice-assistant-nav.component";
@@ -83,7 +83,6 @@ export class VoiceAssistantComponent implements OnInit {
     voiceOutputs: VoiceBackendOption[] = [];
     toolCallingReason: string | null = null;
     imageReason: string | null = null;
-    liveReason: string | null = null;
     @ViewChild("modalContent") modalContent: TemplateRef<any> | undefined;
     ngbModalRef?: NgbModalRef;
     imgSrc: string = "../../assets/toggle-switch-left.png";
@@ -93,6 +92,7 @@ export class VoiceAssistantComponent implements OnInit {
     storedProviderRef: string | null = null;
     cloudTokenStored = false;
     smartChatsEnabled = true;
+    retiredNotice: string | null = null;
     readonly missingKeyMark = MISSING_KEY_MARK;
     readonly isProviderConfigured = isProviderConfigured;
     readonly isProviderOptionDisabled = isProviderOptionDisabled;
@@ -370,16 +370,11 @@ export class VoiceAssistantComponent implements OnInit {
     }
 
     needsAttention = (personalityId: string): boolean => {
-        const personality =
-            this.voiceAssistantService.getPersonality(personalityId);
-        if (personality == null) {
-            return false;
-        }
-        return personalityNeedsAttention(
-            personality.providerRef,
-            this.models,
-            this.cloudTokenStored,
-        );
+        return this.attentionFor(personalityId) != null;
+    };
+
+    attentionLabel = (personalityId: string): string => {
+        return this.attentionFor(personalityId)?.notice ?? MISSING_KEY_MARK;
     };
 
     get showSmartChannelControl(): boolean {
@@ -392,12 +387,20 @@ export class VoiceAssistantComponent implements OnInit {
 
     get showIdleTimeout(): boolean {
         const live = this.personalityForm?.controls["live"];
-        return live != null && live.enabled && live.value === true;
+        return live != null && live.value === true;
     }
 
     private rebuildSelection() {
+        const personality =
+            this.uuid == null
+                ? undefined
+                : this.voiceAssistantService.getPersonality(this.uuid);
         this.selectionModels = providersForSelection(
-            this.models,
+            retainGoneReference(
+                this.models,
+                this.storedProviderRef,
+                personality?.needsNewModel === true,
+            ),
             this.storedProviderRef,
             this.cloudTokenStored,
         );
@@ -464,8 +467,7 @@ export class VoiceAssistantComponent implements OnInit {
             this.personalityForm.controls["images"],
             images.disabled,
         );
-        const live = liveSwitchAvailability(model, loaded);
-        this.setBlocked(this.personalityForm.controls["live"], live.disabled);
+        this.applyDerivedLive(model, loaded);
         this.keepVoiceSelection(
             "voiceInput",
             this.voiceInputs,
@@ -478,7 +480,66 @@ export class VoiceAssistantComponent implements OnInit {
         );
         this.toolCallingReason = tools.reason;
         this.imageReason = images.reason;
-        this.liveReason = live.reason;
+        this.retiredNotice = this.retiredNoticeForSelection();
+    }
+
+    /** The Live control is not a switch. It follows the chosen model. */
+    private applyDerivedLive(
+        model: AssistantModel | null,
+        registryLoaded: boolean,
+    ): void {
+        if (!registryLoaded) {
+            return;
+        }
+        const live = this.personalityForm.controls["live"];
+        const derived = model?.capabilities?.live === true;
+        if (live.value !== derived) {
+            live.setValue(derived, {emitEvent: false});
+        }
+        if (live.enabled) {
+            live.disable({emitEvent: false});
+        }
+    }
+
+    private attentionFor(personalityId: string) {
+        const personality =
+            this.voiceAssistantService.getPersonality(personalityId);
+        if (personality == null) {
+            return null;
+        }
+        return personalityAttention(
+            personality.providerRef,
+            this.models,
+            this.cloudTokenStored,
+            personality.needsNewModel,
+        );
+    }
+
+    private retiredNoticeForSelection(): string | null {
+        if (this.personalityForm == null) {
+            return null;
+        }
+        const personality =
+            this.uuid == null
+                ? undefined
+                : this.voiceAssistantService.getPersonality(this.uuid);
+        const selection = providerRefFromSelection(
+            String(this.personalityForm.controls["assistantModel"].value),
+        ).providerRef;
+        const attention = personalityAttention(
+            selection,
+            retainGoneReference(
+                this.models,
+                this.storedProviderRef,
+                personality?.needsNewModel === true,
+            ),
+            this.cloudTokenStored,
+            personality?.needsNewModel === true,
+        );
+        if (attention?.reason !== "retired") {
+            return null;
+        }
+        return attention.notice;
     }
 
     private keepVoiceSelection(

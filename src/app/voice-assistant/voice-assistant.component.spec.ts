@@ -17,6 +17,7 @@ import {AssistantModel} from "../shared/types/assistantModel";
 import {
     DEFAULT_PROVIDER_REF,
     ProviderCapabilities,
+    retiredModelNotice,
 } from "../shared/types/provider-registry";
 import {ChannelCapabilityService} from "../shared/services/channel-capability.service";
 import {DIRECT_CHANNEL, SMART_CHANNEL} from "../shared/types/channel-router";
@@ -24,7 +25,6 @@ import {
     DEFAULT_IDLE_TIMEOUT_SECONDS,
     IMAGES_NEED_MCP,
     IMAGES_NEED_TOOL_CALLING,
-    LIVE_NO_CAPABILITY,
     LOCAL_VOICE_INPUT,
     LOCAL_VOICE_OUTPUT,
 } from "../shared/types/personality-dialog";
@@ -42,8 +42,8 @@ describe("VoiceAssistantComponent", () => {
     let modalService: NgbModal;
     let _router: Router;
     const models = [
-        new AssistantModel(1, "gpt-3", "GPT-3", false),
-        new AssistantModel(2, "gpt-4", "GPT-4", true),
+        new AssistantModel(1, "gemini-3.8-flash", "Gemini 3.8 Flash", false),
+        new AssistantModel(2, "gpt-6", "GPT-6", true),
     ];
 
     const mockModalRef: MockNgbModalRef = new MockNgbModalRef();
@@ -300,8 +300,8 @@ describe("VoiceAssistantComponent", () => {
         });
         const keyed = new AssistantModel(
             4,
-            "gpt-4o",
-            "GPT-4o",
+            "gpt-6",
+            "GPT-6",
             true,
             "https://api.openai.example/v1",
             flags(true),
@@ -312,8 +312,8 @@ describe("VoiceAssistantComponent", () => {
         expect(component.selectionModels.map((model) => model.id)).toEqual([4]);
         const cleared = new AssistantModel(
             4,
-            "gpt-4o",
-            "GPT-4o",
+            "gpt-6",
+            "GPT-6",
             true,
             "https://api.openai.example/v1",
             flags(true),
@@ -491,15 +491,13 @@ describe("VoiceAssistantComponent", () => {
         expect(
             document.body.querySelector("[data-test=CHK_Images]"),
         ).not.toBeNull();
-        expect(
-            document.body.querySelector("[data-test=CHK_Live]"),
-        ).not.toBeNull();
+        expect(document.body.querySelector("[data-test=CHK_Live]")).toBeNull();
         expect(
             document.body.querySelector("[data-test=CHK_Mcp]"),
         ).not.toBeNull();
         expect(
             document.body.querySelector("[data-test=TXT_Idle_Timeout]"),
-        ).toBeNull();
+        ).not.toBeNull();
         const voiceInput = document.body.querySelector(
             "#voice-input-select",
         ) as HTMLSelectElement;
@@ -508,20 +506,41 @@ describe("VoiceAssistantComponent", () => {
         );
         expect(labels).toContain(LOCAL_VOICE_INPUT);
         expect(labels).toContain("6");
-        const live = document.body.querySelector(
-            "#live-input",
-        ) as HTMLInputElement;
-        expect(live.disabled).toBeFalse();
-        live.click();
+        const plain = new AssistantModel(
+            8,
+            "gpt-6",
+            "GPT-6",
+            true,
+            null,
+            {
+                tools: true,
+                images: true,
+                live: false,
+                stt: false,
+                tts: false,
+            },
+            "provider-8",
+            false,
+        );
+        voiceAssistantService.assistantModelsSubject.next([speech, plain]);
+        fixture.detectChanges();
         TestBed.inject(ApplicationRef).tick();
-        expect(
-            document.body.querySelector("[data-test=TXT_Idle_Timeout]"),
-        ).not.toBeNull();
-        live.click();
+        component.personalityForm.controls["assistantModel"].setValue("8");
+        fixture.detectChanges();
         TestBed.inject(ApplicationRef).tick();
         expect(
             document.body.querySelector("[data-test=TXT_Idle_Timeout]"),
         ).toBeNull();
+        expect(component.personalityForm.getRawValue()["live"]).toBeFalse();
+        component.personalityForm.controls["assistantModel"].setValue(
+            DEFAULT_PROVIDER_REF,
+        );
+        fixture.detectChanges();
+        TestBed.inject(ApplicationRef).tick();
+        expect(
+            document.body.querySelector("[data-test=TXT_Idle_Timeout]"),
+        ).not.toBeNull();
+        expect(component.personalityForm.getRawValue()["live"]).toBeTrue();
     });
 
     it("greys out images when tool calling or the MCP server is off", () => {
@@ -576,7 +595,78 @@ describe("VoiceAssistantComponent", () => {
         expect(reason()).toContain(IMAGES_NEED_MCP);
     });
 
-    it("greys out live when the provider has no live capability and hides the idle timeout", () => {
+    it("offers a live model in the list, and choosing it is the whole statement", () => {
+        const flash = new AssistantModel(
+            3,
+            "gemini-3.8-flash",
+            "Gemini 3.8 Flash",
+            true,
+            null,
+            {
+                tools: true,
+                images: true,
+                live: false,
+                stt: false,
+                tts: false,
+            },
+            "provider-3",
+            false,
+        );
+        const live = new AssistantModel(
+            11,
+            "gemini-3.8-live",
+            "Gemini 3.8 Live",
+            false,
+            null,
+            {
+                tools: true,
+                images: false,
+                live: true,
+                stt: false,
+                tts: false,
+            },
+            "provider-3",
+            false,
+        );
+        voiceAssistantService.assistantModelsSubject.next([flash, live]);
+        fixture.detectChanges();
+        component.openAddModal();
+        component.advancedOpen = true;
+        fixture.detectChanges();
+        TestBed.inject(ApplicationRef).tick();
+        expect(document.body.querySelector("[data-test=CHK_Live]")).toBeNull();
+        const options = Array.from(
+            (
+                document.body.querySelector(
+                    "#voice-assistant-model-select",
+                ) as HTMLSelectElement
+            ).options,
+        );
+        const liveOption = options.find(
+            (option) => option.textContent?.includes("Gemini 3.8 Live"),
+        );
+        expect(liveOption).toBeDefined();
+        expect(liveOption?.disabled).toBeFalse();
+        component.personalityForm.controls["assistantModel"].setValue(
+            String(live.id),
+        );
+        fixture.detectChanges();
+        TestBed.inject(ApplicationRef).tick();
+        expect(component.personalityForm.getRawValue()["live"]).toBeTrue();
+        expect(
+            document.body.querySelector("[data-test=TXT_Idle_Timeout]"),
+        ).not.toBeNull();
+        component.personalityForm.patchValue({"name-input": "Ada"});
+        component.addPersonality();
+        const created =
+            voiceAssistantService.createPersonality.calls.mostRecent()
+                .args[0] as VoiceAssistant;
+        expect(created.providerRef).toBe(String(live.id));
+        expect(created.live).toBeTrue();
+        component.ngbModalRef?.close();
+    });
+
+    it("hides the idle timeout when the chosen model is not a live model", () => {
         const text = new AssistantModel(
             8,
             "anthropic",
@@ -598,14 +688,11 @@ describe("VoiceAssistantComponent", () => {
         component.openAddModal();
         component.advancedOpen = true;
         fixture.detectChanges();
-        const live = document.body.querySelector(
-            "#live-input",
-        ) as HTMLInputElement;
-        expect(live.disabled).toBeTrue();
+        expect(document.body.querySelector("#live-input")).toBeNull();
         expect(
-            document.body.querySelector("[data-test=LBL_Live_Reason]")
-                ?.textContent,
-        ).toContain(LIVE_NO_CAPABILITY);
+            document.body.querySelector("[data-test=LBL_Live_Reason]"),
+        ).toBeNull();
+        expect(component.personalityForm.getRawValue()["live"]).toBeFalse();
         expect(
             document.body.querySelector("[data-test=TXT_Idle_Timeout]"),
         ).toBeNull();
@@ -619,5 +706,363 @@ describe("VoiceAssistantComponent", () => {
         expect(offered.map((option) => option.textContent?.trim())).toEqual([
             "Claude",
         ]);
+    });
+
+    it("shows the catalogue, keeps a retired model out of a new personality, and clears the prompt when a new model is chosen", () => {
+        const flags = (live: boolean): ProviderCapabilities => ({
+            tools: true,
+            images: true,
+            live,
+            stt: false,
+            tts: false,
+        });
+        const gemini = new AssistantModel(
+            3,
+            "gemini-3.8-flash",
+            "Gemini 3.8 Flash",
+            true,
+            null,
+            flags(false),
+            "provider-3",
+            false,
+        );
+        const geminiLive = new AssistantModel(
+            11,
+            "gemini-3.8-live",
+            "Gemini 3.8 Live",
+            true,
+            null,
+            flags(true),
+            "provider-3",
+            false,
+        );
+        const gpt = new AssistantModel(
+            4,
+            "gpt-6",
+            "GPT-6",
+            true,
+            null,
+            flags(false),
+            "provider-4",
+            false,
+        );
+        const claude = new AssistantModel(
+            5,
+            "claude-sonnet-5-5",
+            "Claude Sonnet 5.5",
+            true,
+            null,
+            flags(false),
+            "provider-5",
+            false,
+        );
+        const cloud = new AssistantModel(
+            6,
+            "pib-cloud",
+            "pib.Cloud",
+            true,
+            null,
+            flags(false),
+            "provider-6",
+            true,
+        );
+        const retired = new AssistantModel(
+            1,
+            "retired-entry",
+            "Retired entry",
+            true,
+            null,
+            flags(false),
+            "provider-1",
+            false,
+            true,
+        );
+        voiceAssistantService.assistantModelsSubject.next([
+            gemini,
+            geminiLive,
+            gpt,
+            claude,
+            cloud,
+            retired,
+        ]);
+        fixture.detectChanges();
+        component.openAddModal();
+        component.advancedOpen = true;
+        fixture.detectChanges();
+        TestBed.inject(ApplicationRef).tick();
+        const offered = () =>
+            Array.from(
+                (
+                    document.body.querySelector(
+                        "#voice-assistant-model-select",
+                    ) as HTMLSelectElement
+                ).options,
+            );
+        const selectable = offered()
+            .filter((option) => !option.disabled)
+            .map((option) => option.textContent?.trim());
+        expect(selectable).toEqual([
+            "Gemini 3.8 Flash",
+            "Gemini 3.8 Live",
+            "GPT-6",
+            "Claude Sonnet 5.5",
+            "pib.Cloud",
+        ]);
+        expect(selectable).not.toContain(retired.visualName);
+        expect(
+            document.body.querySelector("[data-test=LBL_Retired_Model]"),
+        ).toBeNull();
+        component.ngbModalRef?.close();
+
+        const persona = new VoiceAssistant(
+            "persona-retired",
+            "Eva",
+            "Female",
+            0.8,
+            "",
+            retired.id,
+            10,
+            String(retired.id),
+        );
+        voiceAssistantService.personalities.push(persona);
+        voiceAssistantService.getPersonality.and.returnValue(persona);
+        expect(component.needsAttention(persona.personalityId)).toBeTrue();
+        expect(component.attentionLabel(persona.personalityId)).toBe(
+            retiredModelNotice(retired),
+        );
+        component.openEditModal(persona.personalityId);
+        component.advancedOpen = true;
+        fixture.detectChanges();
+        TestBed.inject(ApplicationRef).tick();
+        expect(component.personalityForm.controls["assistantModel"].value).toBe(
+            String(retired.id),
+        );
+        const retiredOption = offered().find(
+            (option) => option.value === String(retired.id),
+        );
+        expect(retiredOption?.disabled).toBeTrue();
+        expect(
+            document.body.querySelector("[data-test=LBL_Retired_Model]")
+                ?.textContent,
+        ).toContain(retiredModelNotice(retired));
+        component.editPersonality(persona.personalityId);
+        const kept =
+            voiceAssistantService.updatePersonalityById.calls.mostRecent()
+                .args[0] as VoiceAssistant;
+        expect(kept.providerRef).toBe(String(retired.id));
+
+        component.personalityForm.controls["assistantModel"].setValue(
+            String(gemini.id),
+        );
+        fixture.detectChanges();
+        TestBed.inject(ApplicationRef).tick();
+        expect(
+            document.body.querySelector("[data-test=LBL_Retired_Model]"),
+        ).toBeNull();
+        component.editPersonality(persona.personalityId);
+        const updated =
+            voiceAssistantService.updatePersonalityById.calls.mostRecent()
+                .args[0] as VoiceAssistant;
+        expect(updated.providerRef).toBe(String(gemini.id));
+        persona.providerRef = String(gemini.id);
+        expect(component.needsAttention(persona.personalityId)).toBeFalse();
+        component.ngbModalRef?.close();
+    });
+
+    it("asks for a choice when the model row is gone and keeps the stored reference", () => {
+        const flags = (live: boolean): ProviderCapabilities => ({
+            tools: true,
+            images: !live,
+            live,
+            stt: false,
+            tts: false,
+        });
+        const flash = new AssistantModel(
+            7,
+            "gemini-3.8-flash",
+            "Gemini 3.8 Flash",
+            true,
+            null,
+            flags(false),
+            "provider-1",
+            false,
+        );
+        const live = new AssistantModel(
+            11,
+            "gemini-3.8-live",
+            "Gemini 3.8 Live",
+            false,
+            null,
+            flags(true),
+            "provider-1",
+            false,
+        );
+        voiceAssistantService.assistantModelsSubject.next([flash, live]);
+        fixture.detectChanges();
+        const persona = new VoiceAssistant(
+            "persona-gone",
+            "Ada",
+            "Female",
+            0.8,
+            "",
+            null,
+            10,
+            "12",
+        );
+        persona.needsNewModel = true;
+        voiceAssistantService.personalities.push(persona);
+        voiceAssistantService.getPersonality.and.returnValue(persona);
+        component.openEditModal(persona.personalityId);
+        component.advancedOpen = true;
+        fixture.detectChanges();
+        TestBed.inject(ApplicationRef).tick();
+
+        expect(component.personalityForm.controls["assistantModel"].value).toBe(
+            "12",
+        );
+        const goneOption = Array.from(
+            (
+                document.body.querySelector(
+                    "#voice-assistant-model-select",
+                ) as HTMLSelectElement
+            ).options,
+        ).find((option) => option.value === "12");
+        expect(goneOption?.disabled).toBeTrue();
+        expect(
+            document.body.querySelector("[data-test=LBL_Retired_Model]")
+                ?.textContent,
+        ).toContain("This model is gone. Choose a new one.");
+
+        component.editPersonality(persona.personalityId);
+        const kept =
+            voiceAssistantService.updatePersonalityById.calls.mostRecent()
+                .args[0] as VoiceAssistant;
+        expect(kept.providerRef).toBe("12");
+        expect(kept.assistantModelId).toBe(12);
+
+        component.personalityForm.controls["assistantModel"].setValue("7");
+        fixture.detectChanges();
+        TestBed.inject(ApplicationRef).tick();
+        expect(
+            document.body.querySelector("[data-test=LBL_Retired_Model]"),
+        ).toBeNull();
+        component.editPersonality(persona.personalityId);
+        const chosen =
+            voiceAssistantService.updatePersonalityById.calls.mostRecent()
+                .args[0] as VoiceAssistant;
+        expect(chosen.providerRef).toBe("7");
+        expect(chosen.assistantModelId).toBe(7);
+        component.ngbModalRef?.close();
+    });
+
+    it("loads the example personalities on pib.Cloud with the model enabled", () => {
+        const flags = (live: boolean): ProviderCapabilities => ({
+            tools: true,
+            images: true,
+            live,
+            stt: false,
+            tts: false,
+        });
+        voiceAssistantService.assistantModelsSubject.next([
+            new AssistantModel(
+                7,
+                "gemini-3.8-flash",
+                "Gemini 3.8 Flash",
+                true,
+                null,
+                flags(true),
+                null,
+                false,
+            ),
+            new AssistantModel(
+                8,
+                "gpt-6",
+                "GPT-6",
+                true,
+                null,
+                flags(false),
+                null,
+                false,
+            ),
+            new AssistantModel(
+                9,
+                "claude-sonnet-5-5",
+                "Claude Sonnet 5.5",
+                true,
+                null,
+                flags(false),
+                null,
+                false,
+            ),
+            new AssistantModel(
+                6,
+                "pib-cloud",
+                "pib.Cloud",
+                true,
+                null,
+                flags(false),
+                "provider-6",
+                true,
+            ),
+        ]);
+        fixture.detectChanges();
+        const examples = [
+            new VoiceAssistant(
+                "66ed525d-42bb-41a2-8a52-f2c1b6e989ad",
+                "Eva",
+                "Female",
+                0.5,
+                "You are a helpful assistant.",
+                null,
+                15,
+                DEFAULT_PROVIDER_REF,
+                SMART_CHANNEL,
+            ),
+            new VoiceAssistant(
+                "2cb257e4-d173-44a6-869c-6488c98e8edb",
+                "Tom",
+                "Male",
+                0.9,
+                "You are a helpful assistant.",
+                null,
+                5,
+                DEFAULT_PROVIDER_REF,
+                DIRECT_CHANNEL,
+            ),
+        ];
+        for (const persona of examples) {
+            voiceAssistantService.personalities.length = 0;
+            voiceAssistantService.personalities.push(persona);
+            voiceAssistantService.getPersonality.and.returnValue(persona);
+            expect(component.needsAttention(persona.personalityId)).toBeFalse();
+            component.openEditModal(persona.personalityId);
+            component.advancedOpen = true;
+            fixture.detectChanges();
+            TestBed.inject(ApplicationRef).tick();
+            expect(
+                document.body.querySelector("[data-test=LBL_Retired_Model]"),
+            ).toBeNull();
+            const select = document.body.querySelector(
+                "#voice-assistant-model-select",
+            ) as HTMLSelectElement;
+            const options = Array.from(select.options);
+            expect(
+                options
+                    .filter((option) => !option.disabled)
+                    .map((option) => option.textContent?.trim()),
+            ).toEqual(["pib.Cloud"]);
+            expect(select.value).toBe(DEFAULT_PROVIDER_REF);
+            const selected = options.find(
+                (option) => option.value === select.value,
+            );
+            expect(selected?.disabled).toBeFalse();
+            expect(component.personalityForm.controls["name-input"].value).toBe(
+                persona.name,
+            );
+            expect(component.personalityForm.controls["channel"].value).toBe(
+                persona.channel,
+            );
+            component.ngbModalRef?.close();
+        }
     });
 });

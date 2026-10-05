@@ -5,15 +5,17 @@ import {
     DEGRADED_MODE,
     KeyStoreMode,
     PROMPT_MODE,
+    STARTING_MODE,
     UNLOCKED_MODE,
     chatsAvailable,
+    modeAfterStatus,
 } from "./key-store-session";
 
 @Injectable({
     providedIn: "root",
 })
 export class KeyStoreSessionService {
-    mode: KeyStoreMode = PROMPT_MODE;
+    mode: KeyStoreMode = STARTING_MODE;
     error: string | null = null;
     busy = false;
     readonly changes = new Subject<void>();
@@ -22,6 +24,26 @@ export class KeyStoreSessionService {
 
     get chatsAvailable(): boolean {
         return chatsAvailable(this.mode);
+    }
+
+    /**
+     * Read the backend operating mode. The dialog follows `mode` only.
+     */
+    refresh(): void {
+        this.keyStore.status().subscribe({
+            next: (status) => this.noteStatus(status),
+            error: () => undefined,
+        });
+    }
+
+    noteStatus(status: {encryptKeyStorage?: boolean; mode?: string}): void {
+        const next = modeAfterStatus(this.mode, status);
+        if (next === this.mode) {
+            return;
+        }
+        this.mode = next;
+        this.error = null;
+        this.changes.next();
     }
 
     /**
@@ -61,6 +83,12 @@ export class KeyStoreSessionService {
             error: (err: unknown) => {
                 this.busy = false;
                 this.error = keyStoreErrorMessage(err);
+                // A refused unlock means the store is still locked, so the dialog
+                // belongs on screen - also when no status has arrived yet. A store
+                // that is open (cleartext included) is never pushed back.
+                if (this.mode !== UNLOCKED_MODE) {
+                    this.mode = PROMPT_MODE;
+                }
                 this.changes.next();
             },
         });

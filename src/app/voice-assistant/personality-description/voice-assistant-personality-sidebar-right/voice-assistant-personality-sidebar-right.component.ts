@@ -22,10 +22,11 @@ import {
     MISSING_KEY_MARK,
     isProviderConfigured,
     isProviderOptionDisabled,
-    personalityNeedsAttention,
+    personalityAttention,
     providerOptionValue as providerOptionValueFor,
     providerRefFromSelection,
     providersForSelection,
+    retainGoneReference,
 } from "src/app/shared/types/provider-registry";
 import {TokenService} from "src/app/shared/services/token.service";
 import {ChannelCapabilityService} from "src/app/shared/services/channel-capability.service";
@@ -59,6 +60,7 @@ export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
     cloudTokenStored = false;
     smartChatsEnabled = true;
     needsKey = false;
+    retiredNotice: string | null = null;
     readonly missingKeyMark = MISSING_KEY_MARK;
     readonly isProviderConfigured = isProviderConfigured;
     readonly isProviderOptionDisabled = isProviderOptionDisabled;
@@ -287,6 +289,7 @@ export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
             this.voiceAssistantService.updatePersonalityById(
                 this.personalityClone!,
             );
+            this.rebuildSelection();
         } else {
             console.log("Persona could not be saved, invalid input");
         }
@@ -306,17 +309,25 @@ export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
     private rebuildSelection() {
         const storedRef = this.personalityClone?.providerRef ?? null;
         this.selectionModels = providersForSelection(
-            this.models,
+            retainGoneReference(
+                this.models,
+                storedRef,
+                this.personalityClone?.needsNewModel === true,
+            ),
             storedRef,
             this.cloudTokenStored,
         );
-        this.needsKey =
+        const attention =
             this.personalityClone == null
-                ? false
-                : personalityNeedsAttention(
+                ? null
+                : personalityAttention(
                       storedRef,
                       this.models,
                       this.cloudTokenStored,
+                      this.personalityClone.needsNewModel,
                   );
+        this.needsKey = attention?.reason === "missing-key";
+        this.retiredNotice =
+            attention?.reason === "retired" ? attention.notice : null;
     }
 }
