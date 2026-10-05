@@ -31,7 +31,6 @@
 							"@angular/material/prebuilt-themes/indigo-pink.css",
 							"node_modules/bootstrap/dist/css/bootstrap.min.css",
 							"node_modules/bootstrap-icons/font/bootstrap-icons.css",
-							"src/bootstrap4-compat.scss",
 							"node_modules/highlight.js/styles/atom-one-dark.css",
 							"src/styles.scss"
 						],
