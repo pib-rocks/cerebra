@@ -45,6 +45,7 @@ export class AppComponent implements OnInit {
     currentRoute: string = "";
     isActiveRoute = false;
     onDisplayPath = false;
+    sidebarCollapsed = false;
     appVersion: string = APP_VERSION;
     jointControlNavItemGroup = [
         "/joint-control/",
@@ -84,6 +85,10 @@ export class AppComponent implements OnInit {
 
     showStartupPassword(): boolean {
         return this.session.mode === PROMPT_MODE && !this.onDisplayPath;
+    }
+
+    toggleSidebar(): void {
+        this.sidebarCollapsed = !this.sidebarCollapsed;
     }
 
     private isDisplayUrl(url: string): boolean {

@@ -136,6 +136,23 @@ describe("AppComponent", () => {
         expect(app.showStartupPassword()).toBeFalse();
     });
 
+    it("opens and closes the sidebar with the hamburger button", () => {
+        fixture.detectChanges();
+        const wrapper: HTMLElement =
+            fixture.nativeElement.querySelector(".wrapper");
+        const hamburger: HTMLButtonElement =
+            fixture.nativeElement.querySelector("#hamburger-button");
+        expect(wrapper.classList.contains("sidebar-collapse")).toBeFalse();
+
+        hamburger.click();
+        fixture.detectChanges();
+        expect(wrapper.classList.contains("sidebar-collapse")).toBeTrue();
+
+        hamburger.click();
+        fixture.detectChanges();
+        expect(wrapper.classList.contains("sidebar-collapse")).toBeFalse();
+    });
+
     it("hides the startup modal on the display path", () => {
         const app = fixture.componentInstance;
         app.ngOnInit();
