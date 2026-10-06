@@ -19,6 +19,7 @@ import {
     UNLOCKED_MODE,
     degradedChatReply,
 } from "src/app/system/keys/key-store-session";
+import {KeyStoreService} from "src/app/system/keys/key-store.service";
 import {KeyStoreSessionService} from "src/app/system/keys/key-store-session.service";
 import {ChannelCapabilityService} from "src/app/shared/services/channel-capability.service";
 import {
@@ -37,6 +38,11 @@ describe("ChatWindowDeepChatComponent", () => {
     let tokenStatusSubject: BehaviorSubject<{
         tokenExists: boolean;
         tokenActive: boolean;
+    }>;
+    let keyStoreStatusSubject: BehaviorSubject<{
+        encryptKeyStorage: boolean;
+        credentialRefs: string[];
+        mode?: string;
     }>;
     let mockDeepChat: {
         addMessage: jasmine.Spy;
@@ -60,6 +66,19 @@ describe("ChatWindowDeepChatComponent", () => {
             tokenExists: true,
             tokenActive: true,
         });
+        keyStoreStatusSubject = new BehaviorSubject<{
+            encryptKeyStorage: boolean;
+            credentialRefs: string[];
+            mode?: string;
+        }>({
+            encryptKeyStorage: true,
+            credentialRefs: [],
+            mode: "unlocked",
+        });
+        const keyStoreSpy = jasmine.createSpyObj("KeyStoreService", ["status"]);
+        keyStoreSpy.status.and.returnValue(
+            keyStoreStatusSubject.asObservable(),
+        );
         messagesSubject = new BehaviorSubject<ChatMessage[]>([]);
 
         const chatServiceSpy: jasmine.SpyObj<ChatService> =
@@ -113,6 +132,10 @@ describe("ChatWindowDeepChatComponent", () => {
                 {
                     provide: TokenService,
                     useValue: tokenServiceSpy,
+                },
+                {
+                    provide: KeyStoreService,
+                    useValue: keyStoreSpy,
                 },
                 {
                     provide: VoiceAssistantService,
@@ -633,14 +656,51 @@ describe("ChatWindowDeepChatComponent", () => {
         expect(mockDeepChat.addMessage).not.toHaveBeenCalled();
     });
 
-    it("SmartConnect off disables input and sets the exact placeholder text", () => {
+    it("enables input when SmartConnect is on or key storage encryption is off", () => {
+        // encryption off + SmartConnect off -> enabled
         tokenStatusSubject.next({tokenExists: false, tokenActive: false});
+        keyStoreStatusSubject.next({
+            encryptKeyStorage: false,
+            credentialRefs: [],
+            mode: "unlocked",
+        });
 
-        expect(mockDeepChat.disableSubmitButton).toHaveBeenCalledWith(true);
+        expect(
+            mockDeepChat.disableSubmitButton.calls.mostRecent().args,
+        ).toEqual([false]);
+        expect(mockDeepChat.textInput).toEqual({
+            disabled: false,
+            placeholder: {text: "Enter a message"},
+        });
+
+        // SmartConnect on + encryption on -> enabled
+        tokenStatusSubject.next({tokenExists: true, tokenActive: true});
+        keyStoreStatusSubject.next({
+            encryptKeyStorage: true,
+            credentialRefs: [],
+            mode: "unlocked",
+        });
+
+        expect(mockDeepChat.textInput).toEqual({
+            disabled: false,
+            placeholder: {text: "Enter a message"},
+        });
+
+        // both off -> disabled, placeholder names the missing prerequisite
+        tokenStatusSubject.next({tokenExists: false, tokenActive: false});
+        keyStoreStatusSubject.next({
+            encryptKeyStorage: true,
+            credentialRefs: [],
+            mode: "unlocked",
+        });
+
+        expect(
+            mockDeepChat.disableSubmitButton.calls.mostRecent().args,
+        ).toEqual([true]);
         expect(mockDeepChat.textInput).toEqual({
             disabled: true,
             placeholder: {
-                text: "Enable SmartConnect to start the Voice-Assistant",
+                text: "Enable SmartConnect or deactivate key storage encryption to start the Voice-Assistant",
             },
         });
     });
@@ -877,10 +937,28 @@ describe("ChatWindowDeepChatComponent", () => {
         });
     });
 
-    it("validateInput returns false for 2 chars and true for 3 chars", () => {
-        expect(mockDeepChat.validateInput!("ab")).toBeFalse();
-        expect(mockDeepChat.validateInput!("  ab  ")).toBeFalse();
+    it("validateInput accepts one or more characters and rejects blank input", () => {
+        expect(mockDeepChat.validateInput!("a")).toBeTrue();
+        expect(mockDeepChat.validateInput!("ab")).toBeTrue();
+        expect(mockDeepChat.validateInput!("  ab  ")).toBeTrue();
         expect(mockDeepChat.validateInput!("abc")).toBeTrue();
         expect(mockDeepChat.validateInput!("abcd")).toBeTrue();
+        expect(mockDeepChat.validateInput!("")).toBeFalse();
+        expect(mockDeepChat.validateInput!("   ")).toBeFalse();
+    });
+
+    it("a single character is typeable and sendable", () => {
+        expect(mockDeepChat.validateInput!("a")).toBeTrue();
+
+        const signals = {onResponse: jasmine.createSpy("onResponse")};
+        mockDeepChat.connect!.handler(
+            {messages: [{role: "user", text: "a"}]},
+            signals,
+        );
+
+        expect(chatService.sendChatMessage).toHaveBeenCalledOnceWith(
+            chatId,
+            "a",
+        );
     });
 });

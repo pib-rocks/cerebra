@@ -18,6 +18,7 @@ import {Chat} from "src/app/shared/types/chat.class";
 import {extractText, toDeepChat} from "src/app/shared/util/deep-chat-mapper";
 import {chatStartRefusal} from "src/app/shared/types/provider-registry";
 import {degradedChatReply} from "src/app/system/keys/key-store-session";
+import {KeyStoreService} from "src/app/system/keys/key-store.service";
 import {KeyStoreSessionService} from "src/app/system/keys/key-store-session.service";
 import {ChannelCapabilityService} from "src/app/shared/services/channel-capability.service";
 import {
@@ -47,6 +48,13 @@ export class ChatWindowDeepChatComponent
     personalityName: string | undefined;
 
     private cloudTokenStored = true;
+    /** Same flag the composer used to treat as SmartConnect: stored and active. */
+    private smartConnectActive = false;
+    /**
+     * Keys page reads `encryptKeyStorage` from key-store status. False means
+     * encryption is deactivated and typing does not need SmartConnect.
+     */
+    private keyStorageEncryptionOff = false;
     private pendingSignals?: {onResponse: (response: unknown) => void};
     private lastStreamedMessageId: string | undefined;
     /** Timestamp of the latest user submit, used to measure TTFT. */
@@ -55,6 +63,7 @@ export class ChatWindowDeepChatComponent
     private routeParamsSubscription?: Subscription;
     private chatMessagesSubscription?: Subscription;
     private tokenStatusSubscription?: Subscription;
+    private keyStoreStatusSubscription?: Subscription;
     private voiceStateSubscription?: Subscription;
     private voiceState: VoiceAssistantState = {turnedOn: false, chatId: ""};
     private readonly sendChatMessageSubscriptions = new Subscription();
@@ -69,6 +78,7 @@ export class ChatWindowDeepChatComponent
         private readonly voiceAssistantService: VoiceAssistantService,
         private readonly route: ActivatedRoute,
         private readonly tokenService: TokenService,
+        private readonly keyStore: KeyStoreService,
         private readonly keyStoreSession: KeyStoreSessionService,
         private readonly channelCapability: ChannelCapabilityService,
     ) {}
@@ -114,6 +124,7 @@ export class ChatWindowDeepChatComponent
         this.wireLoadHistory(el);
         this.wireValidateInput(el);
         this.wireTokenStatus(el);
+        this.wireKeyStoreStatus(el);
         this.applyNames(el);
 
         if (this.currentChatId) {
@@ -125,6 +136,7 @@ export class ChatWindowDeepChatComponent
         this.routeParamsSubscription?.unsubscribe();
         this.chatMessagesSubscription?.unsubscribe();
         this.tokenStatusSubscription?.unsubscribe();
+        this.keyStoreStatusSubscription?.unsubscribe();
         this.voiceStateSubscription?.unsubscribe();
         this.sendChatMessageSubscriptions.unsubscribe();
     }
@@ -191,7 +203,7 @@ export class ChatWindowDeepChatComponent
     }
 
     private wireValidateInput(el: any): void {
-        el.validateInput = (text?: string) => (text?.trim().length ?? 0) > 2;
+        el.validateInput = (text?: string) => (text?.trim().length ?? 0) >= 1;
     }
 
     private wireTokenStatus(el: any): void {
@@ -199,20 +211,45 @@ export class ChatWindowDeepChatComponent
         this.tokenStatusSubscription = this.tokenService.tokenStatus$.subscribe(
             ({tokenExists, tokenActive}) => {
                 this.cloudTokenStored = tokenExists;
-                const enabled = tokenExists && tokenActive;
-                el.textInput = {
-                    disabled: !enabled,
-                    placeholder: {
-                        text: enabled
-                            ? "Enter a message"
-                            : "Enable SmartConnect to start the Voice-Assistant",
-                    },
-                };
-                if (typeof el.disableSubmitButton === "function") {
-                    el.disableSubmitButton(!enabled);
-                }
+                this.smartConnectActive = tokenExists && tokenActive;
+                this.applyTextInput(el);
             },
         );
+    }
+
+    /** Same status read as the Keys page: GET /api/system/key-store. */
+    private wireKeyStoreStatus(el: any): void {
+        this.keyStoreStatusSubscription?.unsubscribe();
+        this.keyStoreStatusSubscription = this.keyStore.status().subscribe({
+            next: (status) => {
+                this.keyStorageEncryptionOff =
+                    status.encryptKeyStorage === false;
+                this.applyTextInput(el);
+            },
+            error: () => {
+                this.keyStorageEncryptionOff = false;
+                this.applyTextInput(el);
+            },
+        });
+    }
+
+    /**
+     * Open when SmartConnect is active or key storage encryption is off.
+     * Locked only when both are off; the placeholder names that gap.
+     */
+    private applyTextInput(el: any): void {
+        const enabled = this.smartConnectActive || this.keyStorageEncryptionOff;
+        el.textInput = {
+            disabled: !enabled,
+            placeholder: {
+                text: enabled
+                    ? "Enter a message"
+                    : "Enable SmartConnect or deactivate key storage encryption to start the Voice-Assistant",
+            },
+        };
+        if (typeof el.disableSubmitButton === "function") {
+            el.disableSubmitButton(!enabled);
+        }
     }
 
     /**
