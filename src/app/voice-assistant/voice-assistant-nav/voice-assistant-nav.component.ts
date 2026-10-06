@@ -1,34 +1,35 @@
 import {
+    AfterViewChecked,
     Component,
+    ElementRef,
     Input,
     OnInit,
     ChangeDetectionStrategy,
+    ChangeDetectorRef,
     DestroyRef,
+    ViewChild,
     inject,
 } from "@angular/core";
 import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
-import {
-    ActivatedRoute,
-    NavigationStart,
-    Router,
-    RouterLink,
-} from "@angular/router";
+import {ActivatedRoute, NavigationStart, Router} from "@angular/router";
 import {Observable} from "rxjs";
 import {SidebarElement} from "src/app/shared/interfaces/sidebar-element.interface";
 import {CerebraRegex} from "src/app/shared/types/cerebra-regex";
-import {NgClass} from "@angular/common";
 
 @Component({
     selector: "app-voice-assistant-nav",
     templateUrl: "./voice-assistant-nav.component.html",
     styleUrls: ["./voice-assistant-nav.component.scss"],
     changeDetection: ChangeDetectionStrategy.Eager,
-    imports: [NgClass, RouterLink],
 })
-export class VoiceAssistantNavComponent implements OnInit {
+export class VoiceAssistantNavComponent implements OnInit, AfterViewChecked {
     private readonly destroyRef = inject(DestroyRef);
 
+    @ViewChild("personalitySelect")
+    private personalitySelect?: ElementRef<HTMLSelectElement>;
+
     sidebarElements?: SidebarElement[];
+    selectedPersonalityId = "";
     @Input() subject?: Observable<SidebarElement[]>;
     @Input() button?: {enabled: boolean; func: () => void};
     @Input() defaultRoute?: string;
@@ -38,6 +39,7 @@ export class VoiceAssistantNavComponent implements OnInit {
     constructor(
         private router: Router,
         private route: ActivatedRoute,
+        private changeDetector: ChangeDetectorRef,
     ) {}
 
     ngOnInit(): void {
@@ -72,30 +74,94 @@ export class VoiceAssistantNavComponent implements OnInit {
                 const len = this.sidebarElements?.length ?? 0;
                 this.sidebarElements = elements;
                 if (len == 0 && elements.length > 0) {
-                    this.router.navigate(
-                        [this.sidebarElements[0].getUUID(), "chat"],
-                        {
-                            relativeTo: this.route,
-                        },
-                    );
+                    this.selectedPersonalityId = elements[0].getUUID();
+                    this.router.navigate([this.selectedPersonalityId, "chat"], {
+                        relativeTo: this.route,
+                    });
                 } else if (diff > 0 && len != 0) {
-                    this.router.navigate(
-                        [
-                            this.sidebarElements[
-                                this.sidebarElements.length - 1
-                            ].getUUID(),
-                            "chat",
-                        ],
-                        {relativeTo: this.route},
-                    );
-                } else if (this.getRedirectRoute()) {
-                    this.router.navigate([this.getRedirectRoute()], {
+                    this.selectedPersonalityId =
+                        elements[elements.length - 1].getUUID();
+                    this.router.navigate([this.selectedPersonalityId, "chat"], {
                         relativeTo: this.route,
                     });
                 } else {
-                    this.router.navigate([this.defaultRoute]);
+                    const redirect = this.getRedirectRoute();
+                    if (redirect) {
+                        this.selectedPersonalityId = redirect;
+                        this.router.navigate([redirect], {
+                            relativeTo: this.route,
+                        });
+                    } else {
+                        this.router.navigate([this.defaultRoute]);
+                    }
                 }
+                // Zoneless: a later subject emission does not refresh the view on its own.
+                this.changeDetector.markForCheck();
             });
+    }
+
+    ngAfterViewChecked(): void {
+        // The new option is in the DOM by this hook, so the select can show it
+        // before this change-detection pass returns.
+        const select = this.personalitySelect?.nativeElement;
+        if (
+            select != null &&
+            this.selectedPersonalityId !== "" &&
+            select.value !== this.selectedPersonalityId
+        ) {
+            select.value = this.selectedPersonalityId;
+        }
+    }
+
+    onPersonalityChange(event: Event): void {
+        const value = (event.target as HTMLSelectElement | null)?.value ?? "";
+        this.onPersonalitySelected(value);
+    }
+
+    onPersonalitySelected(personalityId: string): void {
+        if (
+            personalityId === "" ||
+            personalityId === this.selectedPersonalityId
+        ) {
+            return;
+        }
+        this.selectedPersonalityId = personalityId;
+        this.router.navigate([personalityId, "chat"], {
+            relativeTo: this.route,
+        });
+    }
+
+    get activePersonalityName(): string {
+        return (
+            this.sidebarElements
+                ?.find(
+                    (element) =>
+                        element.getUUID() === this.selectedPersonalityId,
+                )
+                ?.getName() ?? ""
+        );
+    }
+
+    optionLabel(element: SidebarElement): string {
+        const name = element.getName();
+        const id = element.getUUID();
+        if (!this.needsAttention?.(id)) {
+            return name;
+        }
+        return `${name} (${this.attentionLabel?.(id) || "Needs a key"})`;
+    }
+
+    activeNeedsAttention(): boolean {
+        return (
+            this.selectedPersonalityId !== "" &&
+            (this.needsAttention?.(this.selectedPersonalityId) ?? false)
+        );
+    }
+
+    activeAttentionLabel(): string {
+        return (
+            this.attentionLabel?.(this.selectedPersonalityId) || "Needs a key"
+        );
     }
 
     getRedirectRoute(): string | undefined {
@@ -113,10 +179,5 @@ export class VoiceAssistantNavComponent implements OnInit {
             }
         }
         return undefined;
-    }
-
-    isRouteActive(currentId: string): boolean {
-        const routerUrl = this.router.url;
-        return routerUrl.includes(currentId);
     }
 }
