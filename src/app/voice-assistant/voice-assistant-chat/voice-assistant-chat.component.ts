@@ -127,7 +127,6 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
                 localStorage.setItem("voice-assistant-tab", "chat");
                 this.topicFormControl.setValidators([
                     Validators.required,
-                    Validators.minLength(2),
                     Validators.maxLength(255),
                 ]);
                 this.toggleDeleteChat(this.chatService.chats);
