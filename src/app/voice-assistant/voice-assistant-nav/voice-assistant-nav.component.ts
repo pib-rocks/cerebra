@@ -7,26 +7,40 @@ import {
     ChangeDetectionStrategy,
     ChangeDetectorRef,
     DestroyRef,
+    TemplateRef,
     ViewChild,
     inject,
 } from "@angular/core";
 import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 import {ActivatedRoute, NavigationStart, Router} from "@angular/router";
+import {NgbModal, NgbModalRef} from "@ng-bootstrap/ng-bootstrap";
 import {Observable} from "rxjs";
 import {SidebarElement} from "src/app/shared/interfaces/sidebar-element.interface";
 import {CerebraRegex} from "src/app/shared/types/cerebra-regex";
+import {PersonalityDescriptionComponent} from "../personality-description/personality-description.component";
+import {VoiceAssistantPersonalitySidebarRightComponent} from "../personality-description/voice-assistant-personality-sidebar-right/voice-assistant-personality-sidebar-right.component";
 
 @Component({
     selector: "app-voice-assistant-nav",
     templateUrl: "./voice-assistant-nav.component.html",
     styleUrls: ["./voice-assistant-nav.component.scss"],
     changeDetection: ChangeDetectionStrategy.Eager,
+    imports: [
+        PersonalityDescriptionComponent,
+        VoiceAssistantPersonalitySidebarRightComponent,
+    ],
 })
 export class VoiceAssistantNavComponent implements OnInit, AfterViewChecked {
     private readonly destroyRef = inject(DestroyRef);
 
     @ViewChild("personalitySelect")
     private personalitySelect?: ElementRef<HTMLSelectElement>;
+
+    @ViewChild("descriptionModal")
+    private descriptionModal?: TemplateRef<unknown>;
+
+    @ViewChild("settingsModal")
+    private settingsModal?: TemplateRef<unknown>;
 
     sidebarElements?: SidebarElement[];
     selectedPersonalityId = "";
@@ -40,6 +54,7 @@ export class VoiceAssistantNavComponent implements OnInit, AfterViewChecked {
         private router: Router,
         private route: ActivatedRoute,
         private changeDetector: ChangeDetectorRef,
+        private modalService: NgbModal,
     ) {}
 
     ngOnInit(): void {
@@ -111,6 +126,34 @@ export class VoiceAssistantNavComponent implements OnInit, AfterViewChecked {
         ) {
             select.value = this.selectedPersonalityId;
         }
+    }
+
+    openDescriptionModal(): void {
+        this.openModal(
+            this.descriptionModal,
+            "personality-description-modal-title",
+        );
+    }
+
+    openSettingsModal(): void {
+        this.openModal(this.settingsModal, "personality-settings-modal-title");
+    }
+
+    private openModal(
+        content: TemplateRef<unknown> | undefined,
+        ariaLabelledBy: string,
+    ): NgbModalRef | undefined {
+        if (content == null) {
+            return undefined;
+        }
+        // cerebra-modal stays on the window wrapper. Putting it on
+        // modal-content leaves the dialog white on white.
+        return this.modalService.open(content, {
+            ariaLabelledBy,
+            size: "lg",
+            windowClass: "cerebra-modal",
+            backdropClass: "cerebra-modal-backdrop",
+        });
     }
 
     onPersonalityChange(event: Event): void {

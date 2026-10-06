@@ -7,18 +7,40 @@ import {BoolToOnOffPipe} from "../../shared/pipes/bool-to-on-off-pipe.pipe";
 import {SidebarElement} from "src/app/shared/interfaces/sidebar-element.interface";
 import {ActivatedRoute, Router} from "@angular/router";
 import {BehaviorSubject} from "rxjs";
+import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {VoiceAssistant} from "src/app/shared/types/voice-assistant";
+import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
+import {TokenService} from "src/app/shared/services/token.service";
+import {ChannelCapabilityService} from "src/app/shared/services/channel-capability.service";
 
 describe("VoiceAssistantNavComponent", () => {
     let component: VoiceAssistantNavComponent;
     let fixture: ComponentFixture<VoiceAssistantNavComponent>;
     let elements: SidebarElement[];
+    let personalities: VoiceAssistant[];
     let router: Router;
     let subject: BehaviorSubject<SidebarElement[]>;
     let spyOnRouterUrl: jasmine.Spy;
     let navigate: jasmine.Spy;
 
     beforeEach(async () => {
+        personalities = [];
+        const voiceAssistantServiceSpy = jasmine.createSpyObj(
+            "VoiceAssistantService",
+            [
+                "getPersonality",
+                "updatePersonalityById",
+                "deletePersonalityById",
+            ],
+            {
+                personalitiesSubject: new BehaviorSubject<VoiceAssistant[]>([]),
+                assistantModelsSubject: new BehaviorSubject([]),
+                personalities,
+            },
+        );
+        voiceAssistantServiceSpy.getPersonality.and.callFake((id: string) =>
+            personalities.find((item) => item.getUUID() === id),
+        );
         await TestBed.configureTestingModule({
             imports: [
                 RouterTestingModule,
@@ -26,21 +48,43 @@ describe("VoiceAssistantNavComponent", () => {
                 VoiceAssistantNavComponent,
                 BoolToOnOffPipe,
             ],
+            providers: [
+                {
+                    provide: VoiceAssistantService,
+                    useValue: voiceAssistantServiceSpy,
+                },
+                {
+                    provide: TokenService,
+                    useValue: {
+                        tokenStatus$: new BehaviorSubject({
+                            tokenExists: true,
+                            tokenActive: true,
+                        }),
+                    },
+                },
+                {
+                    provide: ChannelCapabilityService,
+                    useValue: {
+                        smartChatsEnabled$: new BehaviorSubject(true),
+                    },
+                },
+            ],
         }).compileComponents();
         router = TestBed.inject(Router);
         elements = [
             new VoiceAssistant(
                 "01234567-0123-0123-0123-0123456789ab",
                 "123",
-                "",
-                0,
-                "",
+                "Female",
+                0.8,
+                "A written personality",
             ),
             new VoiceAssistant("223", "223", "", 0, ""),
             new VoiceAssistant("323", "323", "", 0, ""),
             new VoiceAssistant("423", "424", "", 0, ""),
             new VoiceAssistant("525", "525", "", 0, ""),
         ];
+        personalities.push(...(elements as VoiceAssistant[]));
         subject = new BehaviorSubject<SidebarElement[]>(elements);
         fixture = TestBed.createComponent(VoiceAssistantNavComponent);
         component = fixture.componentInstance;
@@ -51,6 +95,10 @@ describe("VoiceAssistantNavComponent", () => {
         navigate = spyOn(router, "navigate").and.resolveTo(true);
 
         fixture.detectChanges();
+    });
+
+    afterEach(() => {
+        TestBed.inject(NgbModal).dismissAll();
     });
 
     it("should create", () => {
@@ -124,6 +172,106 @@ describe("VoiceAssistantNavComponent", () => {
                 .querySelector("#active-personality-name")
                 .textContent.trim(),
         ).toBe("Fresh Persona");
+    });
+
+    it("places labelled person and settings buttons beside the add button", () => {
+        component.button = {enabled: true, func: () => undefined};
+        fixture.detectChanges();
+
+        const header = fixture.nativeElement.querySelector(
+            ".personality-header",
+        ) as HTMLElement;
+        expect(
+            Array.from(header.querySelectorAll("button")).map(
+                (button) => button.id,
+            ),
+        ).toEqual([
+            "add-personality-button",
+            "personality-description-button",
+            "personality-settings-button",
+        ]);
+
+        const person = header.querySelector(
+            "#personality-description-button",
+        ) as HTMLButtonElement;
+        const settings = header.querySelector(
+            "#personality-settings-button",
+        ) as HTMLButtonElement;
+        expect(person.getAttribute("aria-label")).toBe(
+            "Edit personality description",
+        );
+        expect(person.getAttribute("title")).toBe(
+            "Edit personality description",
+        );
+        expect(person.querySelector(".bi-person")).not.toBeNull();
+        expect(settings.getAttribute("aria-label")).toBe(
+            "Personality settings",
+        );
+        expect(settings.getAttribute("title")).toBe("Personality settings");
+        expect(settings.querySelector(".bi-gear")).not.toBeNull();
+    });
+
+    it("opens the personality description for editing from the person button", () => {
+        const person = fixture.nativeElement.querySelector(
+            "#personality-description-button",
+        ) as HTMLButtonElement;
+        person.click();
+        fixture.detectChanges();
+
+        const modal = document.body.querySelector(
+            ".modal.cerebra-modal",
+        ) as HTMLElement | null;
+        expect(modal).not.toBeNull();
+        expect(
+            modal
+                ?.querySelector(".modal-content")
+                ?.classList.contains("cerebra-modal"),
+        ).toBeFalse();
+        const editor = modal?.querySelector(
+            "#textarea-personality",
+        ) as HTMLTextAreaElement | null;
+        expect(editor).not.toBeNull();
+        expect(editor?.value).toBe("A written personality");
+        expect(
+            modal?.querySelector("#voice-assistant-model-select-right-sidebar"),
+        ).toBeNull();
+    });
+
+    it("opens the former right-hand settings from the settings button", () => {
+        const settings = fixture.nativeElement.querySelector(
+            "#personality-settings-button",
+        ) as HTMLButtonElement;
+        settings.click();
+        fixture.detectChanges();
+
+        const modal = document.body.querySelector(
+            ".modal.cerebra-modal",
+        ) as HTMLElement | null;
+        expect(modal).not.toBeNull();
+        expect(
+            modal
+                ?.querySelector(".modal-content")
+                ?.classList.contains("cerebra-modal"),
+        ).toBeFalse();
+        expect(
+            modal?.querySelector("#personality-sidebar-persona-name-input"),
+        ).not.toBeNull();
+        expect(
+            modal?.querySelector("#voice-assistant-model-select-right-sidebar"),
+        ).not.toBeNull();
+        expect(
+            modal?.querySelector("#personality-sidebar-radio-female"),
+        ).not.toBeNull();
+        expect(
+            modal?.querySelector("#personality-sidebar-pause-threshold-input"),
+        ).not.toBeNull();
+        expect(
+            modal?.querySelector("#personality-sidebar-message-history-input"),
+        ).not.toBeNull();
+        expect(
+            modal?.querySelector("#personality-sidebar-delete-persona-button"),
+        ).not.toBeNull();
+        expect(modal?.querySelector("#textarea-personality")).toBeNull();
     });
 });
 

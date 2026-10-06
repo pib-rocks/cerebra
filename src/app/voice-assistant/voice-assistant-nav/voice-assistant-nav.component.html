@@ -41,4 +41,104 @@
         +
     </button>
     }
+    <button
+        id="personality-description-button"
+        data-test="BTN_Personality_Description"
+        type="button"
+        aria-label="Edit personality description"
+        title="Edit personality description"
+        (click)="openDescriptionModal()">
+        <i
+            class="bi bi-person"
+            aria-hidden="true"></i>
+    </button>
+    <button
+        id="personality-settings-button"
+        data-test="BTN_Personality_Settings"
+        type="button"
+        aria-label="Personality settings"
+        title="Personality settings"
+        (click)="openSettingsModal()">
+        <i
+            class="bi bi-gear"
+            aria-hidden="true"></i>
+    </button>
 </header>
+
+<ng-template
+    #descriptionModal
+    let-modal>
+    <div
+        class="row display-flex modal-header"
+        id="personality-description-modal-header">
+        <div
+            class="col-10"
+            id="personality-description-modal-title">
+            <span>Personality description</span>
+        </div>
+        <div class="col-2 text-end">
+            <button
+                id="personality-description-modal-close"
+                type="button"
+                class="btn"
+                aria-label="Close"
+                (click)="modal.dismiss('Cross click')">
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="10"
+                    height="16">
+                    <text
+                        font-family="Titillium"
+                        fill="#FFF"
+                        font-weight="bold"
+                        font-size="16"
+                        y="12">
+                        X
+                    </text>
+                </svg>
+            </button>
+        </div>
+    </div>
+    <app-personality-description
+        [personalityId]="selectedPersonalityId"
+        [descriptionOnly]="true">
+    </app-personality-description>
+</ng-template>
+
+<ng-template
+    #settingsModal
+    let-modal>
+    <div
+        class="row display-flex modal-header"
+        id="personality-settings-modal-header">
+        <div
+            class="col-10"
+            id="personality-settings-modal-title">
+            <span>Personality settings</span>
+        </div>
+        <div class="col-2 text-end">
+            <button
+                id="personality-settings-modal-close"
+                type="button"
+                class="btn"
+                aria-label="Close"
+                (click)="modal.dismiss('Cross click')">
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="10"
+                    height="16">
+                    <text
+                        font-family="Titillium"
+                        fill="#FFF"
+                        font-weight="bold"
+                        font-size="16"
+                        y="12">
+                        X
+                    </text>
+                </svg>
+            </button>
+        </div>
+    </div>
+    <app-va-personality-sidebar-right [personalityId]="selectedPersonalityId">
+    </app-va-personality-sidebar-right>
+</ng-template>

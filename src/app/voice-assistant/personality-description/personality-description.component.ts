@@ -1,11 +1,13 @@
 import {
     Component,
+    Input,
     OnInit,
     ChangeDetectionStrategy,
     DestroyRef,
     inject,
 } from "@angular/core";
 import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
+import {NgTemplateOutlet} from "@angular/common";
 import {ActivatedRoute, Params, RouterLink} from "@angular/router";
 import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
 import {VoiceAssistant} from "src/app/shared/types/voice-assistant";
@@ -28,11 +30,17 @@ import {VoiceAssistantPersonalitySidebarRightComponent} from "./voice-assistant-
         RouterLink,
         ReactiveFormsModule,
         FormsModule,
+        NgTemplateOutlet,
         VoiceAssistantPersonalitySidebarRightComponent,
     ],
 })
 export class PersonalityDescriptionComponent implements OnInit {
     private readonly destroyRef = inject(DestroyRef);
+
+    /** Set when this editor is opened from the personality header, not the route. */
+    @Input() personalityId: string | null = null;
+    /** The header modal shows the identity text only. The page keeps its layout. */
+    @Input() descriptionOnly = false;
 
     personality?: VoiceAssistant;
     textAreaContent: string = "";
@@ -55,11 +63,11 @@ export class PersonalityDescriptionComponent implements OnInit {
         this.route.params
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe((params: Params) => {
-                this.personality = this.voiceAssistantService.getPersonality(
-                    params["personalityUuid"],
-                );
-                this.textAreaContent = this.personality?.description ?? "";
+                this.loadPersonality(params["personalityUuid"]);
             });
+        if (this.personalityId) {
+            this.loadPersonality(undefined);
+        }
         this.voiceAssistantService.personalitiesSubject
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(() => {
@@ -70,6 +78,15 @@ export class PersonalityDescriptionComponent implements OnInit {
                         );
                 }
             });
+    }
+
+    private loadPersonality(routeId: string | undefined): void {
+        const lookup = this.personalityId || routeId;
+        if (lookup == null || lookup === "") {
+            return;
+        }
+        this.personality = this.voiceAssistantService.getPersonality(lookup);
+        this.textAreaContent = this.personality?.description ?? "";
     }
 
     currentChannel() {

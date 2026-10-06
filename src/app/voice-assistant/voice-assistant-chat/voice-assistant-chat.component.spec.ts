@@ -165,7 +165,7 @@ describe("VoiceAssistantChatComponent", () => {
         ).not.toBeUndefined();
     });
 
-    it("refuses to start a chat or the voice when the model row is gone", () => {
+    it("refuses to start a chat when the model row is gone and shows no voice toggle", () => {
         const service = TestBed.inject(VoiceAssistantService);
         const gone = new VoiceAssistant(
             "1234",
@@ -185,24 +185,12 @@ describe("VoiceAssistantChatComponent", () => {
         component.topicFormControl.setValue("Removed");
         component.addChat();
         expect(create).not.toHaveBeenCalled();
-
-        const start = spyOn(service, "setVoiceAssistantState").and.returnValue(
-            of(undefined),
-        );
-        const router = TestBed.inject(Router);
-        const previous = Object.getOwnPropertyDescriptor(router, "url");
-        Object.defineProperty(router, "url", {
-            configurable: true,
-            get: () =>
-                "/voice-assistant/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee/chat/ffffffff-1111-2222-3333-444444444444",
-        });
-        component.voiceAssistantActivationToggle.setValue(false);
-        component.toggleVoiceAssistant();
-        expect(start).not.toHaveBeenCalled();
+        expect(
+            fixture.nativeElement.querySelector(
+                "#sidebar-right-toggle-voice-assistant",
+            ),
+        ).toBeNull();
         expect(component.turnedOn).toBeFalse();
-        if (previous != null) {
-            Object.defineProperty(router, "url", previous);
-        }
     });
 
     it("should edit a chat when calling editChat", () => {
@@ -282,32 +270,37 @@ describe("VoiceAssistantChatComponent", () => {
         expect(deleteChat!.disabled).toBeTrue();
     });
 
-    it("should set smartConnectActive to true when token is active", () => {
+    it("records that a cloud token is stored", () => {
         tokenStatusSubject.next({
             tokenExists: true,
             tokenActive: true,
         });
-        expect(component.smartConnectActive).toBeTrue();
+        expect(component.cloudTokenStored).toBeTrue();
     });
 
-    it("should set smartConnectActive to false when token is inactive", () => {
-        tokenStatusSubject.next({tokenExists: true, tokenActive: false});
+    it("records that no cloud token is stored", () => {
+        tokenStatusSubject.next({tokenExists: false, tokenActive: false});
 
-        expect(component.smartConnectActive).toBeFalse();
+        expect(component.cloudTokenStored).toBeFalse();
     });
 
-    it("keeps local voice available in degraded mode", () => {
+    it("leaves the voice toggle out of the chat header in degraded mode", () => {
         const session = TestBed.inject(KeyStoreSessionService);
         session.cancel();
         tokenStatusSubject.next({tokenExists: true, tokenActive: true});
         fixture.detectChanges();
 
-        const button = fixture.nativeElement.querySelector(
-            "#sidebar-right-toggle-voice-assistant",
-        ) as HTMLButtonElement;
         expect(session.mode).toBe(DEGRADED_MODE);
         expect(session.error).toBeNull();
-        expect(component.localVoiceEnabled()).toBeTrue();
-        expect(button.disabled).toBeFalse();
+        expect(
+            fixture.nativeElement.querySelector(
+                "#sidebar-right-toggle-voice-assistant",
+            ),
+        ).toBeNull();
+        expect(
+            fixture.nativeElement.querySelector(
+                "[data-test=TGL_Voice_Assistant]",
+            ),
+        ).toBeNull();
     });
 });
