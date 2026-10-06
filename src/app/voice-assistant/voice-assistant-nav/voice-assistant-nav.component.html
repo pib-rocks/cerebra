@@ -1,35 +1,44 @@
-<ul class="nav nav-tabs">
-    @for (sidebarElement of sidebarElements; track sidebarElement) {
-    <li
-        class="nav-item"
-        [ngClass]="{'navbar-btn-active': isRouteActive(sidebarElement.getUUID())}">
-        <a
-            class="nav-link"
-            id="personality-{{sidebarElement.getUUID()}}"
-            [attr.data-test]="'LNK_' + sidebarElement.getName()"
-            [routerLink]="[sidebarElement.getUUID(), 'chat']"
-            [ngClass]="{'navbar-ref-active': isRouteActive(sidebarElement.getUUID())}">
-            {{sidebarElement.getName()}} @if
-            (needsAttention?.(sidebarElement.getUUID())) {
-            <span
-                class="speech-attention"
-                [id]="'personality-needs-key-' + sidebarElement.getUUID()">
-                {{ attentionLabel?.(sidebarElement.getUUID()) || "Needs a key"
-                }}
-            </span>
-            }
-        </a>
-    </li>
-    } @if (button?.enabled ?? false) {
-    <li class="">
-        <button
-            id="add-personality-button"
-            data-test="BTN_Add_Personality"
-            type="button"
-            class="nav-link"
-            (click)="button?.func()">
-            +
-        </button>
-    </li>
+<header class="personality-header">
+    <span
+        id="active-personality-name"
+        class="active-personality-name">
+        {{ activePersonalityName }}
+    </span>
+    @if (activeNeedsAttention()) {
+    <span
+        class="speech-attention"
+        [id]="'personality-needs-key-' + selectedPersonalityId">
+        {{ activeAttentionLabel() }}
+    </span>
     }
-</ul>
+    <label
+        for="personality-select"
+        id="personality-select-label">
+        Personality
+    </label>
+    <select
+        #personalitySelect
+        id="personality-select"
+        class="form-select"
+        data-test="DDN_Personality"
+        aria-labelledby="personality-select-label"
+        (change)="onPersonalityChange($event)">
+        @for (sidebarElement of sidebarElements; track sidebarElement.getUUID())
+        {
+        <option
+            [value]="sidebarElement.getUUID()"
+            [selected]="sidebarElement.getUUID() === selectedPersonalityId">
+            {{ optionLabel(sidebarElement) }}
+        </option>
+        }
+    </select>
+    @if (button?.enabled ?? false) {
+    <button
+        id="add-personality-button"
+        data-test="BTN_Add_Personality"
+        type="button"
+        (click)="button?.func()">
+        +
+    </button>
+    }
+</header>
