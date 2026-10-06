@@ -3,8 +3,8 @@ import {Order, pythonGenerator} from "blockly/python";
 import {TestBed} from "@angular/core/testing";
 import {HttpClientTestingModule} from "@angular/common/http/testing";
 import {playAudioFromSpeechGenerator} from "./play-audio-from-speech-generator";
-import {DEGRADED_MODE} from "src/app/system/speech/key-store-session";
-import {KeyStoreSessionService} from "src/app/system/speech/key-store-session.service";
+import {DEGRADED_MODE} from "src/app/system/keys/key-store-session";
+import {KeyStoreSessionService} from "src/app/system/keys/key-store-session.service";
 
 type MockGenerator = typeof pythonGenerator & {
     definitions_: Record<string, string>;

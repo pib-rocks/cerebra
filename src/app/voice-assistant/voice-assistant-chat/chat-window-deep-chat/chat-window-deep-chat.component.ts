@@ -17,8 +17,8 @@ import {ChatMessage} from "src/app/shared/types/chat-message";
 import {Chat} from "src/app/shared/types/chat.class";
 import {extractText, toDeepChat} from "src/app/shared/util/deep-chat-mapper";
 import {chatStartRefusal} from "src/app/shared/types/provider-registry";
-import {degradedChatReply} from "src/app/system/speech/key-store-session";
-import {KeyStoreSessionService} from "src/app/system/speech/key-store-session.service";
+import {degradedChatReply} from "src/app/system/keys/key-store-session";
+import {KeyStoreSessionService} from "src/app/system/keys/key-store-session.service";
 import {ChannelCapabilityService} from "src/app/shared/services/channel-capability.service";
 import {
     RoutedTurn,

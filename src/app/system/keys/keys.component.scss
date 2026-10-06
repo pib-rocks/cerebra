@@ -1,6 +1,6 @@
 @import "src/styles";
 
-.speech-tab {
+.keys-tab {
     color: white;
 }
 
@@ -8,52 +8,52 @@
     font-size: 1.3vw;
 }
 
-.speech-hint {
+.keys-hint {
     color: white;
     opacity: 0.85;
 }
 
-.speech-row {
+.keys-row {
     display: flex;
     align-items: center;
     gap: 0.5rem;
 }
 
-.speech-password,
-.speech-card {
+.keys-password,
+.keys-card {
     margin-top: 1rem;
     padding: 0.75rem;
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.speech-card-title {
+.keys-card-title {
     font-weight: bold;
     margin-bottom: 0.5rem;
 }
 
-.speech-pair {
+.keys-pair {
     display: flex;
     gap: 1rem;
     align-items: center;
     margin-bottom: 0.5rem;
 }
 
-.speech-label {
+.keys-label {
     min-width: 6rem;
     margin-bottom: 0;
 }
 
-.speech-password-fields .speech-label,
-.speech-password-fields input {
+.keys-password-fields .keys-label,
+.keys-password-fields input {
     display: block;
     width: 100%;
 }
 
-.speech-password-fields .speech-label {
+.keys-password-fields .keys-label {
     margin-top: 0.75rem;
 }
 
-.speech-password-fields .alert {
+.keys-password-fields .alert {
     margin-top: 0.75rem;
     margin-bottom: 0;
 }

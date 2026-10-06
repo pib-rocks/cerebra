@@ -4,8 +4,8 @@ import {
     LedRingMode,
     MicrophoneArrayService,
 } from "src/app/system/microphone-array/microphone-array.service";
-import {DEGRADED_MODE} from "src/app/system/speech/key-store-session";
-import {KeyStoreSessionService} from "src/app/system/speech/key-store-session.service";
+import {DEGRADED_MODE} from "src/app/system/keys/key-store-session";
+import {KeyStoreSessionService} from "src/app/system/keys/key-store-session.service";
 import {Chat} from "../types/chat.class";
 import {VoiceAssistant} from "../types/voice-assistant";
 import {AssistantModel} from "../types/assistantModel";

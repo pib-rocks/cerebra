@@ -9,14 +9,16 @@ import {
 import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {
-    AbstractControl,
     FormControl,
     FormGroup,
     Validators,
     ReactiveFormsModule,
 } from "@angular/forms";
+import {RouterLink} from "@angular/router";
 import {RosService} from "../../shared/services/ros-service/ros.service";
 import {TokenService} from "src/app/shared/services/token.service";
+import {ApiService} from "src/app/shared/services/api.service";
+import {UrlConstants} from "src/app/shared/services/url.constants";
 import {NgClass, NgOptimizedImage} from "@angular/common";
 
 @Component({
@@ -24,39 +26,25 @@ import {NgClass, NgOptimizedImage} from "@angular/common";
     templateUrl: "./smart-connect.component.html",
     styleUrls: ["./smart-connect.component.css"],
     changeDetection: ChangeDetectionStrategy.Eager,
-    imports: [NgClass, NgOptimizedImage, ReactiveFormsModule],
+    imports: [NgClass, NgOptimizedImage, ReactiveFormsModule, RouterLink],
 })
 export class SmartConnectComponent implements OnInit {
     private readonly destroyRef = inject(DestroyRef);
 
     // prevent user from opening modal multiple times in case of delay
     isLoadingModal: boolean = false;
-    // decide password input field types
-    passwordTextType: boolean = true;
     isTokenStored: boolean = false;
     isTokenActive: boolean = false;
     onErrorSubmit: boolean = false;
-    encryptTokenForm = new FormGroup(
-        {
-            token: new FormControl("", [Validators.required]),
-            password: new FormControl("", [
-                Validators.required,
-                Validators.minLength(8),
-            ]),
-            confirmPassword: new FormControl("", [Validators.required]),
-        },
-        {validators: this.passwordMatchValidator},
-    );
-    decryptTokenForm = new FormGroup({
-        password: new FormControl({value: "", disabled: this.isTokenActive}, [
-            Validators.required,
-        ]),
+    tokenForm = new FormGroup({
+        token: new FormControl("", [Validators.required]),
     });
 
     constructor(
         private readonly rosService: RosService,
         private readonly modalService: NgbModal,
         private readonly tokenService: TokenService,
+        private readonly apiService: ApiService,
     ) {}
 
     ngOnInit(): void {
@@ -65,30 +53,12 @@ export class SmartConnectComponent implements OnInit {
             .subscribe((response) => {
                 this.isTokenStored = response.tokenExists;
                 this.isTokenActive = response.tokenActive;
-                this.updatePasswordControlState();
             });
-    }
-
-    passwordMatchValidator(form: AbstractControl): null {
-        const password = form.get("password")?.value;
-        const confirmPassword = form.get("confirmPassword")?.value;
-
-        if (password !== confirmPassword && confirmPassword.length > 0) {
-            form.get("confirmPassword")?.setErrors({mismatch: true});
-        } else {
-            form.get("confirmPassword")?.setErrors(null);
-        }
-        return null;
-    }
-
-    togglePasswordTextType() {
-        this.passwordTextType = !this.passwordTextType;
     }
 
     onOpenModal(content: TemplateRef<any>) {
         this.isLoadingModal = true;
         this.tokenService.checkTokenExists();
-        this.updatePasswordControlState();
         this.modalService
             .open(content, {
                 ariaLabelledBy: "modal-basic-title",
@@ -98,8 +68,7 @@ export class SmartConnectComponent implements OnInit {
             })
             .dismissed.subscribe(() => {
                 this.onErrorSubmit = false;
-                this.encryptTokenForm.reset();
-                this.decryptTokenForm.reset();
+                this.tokenForm.reset();
             });
         this.isLoadingModal = false;
     }
@@ -108,36 +77,23 @@ export class SmartConnectComponent implements OnInit {
         this.modalService.dismissAll();
     }
 
-    onSubmitEncryptToken() {
-        if (!this.encryptTokenForm.valid) {
+    onSubmitToken() {
+        if (!this.tokenForm.valid) {
             return;
         }
-        // never null, because form needs to be valid
-        this.rosService
-            .encryptToken(
-                this.encryptTokenForm.value.token!,
-                this.encryptTokenForm.value.password!,
-            )
-            .subscribe((isSuccessful) => {
-                this.submitFormSuccessful(isSuccessful);
-            });
-    }
-
-    onSubmitDecryptToken() {
-        if (!this.decryptTokenForm.valid) {
-            return;
-        }
-        // never null, because form needs to be valid
-        this.rosService
-            .decryptToken(this.decryptTokenForm.value.password!)
-            .subscribe((isSuccessful) => {
-                this.submitFormSuccessful(isSuccessful);
+        this.apiService
+            .post(UrlConstants.SMART_CONNECT, {
+                token: this.tokenForm.value.token!,
+            })
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe({
+                next: () => this.submitFormSuccessful(true),
+                error: () => this.submitFormSuccessful(false),
             });
     }
 
     onDeleteToken() {
         this.rosService.deleteTokenMessage();
-        this.decryptTokenForm.controls["password"].enable();
         this.tokenService.checkTokenExists();
     }
 
@@ -146,14 +102,6 @@ export class SmartConnectComponent implements OnInit {
         if (isSuccessful) {
             this.tokenService.checkTokenExists();
             this.onCloseModal();
-        }
-    }
-
-    private updatePasswordControlState() {
-        if (this.isTokenActive) {
-            this.decryptTokenForm.controls["password"].disable();
-        } else {
-            this.decryptTokenForm.controls["password"].enable();
         }
     }
 }
