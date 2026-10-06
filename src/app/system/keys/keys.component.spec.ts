@@ -1,7 +1,7 @@
 import {HttpErrorResponse} from "@angular/common/http";
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 import {BehaviorSubject, of, throwError} from "rxjs";
-import {SpeechComponent} from "./speech.component";
+import {KeysComponent} from "./keys.component";
 import {KeyStoreService} from "./key-store.service";
 import {KeyStoreSessionService} from "./key-store-session.service";
 import {UNLOCKED_MODE} from "./key-store-session";
@@ -16,9 +16,9 @@ import {
     providersForSelection,
 } from "src/app/shared/types/provider-registry";
 
-describe("SpeechComponent", () => {
-    let fixture: ComponentFixture<SpeechComponent>;
-    let component: SpeechComponent;
+describe("KeysComponent", () => {
+    let fixture: ComponentFixture<KeysComponent>;
+    let component: KeysComponent;
     let keyStore: jasmine.SpyObj<KeyStoreService>;
     let voiceAssistant: jasmine.SpyObj<VoiceAssistantService>;
     let ros: jasmine.SpyObj<RosService>;
@@ -107,7 +107,7 @@ describe("SpeechComponent", () => {
         ros = jasmine.createSpyObj("RosService", ["deleteTokenMessage"]);
 
         await TestBed.configureTestingModule({
-            imports: [SpeechComponent],
+            imports: [KeysComponent],
             providers: [
                 {provide: KeyStoreService, useValue: keyStore},
                 {provide: VoiceAssistantService, useValue: voiceAssistant},
@@ -127,7 +127,7 @@ describe("SpeechComponent", () => {
             ],
         }).compileComponents();
 
-        fixture = TestBed.createComponent(SpeechComponent);
+        fixture = TestBed.createComponent(KeysComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
     });
@@ -139,20 +139,19 @@ describe("SpeechComponent", () => {
     }
 
     it("puts pib.Cloud first and does not offer a second key field", () => {
-        const cards = fixture.nativeElement.querySelectorAll(".speech-card");
-        expect(cards[0].id).toBe("speech-cloud-entry");
-        expect(text("#speech-cloud-entry .speech-card-title")).toBe(
-            "pib.Cloud",
-        );
+        const cards = fixture.nativeElement.querySelectorAll(".keys-card");
+        expect(cards[0].id).toBe("keys-cloud-entry");
+        expect(text(".form-headline")).toBe("Keys");
+        expect(text("#keys-cloud-entry .keys-card-title")).toBe("pib.Cloud");
         expect(
-            fixture.nativeElement.querySelector("#speech-cloud-key"),
+            fixture.nativeElement.querySelector("#keys-cloud-key"),
         ).toBeNull();
-        expect(text("#speech-cloud-status")).toContain("SmartConnect token");
+        expect(text("#keys-cloud-status")).toContain("SmartConnect token");
         expect(
-            fixture.nativeElement.querySelector("#speech-cloud-endpoint"),
+            fixture.nativeElement.querySelector("#keys-cloud-endpoint"),
         ).toBeNull();
         const titles = Array.from(
-            fixture.nativeElement.querySelectorAll(".speech-card-title"),
+            fixture.nativeElement.querySelectorAll(".keys-card-title"),
         ).map((node) => (node as HTMLElement).textContent?.trim());
         expect(titles.indexOf("pib.Cloud")).toBeLessThan(
             titles.indexOf("GPT-6"),
@@ -195,7 +194,7 @@ describe("SpeechComponent", () => {
         mode?: string;
     }): void {
         keyStore.status.and.returnValue(of(status));
-        fixture = TestBed.createComponent(SpeechComponent);
+        fixture = TestBed.createComponent(KeysComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
     }
@@ -212,20 +211,20 @@ describe("SpeechComponent", () => {
             "Provider keys are encrypted. The operator password is asked at robot start.",
         );
         expect(
-            fixture.nativeElement.querySelector("#speech-operator-password"),
+            fixture.nativeElement.querySelector("#keys-operator-password"),
         ).not.toBeNull();
         expect(
-            fixture.nativeElement.querySelector("#speech-change-password"),
+            fixture.nativeElement.querySelector("#keys-change-password"),
         ).not.toBeNull();
         expect(text("[data-test=BTN_Change_Operator_Password]")).toBe("Change");
         expect(
-            fixture.nativeElement.querySelector("#speech-new-password"),
+            fixture.nativeElement.querySelector("#keys-new-password"),
         ).toBeNull();
         expect(
-            fixture.nativeElement.querySelector("#speech-confirm-password"),
+            fixture.nativeElement.querySelector("#keys-confirm-password"),
         ).toBeNull();
         expect(
-            fixture.nativeElement.querySelector("#speech-password-modal"),
+            fixture.nativeElement.querySelector("#keys-password-modal"),
         ).toBeNull();
     });
 
@@ -243,13 +242,13 @@ describe("SpeechComponent", () => {
             "Provider keys are stored in cleartext on the robot. No operator password is asked at robot start.",
         );
         expect(
-            fixture.nativeElement.querySelector("#speech-operator-password"),
+            fixture.nativeElement.querySelector("#keys-operator-password"),
         ).toBeNull();
         expect(
-            fixture.nativeElement.querySelector("#speech-new-password"),
+            fixture.nativeElement.querySelector("#keys-new-password"),
         ).toBeNull();
         expect(
-            fixture.nativeElement.querySelector("#speech-confirm-password"),
+            fixture.nativeElement.querySelector("#keys-confirm-password"),
         ).toBeNull();
         expect(text("[data-test=BTN_Turn_Encryption_On]")).toBe(
             "Set a password to turn encryption on",
@@ -301,7 +300,7 @@ describe("SpeechComponent", () => {
         expect(keyStore.setEncryption).toHaveBeenCalledWith(false, "short");
         expect(encryptionBox().checked).toBeTrue();
         expect(encryptionBox().disabled).toBeFalse();
-        expect(text("#speech-error")).toBe(
+        expect(text("#keys-error")).toBe(
             "Password must be at least 8 characters.",
         );
     });
@@ -312,7 +311,7 @@ describe("SpeechComponent", () => {
 
         expect(keyStore.setEncryption).not.toHaveBeenCalled();
         expect(encryptionBox().checked).toBeTrue();
-        expect(text("#speech-error")).toBe("Enter the operator password.");
+        expect(text("#keys-error")).toBe("Enter the operator password.");
 
         component.credentialRefs = [];
         keyStore.setEncryption.and.returnValue(of({successful: true}));
@@ -338,28 +337,28 @@ describe("SpeechComponent", () => {
         expect(keyStore.setEncryption).not.toHaveBeenCalled();
         expect(encryptionBox().checked).toBeFalse();
         expect(
-            fixture.nativeElement.querySelector("#speech-new-password"),
+            fixture.nativeElement.querySelector("#keys-new-password"),
         ).not.toBeNull();
         expect(
-            fixture.nativeElement.querySelector("#speech-confirm-password"),
+            fixture.nativeElement.querySelector("#keys-confirm-password"),
         ).not.toBeNull();
         expect(
-            fixture.nativeElement.querySelector("#speech-current-password"),
+            fixture.nativeElement.querySelector("#keys-current-password"),
         ).toBeNull();
 
-        click("#speech-password-ok");
+        click("#keys-password-ok");
         expect(keyStore.setEncryption).not.toHaveBeenCalled();
         expect(encryptionBox().checked).toBeFalse();
-        expect(text("#speech-password-modal-error")).toBe(
+        expect(text("#keys-password-modal-error")).toBe(
             "Enter the new password twice.",
         );
 
         component.newPassword = "new-secret";
         component.confirmPassword = "other-secret";
-        click("#speech-password-ok");
+        click("#keys-password-ok");
         expect(keyStore.setEncryption).not.toHaveBeenCalled();
         expect(encryptionBox().checked).toBeFalse();
-        expect(text("#speech-password-modal-error")).toBe(
+        expect(text("#keys-password-modal-error")).toBe(
             "Enter the new password twice. The two entries do not match.",
         );
 
@@ -370,12 +369,12 @@ describe("SpeechComponent", () => {
         keyStore.status.and.returnValue(
             of({encryptKeyStorage: true, credentialRefs: [], mode: "unlocked"}),
         );
-        click("#speech-password-ok");
+        click("#keys-password-ok");
 
         expect(keyStore.setEncryption).toHaveBeenCalledWith(true, "new-secret");
         expect(encryptionBox().checked).toBeTrue();
         expect(
-            fixture.nativeElement.querySelector("#speech-password-modal"),
+            fixture.nativeElement.querySelector("#keys-password-modal"),
         ).toBeNull();
     });
 
@@ -383,16 +382,16 @@ describe("SpeechComponent", () => {
         component.password = "operator-secret";
         fixture.detectChanges();
         expect(
-            fixture.nativeElement.querySelector("#speech-operator-password"),
+            fixture.nativeElement.querySelector("#keys-operator-password"),
         ).not.toBeNull();
-        expect(text("#speech-change-password")).toBe("Change");
+        expect(text("#keys-change-password")).toBe("Change");
         expect(
-            fixture.nativeElement.querySelector("#speech-new-password"),
+            fixture.nativeElement.querySelector("#keys-new-password"),
         ).toBeNull();
 
-        click("#speech-change-password");
+        click("#keys-change-password");
         const modal = fixture.nativeElement.querySelector(
-            "#speech-password-modal",
+            "#keys-password-modal",
         ) as HTMLElement;
         expect(modal.classList.contains("modal")).toBeTrue();
         expect(modal.classList.contains("d-block")).toBeTrue();
@@ -403,39 +402,39 @@ describe("SpeechComponent", () => {
                 ?.classList.contains("cerebra-modal"),
         ).toBeFalse();
         expect(
-            fixture.nativeElement.querySelector("#speech-current-password"),
+            fixture.nativeElement.querySelector("#keys-current-password"),
         ).not.toBeNull();
-        expect(text("#speech-password-modal-title")).toBe(
+        expect(text("#keys-password-modal-title")).toBe(
             "Change operator password",
         );
 
-        setPassword("#speech-current-password", "operator-secret");
-        setPassword("#speech-new-password", "new-secret");
-        setPassword("#speech-confirm-password", "new-secret");
-        click("#speech-password-cancel");
+        setPassword("#keys-current-password", "operator-secret");
+        setPassword("#keys-new-password", "new-secret");
+        setPassword("#keys-confirm-password", "new-secret");
+        click("#keys-password-cancel");
 
         expect(
-            fixture.nativeElement.querySelector("#speech-password-modal"),
+            fixture.nativeElement.querySelector("#keys-password-modal"),
         ).toBeNull();
         expect(keyStore.changePassword).not.toHaveBeenCalled();
         expect(component.password).toBe("operator-secret");
         expect(
             (
                 fixture.nativeElement.querySelector(
-                    "#speech-operator-password",
+                    "#keys-operator-password",
                 ) as HTMLInputElement
             ).value,
         ).toBe("operator-secret");
 
-        click("#speech-change-password");
-        setPassword("#speech-current-password", "operator-secret");
-        setPassword("#speech-confirm-password", "new-secret");
-        click("#speech-password-ok");
+        click("#keys-change-password");
+        setPassword("#keys-current-password", "operator-secret");
+        setPassword("#keys-confirm-password", "new-secret");
+        click("#keys-password-ok");
         expect(keyStore.changePassword).not.toHaveBeenCalled();
-        expect(text("#speech-password-modal-error")).toBe(
+        expect(text("#keys-password-modal-error")).toBe(
             "Enter the new password twice.",
         );
-        expect(fixture.nativeElement.querySelector("#speech-error")).toBeNull();
+        expect(fixture.nativeElement.querySelector("#keys-error")).toBeNull();
 
         keyStore.changePassword.and.returnValue(
             throwError(
@@ -448,36 +447,36 @@ describe("SpeechComponent", () => {
                     }),
             ),
         );
-        setPassword("#speech-current-password", "operator-secret");
-        setPassword("#speech-new-password", "new-secret");
-        setPassword("#speech-confirm-password", "new-secret");
-        click("#speech-password-ok");
+        setPassword("#keys-current-password", "operator-secret");
+        setPassword("#keys-new-password", "new-secret");
+        setPassword("#keys-confirm-password", "new-secret");
+        click("#keys-password-ok");
 
         expect(keyStore.changePassword).toHaveBeenCalledWith(
             "operator-secret",
             "new-secret",
             "new-secret",
         );
-        expect(text("#speech-password-modal-error")).toBe(
+        expect(text("#keys-password-modal-error")).toBe(
             "Password must be at least 8 characters.",
         );
         expect(
-            fixture.nativeElement.querySelector("#speech-password-modal"),
+            fixture.nativeElement.querySelector("#keys-password-modal"),
         ).not.toBeNull();
         expect(component.password).toBe("operator-secret");
-        expect(fixture.nativeElement.querySelector("#speech-error")).toBeNull();
+        expect(fixture.nativeElement.querySelector("#keys-error")).toBeNull();
 
         keyStore.changePassword.and.returnValue(of({successful: true}));
-        click("#speech-password-ok");
+        click("#keys-password-ok");
         expect(component.password).toBe("new-secret");
-        expect(text("#speech-notice")).toBe("Operator password changed.");
+        expect(text("#keys-notice")).toBe("Operator password changed.");
         expect(
-            fixture.nativeElement.querySelector("#speech-password-modal"),
+            fixture.nativeElement.querySelector("#keys-password-modal"),
         ).toBeNull();
         expect(
             (
                 fixture.nativeElement.querySelector(
-                    "#speech-operator-password",
+                    "#keys-operator-password",
                 ) as HTMLInputElement
             ).value,
         ).toBe("new-secret");
@@ -490,7 +489,7 @@ describe("SpeechComponent", () => {
             mode: "unlocked",
         });
         expect(
-            fixture.nativeElement.querySelector("#speech-operator-password"),
+            fixture.nativeElement.querySelector("#keys-operator-password"),
         ).toBeNull();
         expect(
             fixture.nativeElement.querySelectorAll(
@@ -500,30 +499,30 @@ describe("SpeechComponent", () => {
 
         click("[data-test=BTN_Turn_Encryption_On]");
         expect(
-            fixture.nativeElement.querySelector("#speech-current-password"),
+            fixture.nativeElement.querySelector("#keys-current-password"),
         ).toBeNull();
-        expect(text("#speech-password-modal-title")).toBe(
+        expect(text("#keys-password-modal-title")).toBe(
             "Set a password to turn encryption on",
         );
-        setPassword("#speech-new-password", "new-secret");
-        setPassword("#speech-confirm-password", "new-secret");
+        setPassword("#keys-new-password", "new-secret");
+        setPassword("#keys-confirm-password", "new-secret");
         keyStore.setEncryption.and.returnValue(
             of({
                 successful: false,
                 error: "Password must be at least 8 characters.",
             }),
         );
-        click("#speech-password-ok");
+        click("#keys-password-ok");
 
         expect(keyStore.setEncryption).toHaveBeenCalledWith(true, "new-secret");
-        expect(text("#speech-password-modal-error")).toBe(
+        expect(text("#keys-password-modal-error")).toBe(
             "Password must be at least 8 characters.",
         );
         expect(encryptionBox().checked).toBeFalse();
         expect(
-            fixture.nativeElement.querySelector("#speech-password-modal"),
+            fixture.nativeElement.querySelector("#keys-password-modal"),
         ).not.toBeNull();
-        expect(fixture.nativeElement.querySelector("#speech-error")).toBeNull();
+        expect(fixture.nativeElement.querySelector("#keys-error")).toBeNull();
     });
 
     it("stores a provider key in cleartext without an operator password", () => {
@@ -540,18 +539,18 @@ describe("SpeechComponent", () => {
         fixture.detectChanges();
 
         expect(keyStore.putSecret).toHaveBeenCalledWith(4, "", "sk-clear");
-        expect(fixture.nativeElement.querySelector("#speech-error")).toBeNull();
-        expect(text("#speech-notice")).toBe("Key stored for GPT-6.");
+        expect(fixture.nativeElement.querySelector("#keys-error")).toBeNull();
+        expect(text("#keys-notice")).toBe("Key stored for GPT-6.");
     });
 
     it("offers a key field per provider and no endpoint control", () => {
         const key = fixture.nativeElement.querySelector(
-            "#speech-provider-key-4",
+            "#keys-provider-key-4",
         ) as HTMLInputElement;
         expect(key.type).toBe("password");
-        expect(text("#speech-provider-state-4")).toBe("Key stored");
+        expect(text("#keys-provider-state-4")).toBe("Key stored");
         expect(
-            fixture.nativeElement.querySelector("#speech-provider-endpoint-4"),
+            fixture.nativeElement.querySelector("#keys-provider-endpoint-4"),
         ).toBeNull();
         expect(
             fixture.nativeElement.querySelector("[id*='endpoint']"),
@@ -568,8 +567,8 @@ describe("SpeechComponent", () => {
         ) as HTMLInputElement[];
         expect(inputs.map((input) => input.id)).toEqual([
             "encrypt-key-storage",
-            "speech-operator-password",
-            "speech-provider-key-4",
+            "keys-operator-password",
+            "keys-provider-key-4",
         ]);
     });
 
@@ -605,15 +604,15 @@ describe("SpeechComponent", () => {
         models.next([...models.getValue(), retired]);
         fixture.detectChanges();
         const titles = Array.from(
-            fixture.nativeElement.querySelectorAll(".speech-card-title"),
+            fixture.nativeElement.querySelectorAll(".keys-card-title"),
         ).map((node) => (node as HTMLElement).textContent?.trim());
         expect(titles).not.toContain(retired.visualName);
         expect(titles).toContain("GPT-6");
         expect(
-            fixture.nativeElement.querySelector("#speech-provider-9"),
+            fixture.nativeElement.querySelector("#keys-provider-9"),
         ).toBeNull();
         expect(
-            fixture.nativeElement.querySelector("#speech-provider-4"),
+            fixture.nativeElement.querySelector("#keys-provider-4"),
         ).not.toBeNull();
     });
 
@@ -644,7 +643,7 @@ describe("SpeechComponent", () => {
                 (model) => model.id,
             ),
         ).not.toContain(4);
-        expect(text("#speech-provider-state-4")).toBe("No key");
+        expect(text("#keys-provider-state-4")).toBe("No key");
 
         keyStore.putSecret.and.returnValue(
             of({successful: true, credentialRef: "provider-4"}),
@@ -672,7 +671,7 @@ describe("SpeechComponent", () => {
                 (model) => model.id,
             ),
         ).toContain(4);
-        expect(text("#speech-provider-state-4")).toBe("Key stored");
+        expect(text("#keys-provider-state-4")).toBe("Key stored");
     });
 
     it("deletes the SmartConnect token without asking for a cloud key", () => {
@@ -682,7 +681,7 @@ describe("SpeechComponent", () => {
         component.deleteCloudToken();
         fixture.detectChanges();
         expect(ros.deleteTokenMessage).toHaveBeenCalled();
-        expect(text("#speech-cloud-status")).toContain("not stored");
+        expect(text("#keys-cloud-status")).toContain("not stored");
         expect(token).toBeTruthy();
     });
 
@@ -695,7 +694,7 @@ describe("SpeechComponent", () => {
         component.password = "nope";
         component.deleteKey(component.keyProviders[0]);
         fixture.detectChanges();
-        expect(text("#speech-error")).toBe(
+        expect(text("#keys-error")).toBe(
             "Wrong password. No keys are available.",
         );
         expect(models.getValue()[1].credentialRef).toBe("provider-4");
@@ -744,19 +743,19 @@ describe("SpeechComponent", () => {
         fixture.detectChanges();
 
         const titles = Array.from(
-            fixture.nativeElement.querySelectorAll(".speech-card-title"),
+            fixture.nativeElement.querySelectorAll(".keys-card-title"),
         ).map((node) => (node as HTMLElement).textContent?.trim());
         expect(titles.filter((title) => title !== "Operator password")).toEqual(
             ["pib.Cloud", "OpenAI"],
         );
         expect(
-            fixture.nativeElement.querySelector("#speech-provider-key-2"),
+            fixture.nativeElement.querySelector("#keys-provider-key-2"),
         ).not.toBeNull();
         expect(
-            fixture.nativeElement.querySelector("#speech-provider-key-8"),
+            fixture.nativeElement.querySelector("#keys-provider-key-8"),
         ).toBeNull();
         expect(
-            fixture.nativeElement.querySelector("#speech-provider-key-11"),
+            fixture.nativeElement.querySelector("#keys-provider-key-11"),
         ).toBeNull();
         expect(component.keyProviders[0].capabilities).toEqual({
             tools: false,
@@ -795,7 +794,7 @@ describe("SpeechComponent", () => {
         expect(models.getValue()[1].endpointBase).toBe(
             "https://api.openai.example/v1",
         );
-        expect(text("#speech-provider-state-2")).toBe("Key stored");
-        expect(text("#speech-notice")).toBe("Key stored for OpenAI.");
+        expect(text("#keys-provider-state-2")).toBe("Key stored");
+        expect(text("#keys-notice")).toBe("Key stored for OpenAI.");
     });
 });

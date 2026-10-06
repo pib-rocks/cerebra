@@ -13,7 +13,7 @@ import {
     PROMPT_MODE,
     STARTING_MODE,
     UNLOCKED_MODE,
-} from "./system/speech/key-store-session";
+} from "./system/keys/key-store-session";
 import {routes} from "./app-routing.module";
 import {VisibleStateService} from "./shared/services/visible-state.service";
 import {visibleConversation} from "./shared/types/visible-state";

@@ -18,8 +18,8 @@ import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.ser
 import {RouterTestingModule} from "@angular/router/testing";
 import {SideBarRightComponent} from "src/app/ui-components/sidebar-right/sidebar-right.component";
 import {TokenService} from "src/app/shared/services/token.service";
-import {DEGRADED_MODE} from "src/app/system/speech/key-store-session";
-import {KeyStoreSessionService} from "src/app/system/speech/key-store-session.service";
+import {DEGRADED_MODE} from "src/app/system/keys/key-store-session";
+import {KeyStoreSessionService} from "src/app/system/keys/key-store-session.service";
 export class MockNgbModalRef {
     componentInstance = {
         prompt: undefined,

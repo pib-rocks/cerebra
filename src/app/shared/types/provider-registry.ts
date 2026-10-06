@@ -6,7 +6,7 @@
 export const DEFAULT_PROVIDER_REF = "default";
 
 /**
- * Registry row whose credential is the SmartConnect token. The Speech tab
+ * Registry row whose credential is the SmartConnect token. System > Keys
  * shows that token as pib.Cloud and does not ask for a second key.
  * A personality on this row needs no provider key.
  */
@@ -15,7 +15,7 @@ export const CLOUD_TOKEN_API_NAME = "pib-cloud";
 export const MISSING_KEY_MARK = "Needs a key";
 
 export const MISSING_KEY_TURN =
-    "This personality needs a provider key. It is marked until a key is stored in the Speech tab.";
+    "This personality needs a provider key. It is marked until a key is stored in System > Keys.";
 
 export interface ProviderCapabilities {
     tools: boolean;

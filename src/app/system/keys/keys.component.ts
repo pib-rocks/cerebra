@@ -24,12 +24,12 @@ import {
 } from "./key-store.service";
 
 @Component({
-    selector: "app-speech",
-    templateUrl: "./speech.component.html",
-    styleUrls: ["./speech.component.scss"],
+    selector: "app-keys",
+    templateUrl: "./keys.component.html",
+    styleUrls: ["./keys.component.scss"],
     changeDetection: ChangeDetectionStrategy.Eager,
 })
-export class SpeechComponent implements OnInit {
+export class KeysComponent implements OnInit {
     private readonly destroyRef = inject(DestroyRef);
 
     encryptKeyStorage = true;

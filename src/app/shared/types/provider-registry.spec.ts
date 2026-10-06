@@ -192,6 +192,11 @@ describe("provider registry selection", () => {
                 true,
             )?.reason,
         ).toBe("missing-key");
+        expect(
+            chatStartRefusal(String(missing.id), [cloud, keyed, missing], true),
+        ).toBe(
+            "This personality needs a provider key. It is marked until a key is stored in System > Keys.",
+        );
     });
 
     it("marks a personality when its provider key is deleted and clears the mark when the key returns", () => {

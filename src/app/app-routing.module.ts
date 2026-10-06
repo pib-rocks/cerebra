@@ -74,10 +74,10 @@ export const routes: Routes = [
                     ).then((m) => m.MicrophoneArrayComponent),
             },
             {
-                path: "speech",
+                path: "keys",
                 loadComponent: () =>
-                    import("./system/speech/speech.component").then(
-                        (m) => m.SpeechComponent,
+                    import("./system/keys/keys.component").then(
+                        (m) => m.KeysComponent,
                     ),
             },
             {path: "", redirectTo: "diagnostics", pathMatch: "full"},
@@ -201,7 +201,7 @@ export const routes: Routes = [
     {
         path: "display",
         loadComponent: () =>
-            import("./system/speech/display-unlock.component").then(
+            import("./system/keys/display-unlock.component").then(
                 (m) => m.DisplayUnlockComponent,
             ),
     },

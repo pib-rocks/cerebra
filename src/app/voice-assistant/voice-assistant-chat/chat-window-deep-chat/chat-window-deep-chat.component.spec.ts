@@ -18,8 +18,8 @@ import {
     DEGRADED_MODE,
     UNLOCKED_MODE,
     degradedChatReply,
-} from "src/app/system/speech/key-store-session";
-import {KeyStoreSessionService} from "src/app/system/speech/key-store-session.service";
+} from "src/app/system/keys/key-store-session";
+import {KeyStoreSessionService} from "src/app/system/keys/key-store-session.service";
 import {ChannelCapabilityService} from "src/app/shared/services/channel-capability.service";
 import {
     DIRECT_CHANNEL,

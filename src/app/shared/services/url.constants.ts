@@ -23,6 +23,7 @@ export enum UrlConstants {
     SYSTEM_UPDATE_CHECK = "/system/update/check",
     SYSTEM_UPDATE_AVAILABLE = "/system/update/available",
     KEY_STORE = "/system/key-store",
+    SMART_CONNECT = "/system/smart-connect",
     MICROPHONE_ARRAY = "/system/microphone-array",
     MICROPHONE_ARRAY_HEALTH = "/system/microphone-array/health",
     ROSBRIDGE_WEBSOCKET_PORT = "9090",
