@@ -6,17 +6,48 @@
         <div
             class="col-sm-3 col-xl-2 p-0"
             style="background-color: #041939">
-            @if (turnedOn && (activeChatId !== currentChatId)) {
             <div
                 class="pt-4 text-center"
                 style="background-color: #041939">
-                <a
-                    data-test="LNK_Jump_to_Active_Chat"
-                    [routerLink]="['/', 'voice-assistant', activePersonalityId, 'chat', activeChatId]"
-                    >Jump to active chat
-                </a>
+                <label class="p-1 text-break">Voice interaction</label>
+                <div class="row">
+                    <div class="col text-end">
+                        <img
+                            class="microphone-icon align-middle"
+                            src="../../assets/voice-assistant-svgs/chat/voice_interaction_off.svg" />
+                    </div>
+                    <div class="col pe-0 ps-0">
+                        <div
+                            id="tooltip-smart-connect-disabled"
+                            [title]="smartConnectActive ? '' : 'Enable SmartConnect to start the Voice-Assistant' ">
+                            <button
+                                class="btn border-0 p-0"
+                                id="sidebar-right-toggle-voice-assistant"
+                                data-test="TGL_Voice_Assistant"
+                                type="button"
+                                value="{{turnedOn}}"
+                                (click)="toggleVoiceAssistant()"
+                                [disabled]="!localVoiceEnabled()">
+                                <img
+                                    [src]="turnedOn ? '../../assets/toggle-switch-right.png' : '../../assets/toggle-switch-left.png' "
+                                    alt="Toggle for turning the Voice Assistant on and off" />
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col text-start">
+                        <img
+                            class="microphone-icon align-middle"
+                            src="../../assets/voice-assistant-svgs/chat/voice_interaction_on.svg" />
+                    </div>
+                    @if (turnedOn && (activeChatId !== currentChatId)) {
+                    <a
+                        data-test="LNK_Jump_to_Active_Chat"
+                        [routerLink]="['/', 'voice-assistant', activePersonalityId, 'chat', activeChatId]"
+                        >Jump to active chat
+                    </a>
+                    }
+                </div>
             </div>
-            }
             <div>
                 <app-sidebar-right
                     [optionCallbackMethods]="optionCallbackMethods"
