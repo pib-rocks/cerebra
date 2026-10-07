@@ -23,8 +23,8 @@
         class="form-control p-3 mb-4"
         rows="16"
         placeholder="The personality's identity"
-        [(ngModel)]="textAreaContent"
-        (input)="updateDescription()"></textarea>
+        [value]="textAreaContent"
+        (input)="onIdentityInput($event)"></textarea>
 </ng-template>
 
 @if (descriptionOnly) {

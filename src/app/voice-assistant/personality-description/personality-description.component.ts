@@ -18,7 +18,7 @@ import {
     effectiveChannel,
     identityText,
 } from "src/app/shared/types/channel-router";
-import {ReactiveFormsModule, FormsModule} from "@angular/forms";
+import {ReactiveFormsModule} from "@angular/forms";
 import {VoiceAssistantPersonalitySidebarRightComponent} from "./voice-assistant-personality-sidebar-right/voice-assistant-personality-sidebar-right.component";
 
 @Component({
@@ -29,7 +29,6 @@ import {VoiceAssistantPersonalitySidebarRightComponent} from "./voice-assistant-
     imports: [
         RouterLink,
         ReactiveFormsModule,
-        FormsModule,
         NgTemplateOutlet,
         VoiceAssistantPersonalitySidebarRightComponent,
     ],
@@ -105,6 +104,15 @@ export class PersonalityDescriptionComponent implements OnInit {
             return "This is the only identity for this personality. Direct sends it as the system prompt.";
         }
         return "This is the only identity for this personality. Smart loads it as SOUL.md. MEMORY.md stays on Smart.";
+    }
+
+    onIdentityInput(event: Event): void {
+        const target = event.target;
+        if (!(target instanceof HTMLTextAreaElement)) {
+            return;
+        }
+        this.textAreaContent = target.value;
+        this.updateDescription();
     }
 
     updateDescription() {
