@@ -1,5 +1,6 @@
 import {
     Component,
+    Input,
     OnInit,
     ChangeDetectionStrategy,
     DestroyRef,
@@ -44,6 +45,9 @@ import {
 })
 export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
     private readonly destroyRef = inject(DestroyRef);
+
+    /** Set when these settings are opened from the personality header, not the route. */
+    @Input() personalityId: string | null = null;
 
     pauseThresholdMin = 0.1;
     pauseThresholdMax = 3.0;
@@ -93,15 +97,24 @@ export class VoiceAssistantPersonalitySidebarRightComponent implements OnInit {
         this.route.params
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe((params: Params) => {
-                const temp = this.voiceAssistantService.getPersonality(
-                    params["personalityUuid"],
-                );
-                if (temp !== undefined) {
-                    this.personalityClone = temp;
-                }
-                this.rebuildSelection();
-                this.updateForm();
+                this.loadPersonality(params["personalityUuid"]);
             });
+        this.loadPersonality(this.personalityId ?? undefined);
+    }
+
+    private loadPersonality(routeId: string | undefined): void {
+        const lookup = this.personalityId || routeId;
+        if (lookup) {
+            const temp = this.voiceAssistantService.getPersonality(lookup);
+            if (temp !== undefined) {
+                this.personalityClone = temp;
+            }
+        }
+        if (this.personalityClone == null) {
+            return;
+        }
+        this.rebuildSelection();
+        this.updateForm();
     }
 
     updateForm() {

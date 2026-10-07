@@ -59,7 +59,9 @@
     max-width: 1000px;
 }
 
-#add-personality-button {
+#add-personality-button,
+#personality-description-button,
+#personality-settings-button {
     font-size: 1.5rem;
     padding: 0px;
     color: $blue-color;
@@ -71,6 +73,15 @@
     flex: 0 0 auto;
 }
 
-#add-personality-button:hover {
+#personality-description-button,
+#personality-settings-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#add-personality-button:hover,
+#personality-description-button:hover,
+#personality-settings-button:hover {
     color: $white-color;
 }
