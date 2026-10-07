@@ -53,10 +53,12 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
     activeChatId: string = "";
     activePersonalityId: string = "";
     currentChatId: string | null = "";
+    voiceAssistantActivationToggle = new FormControl(false);
     chatSubjectSubscription!: Subscription;
     voiceAssistantStateSubscription?: Subscription;
     tokenStatusSubscription?: Subscription;
     routeParamMapSubscription?: Subscription;
+    smartConnectActive = false;
     cloudTokenStored = false;
 
     constructor(
@@ -79,6 +81,9 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
         this.voiceAssistantStateSubscription =
             this.voiceAssistantService.voiceAssistantStateObservable.subscribe(
                 (state: VoiceAssistantState) => {
+                    this.voiceAssistantActivationToggle.setValue(
+                        state.turnedOn,
+                    );
                     this.turnedOn = state.turnedOn;
                     this.activeChatId = state.chatId;
                     const deleteChat = this.dropdownCallbackMethods.find(
@@ -96,6 +101,7 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
             );
         this.tokenStatusSubscription = this.tokenService.tokenStatus$.subscribe(
             (response) => {
+                this.smartConnectActive = response.tokenActive;
                 this.cloudTokenStored = response.tokenExists;
             },
         );
@@ -209,8 +215,16 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
     }
 
     /**
-     * A personality whose model row is gone cannot start a chat.
-     * The reference stays where it was; the user chooses.
+     * faster-whisper and Supertone do not use the key store.
+     * Degraded mode leaves this control on.
+     */
+    localVoiceEnabled(): boolean {
+        return this.smartConnectActive;
+    }
+
+    /**
+     * A personality whose model row is gone cannot start a chat or take
+     * the voice. The reference stays where it was; the user chooses.
      */
     private modelChoiceRefusal(): string | null {
         const personality =
@@ -228,6 +242,35 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
             this.cloudTokenStored,
             personality.needsNewModel,
         );
+    }
+
+    toggleVoiceAssistant() {
+        const turnedOn = !this.voiceAssistantActivationToggle.value;
+        if (turnedOn && this.modelChoiceRefusal() != null) {
+            return;
+        }
+        const nextState: VoiceAssistantState = {turnedOn, chatId: ""};
+        if (turnedOn) {
+            const match = RegExp(
+                `/voice-assistant/${CerebraRegex.UUID}/chat/(${CerebraRegex.UUID})`,
+            ).exec(this.router.url);
+            if (match) nextState.chatId = match[1];
+            else throw new Error("no chat selected");
+        }
+
+        this.turnedOn = turnedOn;
+        this.activeChatId = nextState.chatId;
+
+        this.voiceAssistantService.setVoiceAssistantState(nextState).subscribe({
+            error: (error) => console.error(error),
+        });
+
+        const deleteChat = this.dropdownCallbackMethods.find(
+            (e) => e.label === "Delete chat",
+        );
+        if (deleteChat) {
+            deleteChat.disabled = this.turnedOn;
+        }
     }
 
     toggleDeleteChat(chats: Chat[]) {

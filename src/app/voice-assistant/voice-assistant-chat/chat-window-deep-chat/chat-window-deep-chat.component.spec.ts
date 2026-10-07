@@ -183,6 +183,36 @@ describe("ChatWindowDeepChatComponent", () => {
         expect(component).toBeTruthy();
     });
 
+    it("leaves out the chat and personality view toggle", () => {
+        const registered = customElements.get("deep-chat");
+        const prototype = registered?.prototype as
+            | {connectedCallback?: () => void}
+            | undefined;
+        const connected = prototype?.connectedCallback;
+        if (prototype != null) {
+            prototype.connectedCallback = () => undefined;
+        }
+        const renderChat = component.ngAfterViewInit.bind(component);
+        component.ngAfterViewInit = () => undefined;
+        try {
+            fixture.detectChanges();
+
+            expect(
+                fixture.nativeElement.querySelector(
+                    "#chat-window-toggle-voice-assistant",
+                ),
+            ).toBeNull();
+            expect(
+                fixture.nativeElement.querySelector("a.toggle-button"),
+            ).toBeNull();
+        } finally {
+            component.ngAfterViewInit = renderChat;
+            if (prototype != null && connected != null) {
+                prototype.connectedCallback = connected;
+            }
+        }
+    });
+
     it("should store currentChatId from route params", () => {
         expect(component.currentChatId).toBe(chatId);
     });

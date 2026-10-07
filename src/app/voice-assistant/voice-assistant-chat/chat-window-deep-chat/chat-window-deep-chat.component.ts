@@ -8,7 +8,7 @@ import {
     OnInit,
     ViewChild,
 } from "@angular/core";
-import {ActivatedRoute, Params, RouterLink} from "@angular/router";
+import {ActivatedRoute, Params} from "@angular/router";
 import {firstValueFrom, Subscription} from "rxjs";
 import {ChatService} from "src/app/shared/services/chat.service";
 import {TokenService} from "src/app/shared/services/token.service";
@@ -35,7 +35,6 @@ import "deep-chat";
     templateUrl: "./chat-window-deep-chat.component.html",
     styleUrls: ["./chat-window-deep-chat.component.scss"],
     changeDetection: ChangeDetectionStrategy.Eager,
-    imports: [RouterLink],
     schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class ChatWindowDeepChatComponent
