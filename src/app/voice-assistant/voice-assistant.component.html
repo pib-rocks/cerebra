@@ -4,6 +4,7 @@
             <app-voice-assistant-nav
                 [subject]="subject"
                 [button]="button"
+                [editButton]="editButton"
                 [needsAttention]="needsAttention"
                 [attentionLabel]="attentionLabel"
                 [defaultRoute]="'/voice-assistant'"></app-voice-assistant-nav>
@@ -24,40 +25,14 @@
         class="row display-flex modal-header"
         id="modal-header">
         <div
-            class="col-10"
+            class="col-12"
             id="header-title">
             <span id="header-title-text"
                 >{{ uuid?"EDIT ":"ADD "}}PERSONALITY</span
             >
         </div>
-        <div
-            class="col-2 text-end"
-            id="close-button">
-            <button
-                id="modal-close-button"
-                data-test="BTN_Close"
-                type="button"
-                (click)="modal.dismiss('Cross click')"
-                class="btn">
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="10"
-                    height="16">
-                    <text
-                        font-family="Titillium"
-                        fill="#FFF"
-                        font-weight="bold"
-                        font-size="16"
-                        y="12">
-                        X
-                    </text>
-                </svg>
-            </button>
-        </div>
     </div>
-    <form
-        [formGroup]="personalityForm"
-        (keydown)="($event).key ==='Enter' ? this.savePersonality(): ''">
+    <form [formGroup]="personalityForm">
         <div
             class="row m-2 mt-4 pe-2"
             id="row-name">
@@ -331,6 +306,18 @@
         </div>
         }
         <div class="row justify-content-center mt-2 mb-3">
+            @if (uuid) {
+            <div class="col-3 align-self-center">
+                <button
+                    type="button"
+                    class="btn btn-regular delete"
+                    id="modal-delete-button"
+                    data-test="BTN_Delete_Persona"
+                    (click)="deleteCurrentPersonality()">
+                    Delete
+                </button>
+            </div>
+            }
             <div class="col-3 align-self-center">
                 <button
                     type="button"

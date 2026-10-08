@@ -237,41 +237,41 @@ describe("VoiceAssistantNavComponent", () => {
         ).toBeNull();
     });
 
-    it("opens the former right-hand settings from the settings button", () => {
+    it("opens the shared add/edit dialog for the active personality from the settings button", () => {
+        const openEdit = jasmine.createSpy("openEdit");
+        component.editButton = {enabled: true, func: openEdit};
+        fixture.detectChanges();
+
         const settings = fixture.nativeElement.querySelector(
             "#personality-settings-button",
         ) as HTMLButtonElement;
+        expect(settings.disabled).toBeFalse();
         settings.click();
+
+        expect(openEdit).toHaveBeenCalledWith(
+            "01234567-0123-0123-0123-0123456789ab",
+        );
+        expect(document.body.querySelector(".modal.cerebra-modal")).toBeNull();
+    });
+
+    it("leaves the route alone when a personality is edited", () => {
+        navigate.calls.reset();
+        subject.next([...elements]);
         fixture.detectChanges();
 
-        const modal = document.body.querySelector(
-            ".modal.cerebra-modal",
-        ) as HTMLElement | null;
-        expect(modal).not.toBeNull();
-        expect(
-            modal
-                ?.querySelector(".modal-content")
-                ?.classList.contains("cerebra-modal"),
-        ).toBeFalse();
-        expect(
-            modal?.querySelector("#personality-sidebar-persona-name-input"),
-        ).not.toBeNull();
-        expect(
-            modal?.querySelector("#voice-assistant-model-select-right-sidebar"),
-        ).not.toBeNull();
-        expect(
-            modal?.querySelector("#personality-sidebar-radio-female"),
-        ).not.toBeNull();
-        expect(
-            modal?.querySelector("#personality-sidebar-pause-threshold-input"),
-        ).not.toBeNull();
-        expect(
-            modal?.querySelector("#personality-sidebar-message-history-input"),
-        ).not.toBeNull();
-        expect(
-            modal?.querySelector("#personality-sidebar-delete-persona-button"),
-        ).not.toBeNull();
-        expect(modal?.querySelector("#textarea-personality")).toBeNull();
+        expect(navigate).not.toHaveBeenCalled();
+    });
+
+    it("redirects only when the routed personality is gone", () => {
+        navigate.calls.reset();
+        const remaining = elements.filter(
+            (element) =>
+                element.getUUID() !== "01234567-0123-0123-0123-0123456789ab",
+        );
+        subject.next(remaining);
+        fixture.detectChanges();
+
+        expect(navigate).toHaveBeenCalled();
     });
 });
 

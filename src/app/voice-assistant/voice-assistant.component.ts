@@ -103,6 +103,20 @@ export class VoiceAssistantComponent implements OnInit {
         },
     };
 
+    /**
+     * The nav's settings button opens this component's shared add/edit dialog.
+     * Enabled only while at least one personality exists.
+     */
+    get editButton(): {
+        enabled: boolean;
+        func: (personalityId: string) => void;
+    } {
+        return {
+            enabled: this.voiceAssistantService.personalities.length > 0,
+            func: (personalityId: string) => this.openEditModal(personalityId),
+        };
+    }
+
     constructor(
         private voiceAssistantService: VoiceAssistantService,
         private modalService: NgbModal,
@@ -201,13 +215,26 @@ export class VoiceAssistantComponent implements OnInit {
     }
 
     showModal = () => {
+        // The dialog is left through Save or Cancel only: a click on the
+        // backdrop or the Escape key no longer dismisses it, so an in-progress
+        // edit cannot be lost (or silently kept) by an outside gesture.
         this.ngbModalRef = this.modalService.open(this.modalContent, {
             ariaLabelledBy: "modal-basic-title",
             size: "lg",
             windowClass: "cerebra-modal",
             backdropClass: "cerebra-modal-backdrop",
+            backdrop: "static",
+            keyboard: false,
         });
         return this.ngbModalRef;
+    };
+
+    deleteCurrentPersonality = () => {
+        if (this.uuid) {
+            this.voiceAssistantService.deletePersonalityById(this.uuid);
+            this.uuid = undefined;
+        }
+        this.ngbModalRef?.close("deleted");
     };
 
     savePersonality = () => {

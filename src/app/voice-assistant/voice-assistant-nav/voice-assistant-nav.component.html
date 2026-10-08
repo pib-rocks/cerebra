@@ -58,7 +58,8 @@
         type="button"
         aria-label="Personality settings"
         title="Personality settings"
-        (click)="openSettingsModal()">
+        [disabled]="!(editButton?.enabled ?? false)"
+        (click)="openSettings()">
         <i
             class="bi bi-gear"
             aria-hidden="true"></i>
@@ -103,42 +104,4 @@
         [personalityId]="selectedPersonalityId"
         [descriptionOnly]="true">
     </app-personality-description>
-</ng-template>
-
-<ng-template
-    #settingsModal
-    let-modal>
-    <div
-        class="row display-flex modal-header"
-        id="personality-settings-modal-header">
-        <div
-            class="col-10"
-            id="personality-settings-modal-title">
-            <span>Personality settings</span>
-        </div>
-        <div class="col-2 text-end">
-            <button
-                id="personality-settings-modal-close"
-                type="button"
-                class="btn"
-                aria-label="Close"
-                (click)="modal.dismiss('Cross click')">
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="10"
-                    height="16">
-                    <text
-                        font-family="Titillium"
-                        fill="#FFF"
-                        font-weight="bold"
-                        font-size="16"
-                        y="12">
-                        X
-                    </text>
-                </svg>
-            </button>
-        </div>
-    </div>
-    <app-va-personality-sidebar-right [personalityId]="selectedPersonalityId">
-    </app-va-personality-sidebar-right>
 </ng-template>

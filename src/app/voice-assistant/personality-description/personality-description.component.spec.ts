@@ -12,7 +12,6 @@ import {FormsModule} from "@angular/forms";
 import {VoiceAssistant} from "src/app/shared/types/voice-assistant";
 import {RouterTestingModule} from "@angular/router/testing";
 import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
-import {VoiceAssistantPersonalitySidebarRightComponent} from "./voice-assistant-personality-sidebar-right/voice-assistant-personality-sidebar-right.component";
 import {VoiceAssistantNavComponent} from "../voice-assistant-nav/voice-assistant-nav.component";
 import {MarkdownModule} from "ngx-markdown";
 import {AssistantModel} from "src/app/shared/types/assistantModel";
@@ -67,7 +66,6 @@ describe("PersonalityDescriptionComponent", () => {
                 FormsModule,
                 RouterTestingModule,
                 VoiceAssistantNavComponent,
-                VoiceAssistantPersonalitySidebarRightComponent,
                 MarkdownModule.forRoot(),
             ],
             providers: [

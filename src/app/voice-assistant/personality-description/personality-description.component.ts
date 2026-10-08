@@ -19,19 +19,13 @@ import {
     identityText,
 } from "src/app/shared/types/channel-router";
 import {ReactiveFormsModule} from "@angular/forms";
-import {VoiceAssistantPersonalitySidebarRightComponent} from "./voice-assistant-personality-sidebar-right/voice-assistant-personality-sidebar-right.component";
 
 @Component({
     selector: "app-personality-description",
     templateUrl: "./personality-description.component.html",
     styleUrls: ["./personality-description.component.scss"],
     changeDetection: ChangeDetectionStrategy.Eager,
-    imports: [
-        RouterLink,
-        ReactiveFormsModule,
-        NgTemplateOutlet,
-        VoiceAssistantPersonalitySidebarRightComponent,
-    ],
+    imports: [RouterLink, ReactiveFormsModule, NgTemplateOutlet],
 })
 export class PersonalityDescriptionComponent implements OnInit {
     private readonly destroyRef = inject(DestroyRef);
