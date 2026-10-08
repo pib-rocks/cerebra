@@ -373,6 +373,11 @@ describe("VoiceAssistantComponent", () => {
         expect(
             document.body.querySelector("[data-test=LBL_Channel_Direct]"),
         ).not.toBeNull();
+        expect(
+            document.body.querySelector(
+                "[data-test=LBL_Channel_Offline_Explanation]",
+            ),
+        ).toBeNull();
         component.personalityForm.patchValue({
             "name-input": "Ada",
             gender: "Female",
@@ -403,6 +408,134 @@ describe("VoiceAssistantComponent", () => {
                 .args[0] as VoiceAssistant;
         expect(updated.channel).toBe(SMART_CHANNEL);
         expect(updated.description).toBe("Du bist pib.");
+        component.ngbModalRef?.close();
+    });
+
+    it("hides Smart for the on-device model and returns the channel to Direct", () => {
+        const cloud = new AssistantModel(
+            2,
+            "gpt-6",
+            "GPT-6",
+            true,
+            null,
+            {
+                tools: true,
+                images: true,
+                live: false,
+                stt: false,
+                tts: false,
+            },
+            "provider-2",
+            true,
+        );
+        const onDevice = new AssistantModel(
+            6,
+            "local-model",
+            "On device",
+            false,
+            null,
+            {
+                tools: false,
+                images: false,
+                live: false,
+                stt: false,
+                tts: false,
+                offline: true,
+            },
+        );
+        voiceAssistantService.assistantModelsSubject.next([cloud, onDevice]);
+        fixture.detectChanges();
+        component.openAddModal();
+        component.advancedOpen = true;
+        fixture.detectChanges();
+        expect(
+            document.body.querySelector("[data-test=RBN_Channel_Smart]"),
+        ).not.toBeNull();
+        component.personalityForm.controls["channel"].setValue(SMART_CHANNEL);
+        component.personalityForm.controls["assistantModel"].setValue(
+            String(onDevice.id),
+        );
+        fixture.detectChanges();
+        // The selected model is the on-device one: Smart is no longer offered
+        // and the channel the dialog was holding moved back to Direct on its
+        // own. The rendered state of that dialog (Direct plus the explanation,
+        // no Smart choice) is asserted by the sibling spec that opens the
+        // dialog on such a personality - this fixture does not re-render the
+        // modal's embedded view after a later form change.
+        expect(component.offlineModelSelected).toBeTrue();
+        expect(component.showSmartChannelControl).toBeFalse();
+        expect(component.personalityForm.controls["channel"].value).toBe(
+            DIRECT_CHANNEL,
+        );
+        component.personalityForm.patchValue({
+            "name-input": "Ada",
+            gender: "Female",
+            pausethreshold: 0.8,
+            messageHistory: 10,
+        });
+        component.addPersonality();
+        const created =
+            voiceAssistantService.createPersonality.calls.mostRecent()
+                .args[0] as VoiceAssistant;
+        expect(created.channel).toBe(DIRECT_CHANNEL);
+        component.ngbModalRef?.close();
+    });
+
+    it("does not rewrite Smart when an on-device personality is opened", () => {
+        const onDevice = new AssistantModel(
+            6,
+            "local-model",
+            "On device",
+            false,
+            null,
+            {
+                tools: false,
+                images: false,
+                live: false,
+                stt: false,
+                tts: false,
+                offline: true,
+            },
+        );
+        voiceAssistantService.assistantModelsSubject.next([onDevice]);
+        const stored = new VoiceAssistant(
+            "persona-1",
+            "Ada",
+            "Female",
+            0.8,
+            "Du bist pib.",
+            onDevice.id,
+            10,
+            String(onDevice.id),
+            SMART_CHANNEL,
+        );
+        voiceAssistantService.personalities.push(stored);
+        voiceAssistantService.getPersonality.and.returnValue(stored);
+        fixture.detectChanges();
+        component.openEditModal(stored.personalityId);
+        component.advancedOpen = true;
+        fixture.detectChanges();
+        expect(component.personalityForm.controls["assistantModel"].value).toBe(
+            String(onDevice.id),
+        );
+        expect(component.personalityForm.controls["channel"].value).toBe(
+            SMART_CHANNEL,
+        );
+        expect(stored.channel).toBe(SMART_CHANNEL);
+        expect(
+            document.body.querySelector("[data-test=RBN_Channel_Smart]"),
+        ).toBeNull();
+        expect(
+            document.body.querySelector(
+                "[data-test=LBL_Channel_Offline_Explanation]",
+            ),
+        ).not.toBeNull();
+        component.editPersonality(stored.personalityId);
+        const updated =
+            voiceAssistantService.updatePersonalityById.calls.mostRecent()
+                .args[0] as VoiceAssistant;
+        expect(updated.channel).toBe(DIRECT_CHANNEL);
+        expect(stored.channel).toBe(SMART_CHANNEL);
         component.ngbModalRef?.close();
     });
 
