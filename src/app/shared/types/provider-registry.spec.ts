@@ -1,8 +1,11 @@
 import {
     CLOUD_TOKEN_API_NAME,
     DEFAULT_PROVIDER_REF,
+    MISSING_KEY_TURN,
+    capabilitiesFrom,
     isCapabilityControlDisabled,
     isProviderConfigured,
+    isOfflineModel,
     isListedModel,
     isProviderOptionDisabled,
     chatStartRefusal,
@@ -507,5 +510,58 @@ describe("provider registry selection", () => {
             models.every((model) => model.providerName === "Google"),
         ).toBeTrue();
         expect(models[0].capabilities).not.toEqual(models[1].capabilities);
+    });
+});
+
+describe("on-device offline model (PR-1931)", () => {
+    const offline = row(6, false, false, "qwen-fast", null);
+    offline.visualName = "Local (qwen-fast)";
+    offline.capabilities = {
+        tools: false,
+        images: false,
+        live: false,
+        stt: false,
+        tts: false,
+        offline: true,
+    };
+
+    it("carries the offline capability through capabilitiesFrom", () => {
+        expect(capabilitiesFrom({offline: true}, false).offline).toBeTrue();
+        expect(capabilitiesFrom({tools: true}, false).offline).toBeFalse();
+    });
+
+    it("treats a keyless offline row as configured without a key", () => {
+        expect(isOfflineModel(offline)).toBeTrue();
+        expect(offline.credentialRef).toBeNull();
+        expect(isProviderConfigured(offline, false)).toBeTrue();
+        expect(isProviderConfigured(offline, false, [offline])).toBeTrue();
+    });
+
+    it("lists the offline row for selection and does not disable it", () => {
+        expect(isListedModel(offline)).toBeTrue();
+        expect(isProviderOptionDisabled(offline, false)).toBeFalse();
+        expect(
+            providersForSelection([offline], null).map((model) => model.id),
+        ).toEqual([offline.id]);
+    });
+
+    it("does not mark a personality on the offline row as needing a key", () => {
+        expect(
+            personalityAttention(String(offline.id), [offline], false),
+        ).toBeNull();
+        expect(
+            personalityNeedsAttention(String(offline.id), [offline], false),
+        ).toBeFalse();
+        expect(
+            chatStartRefusal(String(offline.id), [offline], false),
+        ).toBeNull();
+    });
+
+    it("still marks a keyless cloud row as needing a key", () => {
+        const keyless = row(8, true, false, "gpt-6", null);
+        expect(isProviderConfigured(keyless, false)).toBeFalse();
+        expect(chatStartRefusal(String(keyless.id), [keyless], false)).toBe(
+            MISSING_KEY_TURN,
+        );
     });
 });

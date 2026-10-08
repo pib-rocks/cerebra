@@ -23,6 +23,12 @@ export interface ProviderCapabilities {
     live: boolean;
     stt: boolean;
     tts: boolean;
+    /**
+     * The model runs on the device and needs no provider key. Set only on the
+     * on-device row. Optional so existing capability literals stay valid; read
+     * it through isOfflineModel() rather than the raw flag.
+     */
+    offline?: boolean;
 }
 
 export interface ProviderSelectionRow {
@@ -54,16 +60,33 @@ export function capabilitiesFrom(
         live: Boolean(raw?.live),
         stt: Boolean(raw?.stt),
         tts: Boolean(raw?.tts),
+        offline: Boolean(raw?.offline),
     };
+}
+
+/**
+ * The model runs on the device and needs no provider key. The backend marks it
+ * with the offline capability. Without reading it, a keyless on-device model
+ * looks like a row whose key is missing and every chat is refused (PR-1931).
+ */
+export function isOfflineModel(model: ProviderSelectionRow): boolean {
+    return model.capabilities?.offline === true;
 }
 
 export function hasImagesCapability(model: ProviderSelectionRow): boolean {
     return model.capabilities?.images === true;
 }
 
-/** A personality may choose an image model or a named live model. */
+/**
+ * A personality may choose an image model, a named live model, or the
+ * on-device model. Mirrors the backend's is_listed_model.
+ */
 export function isListedModel(model: ProviderSelectionRow): boolean {
-    return hasImagesCapability(model) || model.capabilities?.live === true;
+    return (
+        hasImagesCapability(model) ||
+        model.capabilities?.live === true ||
+        isOfflineModel(model)
+    );
 }
 
 export function usesCloudToken(model: ProviderSelectionRow): boolean {
@@ -71,10 +94,11 @@ export function usesCloudToken(model: ProviderSelectionRow): boolean {
 }
 
 /**
- * A pasted key, or the SmartConnect token for the pib.Cloud row.
- * When the catalogue is passed, the key is the provider's one credential,
- * shared by every model of that provider. A model row is not a second key,
- * and an empty provider is not filled from another provider.
+ * A pasted key, the SmartConnect token for the pib.Cloud row, or no key at all
+ * for the on-device model. When the catalogue is passed, the key is the
+ * provider's one credential, shared by every model of that provider. A model
+ * row is not a second key, and an empty provider is not filled from another
+ * provider.
  */
 export function isProviderConfigured(
     model: ProviderSelectionRow,
@@ -83,6 +107,11 @@ export function isProviderConfigured(
 ): boolean {
     if (usesCloudToken(model)) {
         return cloudTokenStored;
+    }
+    // The on-device model needs no key. Without this it looks like a row whose
+    // key is missing and the chat is refused (PR-1931).
+    if (isOfflineModel(model)) {
+        return true;
     }
     const credential =
         models == null
@@ -309,7 +338,13 @@ export function providerOptionValue(
     return String(model.id);
 }
 
-const CAPABILITY_KEYS: (keyof ProviderCapabilities)[] = [
+/**
+ * The capability flags shared at the provider level. offline is per-model and
+ * not aggregated, so it is not one of these.
+ */
+type SharedCapabilityKey = "tools" | "images" | "live" | "stt" | "tts";
+
+const CAPABILITY_KEYS: SharedCapabilityKey[] = [
     "tools",
     "images",
     "live",
