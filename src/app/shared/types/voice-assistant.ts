@@ -6,7 +6,8 @@ import {
 } from "./personality-dialog";
 import {
     DEFAULT_PROVIDER_REF,
-    providerRefFromSelection,
+    modelRefFromSelection,
+    selectionFromModelRef,
 } from "./provider-registry";
 
 export class VoiceAssistant implements SidebarElement {
@@ -123,7 +124,12 @@ export interface VoiceAssistantDto {
     description: string | null | undefined;
     gender: string;
     channel: ChatChannel;
-    providerRef: string;
+    /**
+     * Typed, unambiguous model reference: "default", or "model:<id>". The
+     * prefix carries the kind, so a provider-account id can never be read as
+     * a model-row id. providerRef is its deprecated alias on the wire.
+     */
+    modelRef: string;
     sttEngine: string;
     ttsEngine: string;
     liveIdleTimeout: number;
@@ -162,13 +168,12 @@ export function parseVoiceAssistantToDto(
     voiceAssistant: VoiceAssistant,
 ): VoiceAssistantDto {
     const dialog = readPersonalityDialog(voiceAssistant);
-    const choice = providerRefFromSelection(voiceAssistant.providerRef ?? "");
     return {
         name: voiceAssistant.name,
         description: voiceAssistant.description ?? "",
         gender: voiceAssistant.gender,
         channel: parseChatChannel(voiceAssistant.channel),
-        providerRef: choice.providerRef,
+        modelRef: modelRefFromSelection(voiceAssistant.providerRef ?? ""),
         sttEngine: dialog.voiceInput,
         ttsEngine: dialog.voiceOutput,
         liveIdleTimeout: dialog.idleTimeoutSeconds,
@@ -216,6 +221,8 @@ export interface PersonalityRecord extends StoredPersonalityDialog {
     description?: string | null;
     assistantModelId?: number | null;
     messageHistory?: number;
+    /** Typed reference; preferred over the deprecated providerRef alias. */
+    modelRef?: string | null;
     providerRef?: string | null;
     channel?: string | null;
     needsNewModel?: boolean;
@@ -224,6 +231,9 @@ export interface PersonalityRecord extends StoredPersonalityDialog {
 export function parseDtoToVoiceAssistant(
     dummyVoiceAssistant: PersonalityRecord,
 ): VoiceAssistant {
+    const storedSelection =
+        selectionFromModelRef(dummyVoiceAssistant.modelRef) ??
+        dummyVoiceAssistant.providerRef;
     const parsed = new VoiceAssistant(
         dummyVoiceAssistant.personalityId,
         dummyVoiceAssistant.name,
@@ -232,7 +242,7 @@ export function parseDtoToVoiceAssistant(
         dummyVoiceAssistant.description ?? "",
         dummyVoiceAssistant.assistantModelId,
         dummyVoiceAssistant.messageHistory,
-        dummyVoiceAssistant.providerRef,
+        storedSelection,
         // Stored channel, not effectiveChannel. The installer flag only
         // changes how the personality is shown and run.
         dummyVoiceAssistant.channel,

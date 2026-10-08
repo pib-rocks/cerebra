@@ -569,6 +569,44 @@ export function providerRefFromSelection(selection: string): {
     };
 }
 
+/** Namespace of a typed model reference: {@code model:<id>}. */
+export const MODEL_REF_PREFIX = "model:";
+
+/**
+ * The typed spelling of a stored reference: "default", or "model:<id>". The
+ * prefix carries the kind, so a provider-account id can never be read as a
+ * model-row id. This is the canonical field (modelRef) the personality write
+ * sends; providerRef and assistantModelId are its deprecated aliases.
+ */
+export function modelRefFromSelection(selection: string): string {
+    const {providerRef, assistantModelId} = providerRefFromSelection(selection);
+    if (providerRef === DEFAULT_PROVIDER_REF || assistantModelId == null) {
+        return DEFAULT_PROVIDER_REF;
+    }
+    return `${MODEL_REF_PREFIX}${assistantModelId}`;
+}
+
+/**
+ * The bare selection a typed reference names, for the existing resolution
+ * code. A value without the model: prefix is returned unchanged, so the
+ * deprecated providerRef alias keeps working for its migration window.
+ */
+export function selectionFromModelRef(
+    modelRef: string | null | undefined,
+): string | null {
+    if (modelRef == null || modelRef === "") {
+        return null;
+    }
+    if (modelRef === DEFAULT_PROVIDER_REF) {
+        return DEFAULT_PROVIDER_REF;
+    }
+    if (!modelRef.startsWith(MODEL_REF_PREFIX)) {
+        return modelRef;
+    }
+    const id = Number(modelRef.slice(MODEL_REF_PREFIX.length));
+    return Number.isInteger(id) && id >= 1 ? String(id) : null;
+}
+
 /** A control is disabled by the selected row's capability flag. */
 export function isCapabilityControlDisabled(
     model: ProviderSelectionRow | undefined,

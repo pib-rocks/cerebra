@@ -444,14 +444,14 @@ describe("VoiceAssistantService", () => {
             "gender",
             "liveIdleTimeout",
             "messageHistory",
+            "modelRef",
             "name",
             "pauseThreshold",
-            "providerRef",
             "sttEngine",
             "toolCalling",
             "ttsEngine",
         ]);
-        expect(created["providerRef"]).toBe(DEFAULT_PROVIDER_REF);
+        expect(created["modelRef"]).toBe(DEFAULT_PROVIDER_REF);
         expect(created["channel"]).toBe(SMART_CHANNEL);
         expect("voiceMode" in created).toBeFalse();
         service.updatePersonalityById(klaus);
@@ -463,7 +463,7 @@ describe("VoiceAssistantService", () => {
             Object.keys(created).sort(),
         );
         expect(updated["channel"]).toBe(created["channel"]);
-        expect(updated["providerRef"]).toBe(created["providerRef"]);
+        expect(updated["modelRef"]).toBe(created["modelRef"]);
         expect("voiceMode" in updated).toBeFalse();
     });
 
