@@ -45,6 +45,7 @@ import {
 import {
     DEFAULT_PROVIDER_REF,
     MISSING_KEY_MARK,
+    isOfflineModel,
     isProviderConfigured,
     isProviderOptionDisabled,
     personalityAttention,
@@ -92,6 +93,14 @@ export class VoiceAssistantComponent implements OnInit {
     storedProviderRef: string | null = null;
     cloudTokenStored = false;
     smartChatsEnabled = true;
+    /**
+     * True while a stored personality is copied into the form. That copy
+     * is not the user selecting the on-device model, so the channel it
+     * already carries is left alone.
+     */
+    private retainStoredChannel = false;
+    /** Last model-control value seen by syncConstraints. */
+    private seenAssistantModel: string | null = null;
     retiredNotice: string | null = null;
     readonly missingKeyMark = MISSING_KEY_MARK;
     readonly isProviderConfigured = isProviderConfigured;
@@ -285,6 +294,12 @@ export class VoiceAssistantComponent implements OnInit {
         this.advancedOpen = false;
         this.storedProviderRef = null;
         this.rebuildSelection();
+        // defaultChannel() reads the model control. Point it at the model
+        // this dialog will show before reset() replaces the previous one.
+        this.personalityForm.controls["assistantModel"].setValue(
+            DEFAULT_PROVIDER_REF,
+            {emitEvent: false},
+        );
         this.personalityForm.reset({
             gender: "Female",
             pausethreshold: 0.8,
@@ -314,6 +329,7 @@ export class VoiceAssistantComponent implements OnInit {
             const dialog = readPersonalityDialog(updatePersonality);
             this.storedProviderRef = updatePersonality?.providerRef ?? null;
             this.rebuildSelection();
+            this.retainStoredChannel = true;
             this.personalityForm.patchValue({
                 "name-input": updatePersonality?.name,
                 gender: updatePersonality?.gender,
@@ -330,6 +346,7 @@ export class VoiceAssistantComponent implements OnInit {
                 idleTimeoutSeconds: dialog.idleTimeoutSeconds,
                 mcp: dialog.mcp,
             });
+            this.retainStoredChannel = false;
             this.thresholdString =
                 this.personalityForm.controls["pausethreshold"].value + "s";
             this.showModal();
@@ -341,6 +358,9 @@ export class VoiceAssistantComponent implements OnInit {
             const choice = providerRefFromSelection(
                 String(this.personalityForm.controls["assistantModel"].value),
             );
+            // The Smart control is hidden for the installer flag and for the
+            // on-device model. A new personality is then stored as Direct,
+            // so the on-device model can never be sent with channel smart.
             const channel = this.showSmartChannelControl
                 ? parseChatChannel(
                       String(this.personalityForm.controls["channel"].value),
@@ -381,7 +401,13 @@ export class VoiceAssistantComponent implements OnInit {
             );
             updatePersonality.providerRef = choice.providerRef;
             updatePersonality.assistantModelId = choice.assistantModelId;
-            if (this.showSmartChannelControl) {
+            if (this.offlineModelSelected) {
+                // Smart runs through Hermes, which needs a 64,000 token
+                // context window. The on-device model offers 32,768 at most,
+                // so this combination is never written. The installer flag
+                // is different: it leaves a stored Smart channel as it is.
+                updatePersonality.channel = DIRECT_CHANNEL;
+            } else if (this.showSmartChannelControl) {
                 updatePersonality.channel = parseChatChannel(
                     String(this.personalityForm.controls["channel"].value),
                 );
@@ -404,10 +430,37 @@ export class VoiceAssistantComponent implements OnInit {
         return this.attentionFor(personalityId)?.notice ?? MISSING_KEY_MARK;
     };
 
+    /**
+     * Smart is offered when the installer left it on and the selected model
+     * can run it. The on-device model cannot: Hermes needs a context window
+     * of at least 64000 tokens, and that model offers 32768 at most.
+     */
     get showSmartChannelControl(): boolean {
-        return showSmartChannelControl(this.smartChatsEnabled);
+        return (
+            showSmartChannelControl(this.smartChatsEnabled) &&
+            !this.offlineModelSelected
+        );
     }
 
+    /**
+     * The dialog's model control, resolved against the offered rows.
+     * The offline capability marks the on-device model; the name is not used.
+     */
+    get offlineModelSelected(): boolean {
+        if (this.personalityForm == null) {
+            return false;
+        }
+        const selection = String(
+            this.personalityForm.controls["assistantModel"].value,
+        );
+        const model = resolveProvider(
+            providerRefFromSelection(selection).providerRef,
+            this.selectionModels,
+        );
+        return model != null && isOfflineModel(model);
+    }
+
+    /** Smart when that control is shown, otherwise Direct. */
     private defaultChannel() {
         return this.showSmartChannelControl ? SMART_CHANNEL : DIRECT_CHANNEL;
     }
@@ -508,6 +561,34 @@ export class VoiceAssistantComponent implements OnInit {
         this.toolCallingReason = tools.reason;
         this.imageReason = images.reason;
         this.retiredNotice = this.retiredNoticeForSelection();
+        this.keepOnDeviceModelOnDirect();
+    }
+
+    /**
+     * Selecting the on-device model while Smart is chosen moves the channel
+     * back to Direct. Copying a stored personality into the form does not:
+     * an existing Smart plus on-device row is left as it was stored.
+     */
+    private keepOnDeviceModelOnDirect(): void {
+        const selection = String(
+            this.personalityForm.controls["assistantModel"].value,
+        );
+        const previous = this.seenAssistantModel;
+        this.seenAssistantModel = selection;
+        if (
+            this.retainStoredChannel ||
+            previous === null ||
+            previous === selection
+        ) {
+            return;
+        }
+        if (!this.offlineModelSelected) {
+            return;
+        }
+        const channel = this.personalityForm.controls["channel"];
+        if (channel.value === SMART_CHANNEL) {
+            channel.setValue(DIRECT_CHANNEL, {emitEvent: false});
+        }
     }
 
     /** The Live control is not a switch. It follows the chosen model. */
