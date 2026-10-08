@@ -19,9 +19,9 @@ const PERSONALITY_WRITE_KEYS = [
     "gender",
     "liveIdleTimeout",
     "messageHistory",
+    "modelRef",
     "name",
     "pauseThreshold",
-    "providerRef",
     "sttEngine",
     "toolCalling",
     "ttsEngine",
@@ -54,7 +54,7 @@ describe("personality write body", () => {
 
         expect(Object.keys(created).sort()).toEqual(PERSONALITY_WRITE_KEYS);
         expect(created.channel).toBe(SMART_CHANNEL);
-        expect(created.providerRef).toBe("7");
+        expect(created.modelRef).toBe("model:7");
         expect("voiceMode" in created).toBeFalse();
         expect(created.sttEngine).toBe("6");
         expect(created.ttsEngine).toBe(LOCAL_VOICE_OUTPUT);
@@ -111,7 +111,7 @@ describe("personality write body", () => {
         const created = personalityWriteBody(persona, true);
 
         expect("voiceMode" in created).toBeFalse();
-        expect(created.providerRef).toBe(DEFAULT_PROVIDER_REF);
+        expect(created.modelRef).toBe(DEFAULT_PROVIDER_REF);
         expect(created.sttEngine).toBe(LOCAL_VOICE_INPUT);
         expect(created.ttsEngine).toBe(LOCAL_VOICE_OUTPUT);
         expect(created.liveIdleTimeout).toBe(DEFAULT_IDLE_TIMEOUT_SECONDS);
@@ -124,7 +124,7 @@ describe("personality write body", () => {
             Object.keys(created).sort(),
         );
         expect(updated.channel).toBe(created.channel);
-        expect(updated.providerRef).toBe(created.providerRef);
+        expect(updated.modelRef).toBe(created.modelRef);
         expect("voiceMode" in updated).toBeFalse();
         expect(updated.name).toBe("Ada renamed");
     });
