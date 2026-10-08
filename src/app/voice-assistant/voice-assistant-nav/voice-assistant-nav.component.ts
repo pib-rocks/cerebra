@@ -18,17 +18,13 @@ import {Observable} from "rxjs";
 import {SidebarElement} from "src/app/shared/interfaces/sidebar-element.interface";
 import {CerebraRegex} from "src/app/shared/types/cerebra-regex";
 import {PersonalityDescriptionComponent} from "../personality-description/personality-description.component";
-import {VoiceAssistantPersonalitySidebarRightComponent} from "../personality-description/voice-assistant-personality-sidebar-right/voice-assistant-personality-sidebar-right.component";
 
 @Component({
     selector: "app-voice-assistant-nav",
     templateUrl: "./voice-assistant-nav.component.html",
     styleUrls: ["./voice-assistant-nav.component.scss"],
     changeDetection: ChangeDetectionStrategy.Eager,
-    imports: [
-        PersonalityDescriptionComponent,
-        VoiceAssistantPersonalitySidebarRightComponent,
-    ],
+    imports: [PersonalityDescriptionComponent],
 })
 export class VoiceAssistantNavComponent implements OnInit, AfterViewChecked {
     private readonly destroyRef = inject(DestroyRef);
@@ -39,13 +35,15 @@ export class VoiceAssistantNavComponent implements OnInit, AfterViewChecked {
     @ViewChild("descriptionModal")
     private descriptionModal?: TemplateRef<unknown>;
 
-    @ViewChild("settingsModal")
-    private settingsModal?: TemplateRef<unknown>;
-
     sidebarElements?: SidebarElement[];
     selectedPersonalityId = "";
     @Input() subject?: Observable<SidebarElement[]>;
     @Input() button?: {enabled: boolean; func: () => void};
+    /** Opens the shared add/edit dialog for the active personality. */
+    @Input() editButton?: {
+        enabled: boolean;
+        func: (personalityId: string) => void;
+    };
     @Input() defaultRoute?: string;
     @Input() needsAttention?: (id: string) => boolean;
     @Input() attentionLabel?: (id: string) => string;
@@ -100,14 +98,24 @@ export class VoiceAssistantNavComponent implements OnInit, AfterViewChecked {
                         relativeTo: this.route,
                     });
                 } else {
-                    const redirect = this.getRedirectRoute();
-                    if (redirect) {
-                        this.selectedPersonalityId = redirect;
-                        this.router.navigate([redirect], {
-                            relativeTo: this.route,
-                        });
-                    } else {
-                        this.router.navigate([this.defaultRoute]);
+                    // A plain list update (an edit, a save) must not move the
+                    // user: only redirect when the routed personality is gone.
+                    const current = this.currentRoutePersonalityId();
+                    const gone =
+                        current != null &&
+                        !elements.some(
+                            (element) => element.getUUID() === current,
+                        );
+                    if (gone) {
+                        const redirect = this.getRedirectRoute();
+                        if (redirect) {
+                            this.selectedPersonalityId = redirect;
+                            this.router.navigate([redirect], {
+                                relativeTo: this.route,
+                            });
+                        } else {
+                            this.router.navigate([this.defaultRoute]);
+                        }
                     }
                 }
                 // Zoneless: a later subject emission does not refresh the view on its own.
@@ -135,8 +143,27 @@ export class VoiceAssistantNavComponent implements OnInit, AfterViewChecked {
         );
     }
 
-    openSettingsModal(): void {
-        this.openModal(this.settingsModal, "personality-settings-modal-title");
+    /**
+     * The settings button opens the shared add/edit dialog. The dialog owns
+     * Save/Cancel; the former right-hand settings component is gone.
+     */
+    openSettings(): void {
+        const personalityId = this.activePersonalityId();
+        if (personalityId === "") {
+            return;
+        }
+        this.editButton?.func(personalityId);
+    }
+
+    /** The personality the route points at, or the selected one as a fallback. */
+    activePersonalityId(): string {
+        return this.currentRoutePersonalityId() ?? this.selectedPersonalityId;
+    }
+
+    private currentRoutePersonalityId(): string | undefined {
+        return this.router.url
+            .split("/")
+            .find((segment) => RegExp(CerebraRegex.UUID).test(segment));
     }
 
     private openModal(
@@ -208,9 +235,7 @@ export class VoiceAssistantNavComponent implements OnInit, AfterViewChecked {
     }
 
     getRedirectRoute(): string | undefined {
-        const routerUuid: string | undefined = this.router.url
-            .split("/")
-            .find((segment) => RegExp(CerebraRegex.UUID).test(segment));
+        const routerUuid = this.currentRoutePersonalityId();
         if (routerUuid && this.sidebarElements) {
             const elem = this.sidebarElements.find((sidebarElement) =>
                 RegExp(routerUuid).test(sidebarElement.getUUID()),
