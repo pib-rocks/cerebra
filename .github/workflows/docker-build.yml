@@ -139,9 +139,15 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
 
     # No `if:` guard needed - the run has already failed if there is no tag.
+    # source must be the checkout. With no source, bake-action builds the Git
+    # context https://github.com/<owner>/<repo>.git#<github.sha>. On
+    # workflow_dispatch that SHA is the branch tip, not the tag this job
+    # checked out and validated. A local path follows that checkout, which is
+    # the tag on both the dispatch path and the release path.
     - name: Build and push Docker with tags
       uses: docker/bake-action@v7
       with:
+        source: .
         push: true
         set: |
           *.platform=linux/arm64
