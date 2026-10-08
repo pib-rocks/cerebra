@@ -58,31 +58,29 @@ input::placeholder {
     color: $grey-color;
 }
 
-.custom-switch.custom-switch-pib .custom-control-label::before {
+// Bootstrap 5 draws the switch knob as a background image, so the knob colours
+// are inlined SVGs: $grey-color (#ccc) when off, $pink-color (#e10072) when on.
+// The border is the full shorthand on purpose: component stylesheets import
+// this file, where the bare `input` rule below gains the component attribute
+// and would otherwise strip the track border with `border: none`.
+.form-switch.form-switch-pib .form-check-input {
+    --bs-form-switch-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23ccc'/%3e%3c/svg%3e");
     background-color: transparent;
-    border-color: $white-color;
+    border: var(--bs-border-width) solid $white-color;
 }
 
-.custom-switch.custom-switch-pib
-    .custom-control-input:checked
-    ~ .custom-control-label::after {
-    background-color: $pink-color;
+.form-switch.form-switch-pib .form-check-input:checked {
+    --bs-form-switch-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23e10072'/%3e%3c/svg%3e");
 }
 
-.custom-switch.custom-switch-pib
-    .custom-control-input
-    ~ .custom-control-label::after {
-    background-color: $grey-color;
-}
-
-.custom-control-label {
+.form-switch .form-check-label {
     color: $white-color;
 
     font-weight: normal !important;
     font-size: 16px;
 }
 
-.custom-switch {
+.form-switch {
     display: inline-block;
 }
 

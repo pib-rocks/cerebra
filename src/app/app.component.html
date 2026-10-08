@@ -1,4 +1,8 @@
-<div class="wrapper">
+<div
+    class="wrapper"
+    [class.display-path]="onDisplayPath"
+    [class.sidebar-collapse]="sidebarCollapsed">
+    @if (!onDisplayPath) {
     <div class="sidebar-wrapper">
         <aside
             class="main-sidebar elevation-4 sidebar justify-content-between d-flex flex-column">
@@ -22,7 +26,6 @@
                     <nav class="mt-12">
                         <ul
                             class="nav nav-pills nav-sidebar flex-column"
-                            data-widget="treeview"
                             role="menu"
                             routerLinkActive="show">
                             <li
@@ -35,7 +38,7 @@
                                     [class.btn-active]="isActiveRoute"
                                     [routerLink]="['/joint-control', 'head']">
                                     <svg
-                                        class="mr-1"
+                                        class="me-1"
                                         xmlns="http://www.w3.org/2000/svg"
                                         height="20px"
                                         viewBox="0 0 24 24"
@@ -56,7 +59,7 @@
                                     routerLinkActive="btn-active"
                                     routerLink="pose">
                                     <svg
-                                        class="mr-1"
+                                        class="me-1"
                                         height="18px"
                                         xmlns="http://www.w3.org/2000/svg"
                                         viewBox="0 0 55.186 55.186">
@@ -80,7 +83,7 @@
                                     routerLinkActive="btn-active"
                                     routerLink="camera">
                                     <svg
-                                        class="mr-1"
+                                        class="me-1"
                                         width="20px"
                                         height="20px"
                                         viewBox="0 0 24 24"
@@ -102,7 +105,7 @@
                                     routerLinkActive="btn-active"
                                     routerLink="voice-assistant">
                                     <svg
-                                        class="mr-1"
+                                        class="me-1"
                                         width="20px"
                                         height="20px"
                                         viewBox="0 0 48 48"
@@ -145,7 +148,7 @@
                                     routerLinkActive="btn-active"
                                     routerLink="program">
                                     <svg
-                                        class="mr-1"
+                                        class="me-1"
                                         xmlns="http://www.w3.org/2000/svg"
                                         height="20px"
                                         viewBox="0 0 24 24"
@@ -166,7 +169,7 @@
                                     routerLinkActive="btn-active"
                                     routerLink="system">
                                     <svg
-                                        class="mr-1"
+                                        class="me-1"
                                         xmlns="http://www.w3.org/2000/svg"
                                         height="20px"
                                         viewBox="0 0 24 24"
@@ -189,6 +192,7 @@
             </div>
         </aside>
     </div>
+    }
     <div class="content-wrapper">
         <div class="container-fluid">
             <div class="d-flex flex-row">
@@ -197,12 +201,31 @@
                         id="hamburger-button"
                         data-test="BTN_Hamburger"
                         class="btn bi bi-list"
-                        data-widget="pushmenu"></button>
+                        (click)="toggleSidebar()"></button>
                 </div>
                 <div class="flex-shrink-1 flex-grow-1 overflow-hidden">
+                    <app-conversation-status
+                        surface="header"></app-conversation-status>
                     <router-outlet></router-outlet>
                 </div>
             </div>
         </div>
     </div>
+    @if (showStartupPassword()) {
+    <div
+        id="startup-password-modal"
+        class="modal d-block cerebra-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="startup-password-title">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <app-startup-password></app-startup-password>
+            </div>
+        </div>
+    </div>
+    <div
+        id="startup-password-backdrop"
+        class="modal-backdrop fade show cerebra-modal-backdrop"></div>
+    }
 </div>

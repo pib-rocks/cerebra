@@ -11,15 +11,14 @@
                 style="background-color: #041939">
                 <label class="p-1 text-break">Voice interaction</label>
                 <div class="row">
-                    <div class="col text-right">
+                    <div class="col text-end">
                         <img
                             class="microphone-icon align-middle"
                             src="../../assets/voice-assistant-svgs/chat/voice_interaction_off.svg" />
                     </div>
-                    <div class="col pr-0 pl-0">
+                    <div class="col pe-0 ps-0">
                         <div
                             id="tooltip-smart-connect-disabled"
-                            data-toggle="tooltip"
                             [title]="smartConnectActive ? '' : 'Enable SmartConnect to start the Voice-Assistant' ">
                             <button
                                 class="btn border-0 p-0"
@@ -28,14 +27,14 @@
                                 type="button"
                                 value="{{turnedOn}}"
                                 (click)="toggleVoiceAssistant()"
-                                [disabled]="!smartConnectActive">
+                                [disabled]="!localVoiceEnabled()">
                                 <img
                                     [src]="turnedOn ? '../../assets/toggle-switch-right.png' : '../../assets/toggle-switch-left.png' "
                                     alt="Toggle for turning the Voice Assistant on and off" />
                             </button>
                         </div>
                     </div>
-                    <div class="col text-left">
+                    <div class="col text-start">
                         <img
                             class="microphone-icon align-middle"
                             src="../../assets/voice-assistant-svgs/chat/voice_interaction_on.svg" />
@@ -76,7 +75,7 @@
             <span id="header-title-text">ADD CHAT</span>
         </div>
         <div
-            class="col-2 text-right"
+            class="col-2 text-end"
             id="close-button">
             <button
                 id="modal-close-button"
@@ -101,7 +100,7 @@
         </div>
     </div>
     <div
-        class="row m-2 mt-4 pr-2"
+        class="row m-2 mt-4 pe-2"
         id="row-name">
         <label
             for="name-input"

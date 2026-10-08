@@ -1,0 +1,72 @@
+@import "src/styles";
+
+.keys-tab {
+    color: white;
+}
+
+.form-headline {
+    font-size: 1.3vw;
+}
+
+.keys-hint {
+    color: white;
+    opacity: 0.85;
+}
+
+.keys-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.keys-password,
+.keys-card {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.keys-card-title {
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.keys-pair {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.keys-label {
+    min-width: 6rem;
+    margin-bottom: 0;
+}
+
+.keys-password-fields .keys-label,
+.keys-password-fields input {
+    display: block;
+    width: 100%;
+}
+
+.keys-password-fields .keys-label {
+    margin-top: 0.75rem;
+}
+
+.keys-password-fields .alert {
+    margin-top: 0.75rem;
+    margin-bottom: 0;
+}
+
+input {
+    color: $white-color;
+    background-color: $blue-dark-2;
+    border: none;
+    border-radius: 5px;
+    padding: 0.25rem 0.5rem;
+}
+
+button {
+    margin-right: 0.5rem;
+    margin-top: 0.5rem;
+}

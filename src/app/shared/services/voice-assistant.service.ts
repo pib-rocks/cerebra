@@ -3,8 +3,10 @@ import {ApiService} from "./api.service";
 import {
     VoiceAssistant,
     parseDtoToVoiceAssistant,
-    parseVoiceAssistantToDto,
+    personalityDialogFromRecord,
+    personalityWriteBody,
 } from "../types/voice-assistant";
+import {ChannelCapabilityService} from "./channel-capability.service";
 import {
     BehaviorSubject,
     Observable,
@@ -18,7 +20,12 @@ import {SidebarService} from "../interfaces/sidebar-service.interface";
 import {SidebarElement} from "../interfaces/sidebar-element.interface";
 import {RosService} from "./ros-service/ros.service";
 import {VoiceAssistantState} from "../types/voice-assistant-state";
-import {AssistantModel, AssistantModelDto} from "../types/assistantModel";
+import {AssistantModel} from "../types/assistantModel";
+import {
+    CatalogueProviderRecord,
+    flattenProviderCatalogue,
+    providerIdOf,
+} from "../types/provider-registry";
 import {ChatService} from "./chat.service";
 
 @Injectable({
@@ -40,6 +47,7 @@ export class VoiceAssistantService implements SidebarService {
         private apiService: ApiService,
         private rosService: RosService,
         private chatService: ChatService,
+        private channelCapability: ChannelCapabilityService,
     ) {
         this.getAllPersonalities();
         this.getAllAssistantModels();
@@ -72,17 +80,20 @@ export class VoiceAssistantService implements SidebarService {
         const newPersonalities: VoiceAssistant[] = [];
 
         personalities.forEach((m) => {
-            newPersonalities.push(
-                new VoiceAssistant(
-                    m.personalityId,
-                    m.name,
-                    m.gender,
-                    m.pauseThreshold,
-                    m.description,
-                    m.assistantModelId,
-                    m.messageHistory,
-                ),
+            const personality = new VoiceAssistant(
+                m.personalityId,
+                m.name,
+                m.gender,
+                m.pauseThreshold,
+                m.description,
+                m.assistantModelId,
+                m.messageHistory,
+                m.providerRef,
+                m.channel,
+                personalityDialogFromRecord(m),
             );
+            personality.needsNewModel = m.needsNewModel === true;
+            newPersonalities.push(personality);
         });
         this.personalities = newPersonalities;
         this.personalitiesSubject.next(this.personalities.slice());
@@ -117,15 +128,50 @@ export class VoiceAssistantService implements SidebarService {
                 }),
             )
             .subscribe((response) => {
-                this.setPersonalities(
-                    response["voiceAssistantPersonalities"] as VoiceAssistant[],
-                );
+                const rows = response["voiceAssistantPersonalities"] as
+                    | VoiceAssistant[]
+                    | undefined;
+                this.noteInstallerFlag(rows?.[0]);
+                this.setPersonalities(rows ?? []);
             });
+    }
+
+    /** The list and the channel document carry the same installation fact. */
+    private noteInstallerFlag(body: unknown): void {
+        if (body == null || typeof body !== "object") {
+            return;
+        }
+        const flag = (body as {smartChatsEnabled?: unknown}).smartChatsEnabled;
+        if (typeof flag === "boolean") {
+            this.channelCapability.applyInstallerFlag(flag);
+        }
+    }
+
+    setProviderCredential(providerId: number, credentialRef: string | null) {
+        const next = this.assistantModelsSubject.getValue().map((model) => {
+            if (providerIdOf(model) !== providerId) {
+                return model;
+            }
+            return new AssistantModel(
+                model.id,
+                model.apiName,
+                model.visualName,
+                model.hasImageSupport,
+                model.endpointBase,
+                model.capabilities,
+                credentialRef,
+                model.isDefault,
+                model.retired,
+                model.providerId,
+                model.providerName,
+            );
+        });
+        this.assistantModelsSubject.next(next);
     }
 
     getAllAssistantModels() {
         this.apiService
-            .get(UrlConstants.ASSISTANT_MODEL)
+            .get(UrlConstants.PROVIDER)
             .pipe(
                 catchError((err) => {
                     console.log(err);
@@ -133,14 +179,14 @@ export class VoiceAssistantService implements SidebarService {
                 }),
             )
             .subscribe((response) => {
-                const assistantModelDto = response[
-                    "assistantModels"
-                ] as AssistantModelDto[];
-                if (undefined == assistantModelDto) {
+                const providers = response["providers"] as
+                    | CatalogueProviderRecord[]
+                    | undefined;
+                if (providers == null) {
                     return;
                 }
                 this.assistantModelsSubject.next(
-                    assistantModelDto.map((dto) =>
+                    flattenProviderCatalogue(providers).map((dto) =>
                         AssistantModel.parseDtoToAssistantModel(dto),
                     ),
                 );
@@ -151,7 +197,10 @@ export class VoiceAssistantService implements SidebarService {
         this.apiService
             .post(
                 UrlConstants.PERSONALITY,
-                parseVoiceAssistantToDto(personality),
+                personalityWriteBody(
+                    personality,
+                    this.channelCapability.smartChatsEnabled,
+                ),
             )
             .pipe(
                 catchError((err) => {
@@ -160,6 +209,7 @@ export class VoiceAssistantService implements SidebarService {
                 }),
             )
             .subscribe((response) => {
+                this.noteInstallerFlag(response);
                 this.addPersonality(
                     parseDtoToVoiceAssistant(response as VoiceAssistant),
                 );
@@ -174,7 +224,10 @@ export class VoiceAssistantService implements SidebarService {
         this.apiService
             .put(
                 UrlConstants.PERSONALITY + `/${personality.personalityId}`,
-                parseVoiceAssistantToDto(personality),
+                personalityWriteBody(
+                    personality,
+                    this.channelCapability.smartChatsEnabled,
+                ),
             )
             .pipe(
                 catchError((err) => {
@@ -183,6 +236,7 @@ export class VoiceAssistantService implements SidebarService {
                 }),
             )
             .subscribe((response) => {
+                this.noteInstallerFlag(response);
                 this.updatePersonality(
                     parseDtoToVoiceAssistant(response as VoiceAssistant),
                 );

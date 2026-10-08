@@ -8,7 +8,7 @@ import {
     OnInit,
     ViewChild,
 } from "@angular/core";
-import {ActivatedRoute, Params, RouterLink} from "@angular/router";
+import {ActivatedRoute, Params} from "@angular/router";
 import {firstValueFrom, Subscription} from "rxjs";
 import {ChatService} from "src/app/shared/services/chat.service";
 import {TokenService} from "src/app/shared/services/token.service";
@@ -16,6 +16,18 @@ import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.ser
 import {ChatMessage} from "src/app/shared/types/chat-message";
 import {Chat} from "src/app/shared/types/chat.class";
 import {extractText, toDeepChat} from "src/app/shared/util/deep-chat-mapper";
+import {chatStartRefusal} from "src/app/shared/types/provider-registry";
+import {degradedChatReply} from "src/app/system/keys/key-store-session";
+import {KeyStoreService} from "src/app/system/keys/key-store.service";
+import {KeyStoreSessionService} from "src/app/system/keys/key-store-session.service";
+import {ChannelCapabilityService} from "src/app/shared/services/channel-capability.service";
+import {
+    RoutedTurn,
+    routeTurn,
+    transportRequest,
+} from "src/app/shared/types/channel-router";
+import {typedTextJoinsLive} from "src/app/shared/types/live-interaction";
+import {VoiceAssistantState} from "src/app/shared/types/voice-assistant-state";
 import "deep-chat";
 
 @Component({
@@ -23,7 +35,6 @@ import "deep-chat";
     templateUrl: "./chat-window-deep-chat.component.html",
     styleUrls: ["./chat-window-deep-chat.component.scss"],
     changeDetection: ChangeDetectionStrategy.Eager,
-    imports: [RouterLink],
     schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class ChatWindowDeepChatComponent
@@ -35,6 +46,14 @@ export class ChatWindowDeepChatComponent
     currentChatId: string | undefined;
     personalityName: string | undefined;
 
+    private cloudTokenStored = true;
+    /** Same flag the composer used to treat as SmartConnect: stored and active. */
+    private smartConnectActive = false;
+    /**
+     * Keys page reads `encryptKeyStorage` from key-store status. False means
+     * encryption is deactivated and typing does not need SmartConnect.
+     */
+    private keyStorageEncryptionOff = false;
     private pendingSignals?: {onResponse: (response: unknown) => void};
     private lastStreamedMessageId: string | undefined;
     /** Timestamp of the latest user submit, used to measure TTFT. */
@@ -43,6 +62,9 @@ export class ChatWindowDeepChatComponent
     private routeParamsSubscription?: Subscription;
     private chatMessagesSubscription?: Subscription;
     private tokenStatusSubscription?: Subscription;
+    private keyStoreStatusSubscription?: Subscription;
+    private voiceStateSubscription?: Subscription;
+    private voiceState: VoiceAssistantState = {turnedOn: false, chatId: ""};
     private readonly sendChatMessageSubscriptions = new Subscription();
 
     readonly USER_ICON =
@@ -55,9 +77,18 @@ export class ChatWindowDeepChatComponent
         private readonly voiceAssistantService: VoiceAssistantService,
         private readonly route: ActivatedRoute,
         private readonly tokenService: TokenService,
+        private readonly keyStore: KeyStoreService,
+        private readonly keyStoreSession: KeyStoreSessionService,
+        private readonly channelCapability: ChannelCapabilityService,
     ) {}
 
     ngOnInit(): void {
+        this.voiceStateSubscription =
+            this.voiceAssistantService.voiceAssistantStateObservable?.subscribe(
+                (state) => {
+                    this.voiceState = state;
+                },
+            );
         this.routeParamsSubscription = this.route.params.subscribe(
             (params: Params) => {
                 this.chatMessagesSubscription?.unsubscribe();
@@ -92,6 +123,7 @@ export class ChatWindowDeepChatComponent
         this.wireLoadHistory(el);
         this.wireValidateInput(el);
         this.wireTokenStatus(el);
+        this.wireKeyStoreStatus(el);
         this.applyNames(el);
 
         if (this.currentChatId) {
@@ -103,6 +135,8 @@ export class ChatWindowDeepChatComponent
         this.routeParamsSubscription?.unsubscribe();
         this.chatMessagesSubscription?.unsubscribe();
         this.tokenStatusSubscription?.unsubscribe();
+        this.keyStoreStatusSubscription?.unsubscribe();
+        this.voiceStateSubscription?.unsubscribe();
         this.sendChatMessageSubscriptions.unsubscribe();
     }
 
@@ -111,21 +145,46 @@ export class ChatWindowDeepChatComponent
             handler: (body: any, signals: any) => {
                 const text = extractText(body);
                 const chatId = this.currentChatId!;
+                if (!this.keyStoreSession.chatsAvailable) {
+                    signals.onResponse({
+                        role: "ai",
+                        text: degradedChatReply(this.personalityName),
+                    });
+                    return;
+                }
+                const refusal = this.turnRefusal();
+                if (refusal != null) {
+                    signals.onResponse({text: refusal});
+                    return;
+                }
                 this.submitClickMs = performance.now();
                 console.log(
                     `[PERF_TRACE_UI] SUBMIT_CLICK chatId=${chatId} t=${this.submitClickMs.toFixed(
                         3,
                     )}ms`,
                 );
-                this.pendingSignals = signals;
+                const joining = this.typedLineJoinsOpenLive(text);
+                // A line for the open live chat joins that session. Release
+                // the composer so another line can interrupt, and let the
+                // transcript arrive as chat text.
+                this.pendingSignals = joining ? undefined : signals;
+                if (joining) {
+                    signals.onClose();
+                }
+                const request = transportRequest(
+                    chatId,
+                    this.turnForMessage(joining ? text.trim() : text),
+                );
                 this.sendChatMessageSubscriptions.add(
-                    this.chatService.sendChatMessage(chatId, text).subscribe({
-                        error: (err) => {
-                            signals.onResponse({error: String(err)});
-                            this.pendingSignals = undefined;
-                            this.submitClickMs = undefined;
-                        },
-                    }),
+                    this.chatService
+                        .sendChatMessage(request.chat_id, request.content)
+                        .subscribe({
+                            error: (err) => {
+                                signals.onResponse({error: String(err)});
+                                this.pendingSignals = undefined;
+                                this.submitClickMs = undefined;
+                            },
+                        }),
                 );
             },
         };
@@ -143,26 +202,110 @@ export class ChatWindowDeepChatComponent
     }
 
     private wireValidateInput(el: any): void {
-        el.validateInput = (text?: string) => (text?.trim().length ?? 0) > 2;
+        el.validateInput = (text?: string) => (text?.trim().length ?? 0) >= 1;
     }
 
     private wireTokenStatus(el: any): void {
         this.tokenStatusSubscription?.unsubscribe();
         this.tokenStatusSubscription = this.tokenService.tokenStatus$.subscribe(
             ({tokenExists, tokenActive}) => {
-                const enabled = tokenExists && tokenActive;
-                el.textInput = {
-                    disabled: !enabled,
-                    placeholder: {
-                        text: enabled
-                            ? "Enter a message"
-                            : "Enable SmartConnect to start the Voice-Assistant",
-                    },
-                };
-                if (typeof el.disableSubmitButton === "function") {
-                    el.disableSubmitButton(!enabled);
-                }
+                this.cloudTokenStored = tokenExists;
+                this.smartConnectActive = tokenExists && tokenActive;
+                this.applyTextInput(el);
             },
+        );
+    }
+
+    /** Same status read as the Keys page: GET /api/system/key-store. */
+    private wireKeyStoreStatus(el: any): void {
+        this.keyStoreStatusSubscription?.unsubscribe();
+        this.keyStoreStatusSubscription = this.keyStore.status().subscribe({
+            next: (status) => {
+                this.keyStorageEncryptionOff =
+                    status.encryptKeyStorage === false;
+                this.applyTextInput(el);
+            },
+            error: () => {
+                this.keyStorageEncryptionOff = false;
+                this.applyTextInput(el);
+            },
+        });
+    }
+
+    /**
+     * Open when SmartConnect is active or key storage encryption is off.
+     * Locked only when both are off; the placeholder names that gap.
+     */
+    private applyTextInput(el: any): void {
+        const enabled = this.smartConnectActive || this.keyStorageEncryptionOff;
+        el.textInput = {
+            disabled: !enabled,
+            placeholder: {
+                text: enabled
+                    ? "Enter a message"
+                    : "Enable SmartConnect or deactivate key storage encryption to start the Voice-Assistant",
+            },
+        };
+        if (typeof el.disableSubmitButton === "function") {
+            el.disableSubmitButton(!enabled);
+        }
+    }
+
+    /**
+     * Direct turns carry the personality identity as the system prompt.
+     * MEMORY stays on Smart. The ROS request stays chat id plus user text.
+     */
+    turnForMessage(content: string): RoutedTurn {
+        const personality = this.personalityForTurn();
+        return routeTurn({
+            channel: personality?.channel,
+            smartChatsEnabled: this.channelCapability.smartChatsEnabled,
+            soul: personality?.description,
+            memory: null,
+            content,
+        });
+    }
+
+    private personalityForTurn() {
+        const personalityId = this.chat?.personalityId;
+        if (personalityId == null) {
+            return undefined;
+        }
+        return this.voiceAssistantService.getPersonality(personalityId);
+    }
+
+    /**
+     * The open live session of this chat. Choosing the live model is what
+     * makes the session live; a typed line joins it instead of starting
+     * a second turn.
+     */
+    private typedLineJoinsOpenLive(text: string): boolean {
+        const personality = this.personalityForTurn();
+        return typedTextJoinsLive({
+            liveOpen: this.voiceState.turnedOn && personality?.live === true,
+            liveChatId: this.voiceState.chatId,
+            messageChatId: this.currentChatId,
+            text,
+        }).join;
+    }
+
+    private turnRefusal(): string | null {
+        const personalityId = this.chat?.personalityId;
+        if (personalityId == null) {
+            return null;
+        }
+        const personality =
+            this.voiceAssistantService.getPersonality(personalityId);
+        if (personality == null) {
+            return null;
+        }
+        const models =
+            this.voiceAssistantService.assistantModelsSubject?.getValue() ?? [];
+        return chatStartRefusal(
+            personality.providerRef,
+            models,
+            this.cloudTokenStored,
+            personality.needsNewModel,
         );
     }
 

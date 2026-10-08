@@ -1,27 +1,107 @@
-<ul class="nav nav-tabs">
-    @for (sidebarElement of sidebarElements; track sidebarElement) {
-    <li
-        class="nav-item"
-        [ngClass]="{'navbar-btn-active': isRouteActive(sidebarElement.getUUID())}">
-        <a
-            class="nav-link"
-            id="personality-{{sidebarElement.getUUID()}}"
-            [attr.data-test]="'LNK_' + sidebarElement.getName()"
-            [routerLink]="[sidebarElement.getUUID(), 'chat']"
-            [ngClass]="{'navbar-ref-active': isRouteActive(sidebarElement.getUUID())}">
-            {{sidebarElement.getName()}}
-        </a>
-    </li>
-    } @if (button?.enabled ?? false) {
-    <li class="">
-        <button
-            id="add-personality-button"
-            data-test="BTN_Add_Personality"
-            type="button"
-            class="nav-link"
-            (click)="button?.func()">
-            +
-        </button>
-    </li>
+<header class="personality-header">
+    <span
+        id="active-personality-name"
+        class="active-personality-name">
+        {{ activePersonalityName }}
+    </span>
+    @if (activeNeedsAttention()) {
+    <span
+        class="speech-attention"
+        [id]="'personality-needs-key-' + selectedPersonalityId">
+        {{ activeAttentionLabel() }}
+    </span>
     }
-</ul>
+    <label
+        for="personality-select"
+        id="personality-select-label">
+        Personality
+    </label>
+    <select
+        #personalitySelect
+        id="personality-select"
+        class="form-select"
+        data-test="DDN_Personality"
+        aria-labelledby="personality-select-label"
+        (change)="onPersonalityChange($event)">
+        @for (sidebarElement of sidebarElements; track sidebarElement.getUUID())
+        {
+        <option
+            [value]="sidebarElement.getUUID()"
+            [selected]="sidebarElement.getUUID() === selectedPersonalityId">
+            {{ optionLabel(sidebarElement) }}
+        </option>
+        }
+    </select>
+    @if (button?.enabled ?? false) {
+    <button
+        id="add-personality-button"
+        data-test="BTN_Add_Personality"
+        type="button"
+        (click)="button?.func()">
+        +
+    </button>
+    }
+    <button
+        id="personality-description-button"
+        data-test="BTN_Personality_Description"
+        type="button"
+        aria-label="Edit personality description"
+        title="Edit personality description"
+        (click)="openDescriptionModal()">
+        <i
+            class="bi bi-person"
+            aria-hidden="true"></i>
+    </button>
+    <button
+        id="personality-settings-button"
+        data-test="BTN_Personality_Settings"
+        type="button"
+        aria-label="Personality settings"
+        title="Personality settings"
+        [disabled]="!(editButton?.enabled ?? false)"
+        (click)="openSettings()">
+        <i
+            class="bi bi-gear"
+            aria-hidden="true"></i>
+    </button>
+</header>
+
+<ng-template
+    #descriptionModal
+    let-modal>
+    <div
+        class="row display-flex modal-header"
+        id="personality-description-modal-header">
+        <div
+            class="col-10"
+            id="personality-description-modal-title">
+            <span>Personality description</span>
+        </div>
+        <div class="col-2 text-end">
+            <button
+                id="personality-description-modal-close"
+                type="button"
+                class="btn"
+                aria-label="Close"
+                (click)="modal.dismiss('Cross click')">
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="10"
+                    height="16">
+                    <text
+                        font-family="Titillium"
+                        fill="#FFF"
+                        font-weight="bold"
+                        font-size="16"
+                        y="12">
+                        X
+                    </text>
+                </svg>
+            </button>
+        </div>
+    </div>
+    <app-personality-description
+        [personalityId]="selectedPersonalityId"
+        [descriptionOnly]="true">
+    </app-personality-description>
+</ng-template>

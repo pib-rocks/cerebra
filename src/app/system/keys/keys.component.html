@@ -1,0 +1,220 @@
+<div class="keys-tab">
+    <div class="form-headline mb-3">Keys</div>
+
+    <div class="keys-row">
+        <input
+            id="encrypt-key-storage"
+            data-test="CHK_Encrypt_Key_Storage"
+            type="checkbox"
+            [checked]="encryptKeyStorage"
+            [disabled]="busy"
+            (change)="onEncryptionToggle($event)" />
+        <label for="encrypt-key-storage">
+            Encrypt Key Storage (requires password at robot start)
+        </label>
+    </div>
+    <p
+        class="keys-hint"
+        data-test="LBL_Key_Storage">
+        {{ keyStorageHint() }}
+    </p>
+
+    @if (error) {
+    <div
+        class="alert alert-danger"
+        id="keys-error">
+        {{ error }}
+    </div>
+    } @if (notice) {
+    <div
+        class="alert alert-success"
+        id="keys-notice">
+        {{ notice }}
+    </div>
+    }
+
+    <div class="keys-password">
+        <div class="keys-card-title">Operator password</div>
+        @if (encryptKeyStorage) {
+        <label
+            class="keys-label"
+            for="keys-operator-password">
+            One password for every provider key
+        </label>
+        <input
+            id="keys-operator-password"
+            type="password"
+            autocomplete="current-password"
+            [value]="password"
+            (input)="onPasswordInput($event)" />
+        <button
+            id="keys-change-password"
+            data-test="BTN_Change_Operator_Password"
+            type="button"
+            class="btn btn-outline-light"
+            [disabled]="busy"
+            (click)="openPasswordDialog('change')">
+            Change
+        </button>
+        } @else {
+        <button
+            id="keys-enable-encryption"
+            data-test="BTN_Turn_Encryption_On"
+            type="button"
+            class="btn btn-outline-light"
+            [disabled]="busy"
+            (click)="openPasswordDialog('enable')">
+            Set a password to turn encryption on
+        </button>
+        }
+    </div>
+
+    <div
+        class="keys-card"
+        id="keys-cloud-entry">
+        <div class="keys-card-title">pib.Cloud</div>
+        <p class="keys-hint">
+            This is the SmartConnect token, not a key to type in here.
+        </p>
+        <p id="keys-cloud-status">{{ cloudStatus() }}</p>
+        <p class="keys-hint">Re-enter the token in SmartConnect.</p>
+        <button
+            id="keys-cloud-delete"
+            type="button"
+            class="btn btn-outline-light"
+            [disabled]="!cloudTokenStored"
+            (click)="deleteCloudToken()">
+            Delete token
+        </button>
+    </div>
+
+    @for (account of keyProviders; track account.id) {
+    <div
+        class="keys-card"
+        [id]="'keys-provider-' + account.id">
+        <div class="keys-card-title">{{ account.name }}</div>
+        <div class="keys-pair">
+            <label
+                class="keys-label"
+                [for]="'keys-provider-key-' + account.id">
+                Key
+            </label>
+            <input
+                [id]="'keys-provider-key-' + account.id"
+                type="password"
+                autocomplete="off"
+                [value]="drafts[account.id] ?? ''"
+                (input)="onDraft(account.id, $event)" />
+        </div>
+        <p [id]="'keys-provider-state-' + account.id">
+            {{ account.credentialRef ? "Key stored" : "No key" }}
+        </p>
+        <button
+            type="button"
+            class="btn btn-outline-light"
+            [id]="'keys-provider-save-' + account.id"
+            [disabled]="busy"
+            (click)="saveKey(account)">
+            Save key
+        </button>
+        <button
+            type="button"
+            class="btn btn-outline-light"
+            [id]="'keys-provider-delete-' + account.id"
+            [disabled]="busy || !account.credentialRef"
+            (click)="deleteKey(account)">
+            Delete key
+        </button>
+    </div>
+    }
+</div>
+@if (passwordDialog) {
+<div
+    id="keys-password-modal"
+    class="modal d-block cerebra-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="keys-password-modal-title">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4
+                    class="modal-title"
+                    id="keys-password-modal-title">
+                    {{ passwordDialogTitle() }}
+                </h4>
+            </div>
+            <div class="modal-body keys-password-fields">
+                @if (passwordDialog === "change") {
+                <label
+                    class="keys-label"
+                    for="keys-current-password">
+                    Current password
+                </label>
+                <input
+                    id="keys-current-password"
+                    data-test="TXT_Current_Password"
+                    type="password"
+                    autocomplete="current-password"
+                    [value]="dialogPassword"
+                    (input)="onDialogPasswordInput($event)" />
+                }
+                <label
+                    class="keys-label"
+                    for="keys-new-password">
+                    New password
+                </label>
+                <input
+                    id="keys-new-password"
+                    data-test="TXT_New_Password"
+                    type="password"
+                    autocomplete="new-password"
+                    [value]="newPassword"
+                    (input)="onNewPasswordInput($event)" />
+                <label
+                    class="keys-label"
+                    for="keys-confirm-password">
+                    Confirm password
+                </label>
+                <input
+                    id="keys-confirm-password"
+                    data-test="TXT_Confirm_Password"
+                    type="password"
+                    autocomplete="new-password"
+                    [value]="confirmPassword"
+                    (input)="onConfirmPasswordInput($event)" />
+                @if (passwordDialogError) {
+                <div
+                    class="alert alert-danger"
+                    id="keys-password-modal-error"
+                    data-test="LBL_Operator_Password_Error">
+                    {{ passwordDialogError }}
+                </div>
+                }
+            </div>
+            <div class="modal-footer">
+                <button
+                    id="keys-password-ok"
+                    data-test="BTN_Operator_Password_OK"
+                    type="button"
+                    class="btn btn-outline-light"
+                    [disabled]="busy"
+                    (click)="confirmPasswordDialog()">
+                    OK
+                </button>
+                <button
+                    id="keys-password-cancel"
+                    data-test="BTN_Operator_Password_Cancel"
+                    type="button"
+                    class="btn btn-outline-light"
+                    (click)="cancelPasswordDialog()">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<div
+    id="keys-password-backdrop"
+    class="modal-backdrop fade show cerebra-modal-backdrop"></div>
+}

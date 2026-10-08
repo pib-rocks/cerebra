@@ -2,18 +2,25 @@ import {ComponentFixture, TestBed, fakeAsync} from "@angular/core/testing";
 import {SmartConnectComponent} from "./smart-connect.component";
 import {ReactiveFormsModule} from "@angular/forms";
 import {NgbModal, NgbModalRef} from "@ng-bootstrap/ng-bootstrap";
-import {of, Subject} from "rxjs";
+import {RouterTestingModule} from "@angular/router/testing";
+import {EmbeddedViewRef, TemplateRef} from "@angular/core";
+import {of, Subject, throwError} from "rxjs";
 import {RosService} from "../../shared/services/ros-service/ros.service";
-import {TemplateRef} from "@angular/core";
 import {TokenService} from "src/app/shared/services/token.service";
+import {ApiService} from "src/app/shared/services/api.service";
+import {UrlConstants} from "src/app/shared/services/url.constants";
 
 describe("SmartConnectComponent", () => {
     let component: SmartConnectComponent;
     let fixture: ComponentFixture<SmartConnectComponent>;
     let mockRosService: jasmine.SpyObj<RosService>;
     let mockTokenService: jasmine.SpyObj<TokenService>;
+    let mockApiService: jasmine.SpyObj<ApiService>;
     let mockNgbModal: jasmine.SpyObj<NgbModal>;
-    let tokenStatus$: Subject<any>;
+    let tokenStatus$: Subject<{
+        tokenExists: boolean;
+        tokenActive: boolean;
+    }>;
 
     beforeEach(async () => {
         mockRosService = jasmine.createSpyObj("RosService", [
@@ -23,7 +30,7 @@ describe("SmartConnectComponent", () => {
             "deleteTokenMessage",
         ]);
 
-        tokenStatus$ = new Subject<any>();
+        tokenStatus$ = new Subject();
         mockTokenService = jasmine.createSpyObj(
             "TokenService",
             ["checkTokenExists"],
@@ -32,13 +39,19 @@ describe("SmartConnectComponent", () => {
             },
         );
 
+        mockApiService = jasmine.createSpyObj("ApiService", ["post"]);
         mockNgbModal = jasmine.createSpyObj("NgbModal", ["open", "dismissAll"]);
 
         await TestBed.configureTestingModule({
-            imports: [ReactiveFormsModule, SmartConnectComponent],
+            imports: [
+                ReactiveFormsModule,
+                RouterTestingModule,
+                SmartConnectComponent,
+            ],
             providers: [
                 {provide: RosService, useValue: mockRosService},
                 {provide: TokenService, useValue: mockTokenService},
+                {provide: ApiService, useValue: mockApiService},
                 {provide: NgbModal, useValue: mockNgbModal},
             ],
         }).compileComponents();
@@ -48,46 +61,38 @@ describe("SmartConnectComponent", () => {
         fixture.detectChanges();
     });
 
+    function dialog(): HTMLElement {
+        let templateRef!: TemplateRef<unknown>;
+        mockNgbModal.open.and.callFake((template: TemplateRef<unknown>) => {
+            templateRef = template;
+            return {dismissed: of(null)} as NgbModalRef;
+        });
+        fixture.nativeElement
+            .querySelector("[data-test=BTN_Smart_Connect]")
+            .click();
+        fixture.detectChanges();
+        const embedded: EmbeddedViewRef<unknown> =
+            templateRef.createEmbeddedView({});
+        embedded.detectChanges();
+        const host = document.createElement("div");
+        for (const node of embedded.rootNodes) {
+            if (node instanceof Node) {
+                host.appendChild(node);
+            }
+        }
+        return host;
+    }
+
     it("should create", () => {
         expect(component).toBeTruthy();
     });
 
-    it("should initialize forms with default values", () => {
-        expect(component.encryptTokenForm.value).toEqual({
+    it("should initialize the token form without a password", () => {
+        expect(component.tokenForm.value).toEqual({
             token: "",
-            password: "",
-            confirmPassword: "",
         });
-        expect(component.decryptTokenForm.value).toEqual({
-            password: "",
-        });
-    });
-
-    it("should validate password match", () => {
-        const token = "testToken";
-        const password = "testPassword";
-
-        component.encryptTokenForm.setValue({
-            token: token,
-            password: password,
-            confirmPassword: password,
-        });
-        expect(component.encryptTokenForm.valid).toBeTrue();
-
-        component.encryptTokenForm.setValue({
-            token: token,
-            password: password,
-            confirmPassword: "differentPassword",
-        });
-        expect(
-            component.encryptTokenForm.get("confirmPassword")?.errors,
-        ).toEqual({mismatch: true});
-    });
-
-    it("should toggle password text type", () => {
-        const initialType = component.passwordTextType;
-        component.togglePasswordTextType();
-        expect(component.passwordTextType).toBe(!initialType);
+        expect(component.tokenForm.contains("password")).toBeFalse();
+        expect(component.tokenForm.contains("confirmPassword")).toBeFalse();
     });
 
     it("should open modal and set token states", fakeAsync(() => {
@@ -97,8 +102,7 @@ describe("SmartConnectComponent", () => {
 
         mockNgbModal.open.and.returnValue(modalRef);
 
-        const content: TemplateRef<any> = {} as TemplateRef<any>;
-        component.onOpenModal(content);
+        component.onOpenModal({} as TemplateRef<unknown>);
 
         tokenStatus$.next({tokenExists: true, tokenActive: true});
 
@@ -108,38 +112,44 @@ describe("SmartConnectComponent", () => {
         expect(component.isLoadingModal).toBeFalse();
     }));
 
-    it("should handle encrypt token form submission", fakeAsync(() => {
+    it("should send only the token to POST /system/smart-connect", fakeAsync(() => {
         const token = "testToken";
-        const password = "testPassword";
-        component.encryptTokenForm.setValue({
+        component.tokenForm.setValue({
             token: token,
-            password: password,
-            confirmPassword: password,
         });
 
-        mockRosService.encryptToken.and.returnValue(of(true));
+        mockApiService.post.and.returnValue(of({}));
 
-        component.onSubmitEncryptToken();
-        expect(mockRosService.encryptToken).toHaveBeenCalledWith(
-            token,
-            password,
+        component.onSubmitToken();
+        expect(mockApiService.post).toHaveBeenCalledWith(
+            UrlConstants.SMART_CONNECT,
+            {token},
         );
+        expect(mockRosService.encryptToken).not.toHaveBeenCalled();
+        expect(mockRosService.decryptToken).not.toHaveBeenCalled();
         expect(component.onErrorSubmit).toBeFalse();
+        expect(mockTokenService.checkTokenExists).toHaveBeenCalled();
+        expect(mockNgbModal.dismissAll).toHaveBeenCalled();
     }));
 
-    it("should handle decrypt token form submission", fakeAsync(() => {
-        const password = "testPassword";
-        component.decryptTokenForm.setValue({
-            password: password,
-        });
+    it("should not post an empty token", () => {
+        component.tokenForm.setValue({token: ""});
+        component.onSubmitToken();
+        expect(mockApiService.post).not.toHaveBeenCalled();
+        expect(mockRosService.encryptToken).not.toHaveBeenCalled();
+    });
 
-        mockRosService.decryptToken.and.returnValue(of(true));
+    it("should keep the dialog open when storing the token fails", () => {
+        component.tokenForm.setValue({token: "testToken"});
+        mockApiService.post.and.returnValue(
+            throwError(() => new Error("offline")),
+        );
 
-        component.onSubmitDecryptToken();
+        component.onSubmitToken();
 
-        expect(mockRosService.decryptToken).toHaveBeenCalledWith(password);
-        expect(component.onErrorSubmit).toBeFalse();
-    }));
+        expect(component.onErrorSubmit).toBeTrue();
+        expect(mockNgbModal.dismissAll).not.toHaveBeenCalled();
+    });
 
     it("should delete token", () => {
         component.onDeleteToken();
@@ -155,13 +165,34 @@ describe("SmartConnectComponent", () => {
         expect(component.isTokenActive).toBeFalse();
     });
 
-    it("should toggle password control based on tokenActive", () => {
-        const passwordControl = component.decryptTokenForm.controls["password"];
-
+    it("points at System > Keys and asks for no password when the key is missing", () => {
         tokenStatus$.next({tokenExists: true, tokenActive: false});
-        expect(passwordControl.disabled).toBeFalse();
+        fixture.detectChanges();
 
-        tokenStatus$.next({tokenExists: true, tokenActive: true});
-        expect(passwordControl.disabled).toBeTrue();
+        const host = dialog();
+
+        expect(host.querySelector("input[type=password]")).toBeNull();
+        expect(host.querySelector("[data-test=TXT_Password]")).toBeNull();
+        expect(
+            host.querySelector("[data-test=TXT_Password_confirm]"),
+        ).toBeNull();
+        expect(host.textContent).toContain("System > Keys");
+        const link = host.querySelector(
+            "[data-test=LNK_System_Keys]",
+        ) as HTMLAnchorElement;
+        expect(link.getAttribute("href")).toBe("/system/keys");
+    });
+
+    it("renders the token field and no password field when the token is not stored", () => {
+        tokenStatus$.next({tokenExists: false, tokenActive: false});
+        fixture.detectChanges();
+
+        const host = dialog();
+
+        expect(host.querySelector("[data-test=TXT_Token]")).not.toBeNull();
+        expect(host.querySelector("input[type=password]")).toBeNull();
+        expect(host.querySelector("[data-test=TXT_Password]")).toBeNull();
+        expect(host.querySelector("[data-test=BTN_Connect]")).not.toBeNull();
+        expect(host.textContent).not.toContain("Password");
     });
 });

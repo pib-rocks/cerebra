@@ -22,6 +22,7 @@ import {CerebraRegex} from "src/app/shared/types/cerebra-regex";
 import {Chat, ChatDto} from "src/app/shared/types/chat.class";
 import {VoiceAssistant} from "src/app/shared/types/voice-assistant";
 import {VoiceAssistantState} from "../../shared/types/voice-assistant-state";
+import {chatStartRefusal} from "src/app/shared/types/provider-registry";
 import {Location} from "@angular/common";
 import {TokenService} from "src/app/shared/services/token.service";
 import {SideBarRightComponent} from "../../ui-components/sidebar-right/sidebar-right.component";
@@ -58,6 +59,7 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
     tokenStatusSubscription?: Subscription;
     routeParamMapSubscription?: Subscription;
     smartConnectActive = false;
+    cloudTokenStored = false;
 
     constructor(
         private readonly modalService: NgbModal,
@@ -83,6 +85,7 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
                         state.turnedOn,
                     );
                     this.turnedOn = state.turnedOn;
+                    this.activeChatId = state.chatId;
                     const deleteChat = this.dropdownCallbackMethods.find(
                         (e) => e.label === "Delete chat",
                     );
@@ -99,6 +102,7 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
         this.tokenStatusSubscription = this.tokenService.tokenStatus$.subscribe(
             (response) => {
                 this.smartConnectActive = response.tokenActive;
+                this.cloudTokenStored = response.tokenExists;
             },
         );
         this.routeParamMapSubscription = this.route.paramMap.subscribe(
@@ -124,7 +128,6 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
                 localStorage.setItem("voice-assistant-tab", "chat");
                 this.topicFormControl.setValidators([
                     Validators.required,
-                    Validators.minLength(2),
                     Validators.maxLength(255),
                 ]);
                 this.toggleDeleteChat(this.chatService.chats);
@@ -163,6 +166,9 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
     }
 
     addChat() {
+        if (this.modelChoiceRefusal() != null) {
+            return;
+        }
         if (this.personalityId) {
             const chat: Observable<Chat> = this.chatService.createChat(
                 new ChatDto(this.topicFormControl.value, this.personalityId),
@@ -208,8 +214,41 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
         }
     }
 
+    /**
+     * faster-whisper and Supertone do not use the key store.
+     * Degraded mode leaves this control on.
+     */
+    localVoiceEnabled(): boolean {
+        return this.smartConnectActive;
+    }
+
+    /**
+     * A personality whose model row is gone cannot start a chat or take
+     * the voice. The reference stays where it was; the user chooses.
+     */
+    private modelChoiceRefusal(): string | null {
+        const personality =
+            (this.personalityId != null
+                ? this.voiceAssistantService.getPersonality(this.personalityId)
+                : undefined) ?? this.personality;
+        if (personality == null) {
+            return null;
+        }
+        const models =
+            this.voiceAssistantService.assistantModelsSubject?.getValue() ?? [];
+        return chatStartRefusal(
+            personality.providerRef,
+            models,
+            this.cloudTokenStored,
+            personality.needsNewModel,
+        );
+    }
+
     toggleVoiceAssistant() {
         const turnedOn = !this.voiceAssistantActivationToggle.value;
+        if (turnedOn && this.modelChoiceRefusal() != null) {
+            return;
+        }
         const nextState: VoiceAssistantState = {turnedOn, chatId: ""};
         if (turnedOn) {
             const match = RegExp(

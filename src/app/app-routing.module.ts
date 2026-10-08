@@ -12,7 +12,7 @@ import {motorGuard} from "./security/motor-guard";
 import {SaveConfirmationGuard} from "./security/save-confirmation.guard";
 import {programCodeResolver} from "./program/program-overview/program-manager/program-splitscreen/resolver/program-code.resolver";
 
-const routes: Routes = [
+export const routes: Routes = [
     {
         path: "joint-control",
         component: JointControlComponent,
@@ -72,6 +72,13 @@ const routes: Routes = [
                     import(
                         "./system/microphone-array/microphone-array.component"
                     ).then((m) => m.MicrophoneArrayComponent),
+            },
+            {
+                path: "keys",
+                loadComponent: () =>
+                    import("./system/keys/keys.component").then(
+                        (m) => m.KeysComponent,
+                    ),
             },
             {path: "", redirectTo: "diagnostics", pathMatch: "full"},
         ],
@@ -190,6 +197,13 @@ const routes: Routes = [
                 ],
             },
         ],
+    },
+    {
+        path: "display",
+        loadComponent: () =>
+            import("./system/keys/display-unlock.component").then(
+                (m) => m.DisplayUnlockComponent,
+            ),
     },
     {path: "", redirectTo: "joint-control/head", pathMatch: "full"},
     {path: "**", redirectTo: "joint-control/head"},

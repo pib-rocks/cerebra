@@ -20,11 +20,63 @@ const middlewares = jsonServer.defaults();
 server.use(middlewares);
 server.use(jsonServer.bodyParser);
 
+function smartChatsEnabled() {
+    return mockData.chatChannel?.smartChatsEnabled !== false;
+}
+
+function channelDocument() {
+    const enabled = smartChatsEnabled();
+    return {
+        smartChatsEnabled: enabled,
+        channels: enabled ? ["smart", "direct"] : ["direct"],
+        defaultChannel: enabled ? "smart" : "direct",
+    };
+}
+
+function modelForPersonality(personality) {
+    if (personality.providerRef === "default") {
+        return mockData.assistantModel.find(
+            (model) => model.isDefault === true,
+        );
+    }
+    const id =
+        personality.assistantModelId != null &&
+        personality.assistantModelId !== ""
+            ? personality.assistantModelId
+            : Number(personality.providerRef);
+    return mockData.assistantModel.find((model) => model.id == id);
+}
+
+function presentPersonality(row) {
+    const personality = Personality.getPersonality(row);
+    const enabled = smartChatsEnabled();
+    personality.smartChatsEnabled = enabled;
+    personality.effectiveChannel = enabled ? personality.channel : "direct";
+    const model = modelForPersonality(personality);
+    personality.needsNewModel =
+        model?.status === "retired" || model?.retired === true;
+    applyDerivedLive(personality);
+    return personality;
+}
+
+/** Live is the chosen model's own flag. A request cannot switch a mode beside it. */
+function applyDerivedLive(personality) {
+    const model = modelForPersonality(personality);
+    const live = model?.capabilities?.live === true;
+    personality.live = live;
+    personality.voiceMode = live ? "live" : "turn_based";
+}
+
+// Installation fact. Not a switch: the UI only reads it.
+server.get("/voice-assistant/channel", (req, res) => {
+    return res.status(200).send(channelDocument());
+});
+
 //getAllPersonalities
 server.get("/voice-assistant/personality", (req, res, next) => {
     let response = [];
     mockData.personality.forEach((personality) => {
-        response.push(Personality.getPersonality(personality));
+        response.push(presentPersonality(personality));
     });
     return res.status(200).send({voiceAssistantPersonalities: response});
 });
@@ -37,8 +89,64 @@ server.get("/voice-assistant/personality/:personalityId", (req, res, next) => {
     if (response[0] == undefined) {
         return res.status(404).send();
     }
-    return res.status(200).send(Personality.getPersonality(response[0]));
+    return res.status(200).send(presentPersonality(response[0]));
 });
+
+function assignDialog(personality, body) {
+    if (typeof body.voiceInput === "string" && body.voiceInput !== "") {
+        personality.voiceInput = body.voiceInput;
+    }
+    if (typeof body.voiceOutput === "string" && body.voiceOutput !== "") {
+        personality.voiceOutput = body.voiceOutput;
+    }
+    personality.toolCalling = body.toolCalling !== false;
+    personality.images = body.images === true;
+    personality.mcp = body.mcp !== false;
+    applyDerivedLive(personality);
+    const idle = Number(body.idleTimeoutSeconds);
+    if (Number.isFinite(idle) && idle >= 1) {
+        personality.idleTimeoutSeconds = idle;
+    }
+}
+
+function assignChannel(personality, body, creating) {
+    if (body.channel === "smart" && !smartChatsEnabled()) {
+        return false;
+    }
+    if (body.channel === "direct" || body.channel === "smart") {
+        personality.channel = body.channel;
+        return true;
+    }
+    if (creating && !smartChatsEnabled()) {
+        personality.channel = "direct";
+    }
+    return true;
+}
+
+function assignProvider(personality, body, creating) {
+    const ref = body.providerRef;
+    if (ref === "default") {
+        personality.providerRef = "default";
+        personality.assistantModelId = null;
+        return;
+    }
+    if (ref != null && ref !== "") {
+        const id = Number(ref);
+        personality.providerRef = String(id);
+        personality.assistantModelId = id;
+        return;
+    }
+    if (body.assistantModelId != null && body.assistantModelId !== "") {
+        const id = Number(body.assistantModelId);
+        personality.providerRef = String(id);
+        personality.assistantModelId = id;
+        return;
+    }
+    if (creating) {
+        personality.providerRef = "default";
+        personality.assistantModelId = null;
+    }
+}
 
 //postPersonality
 server.post("/voice-assistant/personality", (req, res, next) => {
@@ -48,12 +156,24 @@ server.post("/voice-assistant/personality", (req, res, next) => {
         req.body.pauseThreshold,
         req.body.messageHistory,
     );
+    assignProvider(newPersonality, req.body, true);
+    if (!assignChannel(newPersonality, req.body, true)) {
+        return res.status(400).send({
+            channel: ["Smart chats are not available on this robot."],
+        });
+    }
+    assignDialog(newPersonality, req.body);
     mockData.personality.push(newPersonality);
-    return res.status(201).send(newPersonality);
+    return res.status(201).send(presentPersonality(newPersonality));
 });
 
 //putPersonalityByPersonalityId
 server.put("/voice-assistant/personality/:personalityId", (req, res, next) => {
+    if (req.body.channel === "smart" && !smartChatsEnabled()) {
+        return res.status(400).send({
+            channel: ["Smart chats are not available on this robot."],
+        });
+    }
     let updated = false;
     mockData.personality.forEach((personality) => {
         if (personality.personalityId == req.params.personalityId) {
@@ -62,10 +182,11 @@ server.put("/voice-assistant/personality/:personalityId", (req, res, next) => {
             personality.pauseThreshold = req.body.pauseThreshold;
             personality.description = req.body.description;
             personality.messageHistory = req.body.messageHistory;
+            assignProvider(personality, req.body, false);
+            assignChannel(personality, req.body, false);
+            assignDialog(personality, req.body);
             updated = true;
-            return res
-                .status(200)
-                .send(Personality.getPersonality(personality));
+            return res.status(200).send(presentPersonality(personality));
         }
     });
     if (!updated) {
@@ -557,12 +678,29 @@ server.put("/program/:programNumber/code", (req, res, next) => {
     }
 });
 
+function presentAssistantModel(model) {
+    const provider = mockData.provider.find(
+        (row) => row.id == model.providerId,
+    );
+    return AssistantModel.getAssistantModel({
+        ...model,
+        providerId: provider?.id ?? model.providerId ?? model.id,
+        providerName: provider?.name ?? null,
+        credentialRef: provider?.credentialRef ?? null,
+        endpointBase: provider?.endpointBase ?? null,
+    });
+}
+
 //getAssistantModel
 server.get("/assistant-model", (req, res, next) => {
-    let response = [];
-    mockData.assistantModel.forEach((model) => {
-        response.push(AssistantModel.getAssistantModel(model));
-    });
+    const response = mockData.assistantModel
+        .map((model) => presentAssistantModel(model))
+        .filter(
+            (model) =>
+                model.retired === true ||
+                model.capabilities.images === true ||
+                model.capabilities.live === true,
+        );
     return res.status(200).send({assistantModels: response});
 });
 
@@ -574,7 +712,40 @@ server.get("/assistant-model/:id", (req, res, next) => {
     if (response == undefined) {
         return res.status(404).send();
     }
-    return res.status(200).send(response);
+    return res.status(200).send(presentAssistantModel(response));
+});
+
+function presentCatalogueModel(model, provider) {
+    const row = AssistantModel.getAssistantModel({
+        ...model,
+        providerId: provider.id,
+        providerName: provider.name,
+    });
+    delete row.credentialRef;
+    delete row.endpointBase;
+    return row;
+}
+
+function presentProvider(provider) {
+    return {
+        id: provider.id,
+        name: provider.name,
+        endpointBase: provider.endpointBase ?? null,
+        credentialRef: provider.credentialRef ?? null,
+        capabilities: provider.capabilities ?? null,
+        models: mockData.assistantModel
+            .filter((model) => model.providerId == provider.id)
+            .map((model) => presentCatalogueModel(model, provider)),
+    };
+}
+
+// Each provider, with the models that belong to it. Live is one of those models.
+server.get("/provider", (req, res) => {
+    return res.status(200).send({
+        providers: mockData.provider.map((provider) =>
+            presentProvider(provider),
+        ),
+    });
 });
 
 //getButtonPrograms
@@ -603,6 +774,136 @@ server.put("/button-programs", (req, res, next) => {
         }
     });
     return res.status(200).send({buttonPrograms: updatedButtonPrograms});
+});
+
+const KEY_STORE_WRONG_PASSWORD = "Wrong password. No keys are available.";
+const KEY_STORE_PASSWORD_MISMATCH =
+    "Enter the new password twice. The two entries do not match.";
+const KEY_STORE_PASSWORD_SHORT = "Password must be at least 8 characters.";
+const KEY_STORE_MISSING = "No encrypted key store exists yet.";
+const KEY_STORE_MIN_PASSWORD = 8;
+
+let keyStorePassword = null;
+const keyStoreSecrets = new Map();
+
+function keyStoreFailure(res, status, error) {
+    return res.status(status).send({
+        successful: false,
+        credentials: [],
+        error,
+    });
+}
+
+function keyStoreProvider(providerId) {
+    return mockData.provider.find((provider) => provider.id == providerId);
+}
+
+server.get("/system/key-store", (req, res) => {
+    const credentialRefs = mockData.provider
+        .map((provider) => provider.credentialRef)
+        .filter((ref) => ref != null && ref !== "");
+    return res.status(200).send({
+        encryptKeyStorage: true,
+        credentialRefs,
+    });
+});
+
+server.post("/system/key-store/unlock", (req, res) => {
+    const password = req.body?.password;
+    if (typeof password !== "string" || password === "") {
+        return keyStoreFailure(res, 400, "Bad request.");
+    }
+    if (keyStorePassword == null) {
+        return res.status(200).send({successful: true, credentials: []});
+    }
+    if (password !== keyStorePassword) {
+        return keyStoreFailure(res, 401, KEY_STORE_WRONG_PASSWORD);
+    }
+    return res.status(200).send({
+        successful: true,
+        credentials: [...keyStoreSecrets.keys()]
+            .sort()
+            .map((credentialRef) => ({credentialRef})),
+    });
+});
+
+server.post("/system/key-store/password", (req, res) => {
+    const oldPassword = req.body?.oldPassword;
+    const newPassword = req.body?.newPassword;
+    const confirmPassword = req.body?.confirmPassword;
+    if (
+        typeof oldPassword !== "string" ||
+        typeof newPassword !== "string" ||
+        typeof confirmPassword !== "string" ||
+        oldPassword === "" ||
+        newPassword === "" ||
+        confirmPassword === ""
+    ) {
+        return keyStoreFailure(res, 400, "Bad request.");
+    }
+    if (keyStorePassword == null) {
+        return keyStoreFailure(res, 404, KEY_STORE_MISSING);
+    }
+    if (oldPassword !== keyStorePassword) {
+        return keyStoreFailure(res, 401, KEY_STORE_WRONG_PASSWORD);
+    }
+    if (newPassword !== confirmPassword) {
+        return keyStoreFailure(res, 400, KEY_STORE_PASSWORD_MISMATCH);
+    }
+    if (newPassword.length < KEY_STORE_MIN_PASSWORD) {
+        return keyStoreFailure(res, 400, KEY_STORE_PASSWORD_SHORT);
+    }
+    keyStorePassword = newPassword;
+    return res.status(200).send({successful: true});
+});
+
+server.put("/system/key-store/:providerId", (req, res) => {
+    const password = req.body?.password;
+    const secret = req.body?.secret;
+    if (typeof password !== "string" || typeof secret !== "string") {
+        return keyStoreFailure(res, 400, "Bad request.");
+    }
+    const provider = keyStoreProvider(req.params.providerId);
+    if (provider == undefined) {
+        return keyStoreFailure(res, 404, "Provider not found.");
+    }
+    if (secret.trim() === "") {
+        return keyStoreFailure(res, 400, "A provider secret is required.");
+    }
+    if (keyStorePassword == null) {
+        if (password.length < KEY_STORE_MIN_PASSWORD) {
+            return keyStoreFailure(res, 400, KEY_STORE_PASSWORD_SHORT);
+        }
+        keyStorePassword = password;
+    } else if (password !== keyStorePassword) {
+        return keyStoreFailure(res, 401, KEY_STORE_WRONG_PASSWORD);
+    }
+    const credentialRef = `provider-${provider.id}`;
+    if (provider.credentialRef && provider.credentialRef !== credentialRef) {
+        keyStoreSecrets.delete(provider.credentialRef);
+    }
+    keyStoreSecrets.set(credentialRef, secret);
+    provider.credentialRef = credentialRef;
+    return res.status(200).send({successful: true, credentialRef});
+});
+
+server.delete("/system/key-store/:providerId", (req, res) => {
+    const password = req.body?.password;
+    if (typeof password !== "string" || password === "") {
+        return keyStoreFailure(res, 400, "Bad request.");
+    }
+    const provider = keyStoreProvider(req.params.providerId);
+    if (provider == undefined) {
+        return keyStoreFailure(res, 404, "Provider not found.");
+    }
+    if (keyStorePassword != null && password !== keyStorePassword) {
+        return keyStoreFailure(res, 401, KEY_STORE_WRONG_PASSWORD);
+    }
+    if (provider.credentialRef) {
+        keyStoreSecrets.delete(provider.credentialRef);
+    }
+    provider.credentialRef = null;
+    return res.status(204).send();
 });
 
 server.use(router);

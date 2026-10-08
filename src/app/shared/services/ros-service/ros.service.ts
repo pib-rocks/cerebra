@@ -133,6 +133,8 @@ export class RosService implements IRosService {
     private chatMessageTopic!: ROSLIB.Topic<ChatMessage>;
     private voiceAssistantStateTopic!: ROSLIB.Topic<VoiceAssistantState>;
     private chatIsListeningTopic!: ROSLIB.Topic<ChatIsListening>;
+    private expressionTopic?: ROSLIB.Topic<{data: string}>;
+    private displayTextTopic?: ROSLIB.Topic<{data: string}>;
     private solidStateRelayStateTopic!: ROSLIB.Topic<SolidStateRelayState>;
     private modelStatusTopic!: ROSLIB.Topic<ModelStatusArray>;
     private detectionTopics = new Map<string, ROSLIB.Topic<DetectionArray>>();
@@ -285,6 +287,14 @@ export class RosService implements IRosService {
         this.chatIsListeningTopic = this.createRosTopic(
             rosTopics.chatIsListening,
             rosDataTypes.chatIsListening,
+        );
+        this.expressionTopic = this.createRosTopic(
+            rosTopics.expression,
+            rosDataTypes.string,
+        );
+        this.displayTextTopic = this.createRosTopic(
+            rosTopics.displayText,
+            rosDataTypes.string,
         );
         this.motorSettingsTopic = this.createRosTopic(
             rosTopics.motorSettingsTopicName,
@@ -1017,5 +1027,21 @@ export class RosService implements IRosService {
 
     publishProgramInput(input: string, mpid: number) {
         this.programInputTopic.publish({input, mpid});
+    }
+
+    /** std_msgs/String on /pib/expression. The face node already consumes this. */
+    publishExpression(expression: string): void {
+        if (!this.expressionTopic) {
+            return;
+        }
+        this.expressionTopic.publish({data: expression});
+    }
+
+    /** std_msgs/String on /pib/display_text. The display node already consumes this. */
+    publishDisplayText(text: string): void {
+        if (!this.displayTextTopic) {
+            return;
+        }
+        this.displayTextTopic.publish({data: text});
     }
 }

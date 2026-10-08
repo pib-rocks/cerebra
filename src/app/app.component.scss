@@ -1,5 +1,7 @@
 @import "src/styles";
 
+$sidebar-width: 250px;
+
 .a {
     fill: none;
     stroke: $blue-color;
@@ -7,7 +9,84 @@
     stroke-linejoin: round;
 }
 
+// Layout shell. These classes were styled by AdminLTE until PR-1911; the
+// values below are the ones AdminLTE applied to this markup, so the page
+// keeps its layout without the second Bootstrap.
+.wrapper {
+    position: relative;
+    min-height: 100vh;
+}
+
+.main-sidebar {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: $sidebar-width;
+    z-index: 1038;
+    overflow-y: hidden;
+    transition: margin-left 0.3s ease-in-out;
+}
+
+.elevation-4 {
+    box-shadow:
+        0 14px 28px rgba(0, 0, 0, 0.25),
+        0 10px 10px rgba(0, 0, 0, 0.22);
+}
+
+.sidebar {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    overflow-x: hidden;
+}
+
+.main-sidebar .sidebar {
+    overflow-y: auto;
+}
+
+.nav-sidebar .nav-item > .nav-link {
+    position: relative;
+    margin-bottom: 0.2rem;
+}
+
+.content-wrapper {
+    min-height: 100vh;
+    margin-left: $sidebar-width;
+    transition: margin-left 0.3s ease-in-out;
+}
+
+.sidebar-collapse .main-sidebar {
+    margin-left: -$sidebar-width;
+}
+
+.sidebar-collapse .content-wrapper,
+.display-path .content-wrapper {
+    margin-left: 0;
+}
+
+// Below 768px the sidebar is hidden by default and the hamburger slides it
+// in over the content instead of pushing the content aside.
+@media (max-width: 767.98px) {
+    .main-sidebar {
+        margin-left: -$sidebar-width;
+        box-shadow: none;
+    }
+
+    .sidebar-collapse .main-sidebar {
+        margin-left: 0;
+    }
+
+    .content-wrapper {
+        margin-left: 0;
+    }
+}
+
 .brand-link {
+    display: block;
+    padding: 0.8125rem 0.5rem;
+    font-size: 1.25rem;
+    line-height: 1.5;
+    white-space: nowrap;
+    text-decoration: none;
     border: 0;
 }
 

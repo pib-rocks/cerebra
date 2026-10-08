@@ -21,7 +21,7 @@
     let-modal
     id="smart-connect-modal">
     <div class="modal-header">
-        <span class="modal-title ml-4">Smart Connect</span>
+        <span class="modal-title ms-4">Smart Connect</span>
         <button
             id="modal-close-button"
             data-test="BTN_Close"
@@ -44,91 +44,51 @@
         </button>
     </div>
 
-    <!-- Decrypt Token Form -->
     @if (isTokenStored) {
-    <div class="mt-4 mb-4 mr-5 ml-5">
+    <div class="mt-4 mb-4 me-5 ms-5">
         @if (isTokenActive) {
         <div class="d-flex justify-content-center mb-3">
             <span class="text-success">Token already decrypted.</span>
         </div>
-        }
-        <p [ngClass]="{disabled: isTokenActive}">
-            Enter your password to connect to Smart API.
+        } @else {
+        <p>
+            The key is missing. Store it in
+            <a
+                routerLink="/system/keys"
+                data-test="LNK_System_Keys"
+                (click)="onCloseModal()">
+                System &gt; Keys </a
+            >.
         </p>
-        <form
-            [formGroup]="decryptTokenForm"
-            (ngSubmit)="onSubmitDecryptToken()">
-            <div class="form-group w-100">
-                <label
-                    for="password"
-                    [ngClass]="{disabled: isTokenActive}"
-                    >Password</label
-                >
-                <div class="input-group">
-                    <input
-                        id="password"
-                        data-test="TXT_Password"
-                        ngbAutofocus
-                        class="input form-control"
-                        type="password"
-                        [type]="passwordTextType ? 'password' : 'text'"
-                        formControlName="password" />
-                    <span class="input-group-text input"
-                        ><i
-                            [ngClass]="{'bi bi-eye': passwordTextType, 'bi bi-eye-slash': !passwordTextType}"
-                            (click)="togglePasswordTextType()"></i
-                    ></span>
-                </div>
-                <div class="mt-1">
-                    <button
-                        type="button"
-                        data-test="BTN_Delete"
-                        class="button-link"
-                        (click)="onDeleteToken()">
-                        Delete Token
-                    </button>
-                </div>
-            </div>
-            @if (onErrorSubmit) {
-            <div>
-                <span class="text-danger">Failed to decrypt token.</span>
-            </div>
-            }
-            <div class="d-flex justify-content-around mt-3 mb-4">
-                <button
-                    id="decrypt-form-btn"
-                    data-test="BTN_Connect"
-                    type="submit"
-                    class="btn btn-primary btn-lg w-100 mr-2"
-                    [disabled]="decryptTokenForm.invalid || isTokenActive">
-                    Connect
-                </button>
-                <button
-                    id="decrypt-form-ok-btn"
-                    data-test="BTN_OK"
-                    type="button"
-                    class="btn btn-secondary btn-lg w-100 ml-2"
-                    (click)="onCloseModal()">
-                    OK
-                </button>
-            </div>
-        </form>
+        }
+        <div class="mt-1">
+            <button
+                type="button"
+                data-test="BTN_Delete"
+                class="button-link"
+                (click)="onDeleteToken()">
+                Delete Token
+            </button>
+        </div>
+        <div class="d-flex justify-content-around mt-3 mb-4">
+            <button
+                id="decrypt-form-ok-btn"
+                data-test="BTN_OK"
+                type="button"
+                class="btn btn-secondary btn-lg w-100 ms-2"
+                (click)="onCloseModal()">
+                OK
+            </button>
+        </div>
     </div>
     } @else {
-    <div class="mt-4 mb-4 mr-5 ml-5">
-        <p>
-            <b
-                >To connect to the smart API, enter the token you have received
-                and encrypt it with a password.</b
-            >
-            Please note that if you forget the password, an new token must be
-            requested and encrypted.
-        </p>
+    <div class="mt-4 mb-4 me-5 ms-5">
+        <p>To connect to the smart API, enter the token you have received.</p>
         <form
-            [formGroup]="encryptTokenForm"
-            (ngSubmit)="onSubmitEncryptToken()">
+            [formGroup]="tokenForm"
+            (ngSubmit)="onSubmitToken()">
             <div class="input-group w-100">
-                <div class="form-group w-100">
+                <div class="mb-3 w-100">
                     <label for="token">Token</label>
                     <input
                         id="token"
@@ -139,60 +99,10 @@
                         formControlName="token"
                         ngbAutofocus />
                 </div>
-                <div class="form-group w-100">
-                    <label for="encrypt-password">Password</label>
-                    <div class="input-group">
-                        <input
-                            id="encrypt-password"
-                            data="TXT_Password"
-                            class="input form-control"
-                            type="password"
-                            [type]="passwordTextType ? 'password' : 'text'"
-                            formControlName="password" />
-                        <span class="input-group-text input"
-                            ><i
-                                [ngClass]="{'bi bi-eye': passwordTextType, 'bi bi-eye-slash': !passwordTextType}"
-                                (click)="togglePasswordTextType()"></i
-                        ></span>
-                    </div>
-                    @if (encryptTokenForm.get('password')?.errors?.['minlength']
-                    && (encryptTokenForm.touched || encryptTokenForm.dirty)) {
-                    <div>
-                        <span class="text-danger"
-                            >Password needs to be at least 8 characters
-                            long.</span
-                        >
-                    </div>
-                    }
-                </div>
-                <div class="form-group w-100">
-                    <label for="confirmPassword">Confirm password</label>
-                    <div class="input-group">
-                        <input
-                            id="confirmPassword"
-                            data-test="TXT_Password_confirm"
-                            class="input form-control"
-                            type="password"
-                            [type]="passwordTextType ? 'password' : 'text'"
-                            formControlName="confirmPassword" />
-                        <span class="input-group-text input"
-                            ><i
-                                [ngClass]="{'bi bi-eye': passwordTextType, 'bi bi-eye-slash': !passwordTextType}"
-                                (click)="togglePasswordTextType()"></i
-                        ></span>
-                    </div>
-                    @if
-                    (encryptTokenForm.get('confirmPassword')?.errors?.['mismatch']
-                    && (encryptTokenForm.touched || encryptTokenForm.dirty)) {
-                    <div>
-                        <span class="text-danger">Passwords do not match.</span>
-                    </div>
-                    }
-                </div>
                 @if (onErrorSubmit) {
                 <div>
                     <span class="text-danger"
-                        >Failed to encrypt token. Please check your network
+                        >Failed to store the token. Please check your network
                         connection and try again.</span
                     >
                 </div>
@@ -200,18 +110,18 @@
             </div>
             <div class="d-flex justify-content-around mt-3 mb-4">
                 <button
-                    id="encrypt-form-btn"
-                    data-test="BTN_Encrypt"
+                    id="connect-form-btn"
+                    data-test="BTN_Connect"
                     type="submit"
-                    class="btn btn-primary btn-lg w-100 mr-2"
-                    [disabled]="encryptTokenForm.invalid">
-                    Encrypt
+                    class="btn btn-primary btn-lg w-100 me-2"
+                    [disabled]="tokenForm.invalid">
+                    Connect
                 </button>
                 <button
                     id="encrypt-form-cancel-btn"
                     data-test="BTN_Cancel"
                     type="button"
-                    class="btn btn-secondary btn-lg w-100 ml-2"
+                    class="btn btn-secondary btn-lg w-100 ms-2"
                     (click)="onCloseModal()">
                     Cancel
                 </button>
@@ -220,5 +130,3 @@
     </div>
     }
 </ng-template>
-
-<!-- Encrypt Token Form -->

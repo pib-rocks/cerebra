@@ -1,0 +1,16 @@
+<app-conversation-status surface="display"></app-conversation-status>
+<div
+    class="display-unlock"
+    id="display-key-store">
+    <div class="form-headline mb-3">Key store</div>
+    @if (session.mode === unlockedMode) {
+    <p id="display-key-store-unlocked">The key store is unlocked.</p>
+    } @else {
+    <app-startup-password></app-startup-password>
+    @if (session.mode === degradedMode) {
+    <p id="display-degraded-mode">
+        Degraded mode. Local voice still works. Smart chat and Direct chat stay
+        unavailable until the key store is unlocked.
+    </p>
+    } }
+</div>

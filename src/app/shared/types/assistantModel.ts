@@ -1,9 +1,21 @@
+import {capabilitiesFrom, ProviderCapabilities} from "./provider-registry";
+
 export class AssistantModel {
     constructor(
         public id: number,
         public apiName: string,
         public visualName: string,
         public hasImageSupport: boolean,
+        public endpointBase: string | null = null,
+        public capabilities: ProviderCapabilities = capabilitiesFrom(
+            undefined,
+            hasImageSupport,
+        ),
+        public credentialRef: string | null = null,
+        public isDefault: boolean = false,
+        public retired: boolean = false,
+        public providerId: number | null = null,
+        public providerName: string | null = null,
     ) {}
 
     getId(): number {
@@ -15,20 +27,43 @@ export class AssistantModel {
     }
 
     static parseDtoToAssistantModel(model: AssistantModelDto) {
+        const capabilities = capabilitiesFrom(
+            model.capabilities,
+            Boolean(model.hasImageSupport),
+        );
         return new AssistantModel(
             model.id,
             model.apiName,
             model.visualName,
-            model.hasImageSupport,
+            capabilities.images,
+            model.endpointBase ?? null,
+            capabilities,
+            model.credentialRef ?? null,
+            Boolean(model.isDefault),
+            model.retired === true || model.status === "retired",
+            model.providerId != null && model.providerId > 0
+                ? model.providerId
+                : null,
+            model.providerName != null && model.providerName.trim() !== ""
+                ? model.providerName.trim()
+                : null,
         );
     }
 }
 
-export class AssistantModelDto {
-    constructor(
-        public id: number,
-        public apiName: string,
-        public visualName: string,
-        public hasImageSupport: boolean,
-    ) {}
+export interface AssistantModelDto {
+    id: number;
+    apiName: string;
+    visualName: string;
+    hasImageSupport?: boolean;
+    endpointBase?: string | null;
+    capabilities?: Partial<ProviderCapabilities> | null;
+    credentialRef?: string | null;
+    isDefault?: boolean;
+    retired?: boolean;
+    /** Catalogue status. "retired" is the same fact as retired: true. */
+    status?: string;
+    /** Account this model belongs to. The credential and the endpoint live there. */
+    providerId?: number | null;
+    providerName?: string | null;
 }

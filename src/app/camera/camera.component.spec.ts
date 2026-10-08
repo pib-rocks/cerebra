@@ -29,26 +29,26 @@ describe("CameraComponent", () => {
         modelId: string,
         frameWidth = 640,
         frameHeight = 480,
+        detections?: Partial<Detection>[],
     ): DetectionArray => ({
         model_id: modelId,
         frame_width: frameWidth,
         frame_height: frameHeight,
-        detections: [
-            {
-                label: "hand",
-                score: 0.9,
-                x_min: 64,
-                y_min: 48,
-                x_max: 320,
-                y_max: 240,
-                keypoint_names: ["wrist"],
-                keypoint_x: [128],
-                keypoint_y: [96],
-                keypoint_z: [0],
-                scalar_names: [],
-                scalar_values: [],
-            },
-        ],
+        detections: (detections ?? [{}]).map((overrides) => ({
+            label: "hand",
+            score: 0.9,
+            x_min: 64,
+            y_min: 48,
+            x_max: 320,
+            y_max: 240,
+            keypoint_names: ["wrist"],
+            keypoint_x: [128],
+            keypoint_y: [96],
+            keypoint_z: [0],
+            scalar_names: [],
+            scalar_values: [],
+            ...overrides,
+        })),
     });
     const namedHandDetection = (): Detection => ({
         label: "hand",
@@ -262,6 +262,121 @@ describe("CameraComponent", () => {
         expect(overlays[0].attributes["viewBox"]).toBe("0 0 640 480");
         expect(overlays[1].attributes["viewBox"]).toBe("0 0 1280 720");
     }));
+
+    it("should map a frame-centre detection to the centre of the contained image and a frame-edge detection to its edge", async () => {
+        const frameWidth = 1280;
+        const frameHeight = 720;
+        const column = fixture.debugElement.query(By.css("#cameraColumn"))
+            .nativeElement as HTMLElement;
+        const cameraImage = fixture.debugElement.query(By.css(".camera-image"))
+            .nativeElement as HTMLElement;
+        // A short, wide box: contain keeps the frame intact, a stretched
+        // overlay does not.
+        column.style.maxHeight = "80px";
+        cameraImage.style.width = "524px";
+        cameraImage.style.height = "80px";
+
+        const canvas = document.createElement("canvas");
+        canvas.width = frameWidth;
+        canvas.height = frameHeight;
+        canvas.getContext("2d")!.fillRect(0, 0, frameWidth, frameHeight);
+        const dataUrl = canvas.toDataURL("image/jpeg");
+        const img = fixture.debugElement.query(By.css("#cameraColumn img"))
+            .nativeElement as HTMLImageElement;
+
+        rosService.detectionModelsReceiver$.next(["objects"]);
+        rosService.detectionReceiver$.next(
+            detectionMessage("objects", frameWidth, frameHeight, [
+                {
+                    x_min: 0,
+                    y_min: 0,
+                    x_max: frameWidth,
+                    y_max: frameHeight,
+                    keypoint_names: [],
+                    keypoint_x: [],
+                    keypoint_y: [],
+                    keypoint_z: [],
+                },
+                {
+                    x_min: frameWidth / 2 - 1,
+                    y_min: frameHeight / 2 - 1,
+                    x_max: frameWidth / 2 + 1,
+                    y_max: frameHeight / 2 + 1,
+                    keypoint_names: [],
+                    keypoint_x: [],
+                    keypoint_y: [],
+                    keypoint_z: [],
+                },
+            ]),
+        );
+        // The detection flush arms the refresh timer; clear it so the frame
+        // is drawn immediately instead of waiting for that timer.
+        component["clearDisplayRefreshTimer"]();
+        rosService.cameraReceiver$.next(
+            dataUrl.slice("data:image/jpeg;base64,".length),
+        );
+        fixture.detectChanges();
+        if (!img.complete || img.naturalWidth === 0) {
+            await new Promise<void>((resolve) => {
+                img.addEventListener("load", () => resolve(), {once: true});
+            });
+        }
+        fixture.detectChanges();
+        await new Promise((resolve) =>
+            requestAnimationFrame(() => resolve(undefined)),
+        );
+
+        const imageBox = img.getBoundingClientRect();
+        const scale = Math.min(
+            imageBox.width / img.naturalWidth,
+            imageBox.height / img.naturalHeight,
+        );
+        const painted = {
+            x: imageBox.x + (imageBox.width - img.naturalWidth * scale) / 2,
+            y: imageBox.y + (imageBox.height - img.naturalHeight * scale) / 2,
+            width: img.naturalWidth * scale,
+            height: img.naturalHeight * scale,
+        };
+        const frameToScreen = (frameX: number, frameY: number) => ({
+            x: painted.x + (frameX / frameWidth) * painted.width,
+            y: painted.y + (frameY / frameHeight) * painted.height,
+        });
+
+        const overlayElement = fixture.debugElement.query(
+            By.css(".detection-overlay"),
+        ).nativeElement as SVGSVGElement;
+        const overlayBox = overlayElement.getBoundingClientRect();
+        expect(overlayBox.width / overlayBox.height)
+            .withContext("the overlay box is not the frame aspect")
+            .not.toBeCloseTo(frameWidth / frameHeight, 1);
+
+        const boxes = fixture.debugElement.queryAll(By.css(".detection-box"));
+        expect(boxes.length).toBe(2);
+        const edge = boxes.find((box) => box.attributes["width"] === "1280")!
+            .nativeElement as SVGRectElement;
+        const centre = boxes.find((box) => box.attributes["width"] === "2")!
+            .nativeElement as SVGRectElement;
+        const edgeRect = edge.getBoundingClientRect();
+        const centreRect = centre.getBoundingClientRect();
+        const mappedCentre = frameToScreen(frameWidth / 2, frameHeight / 2);
+        const mappedOrigin = frameToScreen(0, 0);
+        const mappedFar = frameToScreen(frameWidth, frameHeight);
+
+        expect(centreRect.x + centreRect.width / 2)
+            .withContext("centre x")
+            .toBeCloseTo(mappedCentre.x, 0);
+        expect(centreRect.y + centreRect.height / 2)
+            .withContext("centre y")
+            .toBeCloseTo(mappedCentre.y, 0);
+        expect(edgeRect.x).withContext("edge x").toBeCloseTo(mappedOrigin.x, 0);
+        expect(edgeRect.y).withContext("edge y").toBeCloseTo(mappedOrigin.y, 0);
+        expect(edgeRect.right)
+            .withContext("edge right")
+            .toBeCloseTo(mappedFar.x, 0);
+        expect(edgeRect.bottom)
+            .withContext("edge bottom")
+            .toBeCloseTo(mappedFar.y, 0);
+    });
 
     it("should draw the 21 hand landmarks without a box and hang the label on the wrist", fakeAsync(() => {
         const message = detectionMessage("hand_tracking");
