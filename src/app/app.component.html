@@ -197,16 +197,16 @@
         data-test="BTN_SidebarToggle"
         type="button"
         class="sidebar-toggle"
-        [attr.aria-expanded]="!sidebarCollapsed"
+        [attr.aria-expanded]="isNavigationVisible()"
         [attr.aria-label]="
-            sidebarCollapsed ? 'Show navigation' : 'Hide navigation'
+            isNavigationVisible() ? 'Hide navigation' : 'Show navigation'
         "
-        [title]="sidebarCollapsed ? 'Show navigation' : 'Hide navigation'"
+        [title]="isNavigationVisible() ? 'Hide navigation' : 'Show navigation'"
         (click)="toggleSidebar()">
         <i
             class="bi"
-            [class.bi-chevron-left]="!sidebarCollapsed"
-            [class.bi-chevron-right]="sidebarCollapsed"></i>
+            [class.bi-chevron-left]="isNavigationVisible()"
+            [class.bi-chevron-right]="!isNavigationVisible()"></i>
     </button>
     }
     <div class="content-wrapper">

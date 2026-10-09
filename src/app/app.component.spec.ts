@@ -138,6 +138,11 @@ describe("AppComponent", () => {
 
     it("collapses and expands the sidebar with the handle on the divider, the arrow showing the way", () => {
         fixture.detectChanges();
+        const app = fixture.componentInstance;
+        // Wide layout: the navigation sits beside the content. Set explicitly so
+        // the spec does not depend on the browser window Karma happens to use.
+        app.navigationOverlaid = false;
+        fixture.detectChanges();
         const wrapper: HTMLElement =
             fixture.nativeElement.querySelector(".wrapper");
         const handle: HTMLButtonElement = fixture.nativeElement.querySelector(
@@ -161,6 +166,31 @@ describe("AppComponent", () => {
         fixture.detectChanges();
         expect(wrapper.classList.contains("sidebar-collapse")).toBeFalse();
         expect(icon?.classList.contains("bi-chevron-left")).toBeTrue();
+    });
+
+    it("points the arrow at the overlaid navigation the other way round", () => {
+        fixture.detectChanges();
+        const app = fixture.componentInstance;
+        // Narrow layout: the navigation overlays the content and the collapse
+        // class means the opposite, so "collapsed" is the state that shows it.
+        app.navigationOverlaid = true;
+        app.sidebarCollapsed = false;
+        fixture.detectChanges();
+        const handle: HTMLButtonElement = fixture.nativeElement.querySelector(
+            "#sidebar-toggle-button",
+        );
+        const icon = handle.querySelector("i");
+        expect(icon?.classList.contains("bi-chevron-right")).toBeTrue();
+        expect(handle.getAttribute("aria-expanded")).toBe("false");
+
+        handle.click();
+        fixture.detectChanges();
+        expect(icon?.classList.contains("bi-chevron-left")).toBeTrue();
+        expect(handle.getAttribute("aria-expanded")).toBe("true");
+
+        handle.click();
+        fixture.detectChanges();
+        expect(icon?.classList.contains("bi-chevron-right")).toBeTrue();
     });
 
     it("keeps the old hamburger out of the header", () => {
