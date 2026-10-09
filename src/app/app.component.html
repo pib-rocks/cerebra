@@ -192,17 +192,26 @@
             </div>
         </aside>
     </div>
+    <button
+        id="sidebar-toggle-button"
+        data-test="BTN_SidebarToggle"
+        type="button"
+        class="sidebar-toggle"
+        [attr.aria-expanded]="isNavigationVisible()"
+        [attr.aria-label]="
+            isNavigationVisible() ? 'Hide navigation' : 'Show navigation'
+        "
+        [title]="isNavigationVisible() ? 'Hide navigation' : 'Show navigation'"
+        (click)="toggleSidebar()">
+        <i
+            class="bi"
+            [class.bi-chevron-left]="isNavigationVisible()"
+            [class.bi-chevron-right]="!isNavigationVisible()"></i>
+    </button>
     }
     <div class="content-wrapper">
         <div class="container-fluid">
             <div class="d-flex flex-row">
-                <div class="flex-grow-0 flex-shrink-0 m-0 p-0 mt-5">
-                    <button
-                        id="hamburger-button"
-                        data-test="BTN_Hamburger"
-                        class="btn bi bi-list"
-                        (click)="toggleSidebar()"></button>
-                </div>
                 <div class="flex-shrink-1 flex-grow-1 overflow-hidden">
                     <app-conversation-status
                         surface="header"></app-conversation-status>
