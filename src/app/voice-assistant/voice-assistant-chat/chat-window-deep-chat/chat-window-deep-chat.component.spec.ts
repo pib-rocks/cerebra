@@ -183,6 +183,22 @@ describe("ChatWindowDeepChatComponent", () => {
         expect(component).toBeTruthy();
     });
 
+    it("labels both conversation partners and keeps those names readable", () => {
+        component.personalityName = "Ada";
+        component.ngAfterViewInit();
+
+        const names = mockDeepChat["names"] as {
+            user: {text: string; style: {color: string}};
+            ai: {text: string; style: {color: string}};
+        };
+        // Both names sit on the dark blue chat background; deep-chat would draw
+        // them black without a colour of its own.
+        expect(names.user.text).toBe("User");
+        expect(names.user.style.color).toBe("#fff");
+        expect(names.ai.text).toBe("Ada");
+        expect(names.ai.style.color).toBe("#fff");
+    });
+
     it("leaves out the chat and personality view toggle", () => {
         const registered = customElements.get("deep-chat");
         const prototype = registered?.prototype as
