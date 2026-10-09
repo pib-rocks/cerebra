@@ -159,12 +159,16 @@
                 @for (layer of visibleDetectionLayers; track layer.modelId) {
                 <svg
                     class="detection-overlay"
+                    preserveAspectRatio="xMidYMid meet"
                     [attr.viewBox]="
                         '0 0 ' +
                         layer.message!.frame_width +
                         ' ' +
                         layer.message!.frame_height
                     "
+                    [attr.data-model-id]="layer.modelId"
+                    [attr.data-applied-hand-updates]="appliedHandUpdates"
+                    [attr.data-rendered-hand-keypoints]="renderedHandKeypoints"
                     [attr.aria-label]="layer.modelId + ' detections'">
                     @for ( detection of layer.message!.detections; track $index
                     ) { @if (showsBox(layer.modelId, detection)) {

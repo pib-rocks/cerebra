@@ -27,6 +27,7 @@ import {
 import {ModelListComponent} from "./model-list/model-list.component";
 import {
     GAZE_MODEL_ID,
+    HAND_MODEL_IDS,
     boxRule,
     HEAD_POSE_MODEL_ID,
     LabelScalar,
@@ -91,6 +92,9 @@ export class CameraComponent implements OnInit, OnDestroy {
     private static readonly DETECTION_STALE_MS = 1500;
     private static readonly DIAGNOSTIC_WINDOW_MS = 5000;
     private static readonly DEFAULT_REFRESH_RATE_SECONDS = 0.1;
+    /** Latest hand result is applied on this cadence, independent of JPEG refresh. */
+    private static readonly DETECTION_FLUSH_MS = 100;
+    private static readonly HAND_KEYPOINT_COUNT = 21;
     /**
      * Gaze ray length, as a share of the shortest side of the face box: long
      * enough to read as a direction, short enough to stay next to the face.
@@ -120,6 +124,9 @@ export class CameraComponent implements OnInit, OnDestroy {
     detectionModels: DetectionLayer[] = [];
     cameraFramesLastWindow = 0;
     detectionMessagesLastWindow = 0;
+    /** Hand results written onto the overlay. Camera redraws do not increment this. */
+    appliedHandUpdates = 0;
+    renderedHandKeypoints = 0;
     rosbridgeConnected = false;
     private detectionExpiryTimers = new Map<
         string,
@@ -129,6 +136,7 @@ export class CameraComponent implements OnInit, OnDestroy {
     private detectionMessageTimes: number[] = [];
     private diagnosticTimer?: ReturnType<typeof setTimeout>;
     private displayRefreshTimer?: ReturnType<typeof setTimeout>;
+    private detectionFlushTimer?: ReturnType<typeof setTimeout>;
     private pendingCameraFrame?: string;
     private pendingDetections = new Map<string, DetectionArray>();
     private imageIsLive = false;
@@ -191,6 +199,7 @@ export class CameraComponent implements OnInit, OnDestroy {
         this.detectionClearSubscription?.unsubscribe();
         this.connectionStatusSubscription?.unsubscribe();
         this.clearDisplayRefreshTimer();
+        this.clearDetectionFlushTimer();
         this.pendingCameraFrame = undefined;
         this.pendingDetections.clear();
         this.clearDetections();
@@ -233,6 +242,7 @@ export class CameraComponent implements OnInit, OnDestroy {
         this.pendingCameraFrame = undefined;
         this.pendingDetections.clear();
         this.clearDisplayRefreshTimer();
+        this.clearDetectionFlushTimer();
         this.clearDiagnostics();
         this.imageSrc = "../../assets/camera-placeholder.jpg";
         this.imageIsLive = false;
@@ -467,7 +477,7 @@ export class CameraComponent implements OnInit, OnDestroy {
         }
 
         this.pendingDetections.set(message.model_id, message);
-        this.scheduleDisplayFlush();
+        this.scheduleDetectionFlush();
     }
 
     private ensureDetectionLayer(modelId: string): DetectionLayer {
@@ -491,6 +501,7 @@ export class CameraComponent implements OnInit, OnDestroy {
             const timer = this.detectionExpiryTimers.get(id);
             if (timer !== undefined) clearTimeout(timer);
             this.detectionExpiryTimers.delete(id);
+            if (this.isHandModel(id)) this.renderedHandKeypoints = 0;
         }
         this.changeDetectorRef.markForCheck();
     }
@@ -527,7 +538,7 @@ export class CameraComponent implements OnInit, OnDestroy {
     updateRefreshRateLabel(sliderNumber: number) {
         this.cameraSettings!.refreshRate = sliderNumber;
         this.clearDisplayRefreshTimer();
-        if (this.hasPendingDisplay()) {
+        if (this.pendingCameraFrame !== undefined) {
             this.scheduleDisplayFlush();
         }
     }
@@ -576,6 +587,7 @@ export class CameraComponent implements OnInit, OnDestroy {
             this.pendingCameraFrame = undefined;
             this.pendingDetections.clear();
             this.clearDisplayRefreshTimer();
+            this.clearDetectionFlushTimer();
             this.imageSrc = "../../assets/camera-error-image.svg";
             this.imageIsLive = false;
             this.clearDetections();
@@ -591,8 +603,18 @@ export class CameraComponent implements OnInit, OnDestroy {
         this.flushPendingDisplay();
         this.displayRefreshTimer = setTimeout(() => {
             this.displayRefreshTimer = undefined;
-            if (this.hasPendingDisplay()) this.scheduleDisplayFlush();
+            if (this.pendingCameraFrame !== undefined) {
+                this.scheduleDisplayFlush();
+            }
         }, this.displayRefreshDelayMs());
+    }
+
+    private scheduleDetectionFlush() {
+        if (this.detectionFlushTimer !== undefined) return;
+        this.detectionFlushTimer = setTimeout(() => {
+            this.detectionFlushTimer = undefined;
+            this.flushDetections();
+        }, CameraComponent.DETECTION_FLUSH_MS);
     }
 
     private flushPendingDisplay() {
@@ -601,7 +623,11 @@ export class CameraComponent implements OnInit, OnDestroy {
             this.pendingCameraFrame = undefined;
             this.imageIsLive = true;
         }
+        this.changeDetectorRef.markForCheck();
+    }
 
+    private flushDetections() {
+        if (this.pendingDetections.size === 0) return;
         for (const [modelId, message] of this.pendingDetections) {
             const layer = this.ensureDetectionLayer(modelId);
             layer.message = message;
@@ -617,16 +643,35 @@ export class CameraComponent implements OnInit, OnDestroy {
                     CameraComponent.DETECTION_STALE_MS,
                 ),
             );
+            if (this.isHandResult(modelId, message)) {
+                this.appliedHandUpdates += 1;
+                this.renderedHandKeypoints =
+                    CameraComponent.HAND_KEYPOINT_COUNT;
+            } else if (
+                this.isHandModel(modelId) &&
+                message.detections.length === 0
+            ) {
+                this.renderedHandKeypoints = 0;
+            }
         }
         this.pendingDetections.clear();
         this.changeDetectorRef.markForCheck();
     }
 
-    private hasPendingDisplay(): boolean {
-        return (
-            this.pendingCameraFrame !== undefined ||
-            this.pendingDetections.size > 0
-        );
+    private isHandModel(modelId: string): boolean {
+        return HAND_MODEL_IDS.includes(modelId);
+    }
+
+    private isHandResult(modelId: string, message: DetectionArray): boolean {
+        if (!this.isHandModel(modelId)) return false;
+        return message.detections.some((detection) => {
+            const points = this.keypoints(detection);
+            return (
+                points.length === CameraComponent.HAND_KEYPOINT_COUNT &&
+                detection.keypoint_z.length ===
+                    CameraComponent.HAND_KEYPOINT_COUNT
+            );
+        });
     }
 
     private displayRefreshDelayMs(): number {
@@ -642,6 +687,13 @@ export class CameraComponent implements OnInit, OnDestroy {
         if (this.displayRefreshTimer !== undefined) {
             clearTimeout(this.displayRefreshTimer);
             this.displayRefreshTimer = undefined;
+        }
+    }
+
+    private clearDetectionFlushTimer() {
+        if (this.detectionFlushTimer !== undefined) {
+            clearTimeout(this.detectionFlushTimer);
+            this.detectionFlushTimer = undefined;
         }
     }
 
