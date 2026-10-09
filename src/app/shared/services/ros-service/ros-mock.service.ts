@@ -141,7 +141,7 @@ export class RosService implements IRosService {
         });
     detectionReceiver$ = new Subject<DetectionArray>();
     detectionModelsReceiver$ = new BehaviorSubject<string[]>([
-        "hand_tracking",
+        "hand_tracking_fast",
         "object_detection",
     ]);
     detectionClearReceiver$ = new Subject<string | undefined>();
@@ -159,7 +159,7 @@ export class RosService implements IRosService {
 
     private readonly mockModels: ModelInfo[] = [
         {
-            model_id: "hand_tracking",
+            model_id: "hand_tracking_fast",
             task: "hand tracking",
             licence: "Apache-2.0",
             shaves: [4, 1, 4],
@@ -517,7 +517,7 @@ export class RosService implements IRosService {
                 toggle ? orangeJpegBase64 : redJpegBase64,
             );
             this.detectionReceiver$.next({
-                model_id: "hand_tracking",
+                model_id: "hand_tracking_fast",
                 frame_width: 640,
                 frame_height: 480,
                 detections: [

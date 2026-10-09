@@ -22,6 +22,7 @@ import {FACEMESH_INDEX_PAIRS} from "./facemesh-topology";
 
 export const HAND_MODEL_IDS: ReadonlyArray<string> = [
     "hand_tracking",
+    "hand_tracking_fast",
     "hand_tracking_mp",
     "imitation",
 ];
