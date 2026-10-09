@@ -226,23 +226,26 @@ describe("RosService", () => {
     });
 
     it("should list models from the ROS service", (done) => {
-        const models = [
-            {
-                model_id: "hand_tracking",
-                task: "hand tracking",
-                licence: "Apache-2.0",
-                shaves: [4, 1, 4],
-                size_bytes: 100,
-                available: true,
-                active: false,
-            },
-        ];
+        const response = {
+            models: [
+                {
+                    model_id: "hand_tracking",
+                    task: "hand tracking",
+                    licence: "Apache-2.0",
+                    shaves: 4,
+                    size_bytes: 100,
+                    available: true,
+                    active: false,
+                },
+            ],
+            total_shaves: 16,
+        };
         spyOn(rosService["listModelsService"], "callService").and.callFake(
-            (_request, callback) => callback!({models}),
+            (_request, callback) => callback!(response),
         );
 
-        rosService.listModels().subscribe((response) => {
-            expect(response).toEqual(models);
+        rosService.listModels().subscribe((result) => {
+            expect(result).toEqual(response);
             done();
         });
     });
@@ -252,7 +255,7 @@ describe("RosService", () => {
             model_id: "hand_tracking",
             task: "hand tracking",
             licence: "Apache-2.0",
-            shaves: [4, 1, 4],
+            shaves: 4,
             size_bytes: 100,
             available: true,
             active: false,
@@ -266,7 +269,7 @@ describe("RosService", () => {
         expect(startSpy).toHaveBeenCalledOnceWith(
             {
                 model_id: "hand_tracking",
-                shaves: [4, 1, 4],
+                shaves: 4,
                 owner: "cerebra-ui",
             },
             jasmine.any(Function),

@@ -19,6 +19,7 @@ import {GoalStatus} from "../../ros-types/action/goal-status";
 import {ApiService} from "../api.service";
 import {ChatMessage} from "../../types/chat-message";
 import {ChatMessage as ChatMessageRos} from "../../ros-types/msg/chat-message";
+import {ModelInfo} from "../../ros-types/srv/list-models";
 
 describe("RosMockService", () => {
     let service: RosService;
@@ -699,18 +700,19 @@ describe("RosMockService", () => {
         service.setSolidStateRelayState({turned_on: true});
     });
 
-    it("should include hand tracking with per-network SHAVEs", () => {
-        service.listModels().subscribe((models) => {
-            const handTracking = models.find(
+    it("should list hand tracking with its slot count", () => {
+        service.listModels().subscribe((response) => {
+            const handTracking = response.models.find(
                 ({model_id}) => model_id === "hand_tracking_fast",
             );
-            expect(handTracking?.shaves).toEqual([4, 1, 4]);
+            expect(handTracking?.shaves).toBe(4);
+            expect(response.total_shaves).toBe(16);
         });
     });
 
     it("should simulate the hand tracking startup transition", fakeAsync(() => {
-        let models: any[] = [];
-        service.listModels().subscribe((value) => (models = value));
+        let models: ModelInfo[] = [];
+        service.listModels().subscribe((value) => (models = value.models));
 
         service.startModel(models[0], "cerebra-ui").subscribe();
         expect(service.modelStatusReceiver$.value.models[0]).toEqual(

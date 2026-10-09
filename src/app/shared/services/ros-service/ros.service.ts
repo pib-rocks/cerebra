@@ -786,12 +786,12 @@ export class RosService implements IRosService {
         return subject;
     }
 
-    listModels(): Observable<ModelInfo[]> {
+    listModels(): Observable<ListModelsResponse> {
         return from(
-            new Promise<ModelInfo[]>((resolve, reject) => {
+            new Promise<ListModelsResponse>((resolve, reject) => {
                 this.listModelsService.callService(
                     {},
-                    (response) => resolve(response.models),
+                    (response) => resolve(response),
                     (error) => reject(new Error(error)),
                 );
             }),
