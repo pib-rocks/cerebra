@@ -12,6 +12,7 @@ import {
     topologyConnections,
 } from "./detection-topology";
 import {FACEMESH_INDEX_PAIRS} from "./facemesh-topology";
+import {HAND_KEYPOINT_NAMES} from "./hand-skeleton";
 
 describe("facemesh topology", () => {
     it("contains only unique edges within the 468-landmark model", () => {
@@ -104,6 +105,36 @@ describe("QR-code topology", () => {
         ]);
         expect(
             topologyConnections(QR_CODE_MODEL_ID, keypoints.slice(0, 3)),
+        ).toEqual([]);
+    });
+});
+
+describe("hand model ids", () => {
+    const handKeypoints = () =>
+        HAND_KEYPOINT_NAMES.map((name, index) => ({
+            name,
+            x: index,
+            y: 100 + index,
+        }));
+
+    it("includes hand_tracking_fast so its detections draw the existing skeleton", () => {
+        expect(HAND_MODEL_IDS).toContain("hand_tracking_fast");
+
+        const keypoints = handKeypoints();
+        const connections = topologyConnections(
+            "hand_tracking_fast",
+            keypoints,
+        );
+
+        expect(connections.length).toBeGreaterThan(0);
+        expect(connections).toEqual(
+            topologyConnections("hand_tracking", keypoints),
+        );
+    });
+
+    it("draws no connections for a model id that is not listed", () => {
+        expect(
+            topologyConnections("unlisted_detector", handKeypoints()),
         ).toEqual([]);
     });
 });

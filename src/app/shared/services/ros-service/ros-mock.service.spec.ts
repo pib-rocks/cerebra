@@ -702,7 +702,7 @@ describe("RosMockService", () => {
     it("should include hand tracking with per-network SHAVEs", () => {
         service.listModels().subscribe((models) => {
             const handTracking = models.find(
-                ({model_id}) => model_id === "hand_tracking",
+                ({model_id}) => model_id === "hand_tracking_fast",
             );
             expect(handTracking?.shaves).toEqual([4, 1, 4]);
         });
@@ -715,7 +715,7 @@ describe("RosMockService", () => {
         service.startModel(models[0], "cerebra-ui").subscribe();
         expect(service.modelStatusReceiver$.value.models[0]).toEqual(
             jasmine.objectContaining({
-                model_id: "hand_tracking",
+                model_id: "hand_tracking_fast",
                 state: "starting",
                 active: true,
             }),
@@ -725,7 +725,7 @@ describe("RosMockService", () => {
 
         expect(service.modelStatusReceiver$.value.models[0]).toEqual(
             jasmine.objectContaining({
-                model_id: "hand_tracking",
+                model_id: "hand_tracking_fast",
                 state: "running",
                 active: true,
             }),
