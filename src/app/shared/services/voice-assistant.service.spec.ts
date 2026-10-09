@@ -447,6 +447,7 @@ describe("VoiceAssistantService", () => {
             "modelRef",
             "name",
             "pauseThreshold",
+            "reasoningEffort",
             "sttEngine",
             "toolCalling",
             "ttsEngine",

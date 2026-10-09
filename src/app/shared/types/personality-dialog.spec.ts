@@ -6,11 +6,13 @@ import {
     IMAGES_NEED_TOOL_CALLING_AND_MCP,
     LOCAL_VOICE_INPUT,
     LOCAL_VOICE_OUTPUT,
+    NEW_PERSONALITY_REASONING_EFFORT,
     TOOLS_NO_CAPABILITY,
     enforcePersonalityDialog,
     imageSwitchAvailability,
     liveFromChosenModel,
     readPersonalityDialog,
+    reasoningEffortFromStored,
     toolCallingAvailability,
     voiceInputOptions,
     voiceOutputOptions,
@@ -38,7 +40,31 @@ describe("personality dialog rules", () => {
             live: false,
             idleTimeoutSeconds: DEFAULT_IDLE_TIMEOUT_SECONDS,
             mcp: true,
+            reasoningEffort: null,
         });
+    });
+
+    it("keeps a stored reasoning level and does not read NULL as none", () => {
+        expect(NEW_PERSONALITY_REASONING_EFFORT).toBe("none");
+        expect(readPersonalityDialog(undefined).reasoningEffort).toBeNull();
+        expect(
+            readPersonalityDialog({reasoningEffort: null}).reasoningEffort,
+        ).toBeNull();
+        expect(reasoningEffortFromStored("")).toBeNull();
+        expect(reasoningEffortFromStored("nope")).toBeNull();
+        expect(
+            readPersonalityDialog({reasoningEffort: "high"}).reasoningEffort,
+        ).toBe("high");
+        expect(
+            readPersonalityDialog({reasoningEffort: "none"}).reasoningEffort,
+        ).toBe("none");
+        expect(
+            enforcePersonalityDialog(
+                readPersonalityDialog({reasoningEffort: null}),
+                null,
+                false,
+            ).reasoningEffort,
+        ).toBeNull();
     });
 
     it("greys out images while tool calling or the MCP server is off", () => {

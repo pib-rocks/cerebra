@@ -33,11 +33,17 @@ import {
     DEFAULT_IDLE_TIMEOUT_SECONDS,
     LOCAL_VOICE_INPUT,
     LOCAL_VOICE_OUTPUT,
+    NEW_PERSONALITY_REASONING_EFFORT,
     PersonalityDialogValues,
+    REASONING_EFFORTS,
+    REASONING_EFFORT_UNMANAGED,
+    REASONING_EFFORT_UNMANAGED_LABEL,
     VoiceBackendOption,
     enforcePersonalityDialog,
     imageSwitchAvailability,
     readPersonalityDialog,
+    reasoningEffortFromStored,
+    reasoningEffortLabel,
     toolCallingAvailability,
     voiceInputOptions,
     voiceOutputOptions,
@@ -103,6 +109,10 @@ export class VoiceAssistantComponent implements OnInit {
     private seenAssistantModel: string | null = null;
     retiredNotice: string | null = null;
     readonly missingKeyMark = MISSING_KEY_MARK;
+    readonly reasoningLevels = REASONING_EFFORTS;
+    readonly reasoningEffortUnmanaged = REASONING_EFFORT_UNMANAGED;
+    readonly reasoningEffortUnmanagedLabel = REASONING_EFFORT_UNMANAGED_LABEL;
+    readonly reasoningEffortLabel = reasoningEffortLabel;
     readonly isProviderConfigured = isProviderConfigured;
     readonly isProviderOptionDisabled = isProviderOptionDisabled;
     button: {enabled: boolean; func: () => void} = {
@@ -210,6 +220,9 @@ export class VoiceAssistantComponent implements OnInit {
                 validators: [Validators.required, Validators.min(1)],
             }),
             mcp: new FormControl(true, {nonNullable: true}),
+            reasoningEffort: new FormControl(NEW_PERSONALITY_REASONING_EFFORT, {
+                nonNullable: true,
+            }),
         });
         this.personalityForm.valueChanges
             .pipe(takeUntilDestroyed(this.destroyRef))
@@ -313,6 +326,7 @@ export class VoiceAssistantComponent implements OnInit {
             live: false,
             idleTimeoutSeconds: DEFAULT_IDLE_TIMEOUT_SECONDS,
             mcp: true,
+            reasoningEffort: NEW_PERSONALITY_REASONING_EFFORT,
         });
         this.thresholdString =
             this.personalityForm.controls["pausethreshold"].value + "s";
@@ -345,6 +359,8 @@ export class VoiceAssistantComponent implements OnInit {
                 live: dialog.live,
                 idleTimeoutSeconds: dialog.idleTimeoutSeconds,
                 mcp: dialog.mcp,
+                reasoningEffort:
+                    dialog.reasoningEffort ?? REASONING_EFFORT_UNMANAGED,
             });
             this.retainStoredChannel = false;
             this.thresholdString =
@@ -509,6 +525,11 @@ export class VoiceAssistantComponent implements OnInit {
                 live: raw["live"] === true,
                 idleTimeoutSeconds: Number(raw["idleTimeoutSeconds"]),
                 mcp: raw["mcp"] !== false,
+                reasoningEffort: reasoningEffortFromStored(
+                    raw["reasoningEffort"] == null
+                        ? null
+                        : String(raw["reasoningEffort"]),
+                ),
             },
             this.resolvedModel(),
             this.models.length > 0,

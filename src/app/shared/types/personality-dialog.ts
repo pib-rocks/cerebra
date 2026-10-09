@@ -15,6 +15,45 @@ export const LOCAL_VOICE_OUTPUT = "supertone";
  */
 export const DEFAULT_IDLE_TIMEOUT_SECONDS = 60;
 
+/**
+ * Closed set the API accepts for reasoningEffort. "none" is a real level:
+ * it turns reasoning off. It is not the stand-in for a missing column.
+ */
+export const REASONING_EFFORTS = [
+    "none",
+    "minimal",
+    "low",
+    "medium",
+    "high",
+    "xhigh",
+    "max",
+    "ultra",
+] as const;
+
+export type ReasoningEffort = (typeof REASONING_EFFORTS)[number];
+
+/**
+ * Select value for a stored NULL. The Hermes profile keeps its own level.
+ * This is deliberately not "none".
+ */
+export const REASONING_EFFORT_UNMANAGED = "";
+
+export const REASONING_EFFORT_UNMANAGED_LABEL = "Unchanged";
+
+/** A new personality starts here. An existing NULL stays unmanaged. */
+export const NEW_PERSONALITY_REASONING_EFFORT: ReasoningEffort = "none";
+
+const REASONING_EFFORT_LABELS: Record<ReasoningEffort, string> = {
+    none: "None",
+    minimal: "Minimal",
+    low: "Low",
+    medium: "Medium",
+    high: "High",
+    xhigh: "Extra high",
+    max: "Max",
+    ultra: "Ultra",
+};
+
 export const IMAGES_NEED_TOOL_CALLING =
     "Images stay off while tool calling is off. An image is fetched by a tool.";
 export const IMAGES_NEED_MCP =
@@ -31,6 +70,12 @@ export interface PersonalityDialogValues {
     live: boolean;
     idleTimeoutSeconds: number;
     mcp: boolean;
+    /**
+     * null is unmanaged: the column is NULL and the profile's own level
+     * stays in place. One of the eight levels is written only when the
+     * operator chose it.
+     */
+    reasoningEffort: ReasoningEffort | null;
 }
 
 export interface DialogBlock {
@@ -68,7 +113,28 @@ export function readPersonalityDialog(
         live: source?.live === true,
         idleTimeoutSeconds: idleTimeoutOrDefault(source?.idleTimeoutSeconds),
         mcp: source?.mcp !== false,
+        reasoningEffort: reasoningEffortFromStored(source?.reasoningEffort),
     };
+}
+
+export function reasoningEffortLabel(level: ReasoningEffort): string {
+    return REASONING_EFFORT_LABELS[level];
+}
+
+/**
+ * A stored level, or null when the column is NULL. Blank and unknown
+ * text stay null so they are never saved as "none".
+ */
+export function reasoningEffortFromStored(
+    value: string | null | undefined,
+): ReasoningEffort | null {
+    if (
+        typeof value === "string" &&
+        (REASONING_EFFORTS as readonly string[]).includes(value)
+    ) {
+        return value as ReasoningEffort;
+    }
+    return null;
 }
 
 export function toolCallingAvailability(

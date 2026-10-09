@@ -4,6 +4,7 @@ import {
     DEFAULT_IDLE_TIMEOUT_SECONDS,
     LOCAL_VOICE_INPUT,
     LOCAL_VOICE_OUTPUT,
+    readPersonalityDialog,
 } from "./personality-dialog";
 import {
     VOICE_MODE_LIVE,
@@ -22,6 +23,7 @@ const PERSONALITY_WRITE_KEYS = [
     "modelRef",
     "name",
     "pauseThreshold",
+    "reasoningEffort",
     "sttEngine",
     "toolCalling",
     "ttsEngine",
@@ -127,5 +129,49 @@ describe("personality write body", () => {
         expect(updated.modelRef).toBe(created.modelRef);
         expect("voiceMode" in updated).toBeFalse();
         expect(updated.name).toBe("Ada renamed");
+        expect(created.reasoningEffort).toBeNull();
+        expect(updated.reasoningEffort).toBeNull();
+    });
+
+    it("round-trips a stored reasoning level and leaves NULL as NULL", () => {
+        const stored = parseDtoToVoiceAssistant({
+            personalityId: "persona-level",
+            name: "Ada",
+            gender: "Female",
+            pauseThreshold: 0.8,
+            reasoningEffort: "xhigh",
+        });
+        expect(stored.reasoningEffort).toBe("xhigh");
+        expect(personalityWriteBody(stored, true).reasoningEffort).toBe(
+            "xhigh",
+        );
+
+        const unmanaged = parseDtoToVoiceAssistant({
+            personalityId: "persona-unmanaged",
+            name: "Ada",
+            gender: "Female",
+            pauseThreshold: 0.8,
+            reasoningEffort: null,
+        });
+        expect(unmanaged.reasoningEffort).toBeNull();
+        unmanaged.assignDialog(readPersonalityDialog(unmanaged));
+        const rewritten = personalityWriteBody(unmanaged, true);
+        expect(rewritten.reasoningEffort).toBeNull();
+
+        const created = new VoiceAssistant(
+            "",
+            "Ada",
+            "Female",
+            0.8,
+            "",
+            null,
+            10,
+            DEFAULT_PROVIDER_REF,
+            SMART_CHANNEL,
+            {reasoningEffort: "none"},
+        );
+        expect(personalityWriteBody(created, true).reasoningEffort).toBe(
+            "none",
+        );
     });
 });

@@ -27,6 +27,10 @@ import {
     IMAGES_NEED_TOOL_CALLING,
     LOCAL_VOICE_INPUT,
     LOCAL_VOICE_OUTPUT,
+    NEW_PERSONALITY_REASONING_EFFORT,
+    REASONING_EFFORTS,
+    REASONING_EFFORT_UNMANAGED,
+    REASONING_EFFORT_UNMANAGED_LABEL,
 } from "../shared/types/personality-dialog";
 export class MockNgbModalRef {
     componentInstance = {
@@ -577,6 +581,81 @@ describe("VoiceAssistantComponent", () => {
         expect(created.live).toBeFalse();
         expect(created.mcp).toBeTrue();
         expect(created.idleTimeoutSeconds).toBe(DEFAULT_IDLE_TIMEOUT_SECONDS);
+        expect(created.reasoningEffort).toBe(NEW_PERSONALITY_REASONING_EFFORT);
+    });
+
+    it("shows none for a new personality, a stored level as itself, and leaves an untouched NULL as NULL", () => {
+        fixture.detectChanges();
+        component.openAddModal();
+        component.advancedOpen = true;
+        fixture.detectChanges();
+        const select = () =>
+            document.body.querySelector(
+                "#reasoning-effort-select",
+            ) as HTMLSelectElement;
+        expect(select().value).toBe(NEW_PERSONALITY_REASONING_EFFORT);
+        expect(
+            Array.from(select().options).map((option) => option.value),
+        ).toEqual([REASONING_EFFORT_UNMANAGED, ...REASONING_EFFORTS]);
+        expect(select().selectedOptions[0].textContent?.trim()).toBe("None");
+        component.ngbModalRef?.close();
+
+        const unmanaged = new VoiceAssistant(
+            "persona-unmanaged",
+            "Ada",
+            "Female",
+            0.8,
+            "",
+        );
+        expect(unmanaged.reasoningEffort).toBeNull();
+        voiceAssistantService.personalities.push(unmanaged);
+        voiceAssistantService.getPersonality.and.returnValue(unmanaged);
+        component.openEditModal(unmanaged.personalityId);
+        component.advancedOpen = true;
+        fixture.detectChanges();
+        expect(select().value).toBe(REASONING_EFFORT_UNMANAGED);
+        expect(select().selectedOptions[0].textContent?.trim()).toBe(
+            REASONING_EFFORT_UNMANAGED_LABEL,
+        );
+        component.personalityForm.patchValue({"name-input": "Ada renamed"});
+        component.editPersonality(unmanaged.personalityId);
+        const kept =
+            voiceAssistantService.updatePersonalityById.calls.mostRecent()
+                .args[0] as VoiceAssistant;
+        expect(kept.name).toBe("Ada renamed");
+        expect(kept.reasoningEffort).toBeNull();
+
+        component.personalityForm.controls["reasoningEffort"].setValue("high");
+        component.editPersonality(unmanaged.personalityId);
+        const chosen =
+            voiceAssistantService.updatePersonalityById.calls.mostRecent()
+                .args[0] as VoiceAssistant;
+        expect(chosen.reasoningEffort).toBe("high");
+        component.ngbModalRef?.close();
+
+        const stored = new VoiceAssistant(
+            "persona-level",
+            "Ada",
+            "Female",
+            0.8,
+            "",
+            null,
+            10,
+            undefined,
+            undefined,
+            {reasoningEffort: "low"},
+        );
+        voiceAssistantService.getPersonality.and.returnValue(stored);
+        component.openEditModal(stored.personalityId);
+        component.advancedOpen = true;
+        fixture.detectChanges();
+        expect(select().value).toBe("low");
+        component.editPersonality(stored.personalityId);
+        const roundTrip =
+            voiceAssistantService.updatePersonalityById.calls.mostRecent()
+                .args[0] as VoiceAssistant;
+        expect(roundTrip.reasoningEffort).toBe("low");
+        component.ngbModalRef?.close();
     });
 
     it("keeps channel, model, voice, and switches inside Advanced", () => {
@@ -627,6 +706,9 @@ describe("VoiceAssistantComponent", () => {
         expect(document.body.querySelector("[data-test=CHK_Live]")).toBeNull();
         expect(
             document.body.querySelector("[data-test=CHK_Mcp]"),
+        ).not.toBeNull();
+        expect(
+            document.body.querySelector("[data-test=DDN_Reasoning_Effort]"),
         ).not.toBeNull();
         expect(
             document.body.querySelector("[data-test=TXT_Idle_Timeout]"),
