@@ -15,22 +15,11 @@ import {
     UNLOCKED_MODE,
 } from "./system/keys/key-store-session";
 import {routes} from "./app-routing.module";
-import {VisibleStateService} from "./shared/services/visible-state.service";
-import {visibleConversation} from "./shared/types/visible-state";
-import {BehaviorSubject} from "rxjs";
 
 describe("AppComponent", () => {
     let fixture: ComponentFixture<AppComponent>;
 
     beforeEach(async () => {
-        const idle = visibleConversation({
-            voiceTurnedOn: false,
-            listening: false,
-            assistantSpeaking: false,
-            holderName: null,
-            keyStoreDegraded: false,
-            liveUnavailable: false,
-        });
         await TestBed.configureTestingModule({
             imports: [
                 RouterTestingModule,
@@ -39,15 +28,6 @@ describe("AppComponent", () => {
                 RelayControlComponent,
                 IpRetrieverComponent,
                 AppComponent,
-            ],
-            providers: [
-                {
-                    provide: VisibleStateService,
-                    useValue: {
-                        snapshot: idle,
-                        snapshot$: new BehaviorSubject(idle),
-                    },
-                },
             ],
         }).compileComponents();
 
@@ -113,12 +93,20 @@ describe("AppComponent", () => {
         expect(app.showStartupPassword()).toBeFalse();
     });
 
-    it("shows who holds the voice in the header", () => {
+    it("does not render the voice holder outside the voice assistant", () => {
         fixture.detectChanges();
         expect(
-            fixture.nativeElement.querySelector("#voice-channel-holder")
-                .textContent,
-        ).toContain("Nobody holds the voice");
+            fixture.nativeElement.querySelector("app-conversation-status"),
+        ).toBeNull();
+        expect(
+            fixture.nativeElement.querySelector("#voice-channel-holder"),
+        ).toBeNull();
+        expect(
+            fixture.nativeElement.querySelector("#header-conversation-state"),
+        ).toBeNull();
+        expect(
+            fixture.nativeElement.querySelector("#assistant-voice-holder"),
+        ).toBeNull();
     });
 
     it("does not open the password dialog when the store is in cleartext", () => {

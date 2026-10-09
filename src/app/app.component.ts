@@ -21,7 +21,6 @@ import {APP_VERSION} from "./shared/util/version";
 import {PROMPT_MODE} from "./system/keys/key-store-session";
 import {KeyStoreSessionService} from "./system/keys/key-store-session.service";
 import {StartupPasswordComponent} from "./system/keys/startup-password.component";
-import {ConversationStatusComponent} from "./voice-assistant/visible-state/conversation-status.component";
 
 @Component({
     selector: "app-root",
@@ -36,7 +35,6 @@ import {ConversationStatusComponent} from "./voice-assistant/visible-state/conve
         IpRetrieverComponent,
         RouterOutlet,
         StartupPasswordComponent,
-        ConversationStatusComponent,
     ],
 })
 export class AppComponent implements OnInit {

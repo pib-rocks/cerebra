@@ -12,6 +12,8 @@ import {VoiceAssistant} from "src/app/shared/types/voice-assistant";
 import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
 import {TokenService} from "src/app/shared/services/token.service";
 import {ChannelCapabilityService} from "src/app/shared/services/channel-capability.service";
+import {VisibleStateService} from "src/app/shared/services/visible-state.service";
+import {visibleConversation} from "src/app/shared/types/visible-state";
 
 describe("VoiceAssistantNavComponent", () => {
     let component: VoiceAssistantNavComponent;
@@ -41,6 +43,14 @@ describe("VoiceAssistantNavComponent", () => {
         voiceAssistantServiceSpy.getPersonality.and.callFake((id: string) =>
             personalities.find((item) => item.getUUID() === id),
         );
+        const idle = visibleConversation({
+            voiceTurnedOn: false,
+            listening: false,
+            assistantSpeaking: false,
+            holderName: null,
+            keyStoreDegraded: false,
+            liveUnavailable: false,
+        });
         await TestBed.configureTestingModule({
             imports: [
                 RouterTestingModule,
@@ -49,6 +59,13 @@ describe("VoiceAssistantNavComponent", () => {
                 BoolToOnOffPipe,
             ],
             providers: [
+                {
+                    provide: VisibleStateService,
+                    useValue: {
+                        snapshot: idle,
+                        snapshot$: new BehaviorSubject(idle),
+                    },
+                },
                 {
                     provide: VoiceAssistantService,
                     useValue: voiceAssistantServiceSpy,
@@ -252,6 +269,63 @@ describe("VoiceAssistantNavComponent", () => {
             "01234567-0123-0123-0123-0123456789ab",
         );
         expect(document.body.querySelector(".modal.cerebra-modal")).toBeNull();
+    });
+
+    it("shows who holds the voice at the right end of the personality row", () => {
+        const header = fixture.nativeElement.querySelector(
+            ".personality-header",
+        ) as HTMLElement;
+        const tools = header.querySelector(".personality-tools") as HTMLElement;
+        const holder = header.querySelector(
+            "app-conversation-status",
+        ) as HTMLElement;
+        const line = header.querySelector(
+            "#assistant-voice-holder",
+        ) as HTMLElement;
+
+        expect(holder).not.toBeNull();
+        expect(header.lastElementChild).toBe(holder);
+        expect(tools.nextElementSibling).toBe(holder);
+        expect(line.textContent).toContain("Nobody holds the voice");
+        expect(header.querySelector("#animated-face")).toBeNull();
+        expect(header.querySelector("#voice-channel-holder")).toBeNull();
+        expect(header.querySelector("#header-conversation-state")).toBeNull();
+
+        const headerStyle = getComputedStyle(header);
+        expect(headerStyle.display).toBe("flex");
+        expect(headerStyle.flexWrap).toBe("nowrap");
+
+        const host = fixture.nativeElement as HTMLElement;
+        host.style.maxWidth = "none";
+        host.style.width = "1200px";
+        fixture.detectChanges();
+        expect(getComputedStyle(holder).marginLeft).not.toBe("0px");
+        let headerBox = header.getBoundingClientRect();
+        let holderBox = holder.getBoundingClientRect();
+        expect(Math.abs(holderBox.right - headerBox.right)).toBeLessThan(2);
+
+        host.style.width = "480px";
+        fixture.detectChanges();
+        headerBox = header.getBoundingClientRect();
+        holderBox = holder.getBoundingClientRect();
+        const selectBox = personalitySelect(fixture).getBoundingClientRect();
+        const toolsBox = tools.getBoundingClientRect();
+        const buttons = Array.from(
+            tools.querySelectorAll("button"),
+        ) as HTMLElement[];
+        expect(holderBox.width).toBeGreaterThan(0);
+        expect(holderBox.left).toBeGreaterThanOrEqual(selectBox.right - 1);
+        expect(toolsBox.right).toBeLessThanOrEqual(holderBox.left + 1);
+        expect(holderBox.right).toBeLessThanOrEqual(headerBox.right + 1);
+        expect(Math.abs(holderBox.right - headerBox.right)).toBeLessThan(2);
+        expect(holderBox.top).toBeLessThan(selectBox.bottom);
+        expect(holderBox.bottom).toBeGreaterThan(selectBox.top);
+        expect(selectBox.left).toBeGreaterThanOrEqual(headerBox.left - 1);
+        for (const button of buttons) {
+            const buttonBox = button.getBoundingClientRect();
+            expect(buttonBox.left).toBeGreaterThanOrEqual(headerBox.left - 1);
+            expect(buttonBox.right).toBeLessThanOrEqual(holderBox.left + 1);
+        }
     });
 
     it("leaves the route alone when a personality is edited", () => {

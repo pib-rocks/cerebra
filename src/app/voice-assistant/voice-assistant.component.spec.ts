@@ -20,6 +20,8 @@ import {
     retiredModelNotice,
 } from "../shared/types/provider-registry";
 import {ChannelCapabilityService} from "../shared/services/channel-capability.service";
+import {VisibleStateService} from "../shared/services/visible-state.service";
+import {visibleConversation} from "../shared/types/visible-state";
 import {DIRECT_CHANNEL, SMART_CHANNEL} from "../shared/types/channel-router";
 import {
     DEFAULT_IDLE_TIMEOUT_SECONDS,
@@ -69,8 +71,23 @@ describe("VoiceAssistantComponent", () => {
                 personalities: [],
             },
         );
+        const idle = visibleConversation({
+            voiceTurnedOn: false,
+            listening: false,
+            assistantSpeaking: false,
+            holderName: null,
+            keyStoreDegraded: false,
+            liveUnavailable: false,
+        });
         await TestBed.configureTestingModule({
             providers: [
+                {
+                    provide: VisibleStateService,
+                    useValue: {
+                        snapshot: idle,
+                        snapshot$: new BehaviorSubject(idle),
+                    },
+                },
                 {
                     provide: ActivatedRoute,
                     useValue: {},

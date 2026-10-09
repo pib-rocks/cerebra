@@ -3,6 +3,19 @@
     padding: 0.5rem 1rem;
 }
 
+.conversation-state.assistant {
+    min-width: 0;
+    padding: 0;
+    text-align: right;
+
+    p {
+        margin: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+
 .activity {
     font-weight: bold;
 }
