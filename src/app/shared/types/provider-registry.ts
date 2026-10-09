@@ -1,7 +1,8 @@
 /**
- * A new personality stores this pointer. Resolving it is a lookup of
+ * Pointer an existing personality may store. Resolving it is a lookup of
  * whichever model row is currently the default, so changing the default
- * does not rewrite personalities. The provider follows from that model.
+ * does not rewrite those personalities. A new dialog does not start on
+ * this pointer; it starts on a concrete catalogue row.
  */
 export const DEFAULT_PROVIDER_REF = "default";
 
@@ -306,6 +307,48 @@ export function providersForSelection<T extends ProviderSelectionRow>(
         return offered.concat([current]);
     }
     return offered;
+}
+
+/**
+ * The row the backend offers as the on-device model. That row is added only
+ * when Ollama lists qwen-fast, so its presence in the catalogue is the
+ * availability signal. There is no separate order field on a catalogue row;
+ * catalogue order is the array order of `models`.
+ */
+const QWEN_FAST_API_NAME = "qwen-fast";
+
+/**
+ * The catalogue row a new personality dialog starts on. Walks the offered
+ * rows, which keep catalogue order, and stops at the first step that applies.
+ * The stored "default" pointer is not consulted.
+ *
+ * 1. pib.Cloud, when that row is offered (the SmartConnect token is stored).
+ * 2. Otherwise the first external row with a stored key. The on-device row
+ *    is configured without a key, so it is never this step.
+ * 3. Otherwise qwen-fast, when that row is offered.
+ */
+export function startingModelForNewPersonality<T extends ProviderSelectionRow>(
+    models: readonly T[],
+    cloudTokenStored: boolean,
+): T | null {
+    const catalogue = models.slice();
+    const offered = providersForSelection(catalogue, null, cloudTokenStored);
+    const cloud = offered.find((model) => usesCloudToken(model));
+    if (cloud != null) {
+        return cloud;
+    }
+    const external = offered.find(
+        (model) =>
+            !isOfflineModel(model) &&
+            !usesCloudToken(model) &&
+            isProviderConfigured(model, cloudTokenStored, catalogue),
+    );
+    if (external != null) {
+        return external;
+    }
+    return (
+        offered.find((model) => model.apiName === QWEN_FAST_API_NAME) ?? null
+    );
 }
 
 function currentSelection<T extends ProviderSelectionRow>(
