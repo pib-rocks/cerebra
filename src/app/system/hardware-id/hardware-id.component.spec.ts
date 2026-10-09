@@ -103,6 +103,10 @@ describe("HardwareIdComponent", () => {
                 (b) => b.brickletNumber === number,
             );
         });
+        // A successful save subscribes to the returned observable. The spy
+        // does not emit a bricklet-cache update, so these tests stay on the
+        // call itself.
+        brickletServiceSpy.renameBrickletUid.and.returnValue(of(undefined));
 
         diagnosticsServiceSpy = jasmine.createSpyObj("DiagnosticsService", [
             "exportHardwareConfig",
@@ -715,6 +719,177 @@ describe("HardwareIdComponent", () => {
             expect(brickletServiceSpy.renameBrickletUid).not.toHaveBeenCalled();
         });
     });
+
+    it("marks each duplicate UID field and names the other slot", () => {
+        component.brickletUidForm.setValue({
+            "1": "AAA",
+            "2": "AAA",
+            "3": "CCC",
+        });
+        fixture.detectChanges();
+
+        const compiled = fixture.nativeElement as HTMLElement;
+        const field = (slot: number) =>
+            compiled.querySelector(
+                `[data-test="TXT_Bricklet_UID_${slot}"]`,
+            ) as HTMLSelectElement;
+        const message = (slot: number) =>
+            compiled.querySelector(
+                `[data-test="MSG_Bricklet_UID_Error_${slot}"]`,
+            );
+
+        expect(field(1).tagName).toBe("SELECT");
+        expect(field(1).classList).toContain("is-invalid");
+        expect(field(2).classList).toContain("is-invalid");
+        expect(field(3).classList).not.toContain("is-invalid");
+        expect(message(1)?.textContent).toContain("already assigned to slot 2");
+        expect(message(2)?.textContent).toContain("already assigned to slot 1");
+        expect(message(3)).toBeNull();
+        // Red wins over the yellow not-detected warning on the duplicate
+        // fields. The unique field can still warn.
+        expect(field(1).classList).not.toContain("is-warning");
+        expect(field(3).classList).toContain("is-warning");
+        expect(
+            Array.from(field(1).options).map((option) =>
+                (option.textContent ?? "").trim(),
+            ),
+        ).toContain("AAA - not detected (already assigned to slot 2)");
+
+        const save = compiled.querySelector(
+            '[data-test="BTN_Update_bricklet_UIDs"]',
+        ) as HTMLButtonElement;
+        expect(save.disabled).toBeTrue();
+        component.updateIds();
+        expect(brickletServiceSpy.renameBrickletUid).not.toHaveBeenCalled();
+    });
+
+    it("fills each UID select from detected devices of that type", () => {
+        const reported: ConnectedBricklet[] = [
+            {
+                name: "Servo Bricklet 2.0",
+                uid: "2h4Z",
+                port: "c",
+                parentUid: "2iLa",
+                deviceIdentifier: 2157,
+            },
+            {
+                name: "Servo Bricklet 2.0",
+                uid: "2aaa",
+                port: "a",
+                parentUid: "2iLa",
+                deviceIdentifier: 2157,
+            },
+            {
+                name: "Solid State Relay Bricklet 2.0",
+                uid: "27FV",
+                port: "d",
+                parentUid: "2iLa",
+                deviceIdentifier: 296,
+            },
+            {
+                name: "RGB LED Button Bricklet",
+                uid: "2dye",
+                port: "a",
+                parentUid: "2iLa",
+                deviceIdentifier: 282,
+            },
+            {
+                name: "HAT Brick",
+                uid: "2iLa",
+                port: "",
+                parentUid: "",
+                deviceIdentifier: 111,
+            },
+        ];
+        brickletServiceSpy.getConnectedBricklets.and.returnValue(of(reported));
+        component.refreshConnectedBricklets();
+        hardwareContext.next(
+            contextFor("pib5edu", [
+                controller(
+                    1,
+                    "tinkerforge_bricklet",
+                    "Servo Bricklet",
+                    7.5,
+                    "2h4Z",
+                ),
+                controller(
+                    5,
+                    "tinkerforge_bricklet",
+                    "Solid State Relay Bricklet",
+                    null,
+                    "2iJK",
+                ),
+                controller(
+                    6,
+                    "tinkerforge_bricklet",
+                    "RGB LED Button Bricklet",
+                    null,
+                    "2dye",
+                ),
+            ]),
+        );
+        fixture.detectChanges();
+
+        const compiled = fixture.nativeElement as HTMLElement;
+        const field = (slot: number) =>
+            compiled.querySelector(
+                `[data-test="TXT_Bricklet_UID_${slot}"]`,
+            ) as HTMLSelectElement;
+        const labels = (slot: number) =>
+            Array.from(field(slot).options).map((option) =>
+                (option.textContent ?? "").trim(),
+            );
+
+        expect(labels(1)).toEqual([
+            "- not configured -",
+            "2aaa - Servo Bricklet 2.0 - Port A",
+            "2h4Z - Servo Bricklet 2.0 - Port C",
+        ]);
+        expect(labels(1).join(" ")).not.toContain("HAT");
+        expect(labels(1).join(" ")).not.toContain("27FV");
+        expect(labels(1).join(" ")).not.toContain("2dye");
+        expect(field(1).value).toBe("2h4Z");
+        expect(field(1).classList).not.toContain("is-warning");
+
+        expect(labels(5)).toEqual([
+            "- not configured -",
+            "27FV - Solid State Relay Bricklet 2.0 - Port D",
+            "2iJK - not detected",
+        ]);
+        expect(field(5).value).toBe("2iJK");
+        expect(field(5).classList).toContain("is-warning");
+        expect(field(5).classList).not.toContain("is-invalid");
+        expect(
+            compiled.querySelector('[data-test="MSG_Bricklet_UID_Warning_5"]')
+                ?.textContent,
+        ).toContain("This device is not currently detected.");
+
+        expect(labels(6)).toEqual([
+            "- not configured -",
+            "2dye - RGB LED Button Bricklet - Port A",
+        ]);
+        expect(field(6).classList).not.toContain("is-warning");
+        expect(field(6).classList).not.toContain("is-invalid");
+
+        const save = compiled.querySelector(
+            '[data-test="BTN_Update_bricklet_UIDs"]',
+        ) as HTMLButtonElement;
+        expect(save.textContent?.trim()).toBe("Save");
+        expect(save.id).toBe("update-bricklet-uids-button");
+        expect(save.getAttribute("data-test")).toBe("BTN_Update_bricklet_UIDs");
+        expect(save.disabled).toBeFalse();
+        expect(
+            compiled.querySelector(
+                '[data-test="BTN_Refresh_Connected_Bricklets"]',
+            ),
+        ).toBeTruthy();
+
+        const reads = brickletServiceSpy.getConnectedBricklets.calls.count();
+        field(1).dispatchEvent(new FocusEvent("focus"));
+        expect(brickletServiceSpy.getConnectedBricklets.calls.count()).toBe(
+            reads + 1,
+        );
+    });
 });
 
 function controller(
@@ -949,5 +1124,131 @@ describe("HardwareIdComponent import preview (zoneless)", () => {
         expect(
             compiled.querySelector('[data-test="TBL_Connected_Bricklets"]'),
         ).toBeNull();
+    });
+});
+
+describe("HardwareIdComponent UID save", () => {
+    let component: HardwareIdComponent;
+    let fixture: ComponentFixture<HardwareIdComponent>;
+    let brickletServiceSpy: jasmine.SpyObj<BrickletService>;
+    let variantServiceSpy: jasmine.SpyObj<VariantService>;
+    let bricklets$: BehaviorSubject<Bricklet[]>;
+    let hardwareContext: BehaviorSubject<HardwareContext>;
+    // The service cache. renameBrickletUid replaces entries here and then
+    // emits, which is what used to rebuild the form from the stale context.
+    let cache: Bricklet[];
+
+    beforeEach(async () => {
+        cache = [new Bricklet("2iJK", 1, "Servo Bricklet")];
+        bricklets$ = new BehaviorSubject<Bricklet[]>(cache.slice());
+        hardwareContext = new BehaviorSubject<HardwareContext>(
+            contextFor("pib5edu", [
+                controller(
+                    1,
+                    "tinkerforge_bricklet",
+                    "Servo Bricklet",
+                    7.5,
+                    "2iJK",
+                ),
+            ]),
+        );
+        brickletServiceSpy = jasmine.createSpyObj("BrickletService", [
+            "getBrickletObservable",
+            "renameBrickletUid",
+            "getBricklet",
+            "reloadBrickletsFromDb",
+            "getConnectedBricklets",
+        ]);
+        brickletServiceSpy.getBrickletObservable.and.returnValue(bricklets$);
+        brickletServiceSpy.getConnectedBricklets.and.returnValue(of([]));
+        brickletServiceSpy.getBricklet.and.callFake((number: number) =>
+            cache.find((bricklet) => bricklet.brickletNumber === number),
+        );
+        brickletServiceSpy.renameBrickletUid.and.callFake(
+            (changed: Bricklet[]) => {
+                changed.forEach((update) => {
+                    const index = cache.findIndex(
+                        (bricklet) =>
+                            bricklet.brickletNumber === update.brickletNumber,
+                    );
+                    if (index >= 0) {
+                        cache[index] = new Bricklet(
+                            update.uid,
+                            update.brickletNumber,
+                            update.type,
+                        );
+                    }
+                });
+                // Context still holds 2iJK. Re-seeding from it would snap
+                // the field back and the next save would write 2iJK.
+                bricklets$.next(cache.slice());
+                return of(undefined);
+            },
+        );
+        variantServiceSpy = jasmine.createSpyObj("VariantService", [
+            "getContextObservable",
+            "reload",
+        ]);
+        variantServiceSpy.getContextObservable.and.returnValue(hardwareContext);
+
+        await TestBed.configureTestingModule({
+            imports: [ReactiveFormsModule, HardwareIdComponent],
+            providers: [
+                {provide: BrickletService, useValue: brickletServiceSpy},
+                {provide: VariantService, useValue: variantServiceSpy},
+                {
+                    provide: DiagnosticsService,
+                    useValue: jasmine.createSpyObj("DiagnosticsService", [
+                        "exportHardwareConfig",
+                        "importHardwareConfig",
+                        "downloadHardwareConfig",
+                        "parseHardwareConfigFileContent",
+                    ]),
+                },
+            ],
+        }).compileComponents();
+
+        fixture = TestBed.createComponent(HardwareIdComponent);
+        component = fixture.componentInstance;
+        fixture.detectChanges();
+    });
+
+    it("keeps the saved UID after updateIds and sends no request on a second save", () => {
+        const control = component.brickletUidForm.get("1") as AbstractControl;
+        expect(component.usingFallback).toBeFalse();
+        expect(control.value).toBe("2iJK");
+
+        control.setValue("SF1");
+        fixture.detectChanges();
+        component.updateIds();
+        fixture.detectChanges();
+
+        const select = fixture.nativeElement.querySelector(
+            '[data-test="TXT_Bricklet_UID_1"]',
+        ) as HTMLSelectElement;
+        expect(control.value).toBe("SF1");
+        expect(select.value).toBe("SF1");
+        expect(select.selectedOptions[0].textContent).toContain("SF1");
+        // The variant context was not reloaded by the spy, so it still
+        // carries the pre-save address. The field must not follow it.
+        expect(hardwareContext.value.controllers[0].address).toBe("2iJK");
+        expect(variantServiceSpy.reload).toHaveBeenCalledTimes(1);
+        expect(brickletServiceSpy.getConnectedBricklets).toHaveBeenCalledTimes(
+            2,
+        );
+
+        component.updateIds();
+
+        expect(brickletServiceSpy.renameBrickletUid).toHaveBeenCalledOnceWith(
+            jasmine.arrayWithExactContents([
+                jasmine.objectContaining({
+                    brickletNumber: 1,
+                    uid: "SF1",
+                    type: "Servo Bricklet",
+                }),
+            ]),
+        );
+        expect(variantServiceSpy.reload).toHaveBeenCalledTimes(1);
+        expect(control.value).toBe("SF1");
     });
 });

@@ -34,6 +34,45 @@
     <form
         [formGroup]="brickletUidForm"
         (ngSubmit)="updateIds()">
+        <ng-template
+            #uidField
+            let-controller="controller">
+            <div class="uid-field">
+                <select
+                    [attr.id]="'bricklet-uid-' + controller.number"
+                    [attr.data-test]="'TXT_Bricklet_UID_' + controller.number"
+                    class="form-select"
+                    [class.is-invalid]="duplicateMessage(controller.number)"
+                    [class.is-warning]="!duplicateMessage(controller.number) && isUndetected(controller.number)"
+                    [attr.aria-describedby]="
+                        duplicateMessage(controller.number) || isUndetected(controller.number)
+                            ? 'bricklet-uid-message-' + controller.number
+                            : null
+                    "
+                    [formControlName]="controller.number.toString()"
+                    (focus)="refreshConnectedBricklets()">
+                    <option value="">- not configured -</option>
+                    @for (option of uidOptions(controller); track option.uid) {
+                    <option [value]="option.uid">{{ option.label }}</option>
+                    }
+                </select>
+                @if (duplicateMessage(controller.number); as message) {
+                <div
+                    class="invalid-feedback d-block"
+                    [attr.id]="'bricklet-uid-message-' + controller.number"
+                    [attr.data-test]="'MSG_Bricklet_UID_Error_' + controller.number">
+                    {{ message }}
+                </div>
+                } @else if (isUndetected(controller.number)) {
+                <div
+                    class="uid-warning"
+                    [attr.id]="'bricklet-uid-message-' + controller.number"
+                    [attr.data-test]="'MSG_Bricklet_UID_Warning_' + controller.number">
+                    This device is not currently detected.
+                </div>
+                }
+            </div>
+        </ng-template>
         <div class="d-flex gap-4 align-items-start">
             <div class="bricklet-grid form-content">
                 @for (group of servoGroups; track group.supplyVoltage) { @if
@@ -45,33 +84,31 @@
                 <div></div>
                 } @for (controller of group.controllers; track
                 controller.number) {
-                <label
+                <label [attr.for]="'bricklet-uid-' + controller.number"
                     >{{ controller.deviceType }} {{ controller.number }}:</label
                 >
-                <input
-                    type="text"
-                    [attr.data-test]="'TXT_Bricklet_UID_' + controller.number"
-                    class="form-control"
-                    [formControlName]="controller.number.toString()" />
+                <ng-container
+                    [ngTemplateOutlet]="uidField"
+                    [ngTemplateOutletContext]="{controller: controller}"></ng-container>
                 } }
             </div>
 
             <div class="bricklet-grid form-content">
                 @for (controller of relayControllers; track controller.number) {
-                <label>{{ controller.deviceType }}:</label>
-                <input
-                    type="text"
-                    [attr.data-test]="'TXT_Bricklet_UID_' + controller.number"
-                    class="form-control"
-                    [formControlName]="controller.number.toString()" />
+                <label [attr.for]="'bricklet-uid-' + controller.number"
+                    >{{ controller.deviceType }}:</label
+                >
+                <ng-container
+                    [ngTemplateOutlet]="uidField"
+                    [ngTemplateOutletContext]="{controller: controller}"></ng-container>
                 } @for (controller of rgbControllers; track controller; let i =
                 $index) {
-                <label>{{ controller.deviceType }} {{ i + 1 }}:</label>
-                <input
-                    type="text"
-                    [attr.data-test]="'TXT_Bricklet_UID_' + controller.number"
-                    class="form-control"
-                    [formControlName]="controller.number.toString()" />
+                <label [attr.for]="'bricklet-uid-' + controller.number"
+                    >{{ controller.deviceType }} {{ i + 1 }}:</label
+                >
+                <ng-container
+                    [ngTemplateOutlet]="uidField"
+                    [ngTemplateOutletContext]="{controller: controller}"></ng-container>
                 }
             </div>
         </div>
@@ -114,7 +151,7 @@
                     data-test="BTN_Update_bricklet_UIDs"
                     class="hardware-button btn btn-regular"
                     [disabled]="brickletUidForm.invalid">
-                    Update
+                    Save
                 </button>
             </div>
             @if (brickletUidForm.invalid) {
@@ -129,8 +166,9 @@
         }
     </form>
 
-    <!-- Connected Bricklets: what the hardware reports right now. Read-only;
-         it never fills the UID fields above. -->
+    <!-- Connected Bricklets: what the hardware reports right now. The UID
+         selects above are filled from this list; refreshing it does not
+         overwrite a value that is already selected. -->
     <section
         class="controller-section connected-bricklets"
         data-test="GRP_Connected_Bricklets">
@@ -152,8 +190,8 @@
         </div>
         <p class="controller-documentation">
             Devices reported by the hardware, with the port letter printed on
-            the board. This list only displays; the fields above are not changed
-            by it.
+            the board. The fields above offer these devices. Refreshing this
+            list does not change a value that is already selected.
         </p>
 
         @if (connectedBrickletsError) {
