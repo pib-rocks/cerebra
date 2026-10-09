@@ -592,13 +592,8 @@ export class HardwareIdComponent implements OnInit {
         if (slots.length === 1) {
             return `already assigned to slot ${slots[0]}`;
         }
-        const leading = slots
-            .slice(0, -1)
-            .map((slot) => String(slot))
-            .join(", ");
-        return `already assigned to slots ${leading} and ${
-            slots[slots.length - 1]
-        }`;
+        const leading = slots.slice(0, -1).map(String).join(", ");
+        return `already assigned to slots ${leading} and ${slots.at(-1)}`;
     }
 
     private withAssignmentMark(
