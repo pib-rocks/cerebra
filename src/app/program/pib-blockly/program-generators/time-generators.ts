@@ -1,6 +1,6 @@
 import {Block} from "blockly/core/block";
 import {Order, pythonGenerator} from "blockly/python";
-import {IMPORT_TIME} from "./util/definitions";
+import {IMPORT_TIME, addDefinitions} from "./util/definitions";
 
 pythonGenerator.addReservedWords("time");
 
@@ -12,7 +12,7 @@ export function sleep_for_seconds(
     const sleepTime = block.getFieldValue("SECONDS");
 
     // add definitions to generator
-    Object.assign(generator.definitions_, {
+    addDefinitions(generator, {
         IMPORT_TIME,
     });
 
@@ -23,9 +23,9 @@ export function sleep_for_seconds(
 export function get_system_time(
     block: Block,
     generator: typeof pythonGenerator,
-) {
+): [string, Order] {
     // add definitions to generator
-    Object.assign(generator.definitions_, {
+    addDefinitions(generator, {
         IMPORT_TIME,
     });
 
@@ -33,5 +33,3 @@ export function get_system_time(
     const code = "round(time.time() * 1000)";
     return [code, Order.ATOMIC];
 }
-
-export {pythonGenerator};
