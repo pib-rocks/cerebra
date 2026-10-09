@@ -167,8 +167,15 @@
                         layer.message!.frame_height
                     "
                     [attr.data-model-id]="layer.modelId"
-                    [attr.data-applied-hand-updates]="appliedHandUpdates"
-                    [attr.data-rendered-hand-keypoints]="renderedHandKeypoints"
+                    [attr.data-applied-updates]="layer.appliedUpdates"
+                    [attr.data-rendered-keypoints]="layer.renderedKeypoints"
+                    [attr.data-rendered-connections]="layer.renderedConnections"
+                    [attr.data-source-sequence]="layer.sourceSequence ?? null"
+                    [attr.data-source-stamp]="layer.sourceStampMs ?? null"
+                    [attr.data-applied-hand-updates]="handAppliedUpdates(layer)"
+                    [attr.data-rendered-hand-keypoints]="
+                        handRenderedKeypoints(layer)
+                    "
                     [attr.aria-label]="layer.modelId + ' detections'">
                     @for ( detection of layer.message!.detections; track $index
                     ) { @if (showsBox(layer.modelId, detection)) {

@@ -39,6 +39,20 @@ interface DetectionLayer {
     modelId: string;
     color: string;
     message?: DetectionArray;
+    /** Times this layer accepted a result. Empty and incomplete hands do not increment. */
+    appliedUpdates: number;
+    /** Circles the current message actually draws. Not a model-wide constant. */
+    renderedKeypoints: number;
+    /** Connecting lines the current message actually draws. */
+    renderedConnections: number;
+    sourceSequence?: number;
+    sourceStampMs?: number;
+}
+
+interface PendingDetection {
+    message: DetectionArray;
+    sequence: number;
+    stampMs: number;
 }
 
 interface OverlayKeypoint {
@@ -92,8 +106,6 @@ export class CameraComponent implements OnInit, OnDestroy {
     private static readonly DETECTION_STALE_MS = 1500;
     private static readonly DIAGNOSTIC_WINDOW_MS = 5000;
     private static readonly DEFAULT_REFRESH_RATE_SECONDS = 0.1;
-    /** Latest hand result is applied on this cadence, independent of JPEG refresh. */
-    private static readonly DETECTION_FLUSH_MS = 100;
     private static readonly HAND_KEYPOINT_COUNT = 21;
     /**
      * Gaze ray length, as a share of the shortest side of the face box: long
@@ -124,9 +136,6 @@ export class CameraComponent implements OnInit, OnDestroy {
     detectionModels: DetectionLayer[] = [];
     cameraFramesLastWindow = 0;
     detectionMessagesLastWindow = 0;
-    /** Hand results written onto the overlay. Camera redraws do not increment this. */
-    appliedHandUpdates = 0;
-    renderedHandKeypoints = 0;
     rosbridgeConnected = false;
     private detectionExpiryTimers = new Map<
         string,
@@ -136,10 +145,27 @@ export class CameraComponent implements OnInit, OnDestroy {
     private detectionMessageTimes: number[] = [];
     private diagnosticTimer?: ReturnType<typeof setTimeout>;
     private displayRefreshTimer?: ReturnType<typeof setTimeout>;
-    private detectionFlushTimer?: ReturnType<typeof setTimeout>;
+    private detectionFrame?: number;
     private pendingCameraFrame?: string;
-    private pendingDetections = new Map<string, DetectionArray>();
+    private pendingDetections = new Map<string, PendingDetection>();
+    private nextDetectionSequence = 0;
     private imageIsLive = false;
+
+    /** Hand results written onto hand layers. Camera redraws do not increment this. */
+    get appliedHandUpdates(): number {
+        return this.handLayers().reduce(
+            (total, layer) => total + layer.appliedUpdates,
+            0,
+        );
+    }
+
+    /** Keypoints drawn on hand layers for the message currently applied there. */
+    get renderedHandKeypoints(): number {
+        return this.handLayers().reduce(
+            (total, layer) => total + layer.renderedKeypoints,
+            0,
+        );
+    }
 
     get visibleDetectionLayers(): DetectionLayer[] {
         if (!this.imageIsLive) return [];
@@ -476,7 +502,11 @@ export class CameraComponent implements OnInit, OnDestroy {
             return;
         }
 
-        this.pendingDetections.set(message.model_id, message);
+        this.pendingDetections.set(message.model_id, {
+            message,
+            sequence: ++this.nextDetectionSequence,
+            stampMs: Date.now(),
+        });
         this.scheduleDetectionFlush();
     }
 
@@ -486,6 +516,9 @@ export class CameraComponent implements OnInit, OnDestroy {
             layer = {
                 modelId,
                 color: this.modelColor(modelId),
+                appliedUpdates: 0,
+                renderedKeypoints: 0,
+                renderedConnections: 0,
             };
             this.detectionLayers.set(modelId, layer);
         }
@@ -497,11 +530,14 @@ export class CameraComponent implements OnInit, OnDestroy {
         for (const id of modelIds) {
             this.pendingDetections.delete(id);
             const layer = this.detectionLayers.get(id);
-            if (layer) layer.message = undefined;
+            if (layer) {
+                layer.message = undefined;
+                layer.renderedKeypoints = 0;
+                layer.renderedConnections = 0;
+            }
             const timer = this.detectionExpiryTimers.get(id);
             if (timer !== undefined) clearTimeout(timer);
             this.detectionExpiryTimers.delete(id);
-            if (this.isHandModel(id)) this.renderedHandKeypoints = 0;
         }
         this.changeDetectorRef.markForCheck();
     }
@@ -609,12 +645,18 @@ export class CameraComponent implements OnInit, OnDestroy {
         }, this.displayRefreshDelayMs());
     }
 
+    /**
+     * Paint the latest pending result on the next animation frame.
+     * Arrivals that land while that frame is already scheduled replace the
+     * pending message, so a faster source does not build a backlog. A result
+     * every ~98ms is its own frame; it is not held for a 100ms trailing timer.
+     */
     private scheduleDetectionFlush() {
-        if (this.detectionFlushTimer !== undefined) return;
-        this.detectionFlushTimer = setTimeout(() => {
-            this.detectionFlushTimer = undefined;
+        if (this.detectionFrame !== undefined) return;
+        this.detectionFrame = requestAnimationFrame(() => {
+            this.detectionFrame = undefined;
             this.flushDetections();
-        }, CameraComponent.DETECTION_FLUSH_MS);
+        });
     }
 
     private flushPendingDisplay() {
@@ -628,12 +670,18 @@ export class CameraComponent implements OnInit, OnDestroy {
 
     private flushDetections() {
         if (this.pendingDetections.size === 0) return;
-        for (const [modelId, message] of this.pendingDetections) {
+        for (const [modelId, pending] of this.pendingDetections) {
+            const message = pending.message;
             const layer = this.ensureDetectionLayer(modelId);
             layer.message = message;
+            layer.sourceSequence = pending.sequence;
+            layer.sourceStampMs = pending.stampMs;
             if (!this.detectionModels.includes(layer)) {
                 this.detectionModels = [...this.detectionModels, layer];
             }
+            const geometry = this.renderedGeometry(modelId, message);
+            layer.renderedKeypoints = geometry.keypoints;
+            layer.renderedConnections = geometry.connections;
             const oldTimer = this.detectionExpiryTimers.get(modelId);
             if (oldTimer !== undefined) clearTimeout(oldTimer);
             this.detectionExpiryTimers.set(
@@ -643,19 +691,41 @@ export class CameraComponent implements OnInit, OnDestroy {
                     CameraComponent.DETECTION_STALE_MS,
                 ),
             );
-            if (this.isHandResult(modelId, message)) {
-                this.appliedHandUpdates += 1;
-                this.renderedHandKeypoints =
-                    CameraComponent.HAND_KEYPOINT_COUNT;
-            } else if (
-                this.isHandModel(modelId) &&
-                message.detections.length === 0
-            ) {
-                this.renderedHandKeypoints = 0;
-            }
+            const countable =
+                message.detections.length > 0 &&
+                (!this.isHandModel(modelId) ||
+                    this.isHandResult(modelId, message));
+            if (countable) layer.appliedUpdates += 1;
         }
         this.pendingDetections.clear();
         this.changeDetectorRef.markForCheck();
+    }
+
+    private renderedGeometry(
+        modelId: string,
+        message: DetectionArray,
+    ): {keypoints: number; connections: number} {
+        let keypoints = 0;
+        let connections = 0;
+        for (const detection of message.detections) {
+            keypoints += this.keypoints(detection).length;
+            connections += this.connections(modelId, detection).length;
+        }
+        return {keypoints, connections};
+    }
+
+    handAppliedUpdates(layer: DetectionLayer): number | null {
+        return this.isHandModel(layer.modelId) ? layer.appliedUpdates : null;
+    }
+
+    handRenderedKeypoints(layer: DetectionLayer): number | null {
+        return this.isHandModel(layer.modelId) ? layer.renderedKeypoints : null;
+    }
+
+    private handLayers(): DetectionLayer[] {
+        return [...this.detectionLayers.values()].filter((layer) =>
+            this.isHandModel(layer.modelId),
+        );
     }
 
     private isHandModel(modelId: string): boolean {
@@ -691,9 +761,9 @@ export class CameraComponent implements OnInit, OnDestroy {
     }
 
     private clearDetectionFlushTimer() {
-        if (this.detectionFlushTimer !== undefined) {
-            clearTimeout(this.detectionFlushTimer);
-            this.detectionFlushTimer = undefined;
+        if (this.detectionFrame !== undefined) {
+            cancelAnimationFrame(this.detectionFrame);
+            this.detectionFrame = undefined;
         }
     }
 
