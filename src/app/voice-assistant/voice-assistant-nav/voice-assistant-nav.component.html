@@ -1,69 +1,74 @@
 <header class="personality-header">
-    <span
-        id="active-personality-name"
-        class="active-personality-name">
-        {{ activePersonalityName }}
-    </span>
-    @if (activeNeedsAttention()) {
-    <span
-        class="speech-attention"
-        [id]="'personality-needs-key-' + selectedPersonalityId">
-        {{ activeAttentionLabel() }}
-    </span>
-    }
-    <label
-        for="personality-select"
-        id="personality-select-label">
-        Personality
-    </label>
-    <select
-        #personalitySelect
-        id="personality-select"
-        class="form-select"
-        data-test="DDN_Personality"
-        aria-labelledby="personality-select-label"
-        (change)="onPersonalityChange($event)">
-        @for (sidebarElement of sidebarElements; track sidebarElement.getUUID())
-        {
-        <option
-            [value]="sidebarElement.getUUID()"
-            [selected]="sidebarElement.getUUID() === selectedPersonalityId">
-            {{ optionLabel(sidebarElement) }}
-        </option>
+    <div class="personality-tools">
+        <span
+            id="active-personality-name"
+            class="active-personality-name">
+            {{ activePersonalityName }}
+        </span>
+        @if (activeNeedsAttention()) {
+        <span
+            class="speech-attention"
+            [id]="'personality-needs-key-' + selectedPersonalityId">
+            {{ activeAttentionLabel() }}
+        </span>
         }
-    </select>
-    @if (button?.enabled ?? false) {
-    <button
-        id="add-personality-button"
-        data-test="BTN_Add_Personality"
-        type="button"
-        (click)="button?.func()">
-        +
-    </button>
-    }
-    <button
-        id="personality-description-button"
-        data-test="BTN_Personality_Description"
-        type="button"
-        aria-label="Edit personality description"
-        title="Edit personality description"
-        (click)="openDescriptionModal()">
-        <i
-            class="bi bi-person"
-            aria-hidden="true"></i>
-    </button>
-    <button
-        id="personality-settings-button"
-        data-test="BTN_Personality_Settings"
-        type="button"
-        aria-label="Personality settings"
-        title="Personality settings"
-        [disabled]="!(editButton?.enabled ?? false)"
-        (click)="openSettings()">
-        <i
-            class="bi bi-gear"
-            aria-hidden="true"></i>
-    </button>
+        <label
+            for="personality-select"
+            id="personality-select-label">
+            Personality
+        </label>
+        <select
+            #personalitySelect
+            id="personality-select"
+            class="form-select"
+            data-test="DDN_Personality"
+            aria-labelledby="personality-select-label"
+            (change)="onPersonalityChange($event)">
+            @for (sidebarElement of sidebarElements; track
+            sidebarElement.getUUID()) {
+            <option
+                [value]="sidebarElement.getUUID()"
+                [selected]="sidebarElement.getUUID() === selectedPersonalityId">
+                {{ optionLabel(sidebarElement) }}
+            </option>
+            }
+        </select>
+        @if (button?.enabled ?? false) {
+        <button
+            id="add-personality-button"
+            data-test="BTN_Add_Personality"
+            type="button"
+            (click)="button?.func()">
+            +
+        </button>
+        }
+        <button
+            id="personality-description-button"
+            data-test="BTN_Personality_Description"
+            type="button"
+            aria-label="Edit personality description"
+            title="Edit personality description"
+            (click)="openDescriptionModal()">
+            <i
+                class="bi bi-person"
+                aria-hidden="true"></i>
+        </button>
+        <button
+            id="personality-settings-button"
+            data-test="BTN_Personality_Settings"
+            type="button"
+            aria-label="Personality settings"
+            title="Personality settings"
+            [disabled]="!(editButton?.enabled ?? false)"
+            (click)="openSettings()">
+            <i
+                class="bi bi-gear"
+                aria-hidden="true"></i>
+        </button>
+    </div>
+    <app-conversation-status
+        class="personality-voice-holder"
+        surface="assistant"></app-conversation-status>
 </header>
 
 <ng-template
