@@ -481,6 +481,24 @@ export class VoiceAssistantComponent implements OnInit {
         return this.showSmartChannelControl ? SMART_CHANNEL : DIRECT_CHANNEL;
     }
 
+    /**
+     * Smart stays on the left and Direct on the right, the order the radio
+     * group already used. The right-pointing image is shown only while the
+     * control holds direct, so the switch points at the selected side.
+     */
+    get channelPointsRight(): boolean {
+        return (
+            this.personalityForm.controls["channel"].value === DIRECT_CHANNEL
+        );
+    }
+
+    toggleChannel(): void {
+        const channel = this.personalityForm.controls["channel"];
+        channel.setValue(
+            channel.value === SMART_CHANNEL ? DIRECT_CHANNEL : SMART_CHANNEL,
+        );
+    }
+
     get showIdleTimeout(): boolean {
         const live = this.personalityForm?.controls["live"];
         return live != null && live.value === true;

@@ -1,0 +1,90 @@
+Jira ticket PR-1966 - "Personality dialog: switch Direct/Smart with the relay toggle instead of a radio group"
+
+Repository: pib-rocks/cerebra (Angular, ZONELESS, tests run under Karma)
+Working tree: /home/pib/opencode/cerebra-pr1966
+Branch: PR-1966, based on cerebra develop (c2950482)
+
+WHY
+
+The Add/Edit personality dialog picks the chat channel with two radio buttons. The owner wants the
+toggle the application already uses elsewhere in the navigation: the relay toggle, the one whose label
+reads "Motor current". It looks better and reads better, and the two texts belong on its sides.
+
+THE REFERENCE, MEASURED (copy this control's shape)
+
+src/app/ui-components/relay-control/relay-control.component.html
+    :1     <div class="d-flex flex-column align-items-center justify-content-end mb-4">
+    :2     <label class="p-1 text-break">Motor current</label>
+    :3     <div class="row">
+    :4-10    left column  (col text-end):   the off icon, motor_current_off.svg, 30x30
+    :11-23   middle column:
+                <button class="btn border-0 p-0"
+                        id="sidebar-right-toggle-solid-state-relay"
+                        data-test="TGL_Solid_State_Relay"
+                        type="button"
+                        [disabled]="!isRelayAvailable || isLoading"
+                        (click)="toggleSolidStateRelay()">
+                    <img [src]="turnedOn ? '../../assets/toggle-switch-right.png'
+                                      : '../../assets/toggle-switch-left.png'"
+                         alt="Toggle for turning the solid state relay on and off" />
+                </button>
+    :24-30   right column (col text-start): the on icon, motor_current_on.svg, 30x30
+
+It is used exactly once, in src/app/app.component.html:189 <app-relay-control>, that is the sidebar -
+what the owner calls the navigation. toggle-switch-left.png is the state pointing left,
+toggle-switch-right.png the state pointing right.
+
+WHAT IT REPLACES, MEASURED
+
+src/app/voice-assistant/voice-assistant.component.html:81-106
+    <div class="col-4 pointer" id="channel-radio-smart">
+        <input value="smart"  data-test="RBN_Channel_Smart"  formControlName="channel" type="radio" id="channel-smart" />
+        <label for="channel-smart" id="label-channel-smart">Smart</label>
+    <div class="col-4 pointer" id="channel-radio-direct">
+        <input value="direct" data-test="RBN_Channel_Direct" formControlName="channel" type="radio" id="channel-direct" />
+        <label for="channel-direct" id="label-channel-direct">Direct</label>
+
+src/app/voice-assistant/voice-assistant.component.ts:464
+    private defaultChannel() { return this.showSmartChannelControl ? SMART_CHANNEL : DIRECT_CHANNEL; }
+    -> a new personality already starts on Smart whenever the Smart control is shown. Keep that.
+
+THE TASK
+
+Put the relay toggle's shape where the radio group is, with "Direct" on one side and "Smart" on the
+other, keep the form control and the values that are saved unchanged, and keep the default on Smart.
+
+HARD RULES
+
+- The layout mirrors the relay: left column with a text, the centred toggle button with the
+  toggle-switch image, right column with a text. Row/col classes as in the reference, so it lines up
+  with the rest of the dialog.
+- The toggle must point at the SELECTED side: the side whose state is active carries the image that
+  points to it, and the two texts sit on the sides the image points between. Be explicit in your
+  report about which text you put where and why.
+- Keep the stored value semantics exactly: the form control still carries the channel values the rest
+  of the component uses (the ChatChannel constants), not the display texts. Clicking the toggle
+  flips between them; saving and reopening an existing personality shows the stored state.
+- The condition stays: the Smart option only exists when showSmartChannelControl is true. When it is
+  false there must still be a valid Direct value and no control offering a switch that cannot switch.
+  Say in your report how you handled that case.
+- This is both the Add and the Edit dialog - one template serves both. Do not break the edit path,
+  where the control must show the personality's stored channel, not the default.
+- Test ids follow the relay's TGL_ prefix convention rather than the old RBN_ radio prefix. The specs
+  that query RBN_Channel_Smart / RBN_Channel_Direct are adapted in the same change - do not keep the
+  radio elements only to satisfy an old id.
+- No [disabled] state: unlike the relay, both positions are always selectable. Do not invent an
+  unavailable case.
+- Do not touch src/app/program/pib-blockly/**. That tree is generated from pib-backend and
+  guard-blockly-single-source.yml rejects a pull request that edits it.
+- Tests: npx ng test --watch=false --browsers=NoSandbox with CHROME_BIN pointing at a Chromium.
+  Cerebra does not use Jest; a Jest run produces meaningless failures.
+
+BEFORE YOU FINISH, PROVE IT (your report must contain the command and its output)
+
+1. git diff --stat for the change.
+2. The Karma result (TOTAL: ... SUCCESS / FAILED) for the whole suite.
+3. The exact HTML you wrote for the new control, quoted.
+4. Where the two texts sit, and the line that makes the toggle point at the selected one.
+5. What the Add dialog defaults to, and what the Edit dialog shows for an existing personality
+   (the spec that covers it, named).
+6. The line of the old radio markup, to show it is gone: grep for RBN_Channel_ in the template.

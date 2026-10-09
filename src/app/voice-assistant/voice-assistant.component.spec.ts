@@ -380,6 +380,109 @@ describe("VoiceAssistantComponent", () => {
         expect(updated.description).toBe("Du bist pib.");
     });
 
+    it("points the channel toggle at Smart by default and at a stored channel when editing", () => {
+        fixture.detectChanges();
+        component.openAddModal();
+        component.advancedOpen = true;
+        fixture.detectChanges();
+        // A closed dialog stays in the document until its fade transition
+        // ends, so the channel control is taken from the latest dialog.
+        const toggle = () => {
+            const buttons = document.body.querySelectorAll(
+                "[data-test=TGL_Channel]",
+            );
+            return buttons[buttons.length - 1] as HTMLButtonElement;
+        };
+        const toggleImage = () =>
+            toggle().querySelector("img") as HTMLImageElement;
+        const smartLabel = document.body.querySelector("#label-channel-smart");
+        const directLabel = document.body.querySelector(
+            "#label-channel-direct",
+        );
+        expect(smartLabel?.textContent).toContain("Smart");
+        expect(directLabel?.textContent).toContain("Direct");
+        expect(
+            smartLabel!.compareDocumentPosition(toggle()) &
+                Node.DOCUMENT_POSITION_FOLLOWING,
+        ).toBeTruthy();
+        expect(
+            toggle().compareDocumentPosition(directLabel!) &
+                Node.DOCUMENT_POSITION_FOLLOWING,
+        ).toBeTruthy();
+        expect(toggle().disabled).toBeFalse();
+        expect(component.personalityForm.controls["channel"].value).toBe(
+            SMART_CHANNEL,
+        );
+        expect(toggleImage().src).toContain("toggle-switch-left.png");
+        toggle().click();
+        TestBed.inject(ApplicationRef).tick();
+        expect(component.personalityForm.controls["channel"].value).toBe(
+            DIRECT_CHANNEL,
+        );
+        expect(toggleImage().src).toContain("toggle-switch-right.png");
+        toggle().click();
+        TestBed.inject(ApplicationRef).tick();
+        expect(component.personalityForm.controls["channel"].value).toBe(
+            SMART_CHANNEL,
+        );
+        expect(toggleImage().src).toContain("toggle-switch-left.png");
+        toggle().click();
+        TestBed.inject(ApplicationRef).tick();
+        component.personalityForm.patchValue({"name-input": "Ada"});
+        component.addPersonality();
+        const created =
+            voiceAssistantService.createPersonality.calls.mostRecent()
+                .args[0] as VoiceAssistant;
+        expect(created.channel).toBe(DIRECT_CHANNEL);
+        component.ngbModalRef?.close();
+
+        const storedDirect = new VoiceAssistant(
+            "persona-direct",
+            "Ada",
+            "Female",
+            0.8,
+            "Du bist pib.",
+            null,
+            10,
+            DEFAULT_PROVIDER_REF,
+            DIRECT_CHANNEL,
+        );
+        voiceAssistantService.personalities.push(storedDirect);
+        voiceAssistantService.getPersonality.and.returnValue(storedDirect);
+        component.openEditModal(storedDirect.personalityId);
+        component.advancedOpen = true;
+        fixture.detectChanges();
+        TestBed.inject(ApplicationRef).tick();
+        expect(component.personalityForm.controls["channel"].value).toBe(
+            DIRECT_CHANNEL,
+        );
+        expect(toggleImage().src).toContain("toggle-switch-right.png");
+        component.ngbModalRef?.close();
+
+        const storedSmart = new VoiceAssistant(
+            "persona-smart",
+            "Eva",
+            "Female",
+            0.8,
+            "Du bist pib.",
+            null,
+            10,
+            DEFAULT_PROVIDER_REF,
+            SMART_CHANNEL,
+        );
+        voiceAssistantService.personalities.push(storedSmart);
+        voiceAssistantService.getPersonality.and.returnValue(storedSmart);
+        component.openEditModal(storedSmart.personalityId);
+        component.advancedOpen = true;
+        fixture.detectChanges();
+        TestBed.inject(ApplicationRef).tick();
+        expect(component.personalityForm.controls["channel"].value).toBe(
+            SMART_CHANNEL,
+        );
+        expect(toggleImage().src).toContain("toggle-switch-left.png");
+        component.ngbModalRef?.close();
+    });
+
     it("stores Direct and shows no Smart control when Hermes is disabled", () => {
         const capability = TestBed.inject(ChannelCapabilityService);
         capability.applyInstallerFlag(false);
@@ -389,7 +492,7 @@ describe("VoiceAssistantComponent", () => {
         component.advancedOpen = true;
         fixture.detectChanges();
         expect(
-            document.body.querySelector("[data-test=RBN_Channel_Smart]"),
+            document.body.querySelector("[data-test=TGL_Channel]"),
         ).toBeNull();
         expect(
             document.body.querySelector("[data-test=LBL_Channel_Direct]"),
@@ -470,7 +573,7 @@ describe("VoiceAssistantComponent", () => {
         component.advancedOpen = true;
         fixture.detectChanges();
         expect(
-            document.body.querySelector("[data-test=RBN_Channel_Smart]"),
+            document.body.querySelector("[data-test=TGL_Channel]"),
         ).not.toBeNull();
         component.personalityForm.controls["channel"].setValue(SMART_CHANNEL);
         component.personalityForm.controls["assistantModel"].setValue(
@@ -544,7 +647,7 @@ describe("VoiceAssistantComponent", () => {
         );
         expect(stored.channel).toBe(SMART_CHANNEL);
         expect(
-            document.body.querySelector("[data-test=RBN_Channel_Smart]"),
+            document.body.querySelector("[data-test=TGL_Channel]"),
         ).toBeNull();
         expect(
             document.body.querySelector(
@@ -698,7 +801,7 @@ describe("VoiceAssistantComponent", () => {
         component.advancedOpen = true;
         fixture.detectChanges();
         expect(
-            document.body.querySelector("[data-test=RBN_Channel_Smart]"),
+            document.body.querySelector("[data-test=TGL_Channel]"),
         ).not.toBeNull();
         expect(
             document.body.querySelector(
