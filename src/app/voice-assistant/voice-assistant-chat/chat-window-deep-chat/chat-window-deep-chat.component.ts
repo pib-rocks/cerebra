@@ -71,6 +71,15 @@ export class ChatWindowDeepChatComponent
         "../../../../assets/voice-assistant-svgs/chat/user.svg";
     readonly VA_ICON =
         "../../../../assets/voice-assistant-svgs/chat/pib-icon-speaking.png";
+    /** deep-chat's own label for the human side of the conversation. */
+    readonly USER_NAME_LABEL = "User";
+    /**
+     * Both partner names sit on this chat's dark blue background (#041939) and
+     * deep-chat draws them black by default, which cannot be read. The colour is
+     * set through the name style, because the elements live in deep-chat's
+     * shadow root and no outer stylesheet reaches them.
+     */
+    readonly PARTNER_NAME_STYLE = {color: "#fff"};
 
     constructor(
         private readonly chatService: ChatService,
@@ -420,6 +429,15 @@ export class ChatWindowDeepChatComponent
     private applyNames(el?: any): void {
         const target = el ?? this.deepChatRef?.nativeElement;
         if (!target || !this.personalityName) return;
-        target.names = {ai: {text: this.personalityName}};
+        target.names = {
+            user: {
+                text: this.USER_NAME_LABEL,
+                style: this.PARTNER_NAME_STYLE,
+            },
+            ai: {
+                text: this.personalityName,
+                style: this.PARTNER_NAME_STYLE,
+            },
+        };
     }
 }
