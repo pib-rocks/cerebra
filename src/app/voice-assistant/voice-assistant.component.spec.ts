@@ -1400,4 +1400,206 @@ describe("VoiceAssistantComponent", () => {
             component.ngbModalRef?.close();
         }
     });
+
+    function listedModel(
+        id: number,
+        apiName: string,
+        visualName: string,
+        credentialRef: string | null,
+        isDefault: boolean,
+        offline = false,
+    ): AssistantModel {
+        return new AssistantModel(
+            id,
+            apiName,
+            visualName,
+            !offline,
+            null,
+            {
+                tools: !offline,
+                images: !offline,
+                live: false,
+                stt: false,
+                tts: false,
+                offline,
+            },
+            credentialRef,
+            isDefault,
+        );
+    }
+
+    function setCloudToken(stored: boolean): void {
+        (
+            TestBed.inject(TokenService) as unknown as {
+                tokenStatus$: BehaviorSubject<{
+                    tokenExists: boolean;
+                    tokenActive: boolean;
+                }>;
+            }
+        ).tokenStatus$.next({tokenExists: stored, tokenActive: stored});
+    }
+
+    function openNewPersonality(): void {
+        component.openAddModal();
+        component.advancedOpen = true;
+        fixture.detectChanges();
+        TestBed.inject(ApplicationRef).tick();
+    }
+
+    function modelSelect(): HTMLSelectElement {
+        return document.body.querySelector(
+            "#voice-assistant-model-select",
+        ) as HTMLSelectElement;
+    }
+
+    it("starts a new personality on pib.Cloud when that row is available", () => {
+        const local = listedModel(
+            6,
+            "qwen-fast",
+            "Local (qwen-fast)",
+            null,
+            false,
+            true,
+        );
+        const keyed = listedModel(20, "gpt-6", "GPT-6", "provider-20", false);
+        const cloud = listedModel(10, "pib-cloud", "pib.Cloud", null, true);
+        voiceAssistantService.assistantModelsSubject.next([
+            local,
+            keyed,
+            cloud,
+        ]);
+        fixture.detectChanges();
+        openNewPersonality();
+        expect(component.personalityForm.controls["assistantModel"].value).toBe(
+            String(cloud.id),
+        );
+        expect(modelSelect().value).toBe(String(cloud.id));
+        expect(modelSelect().selectedOptions[0].textContent?.trim()).toBe(
+            "pib.Cloud",
+        );
+        component.personalityForm.patchValue({"name-input": "Ada"});
+        component.addPersonality();
+        const created =
+            voiceAssistantService.createPersonality.calls.mostRecent()
+                .args[0] as VoiceAssistant;
+        expect(created.providerRef).toBe(String(cloud.id));
+        expect(created.assistantModelId).toBe(cloud.id);
+        expect(created.channel).toBe(SMART_CHANNEL);
+        component.ngbModalRef?.close();
+    });
+
+    it("starts a new personality on the first external model with a stored key", () => {
+        setCloudToken(false);
+        const local = listedModel(
+            1,
+            "qwen-fast",
+            "Local (qwen-fast)",
+            null,
+            false,
+            true,
+        );
+        const keyless = listedModel(2, "gemini", "Gemini", null, false);
+        const first = listedModel(20, "gpt-6", "GPT-6", "provider-20", false);
+        const later = listedModel(4, "claude", "Claude", "provider-4", true);
+        const cloud = listedModel(10, "pib-cloud", "pib.Cloud", null, false);
+        voiceAssistantService.assistantModelsSubject.next([
+            local,
+            keyless,
+            first,
+            later,
+            cloud,
+        ]);
+        fixture.detectChanges();
+        openNewPersonality();
+        expect(component.personalityForm.controls["assistantModel"].value).toBe(
+            String(first.id),
+        );
+        expect(modelSelect().value).toBe(String(first.id));
+        expect(modelSelect().selectedOptions[0].textContent?.trim()).toBe(
+            "GPT-6",
+        );
+        component.ngbModalRef?.close();
+    });
+
+    it("starts a new personality on qwen-fast when nothing earlier is available", () => {
+        setCloudToken(false);
+        const keyless = listedModel(8, "gpt-6", "GPT-6", null, true);
+        const cloud = listedModel(10, "pib-cloud", "pib.Cloud", null, false);
+        const local = listedModel(
+            6,
+            "qwen-fast",
+            "Local (qwen-fast)",
+            null,
+            false,
+            true,
+        );
+        voiceAssistantService.assistantModelsSubject.next([
+            keyless,
+            cloud,
+            local,
+        ]);
+        fixture.detectChanges();
+        openNewPersonality();
+        expect(component.personalityForm.controls["assistantModel"].value).toBe(
+            String(local.id),
+        );
+        expect(component.personalityForm.controls["channel"].value).toBe(
+            DIRECT_CHANNEL,
+        );
+        expect(modelSelect().value).toBe(String(local.id));
+        expect(modelSelect().selectedOptions[0].textContent?.trim()).toBe(
+            "Local (qwen-fast)",
+        );
+        component.ngbModalRef?.close();
+    });
+
+    it("does not leave the model control empty when qwen-fast is offered", () => {
+        setCloudToken(false);
+        const keyless = listedModel(8, "gpt-6", "GPT-6", null, true);
+        const local = listedModel(
+            6,
+            "qwen-fast",
+            "Local (qwen-fast)",
+            null,
+            false,
+            true,
+        );
+        voiceAssistantService.assistantModelsSubject.next([keyless, local]);
+        fixture.detectChanges();
+        openNewPersonality();
+        const select = modelSelect();
+        expect(select.value).toBe(String(local.id));
+        expect(select.selectedOptions.length).toBe(1);
+        expect(select.selectedOptions[0].value).toBe(String(local.id));
+        expect(select.selectedOptions[0].textContent?.trim()).toBe(
+            "Local (qwen-fast)",
+        );
+        component.ngbModalRef?.close();
+    });
+
+    it("leaves an existing personality on its stored model", () => {
+        const keyed = listedModel(4, "gpt-6", "GPT-6", "provider-4", false);
+        const cloud = listedModel(10, "pib-cloud", "pib.Cloud", null, true);
+        voiceAssistantService.assistantModelsSubject.next([keyed, cloud]);
+        const stored = new VoiceAssistant(
+            "persona-1",
+            "Ada",
+            "Female",
+            0.8,
+            "",
+            keyed.id,
+            10,
+            String(keyed.id),
+            SMART_CHANNEL,
+        );
+        voiceAssistantService.personalities.push(stored);
+        voiceAssistantService.getPersonality.and.returnValue(stored);
+        fixture.detectChanges();
+        component.openEditModal(stored.personalityId);
+        expect(component.personalityForm.controls["assistantModel"].value).toBe(
+            String(keyed.id),
+        );
+        expect(stored.providerRef).toBe(String(keyed.id));
+        component.ngbModalRef?.close();
+    });
 });

@@ -21,6 +21,7 @@ import {
     providerRefFromSelection,
     providersForSelection,
     resolveProvider,
+    startingModelForNewPersonality,
     ProviderSelectionRow,
 } from "./provider-registry";
 
@@ -563,5 +564,64 @@ describe("on-device offline model (PR-1931)", () => {
         expect(chatStartRefusal(String(keyless.id), [keyless], false)).toBe(
             MISSING_KEY_TURN,
         );
+    });
+});
+
+describe("starting model for a new personality (PR-1965)", () => {
+    function offlineRow(
+        id: number,
+        apiName: string,
+        isDefault = false,
+    ): ProviderSelectionRow {
+        const model = row(id, false, isDefault, apiName, null);
+        model.visualName = apiName;
+        model.capabilities = {
+            tools: false,
+            images: false,
+            live: false,
+            stt: false,
+            tts: false,
+            offline: true,
+        };
+        return model;
+    }
+
+    it("prefers pib.Cloud when that row is offered, ahead of an earlier keyed model", () => {
+        const local = offlineRow(6, "qwen-fast");
+        const keyed = row(20, true, false, "gpt-6", "provider-20");
+        const cloud = row(10, true, true, CLOUD_TOKEN_API_NAME, null);
+        expect(
+            startingModelForNewPersonality([local, keyed, cloud], true)?.id,
+        ).toBe(cloud.id);
+        expect(
+            startingModelForNewPersonality([local, keyed, cloud], false)?.id,
+        ).toBe(keyed.id);
+    });
+
+    it("takes the first external model with a stored key, in catalogue array order", () => {
+        const local = offlineRow(1, "qwen-fast");
+        const keyless = row(2, true, true, "gemini", null);
+        const first = row(20, true, false, "gpt-6", "provider-20");
+        const later = row(4, true, false, "claude", "provider-4");
+        const cloud = row(10, true, false, CLOUD_TOKEN_API_NAME, null);
+        expect(
+            startingModelForNewPersonality(
+                [local, keyless, first, later, cloud],
+                false,
+            )?.id,
+        ).toBe(first.id);
+    });
+
+    it("falls back to qwen-fast when no cloud row and no keyed external is offered", () => {
+        const keyless = row(8, true, true, "gpt-6", null);
+        const cloud = row(10, true, false, CLOUD_TOKEN_API_NAME, null);
+        const otherLocal = offlineRow(3, "other-local");
+        const local = offlineRow(6, "qwen-fast");
+        expect(
+            startingModelForNewPersonality(
+                [keyless, cloud, otherLocal, local],
+                false,
+            )?.id,
+        ).toBe(local.id);
     });
 });
