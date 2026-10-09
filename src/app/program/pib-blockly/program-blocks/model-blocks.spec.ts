@@ -149,14 +149,14 @@ describe("model blocks", () => {
             (start.getField("MODEL_ID") as Blockly.FieldDropdown).getOptions(
                 false,
             ),
-        ).toEqual([["hand_tracking_fast", "hand_tracking_fast"]]);
+        ).toEqual([["hand_tracking", "hand_tracking"]]);
         expect(
             (stop.getField("MODEL_ID") as Blockly.FieldDropdown).getOptions(
                 false,
             ),
         ).toEqual([
             ["All", STOP_ALL_MODELS_VALUE],
-            ["hand_tracking_fast", "hand_tracking_fast"],
+            ["hand_tracking", "hand_tracking"],
         ]);
         start.setFieldValue("saved_custom_model", "MODEL_ID");
         expect(start.getFieldValue("MODEL_ID")).toBe("saved_custom_model");
@@ -210,7 +210,7 @@ describe("model blocks", () => {
 
     it("sends a request, deduplicates the next call, and sends again after the test reset", () => {
         expect(getModelDropdownOptions()).toEqual([
-            ["hand_tracking_fast", "hand_tracking_fast"],
+            ["hand_tracking", "hand_tracking"],
         ]);
         expect(FakeWebSocket.instances.length).toBe(1);
 
