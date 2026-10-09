@@ -35,6 +35,7 @@ export enum rosDataTypes {
     listModels = "datatypes/srv/ListModels",
     startModel = "datatypes/srv/StartModel",
     stopModel = "datatypes/srv/StopModel",
+    emptyService = "std_srvs/srv/Empty",
     // action
     runProgram = "datatypes/action/RunProgram",
 }
