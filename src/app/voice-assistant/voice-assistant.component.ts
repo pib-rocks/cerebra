@@ -60,6 +60,7 @@ import {
     providersForSelection,
     resolveProvider,
     retainGoneReference,
+    startingModelForNewPersonality,
 } from "../shared/types/provider-registry";
 import {TokenService} from "../shared/services/token.service";
 import {VoiceAssistantNavComponent} from "./voice-assistant-nav/voice-assistant-nav.component";
@@ -307,17 +308,18 @@ export class VoiceAssistantComponent implements OnInit {
         this.advancedOpen = false;
         this.storedProviderRef = null;
         this.rebuildSelection();
+        const assistantModel = this.initialAssistantModel();
         // defaultChannel() reads the model control. Point it at the model
         // this dialog will show before reset() replaces the previous one.
         this.personalityForm.controls["assistantModel"].setValue(
-            DEFAULT_PROVIDER_REF,
+            assistantModel,
             {emitEvent: false},
         );
         this.personalityForm.reset({
             gender: "Female",
             pausethreshold: 0.8,
             messageHistory: 10,
-            assistantModel: DEFAULT_PROVIDER_REF,
+            assistantModel,
             channel: this.defaultChannel(),
             voiceInput: LOCAL_VOICE_INPUT,
             voiceOutput: LOCAL_VOICE_OUTPUT,
@@ -497,6 +499,24 @@ export class VoiceAssistantComponent implements OnInit {
         channel.setValue(
             channel.value === SMART_CHANNEL ? DIRECT_CHANNEL : SMART_CHANNEL,
         );
+    }
+
+    /**
+     * Concrete catalogue row for a new personality. Naming that row as the
+     * stored reference makes its option the model id, including when the
+     * row is the catalogue default, so the control does not carry the
+     * "default" pointer.
+     */
+    private initialAssistantModel(): string {
+        const model = startingModelForNewPersonality(
+            this.models,
+            this.cloudTokenStored,
+        );
+        if (model == null) {
+            return DEFAULT_PROVIDER_REF;
+        }
+        this.storedProviderRef = String(model.id);
+        return providerOptionValueFor(model, this.storedProviderRef);
     }
 
     get showIdleTimeout(): boolean {
