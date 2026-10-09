@@ -274,13 +274,66 @@ describe("RosService", () => {
             },
             jasmine.any(Function),
             jasmine.any(Function),
+            RosService.MODEL_LIFECYCLE_TIMEOUT_SECONDS,
         );
         expect(stopSpy).toHaveBeenCalledOnceWith(
             {model_id: "hand_tracking", owner: "cerebra-ui"},
             jasmine.any(Function),
             jasmine.any(Function),
+            RosService.MODEL_LIFECYCLE_TIMEOUT_SECONDS,
         );
+        expect(RosService.MODEL_LIFECYCLE_TIMEOUT_SECONDS).toBeGreaterThan(5);
         expect(rosService.modelStatusReceiver$.value.models).toEqual([]);
+    });
+
+    it("should reject a start that verified as failed", (done) => {
+        const model = {
+            model_id: "hand_tracking_fast",
+            task: "hands",
+            licence: "Apache-2.0",
+            shaves: 9,
+            size_bytes: 100,
+            available: true,
+            active: false,
+        };
+        spyOn(rosService["startModelService"], "callService").and.callFake(
+            (_request, callback) =>
+                callback!({success: false, message: "pipeline failed"}),
+        );
+
+        rosService.startModel(model, "cerebra-ui").subscribe({
+            next: () => done.fail("a failed verification must not resolve"),
+            error: (error: Error) => {
+                expect(error.message).toBe("pipeline failed");
+                done();
+            },
+        });
+    });
+
+    it("should surface the rosbridge start timeout", (done) => {
+        const model = {
+            model_id: "hand_tracking_fast",
+            task: "hands",
+            licence: "Apache-2.0",
+            shaves: 9,
+            size_bytes: 100,
+            available: true,
+            active: false,
+        };
+        spyOn(rosService["startModelService"], "callService").and.callFake(
+            (_request, _callback, error) =>
+                error!("Timeout exceeded while waiting for service response"),
+        );
+
+        rosService.startModel(model, "cerebra-ui").subscribe({
+            next: () => done.fail("a rosbridge timeout must not resolve"),
+            error: (error: Error) => {
+                expect(error.message).toContain(
+                    "Timeout exceeded while waiting for service response",
+                );
+                done();
+            },
+        });
     });
 
     it("should call the set_voice_assistant_state ros service", () => {

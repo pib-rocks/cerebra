@@ -185,27 +185,307 @@ describe("CameraComponent", () => {
     }));
 
     it("should retain only the newest pending detection per model", fakeAsync(() => {
-        component.updateRefreshRateLabel(0.5);
+        component.updateRefreshRateLabel(1);
         rosService.cameraReceiver$.next("camera-image");
-        rosService.detectionModelsReceiver$.next(["hand_tracking"]);
-        rosService.detectionReceiver$.next(detectionMessage("hand_tracking"));
-        const newest = detectionMessage("hand_tracking");
+        rosService.detectionModelsReceiver$.next(["hand_tracking_fast"]);
+        rosService.detectionReceiver$.next(
+            detectionMessage("hand_tracking_fast"),
+        );
+        const newest = detectionMessage("hand_tracking_fast");
         newest.detections[0].keypoint_x = [456];
         newest.detections[0].keypoint_y = [321];
         rosService.detectionReceiver$.next(newest);
 
-        tick(499);
-        fixture.detectChanges();
         expect(
             fixture.debugElement.query(By.css(".detection-keypoint")),
         ).toBeNull();
+        expect(component.imageSrc).toBe("data:image/jpeg;base64,camera-image");
 
-        tick(1);
+        tick(16);
         fixture.detectChanges();
+        const overlay = fixture.debugElement.query(
+            By.css(".detection-overlay"),
+        );
         expect(
             fixture.debugElement.query(By.css(".detection-keypoint"))
                 .attributes["cx"],
         ).toBe("456");
+        expect(overlay.attributes["data-source-sequence"]).toBe("2");
+        expect(component.appliedHandUpdates).toBe(0);
+    }));
+
+    it("should count distinct hand overlay updates and clear them when the hand is gone", fakeAsync(() => {
+        component.updateRefreshRateLabel(1);
+        rosService.cameraReceiver$.next("camera-image");
+        rosService.detectionModelsReceiver$.next(["hand_tracking_fast"]);
+        rosService.detectionReceiver$.next(
+            detectionMessage("hand_tracking_fast", 1280, 720, [
+                namedHandDetection(),
+            ]),
+        );
+
+        tick(100);
+        fixture.detectChanges();
+
+        const overlay = fixture.debugElement.query(
+            By.css(".detection-overlay"),
+        );
+        expect(component.appliedHandUpdates).toBe(1);
+        expect(component.renderedHandKeypoints).toBe(21);
+        expect(overlay.attributes["preserveAspectRatio"]).toBe("xMidYMid meet");
+        expect(overlay.attributes["data-model-id"]).toBe("hand_tracking_fast");
+        const circles = fixture.debugElement.queryAll(
+            By.css(".detection-keypoint"),
+        );
+        const connections = fixture.debugElement.queryAll(
+            By.css(".detection-connection"),
+        );
+        expect(overlay.attributes["data-applied-hand-updates"]).toBe("1");
+        expect(overlay.attributes["data-rendered-hand-keypoints"]).toBe(
+            String(circles.length),
+        );
+        expect(overlay.attributes["data-rendered-connections"]).toBe(
+            String(connections.length),
+        );
+        expect(overlay.attributes["data-source-sequence"]).toBe("1");
+        expect(circles.length).toBe(21);
+        expect(connections.length).toBeGreaterThan(0);
+
+        rosService.cameraReceiver$.next("camera-two");
+        expect(component.appliedHandUpdates).toBe(1);
+
+        const moved = namedHandDetection();
+        moved.keypoint_x = moved.keypoint_x.map((value) => value + 10);
+        rosService.detectionReceiver$.next(
+            detectionMessage("hand_tracking_fast", 1280, 720, [moved]),
+        );
+        tick(100);
+        fixture.detectChanges();
+        expect(component.appliedHandUpdates).toBe(2);
+        expect(
+            fixture.debugElement.query(By.css(".detection-keypoint"))
+                .attributes["cx"],
+        ).toBe("10");
+        expect(
+            fixture.debugElement.query(By.css(".detection-overlay")).attributes[
+                "data-source-sequence"
+            ],
+        ).toBe("2");
+
+        rosService.detectionReceiver$.next(
+            detectionMessage("hand_tracking_fast", 1280, 720, []),
+        );
+        tick(100);
+        fixture.detectChanges();
+        expect(
+            fixture.debugElement.queryAll(By.css(".detection-keypoint")).length,
+        ).toBe(0);
+        expect(
+            fixture.debugElement.queryAll(By.css(".detection-connection"))
+                .length,
+        ).toBe(0);
+        expect(component.renderedHandKeypoints).toBe(0);
+        expect(component.appliedHandUpdates).toBe(2);
+    }));
+
+    it("should keep applying a steady 10.2Hz hand above 10Hz after startup", fakeAsync(() => {
+        const periodMs = 1000 / 10.2;
+        const durationMs = 20_000;
+        const startupMs = 1000;
+        component.updateRefreshRateLabel(1);
+        rosService.cameraReceiver$.next("camera-image");
+        rosService.detectionModelsReceiver$.next(["hand_tracking_fast"]);
+
+        let elapsed = 0;
+        let arrivals = 0;
+        let appliedAtStartup = 0;
+        let sequencesAtStartup = 0;
+        let startupElapsed = 0;
+        const appliedSequences: number[] = [];
+        const hand = namedHandDetection();
+        while (elapsed < durationMs) {
+            arrivals += 1;
+            rosService.detectionReceiver$.next(
+                detectionMessage("hand_tracking_fast", 1280, 720, [hand]),
+            );
+            const step = Math.min(periodMs, durationMs - elapsed);
+            tick(step);
+            elapsed += step;
+            const sequence =
+                component.detectionLayers.get("hand_tracking_fast")
+                    ?.sourceSequence;
+            if (
+                sequence !== undefined &&
+                appliedSequences[appliedSequences.length - 1] !== sequence
+            ) {
+                appliedSequences.push(sequence);
+            }
+            if (startupElapsed === 0 && elapsed >= startupMs) {
+                appliedAtStartup = component.appliedHandUpdates;
+                sequencesAtStartup = appliedSequences.length;
+                startupElapsed = elapsed;
+            }
+        }
+
+        const windowSeconds = (durationMs - startupElapsed) / 1000;
+        const applied = component.appliedHandUpdates - appliedAtStartup;
+        const distinct = appliedSequences.length - sequencesAtStartup;
+        expect(arrivals).toBe(204);
+        expect(windowSeconds).toBeGreaterThan(18);
+        expect(applied / windowSeconds).toBeGreaterThanOrEqual(10);
+        expect(distinct / windowSeconds).toBeGreaterThanOrEqual(10);
+        expect(applied).toBe(distinct);
+
+        fixture.detectChanges();
+        const circles = fixture.debugElement.queryAll(
+            By.css(".detection-keypoint"),
+        );
+        const connections = fixture.debugElement.queryAll(
+            By.css(".detection-connection"),
+        );
+        const overlay = fixture.debugElement.query(
+            By.css(".detection-overlay"),
+        );
+        expect(circles.length).toBe(21);
+        expect(connections.length).toBeGreaterThan(0);
+        expect(circles[0].attributes["cx"]).toBe(String(hand.keypoint_x[0]));
+        expect(overlay.attributes["data-source-sequence"]).toBe(
+            String(arrivals),
+        );
+        expect(overlay.attributes["data-rendered-hand-keypoints"]).toBe(
+            String(circles.length),
+        );
+        expect(overlay.attributes["data-rendered-connections"]).toBe(
+            String(connections.length),
+        );
+        expect(component.imageSrc).toBe("data:image/jpeg;base64,camera-image");
+    }));
+
+    it("should coalesce a same-frame burst onto the newest hand", fakeAsync(() => {
+        component.updateRefreshRateLabel(1);
+        rosService.cameraReceiver$.next("camera-image");
+        rosService.detectionModelsReceiver$.next(["hand_tracking_fast"]);
+        for (let index = 0; index < 30; index += 1) {
+            const moved = namedHandDetection();
+            moved.keypoint_x = moved.keypoint_x.map(() => 1000 + index);
+            rosService.detectionReceiver$.next(
+                detectionMessage("hand_tracking_fast", 1280, 720, [moved]),
+            );
+        }
+
+        expect(
+            fixture.debugElement.query(By.css(".detection-keypoint")),
+        ).toBeNull();
+        tick(16);
+        fixture.detectChanges();
+        expect(component.appliedHandUpdates).toBe(1);
+        expect(
+            fixture.debugElement.query(By.css(".detection-keypoint"))
+                .attributes["cx"],
+        ).toBe("1029");
+        expect(
+            fixture.debugElement.query(By.css(".detection-overlay")).attributes[
+                "data-source-sequence"
+            ],
+        ).toBe("30");
+    }));
+
+    it("should drop a stale 21-count when the hand frame is incomplete and keep hand counters off other models", fakeAsync(() => {
+        component.updateRefreshRateLabel(1);
+        rosService.cameraReceiver$.next("camera-image");
+        rosService.detectionModelsReceiver$.next([
+            "hand_tracking_fast",
+            "objects",
+        ]);
+        rosService.detectionReceiver$.next(
+            detectionMessage("hand_tracking_fast", 1280, 720, [
+                namedHandDetection(),
+            ]),
+        );
+        rosService.detectionReceiver$.next(
+            detectionMessage("objects", 1280, 720),
+        );
+        tick(16);
+        fixture.detectChanges();
+
+        const overlays = () =>
+            fixture.debugElement.queryAll(By.css(".detection-overlay"));
+        const handOverlay = () =>
+            overlays().find(
+                (overlay) =>
+                    overlay.attributes["data-model-id"] ===
+                    "hand_tracking_fast",
+            )!;
+        const objectOverlay = () =>
+            overlays().find(
+                (overlay) => overlay.attributes["data-model-id"] === "objects",
+            )!;
+        const handCircles = handOverlay().queryAll(
+            By.css(".detection-keypoint"),
+        );
+        const handLines = handOverlay().queryAll(
+            By.css(".detection-connection"),
+        );
+        expect(handCircles.length).toBe(21);
+        expect(handLines.length).toBeGreaterThan(0);
+        expect(handOverlay().attributes["data-rendered-hand-keypoints"]).toBe(
+            String(handCircles.length),
+        );
+        expect(handOverlay().attributes["data-rendered-connections"]).toBe(
+            String(handLines.length),
+        );
+        expect(
+            objectOverlay().attributes["data-applied-hand-updates"],
+        ).toBeUndefined();
+        expect(
+            objectOverlay().attributes["data-rendered-hand-keypoints"],
+        ).toBeUndefined();
+        expect(component.renderedHandKeypoints).toBe(21);
+
+        const partial = namedHandDetection();
+        partial.keypoint_names = partial.keypoint_names.slice(0, 4);
+        partial.keypoint_x = partial.keypoint_x.slice(0, 4);
+        partial.keypoint_y = partial.keypoint_y.slice(0, 4);
+        partial.keypoint_z = partial.keypoint_z.slice(0, 4);
+        rosService.detectionReceiver$.next(
+            detectionMessage("hand_tracking_fast", 1280, 720, [partial]),
+        );
+        tick(16);
+        fixture.detectChanges();
+
+        const circles = handOverlay().queryAll(By.css(".detection-keypoint"));
+        expect(circles.length).toBe(4);
+        expect(handOverlay().attributes["data-rendered-hand-keypoints"]).toBe(
+            "4",
+        );
+        expect(handOverlay().attributes["data-rendered-hand-keypoints"]).toBe(
+            String(circles.length),
+        );
+        expect(component.renderedHandKeypoints).toBe(4);
+        expect(component.appliedHandUpdates).toBe(1);
+        expect(
+            objectOverlay().attributes["data-rendered-hand-keypoints"],
+        ).toBeUndefined();
+        expect(
+            objectOverlay().attributes["data-applied-hand-updates"],
+        ).toBeUndefined();
+    }));
+
+    it("should notify zoneless Angular when a detection is applied", fakeAsync(() => {
+        rosService.cameraReceiver$.next("camera-image");
+        const markForCheck = spyOn(
+            component["changeDetectorRef"],
+            "markForCheck",
+        );
+        rosService.detectionReceiver$.next(
+            detectionMessage("hand_tracking_fast", 1280, 720, [
+                namedHandDetection(),
+            ]),
+        );
+
+        expect(markForCheck).not.toHaveBeenCalled();
+        tick(100);
+        expect(markForCheck).toHaveBeenCalled();
     }));
 
     it("should notify zoneless Angular once for each display flush", fakeAsync(() => {
@@ -309,9 +589,10 @@ describe("CameraComponent", () => {
                 },
             ]),
         );
-        // The detection flush arms the refresh timer; clear it so the frame
-        // is drawn immediately instead of waiting for that timer.
-        component["clearDisplayRefreshTimer"]();
+        // The overlay paints on the next animation frame, not on JPEG refresh.
+        await new Promise((resolve) =>
+            requestAnimationFrame(() => resolve(undefined)),
+        );
         rosService.cameraReceiver$.next(
             dataUrl.slice("data:image/jpeg;base64,".length),
         );

@@ -3,3 +3,8 @@ export interface StartModelRequest {
     shaves: number;
     owner: string;
 }
+
+export interface ModelActionResponse {
+    success: boolean;
+    message: string;
+}

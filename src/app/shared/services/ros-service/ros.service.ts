@@ -73,13 +73,23 @@ import {
 import {DetectionArray} from "../../ros-types/msg/detection-array";
 import {ModelStatusArray} from "../../ros-types/msg/model-status";
 import {ListModelsResponse, ModelInfo} from "../../ros-types/srv/list-models";
-import {StartModelRequest} from "../../ros-types/srv/start-model";
+import {
+    ModelActionResponse,
+    StartModelRequest,
+} from "../../ros-types/srv/start-model";
 import {StopModelRequest} from "../../ros-types/srv/stop-model";
 
 @Injectable({
     providedIn: "root",
 })
 export class RosService implements IRosService {
+    /**
+     * rosbridge CallService.default_call_service_timeout is 5 seconds when the
+     * call omits timeout. Model start answers only after pipeline rebuild and
+     * verification, so the call must carry a longer timeout or rosbridge
+     * reports a failure while the model is still starting.
+     */
+    static readonly MODEL_LIFECYCLE_TIMEOUT_SECONDS = 90;
     currentReceiver$: Subject<DiagnosticStatus> =
         new Subject<DiagnosticStatus>();
     cameraTimerPeriodReceiver$: BehaviorSubject<number> =
@@ -196,11 +206,11 @@ export class RosService implements IRosService {
     >;
     private startModelService!: ROSLIB.Service<
         StartModelRequest,
-        Record<string, never>
+        ModelActionResponse
     >;
     private stopModelService!: ROSLIB.Service<
         StopModelRequest,
-        Record<string, never>
+        ModelActionResponse
     >;
 
     private runProgramAction!: ROSLIB.ActionClient;
@@ -816,15 +826,26 @@ export class RosService implements IRosService {
     }
 
     private callModelAction<Request extends object>(
-        service: ROSLIB.Service<Request, Record<string, never>>,
+        service: ROSLIB.Service<Request, ModelActionResponse>,
         request: Request,
     ): Observable<void> {
         return from(
             new Promise<void>((resolve, reject) => {
                 service.callService(
                     request,
-                    () => resolve(),
+                    (response) => {
+                        if (response?.success === false) {
+                            reject(
+                                new Error(
+                                    response.message || "Model request failed",
+                                ),
+                            );
+                            return;
+                        }
+                        resolve();
+                    },
                     (error) => reject(new Error(error)),
+                    RosService.MODEL_LIFECYCLE_TIMEOUT_SECONDS,
                 );
             }),
         );
