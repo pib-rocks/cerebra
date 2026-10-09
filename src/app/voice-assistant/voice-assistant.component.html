@@ -319,6 +319,31 @@
                     >MCP server</label
                 >
             </div>
+            <div
+                class="row m-2"
+                id="row-reasoning-effort">
+                <label
+                    for="reasoning-effort-select"
+                    class="col-6 mt-1"
+                    id="label-reasoning-effort"
+                    >Reasoning level</label
+                >
+                <select
+                    id="reasoning-effort-select"
+                    class="col-3 form-select"
+                    data-test="DDN_Reasoning_Effort"
+                    formControlName="reasoningEffort"
+                    aria-label="Reasoning level">
+                    <option [value]="reasoningEffortUnmanaged">
+                        {{ reasoningEffortUnmanagedLabel }}
+                    </option>
+                    @for (level of reasoningLevels; track level) {
+                    <option [value]="level">
+                        {{ reasoningEffortLabel(level) }}
+                    </option>
+                    }
+                </select>
+            </div>
         </div>
         }
         <div class="row justify-content-center mt-2 mb-3">
