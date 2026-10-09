@@ -136,21 +136,42 @@ describe("AppComponent", () => {
         expect(app.showStartupPassword()).toBeFalse();
     });
 
-    it("opens and closes the sidebar with the hamburger button", () => {
+    it("collapses and expands the sidebar with the handle on the divider, the arrow showing the way", () => {
         fixture.detectChanges();
         const wrapper: HTMLElement =
             fixture.nativeElement.querySelector(".wrapper");
-        const hamburger: HTMLButtonElement =
-            fixture.nativeElement.querySelector("#hamburger-button");
+        const handle: HTMLButtonElement = fixture.nativeElement.querySelector(
+            "#sidebar-toggle-button",
+        );
+        const icon = handle.querySelector("i");
         expect(wrapper.classList.contains("sidebar-collapse")).toBeFalse();
+        // Navigation open: the arrow points left, the way the click moves it.
+        expect(icon?.classList.contains("bi-chevron-left")).toBeTrue();
+        expect(icon?.classList.contains("bi-chevron-right")).toBeFalse();
+        expect(handle.getAttribute("aria-expanded")).toBe("true");
 
-        hamburger.click();
+        handle.click();
         fixture.detectChanges();
         expect(wrapper.classList.contains("sidebar-collapse")).toBeTrue();
+        expect(icon?.classList.contains("bi-chevron-right")).toBeTrue();
+        expect(icon?.classList.contains("bi-chevron-left")).toBeFalse();
+        expect(handle.getAttribute("aria-expanded")).toBe("false");
 
-        hamburger.click();
+        handle.click();
         fixture.detectChanges();
         expect(wrapper.classList.contains("sidebar-collapse")).toBeFalse();
+        expect(icon?.classList.contains("bi-chevron-left")).toBeTrue();
+    });
+
+    it("keeps the old hamburger out of the header", () => {
+        fixture.detectChanges();
+
+        expect(
+            fixture.nativeElement.querySelector("#hamburger-button"),
+        ).toBeNull();
+        expect(
+            fixture.nativeElement.querySelector('[data-test="BTN_Hamburger"]'),
+        ).toBeNull();
     });
 
     it("hides the startup modal on the display path", () => {

@@ -63,8 +63,53 @@ $sidebar-width: 250px;
     margin-left: 0;
 }
 
-// Below 768px the sidebar is hidden by default and the hamburger slides it
-// in over the content instead of pushing the content aside.
+// The handle that replaced the old hamburger. It straddles the line between the
+// navigation and the content (half in each), so the control sits where the two
+// areas meet instead of in the content's top corner, and it always points the
+// way it will move the navigation.
+.sidebar-toggle {
+    position: absolute;
+    top: 50%;
+    left: $sidebar-width;
+    transform: translate(-50%, -50%);
+    z-index: 1039; // above the sidebar (1038)
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border: 1px solid $grey-transparent;
+    border-radius: 50%;
+    background-color: $blue-dark-1;
+    color: $white-color;
+    font-size: 1rem;
+    line-height: 1;
+    transition:
+        left 0.3s ease-in-out,
+        background-color 0.15s ease-in-out,
+        border-color 0.15s ease-in-out;
+
+    &:hover {
+        border-color: $pink-color;
+        background-color: $pink-color;
+    }
+
+    &:focus-visible {
+        outline: 2px solid $pink-color;
+        outline-offset: 2px;
+    }
+}
+
+// Collapsed: the navigation has left the screen, so the handle docks at the left
+// edge, where it stays reachable.
+.sidebar-collapse .sidebar-toggle {
+    left: 8px;
+    transform: translate(0, -50%);
+}
+
+// Below 768px the navigation is an overlay and the collapse class means the
+// opposite (set = shown, unset = hidden), so the handle swaps sides with it.
 @media (max-width: 767.98px) {
     .main-sidebar {
         margin-left: -$sidebar-width;
@@ -77,6 +122,16 @@ $sidebar-width: 250px;
 
     .content-wrapper {
         margin-left: 0;
+    }
+
+    .sidebar-toggle {
+        left: 8px;
+        transform: translate(0, -50%);
+    }
+
+    .sidebar-collapse .sidebar-toggle {
+        left: $sidebar-width;
+        transform: translate(-50%, -50%);
     }
 }
 
