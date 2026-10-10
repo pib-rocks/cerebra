@@ -9,6 +9,7 @@ import {
     IMPORT_SYS,
     INIT_PLAY_AUDIO_FROM_SPEECH_CLIENT,
     INIT_ROS,
+    addDefinitions,
 } from "./util/definitions";
 import {PLAY_AUDIO_FROM_SPEECH_FUNCTION} from "./util/function-declarations";
 
@@ -23,7 +24,7 @@ export function playAudioFromSpeechGenerator(
     const voiceName = <string>(block.getFieldValue("VOICENAME") || '"F1"');
 
     // add definitions to generator
-    Object.assign(generator.definitions_, {
+    addDefinitions(generator, {
         IMPORT_RCLPY,
         IMPORT_SYS,
         IMPORT_LOGGING,
@@ -41,5 +42,3 @@ export function playAudioFromSpeechGenerator(
 
     return `${functionName}(${textInput}, ${voiceName}, ${language})\n`;
 }
-
-export {pythonGenerator};
