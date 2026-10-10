@@ -14,7 +14,7 @@ import {
 } from "../../ros-types/srv/proxy-run-program-start";
 import {VoiceAssistantState} from "../../ros-types/msg/voice-assistant-state";
 import {SetVoiceAssistantStateResponse} from "../../ros-types/srv/set-voice-assistant-state";
-import {Observable, Subject} from "rxjs";
+import {Observable, Subject, take} from "rxjs";
 import {SolidStateRelayState} from "../../ros-types/msg/solid-state-relay-state";
 import {SetSolidStateRelayStateResponse} from "../../ros-types/srv/set-solid-state-relay-state";
 import {DetectionArray} from "../../ros-types/msg/detection-array";
@@ -880,9 +880,11 @@ describe("RosService", () => {
     });
 
     it("should initialize connectionStatus$ with an initial value of false", () => {
-        rosService.connectionStatus$.subscribe((status) => {
+        rosService.connectionStatus$.pipe(take(1)).subscribe((status) => {
             expect(status).toBeFalse();
         });
+        // A later connection is legitimate; the initial-value assertion must end.
+        rosService["connectionStatusSubject"].next(true);
     });
 
     it("should update connectionStatus based on ROS events", () => {
