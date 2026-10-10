@@ -1,5 +1,35 @@
 @import "src/styles";
 
+// The absolutely positioned toolbar must be anchored to the editor; without
+// this it climbs to the app `.wrapper` and ends up behind the program tabs.
+.program-editor {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    container-type: inline-size;
+}
+
+.program-toolbar {
+    flex-wrap: wrap;
+    max-width: 100%;
+}
+
+// The overlaid toolbar (about 560px) only clears the Blockly category toolbox
+// (about 140px from the editor's left edge) in a wide editor. In a narrower
+// one it moves into the flow above the workspace, so neither covers the other.
+@container (max-width: 720px) {
+    .program-toolbar {
+        position: static !important;
+        padding: 0 0 0.5rem !important;
+    }
+
+    .program-editor > as-split {
+        flex: 1 1 0;
+        min-height: 0;
+        height: auto;
+    }
+}
+
 .workspaceButton {
     background: transparent;
     border: none;
