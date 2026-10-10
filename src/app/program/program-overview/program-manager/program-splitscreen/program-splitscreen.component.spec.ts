@@ -8,8 +8,11 @@ import {BehaviorSubject, Subject} from "rxjs";
 import {ProgramWorkspaceComponent} from "./program-workspace/program-workspace.component";
 import {ExecutionState, ProgramState} from "src/app/shared/types/program-state";
 import {ProgramLogLine} from "src/app/shared/types/program-log-line";
-import {HttpClientModule} from "@angular/common/http";
+import {HttpClientModule, provideHttpClient} from "@angular/common/http";
+import {provideHttpClientTesting} from "@angular/common/http/testing";
 import {By} from "@angular/platform-browser";
+import {provideZonelessChangeDetection} from "@angular/core";
+import {Program} from "src/app/shared/types/program";
 
 describe("ProgramSplitscreenComponent", () => {
     let component: ProgramSplitscreenComponent;
@@ -361,5 +364,215 @@ describe("ProgramSplitscreenComponent", () => {
                 component.SAVE_ACTIVE,
             );
         });
+    });
+});
+
+describe("ProgramSplitscreenComponent without zone.js", () => {
+    let fixture: ComponentFixture<ProgramSplitscreenComponent>;
+    let programService: jasmine.SpyObj<ProgramService>;
+    let logs$: BehaviorSubject<ProgramLogLine[]>;
+    let state$: BehaviorSubject<ProgramState>;
+    let component: ProgramSplitscreenComponent;
+
+    const runButton = () =>
+        fixture.nativeElement.querySelector("#run-btn") as HTMLButtonElement;
+    const runIcon = () => runButton().querySelector("img")!.getAttribute("src");
+    const consoleArea = () =>
+        fixture.nativeElement.querySelector(
+            "#console-area",
+        ) as HTMLElement | null;
+    const consoleText = () =>
+        consoleArea()!.textContent!.replace(/\s+/g, " ").trim();
+    const outputLines = () =>
+        Array.from(
+            consoleArea()!.querySelectorAll<HTMLElement>(
+                "div.stdout, div.stderr",
+            ),
+        ).map((line) => ({
+            content: line.textContent!.trim(),
+            isError: line.classList.contains("stderr"),
+        }));
+    const line = (content: string, isError = false): ProgramLogLine => ({
+        content,
+        isError,
+        hasInput: false,
+    });
+
+    // Delivers the emission from a later macrotask, the way a rosbridge
+    // WebSocket message arrives: outside any Angular event handler and after
+    // the last change detection has finished. Nothing in these tests runs
+    // fixture.detectChanges() or a user event after such an emission.
+    const emitLater = (emit: () => void) =>
+        new Promise<void>((resolve) =>
+            setTimeout(() => {
+                emit();
+                resolve();
+            }),
+        );
+
+    // Plays the messages of one program run in the order ProgramService
+    // derives them from the ROS goal handle.
+    const finishRun = async (
+        output: ProgramLogLine[],
+        result: ProgramState,
+    ) => {
+        await emitLater(() => {
+            state$.next({executionState: ExecutionState.RUNNING});
+            logs$.next([]);
+        });
+        await fixture.whenStable();
+        expect(runIcon()).toBe(component.STOP);
+
+        await emitLater(() => logs$.next(output));
+        await emitLater(() => state$.next(result));
+        await fixture.whenStable();
+    };
+
+    beforeEach(async () => {
+        logs$ = new BehaviorSubject<ProgramLogLine[]>([]);
+        state$ = new BehaviorSubject<ProgramState>({
+            executionState: ExecutionState.NOT_STARTED,
+        });
+        programService = jasmine.createSpyObj<ProgramService>(
+            "ProgramService",
+            [
+                "getProgramFromCache",
+                "getProgramByProgramNumber",
+                "updateCodeByProgramNumber",
+                "runProgram",
+                "terminateProgram",
+                "getProgramLogs",
+                "getProgramState",
+            ],
+        );
+        programService.getProgramFromCache.and.returnValue(
+            new Program("hello_world", "id-0"),
+        );
+        programService.getProgramLogs.and.returnValue(logs$);
+        programService.getProgramState.and.returnValue(state$);
+        // ProgramService.runProgram reports STARTING synchronously.
+        programService.runProgram.and.callFake(() =>
+            state$.next({executionState: ExecutionState.STARTING}),
+        );
+
+        await TestBed.configureTestingModule({
+            providers: [
+                provideZonelessChangeDetection(),
+                // Keeps the Blockly workspace's pose and motor requests
+                // pending instead of failing against the Karma server.
+                provideHttpClient(),
+                provideHttpClientTesting(),
+                {provide: ProgramService, useValue: programService},
+                {
+                    provide: ActivatedRoute,
+                    useValue: {
+                        params: new BehaviorSubject<Params>({
+                            "program-number": "id-0",
+                        }),
+                        data: new BehaviorSubject<Record<string, any>>({
+                            code: {codeVisual: "{}"},
+                        }),
+                    },
+                },
+            ],
+            imports: [AngularSplitModule, ProgramSplitscreenComponent],
+        }).compileComponents();
+
+        fixture = TestBed.createComponent(ProgramSplitscreenComponent);
+        component = fixture.componentInstance;
+        await fixture.whenStable();
+    });
+
+    it("switches the Run/Stop icon in normal view as the run progresses", async () => {
+        expect(consoleArea()).toBeNull();
+        expect(runIcon()).toBe(component.PLAY);
+
+        await emitLater(() =>
+            state$.next({executionState: ExecutionState.STARTING}),
+        );
+        await finishRun([line("hello world")], {
+            executionState: ExecutionState.FINISHED_SUCCESSFUL,
+            exitCode: 0,
+        });
+
+        expect(runIcon()).toBe(component.PLAY);
+        expect(consoleArea()).toBeNull();
+    });
+
+    it("shows output and completion after Run without another interaction", async () => {
+        runButton().click();
+        await fixture.whenStable();
+        expect(programService.runProgram).toHaveBeenCalledOnceWith("id-0");
+        expect(consoleText()).toContain("Starting execution of program...");
+
+        await finishRun([line("hello world")], {
+            executionState: ExecutionState.FINISHED_SUCCESSFUL,
+            exitCode: 0,
+        });
+
+        expect(runIcon()).toBe(component.PLAY);
+        expect(outputLines()).toEqual([
+            {content: "hello world", isError: false},
+        ]);
+        expect(consoleText()).toContain(
+            "Program has finished successfully (exit code: 0)",
+        );
+    });
+
+    it("renders a consecutive run and keeps it across a view toggle", async () => {
+        runButton().click();
+        await finishRun([line("run one")], {
+            executionState: ExecutionState.FINISHED_SUCCESSFUL,
+            exitCode: 0,
+        });
+        expect(outputLines()).toEqual([{content: "run one", isError: false}]);
+
+        runButton().click();
+        await fixture.whenStable();
+        expect(programService.runProgram).toHaveBeenCalledTimes(2);
+        expect(consoleText()).not.toContain("Program has finished");
+
+        await finishRun([line("run two"), line("Traceback", true)], {
+            executionState: ExecutionState.FINISHED_ERROR,
+            exitCode: 1,
+        });
+        expect(runIcon()).toBe(component.PLAY);
+        expect(outputLines()).toEqual([
+            {content: "Traceback", isError: true},
+            {content: "run two", isError: false},
+        ]);
+        expect(consoleText()).toContain(
+            "Program has finished with errors (exit code: 1)",
+        );
+
+        const toggle = fixture.nativeElement.querySelector(
+            "#toggle-btn",
+        ) as HTMLButtonElement;
+        toggle.click();
+        await fixture.whenStable();
+        expect(consoleArea()).toBeNull();
+
+        toggle.click();
+        await fixture.whenStable();
+        expect(outputLines()).toEqual([
+            {content: "Traceback", isError: true},
+            {content: "run two", isError: false},
+        ]);
+    });
+
+    it("stops listening to the program state when destroyed", async () => {
+        runButton().click();
+        await fixture.whenStable();
+        expect(state$.observed).toBeTrue();
+
+        fixture.destroy();
+
+        expect(state$.observed).toBeFalse();
+        expect(logs$.observed).toBeFalse();
+        await expectAsync(
+            emitLater(() =>
+                state$.next({executionState: ExecutionState.RUNNING}),
+            ),
+        ).toBeResolved();
     });
 });
