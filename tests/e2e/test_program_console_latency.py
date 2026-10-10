@@ -9,7 +9,6 @@ clicking Run, and requires every console and Run/Stop update to reach the DOM
 within MAX_RENDER_DELAY_MS of the WebSocket frame that caused it.
 
 The test executes a program on the robot, so it needs two explicit opt-ins:
-    10|
     PIB_ROBOT_URL=http://<host> PIB_E2E_RUN_PRINT_PROGRAM=1 \\
         python -m pytest tests/e2e/test_program_console_latency.py
 
@@ -19,7 +18,7 @@ The editor saves the workspace when Run is clicked; that request is intercepted
 and aborted unless it is still exactly that print-only program, so the robot can
 only ever compile the verified code. No motor, camera or other block is used.
 The program is deleted afterwards and its deletion is verified by readback.
-    20|"""
+"""
 
 import json
 import os
@@ -76,9 +75,17 @@ RECORDER_JS = """
         }
         send(data) {
             if (typeof data === "string" && data.includes("proxy_run_program")) {
-                try {
-                    record.sent.push(JSON.parse(data));
-                } catch (error) {}
+                let frame;
+                try { frame = JSON.parse(data); } catch (error) {}
+                // Refuse a sidebar-driven reroute to another (possibly actuating)
+                // program before the request leaves the browser.
+                if (frame && frame.op === "call_service" &&
+                    frame.service === "/proxy_run_program_start" &&
+                    frame.args?.program_number !== record.expectedProgramNumber) {
+                    record.unsafeStart = frame;
+                    throw new Error("E2E refused a non-probe program start");
+                }
+                if (frame) record.sent.push(frame);
             }
             return super.send(data);
         }
@@ -334,12 +341,25 @@ def test_console_renders_print_only_run_without_interaction(browser, probe_progr
             timeout=15000,
         )
 
+        # Let sidebar initialization finish; it can request its first stored
+        # program and show an unsaved-changes guard for the explicit probe route.
+        page.wait_for_timeout(1000)
+        dialog = page.get_by_role("dialog")
+        if dialog.count():
+            dialog.get_by_role("button", name="Cancel", exact=True).click()
+        assert (
+            page.url.rstrip("/") == f"{BASE_URL}/program/{program_number}"
+        ), "the editor rerouted away from the verified print-only probe"
+        assert (
+            page.locator(".blocklyText").filter(has_text=marker).count()
+        ), "the editor does not display the verified probe"
         page.evaluate(
-            """(marker) => {
+            """({marker, programNumber}) => {
                 window.__consoleLatency.marker = marker;
+                window.__consoleLatency.expectedProgramNumber = programNumber;
                 window.__consoleLatency.runClickedAt = performance.now();
             }""",
-            marker,
+            {"marker": marker, "programNumber": program_number},
         )
         # The only interaction with the page. Everything below just observes.
         page.locator("#run-btn").click()
