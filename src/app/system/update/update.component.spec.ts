@@ -76,7 +76,15 @@ describe("UpdateComponent", () => {
         ]);
         updateServiceSpy.getInstalledRevisions.and.returnValue(of(installed));
         updateServiceSpy.getAvailableUpdates.and.returnValue(of(availability));
-        updateServiceSpy.checkForUpdates.and.returnValue(of({}));
+        updateServiceSpy.checkForUpdates.and.returnValue(
+            of({
+                schemaVersion: 1,
+                checkId: "check-default",
+                channel: "release",
+                requestedAt: "2026-10-10T00:00:00Z",
+                actor: "test",
+            }),
+        );
         updateServiceSpy.getStatus.and.returnValue(of(idleStatus));
         updateServiceSpy.getLog.and.returnValue(
             of({offset: 0, nextOffset: 4, content: "log\n"}),
@@ -84,6 +92,20 @@ describe("UpdateComponent", () => {
         updateServiceSpy.startUpdate.and.returnValue(
             of({
                 job: {
+                    schemaVersion: 1,
+                    jobId: "job-1",
+                    requestedAt: "2026-10-10T00:00:00Z",
+                    actor: "test",
+                    channel: "develop",
+                    force: true,
+                    confirmation: "UPDATE" as const,
+                    targetKind: "develop-pin",
+                    targets: {
+                        "pib-backend": "a".repeat(40),
+                        cerebra: "b".repeat(40),
+                    },
+                },
+                status: {
                     state: "queued",
                     classification: "queued",
                     jobId: "job-1",
@@ -221,44 +243,118 @@ describe("UpdateComponent", () => {
         );
     }));
 
-    it("requires an explicit channel and the exact confirmation token", () => {
-        component.channel = "";
+    it("accepts only release or develop and the exact confirmation token", () => {
         component.confirmation = "UPDATE";
+        component.channel = "main";
         expect(component.canStart).toBeFalse();
 
-        component.channel = "main";
+        component.channel = "release";
         component.confirmation = "update";
         expect(component.canStart).toBeFalse();
 
         component.confirmation = "UPDATE";
+        component.availability = {
+            ...availability,
+            checkId: "check-1",
+            state: "completed",
+            recommendation: {
+                tag: "v1.2.3",
+                relation: "newer",
+                installable: true,
+                ordinaryUpdate: true,
+            },
+        };
+        component.status = {
+            state: "idle",
+            classification: "idle",
+            readiness: {ready: true, checks: []},
+        };
         expect(component.canStart).toBeTrue();
     });
 
     it("starts only on demand with channel, force, and confirmation", () => {
         expect(updateServiceSpy.startUpdate).not.toHaveBeenCalled();
 
-        component.channel = " develop ";
+        component.channel = "develop";
         component.force = true;
+        component.acknowledgeException = true;
         component.confirmation = "UPDATE";
+        component.availability = {
+            ...availability,
+            checkId: "check-dev",
+            channel: "develop",
+            state: "completed",
+            repositories: {
+                "pib-backend": {
+                    installed: backendSha,
+                    target: "a".repeat(40),
+                    updateAvailable: true,
+                },
+                cerebra: {
+                    installed: cerebraSha,
+                    target: "b".repeat(40),
+                    updateAvailable: true,
+                },
+            },
+        };
+        component.status = {
+            state: "idle",
+            classification: "idle",
+            readiness: {ready: true, checks: []},
+        };
         component.startUpdate();
 
         expect(updateServiceSpy.startUpdate).toHaveBeenCalledWith({
             channel: "develop",
             force: true,
             confirmation: "UPDATE",
+            pin: true,
+            checkId: "check-dev",
         });
         expect(component.status?.state).toBe("queued");
+        expect(component.isActive).toBeTrue();
     });
 
-    it("posts a check before retrieving availability", () => {
+    it("keeps polling until the availability document matches the requested check", fakeAsync(() => {
+        const stale = {
+            ...availability,
+            checkId: "old-check",
+            state: "completed",
+        };
+        const fresh = {
+            ...availability,
+            checkId: "new-check",
+            state: "completed",
+            checkedAt: "2026-10-10T00:05:00Z",
+        };
+        updateServiceSpy.checkForUpdates.and.returnValue(
+            of({
+                schemaVersion: 1,
+                checkId: "new-check",
+                channel: "release",
+                requestedAt: "2026-10-10T00:00:00Z",
+                actor: "test",
+            }),
+        );
+        updateServiceSpy.getAvailableUpdates.and.returnValues(
+            of(stale),
+            of(fresh),
+        );
         updateServiceSpy.checkForUpdates.calls.reset();
         updateServiceSpy.getAvailableUpdates.calls.reset();
 
+        component.channel = "release";
         component.checkForUpdates();
 
-        expect(updateServiceSpy.checkForUpdates).toHaveBeenCalledTimes(1);
-        expect(updateServiceSpy.getAvailableUpdates).toHaveBeenCalledTimes(1);
-    });
+        expect(updateServiceSpy.checkForUpdates).toHaveBeenCalledWith(
+            "release",
+        );
+        expect(component.availabilityLoading).toBeTrue();
+        expect(component.availability?.checkId).not.toBe("new-check");
+        tick(2000);
+        expect(component.availability?.checkId).toBe("new-check");
+        expect(component.availabilityLoading).toBeFalse();
+    }));
 
     it("degrades clearly when PR-1813 availability returns 404", () => {
         updateServiceSpy.getAvailableUpdates.and.returnValue(
@@ -337,7 +433,7 @@ describe("UpdateComponent", () => {
         pollingFixture.destroy();
     }));
 
-    it("stops automatic log polling after an error", fakeAsync(() => {
+    it("retries log reads after an error instead of stopping on the first failure", fakeAsync(() => {
         const running: UpdateStatus = {
             state: "fetching",
             classification: "running",
@@ -357,8 +453,9 @@ describe("UpdateComponent", () => {
         pollingFixture.detectChanges();
         tick(4000);
 
-        expect(updateServiceSpy.getLog.calls.count()).toBe(1);
+        expect(updateServiceSpy.getLog.calls.count()).toBeGreaterThan(1);
         expect(pollingFixture.componentInstance.logError).toBe("log failed");
+        expect(pollingFixture.componentInstance.isActive).toBeTrue();
 
         pollingFixture.destroy();
     }));

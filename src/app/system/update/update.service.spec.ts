@@ -95,7 +95,7 @@ describe("UpdateService", () => {
 
     it("starts an update with channel, force, and typed confirmation", () => {
         const request = {
-            channel: "develop",
+            channel: "develop" as const,
             force: true,
             confirmation: "UPDATE" as const,
         };
@@ -117,15 +117,15 @@ describe("UpdateService", () => {
         );
     });
 
-    it("checks availability and then retrieves its result", () => {
+    it("checks availability for the selected channel and then retrieves its result", () => {
         apiServiceSpy.get.and.returnValue(of(availability));
 
-        service.checkForUpdates().subscribe();
+        service.checkForUpdates("develop").subscribe();
         service.getAvailableUpdates().subscribe();
 
         expect(apiServiceSpy.post).toHaveBeenCalledWith(
             UrlConstants.SYSTEM_UPDATE_CHECK,
-            {},
+            {channel: "develop"},
         );
         expect(apiServiceSpy.get).toHaveBeenCalledWith(
             UrlConstants.SYSTEM_UPDATE_AVAILABLE,
