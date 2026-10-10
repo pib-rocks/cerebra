@@ -599,8 +599,12 @@ export class UpdateComponent implements OnInit, OnDestroy {
         this.statusError = null;
         if (this.isActiveStatus(status) && status.jobId) {
             this.rememberJob(status.jobId);
-        }
-        if (this.isTerminalStatus(status)) {
+        } else if (
+            this.isTerminalStatus(status) ||
+            status.state === "idle" ||
+            status.classification === "idle" ||
+            status.classification === "stale"
+        ) {
             this.clearRememberedJob();
         }
 

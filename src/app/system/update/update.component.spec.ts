@@ -132,6 +132,7 @@ describe("UpdateComponent", () => {
     });
 
     afterEach(() => {
+        sessionStorage.removeItem("pib.update.jobId");
         fixture.destroy();
     });
 

@@ -93,6 +93,7 @@ describe("UpdateComponent operator contract", () => {
     });
 
     afterEach(() => {
+        sessionStorage.removeItem("pib.update.jobId");
         fixture.destroy();
     });
 
