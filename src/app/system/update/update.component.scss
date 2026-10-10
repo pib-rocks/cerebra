@@ -18,6 +18,10 @@
     max-width: 24rem;
 }
 
+details summary {
+    cursor: pointer;
+}
+
 .phase-list {
     display: flex;
     flex-wrap: wrap;
