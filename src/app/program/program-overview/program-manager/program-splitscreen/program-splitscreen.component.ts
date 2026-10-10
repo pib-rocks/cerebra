@@ -2,6 +2,7 @@ import {
     Component,
     OnInit,
     ChangeDetectionStrategy,
+    ChangeDetectorRef,
     DestroyRef,
     inject,
 } from "@angular/core";
@@ -32,6 +33,7 @@ import {ConsoleComponent} from "./console/console.component";
 })
 export class ProgramSplitscreenComponent implements OnInit {
     private readonly destroyRef = inject(DestroyRef);
+    private readonly cdr = inject(ChangeDetectorRef);
 
     ExecutionState = ExecutionState;
 
@@ -83,9 +85,10 @@ export class ProgramSplitscreenComponent implements OnInit {
                 );
                 this.programState$
                     .pipe(takeUntilDestroyed(this.destroyRef))
-                    .subscribe(
-                        (state) => (this.executionState = state.executionState),
-                    );
+                    .subscribe((state) => {
+                        this.executionState = state.executionState;
+                        this.cdr.markForCheck();
+                    });
             });
     }
 
