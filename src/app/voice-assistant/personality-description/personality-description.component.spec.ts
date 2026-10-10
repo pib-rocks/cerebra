@@ -6,8 +6,8 @@ import {
 } from "@angular/core/testing";
 import {PersonalityDescriptionComponent} from "./personality-description.component";
 import {HttpClientTestingModule} from "@angular/common/http/testing";
-import {BehaviorSubject, Subject} from "rxjs";
-import {ActivatedRoute, Router} from "@angular/router";
+import {BehaviorSubject} from "rxjs";
+import {Router} from "@angular/router";
 import {FormsModule} from "@angular/forms";
 import {VoiceAssistant} from "src/app/shared/types/voice-assistant";
 import {RouterTestingModule} from "@angular/router/testing";
@@ -31,12 +31,8 @@ describe("PersonalityDescriptionComponent", () => {
     let _fakePersonality: VoiceAssistant;
 
     let _router: Router;
-    let paramsSubject: Subject<{personalityUuid: string}>;
 
     beforeEach(async () => {
-        paramsSubject = new BehaviorSubject({
-            personalityUuid: "01234567-0123-0123-0123-0123456789ab",
-        });
         const voiceAssistantServiceSpy: jasmine.SpyObj<VoiceAssistantService> =
             jasmine.createSpyObj("VoiceAssistantService", [
                 "getPersonality",
@@ -70,17 +66,6 @@ describe("PersonalityDescriptionComponent", () => {
             ],
             providers: [
                 {
-                    provide: ActivatedRoute,
-                    useValue: {
-                        snapshot: {
-                            data: {
-                                personality: "12345",
-                            },
-                        },
-                        params: paramsSubject,
-                    },
-                },
-                {
                     provide: VoiceAssistantService,
                     useValue: voiceAssistantServiceSpy,
                 },
@@ -109,6 +94,7 @@ describe("PersonalityDescriptionComponent", () => {
         _router = TestBed.inject(Router);
         fixture = TestBed.createComponent(PersonalityDescriptionComponent);
         component = fixture.componentInstance;
+        component.personalityId = "01234567-0123-0123-0123-0123456789ab";
         _fakePersonality = new VoiceAssistant(
             "1234",
             "fakePersonality",
@@ -129,6 +115,40 @@ describe("PersonalityDescriptionComponent", () => {
     it("should create", () => {
         expect(component).toBeTruthy();
     });
+
+    it("renders only the identity editor, without the obsolete Chat/Personality toggle", () => {
+        const host = fixture.nativeElement as HTMLElement;
+        expect(
+            host.querySelector("#personality-description-editor"),
+        ).not.toBeNull();
+        expect(
+            (host.querySelector("#textarea-personality") as HTMLTextAreaElement)
+                .value,
+        ).toBe("FakeDescription");
+        expect(
+            host.querySelector(
+                "#personality-description-toggle-voice-assistant",
+            ),
+        ).toBeNull();
+        expect(host.querySelector("[data-test=TGL_Chat]")).toBeNull();
+        expect(host.querySelector(".pink-corner-frame")).toBeNull();
+        expect(host.querySelector("a")).toBeNull();
+    });
+
+    it("loads the personality given by the header and autosaves typed identity text", fakeAsync(() => {
+        expect(_voiceAssistantService.getPersonality).toHaveBeenCalledWith(
+            "01234567-0123-0123-0123-0123456789ab",
+        );
+        const textarea = fixture.nativeElement.querySelector(
+            "#textarea-personality",
+        ) as HTMLTextAreaElement;
+        textarea.value = "Du bist pib.";
+        textarea.dispatchEvent(new Event("input"));
+        tick(1000);
+
+        expect(_voiceAssistantService.updatePersonalityById).toHaveBeenCalled();
+        expect(component.personality?.description).toBe("Du bist pib.");
+    }));
 
     it("should change the description of the personality when calling updateDescription", () => {
         const spyUpdateDescription = spyOn(

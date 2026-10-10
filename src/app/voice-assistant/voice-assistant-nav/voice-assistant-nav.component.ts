@@ -111,10 +111,11 @@ export class VoiceAssistantNavComponent implements OnInit, AfterViewChecked {
                         const redirect = this.getRedirectRoute();
                         if (redirect) {
                             this.selectedPersonalityId = redirect;
-                            this.router.navigate([redirect], {
+                            this.router.navigate([redirect, "chat"], {
                                 relativeTo: this.route,
                             });
                         } else {
+                            this.selectedPersonalityId = "";
                             this.router.navigate([this.defaultRoute]);
                         }
                     }

@@ -1,3 +1,4 @@
+import {Provider, provideZonelessChangeDetection} from "@angular/core";
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 
 import {VoiceAssistantNavComponent} from "./voice-assistant-nav.component";
@@ -5,8 +6,8 @@ import {RouterTestingModule} from "@angular/router/testing";
 import {ReactiveFormsModule} from "@angular/forms";
 import {BoolToOnOffPipe} from "../../shared/pipes/bool-to-on-off-pipe.pipe";
 import {SidebarElement} from "src/app/shared/interfaces/sidebar-element.interface";
-import {ActivatedRoute, Router} from "@angular/router";
-import {BehaviorSubject} from "rxjs";
+import {ActivatedRoute, Event, NavigationStart, Router} from "@angular/router";
+import {BehaviorSubject, Subject} from "rxjs";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {VoiceAssistant} from "src/app/shared/types/voice-assistant";
 import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
@@ -27,30 +28,6 @@ describe("VoiceAssistantNavComponent", () => {
 
     beforeEach(async () => {
         personalities = [];
-        const voiceAssistantServiceSpy = jasmine.createSpyObj(
-            "VoiceAssistantService",
-            [
-                "getPersonality",
-                "updatePersonalityById",
-                "deletePersonalityById",
-            ],
-            {
-                personalitiesSubject: new BehaviorSubject<VoiceAssistant[]>([]),
-                assistantModelsSubject: new BehaviorSubject([]),
-                personalities,
-            },
-        );
-        voiceAssistantServiceSpy.getPersonality.and.callFake((id: string) =>
-            personalities.find((item) => item.getUUID() === id),
-        );
-        const idle = visibleConversation({
-            voiceTurnedOn: false,
-            listening: false,
-            assistantSpeaking: false,
-            holderName: null,
-            keyStoreDegraded: false,
-            liveUnavailable: false,
-        });
         await TestBed.configureTestingModule({
             imports: [
                 RouterTestingModule,
@@ -58,49 +35,10 @@ describe("VoiceAssistantNavComponent", () => {
                 VoiceAssistantNavComponent,
                 BoolToOnOffPipe,
             ],
-            providers: [
-                {
-                    provide: VisibleStateService,
-                    useValue: {
-                        snapshot: idle,
-                        snapshot$: new BehaviorSubject(idle),
-                    },
-                },
-                {
-                    provide: VoiceAssistantService,
-                    useValue: voiceAssistantServiceSpy,
-                },
-                {
-                    provide: TokenService,
-                    useValue: {
-                        tokenStatus$: new BehaviorSubject({
-                            tokenExists: true,
-                            tokenActive: true,
-                        }),
-                    },
-                },
-                {
-                    provide: ChannelCapabilityService,
-                    useValue: {
-                        smartChatsEnabled$: new BehaviorSubject(true),
-                    },
-                },
-            ],
+            providers: navProviders(personalities),
         }).compileComponents();
         router = TestBed.inject(Router);
-        elements = [
-            new VoiceAssistant(
-                "01234567-0123-0123-0123-0123456789ab",
-                "123",
-                "Female",
-                0.8,
-                "A written personality",
-            ),
-            new VoiceAssistant("223", "223", "", 0, ""),
-            new VoiceAssistant("323", "323", "", 0, ""),
-            new VoiceAssistant("423", "424", "", 0, ""),
-            new VoiceAssistant("525", "525", "", 0, ""),
-        ];
+        elements = navElements();
         personalities.push(...(elements as VoiceAssistant[]));
         subject = new BehaviorSubject<SidebarElement[]>(elements);
         fixture = TestBed.createComponent(VoiceAssistantNavComponent);
@@ -347,7 +285,168 @@ describe("VoiceAssistantNavComponent", () => {
 
         expect(navigate).toHaveBeenCalled();
     });
+
+    it("opens the first remaining personality's chat when the active one is deleted", () => {
+        navigate.calls.reset();
+        const remaining = elements.slice(1);
+
+        subject.next(remaining);
+        fixture.detectChanges();
+
+        expect(navigate).toHaveBeenCalledOnceWith(
+            [remaining[0].getUUID(), "chat"],
+            {relativeTo: TestBed.inject(ActivatedRoute)},
+        );
+        expect(component.selectedPersonalityId).toBe(remaining[0].getUUID());
+        expect(personalitySelect(fixture).value).toBe(remaining[0].getUUID());
+        expect(
+            fixture.nativeElement
+                .querySelector("#active-personality-name")
+                .textContent.trim(),
+        ).toBe(remaining[0].getName());
+    });
+
+    it("lands on the empty voice assistant root without a loop when the last personality is deleted", () => {
+        component.defaultRoute = "/voice-assistant";
+        navigate.calls.reset();
+
+        subject.next([]);
+        fixture.detectChanges();
+
+        expect(navigate).toHaveBeenCalledOnceWith(["/voice-assistant"]);
+        expect(component.selectedPersonalityId).toBe("");
+        expect(component.activePersonalityName).toBe("");
+        expect(optionLabels(personalitySelect(fixture))).toEqual([]);
+
+        (router.events as Subject<Event>).next(
+            new NavigationStart(1, "/voice-assistant"),
+        );
+        expect(navigate).toHaveBeenCalledTimes(1);
+    });
+
+    it("keeps the current chat when an inactive personality is deleted", () => {
+        navigate.calls.reset();
+        const active = elements[0].getUUID();
+
+        subject.next(elements.filter((element) => element !== elements[2]));
+        fixture.detectChanges();
+
+        expect(navigate).not.toHaveBeenCalled();
+        expect(component.selectedPersonalityId).toBe(active);
+        expect(personalitySelect(fixture).value).toBe(active);
+        expect(optionLabels(personalitySelect(fixture))).not.toContain(
+            elements[2].getName(),
+        );
+    });
 });
+
+describe("VoiceAssistantNavComponent (zoneless)", () => {
+    it("refreshes the selection after the active personality is deleted", async () => {
+        const personalities: VoiceAssistant[] = [];
+        await TestBed.configureTestingModule({
+            imports: [RouterTestingModule, VoiceAssistantNavComponent],
+            providers: [
+                provideZonelessChangeDetection(),
+                ...navProviders(personalities),
+            ],
+        }).compileComponents();
+        const elements = navElements();
+        personalities.push(...(elements as VoiceAssistant[]));
+        const router = TestBed.inject(Router);
+        spyOnProperty(router, "url").and.returnValue(
+            "/voice-assistant/01234567-0123-0123-0123-0123456789ab",
+        );
+        const navigate = spyOn(router, "navigate").and.resolveTo(true);
+        const subject = new BehaviorSubject<SidebarElement[]>(elements);
+        const fixture = TestBed.createComponent(VoiceAssistantNavComponent);
+        fixture.componentInstance.subject = subject;
+        await fixture.whenStable();
+        navigate.calls.reset();
+
+        const remaining = elements.slice(1);
+        subject.next(remaining);
+        await fixture.whenStable();
+
+        expect(navigate).toHaveBeenCalledOnceWith(
+            [remaining[0].getUUID(), "chat"],
+            {relativeTo: TestBed.inject(ActivatedRoute)},
+        );
+        expect(personalitySelect(fixture).value).toBe(remaining[0].getUUID());
+        expect(
+            fixture.nativeElement
+                .querySelector("#active-personality-name")
+                .textContent.trim(),
+        ).toBe(remaining[0].getName());
+        TestBed.inject(NgbModal).dismissAll();
+    });
+});
+
+function navElements(): SidebarElement[] {
+    return [
+        new VoiceAssistant(
+            "01234567-0123-0123-0123-0123456789ab",
+            "123",
+            "Female",
+            0.8,
+            "A written personality",
+        ),
+        new VoiceAssistant("223", "223", "", 0, ""),
+        new VoiceAssistant("323", "323", "", 0, ""),
+        new VoiceAssistant("423", "424", "", 0, ""),
+        new VoiceAssistant("525", "525", "", 0, ""),
+    ];
+}
+
+function navProviders(personalities: VoiceAssistant[]): Provider[] {
+    const voiceAssistantServiceSpy = jasmine.createSpyObj(
+        "VoiceAssistantService",
+        ["getPersonality", "updatePersonalityById", "deletePersonalityById"],
+        {
+            personalitiesSubject: new BehaviorSubject<VoiceAssistant[]>([]),
+            assistantModelsSubject: new BehaviorSubject([]),
+            personalities,
+        },
+    );
+    voiceAssistantServiceSpy.getPersonality.and.callFake((id: string) =>
+        personalities.find((item) => item.getUUID() === id),
+    );
+    const idle = visibleConversation({
+        voiceTurnedOn: false,
+        listening: false,
+        assistantSpeaking: false,
+        holderName: null,
+        keyStoreDegraded: false,
+        liveUnavailable: false,
+    });
+    return [
+        {
+            provide: VisibleStateService,
+            useValue: {
+                snapshot: idle,
+                snapshot$: new BehaviorSubject(idle),
+            },
+        },
+        {
+            provide: VoiceAssistantService,
+            useValue: voiceAssistantServiceSpy,
+        },
+        {
+            provide: TokenService,
+            useValue: {
+                tokenStatus$: new BehaviorSubject({
+                    tokenExists: true,
+                    tokenActive: true,
+                }),
+            },
+        },
+        {
+            provide: ChannelCapabilityService,
+            useValue: {
+                smartChatsEnabled$: new BehaviorSubject(true),
+            },
+        },
+    ];
+}
 
 function personalitySelect(
     fixture: ComponentFixture<VoiceAssistantNavComponent>,
