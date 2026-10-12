@@ -13,6 +13,8 @@ import {provideHttpClientTesting} from "@angular/common/http/testing";
 import {By} from "@angular/platform-browser";
 import {provideZonelessChangeDetection} from "@angular/core";
 import {Program} from "src/app/shared/types/program";
+import {NgbModal, NgbModalRef} from "@ng-bootstrap/ng-bootstrap";
+import {ProgramCodeModalComponent} from "../program-code-modal/program-code-modal.component";
 
 describe("ProgramSplitscreenComponent", () => {
     let component: ProgramSplitscreenComponent;
@@ -183,6 +185,13 @@ describe("ProgramSplitscreenComponent", () => {
             .z-2{z-index:2!important}
         `;
         const TAB_STRIP_HEIGHT = 112;
+        const TOOLBAR_IDS = [
+            "export-btn",
+            "code-btn",
+            "save-btn",
+            "run-btn",
+            "toggle-btn",
+        ];
 
         let styleElement: HTMLStyleElement;
         let pageWrapper: HTMLDivElement;
@@ -256,12 +265,7 @@ describe("ProgramSplitscreenComponent", () => {
             mountInPage(1200);
             const editorRect = editor().getBoundingClientRect();
 
-            for (const id of [
-                "export-btn",
-                "save-btn",
-                "run-btn",
-                "toggle-btn",
-            ]) {
+            for (const id of TOOLBAR_IDS) {
                 expectInside(
                     button(id).getBoundingClientRect(),
                     editorRect,
@@ -277,12 +281,7 @@ describe("ProgramSplitscreenComponent", () => {
             expect(toolbar().scrollWidth).toBeLessThanOrEqual(
                 toolbar().clientWidth,
             );
-            for (const id of [
-                "export-btn",
-                "save-btn",
-                "run-btn",
-                "toggle-btn",
-            ]) {
+            for (const id of TOOLBAR_IDS) {
                 expectInside(
                     button(id).getBoundingClientRect(),
                     editorRect,
@@ -325,21 +324,43 @@ describe("ProgramSplitscreenComponent", () => {
         });
 
         it("should switch between normal and split view", () => {
+            const query = (selector: string) =>
+                fixture.nativeElement.querySelector(selector);
             expect(component.inSplitMode).toBeFalse();
 
             button("toggle-btn").click();
             fixture.detectChanges();
             expect(component.inSplitMode).toBeTrue();
-            expect(
-                fixture.nativeElement.querySelector("#python-code-area"),
-            ).not.toBeNull();
+            expect(query("#console-area")).not.toBeNull();
+            expect(query("#python-code-area")).toBeNull();
+            expect(query("app-python-code")).toBeNull();
 
             button("toggle-btn").click();
             fixture.detectChanges();
             expect(component.inSplitMode).toBeFalse();
-            expect(
-                fixture.nativeElement.querySelector("#python-code-area"),
-            ).toBeNull();
+            expect(query("#console-area")).toBeNull();
+        });
+
+        it("should place the code button between export and save", () => {
+            const code = button("code-btn");
+
+            expect(code.previousElementSibling).toBe(button("export-btn"));
+            expect(code.nextElementSibling).toBe(button("save-btn"));
+            expect(code.getAttribute("data-test")).toBe(
+                "BTN_Program_Show_Code",
+            );
+            expect(code.className).toBe(button("export-btn").className);
+            expect(code.querySelector("img")!.getAttribute("src")).toBe(
+                component.CODE,
+            );
+        });
+
+        it("should open the code modal when the code button is clicked", () => {
+            const showCodeSpy = spyOn(component, "showCode");
+
+            button("code-btn").click();
+
+            expect(showCodeSpy).toHaveBeenCalledTimes(1);
         });
 
         it("should keep save disabled until the program is edited", () => {
@@ -363,6 +384,58 @@ describe("ProgramSplitscreenComponent", () => {
             expect(save.querySelector("img")!.getAttribute("src")).toBe(
                 component.SAVE_ACTIVE,
             );
+        });
+    });
+
+    describe("code modal", () => {
+        let openSpy: jasmine.Spy;
+        let modalInstance: {code?: string};
+
+        beforeEach(() => {
+            modalInstance = {};
+            const modalRef = {
+                componentInstance: modalInstance,
+            } as NgbModalRef;
+            openSpy = spyOn(TestBed.inject(NgbModal), "open");
+            openSpy.and.returnValue(modalRef);
+        });
+
+        it("should open the code modal with the cerebra modal styling", () => {
+            component.showCode();
+
+            expect(openSpy).toHaveBeenCalledOnceWith(
+                ProgramCodeModalComponent,
+                jasmine.objectContaining({
+                    windowClass: "cerebra-modal",
+                    backdropClass: "cerebra-modal-backdrop",
+                }),
+            );
+        });
+
+        it("should compile the current workspace before the first run", () => {
+            expect(component.codePython).toBe("");
+            spyOnProperty(
+                component.workspaceComponent!,
+                "codePython",
+                "get",
+            ).and.returnValue("print('hello')\n");
+
+            component.showCode();
+
+            expect(modalInstance.code).toBe("print('hello')\n");
+            expect(component.codePython).toBe("print('hello')\n");
+        });
+
+        it("should not change the program when the code is shown", () => {
+            component.codeVisualOld = '{"some": "json"}';
+            component.codeVisualNew = component.codeVisualOld;
+
+            component.showCode();
+
+            expect(component.codeVisualNew).toBe(component.codeVisualOld);
+            expect(
+                programService.updateCodeByProgramNumber,
+            ).not.toHaveBeenCalled();
         });
     });
 });

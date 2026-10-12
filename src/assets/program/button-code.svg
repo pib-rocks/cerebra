@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="button-code" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 18.66 7.38">
+  <defs>
+    <style>
+      .st0 {
+        fill: #fff;
+      }
+
+      .st1 {
+        fill: none;
+        stroke: #fff;
+        stroke-width: .32px;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+    </style>
+  </defs>
+  <path class="st0" d="M17.23.28c.63,0,1.15.51,1.15,1.15v4.52c0,.63-.51,1.15-1.15,1.15H1.43c-.63,0-1.15-.51-1.15-1.15V1.43c0-.63.52-1.15,1.15-1.15h15.8M17.23,0H1.43C.64,0,0,.64,0,1.43v4.52c0,.79.64,1.43,1.43,1.43h15.8c.79,0,1.43-.64,1.43-1.43V1.43c0-.79-.64-1.43-1.43-1.43h0Z"/>
+  <g>
+    <polyline class="st1" points="2.9 2.4 1.95 3.69 2.9 4.98"/>
+    <line class="st1" x1="3.78" y1="2.2" x2="3.3" y2="5.18"/>
+    <polyline class="st1" points="4.18 2.4 5.13 3.69 4.18 4.98"/>
+  </g>
+  <g transform="translate(1.2 0)">
+    <path class="st1" d="M8.23,2.84A1.1,1.375,0,1,0,8.23,4.79"/>
+    <ellipse class="st1" cx="9.55" cy="4.13" rx=".75" ry=".97"/>
+    <ellipse class="st1" cx="11.5" cy="4.13" rx=".72" ry=".97"/>
+    <line class="st1" x1="12.22" y1="2.44" x2="12.22" y2="5.19"/>
+    <path class="st1" d="M12.95,4.13H14.45A.75,.97,0,1,0,14.23,4.82"/>
+  </g>
+</svg>

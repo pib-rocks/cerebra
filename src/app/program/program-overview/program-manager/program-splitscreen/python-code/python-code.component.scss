@@ -6,6 +6,6 @@
 
 .wrapper {
     background-color: $black-light-1;
-    overflow-y: scroll;
-    height: 0px;
+    overflow: auto;
+    max-height: 60vh;
 }

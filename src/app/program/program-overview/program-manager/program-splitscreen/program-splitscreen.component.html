@@ -14,6 +14,17 @@
                 alt="Program export button" />
         </button>
         <button
+            id="code-btn"
+            data-test="BTN_Program_Show_Code"
+            type="button"
+            (click)="showCode()"
+            class="workspaceButton p-0">
+            <img
+                [src]="CODE"
+                width="75px"
+                alt="Show program code button" />
+        </button>
+        <button
             id="save-btn"
             data-test="BTN_Program_Save"
             type="button"
@@ -72,19 +83,10 @@
         <as-split-area
             [size]="50"
             class="split-screen-lower">
-            <as-split direction="horizontal">
-                <as-split-area
-                    id="python-code-area"
-                    [size]="50">
-                    <app-python-code [code]="codePython"></app-python-code>
-                </as-split-area>
-                <as-split-area [size]="50">
-                    <app-console
-                        [programLogs$]="programLogs$"
-                        (programInput)="onProgramInputReceived($event)"
-                        [programState$]="programState$"></app-console>
-                </as-split-area>
-            </as-split>
+            <app-console
+                [programLogs$]="programLogs$"
+                (programInput)="onProgramInputReceived($event)"
+                [programState$]="programState$"></app-console>
         </as-split-area>
         }
     </as-split>
