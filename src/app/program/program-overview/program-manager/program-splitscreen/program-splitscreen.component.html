@@ -53,12 +53,12 @@
             type="button"
             class="workspaceButton"
             [attr.aria-pressed]="inSplitMode"
-            title="Toggle the split view with the console"
+            title="Show the console log"
             (click)="inSplitMode = !inSplitMode">
             <img
-                [src]="inSplitMode ? SPLIT_ACTIVE : SPLIT_INACTIVE"
+                [src]="inSplitMode ? LOG_ACTIVE : LOG_INACTIVE"
                 width="75px"
-                alt="Toggle between the block view and the split view with the console" />
+                alt="Toggle the console log view" />
         </button>
     </div>
     <as-split direction="vertical">

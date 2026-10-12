@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg id="button-split-inactive" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 18.66 7.38">
-  <!-- Same banner geometry as button-save-inactive.svg: outline only while the console is closed. -->
-  <path fill="#fff" d="M17.23.28c.63,0,1.15.51,1.15,1.15v4.52c0,.63-.51,1.15-1.15,1.15H1.43c-.63,0-1.15-.51-1.15-1.15V1.43c0-.63.52-1.15,1.15-1.15h15.8M17.23,0H1.43C.64,0,0,.64,0,1.43v4.52c0,.79.64,1.43,1.43,1.43h15.8c.79,0,1.43-.64,1.43-1.43V1.43c0-.79-.64-1.43-1.43-1.43h0Z"/>
-  <rect x="6.29" y="0.65" width="6.08" height="6.08" rx=".85" ry=".85" fill="none" stroke="#fff" stroke-width=".32"/>
-  <rect x="7.149" y="1.509" width="4.365" height="2.184" rx=".25" ry=".25" fill="#fff" opacity=".6"/>
-  <rect x="7.149" y="4.095" width="2.009" height="1.773" rx=".24" ry=".24" fill="#fff" opacity=".6"/>
-  <rect x="9.458" y="4.095" width="2.056" height="1.773" rx=".24" ry=".24" fill="#fff" opacity=".6"/>
-</svg>
