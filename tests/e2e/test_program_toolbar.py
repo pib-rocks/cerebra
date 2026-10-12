@@ -1,6 +1,6 @@
-"""Browser E2E checks for the Blockly program toolbar (PR-1973).
+"""Browser E2E checks for the Blockly program toolbar (PR-1973, PR-1982).
 
-The toolbar (export, save, run/stop, normal/split toggle) is absolutely
+The toolbar (export, code, save, run/stop, normal/split toggle) is absolutely
 positioned. When it lost its positioned editor ancestor it anchored to the app
 shell and slid behind the program navigation tabs, where every control
 hit-tested to the tabs instead of the button. These tests check geometry and
@@ -27,7 +27,7 @@ pytestmark = pytest.mark.skipif(
     not BASE_URL, reason="set PIB_ROBOT_URL to run program toolbar E2E tests"
 )
 
-TOOLBAR_IDS = ("export-btn", "save-btn", "run-btn", "toggle-btn")
+TOOLBAR_IDS = ("export-btn", "code-btn", "save-btn", "run-btn", "toggle-btn")
 TOLERANCE = 1.0
 
 VIEWPORTS = {
@@ -167,13 +167,124 @@ def test_save_is_disabled_for_an_unchanged_program(page):
 def test_split_toggle_switches_views_and_stays_reachable(page):
     open_first_program(page)
     collapse_navigation(page)
-    python_area = page.locator("#python-code-area")
-    assert python_area.count() == 0
+    console_area = page.locator("#console-area")
+    assert console_area.count() == 0
 
     page.locator("#toggle-btn").click()
-    python_area.wait_for(state="visible")
+    console_area.wait_for(state="visible")
+    assert page.locator("#python-code-area").count() == 0, (
+        "the split screen must no longer show the generated source"
+    )
+    assert page.locator("app-program-splitscreen app-python-code").count() == 0
     assert_toolbar_reachable(page, "split view")
 
     page.locator("#toggle-btn").click()
-    python_area.wait_for(state="detached")
+    console_area.wait_for(state="detached")
     assert_toolbar_reachable(page, "normal view")
+
+
+def open_code_modal(page):
+    page.locator("#code-btn").click()
+    dialog = page.locator('[data-test="DLG_Program_Code"]')
+    dialog.wait_for(state="visible")
+    return dialog
+
+
+def workspace_has_blocks(page):
+    return page.locator("#blocklyDiv .blocklyBlockCanvas > g").count() > 0
+
+
+def shown_code(page, dialog):
+    """The code in the modal, once highlighting has rendered it."""
+    code = dialog.locator("app-python-code #python-code")
+    code.wait_for(state="attached")
+    if workspace_has_blocks(page):
+        try:
+            page.wait_for_function(
+                "() => document.querySelector("
+                "'[data-test=\"DLG_Program_Code\"] #python-code')"
+                ".textContent.trim() !== ''",
+                timeout=5000,
+            )
+        except playwright_sync.TimeoutError:
+            pytest.fail("the modal opened empty although the program has blocks")
+    return code.text_content()
+
+
+def test_code_button_opens_modal_with_the_source(page):
+    open_first_program(page)
+    collapse_navigation(page)
+    assert page.locator('[data-test="DLG_Program_Code"]').count() == 0
+
+    dialog = open_code_modal(page)
+
+    shown_code(page, dialog)
+    assert dialog.locator("button").count() == 2, "exactly close and copy"
+    assert dialog.locator('[data-test="BTN_Program_Code_Close"]').is_visible()
+    assert dialog.locator('[data-test="BTN_Program_Code_Copy"]').is_visible()
+    assert dialog.locator("textarea, input, [contenteditable=true]").count() == 0, (
+        "the code must be read-only"
+    )
+
+
+def test_code_modal_close_leaves_the_editor_unchanged(page):
+    open_first_program(page)
+    collapse_navigation(page)
+    blocks_before = page.locator("#blocklyDiv .blocklyBlockCanvas > g").count()
+
+    dialog = open_code_modal(page)
+    dialog.locator('[data-test="BTN_Program_Code_Close"]').click()
+    dialog.wait_for(state="detached")
+
+    assert page.locator("#blocklyDiv .blocklyBlockCanvas > g").count() == blocks_before
+    assert page.locator("#save-btn").is_disabled(), (
+        "opening and closing the code view must not mark the program as edited"
+    )
+    assert_toolbar_reachable(page, "after closing the code modal")
+
+
+# Over plain HTTP on the robot IP navigator.clipboard does not exist, so the
+# copy goes through a hidden textarea and execCommand("copy"). This removes the
+# API (as on the robot) and records what was selected when "copy" ran, instead
+# of reading the clipboard back, which the insecure context forbids.
+RECORD_FALLBACK_COPY_JS = """
+() => {
+    Object.defineProperty(navigator, "clipboard", {
+        value: undefined,
+        configurable: true,
+    });
+    window.__copied = null;
+    const execCommand = document.execCommand.bind(document);
+    document.execCommand = (command, ...args) => {
+        const result = execCommand(command, ...args);
+        if (command === "copy") {
+            const el = document.activeElement;
+            window.__copied = {
+                text: el && el.tagName === "TEXTAREA" ? el.value : null,
+                result,
+            };
+        }
+        return result;
+    };
+}
+"""
+
+
+def test_code_modal_copies_the_complete_code(page):
+    open_first_program(page)
+    collapse_navigation(page)
+    page.evaluate(RECORD_FALLBACK_COPY_JS)
+
+    dialog = open_code_modal(page)
+    shown = shown_code(page, dialog)
+
+    dialog.locator('[data-test="BTN_Program_Code_Copy"]').click()
+    dialog.locator('[data-test="TXT_Program_Code_Copied"]').wait_for(state="visible")
+
+    copied = page.evaluate("() => window.__copied")
+    assert copied is not None, "copy did not use the execCommand fallback"
+    assert copied["result"] is True, "execCommand('copy') reported failure"
+    assert copied["text"] == shown, "the copied text differs from the shown code"
+    assert dialog.locator("textarea").count() == 0, (
+        "the hidden textarea must be removed after copying"
+    )

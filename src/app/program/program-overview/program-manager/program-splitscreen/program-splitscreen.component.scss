@@ -14,10 +14,10 @@
     max-width: 100%;
 }
 
-// The overlaid toolbar (about 560px) only clears the Blockly category toolbox
+// The overlaid toolbar (about 650px) only clears the Blockly category toolbox
 // (about 140px from the editor's left edge) in a wide editor. In a narrower
 // one it moves into the flow above the workspace, so neither covers the other.
-@container (max-width: 720px) {
+@container (max-width: 810px) {
     .program-toolbar {
         position: static !important;
         padding: 0 0 0.5rem !important;
