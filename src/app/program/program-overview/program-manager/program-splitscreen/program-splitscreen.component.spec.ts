@@ -326,11 +326,24 @@ describe("ProgramSplitscreenComponent", () => {
         it("should switch between normal and split view", () => {
             const query = (selector: string) =>
                 fixture.nativeElement.querySelector(selector);
+            const icon = () => button("toggle-btn").querySelector("img");
             expect(component.inSplitMode).toBeFalse();
+            expect(button("toggle-btn").getAttribute("aria-pressed")).toBe(
+                "false",
+            );
+            expect(icon()?.getAttribute("src")).toContain(
+                "button-split-inactive",
+            );
 
             button("toggle-btn").click();
             fixture.detectChanges();
             expect(component.inSplitMode).toBeTrue();
+            expect(button("toggle-btn").getAttribute("aria-pressed")).toBe(
+                "true",
+            );
+            expect(icon()?.getAttribute("src")).toContain(
+                "button-split-active",
+            );
             expect(query("#console-area")).not.toBeNull();
             expect(query("#python-code-area")).toBeNull();
             expect(query("app-python-code")).toBeNull();
@@ -338,7 +351,21 @@ describe("ProgramSplitscreenComponent", () => {
             button("toggle-btn").click();
             fixture.detectChanges();
             expect(component.inSplitMode).toBeFalse();
+            expect(icon()?.getAttribute("src")).toContain(
+                "button-split-inactive",
+            );
             expect(query("#console-area")).toBeNull();
+        });
+
+        it("should show the toggle as one button in the button row, without the old mode icons", () => {
+            const toolbar = button("toggle-btn").parentElement as HTMLElement;
+            expect(toolbar.children.length).toBe(5);
+            // The toggle is the last DOM child and the first button visually (flex-row-reverse).
+            expect((toolbar.children[4] as HTMLElement).id).toBe("toggle-btn");
+            expect(
+                fixture.nativeElement.querySelectorAll(".view-mode-icon")
+                    .length,
+            ).toBe(0);
         });
 
         it("should place the code button between export and save", () => {
