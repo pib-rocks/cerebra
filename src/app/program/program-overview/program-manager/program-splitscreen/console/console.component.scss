@@ -18,10 +18,21 @@
     font-family: Consolas, "Courier New", monospace;
 }
 
+// The console fills the split area it sits in. Before the source pane moved into its own modal
+// (PR-1982) it lived in a nested split whose height the split library set, so `height: 0px` was
+// enough; as an area's only child the wrapper has to size itself, otherwise it collapses to its
+// padding (48px) inside a 214px area and the log lines float above empty space.
+:host {
+    display: block;
+    height: 100%;
+    min-height: 0;
+}
+
 .wrapper {
     background-color: $blue-dark-4;
     overflow-y: scroll;
-    height: 0px;
+    height: 100%;
+    min-height: 0;
     overflow-wrap: break-word;
 
     > :first-child {
