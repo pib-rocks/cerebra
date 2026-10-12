@@ -47,27 +47,19 @@
                 width="75px"
                 alt="Program save button" />
         </button>
-        <div class="toggle-btn-icon">
-            <img
-                class="view-mode-icon"
-                [src]="SPLIT_SCREEN"
-                alt="icon for split-screen-view" />
-        </div>
         <button
             id="toggle-btn"
             data-test="TGL_Split_Screen"
+            type="button"
             class="workspaceButton"
+            [attr.aria-pressed]="inSplitMode"
+            title="Toggle the split view with the console"
             (click)="inSplitMode = !inSplitMode">
             <img
-                [src]="inSplitMode ? TOGGLE_RIGHT : TOGGLE_LEFT"
-                alt="Toggle for switching between normal and split screen view" />
+                [src]="inSplitMode ? SPLIT_ACTIVE : SPLIT_INACTIVE"
+                width="75px"
+                alt="Toggle between the block view and the split view with the console" />
         </button>
-        <div class="toggle-btn-icon">
-            <img
-                class="view-mode-icon"
-                [src]="FULL_SCREEN"
-                alt="icon for split-screen-view" />
-        </div>
     </div>
     <as-split direction="vertical">
         <as-split-area

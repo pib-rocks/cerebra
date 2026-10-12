@@ -57,14 +57,14 @@ export class ProgramSplitscreenComponent implements OnInit {
 
     readonly PLAY = "../../assets/program/button-run-play.svg";
     readonly STOP = "../../assets/program/button-run-stop.svg";
-    readonly TOGGLE_LEFT = "../../assets/toggle-switch-left.png";
-    readonly TOGGLE_RIGHT = "../../assets/toggle-switch-right.png";
     readonly SAVE_ACTIVE = "../../assets/program/button-save-active.svg";
     readonly SAVE_INACTIVE = "../../assets/program/button-save-inactive.svg";
     readonly EXPORT = "../../assets/program/button-export.svg";
     readonly CODE = "../../assets/program/button-code.svg";
-    readonly FULL_SCREEN = "../../../../assets/program/icon-full-screen.svg";
-    readonly SPLIT_SCREEN = "../../../../assets/program/icon-split-screen.svg";
+    // The split-view toggle is a single button like Save/Run: the banner is filled while the
+    // console is open, an outline while it is closed.
+    readonly SPLIT_ACTIVE = "../../assets/program/button-split-active.svg";
+    readonly SPLIT_INACTIVE = "../../assets/program/button-split-inactive.svg";
 
     constructor(
         private programService: ProgramService,
