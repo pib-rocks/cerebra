@@ -332,7 +332,7 @@ describe("ProgramSplitscreenComponent", () => {
                 "false",
             );
             expect(icon()?.getAttribute("src")).toContain(
-                "button-split-inactive",
+                "button-log-inactive",
             );
 
             button("toggle-btn").click();
@@ -341,9 +341,7 @@ describe("ProgramSplitscreenComponent", () => {
             expect(button("toggle-btn").getAttribute("aria-pressed")).toBe(
                 "true",
             );
-            expect(icon()?.getAttribute("src")).toContain(
-                "button-split-active",
-            );
+            expect(icon()?.getAttribute("src")).toContain("button-log-active");
             expect(query("#console-area")).not.toBeNull();
             expect(query("#python-code-area")).toBeNull();
             expect(query("app-python-code")).toBeNull();
@@ -352,7 +350,7 @@ describe("ProgramSplitscreenComponent", () => {
             fixture.detectChanges();
             expect(component.inSplitMode).toBeFalse();
             expect(icon()?.getAttribute("src")).toContain(
-                "button-split-inactive",
+                "button-log-inactive",
             );
             expect(query("#console-area")).toBeNull();
         });
