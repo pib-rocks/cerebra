@@ -120,6 +120,13 @@ export class CameraComponent implements OnInit, OnDestroy {
     refreshRateReceiver$!: Observable<number[]>;
     isLoading = false;
     toggleCamera = new FormControl(false);
+
+    /**
+     * True once ngOnInit started the camera for this visit. The stored settings may still say the
+     * camera is inactive while the page shows a live picture, so the toggle has to follow what the
+     * user actually sees.
+     */
+    private cameraStartedOnEntry = false;
     imageSrc!: string;
     selectedSize!: string;
     cameraActiveIcon =
@@ -184,6 +191,13 @@ export class CameraComponent implements OnInit, OnDestroy {
     ngOnInit(): void {
         this.imageSrc = "../../assets/camera-placeholder.jpg";
         this.startCamera();
+        // Entering the page starts the camera, so the picture is live immediately. Mirror that in the
+        // toggle instead of the stored settings, which left a running video looking switched off.
+        this.cameraStartedOnEntry = true;
+        if (this.cameraSettings) {
+            this.cameraSettings.isActive = true;
+        }
+        this.toggleCamera.setValue(true);
         this.cameraReceiverSubscription =
             this.cameraService.cameraReciver$.subscribe((message) => {
                 this.receiveCameraFrame(message);
@@ -551,6 +565,9 @@ export class CameraComponent implements OnInit, OnDestroy {
     }
 
     toggleCameraState() {
+        // The user takes over here: from now on the stored settings decide again, instead of the
+        // "page started the camera" state forced on entry.
+        this.cameraStartedOnEntry = false;
         if (!this.cameraSettings!.isActive) {
             this.startCamera();
         } else {
@@ -597,7 +614,11 @@ export class CameraComponent implements OnInit, OnDestroy {
         this.cameraSettingsSubscription =
             this.cameraService.cameraSettings.subscribe(
                 (message: CameraSettings) => {
+                    if (this.cameraStartedOnEntry) {
+                        message.isActive = true;
+                    }
                     this.cameraSettings = message;
+                    this.toggleCamera.setValue(message.isActive ?? false);
                     this.changeDetectorRef.markForCheck();
                 },
             );
