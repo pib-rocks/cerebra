@@ -1,6 +1,9 @@
 import {TestBed} from "@angular/core/testing";
 import {Observable} from "rxjs";
-import {MicrophoneArrayRosbridgeService} from "./microphone-array-rosbridge.service";
+import {
+    MicrophoneArrayRosbridgeService,
+    PARAMETER_READ_TIMEOUT_MS,
+} from "./microphone-array-rosbridge.service";
 
 interface SentMessage {
     op: string;
@@ -197,21 +200,29 @@ describe("MicrophoneArrayRosbridgeService", () => {
     });
 
     describe("service call correlation", () => {
-        it("queues a request made before the socket is open and sends it on open", () => {
+        it("fails a request made before the socket is open instead of hanging", () => {
             service.connect();
             const socket = FakeWebSocket.instances[0];
-            record(service.getParameter("/doa_publisher:led_mode"));
+            const read = record(
+                service.getParameter("/doa_publisher:led_mode"),
+            );
 
+            expect(read.errors.length).toBe(1);
+            expect(read.errors[0].message).toBe(
+                "Reading /doa_publisher:led_mode failed: Rosbridge is not connected.",
+            );
             expect(socket.sent).toEqual([]);
 
             socket.open();
-            const requests = serviceCalls(socket, "/rosapi/get_param");
+            jasmine.clock().tick(PARAMETER_READ_TIMEOUT_MS);
 
-            expect(requests.length).toBe(1);
-            expect(requests[0].args).toEqual({
-                name: "/doa_publisher:led_mode",
-            });
-            expect(requests[0].id).toBeTruthy();
+            expect(serviceCalls(socket, "/rosapi/get_param").length).toBe(0);
+            expect(read.errors).toEqual([
+                jasmine.objectContaining({
+                    message:
+                        "Reading /doa_publisher:led_mode failed: Rosbridge is not connected.",
+                }),
+            ]);
         });
 
         it("answers the request whose id matches the service_response", () => {
@@ -405,24 +416,33 @@ describe("MicrophoneArrayRosbridgeService", () => {
             });
 
             expect(read.values).toEqual([]);
-            expect(read.errors[0].message).toBe("Parameter not set");
+            expect(read.errors[0].message).toBe(
+                "Reading /doa_publisher:not_a_parameter was refused: Parameter not set",
+            );
         });
     });
 
     describe("requests without an answer", () => {
-        // The client has no request timeout: a pending call is only released
-        // when the socket drops. Waiting alone never fails it.
-        it("keeps an unanswered request pending while the socket stays up", () => {
+        it("fails an unanswered get_param when the read budget elapses", () => {
             connectAndOpen();
             const read = record(
                 service.getParameter("/doa_publisher:led_mode"),
             );
 
-            jasmine.clock().tick(60000);
+            jasmine.clock().tick(PARAMETER_READ_TIMEOUT_MS - 1);
 
             expect(read.values).toEqual([]);
             expect(read.errors).toEqual([]);
             expect(read.completed).toBeFalse();
+
+            jasmine.clock().tick(1);
+
+            expect(read.values).toEqual([]);
+            expect(read.completed).toBeFalse();
+            expect(read.errors.length).toBe(1);
+            expect(read.errors[0].message).toBe(
+                "Reading /doa_publisher:led_mode timed out after 2500 ms.",
+            );
         });
 
         it("fails a pending request when the socket errors", () => {
@@ -690,6 +710,144 @@ describe("MicrophoneArrayRosbridgeService", () => {
             });
 
             expect(service.doaAngle$.value).toBeUndefined();
+        });
+    });
+
+    describe("named parameter read failures", () => {
+        function answer(
+            socket: FakeWebSocket,
+            body: {
+                result?: boolean;
+                values?: object | null;
+            },
+        ): void {
+            const request = serviceCalls(socket, "/rosapi/get_param").slice(
+                -1,
+            )[0];
+            socket.receive({
+                op: "service_response",
+                id: request.id,
+                service: "/rosapi/get_param",
+                result: body.result,
+                values: body.values,
+            });
+        }
+
+        it("names a refused read and keeps the node's reason", () => {
+            const socket = connectAndOpen();
+            const read = record(
+                service.getParameter("/doa_publisher:led_mode"),
+            );
+
+            answer(socket, {
+                result: true,
+                values: {
+                    successful: false,
+                    reason: "Parameter not set",
+                    value: "",
+                },
+            });
+
+            expect(read.values).toEqual([]);
+            expect(read.errors.length).toBe(1);
+            expect(read.errors[0].message).toBe(
+                "Reading /doa_publisher:led_mode was refused: Parameter not set",
+            );
+        });
+
+        it("names a refusal that arrives without a reason", () => {
+            const socket = connectAndOpen();
+            const read = record(
+                service.getParameter("/doa_publisher:led_color"),
+            );
+
+            answer(socket, {
+                result: true,
+                values: {successful: false, reason: "", value: ""},
+            });
+
+            expect(read.errors[0].message).toBe(
+                "Reading /doa_publisher:led_color was refused: no reason given",
+            );
+        });
+
+        it("names a rosbridge timeout that returns no value", () => {
+            const socket = connectAndOpen();
+            const read = record(
+                service.getParameter("/doa_publisher:AGCMAXGAIN"),
+            );
+
+            answer(socket, {result: false, values: null});
+
+            expect(read.values).toEqual([]);
+            expect(read.errors.length).toBe(1);
+            expect(read.errors[0].message).toBe(
+                "Reading /doa_publisher:AGCMAXGAIN returned no value (rosbridge/rosapi did not answer in time).",
+            );
+        });
+
+        it("names an empty parameter value", () => {
+            const socket = connectAndOpen();
+            const read = record(service.getParameter("/doa_publisher:preset"));
+
+            answer(socket, {
+                result: true,
+                values: {successful: true, reason: "", value: ""},
+            });
+
+            expect(read.errors[0].message).toBe(
+                "Reading /doa_publisher:preset returned an empty value.",
+            );
+        });
+
+        it("names a non-string parameter value as empty", () => {
+            const socket = connectAndOpen();
+            const read = record(
+                service.getParameter("/doa_publisher:led_brightness"),
+            );
+
+            answer(socket, {
+                result: true,
+                values: {successful: true, reason: "", value: 16},
+            });
+
+            expect(read.errors[0].message).toBe(
+                "Reading /doa_publisher:led_brightness returned an empty value.",
+            );
+        });
+
+        it("names a malformed parameter value", () => {
+            const socket = connectAndOpen();
+            const read = record(
+                service.getParameter("/doa_publisher:led_mode"),
+            );
+
+            answer(socket, {
+                result: true,
+                values: {successful: true, reason: "", value: "{"},
+            });
+
+            expect(read.errors[0].message).toBe(
+                "Reading /doa_publisher:led_mode returned a malformed value.",
+            );
+        });
+
+        it("fails immediately when the socket was never opened", () => {
+            const read = record(
+                service.getParameter("/doa_publisher:led_mode"),
+            );
+
+            expect(read.errors.length).toBe(1);
+            expect(read.errors[0].message).toBe(
+                "Reading /doa_publisher:led_mode failed: Rosbridge is not connected.",
+            );
+
+            jasmine.clock().tick(PARAMETER_READ_TIMEOUT_MS);
+
+            expect(read.errors.length).toBe(1);
+            expect(read.values).toEqual([]);
+            expect(read.completed).toBeFalse();
+            expect(FakeWebSocket.instances.length).toBe(0);
         });
     });
 });

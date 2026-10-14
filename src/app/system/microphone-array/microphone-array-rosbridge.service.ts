@@ -1,5 +1,13 @@
 import {Injectable} from "@angular/core";
-import {BehaviorSubject, Observable, Subject, map} from "rxjs";
+import {
+    BehaviorSubject,
+    Observable,
+    Subject,
+    catchError,
+    map,
+    throwError,
+    timeout,
+} from "rxjs";
 import {UrlConstants} from "src/app/shared/services/url.constants";
 
 export type RosbridgeConnectionState =
@@ -24,6 +32,11 @@ interface PendingServiceCall {
     response: Subject<RosbridgeServiceResponse>;
     message: object;
 }
+
+// A single /rosapi/get_param answered in 700 ms (p50, idle) and 963 ms (p50) max 1222 ms while
+// the local STT held all four cores of the Pi (test robot 192.168.1.172, 2026-10-14). The budget
+// is the upper bound of that measurement plus headroom, so one slow read cannot hang the panel.
+export const PARAMETER_READ_TIMEOUT_MS = 2500;
 
 @Injectable({
     providedIn: "root",
@@ -80,21 +93,65 @@ export class MicrophoneArrayRosbridgeService {
 
     getParameter<T>(name: string): Observable<T> {
         return this.callService("/rosapi/get_param", {name}).pipe(
+            catchError((error: unknown) => {
+                if (
+                    error instanceof Error &&
+                    error.message === "Rosbridge is not connected."
+                ) {
+                    return throwError(
+                        () =>
+                            new Error(
+                                "Reading " +
+                                    name +
+                                    " failed: Rosbridge is not connected.",
+                            ),
+                    );
+                }
+                return throwError(() => error);
+            }),
+            timeout({
+                first: PARAMETER_READ_TIMEOUT_MS,
+                with: () =>
+                    throwError(
+                        () =>
+                            new Error(
+                                "Reading " +
+                                    name +
+                                    " timed out after " +
+                                    PARAMETER_READ_TIMEOUT_MS +
+                                    " ms.",
+                            ),
+                    ),
+            }),
             map((response) => {
                 const values = response.values;
                 if (values?.successful === false) {
-                    throw new Error(values.reason ?? "");
-                }
-                if (
-                    response.result === false ||
-                    values?.successful !== true ||
-                    typeof values.value !== "string"
-                ) {
                     throw new Error(
-                        values?.reason || "Rosbridge parameter read failed.",
+                        "Reading " +
+                            name +
+                            " was refused: " +
+                            (values.reason || "no reason given"),
                     );
                 }
-                return JSON.parse(values.value) as T;
+                if (response.result === false || values == null) {
+                    throw new Error(
+                        "Reading " +
+                            name +
+                            " returned no value (rosbridge/rosapi did not answer in time).",
+                    );
+                }
+                if (typeof values.value !== "string" || values.value === "") {
+                    throw new Error(
+                        "Reading " + name + " returned an empty value.",
+                    );
+                }
+                try {
+                    return JSON.parse(values.value) as T;
+                } catch {
+                    throw new Error(
+                        "Reading " + name + " returned a malformed value.",
+                    );
+                }
             }),
         );
     }
@@ -286,6 +343,9 @@ export class MicrophoneArrayRosbridgeService {
 
         if (this.socket?.readyState === WebSocket.OPEN) {
             this.socket.send(JSON.stringify(message));
+        } else {
+            this.pendingCalls.delete(id);
+            response.error(new Error("Rosbridge is not connected."));
         }
         return response.asObservable();
     }

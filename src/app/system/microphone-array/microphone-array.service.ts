@@ -1,11 +1,13 @@
 import {Injectable} from "@angular/core";
 import {
     combineLatest,
-    forkJoin,
+    concatMap,
+    from,
     map,
     Observable,
     switchMap,
     throwError,
+    toArray,
 } from "rxjs";
 import {ApiService} from "src/app/shared/services/api.service";
 import {UrlConstants} from "src/app/shared/services/url.constants";
@@ -123,6 +125,24 @@ export class MicrophoneArrayService {
     // The launch file pins this node name.
     private static readonly NODE_NAME = "/doa_publisher";
 
+    private static readonly TUNING_READ_ORDER = [
+        "preset",
+        "led_mode",
+        "led_brightness",
+        "led_color",
+        "vad_led",
+        "AGCONOFF",
+        "AGCMAXGAIN",
+        "AGCDESIREDLEVEL",
+        "AGCTIME",
+        "HPFONOFF",
+        "ECHOONOFF",
+        "STATNOISEONOFF",
+        "STATNOISEONOFF_SR",
+        "NONSTATNOISEONOFF",
+        "NONSTATNOISEONOFF_SR",
+    ] as const;
+
     constructor(
         private apiService: ApiService,
         private rosbridge: MicrophoneArrayRosbridgeService,
@@ -171,45 +191,45 @@ export class MicrophoneArrayService {
     }
 
     getTuning(): Observable<MicrophoneArrayViewModel> {
-        return forkJoin({
-            preset: this.getParameter<MicrophoneArrayPreset>("preset"),
-            ledMode: this.getParameter<LedRingMode>("led_mode"),
-            ledBrightness: this.getParameter<number>("led_brightness"),
-            ledColor: this.getParameter<string>("led_color"),
-            vadLed: this.getParameter<0 | 1>("vad_led"),
-            agcEnabled: this.getParameter<0 | 1>("AGCONOFF"),
-            agcMaxGain: this.getParameter<number>("AGCMAXGAIN"),
-            agcDesiredLevel: this.getParameter<number>("AGCDESIREDLEVEL"),
-            agcTime: this.getParameter<number>("AGCTIME"),
-            highPassFilter: this.getParameter<HighPassFilterValue>("HPFONOFF"),
-            echoEnabled: this.getParameter<0 | 1>("ECHOONOFF"),
-            stationaryNoiseSuppression: this.getParameter<0 | 1>(
-                "STATNOISEONOFF",
-            ),
-            stationaryNoiseSuppressionSr: this.getParameter<0 | 1>(
-                "STATNOISEONOFF_SR",
-            ),
-            nonStationaryNoiseSuppression: this.getParameter<0 | 1>(
-                "NONSTATNOISEONOFF",
-            ),
-            nonStationaryNoiseSuppressionSr: this.getParameter<0 | 1>(
-                "NONSTATNOISEONOFF_SR",
-            ),
-        }).pipe(
-            map((parameters) => ({
-                ...parameters,
-                vadLed: parameters.vadLed === 1,
-                agcEnabled: parameters.agcEnabled === 1,
-                echoEnabled: parameters.echoEnabled === 1,
-                stationaryNoiseSuppression:
-                    parameters.stationaryNoiseSuppression === 1,
-                stationaryNoiseSuppressionSr:
-                    parameters.stationaryNoiseSuppressionSr === 1,
-                nonStationaryNoiseSuppression:
-                    parameters.nonStationaryNoiseSuppression === 1,
-                nonStationaryNoiseSuppressionSr:
-                    parameters.nonStationaryNoiseSuppressionSr === 1,
-            })),
+        // 15 sequential reads, each bounded by PARAMETER_READ_TIMEOUT_MS (2500 ms).
+        // A failing read stops the sequence and the caller receives the named cause
+        // (the old code hung or answered generically).
+        return from(MicrophoneArrayService.TUNING_READ_ORDER).pipe(
+            concatMap((name) => this.getParameter<unknown>(name)),
+            toArray(),
+            map((values) => {
+                const parameters = {
+                    preset: values[0] as MicrophoneArrayPreset,
+                    ledMode: values[1] as LedRingMode,
+                    ledBrightness: values[2] as number,
+                    ledColor: values[3] as string,
+                    vadLed: values[4] as 0 | 1,
+                    agcEnabled: values[5] as 0 | 1,
+                    agcMaxGain: values[6] as number,
+                    agcDesiredLevel: values[7] as number,
+                    agcTime: values[8] as number,
+                    highPassFilter: values[9] as HighPassFilterValue,
+                    echoEnabled: values[10] as 0 | 1,
+                    stationaryNoiseSuppression: values[11] as 0 | 1,
+                    stationaryNoiseSuppressionSr: values[12] as 0 | 1,
+                    nonStationaryNoiseSuppression: values[13] as 0 | 1,
+                    nonStationaryNoiseSuppressionSr: values[14] as 0 | 1,
+                };
+                return {
+                    ...parameters,
+                    vadLed: parameters.vadLed === 1,
+                    agcEnabled: parameters.agcEnabled === 1,
+                    echoEnabled: parameters.echoEnabled === 1,
+                    stationaryNoiseSuppression:
+                        parameters.stationaryNoiseSuppression === 1,
+                    stationaryNoiseSuppressionSr:
+                        parameters.stationaryNoiseSuppressionSr === 1,
+                    nonStationaryNoiseSuppression:
+                        parameters.nonStationaryNoiseSuppression === 1,
+                    nonStationaryNoiseSuppressionSr:
+                        parameters.nonStationaryNoiseSuppressionSr === 1,
+                };
+            }),
         );
     }
 

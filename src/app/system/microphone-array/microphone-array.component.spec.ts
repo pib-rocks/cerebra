@@ -127,23 +127,34 @@ describe("MicrophoneArrayComponent live cockpit", () => {
         );
     }
 
+    /**
+     * The panel reads its parameters one at a time, so answering the reads in flight has to be
+     * repeated: each answer is what makes the panel issue the next read. The loop is bounded, so a
+     * regression that never issues the next read fails on the assertions below instead of hanging.
+     */
     function respondToParameterReads(): void {
-        for (const request of [...serviceCalls("/rosapi/get_param")]) {
-            const name = request.args?.name ?? "";
-            const parameterName = name.split(":")[1];
-            expect(name.startsWith("/doa_publisher:")).toBeTrue();
-            respondedIds.add(request.id);
-            socket.receive({
-                op: "service_response",
-                id: request.id,
-                service: "/rosapi/get_param",
-                result: true,
-                values: {
-                    value: JSON.stringify(parameterValues[parameterName]),
-                    successful: true,
-                    reason: "",
-                },
-            });
+        for (let round = 0; round < 20; round++) {
+            const pending = serviceCalls("/rosapi/get_param");
+            if (pending.length === 0) {
+                break;
+            }
+            for (const request of pending) {
+                const name = request.args?.name ?? "";
+                const parameterName = name.split(":")[1];
+                expect(name.startsWith("/doa_publisher:")).toBeTrue();
+                respondedIds.add(request.id);
+                socket.receive({
+                    op: "service_response",
+                    id: request.id,
+                    service: "/rosapi/get_param",
+                    result: true,
+                    values: {
+                        value: JSON.stringify(parameterValues[parameterName]),
+                        successful: true,
+                        reason: "",
+                    },
+                });
+            }
         }
         fixture.detectChanges();
     }
