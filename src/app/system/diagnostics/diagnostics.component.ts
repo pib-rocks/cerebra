@@ -88,6 +88,19 @@ export class DiagnosticsComponent implements OnInit {
         );
     }
 
+    /**
+     * The load gets its own rating: `summary.cpuStatus` belongs to the temperature (the backend derives
+     * it at 75/85 °C), so reusing it would rate the load by the temperature. The percentages match the
+     * threshold the backend uses for memory (80 %).
+     */
+    getCpuUsagePercentBadgeClass(): string {
+        const percent = this.getCpuUsagePercent();
+        if (percent === undefined) return "text-bg-secondary";
+        if (percent < 80) return "text-bg-success";
+        if (percent < 95) return "text-bg-warning";
+        return "text-bg-danger";
+    }
+
     get servoBricklets(): BrickletTelemetry[] {
         return this.bricklets.filter((b) => b.type === "Servo Bricklet");
     }

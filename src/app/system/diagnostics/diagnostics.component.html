@@ -31,7 +31,7 @@
                 id="table-system-summary">
                 <thead>
                     <tr>
-                        <th>Overall Status</th>
+                        <th>CPU load</th>
                         <th>CPU Temperature</th>
                         <th>Free RAM</th>
                         <th>Free disk space</th>
@@ -42,11 +42,16 @@
                 <tbody>
                     <tr>
                         <td>
+                            @if (getCpuUsagePercent() !== undefined) {
                             <span
                                 class="badge"
-                                [ngClass]="getStatusBadgeClass(summary.overallStatus)">
-                                {{ summary.overallStatus | uppercase }}
+                                data-test="TXT_Cpu_Load"
+                                [ngClass]="getCpuUsagePercentBadgeClass()">
+                                {{ getCpuUsagePercent() }}%
                             </span>
+                            } @if (getCpuUsagePercent() === undefined) {
+                            <span class="badge text-bg-secondary"> N/A </span>
+                            }
                         </td>
                         <td>
                             <span
@@ -69,16 +74,11 @@
                                 <ng-container> N/A </ng-container>
                                 }
                             </span>
-                            @if (getCpuUsagePercent() !== undefined) {
-                            <div class="mt-1 text-white-50 small">
-                                CPU: {{ getCpuUsagePercent() }}%
-                            </div>
-                            }
                         </td>
                         <td>
                             <span
-                                class="badge"
-                                [ngClass]="getStatusBadgeClass(summary.diskStatus)">
+                                [ngClass]="getStatusBadgeClass(summary.diskStatus)"
+                                class="badge">
                                 {{ summary.diskSpace.free }} / {{
                                 summary.diskSpace.total }} ({{
                                 summary.diskSpace.percentUsed }}%)
