@@ -150,6 +150,7 @@
                     id="update-bricklet-uids-button"
                     data-test="BTN_Update_bricklet_UIDs"
                     class="hardware-button btn btn-regular"
+                    [class.is-dirty]="hasUnsavedUidChanges"
                     [disabled]="brickletUidForm.invalid">
                     Save
                 </button>

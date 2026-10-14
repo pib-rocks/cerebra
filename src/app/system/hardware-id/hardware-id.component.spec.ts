@@ -186,6 +186,46 @@ describe("HardwareIdComponent", () => {
         expect(control3.value).toBe("CCC");
     });
 
+    it("should mark the Save button dirty while the uids differ from the stored ones", () => {
+        const compiled = fixture.nativeElement as HTMLElement;
+        const save = () =>
+            compiled.querySelector(
+                "#update-bricklet-uids-button",
+            ) as HTMLButtonElement;
+
+        expect(save().classList).not.toContain("is-dirty");
+
+        component.brickletUidForm.setValue({
+            "1": "AAA1",
+            "2": "BBB1",
+            "3": "CCC1",
+        });
+        fixture.detectChanges();
+
+        expect(save().classList).toContain("is-dirty");
+    });
+
+    it("should clear the dirty marker once the uids are saved", () => {
+        const compiled = fixture.nativeElement as HTMLElement;
+        const save = () =>
+            compiled.querySelector(
+                "#update-bricklet-uids-button",
+            ) as HTMLButtonElement;
+        component.brickletUidForm.setValue({
+            "1": "AAA1",
+            "2": "BBB1",
+            "3": "CCC1",
+        });
+        fixture.detectChanges();
+        expect(save().classList).toContain("is-dirty");
+
+        component.updateIds();
+        fixture.detectChanges();
+
+        expect(brickletServiceSpy.renameBrickletUid).toHaveBeenCalled();
+        expect(save().classList).not.toContain("is-dirty");
+    });
+
     it("should call renameBrickletUid when the form is valid", () => {
         component.brickletUidForm.setValue({
             "1": "NEW1",
