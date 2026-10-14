@@ -64,6 +64,70 @@ describe("UpdateComponent", () => {
     const formatDate = (value: string): string =>
         new DatePipe("en-US").transform(value, "medium") ?? "";
 
+    it("should format the release notes as a list and keep the rest behind a click", () => {
+        const notes = [
+            "## Highlights",
+            ...Array.from({length: 10}, (_, index) => `* Bullet ${index + 1}`),
+        ].join("\n");
+        component.availability = {
+            ...availability,
+            checkedAt: "2026-10-14T00:00:00Z",
+            checkId: "check-1",
+            state: "completed",
+            channel: "release",
+            recommendation: {
+                tag: "v0.6.5",
+                relation: "channel-change",
+                installable: true,
+                ordinaryUpdate: true,
+                notes,
+            },
+            releases: [
+                {
+                    tag: "v0.6.5",
+                    relation: "channel-change",
+                    installable: true,
+                    notes,
+                },
+            ],
+        };
+        component.chosenTag = "v0.6.5";
+        fixture.detectChanges();
+
+        const notesBox = (fixture.nativeElement as HTMLElement).querySelector(
+            '[data-test="TXT_Release_Notes"]',
+        ) as HTMLElement;
+
+        // The Markdown bullets are a list now instead of one flowing text.
+        expect(notesBox.querySelectorAll("li").length).toBeGreaterThan(0);
+        expect(notesBox.textContent).toContain("Bullet 1");
+        expect(notesBox.textContent).not.toContain("##");
+
+        // Collapsed: a few lines and "...", the rest waits for the click.
+        expect(component.hasMoreReleaseNotes).toBeTrue();
+        expect(notesBox.textContent).toContain("...");
+        expect(notesBox.textContent).not.toContain("Bullet 10");
+
+        // Clicking the button is the real path: the template event marks the component for a check,
+        // which a direct call to the method would not (OnPush), so the DOM follows.
+        const toggleButton = notesBox.querySelector(
+            "#btn-toggle-release-notes",
+        ) as HTMLButtonElement;
+        expect(toggleButton).not.toBeNull();
+        toggleButton.click();
+        fixture.detectChanges();
+
+        expect(component.releaseNotesExpanded).toBeTrue();
+        expect(component.hasMoreReleaseNotes).toBeFalse();
+
+        // The list is rebuilt on expand, so the element has to be queried again.
+        const expandedBox = (
+            fixture.nativeElement as HTMLElement
+        ).querySelector('[data-test="TXT_Release_Notes"]') as HTMLElement;
+        expect(expandedBox.textContent).not.toContain("...");
+        expect(expandedBox.textContent).toContain("Show fewer release notes");
+    });
+
     beforeEach(async () => {
         updateServiceSpy = jasmine.createSpyObj("UpdateService", [
             "getInstalledRevisions",

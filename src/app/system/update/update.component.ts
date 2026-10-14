@@ -279,6 +279,120 @@ export class UpdateComponent implements OnInit, OnDestroy {
             : "No release notes were reported.";
     }
 
+    /** How many lines the collapsed notes keep - six fit next to "Available release". */
+    private readonly releaseNotePreviewLines = 6;
+
+    releaseNotesExpanded = false;
+
+    /**
+     * The notes as blocks the template can format. pib-api delivers Markdown (headings, bullet lists)
+     * and the page printed it as one flowing text, which nobody reads.
+     */
+    get releaseNoteGroups(): {
+        kind: "heading" | "bullets" | "text";
+        lines: string[];
+    }[] {
+        return this.groupReleaseNoteLines(this.releaseNoteLines());
+    }
+
+    get visibleReleaseNoteGroups(): {
+        kind: "heading" | "bullets" | "text";
+        lines: string[];
+    }[] {
+        return this.releaseNotesExpanded
+            ? this.releaseNoteGroups
+            : this.limitReleaseNoteLines(
+                  this.releaseNoteGroups,
+                  this.releaseNotePreviewLines,
+              );
+    }
+
+    /** How many lines stay behind the "Show all" button. */
+    get hiddenReleaseNoteLineCount(): number {
+        return (
+            this.countReleaseNoteLines(this.releaseNoteGroups) -
+            this.countReleaseNoteLines(this.visibleReleaseNoteGroups)
+        );
+    }
+
+    get hasMoreReleaseNotes(): boolean {
+        return this.hiddenReleaseNoteLineCount > 0;
+    }
+
+    toggleReleaseNotes(): void {
+        this.releaseNotesExpanded = !this.releaseNotesExpanded;
+    }
+
+    /** Strips the Markdown markers so the lines can be rendered as headings, bullets and text. */
+    private releaseNoteLines(): {
+        kind: "heading" | "bullet" | "text";
+        text: string;
+    }[] {
+        return this.releaseNotes
+            .split(/\r?\n/)
+            .map((line) => line.trim())
+            .filter((line) => line.length > 0)
+            .map((line) => {
+                const heading = /^#{1,6}\s*(.+)$/.exec(line);
+                if (heading) {
+                    return {kind: "heading" as const, text: heading[1].trim()};
+                }
+                const bullet = /^[-*•]\s+(.+)$/.exec(line);
+                if (bullet) {
+                    return {kind: "bullet" as const, text: bullet[1].trim()};
+                }
+                return {kind: "text" as const, text: line};
+            });
+    }
+
+    /** Bullets of one run become a single list; headings and plain lines stand on their own. */
+    private groupReleaseNoteLines(
+        lines: {kind: "heading" | "bullet" | "text"; text: string}[],
+    ): {kind: "heading" | "bullets" | "text"; lines: string[]}[] {
+        const groups: {
+            kind: "heading" | "bullets" | "text";
+            lines: string[];
+        }[] = [];
+        for (const line of lines) {
+            const last = groups[groups.length - 1];
+            if (line.kind === "bullet") {
+                if (last && last.kind === "bullets") {
+                    last.lines.push(line.text);
+                } else {
+                    groups.push({kind: "bullets", lines: [line.text]});
+                }
+                continue;
+            }
+            groups.push({kind: line.kind, lines: [line.text]});
+        }
+        return groups;
+    }
+
+    /** Cuts the blocks off after `budget` lines, splitting a list if it is the one that crosses it. */
+    private limitReleaseNoteLines(
+        groups: {kind: "heading" | "bullets" | "text"; lines: string[]}[],
+        budget: number,
+    ): {kind: "heading" | "bullets" | "text"; lines: string[]}[] {
+        const limited: {
+            kind: "heading" | "bullets" | "text";
+            lines: string[];
+        }[] = [];
+        let left = budget;
+        for (const group of groups) {
+            if (left <= 0) break;
+            const lines = group.lines.slice(0, left);
+            limited.push({kind: group.kind, lines});
+            left -= lines.length;
+        }
+        return limited;
+    }
+
+    private countReleaseNoteLines(
+        groups: {kind: "heading" | "bullets" | "text"; lines: string[]}[],
+    ): number {
+        return groups.reduce((total, group) => total + group.lines.length, 0);
+    }
+
     relationText(relation: string | undefined): string {
         switch (relation) {
             case "newer":
