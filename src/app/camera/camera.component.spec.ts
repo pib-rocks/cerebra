@@ -98,6 +98,17 @@ describe("CameraComponent", () => {
         spyUnsubscribeCamera = spyOn(rosService, "unsubscribeCameraTopic");
     });
 
+    it("should show the camera toggle as active when the page starts the camera", () => {
+        // The picture is live as soon as the page opens (startCamera in ngOnInit), so the toggle must
+        // not read "off" next to a running video.
+        expect(component.toggleCamera.value).toBeTrue();
+        expect(component.cameraSettings?.isActive).toBeTrue();
+        const toggleInput = fixture.debugElement.query(By.css("#toggleCamera"));
+        expect(
+            (toggleInput.nativeElement as HTMLInputElement).checked,
+        ).toBeTrue();
+    });
+
     it("should create", () => {
         expect(component).toBeTruthy();
     });
@@ -119,11 +130,13 @@ describe("CameraComponent", () => {
         const spyStartCamera = spyOn(component, "startCamera");
         const spyStopCamera = spyOn(component, "stopCamera");
 
+        // Entering the page starts the camera (ngOnInit), so the toggle comes up active and the first
+        // click switches the picture off again.
         const toggleBtn = fixture.debugElement.query(By.css("#toggleCamera"));
         toggleBtn.nativeElement.click();
-        expect(spyStartCamera).toHaveBeenCalled();
-        toggleBtn.nativeElement.click();
         expect(spyStopCamera).toHaveBeenCalled();
+        toggleBtn.nativeElement.click();
+        expect(spyStartCamera).toHaveBeenCalled();
     });
 
     it("should display an error image when receiving error messages from the backend", fakeAsync(() => {
@@ -140,13 +153,14 @@ describe("CameraComponent", () => {
             "toggleCameraState",
         ).and.callThrough();
         const toggleBtn = fixture.debugElement.query(By.css("#toggleCamera"));
-        // Initially isActive is falsy (undefined from empty CameraSettings)
+        // The page starts the camera on entry, so isActive is true from the start and the first click
+        // turns it off.
         toggleBtn.nativeElement.click();
         expect(spyOnToggleCamera).toHaveBeenCalledTimes(1);
-        expect(component.cameraSettings?.isActive).toBeTrue();
+        expect(component.cameraSettings?.isActive).toBeFalse();
         toggleBtn.nativeElement.click();
         expect(spyOnToggleCamera).toHaveBeenCalledTimes(2);
-        expect(component.cameraSettings?.isActive).toBeFalse();
+        expect(component.cameraSettings?.isActive).toBeTrue();
     });
 
     it("should subscribe to the camera topic during initialization", () => {
