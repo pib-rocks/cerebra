@@ -131,11 +131,35 @@
             >
             — {{ relationText(recommendation.relation) }}
         </p>
-        <p
-            class="text-light"
+        <div
+            class="release-notes"
             data-test="TXT_Release_Notes">
-            {{ releaseNotes }}
-        </p>
+            @for (group of visibleReleaseNoteGroups; track $index) { @if
+            (group.kind === "heading") {
+            <p class="release-notes-heading">{{ group.lines[0] }}</p>
+            } @else if (group.kind === "bullets") {
+            <ul class="release-notes-list">
+                @for (line of group.lines; track $index) {
+                <li>{{ line }}</li>
+                }
+            </ul>
+            } @else {
+            <p class="release-notes-text">{{ group.lines[0] }}</p>
+            } } @if (hasMoreReleaseNotes && !releaseNotesExpanded) {
+            <p class="release-notes-more">...</p>
+            } @if (hasMoreReleaseNotes || releaseNotesExpanded) {
+            <button
+                id="btn-toggle-release-notes"
+                data-test="BTN_Toggle_Release_Notes"
+                type="button"
+                class="btn btn-link p-0 release-notes-toggle"
+                (click)="toggleReleaseNotes()">
+                {{ releaseNotesExpanded ? "Show fewer release notes" : "Show all
+                release notes (" + hiddenReleaseNoteLineCount + " more lines)"
+                }}
+            </button>
+            }
+        </div>
         } @else if (availability) {
         <p class="text-muted">
             No installable published release pair was reported. Checked: {{

@@ -103,6 +103,43 @@ details summary {
     border-left: 4px solid #ffc107 !important;
 }
 
+.release-notes {
+    color: #f8f9fa;
+    margin-bottom: 0.5rem;
+
+    p {
+        margin-bottom: 0.35rem;
+    }
+}
+
+.release-notes-heading {
+    color: #adb5bd;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    margin-top: 0.6rem;
+    text-transform: uppercase;
+}
+
+.release-notes-list {
+    margin-bottom: 0.35rem;
+    padding-left: 1.4rem;
+}
+
+.release-notes-more {
+    color: #adb5bd;
+}
+
+.release-notes-toggle {
+    color: #17a2b8;
+    font-size: 0.85rem;
+    text-decoration: none;
+
+    &:hover {
+        text-decoration: underline;
+    }
+}
+
 @keyframes pulse {
     50% {
         opacity: 0.35;
