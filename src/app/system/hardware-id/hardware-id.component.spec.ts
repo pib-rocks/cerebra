@@ -186,6 +186,15 @@ describe("HardwareIdComponent", () => {
         expect(control3.value).toBe("CCC");
     });
 
+    it("should keep the Save button in the container that aligns it with the page content", () => {
+        const compiled = fixture.nativeElement as HTMLElement;
+        const save = compiled.querySelector(
+            "#update-bricklet-uids-button",
+        ) as HTMLButtonElement;
+
+        expect(save.parentElement?.classList).toContain("uid-save-actions");
+    });
+
     it("should mark the Save button dirty while the uids differ from the stored ones", () => {
         const compiled = fixture.nativeElement as HTMLElement;
         const save = () =>
