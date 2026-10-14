@@ -164,13 +164,9 @@ $sidebar-width: 250px;
     text-align: center;
 }
 
-.btn-active,
-.nav-pills .nav-link.sidebar-btn:hover {
-    margin: 10px 10px 10px 8px;
-    color: $black-color;
-    border-bottom: $pink-color solid 4px;
-    padding-bottom: 4px;
-}
+// The bar and the hover/active colour are set further down with selectors that outrank the base rule.
+// Nothing here may touch margin or padding: the base rule's own margin shorthand outranked
+// `.nav-sidebar .nav-item > .nav-link { margin-bottom: 0.2rem; }` and grew the hovered entry by 6.8px.
 
 .btn-active svg path,
 .btn-active svg circle,
@@ -218,6 +214,9 @@ $sidebar-width: 250px;
 
 .nav-link.sidebar-btn.btn-active {
     color: $white-color;
+    // Two classes plus the active class outrank the base rule's transparent reservation, so the selected
+    // entry keeps the pink bar as its indicator.
+    border-bottom-color: $pink-color;
 }
 
 .nav-sidebar > .nav-item.menu-open > .nav-link,
@@ -233,10 +232,8 @@ $sidebar-width: 250px;
 }
 
 .nav-pills .nav-link.sidebar-btn:hover {
-    margin: 10px 10px 10px 8px;
     color: $white-color;
-    border-bottom: $pink-color solid 4px;
-    padding-bottom: 4px;
+    border-bottom-color: $pink-color;
 }
 
 svg path,
