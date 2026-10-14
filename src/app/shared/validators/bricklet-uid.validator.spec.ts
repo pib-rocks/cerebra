@@ -25,11 +25,18 @@ describe("uniqueValuesValidator", () => {
         expect(errors).toBeNull();
     });
 
-    it("should return an error if duplicate values exist", () => {
+    it("should return an error naming the duplicated values", () => {
         formGroup.setValue({field1: "A", field2: "B", field3: "B"});
 
         const errors: ValidationErrors | null = formGroup.errors;
-        expect(errors).toEqual({nonUnique: true});
+        expect(errors).toEqual({nonUnique: {ids: ["B"]}});
+    });
+
+    it("should name every field when all values collide", () => {
+        formGroup.setValue({field1: "A", field2: "A", field3: "A"});
+
+        const errors: ValidationErrors | null = formGroup.errors;
+        expect(errors).toEqual({nonUnique: {ids: ["A"]}});
     });
 
     it("should return no errors if multiple values are empty", () => {
