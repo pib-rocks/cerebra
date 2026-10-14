@@ -4,8 +4,7 @@
     [class.sidebar-collapse]="sidebarCollapsed">
     @if (!onDisplayPath) {
     <div class="sidebar-wrapper">
-        <aside
-            class="main-sidebar elevation-4 sidebar justify-content-between d-flex flex-column">
+        <aside class="main-sidebar elevation-4 sidebar d-flex flex-column">
             <div class="d-flex flex-column align-items-center">
                 <a class="brand-link">
                     <img
@@ -184,8 +183,7 @@
                     </nav>
                 </div>
             </div>
-            <div
-                class="d-flex flex-column align-items-center justify-content-end ">
+            <div class="sidebar-status d-flex flex-column align-items-center">
                 <app-relay-control></app-relay-control>
                 <app-smart-connect></app-smart-connect>
                 <app-ip-retriever></app-ip-retriever>
