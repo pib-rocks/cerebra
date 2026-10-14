@@ -156,15 +156,43 @@ describe("DiagnosticsComponent", () => {
         );
     });
 
-    it("should display CPU usage percentage inside the Free RAM cell", () => {
+    it("should show the CPU load in the first column instead of the overall status", () => {
         const compiled = fixture.nativeElement as HTMLElement;
+        const headers = Array.from(
+            compiled.querySelectorAll("#table-system-summary thead th"),
+        ).map((th) => th.textContent?.trim());
+        expect(headers[0]).toBe("CPU load");
+        expect(headers).not.toContain("Overall Status");
+
         const cells = compiled.querySelectorAll(
             "#table-system-summary tbody td",
         );
-        const ramCell = cells[2];
-
-        expect(ramCell?.textContent).toContain("CPU: 42.5%");
+        expect(cells[0]?.textContent?.replace(/\s+/g, " ").trim()).toContain(
+            "42.5%",
+        );
+        // The load no longer hides under Free RAM.
+        expect(cells[2]?.textContent).not.toContain("CPU");
         expect(component.getCpuUsagePercent()).toBe(42.5);
+    });
+
+    it("should rate the CPU load by its own thresholds", () => {
+        // cpuPercent has priority over cpuUsagePercent, so it has to be cleared for this.
+        component.summary = {
+            ...component.summary!,
+            cpuPercent: undefined,
+            cpuUsagePercent: 40,
+        };
+        expect(component.getCpuUsagePercentBadgeClass()).toBe(
+            "text-bg-success",
+        );
+
+        component.summary = {...component.summary!, cpuUsagePercent: 85};
+        expect(component.getCpuUsagePercentBadgeClass()).toBe(
+            "text-bg-warning",
+        );
+
+        component.summary = {...component.summary!, cpuUsagePercent: 99};
+        expect(component.getCpuUsagePercentBadgeClass()).toBe("text-bg-danger");
     });
 
     it("should resolve CPU usage from cpuUsagePercent or cpuUsage fallbacks", () => {
