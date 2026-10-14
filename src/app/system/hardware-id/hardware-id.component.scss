@@ -25,6 +25,20 @@
     background-color: $pink-color;
 }
 
+// The Save button sits flush with the Bricklet labels of the grid above it and keeps all four corners.
+// Its .row carries Bootstrap's negative gutter margin while the column only had a ps-2 inset, so the
+// button started 12px left of the labels - partly under the panel edge, which squared off its left
+// corners. 1.25rem padding puts it exactly under them. It keeps the 6px radius of the Export / Import
+// IDs buttons beside it and gets a little more width so the label is not cramped.
+.uid-save-actions {
+    padding-left: 1.25rem;
+
+    .hardware-button {
+        min-width: 5rem;
+        border-radius: 6px;
+    }
+}
+
 .validation-error {
     color: $pink-color;
     font-size: 1.3vw;
