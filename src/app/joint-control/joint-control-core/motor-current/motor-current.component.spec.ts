@@ -62,6 +62,31 @@ describe("MotorCurrentComponent", () => {
         expect(motorService.getCurrentObservable).toHaveBeenCalledTimes(1);
     });
 
+    it("should ask for a change detection run when a current value arrives", () => {
+        const markForCheckSpy = spyOn(
+            component["changeDetectorRef"],
+            "markForCheck",
+        );
+        currentSubject.next(20);
+        expect(markForCheckSpy).toHaveBeenCalled();
+    });
+
+    it("should render a current value that arrives after the view is up", async () => {
+        component.maxValue = 200;
+        component.minValue = 100;
+        currentSubject.next(123);
+        await fixture.whenStable();
+        // The test bed has no zoneless scheduler driving the render, so this pass stands in for the one
+        // the runtime performs on its own; the spec above ("should ask for a change detection run") is
+        // the guard that the component requests it at all.
+        fixture.detectChanges();
+        expect(
+            (fixture.nativeElement as HTMLElement).querySelector(
+                ".current-label",
+            )?.textContent,
+        ).toContain("123");
+    });
+
     it("should set the style", () => {
         component.maxValue = 200;
         component.minValue = 100;
