@@ -17,6 +17,14 @@
     font-weight: bold;
 }
 
+// Unsaved UID changes light the Save button up in the brand colour - the colour it already takes on
+// hover, and the same signal the Blockly editor's filled Save banner gives. Clean, it keeps the blue
+// of .btn-regular.
+.hardware-button.is-dirty,
+.hardware-button.is-dirty:hover {
+    background-color: $pink-color;
+}
+
 .validation-error {
     color: $pink-color;
     font-size: 1.3vw;

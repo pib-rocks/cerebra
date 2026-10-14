@@ -91,6 +91,35 @@ export class HardwareIdComponent implements OnInit {
         return Object.keys(this.brickletUidForm.controls).length > 0;
     }
 
+    /**
+     * The form value as it was last loaded or successfully saved. A signature rather than Angular's
+     * `dirty`, which stays true once a control moved - the Blockly editor compares values for the
+     * same reason.
+     */
+    private savedUidSignature = "";
+
+    private uidSignature(
+        value: Record<number, string> = this.brickletUidForm.getRawValue(),
+    ): string {
+        return Object.keys(value)
+            .map((key) => Number(key))
+            .sort((left, right) => left - right)
+            .map((key) => `${key}:${value[key]}`)
+            .join("|");
+    }
+
+    /**
+     * True while the form holds UIDs that differ from the last loaded or saved state. The Save button
+     * shows it in the brand colour - the same signal the Blockly editor gives with its filled Save
+     * banner - and a successful save moves the baseline, so the colour clears without a reload.
+     */
+    get hasUnsavedUidChanges(): boolean {
+        if (!this.brickletUidForm.valid) {
+            return false;
+        }
+        return this.uidSignature() !== this.savedUidSignature;
+    }
+
     get importPreviewBricklets() {
         return this.importPreview?.bricklets ?? [];
     }
@@ -508,6 +537,9 @@ export class HardwareIdComponent implements OnInit {
             }
         });
         this.brickletUidForm.updateValueAndValidity();
+        // The freshly synced values are the stored ones again: a load, a refresh or an applied import
+        // must not leave the Save button lit.
+        this.savedUidSignature = this.uidSignature();
     }
 
     /**
@@ -517,6 +549,9 @@ export class HardwareIdComponent implements OnInit {
      */
     private onBrickletUidsSaved(changed: Bricklet[]): void {
         this.applySavedAddresses(changed);
+        // What the server just stored is the new baseline, so the Save button goes back to its normal
+        // colour without waiting for a reload.
+        this.savedUidSignature = this.uidSignature();
         this.variantService.reload();
         this.loadConnectedBricklets();
         this.cdr.markForCheck();
