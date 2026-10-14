@@ -143,12 +143,21 @@ $sidebar-width: 250px;
     white-space: nowrap;
     text-decoration: none;
     border: 0;
+
+    // The brand padding and the logo's Bootstrap margin pushed the version 21px away from the logo.
+    // The version belongs to the logo, not to an area of its own.
+    padding-bottom: 0;
+
+    img {
+        margin-top: 8px;
+        margin-bottom: 0;
+    }
 }
 
 .version-footer {
     font-size: 9px;
     line-height: 1.2;
-    margin-top: 2px;
+    margin-top: 4px;
     color: $grey-color;
     pointer-events: none;
     user-select: none;
@@ -200,6 +209,11 @@ $sidebar-width: 250px;
     border-radius: 0px;
     display: flex;
     align-items: center;
+    // Reserve the bar's space here. The hover and active rules used to add the 4px border and take 4px
+    // away from the padding, so the hovered entry grew and pushed every entry below it down. Now only
+    // the colour of the bar changes.
+    border-bottom: transparent solid 4px;
+    padding-bottom: 4px;
 }
 
 .nav-link.sidebar-btn.btn-active {
