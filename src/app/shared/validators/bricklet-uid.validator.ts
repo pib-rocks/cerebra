@@ -21,10 +21,18 @@ export function uniqueValuesValidator(): ValidatorFn {
         const values = Object.values(formGroup.value).filter(
             (value) => value !== null && value !== "",
         );
-        const uniqueValues = new Set(values);
+        const duplicates = [
+            ...new Set(
+                values.filter(
+                    (value, index) => values.indexOf(value) !== index,
+                ),
+            ),
+        ];
 
-        return values.length === uniqueValues.size || values.length === 0
+        // The duplicated IDs travel with the error, so the form can name the actual mistake instead
+        // of listing every rule it knows (PR-1994).
+        return duplicates.length === 0
             ? null
-            : {nonUnique: true};
+            : {nonUnique: {ids: duplicates as string[]}};
     };
 }

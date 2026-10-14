@@ -195,6 +195,61 @@ describe("HardwareIdComponent", () => {
         expect(save.parentElement?.classList).toContain("uid-save-actions");
     });
 
+    it("should name the duplicated id instead of listing every rule", () => {
+        component.brickletUidForm.setValue({
+            "1": "AAA",
+            "2": "AAA",
+            "3": "CCC",
+        });
+        fixture.detectChanges();
+
+        const message = (
+            (fixture.nativeElement as HTMLElement).querySelector(
+                ".validation-error",
+            ) as HTMLElement
+        ).textContent;
+
+        expect(message).toContain("AAA");
+        expect(message).toContain("is assigned more than once");
+        expect(message).not.toContain("letters and numbers");
+    });
+
+    it("should explain the length and character rule when a value is malformed", () => {
+        component.brickletUidForm.setValue({
+            "1": "000",
+            "2": "BBB",
+            "3": "CCC",
+        });
+        fixture.detectChanges();
+
+        const message = (
+            (fixture.nativeElement as HTMLElement).querySelector(
+                ".validation-error",
+            ) as HTMLElement
+        ).textContent;
+
+        expect(message).toContain("up to 6 characters long");
+        expect(message).not.toContain("assigned more than once");
+    });
+
+    it("should mention both rules when both are broken", () => {
+        component.brickletUidForm.setValue({
+            "1": "000",
+            "2": "000",
+            "3": "CCC",
+        });
+        fixture.detectChanges();
+
+        const message = (
+            (fixture.nativeElement as HTMLElement).querySelector(
+                ".validation-error",
+            ) as HTMLElement
+        ).textContent;
+
+        expect(message).toContain("assigned more than once");
+        expect(message).toContain("up to 6 characters long");
+    });
+
     it("should mark the Save button dirty while the uids differ from the stored ones", () => {
         const compiled = fixture.nativeElement as HTMLElement;
         const save = () =>

@@ -120,6 +120,48 @@ export class HardwareIdComponent implements OnInit {
         return this.uidSignature() !== this.savedUidSignature;
     }
 
+    /** The IDs the group validator found more than once. */
+    private get duplicatedUids(): string[] {
+        const error = this.brickletUidForm.errors?.["nonUnique"] as
+            | {ids?: string[]}
+            | undefined;
+        return error?.ids ?? [];
+    }
+
+    /** True when a control's own value breaks the length or the character rule. */
+    private get hasMalformedUid(): boolean {
+        // The form group is untyped (`new FormGroup({})`), so its controls come back as unknown.
+        const controls = this.brickletUidForm.controls as Record<
+            string,
+            FormControl
+        >;
+        return Object.values(controls).some((control) => control.invalid);
+    }
+
+    /**
+     * What is actually wrong with the form. Both rules were covered by one fixed sentence, so a
+     * duplicated ID also claimed the characters and the length were wrong (PR-1994).
+     */
+    get validationMessage(): string {
+        const messages: string[] = [];
+        const duplicates = this.duplicatedUids;
+        if (duplicates.length > 0) {
+            const subject = duplicates.length === 1 ? "ID" : "IDs";
+            const verb = duplicates.length === 1 ? "is" : "are";
+            messages.push(
+                `${subject} ${duplicates.join(
+                    ", ",
+                )} ${verb} assigned more than once.`,
+            );
+        }
+        if (this.hasMalformedUid) {
+            messages.push(
+                "IDs must be up to 6 characters long and contain only letters and numbers.",
+            );
+        }
+        return messages.join(" ");
+    }
+
     get importPreviewBricklets() {
         return this.importPreview?.bricklets ?? [];
     }

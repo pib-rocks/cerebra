@@ -157,10 +157,7 @@
             </div>
             @if (brickletUidForm.invalid) {
             <div class="col-auto mt-4 ms-4 mb-3 ps-2 align-self-center">
-                <span class="validation-error"
-                    >IDs must be unique, up to 6 characters long, and contain
-                    only letters and numbers.</span
-                >
+                <span class="validation-error">{{ validationMessage }}</span>
             </div>
             }
         </div>
