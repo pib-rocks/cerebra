@@ -1640,6 +1640,15 @@ describe("VoiceAssistantComponent (zoneless)", () => {
             [],
             {smartChatsEnabled$: new BehaviorSubject(true)},
         );
+        const idle = visibleConversation({
+            voiceTurnedOn: false,
+            listening: false,
+            assistantSpeaking: false,
+            holderName: null,
+            keyStoreDegraded: false,
+            liveUnavailable: false,
+        });
+        const tokenProbeSubject = new Subject<unknown>();
 
         await TestBed.configureTestingModule({
             imports: [
@@ -1656,13 +1665,22 @@ describe("VoiceAssistantComponent (zoneless)", () => {
                 },
                 {
                     provide: TokenService,
-                    useValue: {tokenStatus$: tokenStatus.asObservable()},
+                    useValue: {
+                        tokenStatus$: tokenStatus.asObservable(),
+                        checkTokenExists: () => tokenProbeSubject,
+                    },
                 },
                 {
                     provide: ChannelCapabilityService,
                     useValue: channelCapability,
                 },
-                VisibleStateService,
+                {
+                    provide: VisibleStateService,
+                    useValue: {
+                        snapshot: idle,
+                        snapshot$: new BehaviorSubject(idle),
+                    },
+                },
             ],
         }).compileComponents();
 

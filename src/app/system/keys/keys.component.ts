@@ -103,6 +103,11 @@ export class KeysComponent implements OnInit {
 
     cloudStatus(): string {
         if (this.tokenProbe === "unavailable") {
+            if (this.cloudCredentialPresent) {
+                return this.tokenProbeError
+                    ? `SmartConnect credential is stored. ${this.tokenProbeError}`
+                    : "SmartConnect credential is stored. Token status is unavailable.";
+            }
             return this.tokenProbeError
                 ? `SmartConnect status is unavailable. ${this.tokenProbeError}`
                 : "SmartConnect status is unavailable.";

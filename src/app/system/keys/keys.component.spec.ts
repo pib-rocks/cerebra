@@ -1,7 +1,7 @@
 import {HttpErrorResponse} from "@angular/common/http";
 import {provideZonelessChangeDetection} from "@angular/core";
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {BehaviorSubject, of, throwError} from "rxjs";
+import {BehaviorSubject, of, Subject, throwError} from "rxjs";
 import {KeysComponent} from "./keys.component";
 import {KeyStoreService} from "./key-store.service";
 import {KeyStoreSessionService} from "./key-store-session.service";
@@ -878,7 +878,10 @@ describe("KeysComponent (zoneless)", () => {
                 },
                 {
                     provide: TokenService,
-                    useValue: {tokenStatus$: tokenStatus.asObservable()},
+                    useValue: {
+                        tokenStatus$: tokenStatus.asObservable(),
+                        checkTokenExists: () => new Subject(),
+                    },
                 },
                 KeyStoreSessionService,
             ],

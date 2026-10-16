@@ -100,19 +100,28 @@ describe("ChatWindowDeepChatComponent", () => {
                 "getChat",
             ]);
 
-        const tokenServiceSpy = jasmine.createSpyObj("TokenService", [], {
-            tokenStatus$: tokenStatusSubject.asObservable(),
-        });
+        const tokenServiceSpy = jasmine.createSpyObj(
+            "TokenService",
+            ["checkTokenExists"],
+            {
+                tokenStatus$: tokenStatusSubject.asObservable(),
+            },
+        );
+        tokenServiceSpy.checkTokenExists.and.returnValue(new Subject());
 
         voiceStateSubject = new BehaviorSubject<VoiceAssistantState>({
             turnedOn: false,
             chatId: "",
         });
+        const assistantModelsSubject = new BehaviorSubject<AssistantModel[]>(
+            [],
+        );
         const voiceAssistantSpy = jasmine.createSpyObj(
             "VoiceAssistantService",
             ["getPersonality"],
             {
                 voiceAssistantStateObservable: voiceStateSubject.asObservable(),
+                assistantModelsSubject,
             },
         );
 

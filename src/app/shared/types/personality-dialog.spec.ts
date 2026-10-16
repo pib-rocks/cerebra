@@ -304,7 +304,7 @@ describe("personality dialog rules", () => {
         expect(
             reconcileVoiceSelection(
                 "5",
-                voiceInputOptions([cloud], true, "available"),
+                voiceInputOptions([cloud], false, "available"),
                 LOCAL_VOICE_INPUT,
                 "available",
             ),
