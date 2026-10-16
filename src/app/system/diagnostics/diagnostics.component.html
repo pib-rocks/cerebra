@@ -34,7 +34,7 @@
                                 class="badge"
                                 data-test="TXT_Cpu_Load"
                                 [ngClass]="getCpuUsagePercentBadgeClass()">
-                                {{ getCpuUsagePercent() }}%
+                                {{ formatOneDecimal(getCpuUsagePercent()) }}%
                             </span>
                             } @if (getCpuUsagePercent() === undefined) {
                             <span class="badge text-bg-secondary"> N/A </span>
@@ -44,7 +44,8 @@
                             <span
                                 class="badge"
                                 [ngClass]="getStatusBadgeClass(summary.cpuStatus)">
-                                {{ summary.cpuTemperature }} °C
+                                {{ formatOneDecimal(summary.cpuTemperature) }}
+                                °C
                             </span>
                         </td>
                         <td>
@@ -53,9 +54,11 @@
                                 [ngClass]="getStatusBadgeClass(summary.memoryStatus || 'ok')">
                                 @if (summary.memoryUsage) {
                                 <ng-container>
-                                    {{ summary.memoryUsage.used }} / {{
-                                    summary.memoryUsage.total }} ({{
-                                    summary.memoryUsage.percentUsed }}%)
+                                    {{ formatMeasure(summary.memoryUsage.used)
+                                    }} / {{
+                                    formatMeasure(summary.memoryUsage.total) }}
+                                    ({{ formatOneDecimal(
+                                    summary.memoryUsage.percentUsed ) }}%)
                                 </ng-container>
                                 } @if (!summary.memoryUsage) {
                                 <ng-container> N/A </ng-container>
@@ -66,9 +69,10 @@
                             <span
                                 [ngClass]="getStatusBadgeClass(summary.diskStatus)"
                                 class="badge">
-                                {{ summary.diskSpace.free }} / {{
-                                summary.diskSpace.total }} ({{
-                                summary.diskSpace.percentUsed }}%)
+                                {{ formatMeasure(summary.diskSpace.free) }} / {{
+                                formatMeasure(summary.diskSpace.total) }} ({{
+                                formatOneDecimal(summary.diskSpace.percentUsed)
+                                }}%)
                             </span>
                         </td>
                         <td>

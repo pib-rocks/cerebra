@@ -268,6 +268,66 @@ describe("DiagnosticsComponent", () => {
         expect(buttonEmpty.colSpan).toBe(4);
     });
 
+    it("should always show the telemetry numbers with one decimal place", () => {
+        // The four columns are read along a row, so "60%" next to "42.5%" must not read like a second
+        // measurement precision. Whole numbers therefore get a ".0", and the ready-made RAM/disk strings are
+        // normalised inside as well.
+        //
+        // The fixture is rebuilt with the new payload: the component is OnPush, so mutating `summary` after the
+        // first detection would not repaint the template.
+        diagnosticsServiceSpy.getSummary.and.returnValue(
+            of({
+                ...component.summary!,
+                cpuPercent: 60,
+                cpuTemperature: 50,
+                memoryUsage: {
+                    total: "8 GB",
+                    used: "3 GB",
+                    free: "5 GB",
+                    percentUsed: 47,
+                },
+                diskSpace: {
+                    total: "64 GB",
+                    used: "44 GB",
+                    free: "20 GB",
+                    percentUsed: 31,
+                },
+            }),
+        );
+        fixture = TestBed.createComponent(DiagnosticsComponent);
+        fixture.detectChanges();
+
+        const cells = Array.from(
+            fixture.nativeElement.querySelectorAll(
+                "#table-system-summary tbody td",
+            ) as NodeListOf<HTMLElement>,
+        ).map((cell) => (cell.textContent || "").replace(/\s+/g, " ").trim());
+
+        expect(cells[0]).toContain("60.0%");
+        expect(cells[1]).toContain("50.0 °C");
+        expect(cells[2]).toContain("3.0 GB / 8.0 GB (47.0%)");
+        // The disk column shows free / total, so the normalised "free" figure is the one to look for.
+        expect(cells[3]).toContain("20.0 GB / 64.0 GB (31.0%)");
+    });
+
+    it("should round a measurement to one decimal place", () => {
+        expect(component.formatOneDecimal(60)).toBe("60.0");
+        expect(component.formatOneDecimal(42.5)).toBe("42.5");
+        // toFixed rounds the binary value, and 60.55 is not exactly representable - 60.56 is.
+        expect(component.formatOneDecimal(60.56)).toBe("60.6");
+        expect(component.formatOneDecimal(0)).toBe("0.0");
+        expect(component.formatOneDecimal(undefined)).toBe("");
+        expect(component.formatOneDecimal(null)).toBe("");
+    });
+
+    it("should normalise the number inside a ready-made measurement string", () => {
+        expect(component.formatMeasure("3 GB")).toBe("3.0 GB");
+        expect(component.formatMeasure("3.7 GB")).toBe("3.7 GB");
+        expect(component.formatMeasure("1000 MB")).toBe("1000.0 MB");
+        expect(component.formatMeasure("")).toBe("");
+        expect(component.formatMeasure(undefined)).toBe("");
+    });
+
     it("should not render Export or Import Hardware-IDs buttons", () => {
         const compiled = fixture.nativeElement as HTMLElement;
         expect(
