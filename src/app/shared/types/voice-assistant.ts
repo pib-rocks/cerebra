@@ -28,7 +28,6 @@ export class VoiceAssistant implements SidebarElement {
     images: boolean;
     live: boolean;
     idleTimeoutSeconds: number;
-    mcp: boolean;
     /** null means unmanaged: the Hermes profile keeps its own level. */
     reasoningEffort: ReasoningEffort | null;
     /** Set by the API when the selected catalogue row is retired. */
@@ -71,7 +70,6 @@ export class VoiceAssistant implements SidebarElement {
         this.images = settings.images;
         this.live = settings.live;
         this.idleTimeoutSeconds = settings.idleTimeoutSeconds;
-        this.mcp = settings.mcp;
         this.reasoningEffort = settings.reasoningEffort;
     }
 
@@ -83,7 +81,6 @@ export class VoiceAssistant implements SidebarElement {
         this.images = next.images;
         this.live = next.live;
         this.idleTimeoutSeconds = next.idleTimeoutSeconds;
-        this.mcp = next.mcp;
         this.reasoningEffort = next.reasoningEffort;
     }
     getName(): string {
@@ -119,9 +116,9 @@ export const VOICE_MODE_LIVE = "live";
 export const VOICE_MODE_TURN_BASED = "turn_based";
 
 /**
- * Columns the Add and Edit dialog writes. images and mcp stay on the form:
- * a personality has no column for either, and the MCP switch is a separate
- * control from toolCalling. reasoningEffort is a column. null keeps the
+ * Columns the Add and Edit dialog writes. images stays on the form: a
+ * personality has no column for it, and the image tool arrives through the
+ * one "Use tools" switch. reasoningEffort is a column. null keeps the
  * row NULL so the Hermes profile's own level is left alone; a level is
  * sent only when the operator chose one. memory and thinkingFiller are
  * columns the dialog does not collect, so an update leaves them as stored.
@@ -147,8 +144,7 @@ export interface VoiceAssistantDto {
     pauseThreshold: number;
 }
 
-export interface StoredPersonalityDialog
-    extends Partial<PersonalityDialogValues> {
+export interface StoredPersonalityDialog extends Partial<PersonalityDialogValues> {
     sttEngine?: string | null;
     ttsEngine?: string | null;
     voiceMode?: string | null;
@@ -169,7 +165,6 @@ export function personalityDialogFromRecord(
         images: source?.images,
         live: liveFromStored(source),
         idleTimeoutSeconds: idleFromStored(source),
-        mcp: source?.mcp,
         reasoningEffort: source?.reasoningEffort,
     });
 }

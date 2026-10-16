@@ -57,10 +57,6 @@ const REASONING_EFFORT_LABELS: Record<ReasoningEffort, string> = {
 
 export const IMAGES_NEED_TOOL_CALLING =
     "Images stay off while tool calling is off. An image is fetched by a tool.";
-export const IMAGES_NEED_MCP =
-    "Images stay off while the MCP server is off. The image tool is an MCP tool.";
-export const IMAGES_NEED_TOOL_CALLING_AND_MCP =
-    "Images stay off while tool calling and the MCP server are off.";
 export const TOOLS_NO_CAPABILITY = "This provider cannot call tools.";
 
 export interface PersonalityDialogValues {
@@ -70,7 +66,6 @@ export interface PersonalityDialogValues {
     images: boolean;
     live: boolean;
     idleTimeoutSeconds: number;
-    mcp: boolean;
     /**
      * null is unmanaged: the column is NULL and the profile's own level
      * stays in place. One of the eight levels is written only when the
@@ -113,7 +108,6 @@ export function readPersonalityDialog(
         images: source?.images === true,
         live: source?.live === true,
         idleTimeoutSeconds: idleTimeoutOrDefault(source?.idleTimeoutSeconds),
-        mcp: source?.mcp !== false,
         reasoningEffort: reasoningEffortFromStored(source?.reasoningEffort),
     };
 }
@@ -151,19 +145,12 @@ export function toolCallingAvailability(
     return {disabled: true, reason: TOOLS_NO_CAPABILITY};
 }
 
-/** Images require tool calling and the MCP server. Either one off greys the switch. */
-export function imageSwitchAvailability(
-    toolCalling: boolean,
-    mcp: boolean,
-): DialogBlock {
-    if (!toolCalling && !mcp) {
-        return {disabled: true, reason: IMAGES_NEED_TOOL_CALLING_AND_MCP};
-    }
+/**
+ * An image arrives from a tool, so the one "Use tools" switch gates it.
+ */
+export function imageSwitchAvailability(toolCalling: boolean): DialogBlock {
     if (!toolCalling) {
         return {disabled: true, reason: IMAGES_NEED_TOOL_CALLING};
-    }
-    if (!mcp) {
-        return {disabled: true, reason: IMAGES_NEED_MCP};
     }
     return OPEN;
 }
@@ -192,7 +179,7 @@ export function enforcePersonalityDialog(
     if (toolCallingAvailability(model, registryLoaded).disabled) {
         next.toolCalling = false;
     }
-    if (imageSwitchAvailability(next.toolCalling, next.mcp).disabled) {
+    if (imageSwitchAvailability(next.toolCalling).disabled) {
         next.images = false;
     }
     next.live = liveFromChosenModel(model, registryLoaded, next.live);

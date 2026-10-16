@@ -1,9 +1,7 @@
 import {AssistantModel} from "./assistantModel";
 import {
     DEFAULT_IDLE_TIMEOUT_SECONDS,
-    IMAGES_NEED_MCP,
     IMAGES_NEED_TOOL_CALLING,
-    IMAGES_NEED_TOOL_CALLING_AND_MCP,
     LOCAL_VOICE_INPUT,
     LOCAL_VOICE_OUTPUT,
     NEW_PERSONALITY_REASONING_EFFORT,
@@ -40,7 +38,6 @@ describe("personality dialog rules", () => {
             images: false,
             live: false,
             idleTimeoutSeconds: DEFAULT_IDLE_TIMEOUT_SECONDS,
-            mcp: true,
             reasoningEffort: null,
         });
     });
@@ -68,22 +65,14 @@ describe("personality dialog rules", () => {
         ).toBeNull();
     });
 
-    it("greys out images while tool calling or the MCP server is off", () => {
-        expect(imageSwitchAvailability(true, true)).toEqual({
+    it("greys out images while the one tool switch is off", () => {
+        expect(imageSwitchAvailability(true)).toEqual({
             disabled: false,
             reason: null,
         });
-        expect(imageSwitchAvailability(false, true)).toEqual({
+        expect(imageSwitchAvailability(false)).toEqual({
             disabled: true,
             reason: IMAGES_NEED_TOOL_CALLING,
-        });
-        expect(imageSwitchAvailability(true, false)).toEqual({
-            disabled: true,
-            reason: IMAGES_NEED_MCP,
-        });
-        expect(imageSwitchAvailability(false, false)).toEqual({
-            disabled: true,
-            reason: IMAGES_NEED_TOOL_CALLING_AND_MCP,
         });
     });
 
@@ -143,7 +132,7 @@ describe("personality dialog rules", () => {
             reason: TOOLS_NO_CAPABILITY,
         });
         const saved = enforcePersonalityDialog(
-            readPersonalityDialog({toolCalling: true, images: true, mcp: true}),
+            readPersonalityDialog({toolCalling: true, images: true}),
             noTools,
             true,
         );

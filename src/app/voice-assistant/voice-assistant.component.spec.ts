@@ -28,7 +28,6 @@ import {visibleConversation} from "../shared/types/visible-state";
 import {DIRECT_CHANNEL, SMART_CHANNEL} from "../shared/types/channel-router";
 import {
     DEFAULT_IDLE_TIMEOUT_SECONDS,
-    IMAGES_NEED_MCP,
     IMAGES_NEED_TOOL_CALLING,
     LOCAL_VOICE_INPUT,
     LOCAL_VOICE_OUTPUT,
@@ -702,7 +701,6 @@ describe("VoiceAssistantComponent", () => {
         expect(created.toolCalling).toBeTrue();
         expect(created.images).toBeFalse();
         expect(created.live).toBeFalse();
-        expect(created.mcp).toBeTrue();
         expect(created.idleTimeoutSeconds).toBe(DEFAULT_IDLE_TIMEOUT_SECONDS);
         expect(created.reasoningEffort).toBe(NEW_PERSONALITY_REASONING_EFFORT);
     });
@@ -827,9 +825,20 @@ describe("VoiceAssistantComponent", () => {
             document.body.querySelector("[data-test=CHK_Images]"),
         ).not.toBeNull();
         expect(document.body.querySelector("[data-test=CHK_Live]")).toBeNull();
+        // PC-58: exactly one tools control, labelled "Use tools". The second
+        // switch ("MCP server") is gone from the dialog.
+        expect(document.body.querySelector("[data-test=CHK_Mcp]")).toBeNull();
+        expect(document.body.querySelector("#row-mcp")).toBeNull();
         expect(
-            document.body.querySelector("[data-test=CHK_Mcp]"),
-        ).not.toBeNull();
+            document.body.querySelectorAll(
+                "#row-tool-calling input[type=checkbox]",
+            ).length,
+        ).toBe(1);
+        expect(
+            document.body
+                .querySelector("#label-tool-calling")
+                ?.textContent?.trim(),
+        ).toBe("Use tools");
         expect(
             document.body.querySelector("[data-test=DDN_Reasoning_Effort]"),
         ).not.toBeNull();
@@ -881,7 +890,7 @@ describe("VoiceAssistantComponent", () => {
         expect(component.personalityForm.getRawValue()["live"]).toBeTrue();
     });
 
-    it("greys out images when tool calling or the MCP server is off", () => {
+    it("greys out images when the tool switch is off", () => {
         const capable = new AssistantModel(
             7,
             "openai",
@@ -927,10 +936,6 @@ describe("VoiceAssistantComponent", () => {
         ).click();
         TestBed.inject(ApplicationRef).tick();
         expect(images().disabled).toBeFalse();
-        (document.body.querySelector("#mcp-input") as HTMLInputElement).click();
-        TestBed.inject(ApplicationRef).tick();
-        expect(images().disabled).toBeTrue();
-        expect(reason()).toContain(IMAGES_NEED_MCP);
     });
 
     it("offers a live model in the list, and choosing it is the whole statement", () => {
@@ -980,8 +985,8 @@ describe("VoiceAssistantComponent", () => {
                 ) as HTMLSelectElement
             ).options,
         );
-        const liveOption = options.find(
-            (option) => option.textContent?.includes("Gemini 3.8 Live"),
+        const liveOption = options.find((option) =>
+            option.textContent?.includes("Gemini 3.8 Live"),
         );
         expect(liveOption).toBeDefined();
         expect(liveOption?.disabled).toBeFalse();
