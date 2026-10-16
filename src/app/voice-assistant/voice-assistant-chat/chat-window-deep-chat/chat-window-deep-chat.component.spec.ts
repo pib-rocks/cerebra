@@ -194,6 +194,20 @@ describe("ChatWindowDeepChatComponent", () => {
         component.ngAfterViewInit();
     });
 
+    /**
+     * Models reach the component through the service's own subject - the
+     * component subscribes to it. The spy's property is not writable, so
+     * replacing it with a new BehaviorSubject silently left the component
+     * with no catalogue at all: every missing-key assertion in this file
+     * passed vacuously (PC-63).
+     */
+    const publishModels = (models: AssistantModel[]): void => {
+        const service = TestBed.inject(
+            VoiceAssistantService,
+        ) as jasmine.SpyObj<VoiceAssistantService>;
+        service.assistantModelsSubject.next(models);
+    };
+
     afterEach(() => {
         component.ngOnDestroy();
     });
@@ -901,7 +915,7 @@ describe("ChatWindowDeepChatComponent", () => {
             null,
             false,
         );
-        voiceAssistant.assistantModelsSubject = new BehaviorSubject([model]);
+        publishModels([model]);
         voiceAssistant.getPersonality.and.returnValue(
             new VoiceAssistant("persona-1", "Ada", "Female", 0.8, "", 4),
         );
@@ -948,7 +962,7 @@ describe("ChatWindowDeepChatComponent", () => {
             "provider-4",
             false,
         );
-        voiceAssistant.assistantModelsSubject = new BehaviorSubject([cloud]);
+        publishModels([cloud]);
         voiceAssistant.getPersonality.and.returnValue(
             new VoiceAssistant(
                 "persona-1",
@@ -1002,7 +1016,7 @@ describe("ChatWindowDeepChatComponent", () => {
             null,
             false,
         );
-        voiceAssistant.assistantModelsSubject = new BehaviorSubject([model]);
+        publishModels([model]);
         voiceAssistant.getPersonality.and.returnValue(
             new VoiceAssistant("persona-1", "Ada", "Female", 0.8, "", 4),
         );
@@ -1054,10 +1068,7 @@ describe("ChatWindowDeepChatComponent", () => {
             "provider-1",
             false,
         );
-        voiceAssistant.assistantModelsSubject = new BehaviorSubject([
-            flash,
-            live,
-        ]);
+        publishModels([flash, live]);
         const persona = new VoiceAssistant(
             "persona-1",
             "Ada",
@@ -1130,7 +1141,7 @@ describe("ChatWindowDeepChatComponent", () => {
             stt: false,
             tts: false,
         };
-        voiceAssistant.assistantModelsSubject = new BehaviorSubject([
+        publishModels([
             new AssistantModel(
                 7,
                 "gemini-3.8-flash",
