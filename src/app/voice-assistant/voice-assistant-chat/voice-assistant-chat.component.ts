@@ -1,11 +1,15 @@
 import {
+    ChangeDetectorRef,
     Component,
+    DestroyRef,
     OnDestroy,
     OnInit,
     TemplateRef,
     ViewChild,
     ChangeDetectionStrategy,
+    inject,
 } from "@angular/core";
+import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 import {FormControl, Validators, ReactiveFormsModule} from "@angular/forms";
 import {
     ActivatedRoute,
@@ -22,9 +26,17 @@ import {CerebraRegex} from "src/app/shared/types/cerebra-regex";
 import {Chat, ChatDto} from "src/app/shared/types/chat.class";
 import {VoiceAssistant} from "src/app/shared/types/voice-assistant";
 import {VoiceAssistantState} from "../../shared/types/voice-assistant-state";
-import {chatStartRefusal} from "src/app/shared/types/provider-registry";
+import {
+    TokenProbeState,
+    chatStartRefusal,
+    effectiveCloudTokenStored,
+} from "src/app/shared/types/provider-registry";
+import {KeyStoreService} from "src/app/system/keys/key-store.service";
 import {Location} from "@angular/common";
-import {TokenService} from "src/app/shared/services/token.service";
+import {
+    TokenService,
+    normalizeTokenStatus,
+} from "src/app/shared/services/token.service";
 import {SideBarRightComponent} from "../../ui-components/sidebar-right/sidebar-right.component";
 
 @Component({
@@ -40,6 +52,9 @@ import {SideBarRightComponent} from "../../ui-components/sidebar-right/sidebar-r
     ],
 })
 export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
+    private readonly destroyRef = inject(DestroyRef);
+    private readonly changeDetector = inject(ChangeDetectorRef);
+
     @ViewChild("modalContent") modalContent: TemplateRef<any> | undefined;
     ngbModalRef?: NgbModalRef;
     personalityIcon: string = "../../assets/voice-assistant-svgs/chat/chat.svg";
@@ -60,6 +75,9 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
     routeParamMapSubscription?: Subscription;
     smartConnectActive = false;
     cloudTokenStored = false;
+    tokenProbe: TokenProbeState = "unknown";
+    private probeCloudTokenStored = false;
+    private credentialRefs: string[] = [];
 
     constructor(
         private readonly modalService: NgbModal,
@@ -68,6 +86,7 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
         private readonly voiceAssistantService: VoiceAssistantService,
         private readonly route: ActivatedRoute,
         private readonly tokenService: TokenService,
+        private readonly keyStore: KeyStoreService,
         location: Location,
     ) {
         location.onUrlChange((url, _state) => {
@@ -77,6 +96,20 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
+        this.keyStore
+            .status()
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe((status) => {
+                this.credentialRefs = status.credentialRefs ?? [];
+                this.refreshCloudPresence();
+                this.changeDetector.markForCheck();
+            });
+        this.voiceAssistantService.assistantModelsSubject
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe(() => {
+                this.refreshCloudPresence();
+                this.changeDetector.markForCheck();
+            });
         // set current state of VA (in case another user is using it)
         this.voiceAssistantStateSubscription =
             this.voiceAssistantService.voiceAssistantStateObservable.subscribe(
@@ -96,13 +129,20 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
                         .getChatById(state.chatId)
                         .subscribe((chat) => {
                             this.activePersonalityId = chat.personalityId;
+                            this.changeDetector.markForCheck();
                         });
+                    this.changeDetector.markForCheck();
                 },
             );
         this.tokenStatusSubscription = this.tokenService.tokenStatus$.subscribe(
             (response) => {
-                this.smartConnectActive = response.tokenActive;
-                this.cloudTokenStored = response.tokenExists;
+                const status = normalizeTokenStatus(response);
+                this.smartConnectActive =
+                    status.tokenExists === true && status.tokenActive === true;
+                this.probeCloudTokenStored = status.tokenExists === true;
+                this.tokenProbe = status.service;
+                this.refreshCloudPresence();
+                this.changeDetector.markForCheck();
             },
         );
         this.routeParamMapSubscription = this.route.paramMap.subscribe(
@@ -241,6 +281,17 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
             models,
             this.cloudTokenStored,
             personality.needsNewModel,
+            this.tokenProbe,
+        );
+    }
+
+    private refreshCloudPresence(): void {
+        const models =
+            this.voiceAssistantService.assistantModelsSubject?.getValue() ?? [];
+        this.cloudTokenStored = effectiveCloudTokenStored(
+            this.probeCloudTokenStored,
+            models,
+            this.credentialRefs,
         );
     }
 

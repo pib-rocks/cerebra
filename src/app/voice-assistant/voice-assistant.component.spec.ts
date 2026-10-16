@@ -1,4 +1,4 @@
-import {ApplicationRef} from "@angular/core";
+import {ApplicationRef, provideZonelessChangeDetection} from "@angular/core";
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 
 import {VoiceAssistantComponent} from "./voice-assistant.component";
@@ -12,7 +12,10 @@ import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {HttpClientTestingModule} from "@angular/common/http/testing";
 import {VoiceAssistant} from "../shared/types/voice-assistant";
 import {BehaviorSubject, Subject} from "rxjs";
-import {TokenService} from "../shared/services/token.service";
+import {
+    TokenService,
+    normalizeTokenStatus,
+} from "../shared/services/token.service";
 import {AssistantModel} from "../shared/types/assistantModel";
 import {
     DEFAULT_PROVIDER_REF,
@@ -1431,10 +1434,9 @@ describe("VoiceAssistantComponent", () => {
     function setCloudToken(stored: boolean): void {
         (
             TestBed.inject(TokenService) as unknown as {
-                tokenStatus$: BehaviorSubject<{
-                    tokenExists: boolean;
-                    tokenActive: boolean;
-                }>;
+                tokenStatus$: BehaviorSubject<
+                    Parameters<typeof normalizeTokenStatus>[0]
+                >;
             }
         ).tokenStatus$.next({tokenExists: stored, tokenActive: stored});
     }
@@ -1601,5 +1603,109 @@ describe("VoiceAssistantComponent", () => {
         );
         expect(stored.providerRef).toBe(String(keyed.id));
         component.ngbModalRef?.close();
+    });
+});
+
+describe("VoiceAssistantComponent (zoneless)", () => {
+    it("rebuilds model selection after cloud credential metadata arrives", async () => {
+        const tokenStatus = new BehaviorSubject({
+            tokenExists: false,
+            tokenActive: false,
+            service: "available" as const,
+            error: null,
+        });
+        const models = new BehaviorSubject<AssistantModel[]>([]);
+        const voiceAssistantServiceSpy = jasmine.createSpyObj(
+            "VoiceAssistantService",
+            [
+                "setVoiceAssistantState",
+                "getSubject",
+                "getPersonality",
+                "createPersonality",
+                "updatePersonalityById",
+                "getAllAssistantModels",
+            ],
+            {
+                voiceAssistantStateObservable: new BehaviorSubject({
+                    turnedOn: false,
+                    chatId: "",
+                }),
+                uuidSubject: new BehaviorSubject({}),
+                personalities: [],
+                assistantModelsSubject: models,
+            },
+        );
+        const channelCapability = jasmine.createSpyObj(
+            "ChannelCapabilityService",
+            [],
+            {smartChatsEnabled$: new BehaviorSubject(true)},
+        );
+        const idle = visibleConversation({
+            voiceTurnedOn: false,
+            listening: false,
+            assistantSpeaking: false,
+            holderName: null,
+            keyStoreDegraded: false,
+            liveUnavailable: false,
+        });
+        const tokenProbeSubject = new Subject<unknown>();
+
+        await TestBed.configureTestingModule({
+            imports: [
+                VoiceAssistantComponent,
+                ReactiveFormsModule,
+                RouterTestingModule,
+                HttpClientTestingModule,
+            ],
+            providers: [
+                provideZonelessChangeDetection(),
+                {
+                    provide: VoiceAssistantService,
+                    useValue: voiceAssistantServiceSpy,
+                },
+                {
+                    provide: TokenService,
+                    useValue: {
+                        tokenStatus$: tokenStatus.asObservable(),
+                        checkTokenExists: () => tokenProbeSubject,
+                    },
+                },
+                {
+                    provide: ChannelCapabilityService,
+                    useValue: channelCapability,
+                },
+                {
+                    provide: VisibleStateService,
+                    useValue: {
+                        snapshot: idle,
+                        snapshot$: new BehaviorSubject(idle),
+                    },
+                },
+            ],
+        }).compileComponents();
+
+        const fixture = TestBed.createComponent(VoiceAssistantComponent);
+        fixture.detectChanges();
+        await fixture.whenStable();
+        const cloud = new AssistantModel(
+            10,
+            "pib-cloud",
+            "pib.Cloud",
+            true,
+            "https://cloud.example/v1",
+            {
+                tools: true,
+                images: true,
+                live: false,
+                stt: false,
+                tts: false,
+            },
+            "provider-10",
+            true,
+        );
+        models.next([cloud]);
+        await fixture.whenStable();
+
+        expect(fixture.componentInstance.cloudTokenStored).toBeTrue();
     });
 });

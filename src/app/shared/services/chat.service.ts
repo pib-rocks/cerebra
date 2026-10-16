@@ -1,6 +1,17 @@
 import {Injectable} from "@angular/core";
 import {Chat, ChatDto} from "../types/chat.class";
-import {BehaviorSubject, Observable, catchError, map} from "rxjs";
+import {
+    BehaviorSubject,
+    Observable,
+    catchError,
+    map,
+    switchMap,
+    throwError,
+} from "rxjs";
+import {
+    CHAT_TRANSPORT_UNAVAILABLE,
+    chatTransportUnavailableText,
+} from "../types/provider-registry";
 import {ApiService} from "./api.service";
 import {UrlConstants} from "./url.constants";
 import {SidebarService} from "../interfaces/sidebar-service.interface";
@@ -194,15 +205,33 @@ export class ChatService implements SidebarService {
             )}ms`,
         );
 
-        return this.rosService
-            .sendChatMessage(chatId, content)
-            .pipe(
-                catchError(() =>
-                    this.createChatMessage(chatId, content).pipe(
-                        map(() => void 0),
-                    ),
+        return this.rosService.sendChatMessage(chatId, content).pipe(
+            catchError((rosError) =>
+                this.createChatMessage(chatId, content).pipe(
+                    switchMap(() => {
+                        this.pendingSendStartMsByChatId.delete(chatId);
+                        const transport =
+                            chatTransportUnavailableText(rosError);
+                        if (transport != null) {
+                            return throwError(
+                                () => new Error(CHAT_TRANSPORT_UNAVAILABLE),
+                            );
+                        }
+                        const detail =
+                            rosError instanceof Error
+                                ? rosError.message
+                                : String(rosError);
+                        return throwError(
+                            () => new Error(`Chat dispatch failed: ${detail}`),
+                        );
+                    }),
+                    catchError((restError) => {
+                        this.pendingSendStartMsByChatId.delete(chatId);
+                        return throwError(() => restError);
+                    }),
                 ),
-            );
+            ),
+        );
     }
 
     private logFirstTokenIfPending(rosChatMessage: {

@@ -1,3 +1,4 @@
+import {provideZonelessChangeDetection} from "@angular/core";
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 
 import {VoiceAssistantChatComponent} from "./voice-assistant-chat.component";
@@ -17,9 +18,15 @@ import {VoiceAssistant} from "src/app/shared/types/voice-assistant";
 import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
 import {RouterTestingModule} from "@angular/router/testing";
 import {SideBarRightComponent} from "src/app/ui-components/sidebar-right/sidebar-right.component";
-import {TokenService} from "src/app/shared/services/token.service";
+import {
+    TokenService,
+    normalizeTokenStatus,
+} from "src/app/shared/services/token.service";
 import {DEGRADED_MODE} from "src/app/system/keys/key-store-session";
 import {KeyStoreSessionService} from "src/app/system/keys/key-store-session.service";
+import {KeyStoreService} from "src/app/system/keys/key-store.service";
+import {AssistantModel} from "src/app/shared/types/assistantModel";
+import {CLOUD_TOKEN_API_NAME} from "src/app/shared/types/provider-registry";
 export class MockNgbModalRef {
     componentInstance = {
         prompt: undefined,
@@ -33,10 +40,8 @@ describe("VoiceAssistantChatComponent", () => {
     let fixture: ComponentFixture<VoiceAssistantChatComponent>;
     let chatService: ChatService;
     let modalService: NgbModal;
-    let tokenStatusSubject: Subject<{
-        tokenExists: boolean;
-        tokenActive: boolean;
-    }>;
+    type TokenStatusInput = Parameters<typeof normalizeTokenStatus>[0];
+    let tokenStatusSubject: Subject<TokenStatusInput>;
 
     beforeEach(async () => {
         const modalServiceSpy: jasmine.SpyObj<NgbModal> = jasmine.createSpyObj(
@@ -92,6 +97,16 @@ describe("VoiceAssistantChatComponent", () => {
                 {
                     provide: TokenService,
                     useValue: tokenServiceMock,
+                },
+                {
+                    provide: KeyStoreService,
+                    useValue: {
+                        status: () =>
+                            of({
+                                encryptKeyStorage: true,
+                                credentialRefs: [],
+                            }),
+                    },
                 },
             ],
             imports: [
@@ -296,6 +311,31 @@ describe("VoiceAssistantChatComponent", () => {
         expect(component.cloudTokenStored).toBeFalse();
     });
 
+    it("treats a persisted cloud credential as stored for chat refusal", () => {
+        const voiceAssistant = TestBed.inject(VoiceAssistantService);
+        const flags = {
+            tools: true,
+            images: true,
+            live: false,
+            stt: false,
+            tts: false,
+        };
+        const cloud = new AssistantModel(
+            1,
+            CLOUD_TOKEN_API_NAME,
+            "pib.Cloud",
+            true,
+            "https://cloud.example/v1",
+            flags,
+            "provider-1",
+            true,
+        );
+        voiceAssistant.assistantModelsSubject.next([cloud]);
+        tokenStatusSubject.next({tokenExists: false, tokenActive: false});
+
+        expect(component.cloudTokenStored).toBeTrue();
+    });
+
     it("should set smartConnectActive to true when token is active", () => {
         tokenStatusSubject.next({
             tokenExists: true,
@@ -382,5 +422,107 @@ describe("VoiceAssistantChatComponent", () => {
         if (previous != null) {
             Object.defineProperty(router, "url", previous);
         }
+    });
+});
+
+describe("VoiceAssistantChatComponent (zoneless)", () => {
+    it("refreshes cloud presence when the catalogue updates", async () => {
+        const tokenStatusSubject = new Subject<{
+            tokenExists: boolean;
+            tokenActive: boolean;
+        }>();
+        await TestBed.configureTestingModule({
+            providers: [
+                provideZonelessChangeDetection(),
+                {
+                    provide: NgbModal,
+                    useValue: jasmine.createSpyObj("NgbModal", ["open"]),
+                },
+                {
+                    provide: Router,
+                    useValue: {
+                        navigate: () => Promise.resolve(true),
+                        url: "localhost/voice-assistant/personality/1234",
+                    },
+                },
+                {
+                    provide: ActivatedRoute,
+                    useValue: {
+                        paramMap: of(
+                            convertToParamMap({personalityUuid: "1234"}),
+                        ),
+                        snapshot: {
+                            params: {
+                                personality: new VoiceAssistant(
+                                    "1234",
+                                    "Test",
+                                    "Female",
+                                    0.8,
+                                    "Testdescription",
+                                ),
+                            },
+                        },
+                    },
+                },
+                {
+                    provide: TokenService,
+                    useValue: {
+                        tokenStatus$: tokenStatusSubject.asObservable(),
+                    },
+                },
+                {
+                    provide: KeyStoreService,
+                    useValue: {
+                        status: () =>
+                            of({
+                                encryptKeyStorage: true,
+                                credentialRefs: [],
+                            }),
+                    },
+                },
+            ],
+            imports: [
+                RouterTestingModule,
+                ReactiveFormsModule,
+                FormsModule,
+                HttpClientTestingModule,
+                VoiceAssistantChatComponent,
+                SideBarRightComponent,
+            ],
+        }).compileComponents();
+
+        const chatService = TestBed.inject(ChatService);
+        chatService.chatSubject = new BehaviorSubject<Chat[]>([
+            new Chat("Testtopic0", "123", "123"),
+        ]);
+        const fixture = TestBed.createComponent(VoiceAssistantChatComponent);
+        fixture.componentInstance.subject = chatService.getSubject("123");
+        fixture.detectChanges();
+        tokenStatusSubject.next({tokenExists: false, tokenActive: false});
+        await fixture.whenStable();
+
+        const voiceAssistant = TestBed.inject(VoiceAssistantService);
+        const flags = {
+            tools: true,
+            images: true,
+            live: false,
+            stt: false,
+            tts: false,
+        };
+        voiceAssistant.assistantModelsSubject.next([
+            new AssistantModel(
+                1,
+                CLOUD_TOKEN_API_NAME,
+                "pib.Cloud",
+                true,
+                "https://cloud.example/v1",
+                flags,
+                "provider-1",
+                true,
+            ),
+        ]);
+        await fixture.whenStable();
+
+        expect(fixture.componentInstance.cloudTokenStored).toBeTrue();
     });
 });

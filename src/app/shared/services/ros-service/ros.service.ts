@@ -666,25 +666,21 @@ export class RosService implements IRosService {
     }
 
     checkTokenExists(): Observable<ExistTokenResponse> {
-        const failedResponse: ExistTokenResponse = {
-            token_exists: false,
-            token_active: false,
-        };
-        const subject: Subject<ExistTokenResponse> = new ReplaySubject();
+        const subject: Subject<ExistTokenResponse> = new ReplaySubject(1);
         if (this.existTokenService === undefined) {
-            subject.next(failedResponse);
-            return subject;
+            subject.error(new Error("Token service is undefined"));
+            return subject.asObservable();
         }
 
         const successCallback = (response: ExistTokenResponse) => {
             subject.next(response);
         };
-        const errorCallback = (_error: any) => {
-            subject.next(failedResponse);
+        const errorCallback = (error: unknown) => {
+            subject.error(new Error(serviceErrorText(error)));
         };
         this.existTokenService.callService({}, successCallback, errorCallback);
 
-        return subject;
+        return subject.asObservable();
     }
 
     deleteTokenMessage() {
@@ -883,6 +879,10 @@ export class RosService implements IRosService {
 
     sendChatMessage(chatId: string, content: string): Observable<void> {
         const subject: Subject<void> = new ReplaySubject();
+        if (this.sendChatMessageService === undefined) {
+            subject.error(new Error("Chat service is undefined"));
+            return subject.asObservable();
+        }
         const request: SendChatMessageRequest = {
             chat_id: chatId,
             content: content,
@@ -902,7 +902,7 @@ export class RosService implements IRosService {
             successCallback,
             errorCallback,
         );
-        return subject;
+        return subject.asObservable();
     }
 
     getChatIsListening(chatId: string): Observable<boolean> {
@@ -1065,4 +1065,17 @@ export class RosService implements IRosService {
         }
         this.displayTextTopic.publish({data: text});
     }
+}
+
+function serviceErrorText(error: unknown): string {
+    if (typeof error === "string" && error.trim() !== "") {
+        return error;
+    }
+    if (error instanceof Error && error.message.trim() !== "") {
+        return error.message;
+    }
+    if (error == null) {
+        return "Token service error";
+    }
+    return String(error);
 }

@@ -16,8 +16,9 @@ import {
     toolCallingAvailability,
     voiceInputOptions,
     voiceOutputOptions,
+    reconcileVoiceSelection,
 } from "./personality-dialog";
-import {ProviderCapabilities} from "./provider-registry";
+import {CLOUD_TOKEN_API_NAME, ProviderCapabilities} from "./provider-registry";
 
 function flags(partial: Partial<ProviderCapabilities>): ProviderCapabilities {
     return {
@@ -259,5 +260,54 @@ describe("personality dialog rules", () => {
         expect(
             voiceOutputOptions([retired], false).map((option) => option.label),
         ).not.toContain(retired.visualName);
+    });
+
+    it("keeps cloud speech rows visible on a persisted credential while the token probe reloads", () => {
+        const cloud = new AssistantModel(
+            5,
+            CLOUD_TOKEN_API_NAME,
+            "pib.Cloud",
+            true,
+            null,
+            flags({stt: true, tts: true, tools: true, images: true}),
+            "provider-4",
+            false,
+        );
+        expect(
+            voiceInputOptions([cloud], false, "loading").map(
+                (option) => option.id,
+            ),
+        ).toEqual([LOCAL_VOICE_INPUT, "5"]);
+        expect(
+            voiceOutputOptions([cloud], false, "unavailable").map(
+                (option) => option.id,
+            ),
+        ).toEqual([LOCAL_VOICE_OUTPUT, "5"]);
+    });
+
+    it("does not silently fall back to local speech while the token probe is unfinished", () => {
+        const cloud = new AssistantModel(
+            5,
+            CLOUD_TOKEN_API_NAME,
+            "pib.Cloud",
+            true,
+            null,
+            flags({stt: true, tts: true, tools: true, images: true}),
+            null,
+            false,
+        );
+        const options = voiceInputOptions([cloud], true, "loading");
+        expect(options.map((option) => option.id)).toEqual([LOCAL_VOICE_INPUT]);
+        expect(
+            reconcileVoiceSelection("5", options, LOCAL_VOICE_INPUT, "loading"),
+        ).toBe("5");
+        expect(
+            reconcileVoiceSelection(
+                "5",
+                voiceInputOptions([cloud], false, "available"),
+                LOCAL_VOICE_INPUT,
+                "available",
+            ),
+        ).toBe(LOCAL_VOICE_INPUT);
     });
 });

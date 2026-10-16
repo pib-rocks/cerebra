@@ -780,6 +780,17 @@ describe("RosService", () => {
         );
     });
 
+    it("should error when the chat ROS service is undefined", () => {
+        rosService["sendChatMessageService"] = undefined as any;
+        rosService
+            .sendChatMessage(chatId, chatMessageContent)
+            .subscribe(subscriber);
+        expect(subscriber.next).not.toHaveBeenCalled();
+        expect(subscriber.error).toHaveBeenCalledOnceWith(
+            new Error("Chat service is undefined"),
+        );
+    });
+
     it("should check if token exists", () => {
         const callServiceSpy = spyOn(
             rosService["existTokenService"],

@@ -1,11 +1,15 @@
 import {HttpErrorResponse} from "@angular/common/http";
+import {provideZonelessChangeDetection} from "@angular/core";
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-import {BehaviorSubject, of, throwError} from "rxjs";
+import {BehaviorSubject, of, Subject, throwError} from "rxjs";
 import {KeysComponent} from "./keys.component";
 import {KeyStoreService} from "./key-store.service";
 import {KeyStoreSessionService} from "./key-store-session.service";
 import {UNLOCKED_MODE} from "./key-store-session";
-import {TokenService} from "src/app/shared/services/token.service";
+import {
+    TokenService,
+    normalizeTokenStatus,
+} from "src/app/shared/services/token.service";
 import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
 import {RosService} from "src/app/shared/services/ros-service/ros.service";
 import {AssistantModel} from "src/app/shared/types/assistantModel";
@@ -22,10 +26,8 @@ describe("KeysComponent", () => {
     let keyStore: jasmine.SpyObj<KeyStoreService>;
     let voiceAssistant: jasmine.SpyObj<VoiceAssistantService>;
     let ros: jasmine.SpyObj<RosService>;
-    let tokenStatus: BehaviorSubject<{
-        tokenExists: boolean;
-        tokenActive: boolean;
-    }>;
+    type TokenStatusInput = Parameters<typeof normalizeTokenStatus>[0];
+    let tokenStatus: BehaviorSubject<TokenStatusInput>;
     let models: BehaviorSubject<AssistantModel[]>;
 
     const flags = {
@@ -57,10 +59,7 @@ describe("KeysComponent", () => {
     );
 
     beforeEach(async () => {
-        tokenStatus = new BehaviorSubject<{
-            tokenExists: boolean;
-            tokenActive: boolean;
-        }>({
+        tokenStatus = new BehaviorSubject<TokenStatusInput>({
             tokenExists: true,
             tokenActive: true,
         });
@@ -796,5 +795,112 @@ describe("KeysComponent", () => {
         );
         expect(text("#keys-provider-state-2")).toBe("Key stored");
         expect(text("#keys-notice")).toBe("Key stored for OpenAI.");
+    });
+
+    it("does not claim the cloud token is missing when a credential ref is persisted", () => {
+        const storedCloud = new AssistantModel(
+            1,
+            CLOUD_TOKEN_API_NAME,
+            "pib.Cloud",
+            true,
+            "https://cloud.example/v1",
+            flags,
+            "provider-1",
+            true,
+        );
+        models.next([storedCloud, gpt]);
+        tokenStatus.next({
+            tokenExists: false,
+            tokenActive: false,
+            service: "unavailable",
+            error: "Service /get_token_exists does not exist",
+        });
+        fixture.detectChanges();
+
+        expect(text("#keys-cloud-status")).not.toContain("not stored");
+        expect(text("#keys-cloud-status")).toContain("credential is stored");
+    });
+});
+
+describe("KeysComponent (zoneless)", () => {
+    it("updates cloud status text after the token probe resolves", async () => {
+        const tokenStatus = new BehaviorSubject<
+            Parameters<typeof normalizeTokenStatus>[0]
+        >({
+            tokenExists: false,
+            tokenActive: false,
+        });
+        const models = new BehaviorSubject<AssistantModel[]>([]);
+        const keyStore = jasmine.createSpyObj("KeyStoreService", [
+            "putSecret",
+            "deleteSecret",
+            "changePassword",
+            "setEncryption",
+            "status",
+        ]);
+        keyStore.status.and.returnValue(
+            of({encryptKeyStorage: true, credentialRefs: ["provider-1"]}),
+        );
+        const flags = {
+            tools: true,
+            images: true,
+            live: false,
+            stt: false,
+            tts: false,
+        };
+        const cloud = new AssistantModel(
+            1,
+            CLOUD_TOKEN_API_NAME,
+            "pib.Cloud",
+            true,
+            "https://cloud.example/v1",
+            flags,
+            "provider-1",
+            true,
+        );
+        const voiceAssistant = jasmine.createSpyObj(
+            "VoiceAssistantService",
+            ["getAllAssistantModels", "setProviderCredential"],
+            {assistantModelsSubject: models},
+        );
+
+        await TestBed.configureTestingModule({
+            imports: [KeysComponent],
+            providers: [
+                provideZonelessChangeDetection(),
+                {provide: KeyStoreService, useValue: keyStore},
+                {provide: VoiceAssistantService, useValue: voiceAssistant},
+                {
+                    provide: RosService,
+                    useValue: jasmine.createSpyObj("RosService", [
+                        "deleteTokenMessage",
+                    ]),
+                },
+                {
+                    provide: TokenService,
+                    useValue: {
+                        tokenStatus$: tokenStatus.asObservable(),
+                        checkTokenExists: () => new Subject(),
+                    },
+                },
+                KeyStoreSessionService,
+            ],
+        }).compileComponents();
+
+        const fixture = TestBed.createComponent(KeysComponent);
+        models.next([cloud]);
+        tokenStatus.next({
+            tokenExists: false,
+            tokenActive: false,
+            service: "unavailable",
+            error: "probe failed",
+        });
+        await fixture.whenStable();
+
+        const status = (
+            fixture.nativeElement.querySelector("#keys-cloud-status")
+                ?.textContent ?? ""
+        ).trim();
+        expect(status).toContain("credential is stored");
     });
 });

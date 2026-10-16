@@ -1,5 +1,6 @@
 import {
     ChangeDetectionStrategy,
+    ChangeDetectorRef,
     Component,
     DestroyRef,
     OnInit,
@@ -9,10 +10,15 @@ import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 import {AssistantModel} from "src/app/shared/types/assistantModel";
 import {
     ProviderKeyAccount,
+    TokenProbeState,
+    persistedCloudCredentialPresent,
     providerKeyAccounts,
     usesCloudToken,
 } from "src/app/shared/types/provider-registry";
-import {TokenService} from "src/app/shared/services/token.service";
+import {
+    TokenService,
+    normalizeTokenStatus,
+} from "src/app/shared/services/token.service";
 import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
 import {RosService} from "src/app/shared/services/ros-service/ros.service";
 import {KeyStoreSessionService} from "./key-store-session.service";
@@ -31,11 +37,15 @@ import {
 })
 export class KeysComponent implements OnInit {
     private readonly destroyRef = inject(DestroyRef);
+    private readonly changeDetector = inject(ChangeDetectorRef);
 
     encryptKeyStorage = true;
     credentialRefs: string[] = [];
-    cloudTokenStored = false;
+    cloudCredentialPresent = false;
     cloudTokenActive = false;
+    tokenProbe: TokenProbeState = "unknown";
+    private probeCloudTokenStored = false;
+    private tokenProbeError: string | null = null;
     providers: AssistantModel[] = [];
     keyProviders: ProviderKeyAccount[] = [];
     password = "";
@@ -62,8 +72,13 @@ export class KeysComponent implements OnInit {
         this.tokenService.tokenStatus$
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe((status) => {
-                this.cloudTokenStored = status.tokenExists;
-                this.cloudTokenActive = status.tokenActive;
+                const resolved = normalizeTokenStatus(status);
+                this.tokenProbe = resolved.service;
+                this.tokenProbeError = resolved.error;
+                this.probeCloudTokenStored = resolved.tokenExists === true;
+                this.cloudTokenActive = resolved.tokenActive === true;
+                this.refreshCloudPresence();
+                this.changeDetector.markForCheck();
             });
         this.voiceAssistantService.assistantModelsSubject
             .pipe(takeUntilDestroyed(this.destroyRef))
@@ -72,6 +87,8 @@ export class KeysComponent implements OnInit {
                     (model) => !usesCloudToken(model) && !model.retired,
                 );
                 this.keyProviders = providerKeyAccounts(this.providers);
+                this.refreshCloudPresence();
+                this.changeDetector.markForCheck();
             });
         this.voiceAssistantService.getAllAssistantModels();
         this.loadStatus();
@@ -85,13 +102,39 @@ export class KeysComponent implements OnInit {
     }
 
     cloudStatus(): string {
-        if (!this.cloudTokenStored) {
+        if (this.tokenProbe === "unavailable") {
+            if (this.cloudCredentialPresent) {
+                return this.tokenProbeError
+                    ? `SmartConnect credential is stored. ${this.tokenProbeError}`
+                    : "SmartConnect credential is stored. Token status is unavailable.";
+            }
+            return this.tokenProbeError
+                ? `SmartConnect status is unavailable. ${this.tokenProbeError}`
+                : "SmartConnect status is unavailable.";
+        }
+        if (this.tokenProbe === "unknown" || this.tokenProbe === "loading") {
+            return "SmartConnect status is loading.";
+        }
+        if (!this.cloudCredentialPresent && !this.probeCloudTokenStored) {
             return "SmartConnect token is not stored.";
         }
-        if (this.cloudTokenActive) {
-            return "SmartConnect token is stored and active.";
+        if (
+            this.cloudCredentialPresent &&
+            this.tokenProbe !== "available" &&
+            !this.probeCloudTokenStored
+        ) {
+            return this.tokenProbeError
+                ? `SmartConnect credential is stored. ${this.tokenProbeError}`
+                : "SmartConnect credential is stored. Token status is unavailable.";
         }
-        return "SmartConnect token is stored.";
+        if (!this.cloudTokenActive) {
+            return "SmartConnect token is stored but not active.";
+        }
+        return "SmartConnect token is stored and active.";
+    }
+
+    cloudDeleteEnabled(): boolean {
+        return this.cloudCredentialPresent || this.probeCloudTokenStored;
     }
 
     onPasswordInput(event: Event): void {
@@ -179,6 +222,8 @@ export class KeysComponent implements OnInit {
     deleteCloudToken(): void {
         this.rosService.deleteTokenMessage();
         this.tokenService.checkTokenExists();
+        this.loadStatus();
+        this.voiceAssistantService.getAllAssistantModels();
         this.notice =
             "SmartConnect token deleted. Re-enter it in SmartConnect.";
         this.error = null;
@@ -388,5 +433,16 @@ export class KeysComponent implements OnInit {
         this.encryptKeyStorage = status.encryptKeyStorage;
         this.credentialRefs = status.credentialRefs ?? [];
         this.session.noteStatus(status);
+        this.refreshCloudPresence();
+        this.changeDetector.markForCheck();
+    }
+
+    private refreshCloudPresence(): void {
+        const catalogue =
+            this.voiceAssistantService.assistantModelsSubject?.getValue() ?? [];
+        this.cloudCredentialPresent = persistedCloudCredentialPresent(
+            catalogue,
+            this.credentialRefs,
+        );
     }
 }

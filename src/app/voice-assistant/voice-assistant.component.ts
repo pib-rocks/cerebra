@@ -1,4 +1,5 @@
 import {
+    ChangeDetectorRef,
     Component,
     OnInit,
     TemplateRef,
@@ -47,10 +48,14 @@ import {
     toolCallingAvailability,
     voiceInputOptions,
     voiceOutputOptions,
+    reconcileVoiceSelection,
 } from "../shared/types/personality-dialog";
 import {
     DEFAULT_PROVIDER_REF,
     MISSING_KEY_MARK,
+    TokenProbeState,
+    effectiveCloudTokenStored,
+    credentialNotice,
     isOfflineModel,
     isProviderConfigured,
     isProviderOptionDisabled,
@@ -62,7 +67,10 @@ import {
     retainGoneReference,
     startingModelForNewPersonality,
 } from "../shared/types/provider-registry";
-import {TokenService} from "../shared/services/token.service";
+import {
+    TokenService,
+    normalizeTokenStatus,
+} from "../shared/services/token.service";
 import {VoiceAssistantNavComponent} from "./voice-assistant-nav/voice-assistant-nav.component";
 import {RouterOutlet} from "@angular/router";
 import {NgClass} from "@angular/common";
@@ -82,6 +90,7 @@ import {NgClass} from "@angular/common";
 })
 export class VoiceAssistantComponent implements OnInit {
     private readonly destroyRef = inject(DestroyRef);
+    private readonly changeDetector = inject(ChangeDetectorRef);
 
     personalityForm!: FormGroup;
     uuid: string | undefined;
@@ -99,6 +108,8 @@ export class VoiceAssistantComponent implements OnInit {
     selectionModels: AssistantModel[] = [];
     storedProviderRef: string | null = null;
     cloudTokenStored = false;
+    tokenProbe: TokenProbeState = "unknown";
+    private probeCloudTokenStored = false;
     smartChatsEnabled = true;
     /**
      * True while a stored personality is copied into the form. That copy
@@ -116,6 +127,7 @@ export class VoiceAssistantComponent implements OnInit {
     readonly reasoningEffortLabel = reasoningEffortLabel;
     readonly isProviderConfigured = isProviderConfigured;
     readonly isProviderOptionDisabled = isProviderOptionDisabled;
+    readonly credentialNotice = credentialNotice;
     button: {enabled: boolean; func: () => void} = {
         enabled: true,
         func: () => {
@@ -153,17 +165,22 @@ export class VoiceAssistantComponent implements OnInit {
             .subscribe((models) => {
                 this.models = models;
                 this.rebuildSelection();
+                this.changeDetector.markForCheck();
             });
         this.tokenService.tokenStatus$
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe((status) => {
-                this.cloudTokenStored = status.tokenExists;
+                const resolved = normalizeTokenStatus(status);
+                this.probeCloudTokenStored = resolved.tokenExists === true;
+                this.tokenProbe = resolved.service;
                 this.rebuildSelection();
+                this.changeDetector.markForCheck();
             });
         this.channelCapability.smartChatsEnabled$
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe((enabled) => {
                 this.smartChatsEnabled = enabled;
+                this.changeDetector.markForCheck();
             });
         this.button.enabled = true;
         this.button.func = this.openAddModal;
@@ -511,6 +528,7 @@ export class VoiceAssistantComponent implements OnInit {
         const model = startingModelForNewPersonality(
             this.models,
             this.cloudTokenStored,
+            this.tokenProbe,
         );
         if (model == null) {
             return DEFAULT_PROVIDER_REF;
@@ -525,6 +543,10 @@ export class VoiceAssistantComponent implements OnInit {
     }
 
     private rebuildSelection() {
+        this.cloudTokenStored = effectiveCloudTokenStored(
+            this.probeCloudTokenStored,
+            this.models,
+        );
         const personality =
             this.uuid == null
                 ? undefined
@@ -537,14 +559,17 @@ export class VoiceAssistantComponent implements OnInit {
             ),
             this.storedProviderRef,
             this.cloudTokenStored,
+            this.tokenProbe,
         );
         this.voiceInputs = voiceInputOptions(
             this.models,
             this.cloudTokenStored,
+            this.tokenProbe,
         );
         this.voiceOutputs = voiceOutputOptions(
             this.models,
             this.cloudTokenStored,
+            this.tokenProbe,
         );
         if (this.personalityForm != null) {
             this.syncConstraints();
@@ -679,6 +704,7 @@ export class VoiceAssistantComponent implements OnInit {
             this.models,
             this.cloudTokenStored,
             personality.needsNewModel,
+            this.tokenProbe,
         );
     }
 
@@ -702,6 +728,7 @@ export class VoiceAssistantComponent implements OnInit {
             ),
             this.cloudTokenStored,
             personality?.needsNewModel === true,
+            this.tokenProbe,
         );
         if (attention?.reason !== "retired") {
             return null;
@@ -715,12 +742,15 @@ export class VoiceAssistantComponent implements OnInit {
         fallback: string,
     ): void {
         const control = this.personalityForm.controls[controlName];
-        if (options.length === 0) {
-            return;
-        }
         const current = String(control.value);
-        if (!options.some((option) => option.id === current)) {
-            control.setValue(fallback, {emitEvent: false});
+        const next = reconcileVoiceSelection(
+            current,
+            options,
+            fallback,
+            this.tokenProbe,
+        );
+        if (next !== current) {
+            control.setValue(next, {emitEvent: false});
         }
     }
 
