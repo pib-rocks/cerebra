@@ -1,10 +1,12 @@
 import {
     Component,
     OnInit,
+    OnDestroy,
     ChangeDetectionStrategy,
     ChangeDetectorRef,
 } from "@angular/core";
 import {CommonModule} from "@angular/common";
+import {Subscription, interval} from "rxjs";
 import {
     DiagnosticsService,
     DiagnosticsSummary,
@@ -20,12 +22,20 @@ import {
     styleUrls: ["./diagnostics.component.scss"],
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DiagnosticsComponent implements OnInit {
+export class DiagnosticsComponent implements OnInit, OnDestroy {
+    /**
+     * The page refreshes itself; the manual refresh button was removed. The interval is what keeps the
+     * telemetry current, so it must survive the whole life of the component and stop with it.
+     */
+    readonly refreshIntervalMs = 1000;
+
     summary: DiagnosticsSummary | null = null;
     bricklets: BrickletTelemetry[] = [];
     system: SystemTelemetry | null = null;
-    loading = false;
     error: string | null = null;
+
+    private refreshSubscription?: Subscription;
+    private refreshInFlight = false;
 
     constructor(
         private diagnosticsService: DiagnosticsService,
@@ -34,10 +44,20 @@ export class DiagnosticsComponent implements OnInit {
 
     ngOnInit(): void {
         this.refreshDiagnostics();
+        this.refreshSubscription = interval(this.refreshIntervalMs).subscribe(
+            () => this.refreshDiagnostics(),
+        );
+    }
+
+    ngOnDestroy(): void {
+        this.refreshSubscription?.unsubscribe();
     }
 
     refreshDiagnostics(): void {
-        this.loading = true;
+        // The board answers slowly enough that a tick can arrive while the previous round is still open.
+        // Skipping it keeps one round in flight instead of stacking three requests every second.
+        if (this.refreshInFlight) return;
+        this.refreshInFlight = true;
         this.error = null;
         this.cdr.markForCheck();
 
@@ -63,12 +83,16 @@ export class DiagnosticsComponent implements OnInit {
         this.diagnosticsService.getSystem().subscribe({
             next: (sys) => {
                 this.system = sys;
-                this.loading = false;
+                this.refreshInFlight = false;
                 this.cdr.markForCheck();
             },
             error: () => {
-                this.loading = false;
+                this.refreshInFlight = false;
                 this.cdr.markForCheck();
+            },
+            // A response without a body would otherwise leave the guard held and stop every later round.
+            complete: () => {
+                this.refreshInFlight = false;
             },
         });
     }
