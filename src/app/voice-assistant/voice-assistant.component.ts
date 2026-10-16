@@ -237,7 +237,6 @@ export class VoiceAssistantComponent implements OnInit {
                 nonNullable: true,
                 validators: [Validators.required, Validators.min(1)],
             }),
-            mcp: new FormControl(true, {nonNullable: true}),
             reasoningEffort: new FormControl(NEW_PERSONALITY_REASONING_EFFORT, {
                 nonNullable: true,
             }),
@@ -344,7 +343,6 @@ export class VoiceAssistantComponent implements OnInit {
             images: false,
             live: false,
             idleTimeoutSeconds: DEFAULT_IDLE_TIMEOUT_SECONDS,
-            mcp: true,
             reasoningEffort: NEW_PERSONALITY_REASONING_EFFORT,
         });
         this.thresholdString =
@@ -377,7 +375,6 @@ export class VoiceAssistantComponent implements OnInit {
                 images: dialog.images,
                 live: dialog.live,
                 idleTimeoutSeconds: dialog.idleTimeoutSeconds,
-                mcp: dialog.mcp,
                 reasoningEffort:
                     dialog.reasoningEffort ?? REASONING_EFFORT_UNMANAGED,
             });
@@ -587,7 +584,6 @@ export class VoiceAssistantComponent implements OnInit {
                 images: raw["images"] === true,
                 live: raw["live"] === true,
                 idleTimeoutSeconds: Number(raw["idleTimeoutSeconds"]),
-                mcp: raw["mcp"] !== false,
                 reasoningEffort: reasoningEffortFromStored(
                     raw["reasoningEffort"] == null
                         ? null
@@ -625,7 +621,6 @@ export class VoiceAssistantComponent implements OnInit {
         );
         const images = imageSwitchAvailability(
             this.personalityForm.controls["toolCalling"].value === true,
-            this.personalityForm.controls["mcp"].value !== false,
         );
         this.setBlocked(
             this.personalityForm.controls["images"],
