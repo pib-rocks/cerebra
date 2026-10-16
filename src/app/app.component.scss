@@ -48,8 +48,10 @@ $sidebar-entry-height: 53.2px;
 }
 
 // The navigation sat 25px below the brand block and crowded the logo, so it moves down by half a navigation
-// entry - the measured height of one entry (see $sidebar-entry-height). The entry rhythm itself is untouched.
-.main-sidebar > .sidebar.nav-below-brand {
+// entry - the measured height of one entry (see $sidebar-entry-height). A descendant selector, not a child
+// one: the navigation wrapper sits inside the brand block, so `.main-sidebar > .sidebar` matches nothing and
+// the compiled rule silently had no effect.
+.main-sidebar .sidebar.nav-below-brand {
     margin-top: calc(#{$sidebar-entry-height} / 2);
 }
 
