@@ -1,7 +1,13 @@
-import {ComponentFixture, TestBed} from "@angular/core/testing";
+import {
+    ComponentFixture,
+    TestBed,
+    discardPeriodicTasks,
+    fakeAsync,
+    tick,
+} from "@angular/core/testing";
 import {DiagnosticsComponent} from "./diagnostics.component";
-import {DiagnosticsService} from "./diagnostics.service";
-import {of} from "rxjs";
+import {DiagnosticsService, SystemTelemetry} from "./diagnostics.service";
+import {Subject, of} from "rxjs";
 import {provideHttpClient} from "@angular/common/http";
 import {provideHttpClientTesting} from "@angular/common/http/testing";
 
@@ -272,4 +278,79 @@ describe("DiagnosticsComponent", () => {
         ).toBeNull();
         expect(compiled.querySelector("#hardware-ids-import-modal")).toBeNull();
     });
+
+    it("should not render the manual refresh button any more", () => {
+        // The page keeps itself current; a manual trigger would be a second, competing mechanism.
+        const compiled = fixture.nativeElement as HTMLElement;
+        expect(compiled.querySelector("#btn-refresh-diagnostics")).toBeNull();
+        expect(
+            compiled.querySelector('[data-test="BTN_Refresh_Diagnostics"]'),
+        ).toBeNull();
+        expect(compiled.querySelector(".fa-sync-alt")).toBeNull();
+    });
+
+    /**
+     * The auto refresh lives in a timer, so these tests build their own fixture: the one from the shared
+     * `beforeEach` gets its interval in the root zone, where `tick()` cannot reach it. The spy counters are
+     * reset afterwards, because the `beforeEach` fixture already spent one round.
+     */
+    function freshFixture(): void {
+        fixture.destroy();
+        fixture = TestBed.createComponent(DiagnosticsComponent);
+        component = fixture.componentInstance;
+        fixture.detectChanges();
+        diagnosticsServiceSpy.getSummary.calls.reset();
+        diagnosticsServiceSpy.getBricklets.calls.reset();
+        diagnosticsServiceSpy.getSystem.calls.reset();
+    }
+
+    it("should refresh the telemetry once per second on its own", fakeAsync(() => {
+        freshFixture();
+        expect(diagnosticsServiceSpy.getSystem.calls.count()).toBe(0);
+
+        tick(999);
+        expect(diagnosticsServiceSpy.getSystem.calls.count()).toBe(0);
+        tick(1);
+        expect(diagnosticsServiceSpy.getSystem.calls.count()).toBe(1);
+        tick(2000);
+        expect(diagnosticsServiceSpy.getSystem.calls.count()).toBe(3);
+        expect(diagnosticsServiceSpy.getSummary.calls.count()).toBe(3);
+
+        fixture.destroy();
+        discardPeriodicTasks();
+    }));
+
+    it("should stop refreshing once the component is destroyed", fakeAsync(() => {
+        freshFixture();
+        tick(1000);
+        const before = diagnosticsServiceSpy.getSystem.calls.count();
+        expect(before).toBe(1);
+
+        fixture.destroy();
+        tick(5000); // five more rounds if the subscription survived the destroy
+        expect(diagnosticsServiceSpy.getSystem.calls.count()).toBe(before);
+        discardPeriodicTasks();
+    }));
+
+    it("should skip a tick while the previous round is still open", fakeAsync(() => {
+        fixture.destroy();
+        const pending = new Subject<SystemTelemetry>();
+        diagnosticsServiceSpy.getSystem.and.returnValue(pending.asObservable());
+        fixture = TestBed.createComponent(DiagnosticsComponent);
+        component = fixture.componentInstance;
+        fixture.detectChanges();
+        diagnosticsServiceSpy.getSystem.calls.reset();
+
+        tick(3000); // the first round never answered, so nothing may be stacked on top of it
+        expect(diagnosticsServiceSpy.getSystem.calls.count()).toBe(0);
+
+        pending.complete(); // an answer without a body must release the guard too
+        tick(1000);
+        expect(diagnosticsServiceSpy.getSystem.calls.count()).toBe(1);
+        tick(1000);
+        expect(diagnosticsServiceSpy.getSystem.calls.count()).toBe(2);
+
+        fixture.destroy();
+        discardPeriodicTasks();
+    }));
 });

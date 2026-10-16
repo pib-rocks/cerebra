@@ -2,19 +2,6 @@
     <div
         class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
         <h3 class="text-white mb-0">System Diagnostics & Telemetry</h3>
-        <div class="d-flex flex-wrap gap-2">
-            <button
-                id="btn-refresh-diagnostics"
-                data-test="BTN_Refresh_Diagnostics"
-                class="btn btn-primary"
-                [disabled]="loading"
-                (click)="refreshDiagnostics()">
-                <i
-                    class="fas fa-sync-alt me-1"
-                    [class.fa-spin]="loading"></i>
-                {{ loading ? 'Loading...' : 'Refresh' }}
-            </button>
-        </div>
     </div>
 
     @if (error) {
