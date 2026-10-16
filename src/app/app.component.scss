@@ -47,6 +47,12 @@ $sidebar-entry-height: 53.2px;
     overflow-y: auto;
 }
 
+// The navigation sat 25px below the brand block and crowded the logo, so it moves down by half a navigation
+// entry - the measured height of one entry (see $sidebar-entry-height). The entry rhythm itself is untouched.
+.main-sidebar > .sidebar.nav-below-brand {
+    margin-top: calc(#{$sidebar-entry-height} / 2);
+}
+
 // The relay toggle, the smart-connect button and the IP follow the navigation instead of being pinned to the
 // bottom of the column. The aside spans `top: 0; bottom: 0` of a wrapper that is `min-height: 100vh`, so on a
 // tall page it grows with the document: with `justify-content: space-between` on the aside the block was pushed

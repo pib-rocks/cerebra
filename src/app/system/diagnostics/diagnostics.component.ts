@@ -79,6 +79,28 @@ export class DiagnosticsComponent implements OnInit {
         return "text-bg-danger";
     }
 
+    /**
+     * The telemetry columns are read along a row, so every figure carries one decimal place: a bare "60%" next
+     * to "42.5%" would look like a different measurement precision. Empty input yields an empty string; the
+     * template's own guards then render "N/A".
+     */
+    formatOneDecimal(value: number | null | undefined): string {
+        if (value === null || value === undefined) return "";
+        const numeric = Number(value);
+        return Number.isFinite(numeric) ? numeric.toFixed(1) : "";
+    }
+
+    /**
+     * The RAM and disk figures arrive as ready-made strings ("3.7 GB"), so the number inside is what has to be
+     * normalised: "3 GB" becomes "3.0 GB" while "3.7 GB" stays as it is.
+     */
+    formatMeasure(text: string | null | undefined): string {
+        if (!text) return "";
+        return String(text).replace(/-?\d+(?:\.\d+)?/, (match) =>
+            Number(match).toFixed(1),
+        );
+    }
+
     getCpuUsagePercent(): number | undefined {
         if (!this.summary) return undefined;
         return (
