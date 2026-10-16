@@ -22,6 +22,15 @@ describe("TokenServiceService", () => {
                 connectionStatus$: connectionStatusSubject.asObservable(),
             },
         );
+        // A connection event calls checkTokenExists() synchronously, and the
+        // service subscribes to what the ROS call returns. Without a default
+        // the spy answers undefined, the service throws inside its own
+        // subscription, jasmine reports it in afterAll and karma answers with
+        // "Disconnected, because no message in 60000 ms" - which took the whole
+        // suite down mid-run (PC-65).
+        rosServiceSpy.checkTokenExists.and.returnValue(
+            of({token_exists: false, token_active: false}),
+        );
 
         TestBed.configureTestingModule({
             providers: [
