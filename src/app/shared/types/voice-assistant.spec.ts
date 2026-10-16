@@ -48,7 +48,6 @@ describe("personality write body", () => {
                 images: true,
                 live: true,
                 idleTimeoutSeconds: 45,
-                mcp: false,
             },
         );
 
@@ -83,7 +82,6 @@ describe("personality write body", () => {
                 images: true,
                 live: true,
                 idleTimeoutSeconds: 45,
-                mcp: false,
             },
         );
         const created = personalityWriteBody(persona, true);
