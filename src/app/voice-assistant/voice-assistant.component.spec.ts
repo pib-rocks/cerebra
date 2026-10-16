@@ -985,8 +985,8 @@ describe("VoiceAssistantComponent", () => {
                 ) as HTMLSelectElement
             ).options,
         );
-        const liveOption = options.find((option) =>
-            option.textContent?.includes("Gemini 3.8 Live"),
+        const liveOption = options.find(
+            (option) => option.textContent?.includes("Gemini 3.8 Live"),
         );
         expect(liveOption).toBeDefined();
         expect(liveOption?.disabled).toBeFalse();

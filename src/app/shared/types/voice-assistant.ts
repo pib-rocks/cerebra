@@ -144,7 +144,8 @@ export interface VoiceAssistantDto {
     pauseThreshold: number;
 }
 
-export interface StoredPersonalityDialog extends Partial<PersonalityDialogValues> {
+export interface StoredPersonalityDialog
+    extends Partial<PersonalityDialogValues> {
     sttEngine?: string | null;
     ttsEngine?: string | null;
     voiceMode?: string | null;
