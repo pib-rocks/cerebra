@@ -13,7 +13,12 @@ import {ChatWindowDeepChatComponent} from "./chat-window-deep-chat.component";
 import {Chat} from "src/app/shared/types/chat.class";
 import {VoiceAssistant} from "src/app/shared/types/voice-assistant";
 import {AssistantModel} from "src/app/shared/types/assistantModel";
-import {MISSING_KEY_TURN} from "src/app/shared/types/provider-registry";
+import {
+    CHAT_TRANSPORT_UNAVAILABLE,
+    CLOUD_TOKEN_API_NAME,
+    DEEP_CHAT_SMARTCONNECT_PLACEHOLDER,
+    MISSING_KEY_TURN,
+} from "src/app/shared/types/provider-registry";
 import {
     DEGRADED_MODE,
     UNLOCKED_MODE,
@@ -36,8 +41,10 @@ describe("ChatWindowDeepChatComponent", () => {
     let paramsSubject: Subject<{chatUuid: string}>;
     let messagesSubject: BehaviorSubject<ChatMessage[]>;
     let tokenStatusSubject: BehaviorSubject<{
-        tokenExists: boolean;
-        tokenActive: boolean;
+        tokenExists: boolean | null;
+        tokenActive: boolean | null;
+        service?: string;
+        error?: string | null;
     }>;
     let keyStoreStatusSubject: BehaviorSubject<{
         encryptKeyStorage: boolean;
@@ -60,11 +67,14 @@ describe("ChatWindowDeepChatComponent", () => {
     beforeEach(async () => {
         paramsSubject = new Subject<{chatUuid: string}>();
         tokenStatusSubject = new BehaviorSubject<{
-            tokenExists: boolean;
-            tokenActive: boolean;
+            tokenExists: boolean | null;
+            tokenActive: boolean | null;
+            service?: string;
+            error?: string | null;
         }>({
             tokenExists: true,
             tokenActive: true,
+            service: "available",
         });
         keyStoreStatusSubject = new BehaviorSubject<{
             encryptKeyStorage: boolean;
@@ -396,6 +406,74 @@ describe("ChatWindowDeepChatComponent", () => {
         expect(consoleSpy).not.toHaveBeenCalledWith(
             jasmine.stringMatching(/^\[PERF_TRACE_UI\] TTFT/),
         );
+    });
+
+    it("blocks pre-dispatch when SmartConnect is off and encryption is on", () => {
+        const voiceAssistant = TestBed.inject(
+            VoiceAssistantService,
+        ) as jasmine.SpyObj<VoiceAssistantService>;
+        const flags = {
+            tools: true,
+            images: true,
+            live: false,
+            stt: false,
+            tts: false,
+        };
+        const flash = new AssistantModel(
+            7,
+            "gemini-3.8-flash",
+            "Gemini 3.8 Flash",
+            true,
+            "https://api.example/v1",
+            flags,
+            "provider-7",
+            false,
+        );
+        voiceAssistant.assistantModelsSubject.next([flash]);
+        voiceAssistant.getPersonality.and.returnValue(
+            new VoiceAssistant("persona-1", "Ada", "Female", 0.8, "", 7),
+        );
+        chatService.getChat.and.returnValue(
+            new Chat("topic", "persona-1", chatId),
+        );
+        tokenStatusSubject.next({
+            tokenExists: false,
+            tokenActive: false,
+            service: "available",
+        });
+        keyStoreStatusSubject.next({
+            encryptKeyStorage: true,
+            credentialRefs: ["provider-7"],
+            mode: "unlocked",
+        });
+        paramsSubject.next({chatUuid: chatId});
+
+        const signals = {onResponse: jasmine.createSpy("onResponse")};
+        mockDeepChat.connect!.handler(
+            {messages: [{role: "user", text: "hello there"}]},
+            signals,
+        );
+
+        expect(chatService.sendChatMessage).not.toHaveBeenCalled();
+        expect(signals.onResponse).toHaveBeenCalledOnceWith({
+            text: DEEP_CHAT_SMARTCONNECT_PLACEHOLDER,
+        });
+    });
+
+    it("reports a missing chat transport without blaming the stored key", () => {
+        chatService.sendChatMessage.and.returnValue(
+            throwError(
+                () => new Error("Service /send_chat_message does not exist"),
+            ),
+        );
+        const signals = {onResponse: jasmine.createSpy("onResponse")};
+        mockDeepChat.connect!.handler(
+            {messages: [{role: "user", text: "hello there"}]},
+            signals,
+        );
+        expect(signals.onResponse).toHaveBeenCalledWith({
+            text: CHAT_TRANSPORT_UNAVAILABLE,
+        });
     });
 
     it("handler error path calls onResponse with error", () => {
@@ -782,6 +860,117 @@ describe("ChatWindowDeepChatComponent", () => {
         expect(degradedChatReply("Ada")).toContain("Smart chat");
         expect(degradedChatReply("Ada")).toContain("Direct chat");
         expect(degradedChatReply("Ada")).toContain("provider keys");
+    });
+
+    it("disables the composer when encryption is off but the model key is gone", () => {
+        tokenStatusSubject.next({
+            tokenExists: false,
+            tokenActive: false,
+            service: "available",
+        });
+        keyStoreStatusSubject.next({
+            encryptKeyStorage: false,
+            credentialRefs: [],
+            mode: "unlocked",
+        });
+        const voiceAssistant = TestBed.inject(
+            VoiceAssistantService,
+        ) as jasmine.SpyObj<VoiceAssistantService>;
+        const model = new AssistantModel(
+            4,
+            "gpt-6",
+            "GPT-6",
+            true,
+            "https://api.openai.example/v1",
+            {
+                tools: true,
+                images: true,
+                live: false,
+                stt: false,
+                tts: false,
+            },
+            null,
+            false,
+        );
+        voiceAssistant.assistantModelsSubject = new BehaviorSubject([model]);
+        voiceAssistant.getPersonality.and.returnValue(
+            new VoiceAssistant("persona-1", "Ada", "Female", 0.8, "", 4),
+        );
+        chatService.getChat.and.returnValue(
+            new Chat("topic", "persona-1", chatId),
+        );
+        paramsSubject.next({chatUuid: chatId});
+        component.ngAfterViewInit();
+
+        expect(mockDeepChat.textInput).toEqual({
+            disabled: true,
+            placeholder: {text: MISSING_KEY_TURN},
+        });
+    });
+
+    it("sends a turn for pib.Cloud with a stored credential while the token probe is unavailable", () => {
+        tokenStatusSubject.next({
+            tokenExists: null,
+            tokenActive: null,
+            service: "unavailable",
+            error: "Service /get_token_exists does not exist",
+        });
+        keyStoreStatusSubject.next({
+            encryptKeyStorage: false,
+            credentialRefs: ["provider-4"],
+            mode: "unlocked",
+        });
+        const voiceAssistant = TestBed.inject(
+            VoiceAssistantService,
+        ) as jasmine.SpyObj<VoiceAssistantService>;
+        const cloud = new AssistantModel(
+            5,
+            CLOUD_TOKEN_API_NAME,
+            "pib.Cloud",
+            true,
+            null,
+            {
+                tools: true,
+                images: true,
+                live: false,
+                stt: false,
+                tts: false,
+            },
+            "provider-4",
+            false,
+        );
+        voiceAssistant.assistantModelsSubject = new BehaviorSubject([cloud]);
+        voiceAssistant.getPersonality.and.returnValue(
+            new VoiceAssistant(
+                "persona-1",
+                "Ada",
+                "Female",
+                0.8,
+                "",
+                5,
+                10,
+                "5",
+            ),
+        );
+        chatService.getChat.and.returnValue(
+            new Chat("topic", "persona-1", chatId),
+        );
+        paramsSubject.next({chatUuid: chatId});
+        component.ngAfterViewInit();
+
+        const signals = {onResponse: jasmine.createSpy("onResponse")};
+        mockDeepChat.connect!.handler(
+            {messages: [{role: "user", text: "hello there"}]},
+            signals,
+        );
+
+        expect(mockDeepChat.textInput).toEqual(
+            jasmine.objectContaining({disabled: false}),
+        );
+        expect(chatService.sendChatMessage).toHaveBeenCalledOnceWith(
+            chatId,
+            "hello there",
+        );
     });
 
     it("marks a personality whose key was deleted instead of sending the turn", () => {

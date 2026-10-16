@@ -149,11 +149,13 @@
                             isProviderOptionDisabled(
                                 model,
                                 cloudTokenStored,
-                                models
+                                models,
+                                tokenProbe
                             )
                         ">
-                        {{ model.visualName }} @if (!isProviderConfigured(model,
-                        cloudTokenStored, models)) { ({{ missingKeyMark }}) }
+                        {{ model.visualName }} @if (credentialNotice(model,
+                        cloudTokenStored, models, tokenProbe); as notice) { ({{
+                        notice }}) }
                     </option>
                     }
                 </select>

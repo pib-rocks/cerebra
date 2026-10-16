@@ -11,12 +11,22 @@ import {
 import {ActivatedRoute, Params} from "@angular/router";
 import {firstValueFrom, Subscription} from "rxjs";
 import {ChatService} from "src/app/shared/services/chat.service";
-import {TokenService} from "src/app/shared/services/token.service";
+import {
+    TokenService,
+    normalizeTokenStatus,
+} from "src/app/shared/services/token.service";
 import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
 import {ChatMessage} from "src/app/shared/types/chat-message";
 import {Chat} from "src/app/shared/types/chat.class";
 import {extractText, toDeepChat} from "src/app/shared/util/deep-chat-mapper";
-import {chatStartRefusal} from "src/app/shared/types/provider-registry";
+import {
+    ProviderSelectionRow,
+    TokenProbeState,
+    DeepChatComposerState,
+    chatTransportUnavailableText,
+    effectiveCloudTokenStored,
+    resolveDeepChatComposer,
+} from "src/app/shared/types/provider-registry";
 import {degradedChatReply} from "src/app/system/keys/key-store-session";
 import {KeyStoreService} from "src/app/system/keys/key-store.service";
 import {KeyStoreSessionService} from "src/app/system/keys/key-store-session.service";
@@ -46,7 +56,9 @@ export class ChatWindowDeepChatComponent
     currentChatId: string | undefined;
     personalityName: string | undefined;
 
-    private cloudTokenStored = true;
+    private probeCloudTokenStored = false;
+    private credentialRefs: string[] = [];
+    private tokenProbe: TokenProbeState = "unknown";
     /** Same flag the composer used to treat as SmartConnect: stored and active. */
     private smartConnectActive = false;
     /**
@@ -54,6 +66,12 @@ export class ChatWindowDeepChatComponent
      * encryption is deactivated and typing does not need SmartConnect.
      */
     private keyStorageEncryptionOff = false;
+    private assistantModels: ProviderSelectionRow[] = [];
+    private composerState: DeepChatComposerState = {
+        inputEnabled: false,
+        placeholder: "",
+        turnRefusal: null,
+    };
     private pendingSignals?: {onResponse: (response: unknown) => void};
     private lastStreamedMessageId: string | undefined;
     /** Timestamp of the latest user submit, used to measure TTFT. */
@@ -63,6 +81,8 @@ export class ChatWindowDeepChatComponent
     private chatMessagesSubscription?: Subscription;
     private tokenStatusSubscription?: Subscription;
     private keyStoreStatusSubscription?: Subscription;
+    private keyStoreSessionSubscription?: Subscription;
+    private assistantModelsSubscription?: Subscription;
     private voiceStateSubscription?: Subscription;
     private voiceState: VoiceAssistantState = {turnedOn: false, chatId: ""};
     private readonly sendChatMessageSubscriptions = new Subscription();
@@ -119,6 +139,7 @@ export class ChatWindowDeepChatComponent
 
                 this.applyNames();
                 this.subscribeToChatMessages(chatId);
+                this.refreshComposer();
             },
         );
     }
@@ -133,6 +154,8 @@ export class ChatWindowDeepChatComponent
         this.wireValidateInput(el);
         this.wireTokenStatus(el);
         this.wireKeyStoreStatus(el);
+        this.wireAssistantModels(el);
+        this.wireKeyStoreSession(el);
         this.applyNames(el);
 
         if (this.currentChatId) {
@@ -145,6 +168,8 @@ export class ChatWindowDeepChatComponent
         this.chatMessagesSubscription?.unsubscribe();
         this.tokenStatusSubscription?.unsubscribe();
         this.keyStoreStatusSubscription?.unsubscribe();
+        this.keyStoreSessionSubscription?.unsubscribe();
+        this.assistantModelsSubscription?.unsubscribe();
         this.voiceStateSubscription?.unsubscribe();
         this.sendChatMessageSubscriptions.unsubscribe();
     }
@@ -161,9 +186,11 @@ export class ChatWindowDeepChatComponent
                     });
                     return;
                 }
-                const refusal = this.turnRefusal();
-                if (refusal != null) {
-                    signals.onResponse({text: refusal});
+                if (!this.composerState.inputEnabled) {
+                    const refusal = this.composerTurnRefusal();
+                    signals.onResponse({
+                        text: refusal ?? this.composerState.placeholder,
+                    });
                     return;
                 }
                 this.submitClickMs = performance.now();
@@ -189,7 +216,13 @@ export class ChatWindowDeepChatComponent
                         .sendChatMessage(request.chat_id, request.content)
                         .subscribe({
                             error: (err) => {
-                                signals.onResponse({error: String(err)});
+                                const unavailable =
+                                    chatTransportUnavailableText(err);
+                                if (unavailable != null) {
+                                    signals.onResponse({text: unavailable});
+                                } else {
+                                    signals.onResponse({error: String(err)});
+                                }
                                 this.pendingSignals = undefined;
                                 this.submitClickMs = undefined;
                             },
@@ -217,10 +250,14 @@ export class ChatWindowDeepChatComponent
     private wireTokenStatus(el: any): void {
         this.tokenStatusSubscription?.unsubscribe();
         this.tokenStatusSubscription = this.tokenService.tokenStatus$.subscribe(
-            ({tokenExists, tokenActive}) => {
-                this.cloudTokenStored = tokenExists;
-                this.smartConnectActive = tokenExists && tokenActive;
-                this.applyTextInput(el);
+            (status) => {
+                const resolved = normalizeTokenStatus(status);
+                this.probeCloudTokenStored = resolved.tokenExists === true;
+                this.tokenProbe = resolved.service;
+                this.smartConnectActive =
+                    resolved.tokenExists === true &&
+                    resolved.tokenActive === true;
+                this.refreshComposer(el);
             },
         );
     }
@@ -232,28 +269,71 @@ export class ChatWindowDeepChatComponent
             next: (status) => {
                 this.keyStorageEncryptionOff =
                     status.encryptKeyStorage === false;
-                this.applyTextInput(el);
+                this.credentialRefs = status.credentialRefs ?? [];
+                this.refreshComposer(el);
             },
             error: () => {
                 this.keyStorageEncryptionOff = false;
-                this.applyTextInput(el);
+                this.refreshComposer(el);
             },
         });
     }
 
-    /**
-     * Open when SmartConnect is active or key storage encryption is off.
-     * Locked only when both are off; the placeholder names that gap.
-     */
+    private wireAssistantModels(el: any): void {
+        this.assistantModelsSubscription?.unsubscribe();
+        const subject = this.voiceAssistantService.assistantModelsSubject;
+        if (subject == null) {
+            return;
+        }
+        this.assistantModels = subject.getValue() ?? [];
+        this.assistantModelsSubscription = subject.subscribe((models) => {
+            this.assistantModels = models ?? [];
+            this.refreshComposer(el);
+        });
+        this.refreshComposer(el);
+    }
+
+    private wireKeyStoreSession(el: any): void {
+        this.keyStoreSessionSubscription?.unsubscribe();
+        this.keyStoreSessionSubscription =
+            this.keyStoreSession.changes.subscribe(() => {
+                this.refreshComposer(el);
+            });
+        this.refreshComposer(el);
+    }
+
+    private refreshComposer(el?: any): void {
+        const target = el ?? this.deepChatRef?.nativeElement;
+        const liveModels =
+            this.voiceAssistantService.assistantModelsSubject?.getValue();
+        if (liveModels != null) {
+            this.assistantModels = liveModels;
+        }
+        const personality = this.personalityForTurn();
+        this.composerState = resolveDeepChatComposer({
+            smartConnectActive: this.smartConnectActive,
+            keyStorageEncryptionOff: this.keyStorageEncryptionOff,
+            chatsAvailable: this.keyStoreSession.chatsAvailable,
+            providerRef: personality?.providerRef,
+            models: this.assistantModels,
+            cloudTokenStored: effectiveCloudTokenStored(
+                this.probeCloudTokenStored,
+                this.assistantModels,
+                this.credentialRefs,
+            ),
+            needsNewModel: personality?.needsNewModel === true,
+            tokenProbe: this.tokenProbe,
+        });
+        if (target != null) {
+            this.applyTextInput(target);
+        }
+    }
+
     private applyTextInput(el: any): void {
-        const enabled = this.smartConnectActive || this.keyStorageEncryptionOff;
+        const enabled = this.composerState.inputEnabled;
         el.textInput = {
             disabled: !enabled,
-            placeholder: {
-                text: enabled
-                    ? "Enter a message"
-                    : "Enable SmartConnect or deactivate key storage encryption to start the Voice-Assistant",
-            },
+            placeholder: {text: this.composerState.placeholder},
         };
         if (typeof el.disableSubmitButton === "function") {
             el.disableSubmitButton(!enabled);
@@ -298,24 +378,8 @@ export class ChatWindowDeepChatComponent
         }).join;
     }
 
-    private turnRefusal(): string | null {
-        const personalityId = this.chat?.personalityId;
-        if (personalityId == null) {
-            return null;
-        }
-        const personality =
-            this.voiceAssistantService.getPersonality(personalityId);
-        if (personality == null) {
-            return null;
-        }
-        const models =
-            this.voiceAssistantService.assistantModelsSubject?.getValue() ?? [];
-        return chatStartRefusal(
-            personality.providerRef,
-            models,
-            this.cloudTokenStored,
-            personality.needsNewModel,
-        );
+    private composerTurnRefusal(): string | null {
+        return this.composerState.turnRefusal;
     }
 
     private subscribeToChatMessages(chatId: string): void {

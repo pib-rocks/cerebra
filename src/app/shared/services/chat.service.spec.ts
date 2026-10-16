@@ -4,6 +4,7 @@ import {ChatService} from "./chat.service";
 import {ApiService} from "./api.service";
 import {Chat} from "../types/chat.class";
 import {BehaviorSubject, Subject, map, of, throwError} from "rxjs";
+import {CHAT_TRANSPORT_UNAVAILABLE} from "../types/provider-registry";
 import {ChatMessage} from "../types/chat-message";
 import {ChatMessage as ChatMessageRos} from "../ros-types/msg/chat-message";
 import {RosService} from "./ros-service/ros.service";
@@ -278,7 +279,7 @@ describe("ChatService", () => {
         expect(apiService.post).not.toHaveBeenCalled();
     }));
 
-    it("should fall back to createChatMessage when ROS send fails", waitForAsync(() => {
+    it("persists via REST but fails dispatch when ROS send fails", waitForAsync(() => {
         const chatId = "test-id";
         const content = "some-content";
         const message: ChatMessage = {
@@ -292,10 +293,10 @@ describe("ChatService", () => {
         );
         apiService.post.and.returnValue(of(message));
 
-        let completed = false;
+        let error: Error | undefined;
         service.sendChatMessage(chatId, content).subscribe({
-            next: () => {
-                completed = true;
+            error: (err) => {
+                error = err as Error;
             },
         });
 
@@ -310,7 +311,57 @@ describe("ChatService", () => {
                 isUser: true,
             }),
         );
-        expect(completed).toBeTrue();
+        expect(error?.message).toContain("Chat dispatch failed");
+        expect(service["pendingSendStartMsByChatId"].has(chatId)).toBeFalse();
+    }));
+
+    it("reports transport unavailable when ROS service is missing but REST persists", waitForAsync(() => {
+        const chatId = "transport-chat";
+        const content = "hello";
+        rosService.sendChatMessage.and.returnValue(
+            throwError(
+                () => new Error("Service /send_chat_message does not exist"),
+            ),
+        );
+        apiService.post.and.returnValue(
+            of({
+                messageId: "m1",
+                timestamp: "now",
+                isUser: true,
+                content,
+            }),
+        );
+
+        let error: Error | undefined;
+        service.sendChatMessage(chatId, content).subscribe({
+            error: (err) => {
+                error = err as Error;
+            },
+        });
+
+        expect(error?.message).toBe(CHAT_TRANSPORT_UNAVAILABLE);
+        expect(service["pendingSendStartMsByChatId"].has(chatId)).toBeFalse();
+    }));
+
+    it("propagates REST failure without claiming dispatch succeeded", waitForAsync(() => {
+        const chatId = "rest-fail";
+        const content = "hello";
+        rosService.sendChatMessage.and.returnValue(
+            throwError(() => new Error("ros disconnected")),
+        );
+        apiService.post.and.returnValue(
+            throwError(() => new Error("rest down")),
+        );
+
+        let error: Error | undefined;
+        service.sendChatMessage(chatId, content).subscribe({
+            error: (err) => {
+                error = err as Error;
+            },
+        });
+
+        expect(error?.message).toContain("rest down");
+        expect(service["pendingSendStartMsByChatId"].has(chatId)).toBeFalse();
     }));
 
     it("should log PERF_TRACE_UI SEND_START and WS_DISPATCH when sending", () => {

@@ -1,7 +1,8 @@
 import {
-    isProviderConfigured,
     isRetired,
     ProviderSelectionRow,
+    TokenProbeState,
+    credentialState,
 } from "./provider-registry";
 
 /** Local speech engines. They need no provider key. */
@@ -201,21 +202,35 @@ export function enforcePersonalityDialog(
 export function voiceInputOptions(
     models: SpeechProviderRow[],
     cloudTokenStored: boolean,
+    tokenProbe: TokenProbeState = "available",
 ): VoiceBackendOption[] {
-    return speechOptions(models, "stt", cloudTokenStored, {
-        id: LOCAL_VOICE_INPUT,
-        label: "faster-whisper (local)",
-    });
+    return speechOptions(
+        models,
+        "stt",
+        cloudTokenStored,
+        {
+            id: LOCAL_VOICE_INPUT,
+            label: "faster-whisper (local)",
+        },
+        tokenProbe,
+    );
 }
 
 export function voiceOutputOptions(
     models: SpeechProviderRow[],
     cloudTokenStored: boolean,
+    tokenProbe: TokenProbeState = "available",
 ): VoiceBackendOption[] {
-    return speechOptions(models, "tts", cloudTokenStored, {
-        id: LOCAL_VOICE_OUTPUT,
-        label: "Supertone (local)",
-    });
+    return speechOptions(
+        models,
+        "tts",
+        cloudTokenStored,
+        {
+            id: LOCAL_VOICE_OUTPUT,
+            label: "Supertone (local)",
+        },
+        tokenProbe,
+    );
 }
 
 function speechOptions(
@@ -223,13 +238,15 @@ function speechOptions(
     capability: "stt" | "tts",
     cloudTokenStored: boolean,
     local: VoiceBackendOption,
+    tokenProbe: TokenProbeState,
 ): VoiceBackendOption[] {
     const cloud = models
         .filter(
             (model) =>
                 !isRetired(model) &&
                 model.capabilities?.[capability] === true &&
-                isProviderConfigured(model, cloudTokenStored, models),
+                credentialState(model, cloudTokenStored, models, tokenProbe) ===
+                    "present",
         )
         .map((model) => ({
             id: String(model.id),
@@ -243,4 +260,24 @@ function idleTimeoutOrDefault(value: number | null | undefined): number {
         return DEFAULT_IDLE_TIMEOUT_SECONDS;
     }
     return value;
+}
+
+/**
+ * Keeps a stored STT/TTS choice while the token probe is unfinished. Only
+ * reconciles to the local fallback once the probe is available and the row
+ * is genuinely gone from the offered list.
+ */
+export function reconcileVoiceSelection(
+    current: string,
+    options: readonly VoiceBackendOption[],
+    fallback: string,
+    tokenProbe: TokenProbeState,
+): string {
+    if (options.some((option) => option.id === current)) {
+        return current;
+    }
+    if (tokenProbe !== "available" || options.length === 0) {
+        return current;
+    }
+    return fallback;
 }

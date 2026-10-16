@@ -7,9 +7,10 @@
 export const DEFAULT_PROVIDER_REF = "default";
 
 /**
- * Registry row whose credential is the SmartConnect token. System > Keys
- * shows that token as pib.Cloud and does not ask for a second key.
- * A personality on this row needs no provider key.
+ * Registry row for pib.Cloud. System > Keys shows its SmartConnect token and
+ * does not ask for a second pasted key. Presence is the persisted provider
+ * credential, as for every other provider. A resolved token probe is only
+ * the fallback when that credential ref is absent.
  */
 export const CLOUD_TOKEN_API_NAME = "pib-cloud";
 
@@ -17,6 +18,95 @@ export const MISSING_KEY_MARK = "Needs a key";
 
 export const MISSING_KEY_TURN =
     "This personality needs a provider key. It is marked until a key is stored in System > Keys.";
+
+/**
+ * A token probe that has not produced a reading. Unknown, loading, and
+ * unavailable are not a stored token and not a missing one.
+ */
+export type TokenProbeState =
+    | "unknown"
+    | "loading"
+    | "available"
+    | "unavailable";
+
+/** Not a request to store or re-enter a key. */
+export const TOKEN_PROBE_UNAVAILABLE = "SmartConnect status is unavailable.";
+
+/**
+ * The chat transport itself failed. A missing token service is a different
+ * fact and must not be reported with this sentence.
+ */
+export const CHAT_TRANSPORT_UNAVAILABLE =
+    "The chat service is unavailable. The stored key was not removed.";
+
+export const DEEP_CHAT_SMARTCONNECT_PLACEHOLDER =
+    "Enable SmartConnect or deactivate key storage encryption to start the Voice-Assistant";
+
+export const DEEP_CHAT_KEY_STORE_LOCKED_PLACEHOLDER =
+    "Unlock the key store to use Smart chat and Direct chat";
+
+export interface DeepChatComposerInput {
+    smartConnectActive: boolean;
+    keyStorageEncryptionOff: boolean;
+    chatsAvailable: boolean;
+    providerRef: string | null | undefined;
+    models: readonly ProviderSelectionRow[];
+    cloudTokenStored: boolean;
+    needsNewModel: boolean;
+    tokenProbe: TokenProbeState;
+}
+
+export interface DeepChatComposerState {
+    inputEnabled: boolean;
+    placeholder: string;
+    turnRefusal: string | null;
+}
+
+/**
+ * One readiness outcome for the deep-chat composer, its placeholder, and
+ * pre-dispatch refusal. Session degradation is answered separately on send.
+ */
+export function resolveDeepChatComposer(
+    input: DeepChatComposerInput,
+): DeepChatComposerState {
+    const sessionGate =
+        input.smartConnectActive || input.keyStorageEncryptionOff;
+    const turnRefusal = input.chatsAvailable
+        ? chatStartRefusal(
+              input.providerRef,
+              [...input.models],
+              input.cloudTokenStored,
+              input.needsNewModel,
+              input.tokenProbe,
+          )
+        : null;
+    const inputEnabled =
+        input.chatsAvailable && sessionGate && turnRefusal == null;
+
+    let placeholder = "Enter a message";
+    if (!input.chatsAvailable) {
+        placeholder = DEEP_CHAT_KEY_STORE_LOCKED_PLACEHOLDER;
+    } else if (!sessionGate) {
+        placeholder = DEEP_CHAT_SMARTCONNECT_PLACEHOLDER;
+    } else if (turnRefusal != null) {
+        placeholder = turnRefusal;
+    }
+
+    return {inputEnabled, placeholder, turnRefusal};
+}
+
+export function chatTransportUnavailableText(error: unknown): string | null {
+    const text = error instanceof Error ? error.message : String(error ?? "");
+    const normalized = text.trim().toLowerCase();
+    if (
+        normalized.includes("does not exist") ||
+        normalized.includes("service is undefined") ||
+        normalized.includes("unavailable")
+    ) {
+        return CHAT_TRANSPORT_UNAVAILABLE;
+    }
+    return null;
+}
 
 export interface ProviderCapabilities {
     tools: boolean;
@@ -95,30 +185,112 @@ export function usesCloudToken(model: ProviderSelectionRow): boolean {
 }
 
 /**
- * A pasted key, the SmartConnect token for the pib.Cloud row, or no key at all
- * for the on-device model. When the catalogue is passed, the key is the
- * provider's one credential, shared by every model of that provider. A model
- * row is not a second key, and an empty provider is not filled from another
- * provider.
+ * Whether pib.Cloud has a persisted credential in the catalogue or on the
+ * robot key store. Token probe results are not consulted here.
  */
+export function persistedCloudCredentialPresent(
+    models: readonly ProviderSelectionRow[],
+    credentialRefs: readonly string[] = [],
+): boolean {
+    const cloudRows = models.filter(usesCloudToken);
+    if (cloudRows.length === 0) {
+        return false;
+    }
+    if (sharedCredential(cloudRows) != null) {
+        return true;
+    }
+    for (const model of cloudRows) {
+        const ref = `provider-${providerIdOf(model)}`;
+        if (credentialRefs.includes(ref)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * Credential-presence input for registry helpers: a resolved stored token or a
+ * persisted cloud credential ref from the catalogue or key store.
+ */
+export function effectiveCloudTokenStored(
+    tokenExistsFromProbe: boolean,
+    models: readonly ProviderSelectionRow[],
+    credentialRefs: readonly string[] = [],
+): boolean {
+    return (
+        tokenExistsFromProbe ||
+        persistedCloudCredentialPresent(models, credentialRefs)
+    );
+}
+
+/**
+ * Present: a persisted provider credential, an on-device model, or a resolved
+ * SmartConnect probe that says the cloud token is stored.
+ * Absent: a loaded row with no credential, including cloud once the probe has
+ * resolved and the token is not stored.
+ * Unresolved: cloud has no persisted credential and the token probe has not
+ * produced a reading. That is not absence.
+ */
+export type CredentialState = "present" | "absent" | "unresolved";
+
+/**
+ * A pasted key, a persisted pib.Cloud credential, a resolved SmartConnect
+ * token when that row has no credential ref, or no key at all for the
+ * on-device model. When the catalogue is passed, the key is the provider's
+ * one credential, shared by every model of that provider. A model row is not
+ * a second key, and an empty provider is not filled from another provider.
+ * A failed or unfinished token probe never erases a persisted credential.
+ */
+export function credentialState(
+    model: ProviderSelectionRow,
+    cloudTokenStored: boolean,
+    models?: readonly ProviderSelectionRow[],
+    tokenProbe: TokenProbeState = "available",
+): CredentialState {
+    // The on-device model needs no key. Without this it looks like a row whose
+    // key is missing and the chat is refused (PR-1931).
+    if (isOfflineModel(model)) {
+        return "present";
+    }
+    if (storedCredential(model, models) != null) {
+        return "present";
+    }
+    if (usesCloudToken(model) && tokenProbe !== "available") {
+        return "unresolved";
+    }
+    if (usesCloudToken(model) && cloudTokenStored) {
+        return "present";
+    }
+    return "absent";
+}
+
 export function isProviderConfigured(
     model: ProviderSelectionRow,
     cloudTokenStored: boolean,
     models?: readonly ProviderSelectionRow[],
+    tokenProbe: TokenProbeState = "available",
 ): boolean {
-    if (usesCloudToken(model)) {
-        return cloudTokenStored;
+    return (
+        credentialState(model, cloudTokenStored, models, tokenProbe) ===
+        "present"
+    );
+}
+
+/** Label for a row that is not present. Unresolved is not "Needs a key". */
+export function credentialNotice(
+    model: ProviderSelectionRow,
+    cloudTokenStored: boolean,
+    models?: readonly ProviderSelectionRow[],
+    tokenProbe: TokenProbeState = "available",
+): string | null {
+    const state = credentialState(model, cloudTokenStored, models, tokenProbe);
+    if (state === "absent") {
+        return MISSING_KEY_MARK;
     }
-    // The on-device model needs no key. Without this it looks like a row whose
-    // key is missing and the chat is refused (PR-1931).
-    if (isOfflineModel(model)) {
-        return true;
+    if (state === "unresolved") {
+        return TOKEN_PROBE_UNAVAILABLE;
     }
-    const credential =
-        models == null
-            ? model.credentialRef
-            : credentialOnProvider(model, models);
-    return credential != null && credential !== "";
+    return null;
 }
 
 export function isRetired(model: ProviderSelectionRow): boolean {
@@ -136,11 +308,13 @@ export function isProviderOptionDisabled(
     model: ProviderSelectionRow,
     cloudTokenStored: boolean,
     models?: readonly ProviderSelectionRow[],
+    tokenProbe: TokenProbeState = "available",
 ): boolean {
     return (
         isRetired(model) ||
         !isListedModel(model) ||
-        !isProviderConfigured(model, cloudTokenStored, models)
+        credentialState(model, cloudTokenStored, models, tokenProbe) !==
+            "present"
     );
 }
 
@@ -159,7 +333,7 @@ export function resolveProvider<T extends ProviderSelectionRow>(
 }
 
 export interface PersonalityAttention {
-    reason: "retired" | "missing-key";
+    reason: "retired" | "missing-key" | "unavailable";
     notice: string;
 }
 
@@ -175,6 +349,7 @@ export function personalityAttention(
     models: ProviderSelectionRow[],
     cloudTokenStored: boolean,
     needsNewModel = false,
+    tokenProbe: TokenProbeState = "available",
 ): PersonalityAttention | null {
     if (models.length === 0) {
         if (needsNewModel) {
@@ -195,13 +370,17 @@ export function personalityAttention(
             notice: retiredModelNotice({id: 0, isDefault: false}),
         };
     }
-    if (
-        model == null ||
-        !isProviderConfigured(model, cloudTokenStored, models)
-    ) {
+    if (model == null) {
         return {reason: "missing-key", notice: MISSING_KEY_MARK};
     }
-    return null;
+    const state = credentialState(model, cloudTokenStored, models, tokenProbe);
+    if (state === "present") {
+        return null;
+    }
+    if (state === "unresolved") {
+        return {reason: "unavailable", notice: TOKEN_PROBE_UNAVAILABLE};
+    }
+    return {reason: "missing-key", notice: MISSING_KEY_MARK};
 }
 
 /**
@@ -215,6 +394,7 @@ export function personalityNeedsAttention(
     models: ProviderSelectionRow[],
     cloudTokenStored: boolean,
     needsNewModel = false,
+    tokenProbe: TokenProbeState = "available",
 ): boolean {
     return (
         personalityAttention(
@@ -222,6 +402,7 @@ export function personalityNeedsAttention(
             models,
             cloudTokenStored,
             needsNewModel,
+            tokenProbe,
         ) != null
     );
 }
@@ -237,17 +418,19 @@ export function chatStartRefusal(
     models: ProviderSelectionRow[],
     cloudTokenStored: boolean,
     needsNewModel = false,
+    tokenProbe: TokenProbeState = "available",
 ): string | null {
     const attention = personalityAttention(
         providerRef,
         models,
         cloudTokenStored,
         needsNewModel,
+        tokenProbe,
     );
     if (attention == null) {
         return null;
     }
-    if (attention.reason === "retired") {
+    if (attention.reason === "retired" || attention.reason === "unavailable") {
         return attention.notice;
     }
     return MISSING_KEY_TURN;
@@ -295,12 +478,14 @@ export function providersForSelection<T extends ProviderSelectionRow>(
     models: T[],
     storedRef: string | null,
     cloudTokenStored = false,
+    tokenProbe: TokenProbeState = "available",
 ): T[] {
     const offered = models.filter(
         (model) =>
             !isRetired(model) &&
             isListedModel(model) &&
-            isProviderConfigured(model, cloudTokenStored, models),
+            credentialState(model, cloudTokenStored, models, tokenProbe) ===
+                "present",
     );
     const current = currentSelection(models, storedRef);
     if (current != null && !offered.includes(current)) {
@@ -322,7 +507,8 @@ const QWEN_FAST_API_NAME = "qwen-fast";
  * rows, which keep catalogue order, and stops at the first step that applies.
  * The stored "default" pointer is not consulted.
  *
- * 1. pib.Cloud, when that row is offered (the SmartConnect token is stored).
+ * 1. pib.Cloud, when that row is offered (its credential is stored, or a
+ *    resolved probe says the SmartConnect token is stored).
  * 2. Otherwise the first external row with a stored key. The on-device row
  *    is configured without a key, so it is never this step.
  * 3. Otherwise qwen-fast, when that row is offered.
@@ -330,9 +516,15 @@ const QWEN_FAST_API_NAME = "qwen-fast";
 export function startingModelForNewPersonality<T extends ProviderSelectionRow>(
     models: readonly T[],
     cloudTokenStored: boolean,
+    tokenProbe: TokenProbeState = "available",
 ): T | null {
     const catalogue = models.slice();
-    const offered = providersForSelection(catalogue, null, cloudTokenStored);
+    const offered = providersForSelection(
+        catalogue,
+        null,
+        cloudTokenStored,
+        tokenProbe,
+    );
     const cloud = offered.find((model) => usesCloudToken(model));
     if (cloud != null) {
         return cloud;
@@ -341,7 +533,8 @@ export function startingModelForNewPersonality<T extends ProviderSelectionRow>(
         (model) =>
             !isOfflineModel(model) &&
             !usesCloudToken(model) &&
-            isProviderConfigured(model, cloudTokenStored, catalogue),
+            credentialState(model, cloudTokenStored, catalogue, tokenProbe) ===
+                "present",
     );
     if (external != null) {
         return external;
@@ -587,6 +780,20 @@ function sharedCredential(
         (model) => model.credentialRef != null && model.credentialRef !== "",
     );
     return credential?.credentialRef ?? null;
+}
+
+function storedCredential(
+    model: ProviderSelectionRow,
+    models?: readonly ProviderSelectionRow[],
+): string | null {
+    const credential =
+        models == null
+            ? model.credentialRef
+            : credentialOnProvider(model, models);
+    if (credential == null || credential === "") {
+        return null;
+    }
+    return credential;
 }
 
 function credentialOnProvider(

@@ -1,8 +1,12 @@
 import {TestBed} from "@angular/core/testing";
 
-import {TokenService} from "./token.service";
+import {
+    TokenService,
+    UNKNOWN_TOKEN_STATUS,
+    normalizeTokenStatus,
+} from "./token.service";
 import {RosService} from "./ros-service/ros.service";
-import {BehaviorSubject, of} from "rxjs";
+import {BehaviorSubject, of, Subject, throwError} from "rxjs";
 
 describe("TokenServiceService", () => {
     let tokenService: TokenService;
@@ -35,16 +39,104 @@ describe("TokenServiceService", () => {
         expect(tokenService).toBeTruthy();
     });
 
-    it("should call rosService.checkTokenExists and update tokenStatus$", () => {
+    it("starts with an unknown probe, not a missing token", () => {
+        let status = UNKNOWN_TOKEN_STATUS;
+        tokenService.tokenStatus$.subscribe((value) => {
+            status = value;
+        });
+        expect(status).toEqual({
+            tokenExists: null,
+            tokenActive: null,
+            service: "unknown",
+            error: null,
+        });
+    });
+
+    it("should call rosService.checkTokenExists and publish an available reading", () => {
         const tokenResponse = {token_exists: true, token_active: true};
         rosService.checkTokenExists.and.returnValue(of(tokenResponse));
 
+        const seen: unknown[] = [];
+        tokenService.tokenStatus$.subscribe((status) => seen.push(status));
+
         tokenService.checkTokenExists();
 
+        expect(seen).toContain(
+            jasmine.objectContaining({
+                tokenExists: null,
+                tokenActive: null,
+                service: "loading",
+                error: null,
+            }),
+        );
+        expect(seen).toContain(
+            jasmine.objectContaining({
+                tokenExists: true,
+                tokenActive: true,
+                service: "available",
+                error: null,
+            }),
+        );
+        expect(rosService.checkTokenExists).toHaveBeenCalled();
+    });
+
+    it("maps transport failure to unavailable without erasing presence", () => {
+        rosService.checkTokenExists.and.returnValue(
+            throwError(
+                () => new Error("Service /get_token_exists does not exist"),
+            ),
+        );
+
+        const seen: unknown[] = [];
+        tokenService.tokenStatus$.subscribe((status) => seen.push(status));
+
+        tokenService.checkTokenExists();
+
+        expect(seen).toContain(
+            jasmine.objectContaining({
+                tokenExists: null,
+                tokenActive: null,
+                service: "unavailable",
+                error: "Service /get_token_exists does not exist",
+            }),
+        );
+    });
+
+    it("drops stale responses when a newer probe starts", () => {
+        const first = new Subject<{
+            token_exists: boolean;
+            token_active: boolean;
+        }>();
+        const second = new Subject<{
+            token_exists: boolean;
+            token_active: boolean;
+        }>();
+        rosService.checkTokenExists.and.returnValues(
+            first.asObservable(),
+            second.asObservable(),
+        );
+
+        let latest = UNKNOWN_TOKEN_STATUS;
         tokenService.tokenStatus$.subscribe((status) => {
-            expect(status).toEqual({tokenExists: true, tokenActive: true});
-            expect(rosService.checkTokenExists).toHaveBeenCalled();
+            latest = status;
         });
+
+        tokenService.checkTokenExists();
+        first.next({token_exists: true, token_active: true});
+
+        tokenService.checkTokenExists();
+        expect(latest.service).toBe("loading");
+
+        second.next({token_exists: false, token_active: false});
+        expect(latest).toEqual({
+            tokenExists: false,
+            tokenActive: false,
+            service: "available",
+            error: null,
+        });
+
+        first.next({token_exists: true, token_active: true});
+        expect(latest.tokenExists).toBeFalse();
     });
 
     it("should check token status when ROS connects", () => {
@@ -53,5 +145,59 @@ describe("TokenServiceService", () => {
         connectionStatusSubject.next(true);
 
         expect(tokenService.checkTokenExists).toHaveBeenCalled();
+    });
+
+    it("returns to unknown when ROS disconnects", () => {
+        connectionStatusSubject.next(true);
+        rosService.checkTokenExists.and.returnValue(
+            of({token_exists: true, token_active: true}),
+        );
+        tokenService.checkTokenExists();
+
+        let latest = UNKNOWN_TOKEN_STATUS;
+        tokenService.tokenStatus$.subscribe((status) => {
+            latest = status;
+        });
+
+        connectionStatusSubject.next(false);
+        expect(latest).toEqual(UNKNOWN_TOKEN_STATUS);
+    });
+});
+
+describe("normalizeTokenStatus", () => {
+    it("treats legacy boolean payloads as an available probe", () => {
+        expect(
+            normalizeTokenStatus({tokenExists: true, tokenActive: true}),
+        ).toEqual({
+            tokenExists: true,
+            tokenActive: true,
+            service: "available",
+            error: null,
+        });
+    });
+
+    it("does not read unavailable service as a missing token", () => {
+        expect(
+            normalizeTokenStatus({
+                tokenExists: false,
+                tokenActive: false,
+                service: "unavailable",
+                error: "down",
+            }),
+        ).toEqual({
+            tokenExists: null,
+            tokenActive: null,
+            service: "unavailable",
+            error: "down",
+        });
+    });
+
+    it("keeps unknown separate from absence", () => {
+        expect(normalizeTokenStatus({})).toEqual({
+            tokenExists: null,
+            tokenActive: null,
+            service: "unknown",
+            error: null,
+        });
     });
 });
