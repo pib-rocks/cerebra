@@ -14,4 +14,5 @@ export enum rosServices {
     listModels = "/list_models",
     startModel = "/start_model",
     stopModel = "/stop_model",
+    refreshColors = "/refresh_colors",
 }
