@@ -75,6 +75,13 @@ describe("VoiceAssistantComponent", () => {
                 }),
                 uuidSubject: new BehaviorSubject({}),
                 personalities: [],
+                // PC-64: the component subscribes to this subject in ngOnInit.
+                // Declared here instead of assigning it later, so data reaches
+                // the component through .next(...) and not through an
+                // assignment jasmine would silently drop.
+                assistantModelsSubject: new BehaviorSubject<AssistantModel[]>(
+                    [],
+                ),
             },
         );
         const idle = visibleConversation({
@@ -138,9 +145,7 @@ describe("VoiceAssistantComponent", () => {
         _router = TestBed.inject(Router);
         fixture = TestBed.createComponent(VoiceAssistantComponent);
         component = fixture.componentInstance;
-        voiceAssistantService.assistantModelsSubject = new BehaviorSubject<
-            AssistantModel[]
-        >(models);
+        voiceAssistantService.assistantModelsSubject.next(models);
         component.ngOnInit();
     });
 
