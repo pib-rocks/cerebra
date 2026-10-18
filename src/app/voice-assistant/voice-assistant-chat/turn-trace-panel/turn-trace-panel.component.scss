@@ -1,0 +1,36 @@
+.turn-trace {
+    margin: 0.25rem 0 0.5rem 0.25rem;
+    font-size: 0.78rem;
+    color: #dfe7f5;
+
+    summary {
+        cursor: pointer;
+        color: #9fb0cc;
+    }
+}
+
+.turn-trace-empty {
+    margin: 0.35rem 0 0 0;
+    color: #7e889c;
+}
+
+.turn-trace-table {
+    margin-top: 0.35rem;
+    border-collapse: collapse;
+
+    th,
+    td {
+        padding: 0.05rem 0.6rem 0.05rem 0;
+        text-align: left;
+        font-weight: normal;
+    }
+
+    th {
+        color: #7e889c;
+    }
+}
+
+.turn-trace-value {
+    font-variant-numeric: tabular-nums;
+    color: #ff2f92;
+}
