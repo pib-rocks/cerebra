@@ -64,4 +64,43 @@ describe("extractText", () => {
     it("should return an empty string when the last message text is undefined", () => {
         expect(extractText({messages: [{role: "user"}]})).toBe("");
     });
+
+    it("adds the turn details of an answer as a collapsed block", () => {
+        const mapped = toDeepChat({
+            messageId: "m1",
+            timestamp: "2026-10-18 22:00:00",
+            isUser: false,
+            content: "Hallo.",
+            meta: {
+                source: "pib-cloud",
+                model: "pib-cloud",
+                stagesMs: {end_of_speech: 0, first_token: 332.1},
+            },
+        });
+
+        expect(mapped.role).toBe("ai");
+        expect(mapped.text).toBe("Hallo.");
+        expect(mapped.html).toContain("turn details");
+        expect(mapped.html).toContain("pib.Cloud · pib-cloud");
+        expect(mapped.html).toContain("first token +332 ms");
+    });
+
+    it("keeps an answer without metadata plain and a user line never gets details", () => {
+        const plain = toDeepChat({
+            messageId: "m2",
+            timestamp: "2026-10-18 22:00:00",
+            isUser: false,
+            content: "Ohne Metadaten.",
+        });
+        expect(plain.html).toBeUndefined();
+
+        const userLine = toDeepChat({
+            messageId: "m3",
+            timestamp: "2026-10-18 22:00:00",
+            isUser: true,
+            content: "Ich.",
+            meta: {source: "pib-cloud"},
+        });
+        expect(userLine.html).toBeUndefined();
+    });
 });
