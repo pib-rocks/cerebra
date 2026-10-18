@@ -8,6 +8,7 @@ import {RouterTestingModule} from "@angular/router/testing";
 import {HttpClientTestingModule} from "@angular/common/http/testing";
 import {Program} from "../../../shared/types/program";
 import {BehaviorSubject, of} from "rxjs";
+import {createServiceSpy} from "../../../shared/testing/create-service-spy";
 
 describe("ProgramManagerComponent", () => {
     let component: ProgramManagerComponent;
@@ -20,26 +21,21 @@ describe("ProgramManagerComponent", () => {
             NgbModal,
             ["open"],
         );
-        const programServiceSpy: jasmine.SpyObj<ProgramService> =
-            jasmine.createSpyObj<ProgramService>(
-                "ProgramService",
-                [
-                    "getProgramFromCache",
-                    "getAllPrograms",
-                    "getProgramByProgramNumber",
-                    "createProgram",
-                    "updateProgramByProgramNumber",
-                    "deleteProgramByProgramNumber",
-                ],
-                {
-                    // PC-64: the component reads programsSubject in ngOnInit.
-                    // Declared on the spy so the dependency is explicit; a later
-                    // `spy.programsSubject = new BehaviorSubject(...)` is the
-                    // assignment shape jasmine silently ignores once the name
-                    // appears here, so data must go through .next(...).
-                    programsSubject: new BehaviorSubject<Program[]>([]),
-                },
-            );
+        const programServiceSpy = createServiceSpy<ProgramService>(
+            "ProgramService",
+            [
+                "getProgramFromCache",
+                "getAllPrograms",
+                "getProgramByProgramNumber",
+                "createProgram",
+                "updateProgramByProgramNumber",
+                "deleteProgramByProgramNumber",
+            ],
+            // PC-72: programsSubject is part of the double from creation and is a
+            // real subject - the component reads it in ngOnInit and data goes
+            // through .next(...), never through an assignment.
+            {programsSubject: new BehaviorSubject<Program[]>([])},
+        );
         programServiceSpy.getAllPrograms.and.returnValue(
             new BehaviorSubject([]),
         );
