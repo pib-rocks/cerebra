@@ -112,6 +112,8 @@ export class RosService implements IRosService {
         new Subject<ProxyRunProgramStatus>();
     chatIsListeningReceiver$: Subject<ChatIsListening> =
         new Subject<ChatIsListening>();
+    /** Raw JSON of one `/voice_turn_trace` event (std_msgs/String). */
+    voiceTurnTraceReceiver$: Subject<string> = new Subject<string>();
     voiceAssistantStateReceiver$: BehaviorSubject<VoiceAssistantState> =
         new BehaviorSubject<VoiceAssistantState>({
             turned_on: false,
@@ -143,6 +145,7 @@ export class RosService implements IRosService {
     private chatMessageTopic!: ROSLIB.Topic<ChatMessage>;
     private voiceAssistantStateTopic!: ROSLIB.Topic<VoiceAssistantState>;
     private chatIsListeningTopic!: ROSLIB.Topic<ChatIsListening>;
+    private voiceTurnTraceTopic!: ROSLIB.Topic<{data: string}>;
     private expressionTopic?: ROSLIB.Topic<{data: string}>;
     private displayTextTopic?: ROSLIB.Topic<{data: string}>;
     private solidStateRelayStateTopic!: ROSLIB.Topic<SolidStateRelayState>;
@@ -298,6 +301,10 @@ export class RosService implements IRosService {
             rosTopics.chatIsListening,
             rosDataTypes.chatIsListening,
         );
+        this.voiceTurnTraceTopic = this.createRosTopic(
+            rosTopics.voiceTurnTrace,
+            rosDataTypes.string,
+        );
         this.expressionTopic = this.createRosTopic(
             rosTopics.expression,
             rosDataTypes.string,
@@ -432,6 +439,7 @@ export class RosService implements IRosService {
 
         this.subscribeVoiceAssistantStateTopic();
         this.subscribeChatIsListeningTopic();
+        this.subscribeVoiceTurnTraceTopic();
         this.subscribeChatMessageTopic();
         this.subscribeMotorSettingsTopic();
         this.subscribeMotorCurrentTopic();
@@ -655,6 +663,15 @@ export class RosService implements IRosService {
     private subscribeChatIsListeningTopic() {
         this.chatIsListeningTopic.subscribe((message: ChatIsListening) => {
             this.chatIsListeningReceiver$.next(message);
+        });
+    }
+
+    private subscribeVoiceTurnTraceTopic() {
+        this.voiceTurnTraceTopic.subscribe((message: {data?: string}) => {
+            const raw = typeof message?.data === "string" ? message.data : "";
+            if (raw) {
+                this.voiceTurnTraceReceiver$.next(raw);
+            }
         });
     }
     private subscribeSolidStateRelayStateTopic() {
