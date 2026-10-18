@@ -33,6 +33,16 @@ describe("createServiceSpy", () => {
         expect(spy.thingSubject).toBeUndefined();
     });
 
+    it("builds a double that only carries fields, without any methods", () => {
+        // jasmine.createSpyObj refuses a spy object with neither methods nor
+        // propertyNames; ChatService's chatSubject double is exactly that shape.
+        const spy = createServiceSpy<SampleService>("SampleService", [], {
+            thingSubject: new BehaviorSubject<string[]>(["only-field"]),
+        });
+
+        expect(spy.thingSubject.getValue()).toEqual(["only-field"]);
+    });
+
     it("hands the declared subject to the double as a real subject that publishes", () => {
         const seen: string[][] = [];
         const spy = createServiceSpy<SampleService>(
@@ -70,6 +80,7 @@ describe("createServiceSpy", () => {
         // getter/setter pair of spies: the setter swallows the value and the
         // spec keeps passing while asserting nothing (PC-63, PC-64).
         const original = new BehaviorSubject<string[]>([]);
+        // eslint-disable-next-line local/no-three-arg-create-spy-obj -- this spec exists to pin down the behaviour the rule forbids
         const plainJasmine = jasmine.createSpyObj<SampleService>(
             "plainJasmine",
             ["getThing"],

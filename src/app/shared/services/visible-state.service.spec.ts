@@ -15,6 +15,7 @@ import {ChatService} from "./chat.service";
 import {RosService} from "./ros-service/ros.service";
 import {VisibleStateService} from "./visible-state.service";
 import {VoiceAssistantService} from "./voice-assistant.service";
+import {createServiceSpy} from "src/app/shared/testing/create-service-spy";
 
 describe("VisibleStateService", () => {
     let service: VisibleStateService;
@@ -69,7 +70,7 @@ describe("VisibleStateService", () => {
         chats.next([new Chat("hello", "p-1", "chat-1")]);
         microphone?.updateTuning.calls?.reset();
 
-        ros = jasmine.createSpyObj(
+        ros = createServiceSpy<RosService>(
             "RosService",
             ["getChatIsListening", "publishExpression", "publishDisplayText"],
             {
@@ -89,7 +90,7 @@ describe("VisibleStateService", () => {
         microphone.getTuning.and.returnValue(of({ledMode: "mono"}));
         microphone.updateTuning.and.returnValue(of({ledMode: "listen"}));
 
-        const voiceAssistant = jasmine.createSpyObj(
+        const voiceAssistant = createServiceSpy<VoiceAssistantService>(
             "VoiceAssistantService",
             ["getPersonality"],
             {
@@ -98,7 +99,7 @@ describe("VisibleStateService", () => {
                 assistantModelsSubject: models,
             },
         );
-        const chatService = jasmine.createSpyObj("ChatService", [], {
+        const chatService = createServiceSpy<ChatService>("ChatService", [], {
             chatSubject: chats,
         });
 

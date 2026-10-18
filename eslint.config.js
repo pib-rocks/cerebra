@@ -60,11 +60,15 @@ module.exports = tseslint.config(
             local: {
                 rules: {
                     "no-spy-subject-assignment": require("./eslint-rules/no-spy-subject-assignment"),
+                    // PC-72 rollout: the third createSpyObj argument is now
+                    // banned outright - the helper replaced every call site.
+                    "no-three-arg-create-spy-obj": require("./eslint-rules/no-three-arg-create-spy-obj"),
                 },
             },
         },
         rules: {
             "local/no-spy-subject-assignment": "error",
+            "local/no-three-arg-create-spy-obj": "error",
         },
     },
     {

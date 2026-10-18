@@ -16,6 +16,7 @@ import {
 } from "../../shared/ros-types/srv/list-models";
 import {RosService} from "../../shared/services/ros-service/ros.service";
 import {ModelListComponent} from "./model-list.component";
+import {createServiceSpy} from "src/app/shared/testing/create-service-spy";
 
 describe("ModelListComponent", () => {
     let component: ModelListComponent;
@@ -43,7 +44,7 @@ describe("ModelListComponent", () => {
     beforeEach(async () => {
         status$ = new BehaviorSubject<ModelStatusArray>({models: []});
         connection$ = new BehaviorSubject(true);
-        rosService = jasmine.createSpyObj<RosService>(
+        rosService = createServiceSpy<RosService>(
             "RosService",
             ["listModels", "startModel", "stopModel"],
             {

@@ -21,6 +21,7 @@ import {KeyStoreService} from "src/app/system/keys/key-store.service";
 import {AssistantModel} from "src/app/shared/types/assistantModel";
 import {CLOUD_TOKEN_API_NAME} from "src/app/shared/types/provider-registry";
 import {BehaviorSubject} from "rxjs";
+import {createServiceSpy} from "src/app/shared/testing/create-service-spy";
 
 describe("SmartConnectComponent", () => {
     let component: SmartConnectComponent;
@@ -46,7 +47,7 @@ describe("SmartConnectComponent", () => {
         ]);
 
         tokenStatus$ = new Subject();
-        mockTokenService = jasmine.createSpyObj(
+        mockTokenService = createServiceSpy<TokenService>(
             "TokenService",
             ["checkTokenExists"],
             {
@@ -57,7 +58,7 @@ describe("SmartConnectComponent", () => {
         mockApiService = jasmine.createSpyObj("ApiService", ["post"]);
         mockNgbModal = jasmine.createSpyObj("NgbModal", ["open", "dismissAll"]);
         models$ = new BehaviorSubject<AssistantModel[]>([]);
-        mockVoiceAssistant = jasmine.createSpyObj(
+        mockVoiceAssistant = createServiceSpy<VoiceAssistantService>(
             "VoiceAssistantService",
             ["getAllAssistantModels"],
             {assistantModelsSubject: models$},
@@ -275,7 +276,7 @@ describe("SmartConnectComponent (zoneless)", () => {
             tokenActive: boolean;
         }>();
         const models$ = new BehaviorSubject<AssistantModel[]>([]);
-        const mockVoiceAssistant = jasmine.createSpyObj(
+        const mockVoiceAssistant = createServiceSpy<VoiceAssistantService>(
             "VoiceAssistantService",
             ["getAllAssistantModels"],
             {assistantModelsSubject: models$},
@@ -303,7 +304,7 @@ describe("SmartConnectComponent (zoneless)", () => {
                 },
                 {
                     provide: TokenService,
-                    useValue: jasmine.createSpyObj(
+                    useValue: createServiceSpy<TokenService>(
                         "TokenService",
                         ["checkTokenExists"],
                         {tokenStatus$: tokenStatus$.asObservable()},

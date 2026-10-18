@@ -9,6 +9,7 @@ import {ChatMessage} from "../types/chat-message";
 import {ChatMessage as ChatMessageRos} from "../ros-types/msg/chat-message";
 import {RosService} from "./ros-service/ros.service";
 import {ChatIsListening} from "../ros-types/msg/chat-is-listening";
+import {createServiceSpy} from "src/app/shared/testing/create-service-spy";
 
 describe("ChatService", () => {
     let service: ChatService;
@@ -29,15 +30,16 @@ describe("ChatService", () => {
     beforeEach(() => {
         chatMessageReceiver$ = new Subject();
         voiceAssistantChatIsListeningReceiver$ = new Subject();
-        const rosServiceSpy: jasmine.SpyObj<RosService> = jasmine.createSpyObj(
-            "RosService",
-            ["sendChatMessage", "getChatIsListening"],
-            {
-                chatMessageReceiver$: chatMessageReceiver$,
-                chatIsListeningReceiver$:
-                    voiceAssistantChatIsListeningReceiver$,
-            },
-        );
+        const rosServiceSpy: jasmine.SpyObj<RosService> =
+            createServiceSpy<RosService>(
+                "RosService",
+                ["sendChatMessage", "getChatIsListening"],
+                {
+                    chatMessageReceiver$: chatMessageReceiver$,
+                    chatIsListeningReceiver$:
+                        voiceAssistantChatIsListeningReceiver$,
+                },
+            );
 
         const apiServiceSpy: jasmine.SpyObj<ApiService> = jasmine.createSpyObj(
             "ApiService",

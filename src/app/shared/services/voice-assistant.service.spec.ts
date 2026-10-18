@@ -19,6 +19,7 @@ import {
 import {UrlConstants} from "./url.constants";
 import {ChatService} from "./chat.service";
 import {ChannelCapabilityService} from "./channel-capability.service";
+import {createServiceSpy} from "src/app/shared/testing/create-service-spy";
 
 describe("VoiceAssistantService", () => {
     let service: VoiceAssistantService;
@@ -74,16 +75,17 @@ describe("VoiceAssistantService", () => {
     });
 
     beforeEach(() => {
-        const rosServiceSpy: jasmine.SpyObj<RosService> = jasmine.createSpyObj(
-            "RosService",
-            ["setVoiceAssistantState"],
-            {
-                voiceAssistantStateReceiver$: new BehaviorSubject({
-                    turned_on: false,
-                    chat_id: "",
-                }),
-            },
-        );
+        const rosServiceSpy: jasmine.SpyObj<RosService> =
+            createServiceSpy<RosService>(
+                "RosService",
+                ["setVoiceAssistantState"],
+                {
+                    voiceAssistantStateReceiver$: new BehaviorSubject({
+                        turned_on: false,
+                        chat_id: "",
+                    }),
+                },
+            );
         const apiServiceSpy: jasmine.SpyObj<ApiService> = jasmine.createSpyObj(
             "ApiService",
             ["get", "delete", "put", "post"],

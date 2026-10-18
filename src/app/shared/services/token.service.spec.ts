@@ -7,6 +7,7 @@ import {
 } from "./token.service";
 import {RosService} from "./ros-service/ros.service";
 import {BehaviorSubject, of, Subject, throwError} from "rxjs";
+import {createServiceSpy} from "src/app/shared/testing/create-service-spy";
 
 describe("TokenServiceService", () => {
     let tokenService: TokenService;
@@ -15,7 +16,7 @@ describe("TokenServiceService", () => {
 
     beforeEach(() => {
         connectionStatusSubject = new BehaviorSubject<boolean>(false);
-        const rosServiceSpy = jasmine.createSpyObj(
+        const rosServiceSpy = createServiceSpy<RosService>(
             "RosService",
             ["checkTokenExists"],
             {

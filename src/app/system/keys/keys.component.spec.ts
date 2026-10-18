@@ -19,6 +19,7 @@ import {
     providerIdOf,
     providersForSelection,
 } from "src/app/shared/types/provider-registry";
+import {createServiceSpy} from "src/app/shared/testing/create-service-spy";
 
 describe("KeysComponent", () => {
     let fixture: ComponentFixture<KeysComponent>;
@@ -74,7 +75,7 @@ describe("KeysComponent", () => {
         keyStore.status.and.returnValue(
             of({encryptKeyStorage: true, credentialRefs: ["provider-4"]}),
         );
-        voiceAssistant = jasmine.createSpyObj(
+        voiceAssistant = createServiceSpy<VoiceAssistantService>(
             "VoiceAssistantService",
             ["getAllAssistantModels", "setProviderCredential"],
             {assistantModelsSubject: models},
@@ -858,7 +859,7 @@ describe("KeysComponent (zoneless)", () => {
             "provider-1",
             true,
         );
-        const voiceAssistant = jasmine.createSpyObj(
+        const voiceAssistant = createServiceSpy<VoiceAssistantService>(
             "VoiceAssistantService",
             ["getAllAssistantModels", "setProviderCredential"],
             {assistantModelsSubject: models},

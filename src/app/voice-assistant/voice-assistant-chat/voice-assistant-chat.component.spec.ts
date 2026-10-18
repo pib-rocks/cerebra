@@ -27,6 +27,7 @@ import {KeyStoreSessionService} from "src/app/system/keys/key-store-session.serv
 import {KeyStoreService} from "src/app/system/keys/key-store.service";
 import {AssistantModel} from "src/app/shared/types/assistantModel";
 import {CLOUD_TOKEN_API_NAME} from "src/app/shared/types/provider-registry";
+import {createServiceSpy} from "src/app/shared/testing/create-service-spy";
 export class MockNgbModalRef {
     componentInstance = {
         prompt: undefined,
@@ -49,7 +50,7 @@ describe("VoiceAssistantChatComponent", () => {
             ["open"],
         );
         tokenStatusSubject = new Subject();
-        const tokenServiceMock = jasmine.createSpyObj(
+        const tokenServiceMock = createServiceSpy<TokenService>(
             "TokenService",
             ["checkTokenExists"],
             {tokenStatus$: tokenStatusSubject.asObservable()},
