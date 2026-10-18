@@ -3,7 +3,7 @@ import {VoiceAssistantService} from "./voice-assistant.service";
 import {HttpClientTestingModule} from "@angular/common/http/testing";
 import {VoiceAssistant} from "../types/voice-assistant";
 import {ApiService} from "./api.service";
-import {BehaviorSubject} from "rxjs";
+import {BehaviorSubject, Subject} from "rxjs";
 import {RosService} from "./ros-service/ros.service";
 import {AssistantModel} from "../types/assistantModel";
 import {
@@ -84,6 +84,11 @@ describe("VoiceAssistantService", () => {
                         turned_on: false,
                         chat_id: "",
                     }),
+                    chatIsListeningReceiver$: new Subject<{
+                        chat_id: string;
+                        listening: boolean;
+                    }>(),
+                    voiceTurnTraceReceiver$: new Subject<string>(),
                 },
             );
         const apiServiceSpy: jasmine.SpyObj<ApiService> = jasmine.createSpyObj(
@@ -195,6 +200,42 @@ describe("VoiceAssistantService", () => {
         });
         expect(state).toEqual(jasmine.objectContaining(expectedState));
     }));
+
+    it("maps the listening event of the recorder to this chat", () => {
+        let listening: {chatId: string; listening: boolean} | undefined;
+        service.chatIsListeningObservable.subscribe(
+            (next) => (listening = next),
+        );
+
+        rosService.chatIsListeningReceiver$.next({
+            chat_id: "chat-42",
+            listening: true,
+        });
+
+        expect(listening).toEqual({chatId: "chat-42", listening: true});
+    });
+
+    it("parses the turn trace and drops a malformed line", () => {
+        const events: unknown[] = [];
+        service.turnTraceObservable.subscribe((next) => events.push(next));
+
+        rosService.voiceTurnTraceReceiver$.next(
+            JSON.stringify({
+                stage: "turn_path",
+                ts_ms: 12,
+                source: "pib-cloud",
+                chat_id: "chat-42",
+                detail: {model: "pib-cloud"},
+            }),
+        );
+        rosService.voiceTurnTraceReceiver$.next("not json");
+
+        expect(events.length).toBe(2);
+        expect(events[0]).toEqual(
+            jasmine.objectContaining({stage: "turn_path", source: "pib-cloud"}),
+        );
+        expect(events[1]).toBeNull();
+    });
 
     it("should save a behavior subject to a local var", waitForAsync(() => {
         apiService.get.and.returnValue(observableModels);
