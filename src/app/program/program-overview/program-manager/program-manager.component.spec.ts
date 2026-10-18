@@ -21,18 +21,28 @@ describe("ProgramManagerComponent", () => {
             ["open"],
         );
         const programServiceSpy: jasmine.SpyObj<ProgramService> =
-            jasmine.createSpyObj(ProgramService, [
-                "getProgramFromCache",
-                "getAllPrograms",
-                "getProgramByProgramNumber",
-                "createProgram",
-                "updateProgramByProgramNumber",
-                "deleteProgramByProgramNumber",
-            ]);
+            jasmine.createSpyObj<ProgramService>(
+                "ProgramService",
+                [
+                    "getProgramFromCache",
+                    "getAllPrograms",
+                    "getProgramByProgramNumber",
+                    "createProgram",
+                    "updateProgramByProgramNumber",
+                    "deleteProgramByProgramNumber",
+                ],
+                {
+                    // PC-64: the component reads programsSubject in ngOnInit.
+                    // Declared on the spy so the dependency is explicit; a later
+                    // `spy.programsSubject = new BehaviorSubject(...)` is the
+                    // assignment shape jasmine silently ignores once the name
+                    // appears here, so data must go through .next(...).
+                    programsSubject: new BehaviorSubject<Program[]>([]),
+                },
+            );
         programServiceSpy.getAllPrograms.and.returnValue(
             new BehaviorSubject([]),
         );
-        programServiceSpy.programsSubject = new BehaviorSubject<Program[]>([]);
 
         router = {url: "change this"};
 

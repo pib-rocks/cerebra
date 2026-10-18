@@ -14,7 +14,6 @@ import {RouterTestingModule} from "@angular/router/testing";
 import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
 import {VoiceAssistantNavComponent} from "../voice-assistant-nav/voice-assistant-nav.component";
 import {MarkdownModule} from "ngx-markdown";
-import {AssistantModel} from "src/app/shared/types/assistantModel";
 import {TokenService} from "src/app/shared/services/token.service";
 import {ChannelCapabilityService} from "src/app/shared/services/channel-capability.service";
 import {
@@ -34,12 +33,25 @@ describe("PersonalityDescriptionComponent", () => {
 
     beforeEach(async () => {
         const voiceAssistantServiceSpy: jasmine.SpyObj<VoiceAssistantService> =
-            jasmine.createSpyObj("VoiceAssistantService", [
-                "getPersonality",
-                "updatePersonalityById",
-                "deletePersonalityById",
-                "getAllPersonalities",
-            ]);
+            jasmine.createSpyObj(
+                "VoiceAssistantService",
+                [
+                    "getPersonality",
+                    "updatePersonalityById",
+                    "deletePersonalityById",
+                    "getAllPersonalities",
+                ],
+                {
+                    // PC-64: the component subscribes to personalitiesSubject in
+                    // ngOnInit. Declaring it here keeps the service contract on
+                    // the spy itself; assigning `spy.personalitiesSubject = new
+                    // BehaviorSubject(...)` after createSpyObj would be a silent
+                    // no-op as soon as the name is moved into this object.
+                    personalitiesSubject: new BehaviorSubject<VoiceAssistant[]>(
+                        [],
+                    ),
+                },
+            );
         voiceAssistantServiceSpy.getPersonality.and.returnValue(
             new VoiceAssistant(
                 "01234567-0123-0123-0123-0123456789ab",
@@ -49,12 +61,10 @@ describe("PersonalityDescriptionComponent", () => {
                 "FakeDescription",
             ),
         );
-        voiceAssistantServiceSpy.personalitiesSubject = new BehaviorSubject<
-            VoiceAssistant[]
-        >([]);
-        voiceAssistantServiceSpy.assistantModelsSubject = new BehaviorSubject<
-            AssistantModel[]
-        >([{id: "123", name: "TestModel"} as unknown as AssistantModel]);
+        // PC-64: no assistantModelsSubject assignment here. This component never
+        // reads the model catalogue (verified in
+        // personality-description.component.ts), so the spec was not exercising
+        // that data at all; the assignment is removed rather than converted.
 
         await TestBed.configureTestingModule({
             imports: [
