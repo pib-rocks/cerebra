@@ -91,6 +91,18 @@ describe("turn-trace", () => {
         expect(deltas["audio"]).toBe(12595);
     });
 
+    it("rounds a delta to one decimal like the robot", () => {
+        const state = fold([
+            event({stage: "end_of_speech", ts_ms: 0}),
+            event({stage: "request_sent", ts_ms: 84.44}),
+            event({stage: "response_headers", ts_ms: 630.14}),
+        ]);
+        const reqToHeaders = traceDeltas(state).find(
+            (delta) => delta.name === "req_to_headers",
+        );
+        expect(reqToHeaders?.ms).toBe(545.7);
+    });
+
     it("opens a new turn on end_of_speech and forgets the previous stages", () => {
         const first = fold([
             event({stage: "end_of_speech", ts_ms: 1000}),

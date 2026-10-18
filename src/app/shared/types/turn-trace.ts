@@ -162,7 +162,8 @@ export function traceDeltas(state: TurnTrace): {name: string; ms: number}[] {
         const from = state.stages[earlier];
         const to = state.stages[later];
         if (typeof from === "number" && typeof to === "number") {
-            deltas.push({name, ms: to - from});
+            // Same rounding as the stages, so a subtraction never shows 545.6999…
+            deltas.push({name, ms: Math.round((to - from) * 10) / 10});
         }
     }
     return deltas;
