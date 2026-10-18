@@ -45,6 +45,12 @@ import {
     VoiceTurnTraceEvent,
     toVoiceStatus,
 } from "src/app/shared/types/voice-status";
+import {
+    TurnTrace,
+    emptyTurnTrace,
+    reduceTurnTrace,
+} from "src/app/shared/types/turn-trace";
+import {TurnTracePanelComponent} from "./turn-trace-panel/turn-trace-panel.component";
 
 @Component({
     selector: "app-voice-assistant-chat",
@@ -56,6 +62,7 @@ import {
         RouterLink,
         SideBarRightComponent,
         VoiceStatusStripComponent,
+        TurnTracePanelComponent,
         ReactiveFormsModule,
     ],
 })
@@ -88,6 +95,8 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
     private credentialRefs: string[] = [];
     /** Live voice telemetry for the status strip (PC-81). */
     voiceStatus: VoiceStatus = EMPTY_VOICE_STATUS;
+    /** Last turn of the shown chat, folded from the same trace events (PC-83). */
+    turnTrace: TurnTrace = emptyTurnTrace();
     private lastTraceEvent: VoiceTurnTraceEvent | null = null;
     private lastAnswerTrace: VoiceTurnTraceEvent | null = null;
     private turnStartMs: number | null = null;
@@ -106,7 +115,11 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
     ) {
         location.onUrlChange((url, _state) => {
             const urlArray: string[] = url.split("/");
-            this.currentChatId = urlArray[urlArray.length - 1];
+            const chatId = urlArray[urlArray.length - 1];
+            if (chatId !== this.currentChatId) {
+                this.turnTrace = emptyTurnTrace(chatId);
+            }
+            this.currentChatId = chatId;
         });
     }
 
@@ -170,7 +183,13 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
             });
         this.voiceAssistantService.turnTraceObservable
             .pipe(takeUntilDestroyed(this.destroyRef))
-            .subscribe((event) => this.applyTurnTrace(event));
+            .subscribe((event) => {
+                this.applyTurnTrace(event);
+                if (event) {
+                    this.turnTrace = reduceTurnTrace(this.turnTrace, event);
+                    this.changeDetector.markForCheck();
+                }
+            });
         this.routeParamMapSubscription = this.route.paramMap.subscribe(
             (_params) => {
                 const routeParts: string[] = this.router.url.split("/");

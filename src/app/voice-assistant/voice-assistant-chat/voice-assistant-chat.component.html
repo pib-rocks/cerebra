@@ -2,6 +2,7 @@
     <div class="row pink-corner-frame w-100">
         <div class="col-sm-9 col-xl-10">
             <app-voice-status-strip [status]="voiceStatus" />
+            <app-turn-trace-panel [trace]="turnTrace" />
             <router-outlet></router-outlet>
         </div>
         <div
