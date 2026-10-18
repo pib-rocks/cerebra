@@ -33,6 +33,7 @@ import {
     transportRequest,
 } from "src/app/shared/types/channel-router";
 import {VoiceAssistantState} from "src/app/shared/types/voice-assistant-state";
+import {createServiceSpy} from "src/app/shared/testing/create-service-spy";
 
 describe("ChatWindowDeepChatComponent", () => {
     let component: ChatWindowDeepChatComponent;
@@ -100,14 +101,15 @@ describe("ChatWindowDeepChatComponent", () => {
                 "getChat",
             ]);
 
-        const tokenServiceSpy = jasmine.createSpyObj(
+        const tokenServiceSpy = createServiceSpy<TokenService>(
             "TokenService",
             ["checkTokenExists"],
             {
                 tokenStatus$: tokenStatusSubject.asObservable(),
             },
         );
-        tokenServiceSpy.checkTokenExists.and.returnValue(new Subject());
+        // checkTokenExists() returns void on the real service, so there is no
+        // value to stub: the typed spy exposed the old stub as dead code (PC-72).
 
         voiceStateSubject = new BehaviorSubject<VoiceAssistantState>({
             turnedOn: false,
@@ -116,7 +118,7 @@ describe("ChatWindowDeepChatComponent", () => {
         const assistantModelsSubject = new BehaviorSubject<AssistantModel[]>(
             [],
         );
-        const voiceAssistantSpy = jasmine.createSpyObj(
+        const voiceAssistantSpy = createServiceSpy<VoiceAssistantService>(
             "VoiceAssistantService",
             ["getPersonality"],
             {

@@ -6,6 +6,7 @@ import {BehaviorSubject} from "rxjs";
 import {RouterTestingModule} from "@angular/router/testing";
 import {Router} from "@angular/router";
 import {Program} from "src/app/shared/types/program";
+import {createServiceSpy} from "src/app/shared/testing/create-service-spy";
 
 describe("ProgramOverviewComponent", () => {
     let component: ProgramOverviewComponent;
@@ -16,9 +17,13 @@ describe("ProgramOverviewComponent", () => {
     beforeEach(async () => {
         programsSubject = new BehaviorSubject<Program[]>([]);
 
-        programServiceSpy = jasmine.createSpyObj("ProgramService", [], {
-            programsSubject: programsSubject,
-        });
+        programServiceSpy = createServiceSpy<ProgramService>(
+            "ProgramService",
+            [],
+            {
+                programsSubject: programsSubject,
+            },
+        );
 
         await TestBed.configureTestingModule({
             imports: [RouterTestingModule, ProgramOverviewComponent],

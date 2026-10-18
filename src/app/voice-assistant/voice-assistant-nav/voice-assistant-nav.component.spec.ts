@@ -15,6 +15,7 @@ import {TokenService} from "src/app/shared/services/token.service";
 import {ChannelCapabilityService} from "src/app/shared/services/channel-capability.service";
 import {VisibleStateService} from "src/app/shared/services/visible-state.service";
 import {visibleConversation} from "src/app/shared/types/visible-state";
+import {createServiceSpy} from "src/app/shared/testing/create-service-spy";
 
 describe("VoiceAssistantNavComponent", () => {
     let component: VoiceAssistantNavComponent;
@@ -398,7 +399,7 @@ function navElements(): SidebarElement[] {
 }
 
 function navProviders(personalities: VoiceAssistant[]): Provider[] {
-    const voiceAssistantServiceSpy = jasmine.createSpyObj(
+    const voiceAssistantServiceSpy = createServiceSpy<VoiceAssistantService>(
         "VoiceAssistantService",
         ["getPersonality", "updatePersonalityById", "deletePersonalityById"],
         {

@@ -1627,27 +1627,28 @@ describe("VoiceAssistantComponent (zoneless)", () => {
             error: null,
         });
         const models = new BehaviorSubject<AssistantModel[]>([]);
-        const voiceAssistantServiceSpy = jasmine.createSpyObj(
-            "VoiceAssistantService",
-            [
-                "setVoiceAssistantState",
-                "getSubject",
-                "getPersonality",
-                "createPersonality",
-                "updatePersonalityById",
-                "getAllAssistantModels",
-            ],
-            {
-                voiceAssistantStateObservable: new BehaviorSubject({
-                    turnedOn: false,
-                    chatId: "",
-                }),
-                uuidSubject: new BehaviorSubject({}),
-                personalities: [],
-                assistantModelsSubject: models,
-            },
-        );
-        const channelCapability = jasmine.createSpyObj(
+        const voiceAssistantServiceSpy =
+            createServiceSpy<VoiceAssistantService>(
+                "VoiceAssistantService",
+                [
+                    "setVoiceAssistantState",
+                    "getSubject",
+                    "getPersonality",
+                    "createPersonality",
+                    "updatePersonalityById",
+                    "getAllAssistantModels",
+                ],
+                {
+                    voiceAssistantStateObservable: new BehaviorSubject({
+                        turnedOn: false,
+                        chatId: "",
+                    }),
+                    uuidSubject: new BehaviorSubject({}),
+                    personalities: [],
+                    assistantModelsSubject: models,
+                },
+            );
+        const channelCapability = createServiceSpy<ChannelCapabilityService>(
             "ChannelCapabilityService",
             [],
             {smartChatsEnabled$: new BehaviorSubject(true)},

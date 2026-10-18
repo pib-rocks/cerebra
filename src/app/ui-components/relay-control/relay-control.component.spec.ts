@@ -12,6 +12,7 @@ import {MatSnackBar} from "@angular/material/snack-bar";
 import {BehaviorSubject, of, Subject, throwError} from "rxjs";
 import {SolidStateRelayState} from "src/app/shared/ros-types/msg/solid-state-relay-state";
 import {Bricklet} from "src/app/shared/types/bricklet";
+import {createServiceSpy} from "src/app/shared/testing/create-service-spy";
 
 describe("RelayControlComponent", () => {
     let component: RelayControlComponent;
@@ -28,7 +29,7 @@ describe("RelayControlComponent", () => {
         );
         bricklets$ = new BehaviorSubject<Bricklet[]>([]);
 
-        rosServiceMock = jasmine.createSpyObj(
+        rosServiceMock = createServiceSpy<RosService>(
             "RosService",
             ["setSolidStateRelayState"],
             {

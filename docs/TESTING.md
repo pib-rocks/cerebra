@@ -36,6 +36,10 @@ Two consequences worth remembering:
 
 -   Never populate a spy subject by assigning a new one. Call `.next(...)` on the
     subject you handed to the double.
+-   `jasmine.createSpyObj(name, methods, properties)` with a third argument is
+    banned in specs (`local/no-three-arg-create-spy-obj`). Use the helper
+    instead; there is one intentional exception, the helper's own spec, which
+    pins down the behaviour the rule forbids.
 -   The lint rule `local/no-spy-subject-assignment` (config in `eslint.config.js`,
     rule in `eslint-rules/`) fails the build when a spec assigns to a property the
     same file declared on a spy. Assigning to a subject on a real service instance

@@ -41,13 +41,17 @@ export function createServiceSpy<T>(
     methods: readonly (keyof T)[],
     properties: Partial<Record<keyof T, unknown>> = {},
 ): jasmine.SpyObj<T> {
-    // SpyObjMethodNames<T> is a conditional type, so TypeScript cannot match the
-    // generic parameter list against that overload without help. The caller still
-    // gets keyof-typing at the call site; the cast only picks the overload.
-    const spy = jasmine.createSpyObj<T>(
-        baseName,
-        methods as jasmine.SpyObjMethodNames<T>,
-    );
+    // jasmine throws "requires a non-empty array or object of method names" when
+    // asked for a spy object with no methods and no propertyNames, so a double
+    // that only needs fields (ChatService's chatSubject, for instance) is built
+    // as a plain object. Everything the spec uses on such a double is a field.
+    const spy =
+        methods.length === 0
+            ? ({} as jasmine.SpyObj<T>)
+            : jasmine.createSpyObj<T>(
+                  baseName,
+                  methods as jasmine.SpyObjMethodNames<T>,
+              );
 
     for (const [name, value] of Object.entries(properties)) {
         Object.defineProperty(spy, name, {
