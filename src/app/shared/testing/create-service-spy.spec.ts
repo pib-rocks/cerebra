@@ -22,6 +22,17 @@ describe("createServiceSpy", () => {
         expect(spy.getThing).toHaveBeenCalled();
     });
 
+    it("works without a properties argument", () => {
+        const spy = createServiceSpy<SampleService>("SampleService", [
+            "getThing",
+        ]);
+
+        spy.getThing.and.returnValue("answer");
+
+        expect(spy.getThing()).toBe("answer");
+        expect(spy.thingSubject).toBeUndefined();
+    });
+
     it("hands the declared subject to the double as a real subject that publishes", () => {
         const seen: string[][] = [];
         const spy = createServiceSpy<SampleService>(
