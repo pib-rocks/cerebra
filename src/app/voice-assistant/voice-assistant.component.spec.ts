@@ -11,6 +11,7 @@ import {VoiceAssistantService} from "../shared/services/voice-assistant.service"
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {HttpClientTestingModule} from "@angular/common/http/testing";
 import {VoiceAssistant} from "../shared/types/voice-assistant";
+import {createServiceSpy} from "../shared/testing/create-service-spy";
 import {BehaviorSubject, Subject} from "rxjs";
 import {
     TokenService,
@@ -57,33 +58,34 @@ describe("VoiceAssistantComponent", () => {
     const mockModalRef: MockNgbModalRef = new MockNgbModalRef();
 
     beforeEach(async () => {
-        const voiceAssistantServiceSpy = jasmine.createSpyObj(
-            "VocieAssistantService",
-            [
-                "setVoiceAssistantState",
-                "getSubject",
-                "setVoiceAssistantState",
-                "getPersonality",
-                "createPersonality",
-                "updatePersonalityById",
-                "getAllAssistantModels",
-            ],
-            {
-                voiceAssistantStateObservable: new BehaviorSubject({
-                    turnedOn: false,
-                    chatId: "",
-                }),
-                uuidSubject: new BehaviorSubject({}),
-                personalities: [],
-                // PC-64: the component subscribes to this subject in ngOnInit.
-                // Declared here instead of assigning it later, so data reaches
-                // the component through .next(...) and not through an
-                // assignment jasmine would silently drop.
-                assistantModelsSubject: new BehaviorSubject<AssistantModel[]>(
-                    [],
-                ),
-            },
-        );
+        // PC-72: built with createServiceSpy so the state stream, the uuid
+        // stream and the model catalogue are real values on the double - the
+        // component subscribes to them in ngOnInit and data arrives via
+        // .next(...), never via an assignment jasmine would swallow.
+        const voiceAssistantServiceSpy =
+            createServiceSpy<VoiceAssistantService>(
+                "VocieAssistantService",
+                [
+                    "setVoiceAssistantState",
+                    "getSubject",
+                    "setVoiceAssistantState",
+                    "getPersonality",
+                    "createPersonality",
+                    "updatePersonalityById",
+                    "getAllAssistantModels",
+                ],
+                {
+                    voiceAssistantStateObservable: new BehaviorSubject({
+                        turnedOn: false,
+                        chatId: "",
+                    }),
+                    uuidSubject: new BehaviorSubject({}),
+                    personalities: [],
+                    assistantModelsSubject: new BehaviorSubject<
+                        AssistantModel[]
+                    >([]),
+                },
+            );
         const idle = visibleConversation({
             voiceTurnedOn: false,
             listening: false,

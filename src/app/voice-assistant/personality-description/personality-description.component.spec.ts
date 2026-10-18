@@ -20,6 +20,7 @@ import {
     DIRECT_CHANNEL,
     SMART_CHANNEL,
 } from "src/app/shared/types/channel-router";
+import {createServiceSpy} from "src/app/shared/testing/create-service-spy";
 
 describe("PersonalityDescriptionComponent", () => {
     let component: PersonalityDescriptionComponent;
@@ -32,8 +33,11 @@ describe("PersonalityDescriptionComponent", () => {
     let _router: Router;
 
     beforeEach(async () => {
-        const voiceAssistantServiceSpy: jasmine.SpyObj<VoiceAssistantService> =
-            jasmine.createSpyObj(
+        // PC-72: service doubles are built with createServiceSpy - the subject
+        // the component subscribes to in ngOnInit is handed over as a plain
+        // writable field, so it is the same subject the assertions see.
+        const voiceAssistantServiceSpy =
+            createServiceSpy<VoiceAssistantService>(
                 "VoiceAssistantService",
                 [
                     "getPersonality",
@@ -42,11 +46,6 @@ describe("PersonalityDescriptionComponent", () => {
                     "getAllPersonalities",
                 ],
                 {
-                    // PC-64: the component subscribes to personalitiesSubject in
-                    // ngOnInit. Declaring it here keeps the service contract on
-                    // the spy itself; assigning `spy.personalitiesSubject = new
-                    // BehaviorSubject(...)` after createSpyObj would be a silent
-                    // no-op as soon as the name is moved into this object.
                     personalitiesSubject: new BehaviorSubject<VoiceAssistant[]>(
                         [],
                     ),
