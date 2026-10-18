@@ -8,6 +8,7 @@ export enum rosTopics {
     chatMessages = "/chat_messages",
     voiceAssistantState = "/voice_assistant_state",
     chatIsListening = "/chat_is_listening",
+    voiceTurnTrace = "/voice_turn_trace",
     expression = "/pib/expression",
     displayText = "/pib/display_text",
     motorSettingsTopicName = "/motor_settings",

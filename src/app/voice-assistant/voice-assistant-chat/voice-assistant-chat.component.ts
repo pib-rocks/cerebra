@@ -38,6 +38,13 @@ import {
     normalizeTokenStatus,
 } from "src/app/shared/services/token.service";
 import {SideBarRightComponent} from "../../ui-components/sidebar-right/sidebar-right.component";
+import {VoiceStatusStripComponent} from "./voice-status-strip/voice-status-strip.component";
+import {
+    EMPTY_VOICE_STATUS,
+    VoiceStatus,
+    VoiceTurnTraceEvent,
+    toVoiceStatus,
+} from "src/app/shared/types/voice-status";
 
 @Component({
     selector: "app-voice-assistant-chat",
@@ -48,6 +55,7 @@ import {SideBarRightComponent} from "../../ui-components/sidebar-right/sidebar-r
         RouterOutlet,
         RouterLink,
         SideBarRightComponent,
+        VoiceStatusStripComponent,
         ReactiveFormsModule,
     ],
 })
@@ -78,6 +86,13 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
     tokenProbe: TokenProbeState = "unknown";
     private probeCloudTokenStored = false;
     private credentialRefs: string[] = [];
+    /** Live voice telemetry for the status strip (PC-81). */
+    voiceStatus: VoiceStatus = EMPTY_VOICE_STATUS;
+    private lastTraceEvent: VoiceTurnTraceEvent | null = null;
+    private lastAnswerTrace: VoiceTurnTraceEvent | null = null;
+    private turnStartMs: number | null = null;
+    private listeningForChatId = "";
+    private listeningActive = false;
 
     constructor(
         private readonly modalService: NgbModal,
@@ -131,6 +146,7 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
                             this.activePersonalityId = chat.personalityId;
                             this.changeDetector.markForCheck();
                         });
+                    this.refreshVoiceStatus();
                     this.changeDetector.markForCheck();
                 },
             );
@@ -145,6 +161,16 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
                 this.changeDetector.markForCheck();
             },
         );
+        this.voiceAssistantService.chatIsListeningObservable
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe((listening) => {
+                this.listeningForChatId = listening.chatId;
+                this.listeningActive = listening.listening;
+                this.refreshVoiceStatus();
+            });
+        this.voiceAssistantService.turnTraceObservable
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe((event) => this.applyTurnTrace(event));
         this.routeParamMapSubscription = this.route.paramMap.subscribe(
             (_params) => {
                 const routeParts: string[] = this.router.url.split("/");
@@ -285,7 +311,51 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
         );
     }
 
-    private refreshCloudPresence(): void {
+    /** Fold one trace event of the running turn into the strip (PC-81). */
+    private applyTurnTrace(event: VoiceTurnTraceEvent | null): void {
+        if (!event) {
+            return;
+        }
+        if (
+            event.chat_id &&
+            this.currentChatId &&
+            event.chat_id !== this.currentChatId
+        ) {
+            return;
+        }
+        if (event.stage === "end_of_speech") {
+            this.turnStartMs = event.ts_ms;
+            this.lastTraceEvent = event;
+        } else if (event.stage === "stream_done") {
+            // The turn is over: drop the stage, keep the answering transport.
+            this.turnStartMs = null;
+            this.lastTraceEvent = null;
+        } else {
+            this.lastTraceEvent = event;
+        }
+        if (event.stage === "turn_path") {
+            this.lastAnswerTrace = event;
+        }
+        this.refreshVoiceStatus();
+    }
+
+    /** Recompute the strip from state, listening and the last trace event. */
+    private refreshVoiceStatus(): void {
+        const chatId = this.currentChatId ?? "";
+        const listening =
+            this.listeningActive && this.listeningForChatId === chatId;
+        this.voiceStatus = toVoiceStatus({
+            turnedOn: this.turnedOn,
+            chatId,
+            listening,
+            lastEvent: this.lastTraceEvent,
+            turnStartMs: this.turnStartMs,
+            lastAnswer: this.lastAnswerTrace,
+        });
+        this.changeDetector.markForCheck();
+    }
+
+    private refreshCloudPresence() {
         const models =
             this.voiceAssistantService.assistantModelsSubject?.getValue() ?? [];
         this.cloudTokenStored = effectiveCloudTokenStored(
