@@ -524,6 +524,20 @@ describe("provider registry selection", () => {
     });
 });
 
+describe("reasoning capability (PC-108)", () => {
+    it("treats a missing reasoning flag as available", () => {
+        expect(capabilitiesFrom({tools: true}, false).reasoning).toBeTrue();
+        expect(capabilitiesFrom(undefined, false).reasoning).toBeTrue();
+        expect(capabilitiesFrom({reasoning: true}, false).reasoning).toBeTrue();
+    });
+
+    it("keeps an explicit false so the dialog can grey the control out", () => {
+        expect(
+            capabilitiesFrom({reasoning: false}, false).reasoning,
+        ).toBeFalse();
+    });
+});
+
 describe("on-device offline model (PR-1931)", () => {
     const offline = row(6, false, false, "qwen-fast", null);
     offline.visualName = "Local (qwen-fast)";

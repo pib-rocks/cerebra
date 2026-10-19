@@ -1,15 +1,15 @@
 import {AssistantModel} from "./assistantModel";
 import {
     DEFAULT_IDLE_TIMEOUT_SECONDS,
-    IMAGES_NEED_TOOL_CALLING,
     LOCAL_VOICE_INPUT,
     LOCAL_VOICE_OUTPUT,
     NEW_PERSONALITY_REASONING_EFFORT,
+    REASONING_NO_CAPABILITY,
     TOOLS_NO_CAPABILITY,
     enforcePersonalityDialog,
-    imageSwitchAvailability,
     liveFromChosenModel,
     readPersonalityDialog,
+    reasoningAvailability,
     reasoningEffortFromStored,
     toolCallingAvailability,
     voiceInputOptions,
@@ -65,14 +65,43 @@ describe("personality dialog rules", () => {
         ).toBeNull();
     });
 
-    it("greys out images while the one tool switch is off", () => {
-        expect(imageSwitchAvailability(true)).toEqual({
+    it("greys reasoning out only when the chosen row reports it cannot reason", () => {
+        const cannotReason = new AssistantModel(
+            6,
+            CLOUD_TOKEN_API_NAME,
+            "pib.Cloud",
+            true,
+            null,
+            flags({tools: true, reasoning: false}),
+            "provider-6",
+            false,
+        );
+        const silent = new AssistantModel(
+            7,
+            "gpt-6",
+            "GPT-6",
+            true,
+            null,
+            flags({tools: true}),
+            "provider-7",
+            false,
+        );
+        expect(reasoningAvailability(cannotReason, true)).toEqual({
+            disabled: true,
+            reason: REASONING_NO_CAPABILITY,
+        });
+        // A missing flag means the model can reason, not that it cannot.
+        expect(reasoningAvailability(silent, true)).toEqual({
             disabled: false,
             reason: null,
         });
-        expect(imageSwitchAvailability(false)).toEqual({
-            disabled: true,
-            reason: IMAGES_NEED_TOOL_CALLING,
+        expect(reasoningAvailability(cannotReason, false)).toEqual({
+            disabled: false,
+            reason: null,
+        });
+        expect(reasoningAvailability(null, true)).toEqual({
+            disabled: false,
+            reason: null,
         });
     });
 
@@ -137,7 +166,8 @@ describe("personality dialog rules", () => {
             true,
         );
         expect(saved.toolCalling).toBeFalse();
-        expect(saved.images).toBeFalse();
+        // images is no longer a dialog control: a stored value survives.
+        expect(saved.images).toBeTrue();
     });
 
     it("offers local speech engines and only voice rows that have a stored key", () => {
@@ -266,12 +296,43 @@ describe("personality dialog rules", () => {
             voiceInputOptions([cloud], false, "loading").map(
                 (option) => option.id,
             ),
-        ).toEqual([LOCAL_VOICE_INPUT, "5"]);
+        ).toEqual(["5", LOCAL_VOICE_INPUT]);
         expect(
             voiceOutputOptions([cloud], false, "unavailable").map(
                 (option) => option.id,
             ),
-        ).toEqual([LOCAL_VOICE_OUTPUT, "5"]);
+        ).toEqual(["5", LOCAL_VOICE_OUTPUT]);
+    });
+
+    it("offers pib.Cloud before the local engine and the other providers", () => {
+        const cloud = new AssistantModel(
+            5,
+            CLOUD_TOKEN_API_NAME,
+            "pib.Cloud",
+            true,
+            null,
+            flags({stt: true, tts: true, tools: true, reasoning: false}),
+            "provider-4",
+            false,
+        );
+        const other = new AssistantModel(
+            6,
+            "openai",
+            "OpenAI",
+            true,
+            null,
+            flags({stt: true, tts: true, tools: true}),
+            "provider-6",
+            false,
+        );
+        expect(
+            voiceInputOptions([other, cloud], false).map((option) => option.id),
+        ).toEqual(["5", LOCAL_VOICE_INPUT, "6"]);
+        expect(
+            voiceOutputOptions([other, cloud], false).map(
+                (option) => option.id,
+            ),
+        ).toEqual(["5", LOCAL_VOICE_OUTPUT, "6"]);
     });
 
     it("does not silently fall back to local speech while the token probe is unfinished", () => {

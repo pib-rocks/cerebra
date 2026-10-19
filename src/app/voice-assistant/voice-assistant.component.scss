@@ -51,8 +51,12 @@ label {
     margin: 0.25rem 0 0;
 }
 
-#tool-calling-input,
-#images-input {
+#advanced-details > summary {
+    cursor: pointer;
+    margin-bottom: 0.5rem;
+}
+
+#tool-calling-input {
     width: auto;
     margin-right: 0.5rem;
 }

@@ -41,8 +41,8 @@ import {
     REASONING_EFFORT_UNMANAGED_LABEL,
     VoiceBackendOption,
     enforcePersonalityDialog,
-    imageSwitchAvailability,
     readPersonalityDialog,
+    reasoningAvailability,
     reasoningEffortFromStored,
     reasoningEffortLabel,
     toolCallingAvailability,
@@ -95,11 +95,15 @@ export class VoiceAssistantComponent implements OnInit {
     personalityForm!: FormGroup;
     uuid: string | undefined;
     thresholdString: string | undefined;
-    advancedOpen = false;
     voiceInputs: VoiceBackendOption[] = [];
     voiceOutputs: VoiceBackendOption[] = [];
     toolCallingReason: string | null = null;
-    imageReason: string | null = null;
+    reasoningReason: string | null = null;
+    /**
+     * The stored images value. The switch is gone from the dialog, but the
+     * field stays in the payload so an unrelated edit does not drop it.
+     */
+    private storedImages = false;
     @ViewChild("modalContent") modalContent: TemplateRef<any> | undefined;
     ngbModalRef?: NgbModalRef;
     imgSrc: string = "../../assets/toggle-switch-left.png";
@@ -127,7 +131,6 @@ export class VoiceAssistantComponent implements OnInit {
     readonly reasoningEffortLabel = reasoningEffortLabel;
     readonly isProviderConfigured = isProviderConfigured;
     readonly isProviderOptionDisabled = isProviderOptionDisabled;
-    readonly credentialNotice = credentialNotice;
     button: {enabled: boolean; func: () => void} = {
         enabled: true,
         func: () => {
@@ -231,7 +234,6 @@ export class VoiceAssistantComponent implements OnInit {
                 validators: [Validators.required],
             }),
             toolCalling: new FormControl(true, {nonNullable: true}),
-            images: new FormControl(false, {nonNullable: true}),
             live: new FormControl(false, {nonNullable: true}),
             idleTimeoutSeconds: new FormControl(DEFAULT_IDLE_TIMEOUT_SECONDS, {
                 nonNullable: true,
@@ -315,13 +317,9 @@ export class VoiceAssistantComponent implements OnInit {
             "s";
     }
 
-    toggleAdvanced = () => {
-        this.advancedOpen = !this.advancedOpen;
-    };
-
     openAddModal = () => {
         this.uuid = undefined;
-        this.advancedOpen = false;
+        this.storedImages = false;
         this.storedProviderRef = null;
         this.rebuildSelection();
         const assistantModel = this.initialAssistantModel();
@@ -337,10 +335,9 @@ export class VoiceAssistantComponent implements OnInit {
             messageHistory: 10,
             assistantModel,
             channel: this.defaultChannel(),
-            voiceInput: LOCAL_VOICE_INPUT,
-            voiceOutput: LOCAL_VOICE_OUTPUT,
+            voiceInput: this.newPersonalityVoiceInput(),
+            voiceOutput: this.newPersonalityVoiceOutput(),
             toolCalling: true,
-            images: false,
             live: false,
             idleTimeoutSeconds: DEFAULT_IDLE_TIMEOUT_SECONDS,
             reasoningEffort: NEW_PERSONALITY_REASONING_EFFORT,
@@ -352,12 +349,12 @@ export class VoiceAssistantComponent implements OnInit {
 
     openEditModal = (uuid: string) => {
         this.uuid = uuid;
-        this.advancedOpen = false;
         if (this.uuid && this.voiceAssistantService.personalities.length > 0) {
             const updatePersonality = this.voiceAssistantService.getPersonality(
                 this.uuid,
             );
             const dialog = readPersonalityDialog(updatePersonality);
+            this.storedImages = dialog.images;
             this.storedProviderRef = updatePersonality?.providerRef ?? null;
             this.rebuildSelection();
             this.retainStoredChannel = true;
@@ -372,7 +369,6 @@ export class VoiceAssistantComponent implements OnInit {
                 voiceInput: dialog.voiceInput,
                 voiceOutput: dialog.voiceOutput,
                 toolCalling: dialog.toolCalling,
-                images: dialog.images,
                 live: dialog.live,
                 idleTimeoutSeconds: dialog.idleTimeoutSeconds,
                 reasoningEffort:
@@ -452,6 +448,19 @@ export class VoiceAssistantComponent implements OnInit {
 
     providerOptionValue(model: AssistantModel): string {
         return providerOptionValueFor(model, this.storedProviderRef);
+    }
+
+    /** Option text: the model's name, plus its credential notice if it has one. */
+    modelOptionLabel(model: AssistantModel): string {
+        const notice = credentialNotice(
+            model,
+            this.cloudTokenStored,
+            this.models,
+            this.tokenProbe,
+        );
+        return notice == null
+            ? model.visualName
+            : `${model.visualName} (${notice})`;
     }
 
     needsAttention = (personalityId: string): boolean => {
@@ -581,7 +590,7 @@ export class VoiceAssistantComponent implements OnInit {
                 voiceInput: String(raw["voiceInput"]),
                 voiceOutput: String(raw["voiceOutput"]),
                 toolCalling: raw["toolCalling"] === true,
-                images: raw["images"] === true,
+                images: this.storedImages,
                 live: raw["live"] === true,
                 idleTimeoutSeconds: Number(raw["idleTimeoutSeconds"]),
                 reasoningEffort: reasoningEffortFromStored(
@@ -619,12 +628,10 @@ export class VoiceAssistantComponent implements OnInit {
             this.personalityForm.controls["toolCalling"],
             tools.disabled,
         );
-        const images = imageSwitchAvailability(
-            this.personalityForm.controls["toolCalling"].value === true,
-        );
-        this.setBlocked(
-            this.personalityForm.controls["images"],
-            images.disabled,
+        const reasoning = reasoningAvailability(model, loaded);
+        this.setDisabled(
+            this.personalityForm.controls["reasoningEffort"],
+            reasoning.disabled,
         );
         this.applyDerivedLive(model, loaded);
         this.keepVoiceSelection(
@@ -638,7 +645,7 @@ export class VoiceAssistantComponent implements OnInit {
             LOCAL_VOICE_OUTPUT,
         );
         this.toolCallingReason = tools.reason;
-        this.imageReason = images.reason;
+        this.reasoningReason = reasoning.reason;
         this.retiredNotice = this.retiredNoticeForSelection();
         this.keepOnDeviceModelOnDirect();
     }
@@ -749,11 +756,40 @@ export class VoiceAssistantComponent implements OnInit {
         }
     }
 
+    /**
+     * A new personality starts on the first offered speech option. The
+     * options are ordered pib.Cloud, local, other providers, so this is
+     * pib.Cloud while that row is offered and the local engine otherwise.
+     */
+    private newPersonalityVoiceInput(): string {
+        return this.voiceInputs[0]?.id ?? LOCAL_VOICE_INPUT;
+    }
+
+    private newPersonalityVoiceOutput(): string {
+        return this.voiceOutputs[0]?.id ?? LOCAL_VOICE_OUTPUT;
+    }
+
     private setBlocked(control: AbstractControl, blocked: boolean): void {
         if (blocked) {
             if (control.value !== false) {
                 control.setValue(false, {emitEvent: false});
             }
+            if (control.enabled) {
+                control.disable({emitEvent: false});
+            }
+            return;
+        }
+        if (control.disabled) {
+            control.enable({emitEvent: false});
+        }
+    }
+
+    /**
+     * Greys a control out without touching its value. Reasoning keeps its
+     * stored level while the chosen row cannot be given one.
+     */
+    private setDisabled(control: AbstractControl, disabled: boolean): void {
+        if (disabled) {
             if (control.enabled) {
                 control.disable({emitEvent: false});
             }
