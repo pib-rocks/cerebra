@@ -3,6 +3,7 @@ import {
     ProviderSelectionRow,
     TokenProbeState,
     credentialState,
+    usesCloudToken,
 } from "./provider-registry";
 
 /** Local speech engines. They need no provider key. */
@@ -55,9 +56,9 @@ const REASONING_EFFORT_LABELS: Record<ReasoningEffort, string> = {
     ultra: "Ultra",
 };
 
-export const IMAGES_NEED_TOOL_CALLING =
-    "Images stay off while tool calling is off. An image is fetched by a tool.";
 export const TOOLS_NO_CAPABILITY = "This provider cannot call tools.";
+export const REASONING_NO_CAPABILITY =
+    "This provider cannot be given a reasoning level.";
 
 export interface PersonalityDialogValues {
     voiceInput: string;
@@ -146,11 +147,19 @@ export function toolCallingAvailability(
 }
 
 /**
- * An image arrives from a tool, so the one "Use tools" switch gates it.
+ * Reasoning is a capability of the chosen catalogue row. A missing flag is
+ * not a refusal: the field arrives with a later backend, and only an
+ * explicit false greys the control out.
  */
-export function imageSwitchAvailability(toolCalling: boolean): DialogBlock {
-    if (!toolCalling) {
-        return {disabled: true, reason: IMAGES_NEED_TOOL_CALLING};
+export function reasoningAvailability(
+    model: ProviderSelectionRow | null,
+    registryLoaded: boolean,
+): DialogBlock {
+    if (!registryLoaded || model == null) {
+        return OPEN;
+    }
+    if (model.capabilities?.reasoning === false) {
+        return {disabled: true, reason: REASONING_NO_CAPABILITY};
     }
     return OPEN;
 }
@@ -179,9 +188,8 @@ export function enforcePersonalityDialog(
     if (toolCallingAvailability(model, registryLoaded).disabled) {
         next.toolCalling = false;
     }
-    if (imageSwitchAvailability(next.toolCalling).disabled) {
-        next.images = false;
-    }
+    // images is not a control any more. It is carried through unchanged so
+    // a stored value survives an unrelated edit.
     next.live = liveFromChosenModel(model, registryLoaded, next.live);
     return next;
 }
@@ -220,6 +228,11 @@ export function voiceOutputOptions(
     );
 }
 
+/**
+ * pib.Cloud comes first, then the local engine, then the other providers.
+ * A new personality starts on the first offered option; an existing one
+ * keeps its stored value.
+ */
 function speechOptions(
     models: SpeechProviderRow[],
     capability: "stt" | "tts",
@@ -227,19 +240,20 @@ function speechOptions(
     local: VoiceBackendOption,
     tokenProbe: TokenProbeState,
 ): VoiceBackendOption[] {
-    const cloud = models
-        .filter(
-            (model) =>
-                !isRetired(model) &&
-                model.capabilities?.[capability] === true &&
-                credentialState(model, cloudTokenStored, models, tokenProbe) ===
-                    "present",
-        )
-        .map((model) => ({
-            id: String(model.id),
-            label: model.visualName,
-        }));
-    return [local, ...cloud];
+    const offered = models.filter(
+        (model) =>
+            !isRetired(model) &&
+            model.capabilities?.[capability] === true &&
+            credentialState(model, cloudTokenStored, models, tokenProbe) ===
+                "present",
+    );
+    const toOption = (model: SpeechProviderRow): VoiceBackendOption => ({
+        id: String(model.id),
+        label: model.visualName,
+    });
+    const cloud = offered.filter(usesCloudToken).map(toOption);
+    const providers = offered.filter((model) => !usesCloudToken(model));
+    return [...cloud, local, ...providers.map(toOption)];
 }
 
 function idleTimeoutOrDefault(value: number | null | undefined): number {

@@ -101,6 +101,8 @@ export class ProgramWorkspaceComponent
             }
         });
 
+        customBlockDefinition();
+
         this.poseSubscription = this.poseService
             .getPosesObservable()
             .subscribe((poses) => {
@@ -118,7 +120,6 @@ export class ProgramWorkspaceComponent
             theme: this.customTheme,
         });
 
-        customBlockDefinition();
         this.observer = new ResizeObserver(() => {
             this.resizeBlockly();
         });
@@ -191,8 +192,24 @@ export class ProgramWorkspaceComponent
     updatePoseBlockDropdown(poses: Pose[]): void {
         const poseOptions = poses.map((pose) => [pose.name, pose.poseId]);
         Blockly.Blocks["move_to_pose"].getPoses = () => poseOptions;
-        if (this.workspace) {
-            this.workspaceContent = this.codeVisual;
+        if (!this.workspace) {
+            return;
+        }
+        for (const block of this.workspace.getBlocksByType(
+            "move_to_pose",
+            false,
+        )) {
+            const field = block.getField(
+                "POSE",
+            ) as Blockly.FieldDropdown | null;
+            if (!field) {
+                continue;
+            }
+            const currentValue = field.getValue();
+            field.getOptions(false);
+            if (currentValue) {
+                field.setValue(currentValue);
+            }
         }
     }
 }

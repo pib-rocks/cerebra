@@ -19,6 +19,7 @@ import {
 } from "../shared/services/token.service";
 import {AssistantModel} from "../shared/types/assistantModel";
 import {
+    CLOUD_TOKEN_API_NAME,
     DEFAULT_PROVIDER_REF,
     ProviderCapabilities,
     retiredModelNotice,
@@ -29,13 +30,13 @@ import {visibleConversation} from "../shared/types/visible-state";
 import {DIRECT_CHANNEL, SMART_CHANNEL} from "../shared/types/channel-router";
 import {
     DEFAULT_IDLE_TIMEOUT_SECONDS,
-    IMAGES_NEED_TOOL_CALLING,
     LOCAL_VOICE_INPUT,
     LOCAL_VOICE_OUTPUT,
     NEW_PERSONALITY_REASONING_EFFORT,
     REASONING_EFFORTS,
     REASONING_EFFORT_UNMANAGED,
     REASONING_EFFORT_UNMANAGED_LABEL,
+    REASONING_NO_CAPABILITY,
 } from "../shared/types/personality-dialog";
 export class MockNgbModalRef {
     componentInstance = {
@@ -392,7 +393,6 @@ describe("VoiceAssistantComponent", () => {
     it("points the channel toggle at Smart by default and at a stored channel when editing", () => {
         fixture.detectChanges();
         component.openAddModal();
-        component.advancedOpen = true;
         fixture.detectChanges();
         // A closed dialog stays in the document until its fade transition
         // ends, so the channel control is taken from the latest dialog.
@@ -459,7 +459,6 @@ describe("VoiceAssistantComponent", () => {
         voiceAssistantService.personalities.push(storedDirect);
         voiceAssistantService.getPersonality.and.returnValue(storedDirect);
         component.openEditModal(storedDirect.personalityId);
-        component.advancedOpen = true;
         fixture.detectChanges();
         TestBed.inject(ApplicationRef).tick();
         expect(component.personalityForm.controls["channel"].value).toBe(
@@ -482,7 +481,6 @@ describe("VoiceAssistantComponent", () => {
         voiceAssistantService.personalities.push(storedSmart);
         voiceAssistantService.getPersonality.and.returnValue(storedSmart);
         component.openEditModal(storedSmart.personalityId);
-        component.advancedOpen = true;
         fixture.detectChanges();
         TestBed.inject(ApplicationRef).tick();
         expect(component.personalityForm.controls["channel"].value).toBe(
@@ -498,7 +496,6 @@ describe("VoiceAssistantComponent", () => {
         fixture.detectChanges();
         expect(component.showSmartChannelControl).toBeFalse();
         component.openAddModal();
-        component.advancedOpen = true;
         fixture.detectChanges();
         expect(
             document.body.querySelector("[data-test=TGL_Channel]"),
@@ -579,7 +576,6 @@ describe("VoiceAssistantComponent", () => {
         voiceAssistantService.assistantModelsSubject.next([cloud, onDevice]);
         fixture.detectChanges();
         component.openAddModal();
-        component.advancedOpen = true;
         fixture.detectChanges();
         expect(
             document.body.querySelector("[data-test=TGL_Channel]"),
@@ -646,7 +642,6 @@ describe("VoiceAssistantComponent", () => {
         voiceAssistantService.getPersonality.and.returnValue(stored);
         fixture.detectChanges();
         component.openEditModal(stored.personalityId);
-        component.advancedOpen = true;
         fixture.detectChanges();
         expect(component.personalityForm.controls["assistantModel"].value).toBe(
             String(onDevice.id),
@@ -677,18 +672,29 @@ describe("VoiceAssistantComponent", () => {
         component.openAddModal();
         fixture.detectChanges();
         expect(document.body.querySelector("#name-input")).not.toBeNull();
+        const advanced = document.body.querySelector(
+            "[data-test=SEC_Advanced]",
+        ) as HTMLDetailsElement;
+        expect(advanced).not.toBeNull();
+        expect(advanced.open).toBeFalse();
         expect(
-            document.body.querySelector("[data-test=SEC_Advanced]"),
+            document.body
+                .querySelector("[data-test=TGL_Advanced]")
+                ?.textContent?.trim(),
+        ).toBe("Advanced");
+        expect(
+            document.body.querySelector("[data-test=BTN_Advanced]"),
         ).toBeNull();
         expect(
-            document.body.querySelector("#voice-assistant-model-select"),
-        ).toBeNull();
+            advanced.querySelector("#voice-assistant-model-select"),
+        ).not.toBeNull();
         const save = document.body.querySelector(
             "#modal-save-button",
         ) as HTMLButtonElement;
         expect(save.disabled).toBeTrue();
         component.personalityForm.patchValue({"name-input": "Ada"});
         fixture.detectChanges();
+        TestBed.inject(ApplicationRef).tick();
         expect(
             (
                 document.body.querySelector(
@@ -715,7 +721,6 @@ describe("VoiceAssistantComponent", () => {
     it("shows none for a new personality, a stored level as itself, and leaves an untouched NULL as NULL", () => {
         fixture.detectChanges();
         component.openAddModal();
-        component.advancedOpen = true;
         fixture.detectChanges();
         const select = () =>
             document.body.querySelector(
@@ -739,7 +744,6 @@ describe("VoiceAssistantComponent", () => {
         voiceAssistantService.personalities.push(unmanaged);
         voiceAssistantService.getPersonality.and.returnValue(unmanaged);
         component.openEditModal(unmanaged.personalityId);
-        component.advancedOpen = true;
         fixture.detectChanges();
         expect(select().value).toBe(REASONING_EFFORT_UNMANAGED);
         expect(select().selectedOptions[0].textContent?.trim()).toBe(
@@ -775,7 +779,6 @@ describe("VoiceAssistantComponent", () => {
         );
         voiceAssistantService.getPersonality.and.returnValue(stored);
         component.openEditModal(stored.personalityId);
-        component.advancedOpen = true;
         fixture.detectChanges();
         expect(select().value).toBe("low");
         component.editPersonality(stored.personalityId);
@@ -806,7 +809,6 @@ describe("VoiceAssistantComponent", () => {
         voiceAssistantService.assistantModelsSubject.next([speech]);
         fixture.detectChanges();
         component.openAddModal();
-        component.advancedOpen = true;
         fixture.detectChanges();
         expect(
             document.body.querySelector("[data-test=TGL_Channel]"),
@@ -823,14 +825,24 @@ describe("VoiceAssistantComponent", () => {
             document.body.querySelector("[data-test=DDN_Voice_Output]"),
         ).not.toBeNull();
         expect(
+            document.body
+                .querySelector("[data-test=DDN_Voice_Input]")
+                ?.closest(".col")?.parentElement,
+        ).toBe(
+            document.body
+                .querySelector("[data-test=DDN_Voice_Output]")
+                ?.closest(".col")?.parentElement,
+        );
+        expect(
             document.body.querySelector("[data-test=TXT_Threshold]"),
         ).not.toBeNull();
         expect(
             document.body.querySelector("[data-test=CHK_Tool_Calling]"),
         ).not.toBeNull();
+        // PC-108: the Images switch is gone from the dialog.
         expect(
             document.body.querySelector("[data-test=CHK_Images]"),
-        ).not.toBeNull();
+        ).toBeNull();
         expect(document.body.querySelector("[data-test=CHK_Live]")).toBeNull();
         // PC-58: exactly one tools control, labelled "Use tools". The second
         // switch ("MCP server") is gone from the dialog.
@@ -897,52 +909,122 @@ describe("VoiceAssistantComponent", () => {
         expect(component.personalityForm.getRawValue()["live"]).toBeTrue();
     });
 
-    it("greys out images when the tool switch is off", () => {
-        const capable = new AssistantModel(
+    it("greys the reasoning level out when the chosen row cannot reason and keeps its value", () => {
+        const cloud = new AssistantModel(
+            9,
+            CLOUD_TOKEN_API_NAME,
+            "pib.Cloud",
+            true,
+            null,
+            {
+                tools: true,
+                images: true,
+                live: false,
+                stt: false,
+                tts: false,
+                reasoning: false,
+            },
+            null,
+            false,
+        );
+        // No reasoning flag at all: PC-109 delivers it, and a missing flag
+        // must leave the control usable.
+        const plain = new AssistantModel(
             7,
-            "openai",
-            "OpenAI",
+            "gpt-6",
+            "GPT-6",
             true,
             "https://api.openai.example/v1",
             {
                 tools: true,
                 images: true,
-                live: true,
+                live: false,
                 stt: false,
                 tts: false,
             },
             "provider-7",
             true,
         );
-        voiceAssistantService.assistantModelsSubject.next([capable]);
+        voiceAssistantService.assistantModelsSubject.next([cloud, plain]);
         fixture.detectChanges();
         component.openAddModal();
-        component.advancedOpen = true;
         fixture.detectChanges();
-        const images = () =>
-            document.body.querySelector("#images-input") as HTMLInputElement;
+        TestBed.inject(ApplicationRef).tick();
+        const reasoning = () =>
+            document.body.querySelector(
+                "#reasoning-effort-select",
+            ) as HTMLSelectElement;
         const reason = () =>
-            document.body.querySelector("[data-test=LBL_Images_Reason]")
+            document.body.querySelector("[data-test=LBL_Reasoning_Reason]")
                 ?.textContent ?? "";
-        expect(images().disabled).toBeFalse();
+        // Right of the model select, in the same row.
+        expect(reasoning().closest("#row-model")).not.toBeNull();
+        expect(reasoning().closest(".col")).toBe(
+            document.body
+                .querySelector("#voice-assistant-model-select")
+                ?.closest(".col")?.nextElementSibling ?? null,
+        );
+        expect(reasoning().disabled).toBeTrue();
+        expect(reason()).toContain(REASONING_NO_CAPABILITY);
+        // Disabled means not editable, not cleared.
         expect(
-            document.body.querySelector("[data-test=LBL_Images_Reason]"),
+            component.personalityForm.controls["reasoningEffort"].value,
+        ).toBe(NEW_PERSONALITY_REASONING_EFFORT);
+
+        component.personalityForm.controls["assistantModel"].setValue(
+            String(plain.id),
+        );
+        fixture.detectChanges();
+        TestBed.inject(ApplicationRef).tick();
+        expect(reasoning().disabled).toBeFalse();
+        expect(
+            document.body.querySelector("[data-test=LBL_Reasoning_Reason]"),
         ).toBeNull();
-        (
-            document.body.querySelector(
-                "#tool-calling-input",
-            ) as HTMLInputElement
-        ).click();
+        component.personalityForm.controls["reasoningEffort"].setValue("high");
+
+        component.personalityForm.controls["assistantModel"].setValue(
+            String(cloud.id),
+        );
+        fixture.detectChanges();
         TestBed.inject(ApplicationRef).tick();
-        expect(images().disabled).toBeTrue();
-        expect(reason()).toContain(IMAGES_NEED_TOOL_CALLING);
-        (
-            document.body.querySelector(
-                "#tool-calling-input",
-            ) as HTMLInputElement
-        ).click();
-        TestBed.inject(ApplicationRef).tick();
-        expect(images().disabled).toBeFalse();
+        expect(reasoning().disabled).toBeTrue();
+        expect(reason()).toContain(REASONING_NO_CAPABILITY);
+        expect(
+            component.personalityForm.controls["reasoningEffort"].value,
+        ).toBe("high");
+        component.ngbModalRef?.close();
+    });
+
+    it("sends a stored images value back although the switch is gone", () => {
+        const stored = new VoiceAssistant(
+            "persona-images",
+            "Ada",
+            "Female",
+            0.8,
+            "",
+            null,
+            10,
+            DEFAULT_PROVIDER_REF,
+            SMART_CHANNEL,
+            {images: true},
+        );
+        voiceAssistantService.personalities.push(stored);
+        voiceAssistantService.getPersonality.and.returnValue(stored);
+        fixture.detectChanges();
+        component.openEditModal(stored.personalityId);
+        fixture.detectChanges();
+        expect(component.personalityForm.contains("images")).toBeFalse();
+        expect(
+            document.body.querySelector("[data-test=CHK_Images]"),
+        ).toBeNull();
+        component.personalityForm.patchValue({"name-input": "Ada renamed"});
+        component.editPersonality(stored.personalityId);
+        const updated =
+            voiceAssistantService.updatePersonalityById.calls.mostRecent()
+                .args[0] as VoiceAssistant;
+        expect(updated.name).toBe("Ada renamed");
+        expect(updated.images).toBeTrue();
+        component.ngbModalRef?.close();
     });
 
     it("offers a live model in the list, and choosing it is the whole statement", () => {
@@ -981,7 +1063,6 @@ describe("VoiceAssistantComponent", () => {
         voiceAssistantService.assistantModelsSubject.next([flash, live]);
         fixture.detectChanges();
         component.openAddModal();
-        component.advancedOpen = true;
         fixture.detectChanges();
         TestBed.inject(ApplicationRef).tick();
         expect(document.body.querySelector("[data-test=CHK_Live]")).toBeNull();
@@ -1036,7 +1117,6 @@ describe("VoiceAssistantComponent", () => {
         voiceAssistantService.assistantModelsSubject.next([text]);
         fixture.detectChanges();
         component.openAddModal();
-        component.advancedOpen = true;
         fixture.detectChanges();
         expect(document.body.querySelector("#live-input")).toBeNull();
         expect(
@@ -1137,7 +1217,6 @@ describe("VoiceAssistantComponent", () => {
         ]);
         fixture.detectChanges();
         component.openAddModal();
-        component.advancedOpen = true;
         fixture.detectChanges();
         TestBed.inject(ApplicationRef).tick();
         const offered = () =>
@@ -1181,7 +1260,6 @@ describe("VoiceAssistantComponent", () => {
             retiredModelNotice(retired),
         );
         component.openEditModal(persona.personalityId);
-        component.advancedOpen = true;
         fixture.detectChanges();
         TestBed.inject(ApplicationRef).tick();
         expect(component.personalityForm.controls["assistantModel"].value).toBe(
@@ -1263,7 +1341,6 @@ describe("VoiceAssistantComponent", () => {
         voiceAssistantService.personalities.push(persona);
         voiceAssistantService.getPersonality.and.returnValue(persona);
         component.openEditModal(persona.personalityId);
-        component.advancedOpen = true;
         fixture.detectChanges();
         TestBed.inject(ApplicationRef).tick();
 
@@ -1386,7 +1463,6 @@ describe("VoiceAssistantComponent", () => {
             voiceAssistantService.getPersonality.and.returnValue(persona);
             expect(component.needsAttention(persona.personalityId)).toBeFalse();
             component.openEditModal(persona.personalityId);
-            component.advancedOpen = true;
             fixture.detectChanges();
             TestBed.inject(ApplicationRef).tick();
             expect(
@@ -1455,7 +1531,6 @@ describe("VoiceAssistantComponent", () => {
 
     function openNewPersonality(): void {
         component.openAddModal();
-        component.advancedOpen = true;
         fixture.detectChanges();
         TestBed.inject(ApplicationRef).tick();
     }
@@ -1499,6 +1574,96 @@ describe("VoiceAssistantComponent", () => {
         expect(created.providerRef).toBe(String(cloud.id));
         expect(created.assistantModelId).toBe(cloud.id);
         expect(created.channel).toBe(SMART_CHANNEL);
+        component.ngbModalRef?.close();
+    });
+
+    it("starts a new personality on pib.Cloud for both speech selects", () => {
+        const cloud = new AssistantModel(
+            10,
+            CLOUD_TOKEN_API_NAME,
+            "pib.Cloud",
+            true,
+            null,
+            {
+                tools: true,
+                images: true,
+                live: false,
+                stt: true,
+                tts: true,
+                reasoning: false,
+            },
+            null,
+            true,
+        );
+        voiceAssistantService.assistantModelsSubject.next([cloud]);
+        fixture.detectChanges();
+        openNewPersonality();
+        const voiceInput = document.body.querySelector(
+            "#voice-input-select",
+        ) as HTMLSelectElement;
+        const voiceOutput = document.body.querySelector(
+            "#voice-output-select",
+        ) as HTMLSelectElement;
+        expect(
+            Array.from(voiceInput.options).map((option) => option.value),
+        ).toEqual([String(cloud.id), LOCAL_VOICE_INPUT]);
+        expect(
+            Array.from(voiceOutput.options).map((option) => option.value),
+        ).toEqual([String(cloud.id), LOCAL_VOICE_OUTPUT]);
+        expect(voiceInput.value).toBe(String(cloud.id));
+        expect(voiceOutput.value).toBe(String(cloud.id));
+        component.personalityForm.patchValue({"name-input": "Ada"});
+        component.addPersonality();
+        const created =
+            voiceAssistantService.createPersonality.calls.mostRecent()
+                .args[0] as VoiceAssistant;
+        expect(created.voiceInput).toBe(String(cloud.id));
+        expect(created.voiceOutput).toBe(String(cloud.id));
+        component.ngbModalRef?.close();
+    });
+
+    it("keeps an existing personality on its stored speech engines", () => {
+        const cloud = new AssistantModel(
+            10,
+            CLOUD_TOKEN_API_NAME,
+            "pib.Cloud",
+            true,
+            null,
+            {
+                tools: true,
+                images: true,
+                live: false,
+                stt: true,
+                tts: true,
+                reasoning: false,
+            },
+            null,
+            true,
+        );
+        voiceAssistantService.assistantModelsSubject.next([cloud]);
+        const stored = new VoiceAssistant(
+            "persona-voice",
+            "Ada",
+            "Female",
+            0.8,
+            "",
+            null,
+            10,
+            DEFAULT_PROVIDER_REF,
+            SMART_CHANNEL,
+            {voiceInput: LOCAL_VOICE_INPUT, voiceOutput: LOCAL_VOICE_OUTPUT},
+        );
+        voiceAssistantService.personalities.push(stored);
+        voiceAssistantService.getPersonality.and.returnValue(stored);
+        fixture.detectChanges();
+        component.openEditModal(stored.personalityId);
+        fixture.detectChanges();
+        expect(component.personalityForm.controls["voiceInput"].value).toBe(
+            LOCAL_VOICE_INPUT,
+        );
+        expect(component.personalityForm.controls["voiceOutput"].value).toBe(
+            LOCAL_VOICE_OUTPUT,
+        );
         component.ngbModalRef?.close();
     });
 

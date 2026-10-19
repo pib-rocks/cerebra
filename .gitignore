@@ -50,3 +50,9 @@ Thumbs.db
 .editorconfig
 .scannerwork/.sonar_lock
 .scannerwork/report-task.txt
+
+# Environment files carry credentials and per-host settings; they must never be
+# committed. ros-audio.env does not exist here; keep examples opt-in.
+.env
+*.env
+!*.env.example

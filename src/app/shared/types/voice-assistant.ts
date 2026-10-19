@@ -116,9 +116,9 @@ export const VOICE_MODE_LIVE = "live";
 export const VOICE_MODE_TURN_BASED = "turn_based";
 
 /**
- * Columns the Add and Edit dialog writes. images stays on the form: a
- * personality has no column for it, and the image tool arrives through the
- * one "Use tools" switch. reasoningEffort is a column. null keeps the
+ * Columns the Add and Edit dialog writes. images has no dialog control: the
+ * stored value is carried through unchanged so an unrelated edit keeps it.
+ * reasoningEffort is a column. null keeps the
  * row NULL so the Hermes profile's own level is left alone; a level is
  * sent only when the operator chose one. memory and thinkingFiller are
  * columns the dialog does not collect, so an update leaves them as stored.

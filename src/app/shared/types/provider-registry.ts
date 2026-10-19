@@ -120,6 +120,13 @@ export interface ProviderCapabilities {
      * it through isOfflineModel() rather than the raw flag.
      */
     offline?: boolean;
+    /**
+     * The model can be given a reasoning level. Optional, and a missing flag
+     * means true: the field is delivered by a later backend story, and the
+     * dialog must not grey the control out by accident before it arrives.
+     * Read it through reasoningAvailability() rather than the raw flag.
+     */
+    reasoning?: boolean;
 }
 
 export interface ProviderSelectionRow {
@@ -152,6 +159,9 @@ export function capabilitiesFrom(
         stt: Boolean(raw?.stt),
         tts: Boolean(raw?.tts),
         offline: Boolean(raw?.offline),
+        // A missing flag means the model can reason: the capability is
+        // delivered later, and false is written only when the row says so.
+        reasoning: raw?.reasoning !== false,
     };
 }
 

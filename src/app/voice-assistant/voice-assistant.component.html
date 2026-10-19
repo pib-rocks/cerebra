@@ -52,288 +52,274 @@
                 id="name-input" />
         </div>
         <div class="row m-2">
-            <button
-                type="button"
-                class="btn btn-regular"
-                id="advanced-toggle"
-                data-test="BTN_Advanced"
-                [attr.aria-expanded]="advancedOpen"
-                (click)="toggleAdvanced()">
-                Advanced
-            </button>
-        </div>
-        @if (advancedOpen) {
-        <div
-            id="personality-advanced"
-            data-test="SEC_Advanced">
-            @if (showSmartChannelControl) {
-            <div
-                class="row mt-3 m-2 ms-3"
-                id="row-channel">
-                <label
-                    id="label-channel"
-                    class="col-12"
-                    >Channel</label
-                >
-                <div class="col text-end">
-                    <span
-                        class="align-middle"
-                        id="label-channel-smart"
-                        >Smart</span
-                    >
-                </div>
-                <div class="col pe-0 ps-0">
-                    <button
-                        class="btn border-0 p-0"
-                        id="channel-toggle"
-                        data-test="TGL_Channel"
-                        type="button"
-                        (click)="toggleChannel()">
-                        <img
-                            [src]="
-                                channelPointsRight
-                                    ? '../../assets/toggle-switch-right.png'
-                                    : '../../assets/toggle-switch-left.png'
-                            "
-                            alt="Toggle for switching the chat channel between Direct and Smart" />
-                    </button>
-                </div>
-                <div class="col text-start">
-                    <span
-                        class="align-middle"
-                        id="label-channel-direct"
-                        >Direct</span
-                    >
-                </div>
-            </div>
-            } @else { @if (offlineModelSelected) {
-            <div class="row mt-3 m-2 ms-3">
-                <div
-                    class="col-12 text-white"
-                    id="channel-offline-explanation"
-                    data-test="LBL_Channel_Offline_Explanation">
-                    Smart is not available for this model because it cannot
-                    provide the context window the agent requires.
-                </div>
-                <p
-                    class="col-4"
-                    id="channel-direct-only"
-                    data-test="LBL_Channel_Direct">
-                    Direct
-                </p>
-            </div>
-            } @else {
-            <p
-                class="m-2 ms-3"
-                id="channel-direct-only"
-                data-test="LBL_Channel_Direct">
-                Direct
-            </p>
-            } }
-            <div class="row ms-3 m-2 mt-3 pe-2">
-                <label
-                    for="voice-assistant-model-select"
-                    id="label-model"
-                    >Model</label
-                >
-                <select
-                    id="voice-assistant-model-select"
-                    formControlName="assistantModel"
-                    class="form-select"
-                    data-test="DDN_Voice_Assistant_Model"
-                    aria-label="Voice-assistant language model">
-                    @for (model of selectionModels; track model.id) {
-                    <option
-                        [value]="providerOptionValue(model)"
-                        [disabled]="
-                            isProviderOptionDisabled(
-                                model,
-                                cloudTokenStored,
-                                models,
-                                tokenProbe
-                            )
-                        ">
-                        {{ model.visualName }} @if (credentialNotice(model,
-                        cloudTokenStored, models, tokenProbe); as notice) { ({{
-                        notice }}) }
-                    </option>
-                    }
-                </select>
-                @if (retiredNotice) {
-                <p
-                    class="advanced-reason"
-                    id="retired-model-notice"
-                    data-test="LBL_Retired_Model">
-                    {{ retiredNotice }}
-                </p>
-                }
-            </div>
-            <div class="row ms-3 m-2 mt-3 pe-2">
-                <label
-                    for="voice-input-select"
-                    id="label-voice-input"
-                    >Voice input</label
-                >
-                <select
-                    id="voice-input-select"
-                    formControlName="voiceInput"
-                    class="form-select"
-                    data-test="DDN_Voice_Input"
-                    aria-label="Voice input">
-                    @for (option of voiceInputs; track option.id) {
-                    <option [value]="option.id">{{ option.label }}</option>
-                    }
-                </select>
-            </div>
-            <div class="row ms-3 m-2 mt-3 pe-2">
-                <label
-                    for="voice-output-select"
-                    id="label-voice-output"
-                    >Voice output</label
-                >
-                <select
-                    id="voice-output-select"
-                    formControlName="voiceOutput"
-                    class="form-select"
-                    data-test="DDN_Voice_Output"
-                    aria-label="Voice output">
-                    @for (option of voiceOutputs; track option.id) {
-                    <option [value]="option.id">{{ option.label }}</option>
-                    }
-                </select>
-            </div>
-            <div
-                class="row m-2"
-                id="row-pause-threshold"
-                lang="en-US">
-                <label
-                    for="pause-threshold-input"
-                    class="col-6 mt-1"
-                    id="label-pause-threshold"
-                    >Pause threshold</label
-                >
-                <div class="col-3">
-                    <div class="row">
-                        <div class="col-10 p-0">
-                            <input
-                                type="text"
-                                id="pause-threshold-input"
-                                data-test="TXT_Threshold"
-                                [(ngModel)]="thresholdString"
-                                [ngModelOptions]="{standalone: true}"
-                                readonly />
+            <details
+                id="advanced-details"
+                class="col-12"
+                data-test="SEC_Advanced">
+                <summary
+                    id="advanced-summary"
+                    data-test="TGL_Advanced">
+                    Advanced
+                </summary>
+                <div id="personality-advanced">
+                    @if (showSmartChannelControl) {
+                    <div
+                        class="row mt-3 m-2 ms-3"
+                        id="row-channel">
+                        <label
+                            id="label-channel"
+                            class="col-12"
+                            >Channel</label
+                        >
+                        <div class="col text-end">
+                            <span
+                                class="align-middle"
+                                id="label-channel-smart"
+                                >Smart</span
+                            >
                         </div>
-                        <div class="col-2 p-0">
-                            <div class="row mt-1 p-0">
-                                <button
-                                    id="up"
-                                    data-test="BTN_Threshold_up"
-                                    type="button"
-                                    (click)="adjustThreshold('0.1')">
-                                    &#9650;
-                                </button>
-                            </div>
-                            <div class="row p-0">
-                                <button
-                                    id="down"
-                                    data-test="BTN_Threshold_down"
-                                    type="button"
-                                    (click)="adjustThreshold('-0.1')">
-                                    &#9660;
-                                </button>
+                        <div class="col pe-0 ps-0">
+                            <button
+                                class="btn border-0 p-0"
+                                id="channel-toggle"
+                                data-test="TGL_Channel"
+                                type="button"
+                                (click)="toggleChannel()">
+                                <img
+                                    [src]="
+                                        channelPointsRight
+                                            ? '../../assets/toggle-switch-right.png'
+                                            : '../../assets/toggle-switch-left.png'
+                                    "
+                                    alt="Toggle for switching the chat channel between Direct and Smart" />
+                            </button>
+                        </div>
+                        <div class="col text-start">
+                            <span
+                                class="align-middle"
+                                id="label-channel-direct"
+                                >Direct</span
+                            >
+                        </div>
+                    </div>
+                    } @else { @if (offlineModelSelected) {
+                    <div class="row mt-3 m-2 ms-3">
+                        <div
+                            class="col-12 text-white"
+                            id="channel-offline-explanation"
+                            data-test="LBL_Channel_Offline_Explanation">
+                            Smart is not available for this model because it
+                            cannot provide the context window the agent
+                            requires.
+                        </div>
+                        <p
+                            class="col-4"
+                            id="channel-direct-only"
+                            data-test="LBL_Channel_Direct">
+                            Direct
+                        </p>
+                    </div>
+                    } @else {
+                    <p
+                        class="m-2 ms-3"
+                        id="channel-direct-only"
+                        data-test="LBL_Channel_Direct">
+                        Direct
+                    </p>
+                    } }
+                    <div
+                        class="row ms-3 m-2 mt-3 pe-2"
+                        id="row-model">
+                        <label
+                            for="voice-assistant-model-select"
+                            id="label-model"
+                            class="col-12"
+                            >Model</label
+                        >
+                        <div class="col pe-0">
+                            <select
+                                id="voice-assistant-model-select"
+                                formControlName="assistantModel"
+                                class="form-select"
+                                data-test="DDN_Voice_Assistant_Model"
+                                aria-label="Voice-assistant language model">
+                                @for (model of selectionModels; track model.id)
+                                {
+                                <option
+                                    [value]="providerOptionValue(model)"
+                                    [disabled]="
+                                        isProviderOptionDisabled(
+                                            model,
+                                            cloudTokenStored,
+                                            models,
+                                            tokenProbe
+                                        )
+                                    ">
+                                    {{ modelOptionLabel(model) }}
+                                </option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col ps-0">
+                            <select
+                                id="reasoning-effort-select"
+                                class="form-select"
+                                data-test="DDN_Reasoning_Effort"
+                                formControlName="reasoningEffort"
+                                aria-label="Reasoning level">
+                                <option [value]="reasoningEffortUnmanaged">
+                                    {{ reasoningEffortUnmanagedLabel }}
+                                </option>
+                                @for (level of reasoningLevels; track level) {
+                                <option [value]="level">
+                                    {{ reasoningEffortLabel(level) }}
+                                </option>
+                                }
+                            </select>
+                            @if (reasoningReason) {
+                            <p
+                                class="advanced-reason"
+                                data-test="LBL_Reasoning_Reason">
+                                {{ reasoningReason }}
+                            </p>
+                            }
+                        </div>
+                        @if (retiredNotice) {
+                        <p
+                            class="advanced-reason col-12"
+                            id="retired-model-notice"
+                            data-test="LBL_Retired_Model">
+                            {{ retiredNotice }}
+                        </p>
+                        }
+                    </div>
+                    <div class="row ms-3 m-2 mt-3 pe-2">
+                        <div class="col pe-0">
+                            <label
+                                for="voice-input-select"
+                                id="label-voice-input"
+                                >Voice input</label
+                            >
+                            <select
+                                id="voice-input-select"
+                                formControlName="voiceInput"
+                                class="form-select"
+                                data-test="DDN_Voice_Input"
+                                aria-label="Voice input">
+                                @for (option of voiceInputs; track option.id) {
+                                <option [value]="option.id">
+                                    {{ option.label }}
+                                </option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col ps-0">
+                            <label
+                                for="voice-output-select"
+                                id="label-voice-output"
+                                >Voice output</label
+                            >
+                            <select
+                                id="voice-output-select"
+                                formControlName="voiceOutput"
+                                class="form-select"
+                                data-test="DDN_Voice_Output"
+                                aria-label="Voice output">
+                                @for (option of voiceOutputs; track option.id) {
+                                <option [value]="option.id">
+                                    {{ option.label }}
+                                </option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                    <div
+                        class="row m-2"
+                        id="row-pause-threshold"
+                        lang="en-US">
+                        <label
+                            for="pause-threshold-input"
+                            class="col-6 mt-1"
+                            id="label-pause-threshold"
+                            >Pause threshold</label
+                        >
+                        <div class="col-3">
+                            <div class="row">
+                                <div class="col-10 p-0">
+                                    <input
+                                        type="text"
+                                        id="pause-threshold-input"
+                                        data-test="TXT_Threshold"
+                                        [(ngModel)]="thresholdString"
+                                        [ngModelOptions]="{standalone: true}"
+                                        readonly />
+                                </div>
+                                <div class="col-2 p-0">
+                                    <div class="row mt-1 p-0">
+                                        <button
+                                            id="up"
+                                            data-test="BTN_Threshold_up"
+                                            type="button"
+                                            (click)="adjustThreshold('0.1')">
+                                            &#9650;
+                                        </button>
+                                    </div>
+                                    <div class="row p-0">
+                                        <button
+                                            id="down"
+                                            data-test="BTN_Threshold_down"
+                                            type="button"
+                                            (click)="adjustThreshold('-0.1')">
+                                            &#9660;
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-            <div
-                class="row m-2"
-                id="row-tool-calling">
-                <input
-                    type="checkbox"
-                    id="tool-calling-input"
-                    data-test="CHK_Tool_Calling"
-                    formControlName="toolCalling" />
-                <label
-                    for="tool-calling-input"
-                    id="label-tool-calling"
-                    >Use tools</label
-                >
-                @if (toolCallingReason) {
-                <p
-                    class="advanced-reason"
-                    data-test="LBL_Tool_Calling_Reason">
-                    {{ toolCallingReason }}
-                </p>
-                }
-            </div>
-            <div
-                class="row m-2"
-                id="row-images">
-                <input
-                    type="checkbox"
-                    id="images-input"
-                    data-test="CHK_Images"
-                    formControlName="images" />
-                <label
-                    for="images-input"
-                    id="label-images"
-                    >Images</label
-                >
-                @if (imageReason) {
-                <p
-                    class="advanced-reason"
-                    data-test="LBL_Images_Reason">
-                    {{ imageReason }}
-                </p>
-                }
-            </div>
-            @if (showIdleTimeout) {
-            <div
-                class="row m-2"
-                id="row-idle-timeout">
-                <label
-                    for="idle-timeout-input"
-                    class="col-6 mt-1"
-                    id="label-idle-timeout"
-                    >Idle timeout (s)</label
-                >
-                <input
-                    type="number"
-                    id="idle-timeout-input"
-                    class="col-3"
-                    data-test="TXT_Idle_Timeout"
-                    formControlName="idleTimeoutSeconds"
-                    min="1" />
-            </div>
-            }
-            <div
-                class="row m-2"
-                id="row-reasoning-effort">
-                <label
-                    for="reasoning-effort-select"
-                    class="col-6 mt-1"
-                    id="label-reasoning-effort"
-                    >Reasoning level</label
-                >
-                <select
-                    id="reasoning-effort-select"
-                    class="col-3 form-select"
-                    data-test="DDN_Reasoning_Effort"
-                    formControlName="reasoningEffort"
-                    aria-label="Reasoning level">
-                    <option [value]="reasoningEffortUnmanaged">
-                        {{ reasoningEffortUnmanagedLabel }}
-                    </option>
-                    @for (level of reasoningLevels; track level) {
-                    <option [value]="level">
-                        {{ reasoningEffortLabel(level) }}
-                    </option>
+                    <div
+                        class="row m-2"
+                        id="row-tool-calling">
+                        <input
+                            type="checkbox"
+                            id="tool-calling-input"
+                            data-test="CHK_Tool_Calling"
+                            formControlName="toolCalling" />
+                        <label
+                            for="tool-calling-input"
+                            id="label-tool-calling"
+                            >Use tools</label
+                        >
+                        @if (toolCallingReason) {
+                        <p
+                            class="advanced-reason"
+                            data-test="LBL_Tool_Calling_Reason">
+                            {{ toolCallingReason }}
+                        </p>
+                        }
+                    </div>
+                    @if (showIdleTimeout) {
+                    <div
+                        class="row m-2"
+                        id="row-idle-timeout">
+                        <label
+                            for="idle-timeout-input"
+                            class="col-6 mt-1"
+                            id="label-idle-timeout"
+                            >Idle timeout (s)</label
+                        >
+                        <input
+                            type="number"
+                            id="idle-timeout-input"
+                            class="col-3"
+                            data-test="TXT_Idle_Timeout"
+                            formControlName="idleTimeoutSeconds"
+                            min="1" />
+                    </div>
                     }
-                </select>
-            </div>
+                </div>
+            </details>
         </div>
-        }
         <div class="row justify-content-center mt-2 mb-3">
             @if (uuid) {
             <div class="col-3 align-self-center">
