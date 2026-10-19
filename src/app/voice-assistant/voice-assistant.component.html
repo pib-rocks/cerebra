@@ -75,36 +75,52 @@
                     class="col-12"
                     >Channel</label
                 >
-                <div
-                    class="col-4 pointer"
-                    id="channel-radio-smart">
-                    <input
-                        value="smart"
-                        data-test="RBN_Channel_Smart"
-                        formControlName="channel"
-                        type="radio"
-                        id="channel-smart" />
-                    <label
-                        for="channel-smart"
+                <div class="col text-end">
+                    <span
+                        class="align-middle"
                         id="label-channel-smart"
-                        >Smart</label
+                        >Smart</span
                     >
                 </div>
-                <div
-                    class="col-4 pointer"
-                    id="channel-radio-direct">
-                    <input
-                        value="direct"
-                        data-test="RBN_Channel_Direct"
-                        formControlName="channel"
-                        type="radio"
-                        id="channel-direct" />
-                    <label
-                        for="channel-direct"
+                <div class="col pe-0 ps-0">
+                    <button
+                        class="btn border-0 p-0"
+                        id="channel-toggle"
+                        data-test="TGL_Channel"
+                        type="button"
+                        (click)="toggleChannel()">
+                        <img
+                            [src]="
+                                channelPointsRight
+                                    ? '../../assets/toggle-switch-right.png'
+                                    : '../../assets/toggle-switch-left.png'
+                            "
+                            alt="Toggle for switching the chat channel between Direct and Smart" />
+                    </button>
+                </div>
+                <div class="col text-start">
+                    <span
+                        class="align-middle"
                         id="label-channel-direct"
-                        >Direct</label
+                        >Direct</span
                     >
                 </div>
+            </div>
+            } @else { @if (offlineModelSelected) {
+            <div class="row mt-3 m-2 ms-3">
+                <div
+                    class="col-12 text-white"
+                    id="channel-offline-explanation"
+                    data-test="LBL_Channel_Offline_Explanation">
+                    Smart is not available for this model because it cannot
+                    provide the context window the agent requires.
+                </div>
+                <p
+                    class="col-4"
+                    id="channel-direct-only"
+                    data-test="LBL_Channel_Direct">
+                    Direct
+                </p>
             </div>
             } @else {
             <p
@@ -113,7 +129,7 @@
                 data-test="LBL_Channel_Direct">
                 Direct
             </p>
-            }
+            } }
             <div class="row ms-3 m-2 mt-3 pe-2">
                 <label
                     for="voice-assistant-model-select"
@@ -133,11 +149,13 @@
                             isProviderOptionDisabled(
                                 model,
                                 cloudTokenStored,
-                                models
+                                models,
+                                tokenProbe
                             )
                         ">
-                        {{ model.visualName }} @if (!isProviderConfigured(model,
-                        cloudTokenStored, models)) { ({{ missingKeyMark }}) }
+                        {{ model.visualName }} @if (credentialNotice(model,
+                        cloudTokenStored, models, tokenProbe); as notice) { ({{
+                        notice }}) }
                     </option>
                     }
                 </select>
@@ -239,7 +257,7 @@
                 <label
                     for="tool-calling-input"
                     id="label-tool-calling"
-                    >Tool calling</label
+                    >Use tools</label
                 >
                 @if (toolCallingReason) {
                 <p
@@ -291,17 +309,28 @@
             }
             <div
                 class="row m-2"
-                id="row-mcp">
-                <input
-                    type="checkbox"
-                    id="mcp-input"
-                    data-test="CHK_Mcp"
-                    formControlName="mcp" />
+                id="row-reasoning-effort">
                 <label
-                    for="mcp-input"
-                    id="label-mcp"
-                    >MCP server</label
+                    for="reasoning-effort-select"
+                    class="col-6 mt-1"
+                    id="label-reasoning-effort"
+                    >Reasoning level</label
                 >
+                <select
+                    id="reasoning-effort-select"
+                    class="col-3 form-select"
+                    data-test="DDN_Reasoning_Effort"
+                    formControlName="reasoningEffort"
+                    aria-label="Reasoning level">
+                    <option [value]="reasoningEffortUnmanaged">
+                        {{ reasoningEffortUnmanagedLabel }}
+                    </option>
+                    @for (level of reasoningLevels; track level) {
+                    <option [value]="level">
+                        {{ reasoningEffortLabel(level) }}
+                    </option>
+                    }
+                </select>
             </div>
         </div>
         }

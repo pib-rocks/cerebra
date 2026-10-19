@@ -116,4 +116,69 @@ describe("ConversationStatusComponent", () => {
                 .classList.contains("mouth-open"),
         ).toBeTrue();
     });
+
+    it("shows the full holder line in the voice assistant without the face", () => {
+        fixture.componentInstance.surface = "assistant";
+        fixture.detectChanges();
+
+        const root = fixture.nativeElement.querySelector(
+            "#assistant-conversation-state",
+        ) as HTMLElement;
+        expect(root).not.toBeNull();
+        expect(root.classList.contains("assistant")).toBeTrue();
+        expect(root.textContent).toContain("Nobody holds the voice");
+        expect(
+            fixture.nativeElement.querySelector("#assistant-voice-holder")
+                .textContent,
+        ).toContain("Nobody holds the voice");
+        expect(
+            fixture.nativeElement.querySelector("#animated-face"),
+        ).toBeNull();
+        expect(
+            fixture.nativeElement.querySelector("#display-conversation-state"),
+        ).toBeNull();
+        expect(
+            fixture.nativeElement.querySelector("#voice-channel-holder"),
+        ).toBeNull();
+        expect(
+            fixture.nativeElement.querySelector("#header-conversation-state"),
+        ).toBeNull();
+
+        states.next(
+            visibleConversation({
+                voiceTurnedOn: true,
+                listening: true,
+                assistantSpeaking: false,
+                holderName: "Ada",
+                keyStoreDegraded: true,
+                liveUnavailable: true,
+            }),
+        );
+        fixture.detectChanges();
+
+        expect(root.textContent).toContain("Ada holds the voice");
+        expect(root.textContent).toContain("Listening");
+        expect(root.textContent).toContain("Degraded");
+        expect(root.textContent).toContain("Fallback");
+        expect(
+            fixture.nativeElement.querySelector(
+                "#assistant-conversation-activity",
+            ).textContent,
+        ).toContain("Listening");
+        expect(
+            fixture.nativeElement.querySelector(
+                "#assistant-conversation-degraded",
+            ),
+        ).not.toBeNull();
+        expect(
+            fixture.nativeElement.querySelector(
+                "#assistant-conversation-fallback",
+            ),
+        ).not.toBeNull();
+        expect(
+            fixture.nativeElement.querySelector(
+                "#display-conversation-activity",
+            ),
+        ).toBeNull();
+    });
 });

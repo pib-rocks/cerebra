@@ -113,6 +113,35 @@ describe("BrickletService", () => {
         expect(brickletSubscriber).toHaveBeenCalledWith(updatedBricklets);
     });
 
+    it("sends an empty string for a slot that is cleared, never null", () => {
+        // The API contract is: an empty string means "not configured", and the
+        // backend rejects null with 400 ("Bricklet UID must be a string"). This
+        // is the case where only some Bricklets are plugged in and the rest of
+        // the slots stay empty.
+        const clearedBricklet = new Bricklet(
+            "",
+            bricklet1.brickletNumber,
+            "Servo Bricklet",
+        );
+        const updatedBricklets: Bricklet[] = [
+            clearedBricklet,
+            bricklet2,
+            bricklet3,
+        ];
+        apiService.put.and.returnValue(of(updatedBricklets));
+
+        brickletService.renameBrickletUid([clearedBricklet]);
+
+        expect(apiService.put).toHaveBeenCalledWith(
+            "/bricklet/" + clearedBricklet.brickletNumber,
+            {uid: ""},
+        );
+        expect(apiService.put).not.toHaveBeenCalledWith(
+            "/bricklet/" + clearedBricklet.brickletNumber,
+            {uid: null},
+        );
+    });
+
     it("should open a success snackbar on successful bricklet-uid change", () => {
         const uid = "newUid";
         const updatedBricklet1 = new Bricklet(

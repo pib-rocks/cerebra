@@ -9,6 +9,7 @@ import {
     SimpleChanges,
     ViewChild,
     ChangeDetectionStrategy,
+    ChangeDetectorRef,
     DestroyRef,
     inject,
 } from "@angular/core";
@@ -28,6 +29,7 @@ import {NgClass} from "@angular/common";
 })
 export class ConsoleComponent implements AfterViewInit, OnChanges {
     private readonly destroyRef = inject(DestroyRef);
+    private readonly cdr = inject(ChangeDetectorRef);
 
     @Input() programLogs$!: Observable<ProgramLogLine[]>;
     @Input() programState$!: Observable<ProgramState>;
@@ -121,9 +123,11 @@ export class ConsoleComponent implements AfterViewInit, OnChanges {
         this.logs.reverse();
         this.programInputForm.setValue(this.lastLogLineIfInputContent);
         this.programInputAreaElement?.focus();
+        this.cdr.markForCheck();
     }
 
     private onStateUpdated(state: ProgramState) {
         this.state = state;
+        this.cdr.markForCheck();
     }
 }

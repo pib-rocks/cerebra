@@ -8,6 +8,10 @@
 /coverage
 /.scannerwork
 
+# Python browser-test caches
+__pycache__/
+.pytest_cache/
+
 # Node
 /node_modules
 npm-debug.log

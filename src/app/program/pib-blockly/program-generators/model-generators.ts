@@ -10,6 +10,7 @@ import {
     IMPORT_SYS,
     IMPORT_TIME,
     INIT_ROS,
+    addDefinitions,
 } from "./util/definitions";
 import {STOP_ALL_MODELS_VALUE} from "../program-blocks/model-blocks";
 import {
@@ -33,7 +34,7 @@ function modelIdFromDropdown(
 }
 
 function ensureModelsSdk(generator: typeof pythonGenerator) {
-    Object.assign(generator.definitions_, {
+    addDefinitions(generator, {
         IMPORT_OS,
         IMPORT_PIB_SDK_MODELS,
     });
@@ -73,7 +74,7 @@ function latestDetectionsReporter(
         _block: Block,
         generator: typeof pythonGenerator,
     ): [string, Order] => {
-        Object.assign(generator.definitions_, {
+        addDefinitions(generator, {
             IMPORT_RCLPY,
             IMPORT_TIME,
             IMPORT_LOGGING,
@@ -116,5 +117,3 @@ export const get_head_pose_detections = latestDetectionsReporter(
     "get_head_pose_detections",
     GET_HEAD_POSE_DETECTIONS_FUNCTION,
 );
-
-export {pythonGenerator};

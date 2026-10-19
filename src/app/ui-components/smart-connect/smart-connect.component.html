@@ -44,21 +44,19 @@
         </button>
     </div>
 
-    @if (isTokenStored) {
+    @if (tokenProbe !== "available") {
+    <div class="mt-4 mb-4 me-5 ms-5">
+        <p data-test="LBL_Token_Status">SmartConnect status is unavailable.</p>
+    </div>
+    } @else if (isTokenStored) {
     <div class="mt-4 mb-4 me-5 ms-5">
         @if (isTokenActive) {
         <div class="d-flex justify-content-center mb-3">
             <span class="text-success">Token already decrypted.</span>
         </div>
         } @else {
-        <p>
-            The key is missing. Store it in
-            <a
-                routerLink="/system/keys"
-                data-test="LNK_System_Keys"
-                (click)="onCloseModal()">
-                System &gt; Keys </a
-            >.
+        <p data-test="LBL_Token_Status">
+            The SmartConnect token is stored but not active.
         </p>
         }
         <div class="mt-1">

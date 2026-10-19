@@ -1,8 +1,21 @@
+/**
+ * WHY THIS FILE LIVES HERE AND NOT BESIDE THE GENERATOR
+ *
+ * src/app/program/pib-blockly/ is mirrored from pib-backend by
+ * sync-blockly-to-cerebra.yml (rsync -a --delete) and guard-blockly-single-source.yml rejects pull
+ * requests that touch it. Anything that exists only in Cerebra inside that tree is therefore deleted
+ * by the next sync - which is exactly what happened to this spec when PR-1964 synced the Blockly
+ * fallback change.
+ *
+ * It cannot move to pib-backend either: it asserts the generator together with Cerebra's key-store
+ * session, so it depends on Cerebra modules. So it sits one directory above the mirrored tree and
+ * imports from it. Keep it here.
+ */
 import {Block} from "blockly/core/block";
 import {Order, pythonGenerator} from "blockly/python";
 import {TestBed} from "@angular/core/testing";
 import {HttpClientTestingModule} from "@angular/common/http/testing";
-import {playAudioFromSpeechGenerator} from "./play-audio-from-speech-generator";
+import {playAudioFromSpeechGenerator} from "../pib-blockly/program-generators/play-audio-from-speech-generator";
 import {DEGRADED_MODE} from "src/app/system/keys/key-store-session";
 import {KeyStoreSessionService} from "src/app/system/keys/key-store-session.service";
 

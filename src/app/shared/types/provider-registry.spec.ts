@@ -2,6 +2,13 @@ import {
     CLOUD_TOKEN_API_NAME,
     DEFAULT_PROVIDER_REF,
     MISSING_KEY_TURN,
+    TOKEN_PROBE_UNAVAILABLE,
+    CHAT_TRANSPORT_UNAVAILABLE,
+    DEEP_CHAT_SMARTCONNECT_PLACEHOLDER,
+    credentialState,
+    credentialNotice,
+    resolveDeepChatComposer,
+    chatTransportUnavailableText,
     capabilitiesFrom,
     isCapabilityControlDisabled,
     isProviderConfigured,
@@ -11,6 +18,7 @@ import {
     chatStartRefusal,
     personalityAttention,
     personalityNeedsAttention,
+    persistedCloudCredentialPresent,
     retainGoneReference,
     providerIdOf,
     providerKeyAccounts,
@@ -21,6 +29,7 @@ import {
     providerRefFromSelection,
     providersForSelection,
     resolveProvider,
+    startingModelForNewPersonality,
     ProviderSelectionRow,
 } from "./provider-registry";
 
@@ -143,17 +152,19 @@ describe("provider registry selection", () => {
         ).toEqual([keyed.id, missing.id]);
     });
 
-    it("treats the cloud row as the SmartConnect token, not a pasted key", () => {
+    it("uses a persisted cloud credential, and a resolved token only as fallback", () => {
         const cloud = row(6, true, true, CLOUD_TOKEN_API_NAME, null);
         expect(CLOUD_TOKEN_API_NAME).toBe("pib-cloud");
         expect(isProviderConfigured(cloud, false)).toBeFalse();
         expect(isProviderConfigured(cloud, true)).toBeTrue();
         cloud.credentialRef = "provider-6";
-        expect(isProviderConfigured(cloud, false)).toBeFalse();
+        expect(isProviderConfigured(cloud, false)).toBeTrue();
         expect(
             providersForSelection([cloud], null, true).map((m) => m.id),
         ).toEqual([cloud.id]);
-        expect(providersForSelection([cloud], null, false)).toEqual([]);
+        expect(
+            providersForSelection([cloud], null, false).map((m) => m.id),
+        ).toEqual([cloud.id]);
     });
 
     it("does not mark a default personality on pib.Cloud as needing a provider key", () => {
@@ -563,5 +574,225 @@ describe("on-device offline model (PR-1931)", () => {
         expect(chatStartRefusal(String(keyless.id), [keyless], false)).toBe(
             MISSING_KEY_TURN,
         );
+    });
+});
+
+describe("starting model for a new personality (PR-1965)", () => {
+    function offlineRow(
+        id: number,
+        apiName: string,
+        isDefault = false,
+    ): ProviderSelectionRow {
+        const model = row(id, false, isDefault, apiName, null);
+        model.visualName = apiName;
+        model.capabilities = {
+            tools: false,
+            images: false,
+            live: false,
+            stt: false,
+            tts: false,
+            offline: true,
+        };
+        return model;
+    }
+
+    it("prefers pib.Cloud when that row is offered, ahead of an earlier keyed model", () => {
+        const local = offlineRow(6, "qwen-fast");
+        const keyed = row(20, true, false, "gpt-6", "provider-20");
+        const cloud = row(10, true, true, CLOUD_TOKEN_API_NAME, null);
+        expect(
+            startingModelForNewPersonality([local, keyed, cloud], true)?.id,
+        ).toBe(cloud.id);
+        expect(
+            startingModelForNewPersonality([local, keyed, cloud], false)?.id,
+        ).toBe(keyed.id);
+    });
+
+    it("takes the first external model with a stored key, in catalogue array order", () => {
+        const local = offlineRow(1, "qwen-fast");
+        const keyless = row(2, true, true, "gemini", null);
+        const first = row(20, true, false, "gpt-6", "provider-20");
+        const later = row(4, true, false, "claude", "provider-4");
+        const cloud = row(10, true, false, CLOUD_TOKEN_API_NAME, null);
+        expect(
+            startingModelForNewPersonality(
+                [local, keyless, first, later, cloud],
+                false,
+            )?.id,
+        ).toBe(first.id);
+    });
+
+    it("falls back to qwen-fast when no cloud row and no keyed external is offered", () => {
+        const keyless = row(8, true, true, "gpt-6", null);
+        const cloud = row(10, true, false, CLOUD_TOKEN_API_NAME, null);
+        const otherLocal = offlineRow(3, "other-local");
+        const local = offlineRow(6, "qwen-fast");
+        expect(
+            startingModelForNewPersonality(
+                [keyless, cloud, otherLocal, local],
+                false,
+            )?.id,
+        ).toBe(local.id);
+    });
+});
+
+describe("persistedCloudCredentialPresent", () => {
+    it("reads catalogue credential refs on the cloud provider row", () => {
+        const cloud = row(5, true, true, CLOUD_TOKEN_API_NAME, "provider-4");
+        expect(persistedCloudCredentialPresent([cloud], [])).toBeTrue();
+    });
+
+    it("reads robot key-store refs for the cloud provider id", () => {
+        const cloud = row(5, true, true, CLOUD_TOKEN_API_NAME, null);
+        expect(
+            persistedCloudCredentialPresent([cloud], ["provider-5"]),
+        ).toBeTrue();
+    });
+
+    it("returns false when neither catalogue nor key store lists cloud", () => {
+        const cloud = row(5, true, true, CLOUD_TOKEN_API_NAME, null);
+        expect(persistedCloudCredentialPresent([cloud], [])).toBeFalse();
+    });
+});
+
+describe("credential probe vs stored ref (PC-51)", () => {
+    it("keeps cloud present on a persisted credential when the token probe fails", () => {
+        const cloud = row(5, true, true, CLOUD_TOKEN_API_NAME, "provider-4");
+        expect(credentialState(cloud, false, [cloud], "unavailable")).toBe(
+            "present",
+        );
+        expect(
+            credentialNotice(cloud, false, [cloud], "unavailable"),
+        ).toBeNull();
+        expect(
+            personalityAttention(
+                String(cloud.id),
+                [cloud],
+                false,
+                false,
+                "loading",
+            ),
+        ).toBeNull();
+        expect(
+            chatStartRefusal(
+                String(cloud.id),
+                [cloud],
+                false,
+                false,
+                "unavailable",
+            ),
+        ).toBeNull();
+    });
+
+    it("marks unavailable, not missing-key, while cloud has no ref and the probe is unfinished", () => {
+        const cloud = row(5, true, true, CLOUD_TOKEN_API_NAME, null);
+        expect(credentialState(cloud, false, [cloud], "loading")).toBe(
+            "unresolved",
+        );
+        expect(credentialNotice(cloud, false, [cloud], "loading")).toBe(
+            TOKEN_PROBE_UNAVAILABLE,
+        );
+        expect(
+            personalityAttention(
+                DEFAULT_PROVIDER_REF,
+                [cloud],
+                false,
+                false,
+                "unknown",
+            )?.reason,
+        ).toBe("unavailable");
+    });
+
+    it("still marks a keyless cloud row absent once the probe resolves", () => {
+        const cloud = row(5, true, true, CLOUD_TOKEN_API_NAME, null);
+        expect(credentialState(cloud, false, [cloud], "available")).toBe(
+            "absent",
+        );
+        expect(
+            chatStartRefusal(
+                String(cloud.id),
+                [cloud],
+                false,
+                false,
+                "available",
+            ),
+        ).toBe(MISSING_KEY_TURN);
+    });
+});
+
+describe("resolveDeepChatComposer", () => {
+    const flash = row(7, true, false, "gemini-3.8-flash", "provider-1");
+
+    function base(
+        overrides: Partial<Parameters<typeof resolveDeepChatComposer>[0]>,
+    ) {
+        return resolveDeepChatComposer({
+            smartConnectActive: true,
+            keyStorageEncryptionOff: false,
+            chatsAvailable: true,
+            providerRef: String(flash.id),
+            models: [flash],
+            cloudTokenStored: true,
+            needsNewModel: false,
+            tokenProbe: "available",
+            ...overrides,
+        });
+    }
+
+    it("agrees on enabled input and null refusal when the personality can chat", () => {
+        const state = base({});
+        expect(state.inputEnabled).toBeTrue();
+        expect(state.turnRefusal).toBeNull();
+        expect(state.placeholder).toBe("Enter a message");
+    });
+
+    it("disables input when encryption is on and SmartConnect is off", () => {
+        const state = base({smartConnectActive: false});
+        expect(state.inputEnabled).toBeFalse();
+        expect(state.placeholder).toBe(DEEP_CHAT_SMARTCONNECT_PLACEHOLDER);
+    });
+
+    it("does not let encryption-off bypass a genuinely missing key", () => {
+        const missing = row(8, true, false, "gpt-6", null);
+        const state = base({
+            keyStorageEncryptionOff: true,
+            smartConnectActive: false,
+            providerRef: String(missing.id),
+            models: [missing],
+            cloudTokenStored: false,
+        });
+        expect(state.turnRefusal).toBe(MISSING_KEY_TURN);
+        expect(state.inputEnabled).toBeFalse();
+        expect(state.placeholder).toBe(MISSING_KEY_TURN);
+    });
+
+    it("keeps typing open with a stored cloud credential while the token probe is unavailable", () => {
+        const cloud = row(5, true, true, CLOUD_TOKEN_API_NAME, "provider-4");
+        const state = base({
+            keyStorageEncryptionOff: true,
+            smartConnectActive: false,
+            providerRef: String(cloud.id),
+            models: [cloud],
+            cloudTokenStored: false,
+            tokenProbe: "unavailable",
+        });
+        expect(state.turnRefusal).toBeNull();
+        expect(state.inputEnabled).toBeTrue();
+    });
+
+    it("locks the composer when the key store session is degraded", () => {
+        const state = base({chatsAvailable: false});
+        expect(state.inputEnabled).toBeFalse();
+        expect(state.turnRefusal).toBeNull();
+    });
+});
+
+describe("chatTransportUnavailableText", () => {
+    it("maps a missing ROS chat service to a transport message, not a missing key", () => {
+        expect(
+            chatTransportUnavailableText(
+                new Error("Service /send_chat_message does not exist"),
+            ),
+        ).toBe(CHAT_TRANSPORT_UNAVAILABLE);
     });
 });

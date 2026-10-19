@@ -17,6 +17,28 @@
     font-weight: bold;
 }
 
+// Unsaved UID changes light the Save button up in the brand colour - the colour it already takes on
+// hover, and the same signal the Blockly editor's filled Save banner gives. Clean, it keeps the blue
+// of .btn-regular.
+.hardware-button.is-dirty,
+.hardware-button.is-dirty:hover {
+    background-color: $pink-color;
+}
+
+// The Save button sits flush with the Bricklet labels of the grid above it and keeps all four corners.
+// Its .row carries Bootstrap's negative gutter margin while the column only had a ps-2 inset, so the
+// button started 12px left of the labels - partly under the panel edge, which squared off its left
+// corners. 1.25rem padding puts it exactly under them. It keeps the 6px radius of the Export / Import
+// IDs buttons beside it and gets a little more width so the label is not cramped.
+.uid-save-actions {
+    padding-left: 1.25rem;
+
+    .hardware-button {
+        min-width: 5rem;
+        border-radius: 6px;
+    }
+}
+
 .validation-error {
     color: $pink-color;
     font-size: 1.3vw;
@@ -32,7 +54,7 @@ input.form-control:focus {
 .bricklet-grid {
     display: grid;
     grid-template-columns: max-content 1fr;
-    grid-auto-rows: 2.5rem;
+    grid-auto-rows: minmax(2.5rem, auto);
     gap: 1.5rem 1.5rem;
     align-items: center;
     padding-left: 0.5rem;
@@ -79,6 +101,53 @@ input.form-control:focus {
 .modal-body {
     max-height: 60vh;
     overflow-y: auto;
+}
+
+.uid-field {
+    width: 100%;
+}
+
+.uid-field select.form-select {
+    color: $white-color;
+    background-color: $blue-dark-2;
+    border-radius: 5px;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+}
+
+.uid-field select.form-select:focus {
+    color: $white-color;
+    background-color: $blue-dark-2;
+}
+
+.uid-field select.form-select option {
+    color: $white-color;
+    background-color: $blue-dark-2;
+}
+
+.uid-field select.form-select.is-invalid,
+.uid-field select.form-select.is-invalid:focus {
+    border-color: #dc3545;
+    outline: 2px solid #dc3545;
+}
+
+.uid-field select.form-select.is-warning,
+.uid-field select.form-select.is-warning:focus {
+    border-color: #ffc107;
+    outline: 2px solid #ffc107;
+}
+
+.uid-field .invalid-feedback,
+.uid-field .uid-warning {
+    font-size: 0.85rem;
+    font-weight: 400;
+}
+
+.uid-field .invalid-feedback {
+    color: #dc3545;
+}
+
+.uid-field .uid-warning {
+    color: #ffc107;
 }
 
 .table {

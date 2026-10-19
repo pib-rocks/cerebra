@@ -1,6 +1,6 @@
-<div class="h-100 w-100 p-3">
+<div class="program-editor h-100 w-100 p-3">
     <div
-        class="d-flex flex-row-reverse hstack gap-3 position-absolute z-2 top-0 end-0 pt-4 pb-4 pe-5 pe-none"
+        class="program-toolbar d-flex flex-row-reverse hstack gap-3 position-absolute z-2 top-0 end-0 pt-4 pb-4 pe-5 pe-none"
         [style]="'transform: translate(' + -flyoutWidth + 'px, 0);'">
         <button
             id="export-btn"
@@ -12,6 +12,17 @@
                 [src]="EXPORT"
                 width="75px"
                 alt="Program export button" />
+        </button>
+        <button
+            id="code-btn"
+            data-test="BTN_Program_Show_Code"
+            type="button"
+            (click)="showCode()"
+            class="workspaceButton p-0">
+            <img
+                [src]="CODE"
+                width="75px"
+                alt="Show program code button" />
         </button>
         <button
             id="save-btn"
@@ -36,27 +47,19 @@
                 width="75px"
                 alt="Program save button" />
         </button>
-        <div class="toggle-btn-icon">
-            <img
-                class="view-mode-icon"
-                [src]="SPLIT_SCREEN"
-                alt="icon for split-screen-view" />
-        </div>
         <button
             id="toggle-btn"
             data-test="TGL_Split_Screen"
+            type="button"
             class="workspaceButton"
+            [attr.aria-pressed]="inSplitMode"
+            title="Show the console log"
             (click)="inSplitMode = !inSplitMode">
             <img
-                [src]="inSplitMode ? TOGGLE_RIGHT : TOGGLE_LEFT"
-                alt="Toggle for switching between normal and split screen view" />
+                [src]="inSplitMode ? LOG_ACTIVE : LOG_INACTIVE"
+                width="75px"
+                alt="Toggle the console log view" />
         </button>
-        <div class="toggle-btn-icon">
-            <img
-                class="view-mode-icon"
-                [src]="FULL_SCREEN"
-                alt="icon for split-screen-view" />
-        </div>
     </div>
     <as-split direction="vertical">
         <as-split-area
@@ -72,19 +75,10 @@
         <as-split-area
             [size]="50"
             class="split-screen-lower">
-            <as-split direction="horizontal">
-                <as-split-area
-                    id="python-code-area"
-                    [size]="50">
-                    <app-python-code [code]="codePython"></app-python-code>
-                </as-split-area>
-                <as-split-area [size]="50">
-                    <app-console
-                        [programLogs$]="programLogs$"
-                        (programInput)="onProgramInputReceived($event)"
-                        [programState$]="programState$"></app-console>
-                </as-split-area>
-            </as-split>
+            <app-console
+                [programLogs$]="programLogs$"
+                (programInput)="onProgramInputReceived($event)"
+                [programState$]="programState$"></app-console>
         </as-split-area>
         }
     </as-split>

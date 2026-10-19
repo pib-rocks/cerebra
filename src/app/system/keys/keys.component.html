@@ -82,7 +82,7 @@
             id="keys-cloud-delete"
             type="button"
             class="btn btn-outline-light"
-            [disabled]="!cloudTokenStored"
+            [disabled]="!cloudDeleteEnabled()"
             (click)="deleteCloudToken()">
             Delete token
         </button>

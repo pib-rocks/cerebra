@@ -2,7 +2,12 @@
     class="model-panel"
     aria-labelledby="model-panel-title">
     <div class="model-panel-header">
-        <h2 id="model-panel-title">Models</h2>
+        <div class="model-panel-heading">
+            <h2 id="model-panel-title">Models</h2>
+            @if (slotsKnown()) {
+            <span class="free-slots">{{ freeSlotsLabel() }}</span>
+            }
+        </div>
         @if (actionsInFlight.size > 0) {
         <span
             class="camera-restarting"
@@ -33,9 +38,9 @@
             [attr.data-model-id]="model.model_id">
             <div class="model-copy">
                 <label [for]="'model-' + model.model_id">
-                    {{ model.task || model.model_id }}
+                    {{ labelFor(model) }}
                 </label>
-                <span class="model-id">{{ model.model_id }}</span>
+                <span class="model-id">{{ slotLine(model) }}</span>
                 <span [class]="'model-state state-' + stateFor(model)">
                     {{ statusText(model) }}
                 </span>
@@ -48,11 +53,9 @@
                     role="switch"
                     [id]="'model-' + model.model_id"
                     [checked]="isActive(model)"
-                    [disabled]="
-                        !model.available ||
-                        actionsInFlight.has(model.model_id)
-                    "
-                    [attr.aria-label]="'Run ' + (model.task || model.model_id)"
+                    [disabled]="toggleDisabled(model)"
+                    [attr.aria-label]="toggleAriaLabel(model)"
+                    [attr.title]="toggleTitle(model)"
                     (change)="setModelActive(model, modelToggle.checked)" />
             </div>
         </div>

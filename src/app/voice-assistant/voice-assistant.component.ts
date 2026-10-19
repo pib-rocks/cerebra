@@ -1,4 +1,5 @@
 import {
+    ChangeDetectorRef,
     Component,
     OnInit,
     TemplateRef,
@@ -33,18 +34,29 @@ import {
     DEFAULT_IDLE_TIMEOUT_SECONDS,
     LOCAL_VOICE_INPUT,
     LOCAL_VOICE_OUTPUT,
+    NEW_PERSONALITY_REASONING_EFFORT,
     PersonalityDialogValues,
+    REASONING_EFFORTS,
+    REASONING_EFFORT_UNMANAGED,
+    REASONING_EFFORT_UNMANAGED_LABEL,
     VoiceBackendOption,
     enforcePersonalityDialog,
     imageSwitchAvailability,
     readPersonalityDialog,
+    reasoningEffortFromStored,
+    reasoningEffortLabel,
     toolCallingAvailability,
     voiceInputOptions,
     voiceOutputOptions,
+    reconcileVoiceSelection,
 } from "../shared/types/personality-dialog";
 import {
     DEFAULT_PROVIDER_REF,
     MISSING_KEY_MARK,
+    TokenProbeState,
+    effectiveCloudTokenStored,
+    credentialNotice,
+    isOfflineModel,
     isProviderConfigured,
     isProviderOptionDisabled,
     personalityAttention,
@@ -53,8 +65,12 @@ import {
     providersForSelection,
     resolveProvider,
     retainGoneReference,
+    startingModelForNewPersonality,
 } from "../shared/types/provider-registry";
-import {TokenService} from "../shared/services/token.service";
+import {
+    TokenService,
+    normalizeTokenStatus,
+} from "../shared/services/token.service";
 import {VoiceAssistantNavComponent} from "./voice-assistant-nav/voice-assistant-nav.component";
 import {RouterOutlet} from "@angular/router";
 import {NgClass} from "@angular/common";
@@ -74,6 +90,7 @@ import {NgClass} from "@angular/common";
 })
 export class VoiceAssistantComponent implements OnInit {
     private readonly destroyRef = inject(DestroyRef);
+    private readonly changeDetector = inject(ChangeDetectorRef);
 
     personalityForm!: FormGroup;
     uuid: string | undefined;
@@ -91,11 +108,26 @@ export class VoiceAssistantComponent implements OnInit {
     selectionModels: AssistantModel[] = [];
     storedProviderRef: string | null = null;
     cloudTokenStored = false;
+    tokenProbe: TokenProbeState = "unknown";
+    private probeCloudTokenStored = false;
     smartChatsEnabled = true;
+    /**
+     * True while a stored personality is copied into the form. That copy
+     * is not the user selecting the on-device model, so the channel it
+     * already carries is left alone.
+     */
+    private retainStoredChannel = false;
+    /** Last model-control value seen by syncConstraints. */
+    private seenAssistantModel: string | null = null;
     retiredNotice: string | null = null;
     readonly missingKeyMark = MISSING_KEY_MARK;
+    readonly reasoningLevels = REASONING_EFFORTS;
+    readonly reasoningEffortUnmanaged = REASONING_EFFORT_UNMANAGED;
+    readonly reasoningEffortUnmanagedLabel = REASONING_EFFORT_UNMANAGED_LABEL;
+    readonly reasoningEffortLabel = reasoningEffortLabel;
     readonly isProviderConfigured = isProviderConfigured;
     readonly isProviderOptionDisabled = isProviderOptionDisabled;
+    readonly credentialNotice = credentialNotice;
     button: {enabled: boolean; func: () => void} = {
         enabled: true,
         func: () => {
@@ -133,17 +165,22 @@ export class VoiceAssistantComponent implements OnInit {
             .subscribe((models) => {
                 this.models = models;
                 this.rebuildSelection();
+                this.changeDetector.markForCheck();
             });
         this.tokenService.tokenStatus$
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe((status) => {
-                this.cloudTokenStored = status.tokenExists;
+                const resolved = normalizeTokenStatus(status);
+                this.probeCloudTokenStored = resolved.tokenExists === true;
+                this.tokenProbe = resolved.service;
                 this.rebuildSelection();
+                this.changeDetector.markForCheck();
             });
         this.channelCapability.smartChatsEnabled$
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe((enabled) => {
                 this.smartChatsEnabled = enabled;
+                this.changeDetector.markForCheck();
             });
         this.button.enabled = true;
         this.button.func = this.openAddModal;
@@ -200,7 +237,9 @@ export class VoiceAssistantComponent implements OnInit {
                 nonNullable: true,
                 validators: [Validators.required, Validators.min(1)],
             }),
-            mcp: new FormControl(true, {nonNullable: true}),
+            reasoningEffort: new FormControl(NEW_PERSONALITY_REASONING_EFFORT, {
+                nonNullable: true,
+            }),
         });
         this.personalityForm.valueChanges
             .pipe(takeUntilDestroyed(this.destroyRef))
@@ -285,11 +324,18 @@ export class VoiceAssistantComponent implements OnInit {
         this.advancedOpen = false;
         this.storedProviderRef = null;
         this.rebuildSelection();
+        const assistantModel = this.initialAssistantModel();
+        // defaultChannel() reads the model control. Point it at the model
+        // this dialog will show before reset() replaces the previous one.
+        this.personalityForm.controls["assistantModel"].setValue(
+            assistantModel,
+            {emitEvent: false},
+        );
         this.personalityForm.reset({
             gender: "Female",
             pausethreshold: 0.8,
             messageHistory: 10,
-            assistantModel: DEFAULT_PROVIDER_REF,
+            assistantModel,
             channel: this.defaultChannel(),
             voiceInput: LOCAL_VOICE_INPUT,
             voiceOutput: LOCAL_VOICE_OUTPUT,
@@ -297,7 +343,7 @@ export class VoiceAssistantComponent implements OnInit {
             images: false,
             live: false,
             idleTimeoutSeconds: DEFAULT_IDLE_TIMEOUT_SECONDS,
-            mcp: true,
+            reasoningEffort: NEW_PERSONALITY_REASONING_EFFORT,
         });
         this.thresholdString =
             this.personalityForm.controls["pausethreshold"].value + "s";
@@ -314,6 +360,7 @@ export class VoiceAssistantComponent implements OnInit {
             const dialog = readPersonalityDialog(updatePersonality);
             this.storedProviderRef = updatePersonality?.providerRef ?? null;
             this.rebuildSelection();
+            this.retainStoredChannel = true;
             this.personalityForm.patchValue({
                 "name-input": updatePersonality?.name,
                 gender: updatePersonality?.gender,
@@ -328,8 +375,10 @@ export class VoiceAssistantComponent implements OnInit {
                 images: dialog.images,
                 live: dialog.live,
                 idleTimeoutSeconds: dialog.idleTimeoutSeconds,
-                mcp: dialog.mcp,
+                reasoningEffort:
+                    dialog.reasoningEffort ?? REASONING_EFFORT_UNMANAGED,
             });
+            this.retainStoredChannel = false;
             this.thresholdString =
                 this.personalityForm.controls["pausethreshold"].value + "s";
             this.showModal();
@@ -341,6 +390,9 @@ export class VoiceAssistantComponent implements OnInit {
             const choice = providerRefFromSelection(
                 String(this.personalityForm.controls["assistantModel"].value),
             );
+            // The Smart control is hidden for the installer flag and for the
+            // on-device model. A new personality is then stored as Direct,
+            // so the on-device model can never be sent with channel smart.
             const channel = this.showSmartChannelControl
                 ? parseChatChannel(
                       String(this.personalityForm.controls["channel"].value),
@@ -381,7 +433,13 @@ export class VoiceAssistantComponent implements OnInit {
             );
             updatePersonality.providerRef = choice.providerRef;
             updatePersonality.assistantModelId = choice.assistantModelId;
-            if (this.showSmartChannelControl) {
+            if (this.offlineModelSelected) {
+                // Smart runs through Hermes, which needs a 64,000 token
+                // context window. The on-device model offers 32,768 at most,
+                // so this combination is never written. The installer flag
+                // is different: it leaves a stored Smart channel as it is.
+                updatePersonality.channel = DIRECT_CHANNEL;
+            } else if (this.showSmartChannelControl) {
                 updatePersonality.channel = parseChatChannel(
                     String(this.personalityForm.controls["channel"].value),
                 );
@@ -404,12 +462,76 @@ export class VoiceAssistantComponent implements OnInit {
         return this.attentionFor(personalityId)?.notice ?? MISSING_KEY_MARK;
     };
 
+    /**
+     * Smart is offered when the installer left it on and the selected model
+     * can run it. The on-device model cannot: Hermes needs a context window
+     * of at least 64000 tokens, and that model offers 32768 at most.
+     */
     get showSmartChannelControl(): boolean {
-        return showSmartChannelControl(this.smartChatsEnabled);
+        return (
+            showSmartChannelControl(this.smartChatsEnabled) &&
+            !this.offlineModelSelected
+        );
     }
 
+    /**
+     * The dialog's model control, resolved against the offered rows.
+     * The offline capability marks the on-device model; the name is not used.
+     */
+    get offlineModelSelected(): boolean {
+        if (this.personalityForm == null) {
+            return false;
+        }
+        const selection = String(
+            this.personalityForm.controls["assistantModel"].value,
+        );
+        const model = resolveProvider(
+            providerRefFromSelection(selection).providerRef,
+            this.selectionModels,
+        );
+        return model != null && isOfflineModel(model);
+    }
+
+    /** Smart when that control is shown, otherwise Direct. */
     private defaultChannel() {
         return this.showSmartChannelControl ? SMART_CHANNEL : DIRECT_CHANNEL;
+    }
+
+    /**
+     * Smart stays on the left and Direct on the right, the order the radio
+     * group already used. The right-pointing image is shown only while the
+     * control holds direct, so the switch points at the selected side.
+     */
+    get channelPointsRight(): boolean {
+        return (
+            this.personalityForm.controls["channel"].value === DIRECT_CHANNEL
+        );
+    }
+
+    toggleChannel(): void {
+        const channel = this.personalityForm.controls["channel"];
+        channel.setValue(
+            channel.value === SMART_CHANNEL ? DIRECT_CHANNEL : SMART_CHANNEL,
+        );
+    }
+
+    /**
+     * Concrete catalogue row for a new personality. Naming that row as the
+     * stored reference makes its option the model id, including when the
+     * row is the catalogue default, so the control does not carry the
+     * "default" pointer.
+     */
+    private initialAssistantModel(): string {
+        const model = startingModelForNewPersonality(
+            this.models,
+            this.cloudTokenStored,
+            this.tokenProbe,
+        );
+        if (model == null) {
+            return DEFAULT_PROVIDER_REF;
+        }
+        this.storedProviderRef = String(model.id);
+        return providerOptionValueFor(model, this.storedProviderRef);
     }
 
     get showIdleTimeout(): boolean {
@@ -418,6 +540,10 @@ export class VoiceAssistantComponent implements OnInit {
     }
 
     private rebuildSelection() {
+        this.cloudTokenStored = effectiveCloudTokenStored(
+            this.probeCloudTokenStored,
+            this.models,
+        );
         const personality =
             this.uuid == null
                 ? undefined
@@ -430,14 +556,17 @@ export class VoiceAssistantComponent implements OnInit {
             ),
             this.storedProviderRef,
             this.cloudTokenStored,
+            this.tokenProbe,
         );
         this.voiceInputs = voiceInputOptions(
             this.models,
             this.cloudTokenStored,
+            this.tokenProbe,
         );
         this.voiceOutputs = voiceOutputOptions(
             this.models,
             this.cloudTokenStored,
+            this.tokenProbe,
         );
         if (this.personalityForm != null) {
             this.syncConstraints();
@@ -455,7 +584,11 @@ export class VoiceAssistantComponent implements OnInit {
                 images: raw["images"] === true,
                 live: raw["live"] === true,
                 idleTimeoutSeconds: Number(raw["idleTimeoutSeconds"]),
-                mcp: raw["mcp"] !== false,
+                reasoningEffort: reasoningEffortFromStored(
+                    raw["reasoningEffort"] == null
+                        ? null
+                        : String(raw["reasoningEffort"]),
+                ),
             },
             this.resolvedModel(),
             this.models.length > 0,
@@ -488,7 +621,6 @@ export class VoiceAssistantComponent implements OnInit {
         );
         const images = imageSwitchAvailability(
             this.personalityForm.controls["toolCalling"].value === true,
-            this.personalityForm.controls["mcp"].value !== false,
         );
         this.setBlocked(
             this.personalityForm.controls["images"],
@@ -508,6 +640,34 @@ export class VoiceAssistantComponent implements OnInit {
         this.toolCallingReason = tools.reason;
         this.imageReason = images.reason;
         this.retiredNotice = this.retiredNoticeForSelection();
+        this.keepOnDeviceModelOnDirect();
+    }
+
+    /**
+     * Selecting the on-device model while Smart is chosen moves the channel
+     * back to Direct. Copying a stored personality into the form does not:
+     * an existing Smart plus on-device row is left as it was stored.
+     */
+    private keepOnDeviceModelOnDirect(): void {
+        const selection = String(
+            this.personalityForm.controls["assistantModel"].value,
+        );
+        const previous = this.seenAssistantModel;
+        this.seenAssistantModel = selection;
+        if (
+            this.retainStoredChannel ||
+            previous === null ||
+            previous === selection
+        ) {
+            return;
+        }
+        if (!this.offlineModelSelected) {
+            return;
+        }
+        const channel = this.personalityForm.controls["channel"];
+        if (channel.value === SMART_CHANNEL) {
+            channel.setValue(DIRECT_CHANNEL, {emitEvent: false});
+        }
     }
 
     /** The Live control is not a switch. It follows the chosen model. */
@@ -539,6 +699,7 @@ export class VoiceAssistantComponent implements OnInit {
             this.models,
             this.cloudTokenStored,
             personality.needsNewModel,
+            this.tokenProbe,
         );
     }
 
@@ -562,6 +723,7 @@ export class VoiceAssistantComponent implements OnInit {
             ),
             this.cloudTokenStored,
             personality?.needsNewModel === true,
+            this.tokenProbe,
         );
         if (attention?.reason !== "retired") {
             return null;
@@ -575,12 +737,15 @@ export class VoiceAssistantComponent implements OnInit {
         fallback: string,
     ): void {
         const control = this.personalityForm.controls[controlName];
-        if (options.length === 0) {
-            return;
-        }
         const current = String(control.value);
-        if (!options.some((option) => option.id === current)) {
-            control.setValue(fallback, {emitEvent: false});
+        const next = reconcileVoiceSelection(
+            current,
+            options,
+            fallback,
+            this.tokenProbe,
+        );
+        if (next !== current) {
+            control.setValue(next, {emitEvent: false});
         }
     }
 

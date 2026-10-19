@@ -1,10 +1,12 @@
 import {
     Component,
     OnInit,
+    OnDestroy,
     ChangeDetectionStrategy,
     ChangeDetectorRef,
 } from "@angular/core";
 import {CommonModule} from "@angular/common";
+import {Subscription, interval} from "rxjs";
 import {
     DiagnosticsService,
     DiagnosticsSummary,
@@ -20,12 +22,20 @@ import {
     styleUrls: ["./diagnostics.component.scss"],
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DiagnosticsComponent implements OnInit {
+export class DiagnosticsComponent implements OnInit, OnDestroy {
+    /**
+     * The page refreshes itself; the manual refresh button was removed. The interval is what keeps the
+     * telemetry current, so it must survive the whole life of the component and stop with it.
+     */
+    readonly refreshIntervalMs = 1000;
+
     summary: DiagnosticsSummary | null = null;
     bricklets: BrickletTelemetry[] = [];
     system: SystemTelemetry | null = null;
-    loading = false;
     error: string | null = null;
+
+    private refreshSubscription?: Subscription;
+    private refreshInFlight = false;
 
     constructor(
         private diagnosticsService: DiagnosticsService,
@@ -34,10 +44,20 @@ export class DiagnosticsComponent implements OnInit {
 
     ngOnInit(): void {
         this.refreshDiagnostics();
+        this.refreshSubscription = interval(this.refreshIntervalMs).subscribe(
+            () => this.refreshDiagnostics(),
+        );
+    }
+
+    ngOnDestroy(): void {
+        this.refreshSubscription?.unsubscribe();
     }
 
     refreshDiagnostics(): void {
-        this.loading = true;
+        // The board answers slowly enough that a tick can arrive while the previous round is still open.
+        // Skipping it keeps one round in flight instead of stacking three requests every second.
+        if (this.refreshInFlight) return;
+        this.refreshInFlight = true;
         this.error = null;
         this.cdr.markForCheck();
 
@@ -63,12 +83,16 @@ export class DiagnosticsComponent implements OnInit {
         this.diagnosticsService.getSystem().subscribe({
             next: (sys) => {
                 this.system = sys;
-                this.loading = false;
+                this.refreshInFlight = false;
                 this.cdr.markForCheck();
             },
             error: () => {
-                this.loading = false;
+                this.refreshInFlight = false;
                 this.cdr.markForCheck();
+            },
+            // A response without a body would otherwise leave the guard held and stop every later round.
+            complete: () => {
+                this.refreshInFlight = false;
             },
         });
     }
@@ -79,6 +103,28 @@ export class DiagnosticsComponent implements OnInit {
         return "text-bg-danger";
     }
 
+    /**
+     * The telemetry columns are read along a row, so every figure carries one decimal place: a bare "60%" next
+     * to "42.5%" would look like a different measurement precision. Empty input yields an empty string; the
+     * template's own guards then render "N/A".
+     */
+    formatOneDecimal(value: number | null | undefined): string {
+        if (value === null || value === undefined) return "";
+        const numeric = Number(value);
+        return Number.isFinite(numeric) ? numeric.toFixed(1) : "";
+    }
+
+    /**
+     * The RAM and disk figures arrive as ready-made strings ("3.7 GB"), so the number inside is what has to be
+     * normalised: "3 GB" becomes "3.0 GB" while "3.7 GB" stays as it is.
+     */
+    formatMeasure(text: string | null | undefined): string {
+        if (!text) return "";
+        return String(text).replace(/-?\d+(?:\.\d+)?/, (match) =>
+            Number(match).toFixed(1),
+        );
+    }
+
     getCpuUsagePercent(): number | undefined {
         if (!this.summary) return undefined;
         return (
@@ -86,6 +132,19 @@ export class DiagnosticsComponent implements OnInit {
             this.summary.cpuUsagePercent ??
             this.summary.cpuUsage
         );
+    }
+
+    /**
+     * The load gets its own rating: `summary.cpuStatus` belongs to the temperature (the backend derives
+     * it at 75/85 °C), so reusing it would rate the load by the temperature. The percentages match the
+     * threshold the backend uses for memory (80 %).
+     */
+    getCpuUsagePercentBadgeClass(): string {
+        const percent = this.getCpuUsagePercent();
+        if (percent === undefined) return "text-bg-secondary";
+        if (percent < 80) return "text-bg-success";
+        if (percent < 95) return "text-bg-warning";
+        return "text-bg-danger";
     }
 
     get servoBricklets(): BrickletTelemetry[] {

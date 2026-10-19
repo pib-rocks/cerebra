@@ -1,7 +1,13 @@
-import {ComponentFixture, TestBed} from "@angular/core/testing";
+import {
+    ComponentFixture,
+    TestBed,
+    discardPeriodicTasks,
+    fakeAsync,
+    tick,
+} from "@angular/core/testing";
 import {DiagnosticsComponent} from "./diagnostics.component";
-import {DiagnosticsService} from "./diagnostics.service";
-import {of} from "rxjs";
+import {DiagnosticsService, SystemTelemetry} from "./diagnostics.service";
+import {Subject, of} from "rxjs";
 import {provideHttpClient} from "@angular/common/http";
 import {provideHttpClientTesting} from "@angular/common/http/testing";
 
@@ -156,15 +162,43 @@ describe("DiagnosticsComponent", () => {
         );
     });
 
-    it("should display CPU usage percentage inside the Free RAM cell", () => {
+    it("should show the CPU load in the first column instead of the overall status", () => {
         const compiled = fixture.nativeElement as HTMLElement;
+        const headers = Array.from(
+            compiled.querySelectorAll("#table-system-summary thead th"),
+        ).map((th) => th.textContent?.trim());
+        expect(headers[0]).toBe("CPU load");
+        expect(headers).not.toContain("Overall Status");
+
         const cells = compiled.querySelectorAll(
             "#table-system-summary tbody td",
         );
-        const ramCell = cells[2];
-
-        expect(ramCell?.textContent).toContain("CPU: 42.5%");
+        expect(cells[0]?.textContent?.replace(/\s+/g, " ").trim()).toContain(
+            "42.5%",
+        );
+        // The load no longer hides under Free RAM.
+        expect(cells[2]?.textContent).not.toContain("CPU");
         expect(component.getCpuUsagePercent()).toBe(42.5);
+    });
+
+    it("should rate the CPU load by its own thresholds", () => {
+        // cpuPercent has priority over cpuUsagePercent, so it has to be cleared for this.
+        component.summary = {
+            ...component.summary!,
+            cpuPercent: undefined,
+            cpuUsagePercent: 40,
+        };
+        expect(component.getCpuUsagePercentBadgeClass()).toBe(
+            "text-bg-success",
+        );
+
+        component.summary = {...component.summary!, cpuUsagePercent: 85};
+        expect(component.getCpuUsagePercentBadgeClass()).toBe(
+            "text-bg-warning",
+        );
+
+        component.summary = {...component.summary!, cpuUsagePercent: 99};
+        expect(component.getCpuUsagePercentBadgeClass()).toBe("text-bg-danger");
     });
 
     it("should resolve CPU usage from cpuUsagePercent or cpuUsage fallbacks", () => {
@@ -234,6 +268,66 @@ describe("DiagnosticsComponent", () => {
         expect(buttonEmpty.colSpan).toBe(4);
     });
 
+    it("should always show the telemetry numbers with one decimal place", () => {
+        // The four columns are read along a row, so "60%" next to "42.5%" must not read like a second
+        // measurement precision. Whole numbers therefore get a ".0", and the ready-made RAM/disk strings are
+        // normalised inside as well.
+        //
+        // The fixture is rebuilt with the new payload: the component is OnPush, so mutating `summary` after the
+        // first detection would not repaint the template.
+        diagnosticsServiceSpy.getSummary.and.returnValue(
+            of({
+                ...component.summary!,
+                cpuPercent: 60,
+                cpuTemperature: 50,
+                memoryUsage: {
+                    total: "8 GB",
+                    used: "3 GB",
+                    free: "5 GB",
+                    percentUsed: 47,
+                },
+                diskSpace: {
+                    total: "64 GB",
+                    used: "44 GB",
+                    free: "20 GB",
+                    percentUsed: 31,
+                },
+            }),
+        );
+        fixture = TestBed.createComponent(DiagnosticsComponent);
+        fixture.detectChanges();
+
+        const cells = Array.from(
+            fixture.nativeElement.querySelectorAll(
+                "#table-system-summary tbody td",
+            ) as NodeListOf<HTMLElement>,
+        ).map((cell) => (cell.textContent || "").replace(/\s+/g, " ").trim());
+
+        expect(cells[0]).toContain("60.0%");
+        expect(cells[1]).toContain("50.0 °C");
+        expect(cells[2]).toContain("3.0 GB / 8.0 GB (47.0%)");
+        // The disk column shows free / total, so the normalised "free" figure is the one to look for.
+        expect(cells[3]).toContain("20.0 GB / 64.0 GB (31.0%)");
+    });
+
+    it("should round a measurement to one decimal place", () => {
+        expect(component.formatOneDecimal(60)).toBe("60.0");
+        expect(component.formatOneDecimal(42.5)).toBe("42.5");
+        // toFixed rounds the binary value, and 60.55 is not exactly representable - 60.56 is.
+        expect(component.formatOneDecimal(60.56)).toBe("60.6");
+        expect(component.formatOneDecimal(0)).toBe("0.0");
+        expect(component.formatOneDecimal(undefined)).toBe("");
+        expect(component.formatOneDecimal(null)).toBe("");
+    });
+
+    it("should normalise the number inside a ready-made measurement string", () => {
+        expect(component.formatMeasure("3 GB")).toBe("3.0 GB");
+        expect(component.formatMeasure("3.7 GB")).toBe("3.7 GB");
+        expect(component.formatMeasure("1000 MB")).toBe("1000.0 MB");
+        expect(component.formatMeasure("")).toBe("");
+        expect(component.formatMeasure(undefined)).toBe("");
+    });
+
     it("should not render Export or Import Hardware-IDs buttons", () => {
         const compiled = fixture.nativeElement as HTMLElement;
         expect(
@@ -244,4 +338,79 @@ describe("DiagnosticsComponent", () => {
         ).toBeNull();
         expect(compiled.querySelector("#hardware-ids-import-modal")).toBeNull();
     });
+
+    it("should not render the manual refresh button any more", () => {
+        // The page keeps itself current; a manual trigger would be a second, competing mechanism.
+        const compiled = fixture.nativeElement as HTMLElement;
+        expect(compiled.querySelector("#btn-refresh-diagnostics")).toBeNull();
+        expect(
+            compiled.querySelector('[data-test="BTN_Refresh_Diagnostics"]'),
+        ).toBeNull();
+        expect(compiled.querySelector(".fa-sync-alt")).toBeNull();
+    });
+
+    /**
+     * The auto refresh lives in a timer, so these tests build their own fixture: the one from the shared
+     * `beforeEach` gets its interval in the root zone, where `tick()` cannot reach it. The spy counters are
+     * reset afterwards, because the `beforeEach` fixture already spent one round.
+     */
+    function freshFixture(): void {
+        fixture.destroy();
+        fixture = TestBed.createComponent(DiagnosticsComponent);
+        component = fixture.componentInstance;
+        fixture.detectChanges();
+        diagnosticsServiceSpy.getSummary.calls.reset();
+        diagnosticsServiceSpy.getBricklets.calls.reset();
+        diagnosticsServiceSpy.getSystem.calls.reset();
+    }
+
+    it("should refresh the telemetry once per second on its own", fakeAsync(() => {
+        freshFixture();
+        expect(diagnosticsServiceSpy.getSystem.calls.count()).toBe(0);
+
+        tick(999);
+        expect(diagnosticsServiceSpy.getSystem.calls.count()).toBe(0);
+        tick(1);
+        expect(diagnosticsServiceSpy.getSystem.calls.count()).toBe(1);
+        tick(2000);
+        expect(diagnosticsServiceSpy.getSystem.calls.count()).toBe(3);
+        expect(diagnosticsServiceSpy.getSummary.calls.count()).toBe(3);
+
+        fixture.destroy();
+        discardPeriodicTasks();
+    }));
+
+    it("should stop refreshing once the component is destroyed", fakeAsync(() => {
+        freshFixture();
+        tick(1000);
+        const before = diagnosticsServiceSpy.getSystem.calls.count();
+        expect(before).toBe(1);
+
+        fixture.destroy();
+        tick(5000); // five more rounds if the subscription survived the destroy
+        expect(diagnosticsServiceSpy.getSystem.calls.count()).toBe(before);
+        discardPeriodicTasks();
+    }));
+
+    it("should skip a tick while the previous round is still open", fakeAsync(() => {
+        fixture.destroy();
+        const pending = new Subject<SystemTelemetry>();
+        diagnosticsServiceSpy.getSystem.and.returnValue(pending.asObservable());
+        fixture = TestBed.createComponent(DiagnosticsComponent);
+        component = fixture.componentInstance;
+        fixture.detectChanges();
+        diagnosticsServiceSpy.getSystem.calls.reset();
+
+        tick(3000); // the first round never answered, so nothing may be stacked on top of it
+        expect(diagnosticsServiceSpy.getSystem.calls.count()).toBe(0);
+
+        pending.complete(); // an answer without a body must release the guard too
+        tick(1000);
+        expect(diagnosticsServiceSpy.getSystem.calls.count()).toBe(1);
+        tick(1000);
+        expect(diagnosticsServiceSpy.getSystem.calls.count()).toBe(2);
+
+        fixture.destroy();
+        discardPeriodicTasks();
+    }));
 });

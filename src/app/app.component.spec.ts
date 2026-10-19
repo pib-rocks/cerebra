@@ -15,22 +15,11 @@ import {
     UNLOCKED_MODE,
 } from "./system/keys/key-store-session";
 import {routes} from "./app-routing.module";
-import {VisibleStateService} from "./shared/services/visible-state.service";
-import {visibleConversation} from "./shared/types/visible-state";
-import {BehaviorSubject} from "rxjs";
 
 describe("AppComponent", () => {
     let fixture: ComponentFixture<AppComponent>;
 
     beforeEach(async () => {
-        const idle = visibleConversation({
-            voiceTurnedOn: false,
-            listening: false,
-            assistantSpeaking: false,
-            holderName: null,
-            keyStoreDegraded: false,
-            liveUnavailable: false,
-        });
         await TestBed.configureTestingModule({
             imports: [
                 RouterTestingModule,
@@ -39,15 +28,6 @@ describe("AppComponent", () => {
                 RelayControlComponent,
                 IpRetrieverComponent,
                 AppComponent,
-            ],
-            providers: [
-                {
-                    provide: VisibleStateService,
-                    useValue: {
-                        snapshot: idle,
-                        snapshot$: new BehaviorSubject(idle),
-                    },
-                },
             ],
         }).compileComponents();
 
@@ -113,12 +93,20 @@ describe("AppComponent", () => {
         expect(app.showStartupPassword()).toBeFalse();
     });
 
-    it("shows who holds the voice in the header", () => {
+    it("does not render the voice holder outside the voice assistant", () => {
         fixture.detectChanges();
         expect(
-            fixture.nativeElement.querySelector("#voice-channel-holder")
-                .textContent,
-        ).toContain("Nobody holds the voice");
+            fixture.nativeElement.querySelector("app-conversation-status"),
+        ).toBeNull();
+        expect(
+            fixture.nativeElement.querySelector("#voice-channel-holder"),
+        ).toBeNull();
+        expect(
+            fixture.nativeElement.querySelector("#header-conversation-state"),
+        ).toBeNull();
+        expect(
+            fixture.nativeElement.querySelector("#assistant-voice-holder"),
+        ).toBeNull();
     });
 
     it("does not open the password dialog when the store is in cleartext", () => {
@@ -136,21 +124,72 @@ describe("AppComponent", () => {
         expect(app.showStartupPassword()).toBeFalse();
     });
 
-    it("opens and closes the sidebar with the hamburger button", () => {
+    it("collapses and expands the sidebar with the handle on the divider, the arrow showing the way", () => {
+        fixture.detectChanges();
+        const app = fixture.componentInstance;
+        // Wide layout: the navigation sits beside the content. Set explicitly so
+        // the spec does not depend on the browser window Karma happens to use.
+        app.navigationOverlaid = false;
         fixture.detectChanges();
         const wrapper: HTMLElement =
             fixture.nativeElement.querySelector(".wrapper");
-        const hamburger: HTMLButtonElement =
-            fixture.nativeElement.querySelector("#hamburger-button");
+        const handle: HTMLButtonElement = fixture.nativeElement.querySelector(
+            "#sidebar-toggle-button",
+        );
+        const icon = handle.querySelector("i");
         expect(wrapper.classList.contains("sidebar-collapse")).toBeFalse();
+        // Navigation open: the arrow points left, the way the click moves it.
+        expect(icon?.classList.contains("bi-chevron-left")).toBeTrue();
+        expect(icon?.classList.contains("bi-chevron-right")).toBeFalse();
+        expect(handle.getAttribute("aria-expanded")).toBe("true");
 
-        hamburger.click();
+        handle.click();
         fixture.detectChanges();
         expect(wrapper.classList.contains("sidebar-collapse")).toBeTrue();
+        expect(icon?.classList.contains("bi-chevron-right")).toBeTrue();
+        expect(icon?.classList.contains("bi-chevron-left")).toBeFalse();
+        expect(handle.getAttribute("aria-expanded")).toBe("false");
 
-        hamburger.click();
+        handle.click();
         fixture.detectChanges();
         expect(wrapper.classList.contains("sidebar-collapse")).toBeFalse();
+        expect(icon?.classList.contains("bi-chevron-left")).toBeTrue();
+    });
+
+    it("points the arrow at the overlaid navigation the other way round", () => {
+        fixture.detectChanges();
+        const app = fixture.componentInstance;
+        // Narrow layout: the navigation overlays the content and the collapse
+        // class means the opposite, so "collapsed" is the state that shows it.
+        app.navigationOverlaid = true;
+        app.sidebarCollapsed = false;
+        fixture.detectChanges();
+        const handle: HTMLButtonElement = fixture.nativeElement.querySelector(
+            "#sidebar-toggle-button",
+        );
+        const icon = handle.querySelector("i");
+        expect(icon?.classList.contains("bi-chevron-right")).toBeTrue();
+        expect(handle.getAttribute("aria-expanded")).toBe("false");
+
+        handle.click();
+        fixture.detectChanges();
+        expect(icon?.classList.contains("bi-chevron-left")).toBeTrue();
+        expect(handle.getAttribute("aria-expanded")).toBe("true");
+
+        handle.click();
+        fixture.detectChanges();
+        expect(icon?.classList.contains("bi-chevron-right")).toBeTrue();
+    });
+
+    it("keeps the old hamburger out of the header", () => {
+        fixture.detectChanges();
+
+        expect(
+            fixture.nativeElement.querySelector("#hamburger-button"),
+        ).toBeNull();
+        expect(
+            fixture.nativeElement.querySelector('[data-test="BTN_Hamburger"]'),
+        ).toBeNull();
     });
 
     it("hides the startup modal on the display path", () => {

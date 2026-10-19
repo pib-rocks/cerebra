@@ -6,6 +6,7 @@ import {
     IMPORT_OS,
     IMPORT_PARAMIKO,
     IMPORT_SYS,
+    addDefinitions,
 } from "./util/definitions";
 import {RUN_SCRIPT_FUNCTION} from "./util/function-declarations";
 
@@ -18,7 +19,7 @@ export function run_script(block: Block, generator: typeof pythonGenerator) {
     const port = (block as any).port_ ?? 22;
 
     // add definitions to generator
-    Object.assign(generator.definitions_, {
+    addDefinitions(generator, {
         IMPORT_SYS,
         IMPORT_OS,
         IMPORT_LOGGING,
@@ -38,5 +39,3 @@ export function run_script(block: Block, generator: typeof pythonGenerator) {
         port,
     )})\n`;
 }
-
-export {pythonGenerator};

@@ -2,11 +2,14 @@ import {
     Component,
     OnInit,
     ChangeDetectionStrategy,
+    ChangeDetectorRef,
     DestroyRef,
+    ViewChild,
     inject,
 } from "@angular/core";
 import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 import {ActivatedRoute} from "@angular/router";
+import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {Observable} from "rxjs";
 import {ProgramService} from "src/app/shared/services/program.service";
 import {ProgramCode} from "src/app/shared/types/program-code";
@@ -14,8 +17,8 @@ import {ExecutionState, ProgramState} from "src/app/shared/types/program-state";
 import {ProgramLogLine} from "src/app/shared/types/program-log-line";
 import {SplitComponent, SplitAreaComponent} from "angular-split";
 import {ProgramWorkspaceComponent} from "./program-workspace/program-workspace.component";
-import {PythonCodeComponent} from "./python-code/python-code.component";
 import {ConsoleComponent} from "./console/console.component";
+import {ProgramCodeModalComponent} from "../program-code-modal/program-code-modal.component";
 
 @Component({
     selector: "app-program-splitscreen",
@@ -26,12 +29,16 @@ import {ConsoleComponent} from "./console/console.component";
         SplitComponent,
         SplitAreaComponent,
         ProgramWorkspaceComponent,
-        PythonCodeComponent,
         ConsoleComponent,
     ],
 })
 export class ProgramSplitscreenComponent implements OnInit {
     private readonly destroyRef = inject(DestroyRef);
+    private readonly cdr = inject(ChangeDetectorRef);
+    private readonly modalService = inject(NgbModal);
+
+    @ViewChild(ProgramWorkspaceComponent)
+    workspaceComponent?: ProgramWorkspaceComponent;
 
     ExecutionState = ExecutionState;
 
@@ -50,13 +57,14 @@ export class ProgramSplitscreenComponent implements OnInit {
 
     readonly PLAY = "../../assets/program/button-run-play.svg";
     readonly STOP = "../../assets/program/button-run-stop.svg";
-    readonly TOGGLE_LEFT = "../../assets/toggle-switch-left.png";
-    readonly TOGGLE_RIGHT = "../../assets/toggle-switch-right.png";
     readonly SAVE_ACTIVE = "../../assets/program/button-save-active.svg";
     readonly SAVE_INACTIVE = "../../assets/program/button-save-inactive.svg";
     readonly EXPORT = "../../assets/program/button-export.svg";
-    readonly FULL_SCREEN = "../../../../assets/program/icon-full-screen.svg";
-    readonly SPLIT_SCREEN = "../../../../assets/program/icon-split-screen.svg";
+    readonly CODE = "../../assets/program/button-code.svg";
+    // The split-view toggle is a single button like Save/Run: the banner is filled while the
+    // console is open, an outline while it is closed.
+    readonly LOG_ACTIVE = "../../assets/program/button-log-active.svg";
+    readonly LOG_INACTIVE = "../../assets/program/button-log-inactive.svg";
 
     constructor(
         private programService: ProgramService,
@@ -83,9 +91,10 @@ export class ProgramSplitscreenComponent implements OnInit {
                 );
                 this.programState$
                     .pipe(takeUntilDestroyed(this.destroyRef))
-                    .subscribe(
-                        (state) => (this.executionState = state.executionState),
-                    );
+                    .subscribe((state) => {
+                        this.executionState = state.executionState;
+                        this.cdr.markForCheck();
+                    });
             });
     }
 
@@ -121,6 +130,20 @@ export class ProgramSplitscreenComponent implements OnInit {
         link.click();
 
         URL.revokeObjectURL(url);
+    }
+
+    showCode() {
+        // codePython is only emitted on workspace changes, so it is still
+        // empty when the program was loaded but not edited yet.
+        if (this.workspaceComponent?.workspace) {
+            this.codePython = this.workspaceComponent.codePython;
+        }
+        const modalRef = this.modalService.open(ProgramCodeModalComponent, {
+            windowClass: "cerebra-modal",
+            backdropClass: "cerebra-modal-backdrop",
+            size: "lg",
+        });
+        modalRef.componentInstance.code = this.codePython;
     }
 
     private resolveProgramName(programNumber: string) {

@@ -19,7 +19,11 @@ import {UrlConstants} from "./url.constants";
 import {SidebarService} from "../interfaces/sidebar-service.interface";
 import {SidebarElement} from "../interfaces/sidebar-element.interface";
 import {RosService} from "./ros-service/ros.service";
-import {VoiceAssistantState} from "../types/voice-assistant-state";
+import {VoiceAssistantState} from "src/app/shared/types/voice-assistant-state";
+import {
+    VoiceTurnTraceEvent,
+    parseTurnTrace,
+} from "src/app/shared/types/voice-status";
 import {AssistantModel} from "../types/assistantModel";
 import {
     CatalogueProviderRecord,
@@ -33,6 +37,10 @@ import {ChatService} from "./chat.service";
 })
 export class VoiceAssistantService implements SidebarService {
     voiceAssistantStateObservable: Observable<VoiceAssistantState>;
+    /** True while the robot reads the microphone for `chatId`. */
+    chatIsListeningObservable: Observable<{chatId: string; listening: boolean}>;
+    /** Parsed `/voice_turn_trace` events, newest last; null for malformed lines. */
+    turnTraceObservable: Observable<VoiceTurnTraceEvent | null>;
     personalities: VoiceAssistant[] = [];
     personalitiesSubject: BehaviorSubject<VoiceAssistant[]> =
         new BehaviorSubject<VoiceAssistant[]>([]);
@@ -59,6 +67,18 @@ export class VoiceAssistantService implements SidebarService {
                     chatId: state.chat_id,
                 })),
             );
+
+        this.chatIsListeningObservable =
+            this.rosService.chatIsListeningReceiver$.pipe(
+                map((message) => ({
+                    chatId: message.chat_id,
+                    listening: message.listening === true,
+                })),
+            );
+
+        this.turnTraceObservable = this.rosService.voiceTurnTraceReceiver$.pipe(
+            map((raw) => parseTurnTrace(raw)),
+        );
     }
 
     setVoiceAssistantState(nextState: VoiceAssistantState) {

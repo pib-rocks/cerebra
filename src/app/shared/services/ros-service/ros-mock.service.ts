@@ -33,7 +33,7 @@ import {ExistTokenResponse} from "../../ros-types/srv/exist-token";
 import {SolidStateRelayState} from "../../ros-types/msg/solid-state-relay-state";
 import {DetectionArray} from "../../ros-types/msg/detection-array";
 import {ModelStatusArray} from "../../ros-types/msg/model-status";
-import {ModelInfo} from "../../ros-types/srv/list-models";
+import {ListModelsResponse, ModelInfo} from "../../ros-types/srv/list-models";
 
 @Injectable({
     providedIn: "root",
@@ -141,7 +141,7 @@ export class RosService implements IRosService {
         });
     detectionReceiver$ = new Subject<DetectionArray>();
     detectionModelsReceiver$ = new BehaviorSubject<string[]>([
-        "hand_tracking",
+        "hand_tracking_fast",
         "object_detection",
     ]);
     detectionClearReceiver$ = new Subject<string | undefined>();
@@ -159,10 +159,10 @@ export class RosService implements IRosService {
 
     private readonly mockModels: ModelInfo[] = [
         {
-            model_id: "hand_tracking",
+            model_id: "hand_tracking_fast",
             task: "hand tracking",
             licence: "Apache-2.0",
-            shaves: [4, 1, 4],
+            shaves: 4,
             size_bytes: 17400000,
             available: true,
             active: false,
@@ -171,7 +171,7 @@ export class RosService implements IRosService {
             model_id: "object_detection",
             task: "object detection",
             licence: "Apache-2.0",
-            shaves: [6],
+            shaves: 6,
             size_bytes: 14900000,
             available: true,
             active: true,
@@ -329,8 +329,11 @@ export class RosService implements IRosService {
         return subject;
     }
 
-    listModels(): Observable<ModelInfo[]> {
-        return of(structuredClone(this.mockModels));
+    listModels(): Observable<ListModelsResponse> {
+        return of({
+            models: structuredClone(this.mockModels),
+            total_shaves: 16,
+        });
     }
 
     startModel(model: ModelInfo, owner: string): Observable<void> {
@@ -517,7 +520,7 @@ export class RosService implements IRosService {
                 toggle ? orangeJpegBase64 : redJpegBase64,
             );
             this.detectionReceiver$.next({
-                model_id: "hand_tracking",
+                model_id: "hand_tracking_fast",
                 frame_width: 640,
                 frame_height: 480,
                 detections: [

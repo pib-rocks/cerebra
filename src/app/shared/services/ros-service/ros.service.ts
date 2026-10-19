@@ -73,13 +73,23 @@ import {
 import {DetectionArray} from "../../ros-types/msg/detection-array";
 import {ModelStatusArray} from "../../ros-types/msg/model-status";
 import {ListModelsResponse, ModelInfo} from "../../ros-types/srv/list-models";
-import {StartModelRequest} from "../../ros-types/srv/start-model";
+import {
+    ModelActionResponse,
+    StartModelRequest,
+} from "../../ros-types/srv/start-model";
 import {StopModelRequest} from "../../ros-types/srv/stop-model";
 
 @Injectable({
     providedIn: "root",
 })
 export class RosService implements IRosService {
+    /**
+     * rosbridge CallService.default_call_service_timeout is 5 seconds when the
+     * call omits timeout. Model start answers only after pipeline rebuild and
+     * verification, so the call must carry a longer timeout or rosbridge
+     * reports a failure while the model is still starting.
+     */
+    static readonly MODEL_LIFECYCLE_TIMEOUT_SECONDS = 90;
     currentReceiver$: Subject<DiagnosticStatus> =
         new Subject<DiagnosticStatus>();
     cameraTimerPeriodReceiver$: BehaviorSubject<number> =
@@ -102,6 +112,8 @@ export class RosService implements IRosService {
         new Subject<ProxyRunProgramStatus>();
     chatIsListeningReceiver$: Subject<ChatIsListening> =
         new Subject<ChatIsListening>();
+    /** Raw JSON of one `/voice_turn_trace` event (std_msgs/String). */
+    voiceTurnTraceReceiver$: Subject<string> = new Subject<string>();
     voiceAssistantStateReceiver$: BehaviorSubject<VoiceAssistantState> =
         new BehaviorSubject<VoiceAssistantState>({
             turned_on: false,
@@ -133,6 +145,7 @@ export class RosService implements IRosService {
     private chatMessageTopic!: ROSLIB.Topic<ChatMessage>;
     private voiceAssistantStateTopic!: ROSLIB.Topic<VoiceAssistantState>;
     private chatIsListeningTopic!: ROSLIB.Topic<ChatIsListening>;
+    private voiceTurnTraceTopic!: ROSLIB.Topic<{data: string}>;
     private expressionTopic?: ROSLIB.Topic<{data: string}>;
     private displayTextTopic?: ROSLIB.Topic<{data: string}>;
     private solidStateRelayStateTopic!: ROSLIB.Topic<SolidStateRelayState>;
@@ -196,11 +209,11 @@ export class RosService implements IRosService {
     >;
     private startModelService!: ROSLIB.Service<
         StartModelRequest,
-        Record<string, never>
+        ModelActionResponse
     >;
     private stopModelService!: ROSLIB.Service<
         StopModelRequest,
-        Record<string, never>
+        ModelActionResponse
     >;
 
     private runProgramAction!: ROSLIB.ActionClient;
@@ -287,6 +300,10 @@ export class RosService implements IRosService {
         this.chatIsListeningTopic = this.createRosTopic(
             rosTopics.chatIsListening,
             rosDataTypes.chatIsListening,
+        );
+        this.voiceTurnTraceTopic = this.createRosTopic(
+            rosTopics.voiceTurnTrace,
+            rosDataTypes.string,
         );
         this.expressionTopic = this.createRosTopic(
             rosTopics.expression,
@@ -422,6 +439,7 @@ export class RosService implements IRosService {
 
         this.subscribeVoiceAssistantStateTopic();
         this.subscribeChatIsListeningTopic();
+        this.subscribeVoiceTurnTraceTopic();
         this.subscribeChatMessageTopic();
         this.subscribeMotorSettingsTopic();
         this.subscribeMotorCurrentTopic();
@@ -647,6 +665,15 @@ export class RosService implements IRosService {
             this.chatIsListeningReceiver$.next(message);
         });
     }
+
+    private subscribeVoiceTurnTraceTopic() {
+        this.voiceTurnTraceTopic.subscribe((message: {data?: string}) => {
+            const raw = typeof message?.data === "string" ? message.data : "";
+            if (raw) {
+                this.voiceTurnTraceReceiver$.next(raw);
+            }
+        });
+    }
     private subscribeSolidStateRelayStateTopic() {
         this.solidStateRelayStateTopic.subscribe(
             (message: SolidStateRelayState) => {
@@ -656,25 +683,21 @@ export class RosService implements IRosService {
     }
 
     checkTokenExists(): Observable<ExistTokenResponse> {
-        const failedResponse: ExistTokenResponse = {
-            token_exists: false,
-            token_active: false,
-        };
-        const subject: Subject<ExistTokenResponse> = new ReplaySubject();
+        const subject: Subject<ExistTokenResponse> = new ReplaySubject(1);
         if (this.existTokenService === undefined) {
-            subject.next(failedResponse);
-            return subject;
+            subject.error(new Error("Token service is undefined"));
+            return subject.asObservable();
         }
 
         const successCallback = (response: ExistTokenResponse) => {
             subject.next(response);
         };
-        const errorCallback = (_error: any) => {
-            subject.next(failedResponse);
+        const errorCallback = (error: unknown) => {
+            subject.error(new Error(serviceErrorText(error)));
         };
         this.existTokenService.callService({}, successCallback, errorCallback);
 
-        return subject;
+        return subject.asObservable();
     }
 
     deleteTokenMessage() {
@@ -786,12 +809,12 @@ export class RosService implements IRosService {
         return subject;
     }
 
-    listModels(): Observable<ModelInfo[]> {
+    listModels(): Observable<ListModelsResponse> {
         return from(
-            new Promise<ModelInfo[]>((resolve, reject) => {
+            new Promise<ListModelsResponse>((resolve, reject) => {
                 this.listModelsService.callService(
                     {},
-                    (response) => resolve(response.models),
+                    (response) => resolve(response),
                     (error) => reject(new Error(error)),
                 );
             }),
@@ -816,15 +839,26 @@ export class RosService implements IRosService {
     }
 
     private callModelAction<Request extends object>(
-        service: ROSLIB.Service<Request, Record<string, never>>,
+        service: ROSLIB.Service<Request, ModelActionResponse>,
         request: Request,
     ): Observable<void> {
         return from(
             new Promise<void>((resolve, reject) => {
                 service.callService(
                     request,
-                    () => resolve(),
+                    (response) => {
+                        if (response?.success === false) {
+                            reject(
+                                new Error(
+                                    response.message || "Model request failed",
+                                ),
+                            );
+                            return;
+                        }
+                        resolve();
+                    },
                     (error) => reject(new Error(error)),
+                    RosService.MODEL_LIFECYCLE_TIMEOUT_SECONDS,
                 );
             }),
         );
@@ -862,6 +896,10 @@ export class RosService implements IRosService {
 
     sendChatMessage(chatId: string, content: string): Observable<void> {
         const subject: Subject<void> = new ReplaySubject();
+        if (this.sendChatMessageService === undefined) {
+            subject.error(new Error("Chat service is undefined"));
+            return subject.asObservable();
+        }
         const request: SendChatMessageRequest = {
             chat_id: chatId,
             content: content,
@@ -881,7 +919,7 @@ export class RosService implements IRosService {
             successCallback,
             errorCallback,
         );
-        return subject;
+        return subject.asObservable();
     }
 
     getChatIsListening(chatId: string): Observable<boolean> {
@@ -1044,4 +1082,17 @@ export class RosService implements IRosService {
         }
         this.displayTextTopic.publish({data: text});
     }
+}
+
+function serviceErrorText(error: unknown): string {
+    if (typeof error === "string" && error.trim() !== "") {
+        return error;
+    }
+    if (error instanceof Error && error.message.trim() !== "") {
+        return error.message;
+    }
+    if (error == null) {
+        return "Token service error";
+    }
+    return String(error);
 }

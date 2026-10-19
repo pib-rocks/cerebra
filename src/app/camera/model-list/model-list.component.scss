@@ -16,9 +16,23 @@
     margin-bottom: 0.75rem;
 }
 
+.model-panel-heading {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.75rem;
+    align-items: baseline;
+    min-width: 0;
+}
+
 .model-panel-header h2 {
     margin: 0;
     font-size: 1.25rem;
+}
+
+.free-slots {
+    font-size: 0.75rem;
+    color: rgba($white-color, 0.85);
+    white-space: nowrap;
 }
 
 .camera-restarting {

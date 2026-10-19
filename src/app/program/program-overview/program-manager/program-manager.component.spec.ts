@@ -8,6 +8,7 @@ import {RouterTestingModule} from "@angular/router/testing";
 import {HttpClientTestingModule} from "@angular/common/http/testing";
 import {Program} from "../../../shared/types/program";
 import {BehaviorSubject, of} from "rxjs";
+import {createServiceSpy} from "../../../shared/testing/create-service-spy";
 
 describe("ProgramManagerComponent", () => {
     let component: ProgramManagerComponent;
@@ -20,19 +21,24 @@ describe("ProgramManagerComponent", () => {
             NgbModal,
             ["open"],
         );
-        const programServiceSpy: jasmine.SpyObj<ProgramService> =
-            jasmine.createSpyObj(ProgramService, [
+        const programServiceSpy = createServiceSpy<ProgramService>(
+            "ProgramService",
+            [
                 "getProgramFromCache",
                 "getAllPrograms",
                 "getProgramByProgramNumber",
                 "createProgram",
                 "updateProgramByProgramNumber",
                 "deleteProgramByProgramNumber",
-            ]);
+            ],
+            // PC-72: programsSubject is part of the double from creation and is a
+            // real subject - the component reads it in ngOnInit and data goes
+            // through .next(...), never through an assignment.
+            {programsSubject: new BehaviorSubject<Program[]>([])},
+        );
         programServiceSpy.getAllPrograms.and.returnValue(
             new BehaviorSubject([]),
         );
-        programServiceSpy.programsSubject = new BehaviorSubject<Program[]>([]);
 
         router = {url: "change this"};
 

@@ -1,6 +1,10 @@
 @import "src/styles";
 
 $sidebar-width: 250px;
+// One navigation entry as it sits in the flow: 40px link box (including the 4px indicator bar) plus its
+// 10px top and 3.2px bottom margin, measured in the browser. Used as the breathing room the status block
+// gets after the last entry.
+$sidebar-entry-height: 53.2px;
 
 .a {
     fill: none;
@@ -43,6 +47,24 @@ $sidebar-width: 250px;
     overflow-y: auto;
 }
 
+// The navigation sat 25px below the brand block and crowded the logo, so it moves down by half a navigation
+// entry - the measured height of one entry (see $sidebar-entry-height). A descendant selector, not a child
+// one: the navigation wrapper sits inside the brand block, so `.main-sidebar > .sidebar` matches nothing and
+// the compiled rule silently had no effect.
+.main-sidebar .sidebar.nav-below-brand {
+    margin-top: calc(#{$sidebar-entry-height} / 2);
+}
+
+// The relay toggle, the smart-connect button and the IP follow the navigation instead of being pinned to the
+// bottom of the column. The aside spans `top: 0; bottom: 0` of a wrapper that is `min-height: 100vh`, so on a
+// tall page it grows with the document: with `justify-content: space-between` on the aside the block was pushed
+// to its bottom edge and ended up below the fold (measured on /system/diagnostics in an 800px window: the relay
+// toggle sat at y=967). It now sits one entry below the last navigation point.
+.main-sidebar .sidebar-status {
+    margin-top: $sidebar-entry-height;
+    padding-bottom: 1rem;
+}
+
 .nav-sidebar .nav-item > .nav-link {
     position: relative;
     margin-bottom: 0.2rem;
@@ -63,8 +85,53 @@ $sidebar-width: 250px;
     margin-left: 0;
 }
 
-// Below 768px the sidebar is hidden by default and the hamburger slides it
-// in over the content instead of pushing the content aside.
+// The handle that replaced the old hamburger. It straddles the line between the
+// navigation and the content (half in each), so the control sits where the two
+// areas meet instead of in the content's top corner, and it always points the
+// way it will move the navigation.
+.sidebar-toggle {
+    position: absolute;
+    top: 50%;
+    left: $sidebar-width;
+    transform: translate(-50%, -50%);
+    z-index: 1039; // above the sidebar (1038)
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border: 1px solid $grey-transparent;
+    border-radius: 50%;
+    background-color: $blue-dark-1;
+    color: $white-color;
+    font-size: 1rem;
+    line-height: 1;
+    transition:
+        left 0.3s ease-in-out,
+        background-color 0.15s ease-in-out,
+        border-color 0.15s ease-in-out;
+
+    &:hover {
+        border-color: $pink-color;
+        background-color: $pink-color;
+    }
+
+    &:focus-visible {
+        outline: 2px solid $pink-color;
+        outline-offset: 2px;
+    }
+}
+
+// Collapsed: the navigation has left the screen, so the handle docks at the left
+// edge, where it stays reachable.
+.sidebar-collapse .sidebar-toggle {
+    left: 8px;
+    transform: translate(0, -50%);
+}
+
+// Below 768px the navigation is an overlay and the collapse class means the
+// opposite (set = shown, unset = hidden), so the handle swaps sides with it.
 @media (max-width: 767.98px) {
     .main-sidebar {
         margin-left: -$sidebar-width;
@@ -78,6 +145,16 @@ $sidebar-width: 250px;
     .content-wrapper {
         margin-left: 0;
     }
+
+    .sidebar-toggle {
+        left: 8px;
+        transform: translate(0, -50%);
+    }
+
+    .sidebar-collapse .sidebar-toggle {
+        left: $sidebar-width;
+        transform: translate(-50%, -50%);
+    }
 }
 
 .brand-link {
@@ -88,25 +165,30 @@ $sidebar-width: 250px;
     white-space: nowrap;
     text-decoration: none;
     border: 0;
+
+    // The brand padding and the logo's Bootstrap margin pushed the version 21px away from the logo.
+    // The version belongs to the logo, not to an area of its own.
+    padding-bottom: 0;
+
+    img {
+        margin-top: 8px;
+        margin-bottom: 0;
+    }
 }
 
 .version-footer {
     font-size: 9px;
     line-height: 1.2;
-    margin-top: 2px;
+    margin-top: 4px;
     color: $grey-color;
     pointer-events: none;
     user-select: none;
     text-align: center;
 }
 
-.btn-active,
-.nav-pills .nav-link.sidebar-btn:hover {
-    margin: 10px 10px 10px 8px;
-    color: $black-color;
-    border-bottom: $pink-color solid 4px;
-    padding-bottom: 4px;
-}
+// The bar and the hover/active colour are set further down with selectors that outrank the base rule.
+// Nothing here may touch margin or padding: the base rule's own margin shorthand outranked
+// `.nav-sidebar .nav-item > .nav-link { margin-bottom: 0.2rem; }` and grew the hovered entry by 6.8px.
 
 .btn-active svg path,
 .btn-active svg circle,
@@ -145,10 +227,18 @@ $sidebar-width: 250px;
     border-radius: 0px;
     display: flex;
     align-items: center;
+    // Reserve the bar's space here. The hover and active rules used to add the 4px border and take 4px
+    // away from the padding, so the hovered entry grew and pushed every entry below it down. Now only
+    // the colour of the bar changes.
+    border-bottom: transparent solid 4px;
+    padding-bottom: 4px;
 }
 
 .nav-link.sidebar-btn.btn-active {
     color: $white-color;
+    // Two classes plus the active class outrank the base rule's transparent reservation, so the selected
+    // entry keeps the pink bar as its indicator.
+    border-bottom-color: $pink-color;
 }
 
 .nav-sidebar > .nav-item.menu-open > .nav-link,
@@ -164,10 +254,8 @@ $sidebar-width: 250px;
 }
 
 .nav-pills .nav-link.sidebar-btn:hover {
-    margin: 10px 10px 10px 8px;
     color: $white-color;
-    border-bottom: $pink-color solid 4px;
-    padding-bottom: 4px;
+    border-bottom-color: $pink-color;
 }
 
 svg path,

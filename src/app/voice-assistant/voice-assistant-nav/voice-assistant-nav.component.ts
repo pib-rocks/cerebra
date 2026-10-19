@@ -18,13 +18,14 @@ import {Observable} from "rxjs";
 import {SidebarElement} from "src/app/shared/interfaces/sidebar-element.interface";
 import {CerebraRegex} from "src/app/shared/types/cerebra-regex";
 import {PersonalityDescriptionComponent} from "../personality-description/personality-description.component";
+import {ConversationStatusComponent} from "../visible-state/conversation-status.component";
 
 @Component({
     selector: "app-voice-assistant-nav",
     templateUrl: "./voice-assistant-nav.component.html",
     styleUrls: ["./voice-assistant-nav.component.scss"],
     changeDetection: ChangeDetectionStrategy.Eager,
-    imports: [PersonalityDescriptionComponent],
+    imports: [PersonalityDescriptionComponent, ConversationStatusComponent],
 })
 export class VoiceAssistantNavComponent implements OnInit, AfterViewChecked {
     private readonly destroyRef = inject(DestroyRef);
@@ -110,10 +111,11 @@ export class VoiceAssistantNavComponent implements OnInit, AfterViewChecked {
                         const redirect = this.getRedirectRoute();
                         if (redirect) {
                             this.selectedPersonalityId = redirect;
-                            this.router.navigate([redirect], {
+                            this.router.navigate([redirect, "chat"], {
                                 relativeTo: this.route,
                             });
                         } else {
+                            this.selectedPersonalityId = "";
                             this.router.navigate([this.defaultRoute]);
                         }
                     }

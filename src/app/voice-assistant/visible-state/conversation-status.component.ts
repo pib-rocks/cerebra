@@ -24,7 +24,12 @@ import {AnimatedFaceComponent} from "./animated-face.component";
     imports: [AnimatedFaceComponent],
 })
 export class ConversationStatusComponent implements OnInit {
-    @Input() surface: "header" | "display" = "display";
+    /**
+     * "display" is the robot screen and keeps the animated face.
+     * "assistant" is the voice-assistant personality row and shows the
+     * holder text only. The old global header surface is gone.
+     */
+    @Input() surface: "assistant" | "display" = "display";
 
     private readonly destroyRef = inject(DestroyRef);
     state: VisibleConversation = visibleConversation({

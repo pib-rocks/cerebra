@@ -8,6 +8,7 @@ import {
     IMPORT_SYS,
     IMPORT_TIME,
     INIT_ROS,
+    addDefinitions,
 } from "./util/definitions";
 import {GET_SOUND_DIRECTION_FUNCTION} from "./util/function-declarations";
 
@@ -15,7 +16,7 @@ export function get_sound_direction(
     _block: Block,
     generator: typeof pythonGenerator,
 ): [string, Order] {
-    Object.assign(generator.definitions_, {
+    addDefinitions(generator, {
         CONFIGURE_LOGGING,
         IMPORT_LOGGING,
         IMPORT_SYS,
@@ -32,5 +33,3 @@ export function get_sound_direction(
 
     return [`${functionName}()`, Order.FUNCTION_CALL];
 }
-
-export {pythonGenerator};

@@ -1,12 +1,18 @@
-import {ComponentFixture, TestBed} from "@angular/core/testing";
+import {
+    ComponentFixture,
+    fakeAsync,
+    TestBed,
+    tick,
+} from "@angular/core/testing";
 
 import {RelayControlComponent} from "./relay-control.component";
 import {RosService} from "src/app/shared/services/ros-service/ros.service";
 import {BrickletService} from "src/app/shared/services/bricklet.service";
 import {MatSnackBar} from "@angular/material/snack-bar";
-import {BehaviorSubject, of, throwError} from "rxjs";
+import {BehaviorSubject, of, Subject, throwError} from "rxjs";
 import {SolidStateRelayState} from "src/app/shared/ros-types/msg/solid-state-relay-state";
 import {Bricklet} from "src/app/shared/types/bricklet";
+import {createServiceSpy} from "src/app/shared/testing/create-service-spy";
 
 describe("RelayControlComponent", () => {
     let component: RelayControlComponent;
@@ -23,7 +29,7 @@ describe("RelayControlComponent", () => {
         );
         bricklets$ = new BehaviorSubject<Bricklet[]>([]);
 
-        rosServiceMock = jasmine.createSpyObj(
+        rosServiceMock = createServiceSpy<RosService>(
             "RosService",
             ["setSolidStateRelayState"],
             {
@@ -117,6 +123,35 @@ describe("RelayControlComponent", () => {
             turned_on: true,
         });
     });
+
+    it("should release the toggle when the relay state arrives instead of the service response", () => {
+        rosServiceMock.setSolidStateRelayState.and.returnValue(
+            new Subject<void>().asObservable(),
+        );
+
+        component.toggleSolidStateRelay();
+        expect(component.isLoading).toBeTrue();
+
+        // The node broadcasts the state it applied. rosbridge can lose the service response, which
+        // used to leave the button disabled until the page was reloaded.
+        relayState$.next({turned_on: true});
+
+        expect(component.isLoading).toBeFalse();
+        expect(component.turnedOn).toBeTrue();
+    });
+
+    it("should release the toggle after the deadline when nothing acknowledges", fakeAsync(() => {
+        rosServiceMock.setSolidStateRelayState.and.returnValue(
+            new Subject<void>().asObservable(),
+        );
+
+        component.toggleSolidStateRelay();
+        expect(component.isLoading).toBeTrue();
+
+        tick(5000);
+
+        expect(component.isLoading).toBeFalse();
+    }));
 
     it("should not toggle SSR if relay is not available", () => {
         component.isRelayAvailable = false;

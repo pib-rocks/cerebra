@@ -1,5 +1,6 @@
 import {
     AfterViewInit,
+    ChangeDetectorRef,
     Component,
     ElementRef,
     Input,
@@ -44,6 +45,7 @@ export class MotorCurrentComponent implements AfterViewInit, OnDestroy {
     constructor(
         private motorService: MotorService,
         private renderer: Renderer2,
+        private changeDetectorRef: ChangeDetectorRef,
     ) {}
 
     ngAfterViewInit(): void {
@@ -59,6 +61,10 @@ export class MotorCurrentComponent implements AfterViewInit, OnDestroy {
                         this.CIRCUMFERENCE
                     }, 360`,
                 );
+                // The value arrives from a ROS callback, and Cerebra runs zoneless: without this the
+                // SVG arc moves (set through the renderer) while the number stays at its initial value
+                // until the next user interaction - selecting a motor made the readings appear.
+                this.changeDetectorRef.markForCheck();
             });
     }
 

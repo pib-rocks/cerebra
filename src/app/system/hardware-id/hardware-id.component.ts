@@ -1,3 +1,4 @@
+import {NgTemplateOutlet} from "@angular/common";
 import {
     Component,
     OnInit,
@@ -32,12 +33,17 @@ import {
     HardwareConfig,
 } from "../diagnostics/diagnostics.service";
 
+interface UidSelectOption {
+    uid: string;
+    label: string;
+}
+
 @Component({
     selector: "app-hardware-id",
     templateUrl: "./hardware-id.component.html",
     styleUrl: "./hardware-id.component.scss",
     changeDetection: ChangeDetectionStrategy.Default,
-    imports: [ReactiveFormsModule],
+    imports: [ReactiveFormsModule, NgTemplateOutlet],
 })
 export class HardwareIdComponent implements OnInit {
     private readonly destroyRef = inject(DestroyRef);
@@ -69,8 +75,9 @@ export class HardwareIdComponent implements OnInit {
     importSuccessMessage: string | null = null;
     error: string | null = null;
 
-    // Devices the hardware really reports (GET /bricklet/connected). This is
-    // read-only display and never feeds the UID form above it.
+    // Devices the hardware really reports (GET /bricklet/connected). The UID
+    // selects are filled from this list. Refreshing it does not overwrite a
+    // value that is already selected.
     connectedBricklets: ConnectedBricklet[] = [];
     connectedBrickletsLoading = false;
     // True once a read has succeeded, so "not loaded yet" and "loaded, nothing
@@ -82,6 +89,77 @@ export class HardwareIdComponent implements OnInit {
 
     get hasEditableControllers(): boolean {
         return Object.keys(this.brickletUidForm.controls).length > 0;
+    }
+
+    /**
+     * The form value as it was last loaded or successfully saved. A signature rather than Angular's
+     * `dirty`, which stays true once a control moved - the Blockly editor compares values for the
+     * same reason.
+     */
+    private savedUidSignature = "";
+
+    private uidSignature(
+        value: Record<number, string> = this.brickletUidForm.getRawValue(),
+    ): string {
+        return Object.keys(value)
+            .map((key) => Number(key))
+            .sort((left, right) => left - right)
+            .map((key) => `${key}:${value[key]}`)
+            .join("|");
+    }
+
+    /**
+     * True while the form holds UIDs that differ from the last loaded or saved state. The Save button
+     * shows it in the brand colour - the same signal the Blockly editor gives with its filled Save
+     * banner - and a successful save moves the baseline, so the colour clears without a reload.
+     */
+    get hasUnsavedUidChanges(): boolean {
+        if (!this.brickletUidForm.valid) {
+            return false;
+        }
+        return this.uidSignature() !== this.savedUidSignature;
+    }
+
+    /** The IDs the group validator found more than once. */
+    private get duplicatedUids(): string[] {
+        const error = this.brickletUidForm.errors?.["nonUnique"] as
+            | {ids?: string[]}
+            | undefined;
+        return error?.ids ?? [];
+    }
+
+    /** True when a control's own value breaks the length or the character rule. */
+    private get hasMalformedUid(): boolean {
+        // The form group is untyped (`new FormGroup({})`), so its controls come back as unknown.
+        const controls = this.brickletUidForm.controls as Record<
+            string,
+            FormControl
+        >;
+        return Object.values(controls).some((control) => control.invalid);
+    }
+
+    /**
+     * What is actually wrong with the form. Both rules were covered by one fixed sentence, so a
+     * duplicated ID also claimed the characters and the length were wrong (PR-1994).
+     */
+    get validationMessage(): string {
+        const messages: string[] = [];
+        const duplicates = this.duplicatedUids;
+        if (duplicates.length > 0) {
+            const subject = duplicates.length === 1 ? "ID" : "IDs";
+            const verb = duplicates.length === 1 ? "is" : "are";
+            messages.push(
+                `${subject} ${duplicates.join(
+                    ", ",
+                )} ${verb} assigned more than once.`,
+            );
+        }
+        if (this.hasMalformedUid) {
+            messages.push(
+                "IDs must be up to 6 characters long and contain only letters and numbers.",
+            );
+        }
+        return messages.join(" ");
     }
 
     get importPreviewBricklets() {
@@ -105,7 +183,12 @@ export class HardwareIdComponent implements OnInit {
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe((bricklets) => {
                 this.bricklets = bricklets;
-                this.rebuildControllerView();
+                // Re-seed from the cache only while it is the source of truth.
+                // With a variant context, this emission is what used to rebuild
+                // the form from the stale context and snap a saved UID back.
+                if (this.usingFallback) {
+                    this.rebuildControllerView();
+                }
                 this.cdr.markForCheck();
             });
 
@@ -186,9 +269,76 @@ export class HardwareIdComponent implements OnInit {
         const changedBricklets: Bricklet[] =
             this.detectChangedBricklets(newBrickletInput);
 
-        if (changedBricklets.length > 0) {
-            this.brickletService.renameBrickletUid(changedBricklets);
+        if (changedBricklets.length === 0) {
+            return;
         }
+        this.brickletService
+            .renameBrickletUid(changedBricklets)
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe({
+                next: () => this.onBrickletUidsSaved(changedBricklets),
+            });
+    }
+
+    /**
+     * Options for one slot: detected devices whose name starts with the
+     * controller's device type (the enumeration adds a version suffix),
+     * sorted by port. A stored UID that is not in that list stays as an
+     * extra option so the select does not drop it.
+     */
+    uidOptions(controller: HardwareController): UidSelectOption[] {
+        const deviceType = controller.deviceType ?? "";
+        const detected = this.connectedBricklets
+            .filter((device) => this.matchesDeviceType(device.name, deviceType))
+            .slice()
+            .sort((a, b) => a.port.localeCompare(b.port));
+        const options = detected.map((device) => ({
+            uid: device.uid,
+            label: this.withAssignmentMark(
+                this.detectedLabel(device),
+                device.uid,
+                controller.number,
+            ),
+        }));
+        const current = this.currentUid(controller.number);
+        if (current && !options.some((option) => option.uid === current)) {
+            options.push({
+                uid: current,
+                label: this.withAssignmentMark(
+                    `${current} - not detected`,
+                    current,
+                    controller.number,
+                ),
+            });
+        }
+        return options;
+    }
+
+    duplicateMessage(slot: number): string | null {
+        const others = this.otherSlotsWithUid(this.currentUid(slot), slot);
+        if (others.length === 0) {
+            return null;
+        }
+        return this.assignmentPhrase(others);
+    }
+
+    /** Configured UID that the hardware is not reporting for this slot. */
+    isUndetected(slot: number): boolean {
+        const uid = this.currentUid(slot);
+        if (!uid) {
+            return false;
+        }
+        const deviceType = this.editableControllers().find(
+            (candidate) => candidate.number === slot,
+        )?.deviceType;
+        if (!deviceType) {
+            return true;
+        }
+        return !this.connectedBricklets.some(
+            (device) =>
+                device.uid === uid &&
+                this.matchesDeviceType(device.name, deviceType),
+        );
     }
 
     exportHardwareIds(): void {
@@ -429,6 +579,110 @@ export class HardwareIdComponent implements OnInit {
             }
         });
         this.brickletUidForm.updateValueAndValidity();
+        // The freshly synced values are the stored ones again: a load, a refresh or an applied import
+        // must not leave the Save button lit.
+        this.savedUidSignature = this.uidSignature();
+    }
+
+    /**
+     * Align the in-memory controller list with what was just stored. The form
+     * already shows those values; writing the controls again would hide a
+     * snap-back that a cache emission had applied.
+     */
+    private onBrickletUidsSaved(changed: Bricklet[]): void {
+        this.applySavedAddresses(changed);
+        // What the server just stored is the new baseline, so the Save button goes back to its normal
+        // colour without waiting for a reload.
+        this.savedUidSignature = this.uidSignature();
+        this.variantService.reload();
+        this.loadConnectedBricklets();
+        this.cdr.markForCheck();
+    }
+
+    private applySavedAddresses(changed: Bricklet[]): void {
+        const saved = new Map(
+            changed.map((bricklet) => [bricklet.brickletNumber, bricklet.uid]),
+        );
+        if (this.hardwareContext) {
+            this.hardwareContext = {
+                ...this.hardwareContext,
+                controllers: this.hardwareContext.controllers.map(
+                    (controller) => {
+                        const uid = saved.get(controller.number);
+                        return uid === undefined
+                            ? controller
+                            : {...controller, address: uid};
+                    },
+                ),
+            };
+        }
+        this.bricklets = this.bricklets.map((bricklet) => {
+            const uid = saved.get(bricklet.brickletNumber);
+            return uid === undefined
+                ? bricklet
+                : new Bricklet(uid, bricklet.brickletNumber, bricklet.type);
+        });
+    }
+
+    private editableControllers(): HardwareController[] {
+        return [
+            ...this.servoGroups.flatMap((group) => group.controllers),
+            ...this.relayControllers,
+            ...this.rgbControllers,
+        ];
+    }
+
+    private matchesDeviceType(name: string, deviceType: string): boolean {
+        if (!deviceType) {
+            return false;
+        }
+        return name === deviceType || name.startsWith(`${deviceType} `);
+    }
+
+    private detectedLabel(device: ConnectedBricklet): string {
+        const port = device.port
+            ? `Port ${device.port.toUpperCase()}`
+            : "carrier board";
+        return `${device.uid} - ${device.name} - ${port}`;
+    }
+
+    private currentUid(slot: number): string {
+        const value = this.brickletUidForm.get(String(slot))?.value;
+        return typeof value === "string" ? value : "";
+    }
+
+    private otherSlotsWithUid(uid: string, slot: number): number[] {
+        if (!uid) {
+            return [];
+        }
+        const values = this.brickletUidForm.getRawValue() as Record<
+            string,
+            string | null
+        >;
+        return Object.entries(values)
+            .filter(([key, value]) => Number(key) !== slot && value === uid)
+            .map(([key]) => Number(key))
+            .sort((a, b) => a - b);
+    }
+
+    private assignmentPhrase(slots: number[]): string {
+        if (slots.length === 1) {
+            return `already assigned to slot ${slots[0]}`;
+        }
+        const leading = slots.slice(0, -1).map(String).join(", ");
+        return `already assigned to slots ${leading} and ${slots.at(-1)}`;
+    }
+
+    private withAssignmentMark(
+        label: string,
+        uid: string,
+        slot: number,
+    ): string {
+        const others = this.otherSlotsWithUid(uid, slot);
+        if (others.length === 0) {
+            return label;
+        }
+        return `${label} (${this.assignmentPhrase(others)})`;
     }
 
     private resetImportState(): void {

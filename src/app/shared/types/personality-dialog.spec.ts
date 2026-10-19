@@ -1,21 +1,22 @@
 import {AssistantModel} from "./assistantModel";
 import {
     DEFAULT_IDLE_TIMEOUT_SECONDS,
-    IMAGES_NEED_MCP,
     IMAGES_NEED_TOOL_CALLING,
-    IMAGES_NEED_TOOL_CALLING_AND_MCP,
     LOCAL_VOICE_INPUT,
     LOCAL_VOICE_OUTPUT,
+    NEW_PERSONALITY_REASONING_EFFORT,
     TOOLS_NO_CAPABILITY,
     enforcePersonalityDialog,
     imageSwitchAvailability,
     liveFromChosenModel,
     readPersonalityDialog,
+    reasoningEffortFromStored,
     toolCallingAvailability,
     voiceInputOptions,
     voiceOutputOptions,
+    reconcileVoiceSelection,
 } from "./personality-dialog";
-import {ProviderCapabilities} from "./provider-registry";
+import {CLOUD_TOKEN_API_NAME, ProviderCapabilities} from "./provider-registry";
 
 function flags(partial: Partial<ProviderCapabilities>): ProviderCapabilities {
     return {
@@ -37,26 +38,41 @@ describe("personality dialog rules", () => {
             images: false,
             live: false,
             idleTimeoutSeconds: DEFAULT_IDLE_TIMEOUT_SECONDS,
-            mcp: true,
+            reasoningEffort: null,
         });
     });
 
-    it("greys out images while tool calling or the MCP server is off", () => {
-        expect(imageSwitchAvailability(true, true)).toEqual({
+    it("keeps a stored reasoning level and does not read NULL as none", () => {
+        expect(NEW_PERSONALITY_REASONING_EFFORT).toBe("none");
+        expect(readPersonalityDialog(undefined).reasoningEffort).toBeNull();
+        expect(
+            readPersonalityDialog({reasoningEffort: null}).reasoningEffort,
+        ).toBeNull();
+        expect(reasoningEffortFromStored("")).toBeNull();
+        expect(reasoningEffortFromStored("nope")).toBeNull();
+        expect(
+            readPersonalityDialog({reasoningEffort: "high"}).reasoningEffort,
+        ).toBe("high");
+        expect(
+            readPersonalityDialog({reasoningEffort: "none"}).reasoningEffort,
+        ).toBe("none");
+        expect(
+            enforcePersonalityDialog(
+                readPersonalityDialog({reasoningEffort: null}),
+                null,
+                false,
+            ).reasoningEffort,
+        ).toBeNull();
+    });
+
+    it("greys out images while the one tool switch is off", () => {
+        expect(imageSwitchAvailability(true)).toEqual({
             disabled: false,
             reason: null,
         });
-        expect(imageSwitchAvailability(false, true)).toEqual({
+        expect(imageSwitchAvailability(false)).toEqual({
             disabled: true,
             reason: IMAGES_NEED_TOOL_CALLING,
-        });
-        expect(imageSwitchAvailability(true, false)).toEqual({
-            disabled: true,
-            reason: IMAGES_NEED_MCP,
-        });
-        expect(imageSwitchAvailability(false, false)).toEqual({
-            disabled: true,
-            reason: IMAGES_NEED_TOOL_CALLING_AND_MCP,
         });
     });
 
@@ -116,7 +132,7 @@ describe("personality dialog rules", () => {
             reason: TOOLS_NO_CAPABILITY,
         });
         const saved = enforcePersonalityDialog(
-            readPersonalityDialog({toolCalling: true, images: true, mcp: true}),
+            readPersonalityDialog({toolCalling: true, images: true}),
             noTools,
             true,
         );
@@ -233,5 +249,54 @@ describe("personality dialog rules", () => {
         expect(
             voiceOutputOptions([retired], false).map((option) => option.label),
         ).not.toContain(retired.visualName);
+    });
+
+    it("keeps cloud speech rows visible on a persisted credential while the token probe reloads", () => {
+        const cloud = new AssistantModel(
+            5,
+            CLOUD_TOKEN_API_NAME,
+            "pib.Cloud",
+            true,
+            null,
+            flags({stt: true, tts: true, tools: true, images: true}),
+            "provider-4",
+            false,
+        );
+        expect(
+            voiceInputOptions([cloud], false, "loading").map(
+                (option) => option.id,
+            ),
+        ).toEqual([LOCAL_VOICE_INPUT, "5"]);
+        expect(
+            voiceOutputOptions([cloud], false, "unavailable").map(
+                (option) => option.id,
+            ),
+        ).toEqual([LOCAL_VOICE_OUTPUT, "5"]);
+    });
+
+    it("does not silently fall back to local speech while the token probe is unfinished", () => {
+        const cloud = new AssistantModel(
+            5,
+            CLOUD_TOKEN_API_NAME,
+            "pib.Cloud",
+            true,
+            null,
+            flags({stt: true, tts: true, tools: true, images: true}),
+            null,
+            false,
+        );
+        const options = voiceInputOptions([cloud], true, "loading");
+        expect(options.map((option) => option.id)).toEqual([LOCAL_VOICE_INPUT]);
+        expect(
+            reconcileVoiceSelection("5", options, LOCAL_VOICE_INPUT, "loading"),
+        ).toBe("5");
+        expect(
+            reconcileVoiceSelection(
+                "5",
+                voiceInputOptions([cloud], false, "available"),
+                LOCAL_VOICE_INPUT,
+                "available",
+            ),
+        ).toBe(LOCAL_VOICE_INPUT);
     });
 });

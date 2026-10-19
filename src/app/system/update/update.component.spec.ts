@@ -64,6 +64,70 @@ describe("UpdateComponent", () => {
     const formatDate = (value: string): string =>
         new DatePipe("en-US").transform(value, "medium") ?? "";
 
+    it("should format the release notes as a list and keep the rest behind a click", () => {
+        const notes = [
+            "## Highlights",
+            ...Array.from({length: 10}, (_, index) => `* Bullet ${index + 1}`),
+        ].join("\n");
+        component.availability = {
+            ...availability,
+            checkedAt: "2026-10-14T00:00:00Z",
+            checkId: "check-1",
+            state: "completed",
+            channel: "release",
+            recommendation: {
+                tag: "v0.6.5",
+                relation: "channel-change",
+                installable: true,
+                ordinaryUpdate: true,
+                notes,
+            },
+            releases: [
+                {
+                    tag: "v0.6.5",
+                    relation: "channel-change",
+                    installable: true,
+                    notes,
+                },
+            ],
+        };
+        component.chosenTag = "v0.6.5";
+        fixture.detectChanges();
+
+        const notesBox = (fixture.nativeElement as HTMLElement).querySelector(
+            '[data-test="TXT_Release_Notes"]',
+        ) as HTMLElement;
+
+        // The Markdown bullets are a list now instead of one flowing text.
+        expect(notesBox.querySelectorAll("li").length).toBeGreaterThan(0);
+        expect(notesBox.textContent).toContain("Bullet 1");
+        expect(notesBox.textContent).not.toContain("##");
+
+        // Collapsed: a few lines and "...", the rest waits for the click.
+        expect(component.hasMoreReleaseNotes).toBeTrue();
+        expect(notesBox.textContent).toContain("...");
+        expect(notesBox.textContent).not.toContain("Bullet 10");
+
+        // Clicking the button is the real path: the template event marks the component for a check,
+        // which a direct call to the method would not (OnPush), so the DOM follows.
+        const toggleButton = notesBox.querySelector(
+            "#btn-toggle-release-notes",
+        ) as HTMLButtonElement;
+        expect(toggleButton).not.toBeNull();
+        toggleButton.click();
+        fixture.detectChanges();
+
+        expect(component.releaseNotesExpanded).toBeTrue();
+        expect(component.hasMoreReleaseNotes).toBeFalse();
+
+        // The list is rebuilt on expand, so the element has to be queried again.
+        const expandedBox = (
+            fixture.nativeElement as HTMLElement
+        ).querySelector('[data-test="TXT_Release_Notes"]') as HTMLElement;
+        expect(expandedBox.textContent).not.toContain("...");
+        expect(expandedBox.textContent).toContain("Show fewer release notes");
+    });
+
     beforeEach(async () => {
         updateServiceSpy = jasmine.createSpyObj("UpdateService", [
             "getInstalledRevisions",
@@ -76,7 +140,15 @@ describe("UpdateComponent", () => {
         ]);
         updateServiceSpy.getInstalledRevisions.and.returnValue(of(installed));
         updateServiceSpy.getAvailableUpdates.and.returnValue(of(availability));
-        updateServiceSpy.checkForUpdates.and.returnValue(of({}));
+        updateServiceSpy.checkForUpdates.and.returnValue(
+            of({
+                schemaVersion: 1,
+                checkId: "check-default",
+                channel: "release",
+                requestedAt: "2026-10-10T00:00:00Z",
+                actor: "test",
+            }),
+        );
         updateServiceSpy.getStatus.and.returnValue(of(idleStatus));
         updateServiceSpy.getLog.and.returnValue(
             of({offset: 0, nextOffset: 4, content: "log\n"}),
@@ -84,6 +156,20 @@ describe("UpdateComponent", () => {
         updateServiceSpy.startUpdate.and.returnValue(
             of({
                 job: {
+                    schemaVersion: 1,
+                    jobId: "job-1",
+                    requestedAt: "2026-10-10T00:00:00Z",
+                    actor: "test",
+                    channel: "develop",
+                    force: true,
+                    confirmation: "UPDATE" as const,
+                    targetKind: "develop-pin",
+                    targets: {
+                        "pib-backend": "a".repeat(40),
+                        cerebra: "b".repeat(40),
+                    },
+                },
+                status: {
                     state: "queued",
                     classification: "queued",
                     jobId: "job-1",
@@ -110,6 +196,7 @@ describe("UpdateComponent", () => {
     });
 
     afterEach(() => {
+        sessionStorage.removeItem("pib.update.jobId");
         fixture.destroy();
     });
 
@@ -221,44 +308,118 @@ describe("UpdateComponent", () => {
         );
     }));
 
-    it("requires an explicit channel and the exact confirmation token", () => {
-        component.channel = "";
+    it("accepts only release or develop and the exact confirmation token", () => {
         component.confirmation = "UPDATE";
+        component.channel = "main";
         expect(component.canStart).toBeFalse();
 
-        component.channel = "main";
+        component.channel = "release";
         component.confirmation = "update";
         expect(component.canStart).toBeFalse();
 
         component.confirmation = "UPDATE";
+        component.availability = {
+            ...availability,
+            checkId: "check-1",
+            state: "completed",
+            recommendation: {
+                tag: "v1.2.3",
+                relation: "newer",
+                installable: true,
+                ordinaryUpdate: true,
+            },
+        };
+        component.status = {
+            state: "idle",
+            classification: "idle",
+            readiness: {ready: true, checks: []},
+        };
         expect(component.canStart).toBeTrue();
     });
 
     it("starts only on demand with channel, force, and confirmation", () => {
         expect(updateServiceSpy.startUpdate).not.toHaveBeenCalled();
 
-        component.channel = " develop ";
+        component.channel = "develop";
         component.force = true;
+        component.acknowledgeException = true;
         component.confirmation = "UPDATE";
+        component.availability = {
+            ...availability,
+            checkId: "check-dev",
+            channel: "develop",
+            state: "completed",
+            repositories: {
+                "pib-backend": {
+                    installed: backendSha,
+                    target: "a".repeat(40),
+                    updateAvailable: true,
+                },
+                cerebra: {
+                    installed: cerebraSha,
+                    target: "b".repeat(40),
+                    updateAvailable: true,
+                },
+            },
+        };
+        component.status = {
+            state: "idle",
+            classification: "idle",
+            readiness: {ready: true, checks: []},
+        };
         component.startUpdate();
 
         expect(updateServiceSpy.startUpdate).toHaveBeenCalledWith({
             channel: "develop",
             force: true,
             confirmation: "UPDATE",
+            pin: true,
+            checkId: "check-dev",
         });
         expect(component.status?.state).toBe("queued");
+        expect(component.isActive).toBeTrue();
     });
 
-    it("posts a check before retrieving availability", () => {
+    it("keeps polling until the availability document matches the requested check", fakeAsync(() => {
+        const stale = {
+            ...availability,
+            checkId: "old-check",
+            state: "completed",
+        };
+        const fresh = {
+            ...availability,
+            checkId: "new-check",
+            state: "completed",
+            checkedAt: "2026-10-10T00:05:00Z",
+        };
+        updateServiceSpy.checkForUpdates.and.returnValue(
+            of({
+                schemaVersion: 1,
+                checkId: "new-check",
+                channel: "release",
+                requestedAt: "2026-10-10T00:00:00Z",
+                actor: "test",
+            }),
+        );
+        updateServiceSpy.getAvailableUpdates.and.returnValues(
+            of(stale),
+            of(fresh),
+        );
         updateServiceSpy.checkForUpdates.calls.reset();
         updateServiceSpy.getAvailableUpdates.calls.reset();
 
+        component.channel = "release";
         component.checkForUpdates();
 
-        expect(updateServiceSpy.checkForUpdates).toHaveBeenCalledTimes(1);
-        expect(updateServiceSpy.getAvailableUpdates).toHaveBeenCalledTimes(1);
-    });
+        expect(updateServiceSpy.checkForUpdates).toHaveBeenCalledWith(
+            "release",
+        );
+        expect(component.availabilityLoading).toBeTrue();
+        expect(component.availability?.checkId).not.toBe("new-check");
+        tick(2000);
+        expect(component.availability?.checkId).toBe("new-check");
+        expect(component.availabilityLoading).toBeFalse();
+    }));
 
     it("degrades clearly when PR-1813 availability returns 404", () => {
         updateServiceSpy.getAvailableUpdates.and.returnValue(
@@ -337,7 +498,7 @@ describe("UpdateComponent", () => {
         pollingFixture.destroy();
     }));
 
-    it("stops automatic log polling after an error", fakeAsync(() => {
+    it("retries log reads after an error instead of stopping on the first failure", fakeAsync(() => {
         const running: UpdateStatus = {
             state: "fetching",
             classification: "running",
@@ -357,8 +518,9 @@ describe("UpdateComponent", () => {
         pollingFixture.detectChanges();
         tick(4000);
 
-        expect(updateServiceSpy.getLog.calls.count()).toBe(1);
+        expect(updateServiceSpy.getLog.calls.count()).toBeGreaterThan(1);
         expect(pollingFixture.componentInstance.logError).toBe("log failed");
+        expect(pollingFixture.componentInstance.isActive).toBeTrue();
 
         pollingFixture.destroy();
     }));

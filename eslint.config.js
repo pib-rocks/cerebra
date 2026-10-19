@@ -50,6 +50,28 @@ module.exports = tseslint.config(
         },
     },
     {
+        // PC-72: a spec must not assign to a property it declared on a jasmine
+        // spy - jasmine's third createSpyObj argument installs a setter spy that
+        // silently discards the value (PC-63, PC-64). Assignments on real
+        // service instances stay legal; the rule only fires for names declared
+        // on a spy in the same file.
+        files: ["**/*.spec.ts"],
+        plugins: {
+            local: {
+                rules: {
+                    "no-spy-subject-assignment": require("./eslint-rules/no-spy-subject-assignment"),
+                    // PC-72 rollout: the third createSpyObj argument is now
+                    // banned outright - the helper replaced every call site.
+                    "no-three-arg-create-spy-obj": require("./eslint-rules/no-three-arg-create-spy-obj"),
+                },
+            },
+        },
+        rules: {
+            "local/no-spy-subject-assignment": "error",
+            "local/no-three-arg-create-spy-obj": "error",
+        },
+    },
+    {
         files: ["**/*.html"],
         extends: [...angular.configs.templateRecommended],
         rules: {},

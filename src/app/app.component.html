@@ -4,8 +4,7 @@
     [class.sidebar-collapse]="sidebarCollapsed">
     @if (!onDisplayPath) {
     <div class="sidebar-wrapper">
-        <aside
-            class="main-sidebar elevation-4 sidebar justify-content-between d-flex flex-column">
+        <aside class="main-sidebar elevation-4 sidebar d-flex flex-column">
             <div class="d-flex flex-column align-items-center">
                 <a class="brand-link">
                     <img
@@ -13,7 +12,7 @@
                         data-test="IMG_Cerebra_Logo"
                         routerLink="head"
                         alt="cerebra logo"
-                        class="img-fluid d-inline-block my-2"
+                        class="img-fluid d-inline-block"
                         style="cursor: pointer"
                         title="Cerebra" />
                 </a>
@@ -22,7 +21,7 @@
                     data-test="TXT_AppVersion">
                     {{ appVersion }}
                 </div>
-                <div class="sidebar mt-12">
+                <div class="sidebar nav-below-brand">
                     <nav class="mt-12">
                         <ul
                             class="nav nav-pills nav-sidebar flex-column"
@@ -184,28 +183,34 @@
                     </nav>
                 </div>
             </div>
-            <div
-                class="d-flex flex-column align-items-center justify-content-end ">
+            <div class="sidebar-status d-flex flex-column align-items-center">
                 <app-relay-control></app-relay-control>
                 <app-smart-connect></app-smart-connect>
                 <app-ip-retriever></app-ip-retriever>
             </div>
         </aside>
     </div>
+    <button
+        id="sidebar-toggle-button"
+        data-test="BTN_SidebarToggle"
+        type="button"
+        class="sidebar-toggle"
+        [attr.aria-expanded]="isNavigationVisible()"
+        [attr.aria-label]="
+            isNavigationVisible() ? 'Hide navigation' : 'Show navigation'
+        "
+        [title]="isNavigationVisible() ? 'Hide navigation' : 'Show navigation'"
+        (click)="toggleSidebar()">
+        <i
+            class="bi"
+            [class.bi-chevron-left]="isNavigationVisible()"
+            [class.bi-chevron-right]="!isNavigationVisible()"></i>
+    </button>
     }
     <div class="content-wrapper">
         <div class="container-fluid">
             <div class="d-flex flex-row">
-                <div class="flex-grow-0 flex-shrink-0 m-0 p-0 mt-5">
-                    <button
-                        id="hamburger-button"
-                        data-test="BTN_Hamburger"
-                        class="btn bi bi-list"
-                        (click)="toggleSidebar()"></button>
-                </div>
                 <div class="flex-shrink-1 flex-grow-1 overflow-hidden">
-                    <app-conversation-status
-                        surface="header"></app-conversation-status>
                     <router-outlet></router-outlet>
                 </div>
             </div>

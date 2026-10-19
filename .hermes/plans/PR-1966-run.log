@@ -1,0 +1,105 @@
+WORKTREE=/home/pib/opencode/cerebra-pr1966
+BRANCH_BEFORE=PR-1966
+BRANCH_HEAD=c2950482
+PROMPT_LINES=90
+PROMPT_SHA256=00dc1d18a18fc072
+The personality dialog now switches Direct and Smart with the relay toggle. The form still stores the channel constants `smart` and `direct`, and a new personality still starts on Smart.
+
+**Smart is on the left, Direct on the right.** That is the same left-to-right order the radio group already used. The switch points at the selected word: `toggle-switch-left.png` while the control holds `smart`, `toggle-switch-right.png` while it holds `direct`.
+
+```93:97:src/app/voice-assistant/voice-assistant.component.html
+                            [src]="
+                                channelPointsRight
+                                    ? '../../assets/toggle-switch-right.png'
+                                    : '../../assets/toggle-switch-left.png'
+                            "
+```
+
+`channelPointsRight` is true only when the form control equals `DIRECT_CHANNEL`. Clicking the button flips that control between the two constants. There is no `[disabled]` state.
+
+When `showSmartChannelControl` is false, that whole block is omitted. The dialog keeps the existing Direct-only text (`LBL_Channel_Direct`, and the offline explanation when the on-device model is selected). `defaultChannel()` still returns Direct, and saving a new personality still writes Direct. Nothing offers a switch that cannot switch.
+
+**Add** opens on Smart, with the knob pointing left. **Edit** shows the personality’s stored channel. Both are covered by the spec `points the channel toggle at Smart by default and at a stored channel when editing`: a stored Direct personality shows the right-pointing image, a stored Smart personality the left-pointing one.
+
+The new control:
+
+```html
+<div class="col text-end">
+    <span class="align-middle" id="label-channel-smart">Smart</span>
+</div>
+<div class="col pe-0 ps-0">
+    <button
+        class="btn border-0 p-0"
+        id="channel-toggle"
+        data-test="TGL_Channel"
+        type="button"
+        (click)="toggleChannel()">
+        <img
+            [src]="
+                channelPointsRight
+                    ? '../../assets/toggle-switch-right.png'
+                    : '../../assets/toggle-switch-left.png'
+            "
+            alt="Toggle for switching the chat channel between Direct and Smart" />
+    </button>
+</div>
+<div class="col text-start">
+    <span class="align-middle" id="label-channel-direct">Direct</span>
+</div>
+```
+
+`grep -n "RBN_Channel_" src/app/voice-assistant/voice-assistant.component.html` prints no matches. The radio markup is gone.
+
+```
+git diff --stat
+ .../voice-assistant/voice-assistant.component.html |  48 ++++-----
+ .../voice-assistant.component.spec.ts              | 111 ++++++++++++++++++++-
+ .../voice-assistant/voice-assistant.component.ts   |  18 ++++
+ 3 files changed, 149 insertions(+), 28 deletions(-)
+```
+
+Snap Chromium cannot lock a profile under the Hermes scratch `TMPDIR`, so the suite was run with `TMPDIR=/tmp`:
+
+```
+TMPDIR=/tmp CHROME_BIN=/usr/bin/chromium-browser npx ng test --watch=false --browsers=NoSandbox
+```
+
+```
+Chrome Headless 155.0.0.0 (Ubuntu 0.0.0): Executed 697 of 697 SUCCESS (8.338 secs / 5.664 secs)
+TOTAL: 697 SUCCESS
+```
+CURSOR_EXIT=0
+=== git status:
+ M src/app/voice-assistant/voice-assistant.component.html
+ M src/app/voice-assistant/voice-assistant.component.spec.ts
+ M src/app/voice-assistant/voice-assistant.component.ts
+=== diff stat:
+ .../voice-assistant/voice-assistant.component.html |  48 ++++-----
+ .../voice-assistant.component.spec.ts              | 111 ++++++++++++++++++++-
+ .../voice-assistant/voice-assistant.component.ts   |  18 ++++
+ 3 files changed, 149 insertions(+), 28 deletions(-)
+=== Blockly-Baum angefasst? (muss leer sein)
+   sauber
+=== Alte Radios noch da? (muss leer sein)
+   keine
+=== Der neue Toggle:
+   91-                        (click)="toggleChannel()">
+   92-                        <img
+   93-                            [src]="
+   94-                                channelPointsRight
+   95:                                    ? '../../assets/toggle-switch-right.png'
+   96:                                    : '../../assets/toggle-switch-left.png'
+   97-                            "
+   98-                            alt="Toggle for switching the chat channel between Direct and Smart" />
+   99-                    </button>
+   100-                </div>
+   101-                <div class="col text-start">
+   102-                    <span
+   103-                        class="align-middle"
+   104-                        id="label-channel-direct"
+   105-                        >Direct</span
+   106-                    >
+   107-                </div>
+   108-            </div>
+=== Tests
+   TOTAL: 697 SUCCESS

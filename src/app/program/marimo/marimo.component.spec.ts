@@ -9,6 +9,7 @@ import {BehaviorSubject, of, Subject} from "rxjs";
 import {MarimoComponent} from "./marimo.component";
 import {MarimoService} from "./marimo.service";
 import {MarimoWorkbook} from "../../shared/types/marimo-workbook";
+import {createServiceSpy} from "src/app/shared/testing/create-service-spy";
 
 describe("MarimoComponent", () => {
     let component: MarimoComponent;
@@ -18,7 +19,7 @@ describe("MarimoComponent", () => {
     let routerEvents: Subject<any>;
 
     const setup = () => {
-        marimoServiceSpy = jasmine.createSpyObj(
+        marimoServiceSpy = createServiceSpy<MarimoService>(
             "MarimoService",
             [
                 "getNotebooks",

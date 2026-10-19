@@ -1,0 +1,46 @@
+<details
+    class="turn-trace"
+    data-test="TURN_TRACE_PANEL">
+    <summary data-test="TURN_TRACE_SUMMARY">{{ summary }}</summary>
+    @if (!hasData) {
+    <p
+        class="turn-trace-empty"
+        data-test="TURN_TRACE_EMPTY">
+        No turn has been recorded for this chat yet.
+    </p>
+    } @else {
+    <table class="turn-trace-table">
+        <thead>
+            <tr>
+                <th>stage</th>
+                <th>since turn start</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (row of rows; track row.stage) {
+            <tr data-test="TURN_TRACE_ROW">
+                <td>{{ row.label }}</td>
+                <td class="turn-trace-value">+{{ row.ms }} ms</td>
+            </tr>
+            }
+        </tbody>
+    </table>
+    @if (deltas.length) {
+    <table class="turn-trace-table">
+        <thead>
+            <tr>
+                <th>delta</th>
+                <th>gap</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (delta of deltas; track delta.name) {
+            <tr data-test="TURN_TRACE_DELTA">
+                <td>{{ delta.name }}</td>
+                <td class="turn-trace-value">{{ delta.ms }} ms</td>
+            </tr>
+            }
+        </tbody>
+    </table>
+    } }
+</details>

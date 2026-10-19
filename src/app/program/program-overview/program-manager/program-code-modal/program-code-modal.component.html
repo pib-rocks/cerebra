@@ -1,0 +1,45 @@
+<div
+    class="cerebra-modal"
+    data-test="DLG_Program_Code">
+    <div
+        class="modal-header"
+        id="modal-header">
+        <h4 class="modal-title">Python code</h4>
+    </div>
+    <div class="modal-body">
+        <app-python-code [code]="code"></app-python-code>
+    </div>
+    <div class="modal-footer">
+        @if (copyResult === "copied") {
+        <span
+            class="me-auto"
+            data-test="TXT_Program_Code_Copied"
+            role="status">
+            Copied to clipboard
+        </span>
+        } @else if (copyResult === "failed") {
+        <span
+            class="me-auto"
+            data-test="TXT_Program_Code_Copy_Failed"
+            role="alert">
+            Copying failed - select the code and copy it manually
+        </span>
+        }
+        <button
+            type="button"
+            class="btn btn-primary"
+            id="program-code-copy-btn"
+            data-test="BTN_Program_Code_Copy"
+            (click)="copy()">
+            Copy
+        </button>
+        <button
+            type="button"
+            class="btn btn-secondary"
+            id="program-code-close-btn"
+            data-test="BTN_Program_Code_Close"
+            (click)="close()">
+            Close
+        </button>
+    </div>
+</div>

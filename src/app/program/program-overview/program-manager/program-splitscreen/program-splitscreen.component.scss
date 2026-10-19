@@ -1,19 +1,53 @@
 @import "src/styles";
 
+// The absolutely positioned toolbar must be anchored to the editor; without
+// this it climbs to the app `.wrapper` and ends up behind the program tabs.
+.program-editor {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    container-type: inline-size;
+}
+
+.program-toolbar {
+    flex-wrap: wrap;
+    max-width: 100%;
+}
+
+// The overlaid toolbar (about 540px now: five 75px buttons plus four 1rem gaps) only clears the
+// Blockly category toolbox (about 140px from the editor's left edge) in a wide editor. In a
+// narrower one it moves into the flow above the workspace, so neither covers the other.
+@container (max-width: 700px) {
+    .program-toolbar {
+        position: static !important;
+        padding: 0 0 0.5rem !important;
+    }
+
+    .program-editor > as-split {
+        flex: 1 1 0;
+        min-height: 0;
+        height: auto;
+    }
+}
+
+// Every button in the row sits on the same 75px raster, so the rhythm does not depend on an icon's
+// intrinsic size (the split toggle used to be a 40px square between 75px banners) and the gaps
+// between them stay visually equal. The disabled state used `all: unset`, which also dropped the
+// width - the repository's disabled Save button was narrower than its neighbours.
 .workspaceButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 75px;
+    padding: 0;
     background: transparent;
     border: none;
     pointer-events: auto;
 }
 
-.view-mode-icon {
-    width: 40px;
-    height: 40px;
-}
-
 .workspaceButton:disabled {
-    all: unset;
     cursor: not-allowed;
+    background: transparent;
     border: none;
     outline: none;
     filter: grayscale(100%);

@@ -14,7 +14,7 @@ import {
 } from "../../ros-types/srv/proxy-run-program-start";
 import {VoiceAssistantState} from "../../ros-types/msg/voice-assistant-state";
 import {SetVoiceAssistantStateResponse} from "../../ros-types/srv/set-voice-assistant-state";
-import {Observable, Subject} from "rxjs";
+import {Observable, Subject, take} from "rxjs";
 import {SolidStateRelayState} from "../../ros-types/msg/solid-state-relay-state";
 import {SetSolidStateRelayStateResponse} from "../../ros-types/srv/set-solid-state-relay-state";
 import {DetectionArray} from "../../ros-types/msg/detection-array";
@@ -226,23 +226,26 @@ describe("RosService", () => {
     });
 
     it("should list models from the ROS service", (done) => {
-        const models = [
-            {
-                model_id: "hand_tracking",
-                task: "hand tracking",
-                licence: "Apache-2.0",
-                shaves: [4, 1, 4],
-                size_bytes: 100,
-                available: true,
-                active: false,
-            },
-        ];
+        const response = {
+            models: [
+                {
+                    model_id: "hand_tracking",
+                    task: "hand tracking",
+                    licence: "Apache-2.0",
+                    shaves: 4,
+                    size_bytes: 100,
+                    available: true,
+                    active: false,
+                },
+            ],
+            total_shaves: 16,
+        };
         spyOn(rosService["listModelsService"], "callService").and.callFake(
-            (_request, callback) => callback!({models}),
+            (_request, callback) => callback!(response),
         );
 
-        rosService.listModels().subscribe((response) => {
-            expect(response).toEqual(models);
+        rosService.listModels().subscribe((result) => {
+            expect(result).toEqual(response);
             done();
         });
     });
@@ -252,7 +255,7 @@ describe("RosService", () => {
             model_id: "hand_tracking",
             task: "hand tracking",
             licence: "Apache-2.0",
-            shaves: [4, 1, 4],
+            shaves: 4,
             size_bytes: 100,
             available: true,
             active: false,
@@ -266,18 +269,71 @@ describe("RosService", () => {
         expect(startSpy).toHaveBeenCalledOnceWith(
             {
                 model_id: "hand_tracking",
-                shaves: [4, 1, 4],
+                shaves: 4,
                 owner: "cerebra-ui",
             },
             jasmine.any(Function),
             jasmine.any(Function),
+            RosService.MODEL_LIFECYCLE_TIMEOUT_SECONDS,
         );
         expect(stopSpy).toHaveBeenCalledOnceWith(
             {model_id: "hand_tracking", owner: "cerebra-ui"},
             jasmine.any(Function),
             jasmine.any(Function),
+            RosService.MODEL_LIFECYCLE_TIMEOUT_SECONDS,
         );
+        expect(RosService.MODEL_LIFECYCLE_TIMEOUT_SECONDS).toBeGreaterThan(5);
         expect(rosService.modelStatusReceiver$.value.models).toEqual([]);
+    });
+
+    it("should reject a start that verified as failed", (done) => {
+        const model = {
+            model_id: "hand_tracking_fast",
+            task: "hands",
+            licence: "Apache-2.0",
+            shaves: 9,
+            size_bytes: 100,
+            available: true,
+            active: false,
+        };
+        spyOn(rosService["startModelService"], "callService").and.callFake(
+            (_request, callback) =>
+                callback!({success: false, message: "pipeline failed"}),
+        );
+
+        rosService.startModel(model, "cerebra-ui").subscribe({
+            next: () => done.fail("a failed verification must not resolve"),
+            error: (error: Error) => {
+                expect(error.message).toBe("pipeline failed");
+                done();
+            },
+        });
+    });
+
+    it("should surface the rosbridge start timeout", (done) => {
+        const model = {
+            model_id: "hand_tracking_fast",
+            task: "hands",
+            licence: "Apache-2.0",
+            shaves: 9,
+            size_bytes: 100,
+            available: true,
+            active: false,
+        };
+        spyOn(rosService["startModelService"], "callService").and.callFake(
+            (_request, _callback, error) =>
+                error!("Timeout exceeded while waiting for service response"),
+        );
+
+        rosService.startModel(model, "cerebra-ui").subscribe({
+            next: () => done.fail("a rosbridge timeout must not resolve"),
+            error: (error: Error) => {
+                expect(error.message).toContain(
+                    "Timeout exceeded while waiting for service response",
+                );
+                done();
+            },
+        });
     });
 
     it("should call the set_voice_assistant_state ros service", () => {
@@ -724,6 +780,17 @@ describe("RosService", () => {
         );
     });
 
+    it("should error when the chat ROS service is undefined", () => {
+        rosService["sendChatMessageService"] = undefined as any;
+        rosService
+            .sendChatMessage(chatId, chatMessageContent)
+            .subscribe(subscriber);
+        expect(subscriber.next).not.toHaveBeenCalled();
+        expect(subscriber.error).toHaveBeenCalledOnceWith(
+            new Error("Chat service is undefined"),
+        );
+    });
+
     it("should check if token exists", () => {
         const callServiceSpy = spyOn(
             rosService["existTokenService"],
@@ -824,9 +891,11 @@ describe("RosService", () => {
     });
 
     it("should initialize connectionStatus$ with an initial value of false", () => {
-        rosService.connectionStatus$.subscribe((status) => {
+        rosService.connectionStatus$.pipe(take(1)).subscribe((status) => {
             expect(status).toBeFalse();
         });
+        // A later connection is legitimate; the initial-value assertion must end.
+        rosService["connectionStatusSubject"].next(true);
     });
 
     it("should update connectionStatus based on ROS events", () => {

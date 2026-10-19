@@ -1,0 +1,31 @@
+<div
+    class="voice-status"
+    data-test="VOICE_STATUS_STRIP">
+    <span
+        class="voice-status-chip"
+        [class.voice-status-chip-active]="status.mic === 'listening'"
+        [class.voice-status-chip-muted]="status.mic === 'off'"
+        data-test="VOICE_STATUS_MIC">
+        {{ micLabel }}
+    </span>
+    <span
+        class="voice-status-chip"
+        data-test="VOICE_STATUS_PHASE">
+        {{ phaseLabel }}
+    </span>
+    @if (status.source) {
+    <span
+        class="voice-status-chip"
+        data-test="VOICE_STATUS_SOURCE">
+        {{ status.source }}@if (status.model) {<span class="voice-status-model">
+            · {{ status.model }}</span
+        >}
+    </span>
+    } @if (lastStageLabel) {
+    <span
+        class="voice-status-chip"
+        data-test="VOICE_STATUS_STAGE">
+        {{ lastStageLabel }}
+    </span>
+    }
+</div>

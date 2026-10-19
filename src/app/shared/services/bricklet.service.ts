@@ -7,6 +7,7 @@ import {
     forkJoin,
     map,
     Observable,
+    ReplaySubject,
     Subject,
     tap,
     throwError,
@@ -45,7 +46,14 @@ export class BrickletService {
         });
     }
 
-    public renameBrickletUid(bricklets: Bricklet[]) {
+    /**
+     * Two-phase write: a temporary UID first, then the real one, so two slots
+     * can swap UIDs without the motors node seeing a duplicate. Emits once
+     * the real UID is stored. The cache emission happens before that, inside
+     * the successful second write.
+     */
+    public renameBrickletUid(bricklets: Bricklet[]): Observable<void> {
+        const result$ = new ReplaySubject<void>(1);
         const dummyBricklets = bricklets.map((bricklet) => ({
             ...bricklet,
             uid: `temp${bricklet.brickletNumber}`,
@@ -54,12 +62,17 @@ export class BrickletService {
         this.updateBrickletUidsInDb(dummyBricklets, false).subscribe({
             next: () => {
                 this.updateBrickletUidsInDb(bricklets, true).subscribe({
+                    next: () => {
+                        result$.next();
+                        result$.complete();
+                    },
                     error: () => {
                         this.matSnackBarService.open(
                             "Error! IDs could not be set.",
                             "",
                             {panelClass: "cerebra-toast", duration: 3000},
                         );
+                        result$.complete();
                     },
                 });
             },
@@ -69,8 +82,10 @@ export class BrickletService {
                     "",
                     {panelClass: "cerebra-toast", duration: 3000},
                 );
+                result$.complete();
             },
         });
+        return result$.asObservable();
     }
 
     private updateBrickletUidsInDb(
@@ -81,7 +96,10 @@ export class BrickletService {
             return this.apiService.put(
                 UrlConstants.BRICKLET + `/${bricklet.brickletNumber}`,
                 {
-                    uid: bricklet.uid ? bricklet.uid : null,
+                    // The API contract is: an empty string means "not
+                    // configured". null is rejected with 400 ("Bricklet UID
+                    // must be a string"), so clearing a slot has to send "".
+                    uid: bricklet.uid ? bricklet.uid : "",
                 },
             );
         });

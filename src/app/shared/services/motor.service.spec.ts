@@ -8,6 +8,7 @@ import {MotorDTO} from "../types/motor-dto";
 import {MotorSettings} from "../types/motor-settings.class";
 import {MotorSettingsMessage} from "../ros-types/msg/motor-settings-message";
 import {MotorPosition} from "../types/motor-position";
+import {createServiceSpy} from "src/app/shared/testing/create-service-spy";
 
 describe("MotorService", () => {
     let service: MotorService;
@@ -31,15 +32,16 @@ describe("MotorService", () => {
     };
 
     beforeEach(() => {
-        const rosServiceSpy: jasmine.SpyObj<RosService> = jasmine.createSpyObj(
-            "RosService",
-            ["applyMotorSettings", "applyJointTrajectory"],
-            {
-                motorSettingsReceiver$: new Subject(),
-                jointTrajectoryReceiver$: new Subject(),
-                currentReceiver$: new Subject(),
-            },
-        );
+        const rosServiceSpy: jasmine.SpyObj<RosService> =
+            createServiceSpy<RosService>(
+                "RosService",
+                ["applyMotorSettings", "applyJointTrajectory"],
+                {
+                    motorSettingsReceiver$: new Subject(),
+                    jointTrajectoryReceiver$: new Subject(),
+                    currentReceiver$: new Subject(),
+                },
+            );
         const apiServiceSpy: jasmine.SpyObj<ApiService> = jasmine.createSpyObj(
             "ApiService",
             ["get", "delete", "put", "post"],

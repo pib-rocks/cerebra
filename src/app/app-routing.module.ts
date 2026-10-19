@@ -109,11 +109,8 @@ export const routes: Routes = [
                 children: [
                     {
                         path: "",
-                        loadComponent: () =>
-                            import(
-                                "./voice-assistant/personality-description/personality-description.component"
-                            ).then((m) => m.PersonalityDescriptionComponent),
-                        resolve: {personality: voiceAssistantResolver},
+                        redirectTo: "chat",
+                        pathMatch: "full",
                     },
                     {
                         path: "chat",
