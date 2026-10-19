@@ -1,5 +1,16 @@
 @import "src/styles";
 
+:host {
+    display: block;
+    height: 100%;
+    min-height: 0;
+}
+
 #blocklyDiv {
     color: $white-color;
+
+    ::ng-deep .blocklyToolboxDiv {
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+    }
 }

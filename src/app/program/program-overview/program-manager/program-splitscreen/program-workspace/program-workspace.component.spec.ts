@@ -3,7 +3,7 @@ import {ProgramWorkspaceComponent} from "./program-workspace.component";
 import * as Blockly from "blockly";
 import {SimpleChange} from "@angular/core";
 import {PoseService} from "src/app/shared/services/pose.service";
-import {Subject} from "rxjs";
+import {BehaviorSubject, Subject} from "rxjs";
 import {Pose} from "src/app/shared/types/pose";
 
 describe("ProgramWorkspaceComponent", () => {
@@ -121,5 +121,36 @@ describe("ProgramWorkspaceComponent", () => {
         const flyoutChangeSpy = spyOn(component.trashcanFlyoutChange, "emit");
         component.flyoutChangeCallback();
         expect(flyoutChangeSpy).toHaveBeenCalledOnceWith(0);
+    });
+
+    it("should update move_to_pose dropdown options in place without overwriting unsaved workspace blocks", () => {
+        const block = component.workspace.newBlock("move_to_pose");
+        block.setFieldValue("pose-head-up", "POSE");
+
+        poseSubject.next([
+            new Pose("Startup/Resting", "pose-rest", false),
+            new Pose("Head up", "pose-head-up", true),
+        ]);
+
+        const blocksAfter = component.workspace.getAllBlocks(false);
+        expect(blocksAfter.length).toBe(1);
+        expect(blocksAfter[0].getFieldValue("POSE")).toBe("pose-head-up");
+        expect(blocksAfter[0].getField("POSE")?.getText()).toBe("Head up");
+    });
+
+    it("should define move_to_pose before the initial synchronous pose emission", () => {
+        delete Blockly.Blocks["move_to_pose"];
+        poseService.getPosesObservable.and.returnValue(
+            new BehaviorSubject<Pose[]>([
+                new Pose("Startup/Resting", "pose-rest", false),
+            ]),
+        );
+
+        const freshFixture = TestBed.createComponent(ProgramWorkspaceComponent);
+        expect(() => freshFixture.detectChanges()).not.toThrow();
+        expect(Blockly.Blocks["move_to_pose"].getPoses()).toEqual([
+            ["Startup/Resting", "pose-rest"],
+        ]);
+        freshFixture.destroy();
     });
 });

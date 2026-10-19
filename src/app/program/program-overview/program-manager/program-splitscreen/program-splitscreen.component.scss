@@ -12,6 +12,7 @@
 .program-toolbar {
     flex-wrap: wrap;
     max-width: 100%;
+    z-index: 30 !important;
 }
 
 // The overlaid toolbar (about 540px now: five 75px buttons plus four 1rem gaps) only clears the
