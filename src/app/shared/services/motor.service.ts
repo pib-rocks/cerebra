@@ -249,6 +249,26 @@ export class MotorService {
             });
     }
 
+    calibrateZero(motorName: string): void {
+        const current =
+            this.motorNameToSettingsSubject.get(motorName)?.value ??
+            this.defaultSettings;
+        const sentinelSettings: MotorSettings = structuredClone(current);
+        sentinelSettings.pulseWidthMin = -1;
+        sentinelSettings.pulseWidthMax = -1;
+        this.rosService
+            .applyMotorSettings(fromMotorSettings(motorName, sentinelSettings))
+            .subscribe({
+                next: () => {
+                    this.publishToSubject(
+                        motorName,
+                        this.motorNameToPositionSubject,
+                        0,
+                    );
+                },
+            });
+    }
+
     setPosition(motorName: string, position: number): Observable<void> {
         return this.setPositions([{motorName, position}]);
     }
