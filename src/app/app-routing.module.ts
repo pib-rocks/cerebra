@@ -34,6 +34,13 @@ export const routes: Routes = [
         ],
     },
     {
+        path: "smart-home",
+        loadComponent: () =>
+            import("./smart-home/smart-home.component").then(
+                (m) => m.SmartHomeComponent,
+            ),
+    },
+    {
         path: "system",
         loadComponent: () =>
             import("./system/system.component").then((m) => m.SystemComponent),

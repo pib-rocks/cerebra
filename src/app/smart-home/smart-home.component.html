@@ -1,0 +1,345 @@
+<div class="pt-4 ps-2 pe-2">
+    <ul class="nav nav-tabs">
+        <li
+            class="nav-item"
+            [class.navbar-btn-active]="activeTab === 'devices'">
+            <button
+                type="button"
+                class="nav-link sidebar-btn border-0 bg-transparent"
+                data-test="TAB_SmartHome_Devices"
+                (click)="selectTab('devices')">
+                Devices
+            </button>
+        </li>
+        <li
+            class="nav-item"
+            [class.navbar-btn-active]="activeTab === 'pairing'">
+            <button
+                type="button"
+                class="nav-link sidebar-btn border-0 bg-transparent"
+                data-test="TAB_SmartHome_Pairing"
+                (click)="selectTab('pairing')">
+                Matter Pairing
+            </button>
+        </li>
+        <li
+            class="nav-item"
+            [class.navbar-btn-active]="activeTab === 'hub'">
+            <button
+                type="button"
+                class="nav-link sidebar-btn border-0 bg-transparent"
+                data-test="TAB_SmartHome_Hub"
+                (click)="selectTab('hub')">
+                Hub &amp; Settings
+            </button>
+        </li>
+    </ul>
+    <div class="mt-3">
+        <div class="background-image">
+            <div class="pink-corner-frame p-3">
+                @if (activeTab === 'devices') {
+                <div>
+                    <div class="mb-3 d-flex flex-wrap align-items-center gap-2">
+                        <button
+                            type="button"
+                            class="btn btn-sm btn-outline-secondary room-pill"
+                            [class.active]="selectedRoom === null"
+                            data-test="BTN_SmartHome_Room_All"
+                            (click)="selectRoom(null)">
+                            All
+                        </button>
+                        @for (room of distinctRooms; track room) {
+                        <button
+                            type="button"
+                            class="btn btn-sm btn-outline-secondary room-pill"
+                            [class.active]="selectedRoom === room"
+                            [attr.data-test]="'BTN_SmartHome_Room_' + room"
+                            (click)="selectRoom(room)">
+                            {{ room }}
+                        </button>
+                        }
+                        <input
+                            class="form-control form-control-sm ms-auto"
+                            style="max-width: 16rem"
+                            type="search"
+                            placeholder="Search devices"
+                            data-test="INP_SmartHome_Search"
+                            [value]="searchQuery"
+                            (input)="onSearchInput($event)" />
+                    </div>
+                    @if (devicesLoading) {
+                    <p>Loading devices…</p>
+                    }
+                    <div class="row g-3">
+                        @for (device of filteredDevices; track device.entityId)
+                        {
+                        <div class="col-md-6 col-lg-4">
+                            <div
+                                class="smart-home-device-card p-3 h-100"
+                                [attr.data-test]="'CRD_SmartHome_Device_' + device.entityId">
+                                <div
+                                    class="d-flex justify-content-between align-items-start mb-2">
+                                    <div>
+                                        <h6 class="mb-1">
+                                            {{ device.friendlyName }}
+                                        </h6>
+                                        <small class="text-muted"
+                                            >{{ device.entityId }}</small
+                                        >
+                                    </div>
+                                    <span
+                                        class="badge"
+                                        [class.bg-success]="device.online"
+                                        [class.bg-secondary]="!device.online">
+                                        {{ device.online ? "Online" : "Offline"
+                                        }}
+                                    </span>
+                                </div>
+                                <div class="mb-2">
+                                    <span class="badge bg-primary me-1"
+                                        >{{ device.domain }}</span
+                                    >
+                                    <span class="badge bg-info text-dark"
+                                        >{{ device.room }}</span
+                                    >
+                                </div>
+                                <div class="form-check mb-2">
+                                    <input
+                                        class="form-check-input"
+                                        type="checkbox"
+                                        [id]="controlIdForEntity(device.entityId, 'voice')"
+                                        [attr.data-test]="'CHK_SmartHome_Voice_' + device.entityId"
+                                        [checked]="device.exposeToVoice"
+                                        (change)="toggleVoiceExposure(device)" />
+                                    <label
+                                        class="form-check-label"
+                                        [attr.for]="controlIdForEntity(device.entityId, 'voice')">
+                                        Voice
+                                    </label>
+                                </div>
+                                @if (isToggleDomain(device.domain)) {
+                                <button
+                                    type="button"
+                                    class="btn btn-sm btn-outline-primary mb-2"
+                                    [attr.data-test]="'BTN_SmartHome_Toggle_' + device.entityId"
+                                    (click)="toggleDevice(device)">
+                                    {{ isDeviceOn(device) ? "Off" : "On" }}
+                                </button>
+                                } @if (device.domain === 'light') {
+                                <div class="mb-2">
+                                    <label
+                                        class="form-label small"
+                                        [attr.for]="controlIdForEntity(device.entityId, 'brightness')">
+                                        Brightness
+                                    </label>
+                                    <input
+                                        type="range"
+                                        class="form-range"
+                                        min="0"
+                                        max="100"
+                                        [id]="controlIdForEntity(device.entityId, 'brightness')"
+                                        [attr.data-test]="'RNG_SmartHome_Brightness_' + device.entityId"
+                                        [value]="deviceBrightness(device)"
+                                        (change)="setBrightness(device, $event)" />
+                                </div>
+                                } @if (device.domain === 'climate') {
+                                <div
+                                    class="d-flex align-items-center gap-2 mb-2">
+                                    <button
+                                        type="button"
+                                        class="btn btn-sm btn-outline-secondary"
+                                        [attr.data-test]="'BTN_SmartHome_Temp_Dec_' + device.entityId"
+                                        (click)="adjustClimateTemperature(device, -1)">
+                                        −
+                                    </button>
+                                    <span
+                                        >{{ climateTargetTemperature(device)
+                                        }}°</span
+                                    >
+                                    <button
+                                        type="button"
+                                        class="btn btn-sm btn-outline-secondary"
+                                        [attr.data-test]="'BTN_SmartHome_Temp_Inc_' + device.entityId"
+                                        (click)="adjustClimateTemperature(device, 1)">
+                                        +
+                                    </button>
+                                </div>
+                                } @if (device.domain === 'cover') {
+                                <div class="d-flex gap-2 mb-2">
+                                    <button
+                                        type="button"
+                                        class="btn btn-sm btn-outline-secondary"
+                                        [attr.data-test]="'BTN_SmartHome_Cover_Open_' + device.entityId"
+                                        (click)="openCover(device)">
+                                        Open
+                                    </button>
+                                    <button
+                                        type="button"
+                                        class="btn btn-sm btn-outline-secondary"
+                                        [attr.data-test]="'BTN_SmartHome_Cover_Close_' + device.entityId"
+                                        (click)="closeCover(device)">
+                                        Close
+                                    </button>
+                                </div>
+                                }
+                                <button
+                                    type="button"
+                                    class="btn btn-sm btn-outline-danger"
+                                    [attr.data-test]="'BTN_SmartHome_Delete_' + device.entityId"
+                                    (click)="deleteDevice(device)">
+                                    Delete / Unpair
+                                </button>
+                            </div>
+                        </div>
+                        }
+                    </div>
+                    @if (!devicesLoading && filteredDevices.length === 0) {
+                    <p class="text-muted mb-0">
+                        No devices match the current filter.
+                    </p>
+                    }
+                </div>
+                } @if (activeTab === 'pairing') {
+                <form
+                    [formGroup]="pairingForm"
+                    (ngSubmit)="submitPairing()">
+                    <div class="mb-3">
+                        <label
+                            class="form-label"
+                            for="matter-pairing-code">
+                            Pairing code
+                        </label>
+                        <input
+                            id="matter-pairing-code"
+                            class="form-control"
+                            type="text"
+                            formControlName="pairingCode"
+                            placeholder="3497-011-2332 or MT:..."
+                            data-test="INP_Matter_Pairing_Code" />
+                    </div>
+                    <div class="mb-3">
+                        <label
+                            class="form-label"
+                            for="matter-friendly-name">
+                            Friendly name
+                        </label>
+                        <input
+                            id="matter-friendly-name"
+                            class="form-control"
+                            type="text"
+                            formControlName="friendlyName"
+                            data-test="INP_Matter_Friendly_Name" />
+                    </div>
+                    <div class="mb-3">
+                        <label
+                            class="form-label"
+                            for="matter-room">
+                            Room
+                        </label>
+                        <input
+                            id="matter-room"
+                            class="form-control"
+                            type="text"
+                            formControlName="room"
+                            data-test="INP_Matter_Room" />
+                    </div>
+                    <div class="mb-3">
+                        <label
+                            class="form-label"
+                            for="matter-domain">
+                            Domain
+                        </label>
+                        <select
+                            id="matter-domain"
+                            class="form-select"
+                            formControlName="domain"
+                            data-test="SEL_Matter_Domain">
+                            @for (domain of commissionDomains; track domain) {
+                            <option [value]="domain">{{ domain }}</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label
+                            class="form-label"
+                            for="matter-wifi-ssid">
+                            Wi‑Fi SSID (optional)
+                        </label>
+                        <input
+                            id="matter-wifi-ssid"
+                            class="form-control"
+                            type="text"
+                            formControlName="wifiSsid"
+                            data-test="INP_Matter_Wifi_Ssid" />
+                    </div>
+                    <div class="mb-3">
+                        <label
+                            class="form-label"
+                            for="matter-wifi-password">
+                            Wi‑Fi password (optional)
+                        </label>
+                        <input
+                            id="matter-wifi-password"
+                            class="form-control"
+                            type="password"
+                            formControlName="wifiPassword"
+                            data-test="INP_Matter_Wifi_Password" />
+                    </div>
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                        [disabled]="pairingSubmitting"
+                        data-test="BTN_Matter_Commission">
+                        Pair Matter Device
+                    </button>
+                    @if (pairingStatusMessage) {
+                    <div
+                        class="alert mt-3 mb-0"
+                        [class.alert-success]="!pairingStatusError"
+                        [class.alert-danger]="pairingStatusError"
+                        data-test="TXT_Matter_Pairing_Status">
+                        {{ pairingStatusMessage }}
+                    </div>
+                    }
+                </form>
+                } @if (activeTab === 'hub') {
+                <div>
+                    @if (hubLoading && !hubStatus) {
+                    <p>Loading hub status…</p>
+                    } @if (hubStatus) {
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">Home Assistant Core</dt>
+                        <dd class="col-sm-8">
+                            {{ hubStatus.homeAssistant.online ? "Online" :
+                            "Offline" }} · profile {{
+                            hubStatus.homeAssistant.profile }} · {{
+                            hubStatus.homeAssistant.memoryCapMib }} MiB
+                        </dd>
+                        <dt class="col-sm-4">Python Matter Server</dt>
+                        <dd class="col-sm-8">
+                            {{ hubStatus.matterServer.online ? "Online" :
+                            "Offline" }} · {{
+                            hubStatus.matterServer.memoryCapMib }} MiB
+                        </dd>
+                        <dt class="col-sm-4">Registered devices</dt>
+                        <dd class="col-sm-8">{{ hubStatus.deviceCount }}</dd>
+                        <dt class="col-sm-4">Voice-exposed devices</dt>
+                        <dd class="col-sm-8">
+                            {{ hubStatus.voiceExposedCount }}
+                        </dd>
+                    </dl>
+                    }
+                    <button
+                        type="button"
+                        class="btn btn-primary mt-3"
+                        [disabled]="hubInitializing"
+                        data-test="BTN_SmartHome_Initialize"
+                        (click)="initializeHub()">
+                        Initialize / Reconnect Hub
+                    </button>
+                </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
