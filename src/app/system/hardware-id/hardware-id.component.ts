@@ -66,7 +66,7 @@ export class HardwareIdComponent implements OnInit {
     usingFallback = true;
     brickletUidForm = new FormGroup({}, {validators: uniqueValuesValidator()});
     /** One identifier field per serial controller: read off the module, typed in. */
-    serialAddressForm = new FormRecord<FormControl<string | null>>({});
+    readonly serialAddressForm = new FormRecord<FormControl<string | null>>({});
     serialAddressSaving = false;
     serialAddressMessage: string | null = null;
     serialAddressError: string | null = null;

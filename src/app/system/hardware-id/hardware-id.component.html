@@ -130,10 +130,15 @@
                 <div
                     class="controller-detail"
                     [attr.data-test]="'TXT_Serial_Controller_' + controller.number">
-                    <strong>Controller {{ controller.number }}</strong>
+                    <label
+                        class="serial-address-label"
+                        [attr.for]="'serial-address-' + controller.number"
+                        >Controller {{ controller.number }}</label
+                    >
                     <input
                         type="text"
                         class="form-control form-control-sm serial-address-input"
+                        [attr.id]="'serial-address-' + controller.number"
                         [attr.data-test]="'INP_Serial_Address_' + controller.number"
                         [attr.data-test-id]="controller.number"
                         [formControlName]="controller.number.toString()"
