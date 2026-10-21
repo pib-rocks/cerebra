@@ -1,5 +1,6 @@
 import {
     hasMeta,
+    imageAttachments,
     metaHtml,
     metaSummary,
     type ChatMessageMeta,
@@ -61,5 +62,55 @@ describe("chat-message-meta", () => {
         expect(html).toContain("&lt;script&gt;");
         expect(html).toContain("&quot;quoted&quot;");
         expect(html).not.toContain("<details open");
+    });
+
+    it("turns a captured picture into an attachment under the API base", () => {
+        const attachments = imageAttachments({
+            images: [
+                {
+                    id: "image-1",
+                    mimeType: "image/jpeg",
+                    width: 1024,
+                    height: 768,
+                    url: "/voice-assistant/chat/c1/messages/m1/images/0",
+                },
+            ],
+        });
+
+        expect(attachments).toEqual([
+            {
+                src: "/api/voice-assistant/chat/c1/messages/m1/images/0",
+                type: "image",
+                name: "capture.jpg",
+            },
+        ]);
+    });
+
+    it("keeps a fully qualified picture url as it is", () => {
+        const attachments = imageAttachments(
+            {images: [{url: "https://robot.local/api/chat/image/1"}]},
+            "/api/",
+        );
+
+        expect(attachments[0].src).toBe("https://robot.local/api/chat/image/1");
+    });
+
+    it("skips a reference without a url instead of painting a broken picture", () => {
+        expect(
+            imageAttachments({images: [{id: "image-1"}, {url: "  "}]}),
+        ).toEqual([]);
+    });
+
+    it("has no attachments for a turn without images", () => {
+        expect(imageAttachments(null)).toEqual([]);
+        expect(imageAttachments({source: "pib-cloud"})).toEqual([]);
+    });
+
+    it("counts a captured picture as metadata worth showing", () => {
+        expect(
+            hasMeta({
+                images: [{url: "/voice-assistant/chat/c/messages/m/images/0"}],
+            }),
+        ).toBe(true);
     });
 });

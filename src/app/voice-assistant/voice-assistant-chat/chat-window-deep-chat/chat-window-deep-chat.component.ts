@@ -17,6 +17,7 @@ import {
 } from "src/app/shared/services/token.service";
 import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
 import {ChatMessage} from "src/app/shared/types/chat-message";
+import {imageAttachments} from "src/app/shared/types/chat-message-meta";
 import {Chat} from "src/app/shared/types/chat.class";
 import {extractText, toDeepChat} from "src/app/shared/util/deep-chat-mapper";
 import {
@@ -74,6 +75,9 @@ export class ChatWindowDeepChatComponent
     };
     private pendingSignals?: {onResponse: (response: unknown) => void};
     private lastStreamedMessageId: string | undefined;
+    /** Debounce of the stored-message lookup that brings the captured pictures. */
+    private imageRefreshTimer: ReturnType<typeof setTimeout> | undefined;
+    private readonly imageRefreshDelayMs = 700;
     /** Timestamp of the latest user submit, used to measure TTFT. */
     private submitClickMs: number | undefined;
 
@@ -172,6 +176,10 @@ export class ChatWindowDeepChatComponent
         this.assistantModelsSubscription?.unsubscribe();
         this.voiceStateSubscription?.unsubscribe();
         this.sendChatMessageSubscriptions.unsubscribe();
+        if (this.imageRefreshTimer !== undefined) {
+            clearTimeout(this.imageRefreshTimer);
+            this.imageRefreshTimer = undefined;
+        }
     }
 
     private wireConnect(el: any): void {
@@ -420,6 +428,55 @@ export class ChatWindowDeepChatComponent
             }
             this.lastStreamedMessageId = messageId;
         }
+
+        // A picture a tool captured is written onto the message after the answer
+        // was stored, and the live channel carries text only. Read that one
+        // message back once the text stops arriving.
+        this.scheduleImageRefresh(messageId, content, el);
+    }
+
+    /**
+     * Ask for the stored message a moment after its last chunk and paint the
+     * pictures a tool captured during that turn (PC-119).
+     *
+     * One request per turn: every chunk of a turn resets the timer, so a
+     * streaming answer produces exactly one lookup after it has settled.
+     */
+    private scheduleImageRefresh(
+        messageId: string,
+        content: string,
+        el: any,
+    ): void {
+        if (typeof el.addMessage !== "function") {
+            return;
+        }
+        if (this.imageRefreshTimer !== undefined) {
+            clearTimeout(this.imageRefreshTimer);
+        }
+        const chatId = this.currentChatId;
+        this.imageRefreshTimer = setTimeout(() => {
+            this.imageRefreshTimer = undefined;
+            if (!chatId || messageId !== this.lastStreamedMessageId) {
+                return;
+            }
+            this.chatService
+                .getChatMessage(chatId, messageId)
+                .subscribe((stored) => {
+                    const attachments = imageAttachments(stored?.meta);
+                    if (!attachments.length) {
+                        return;
+                    }
+                    if (messageId !== this.lastStreamedMessageId) {
+                        return;
+                    }
+                    el.addMessage({
+                        role: "ai",
+                        text: stored.content || content,
+                        files: attachments,
+                        overwrite: true,
+                    });
+                });
+        }, this.imageRefreshDelayMs);
     }
 
     private logTtftIfPending(): void {
