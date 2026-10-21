@@ -11,9 +11,18 @@
  * budget are all fine. `unknown` means the probe could not run at all (no
  * stored key, locked key store, no probe endpoint) and must stay neutral - a
  * missing key is not an outage.
+ *
+ * Beside the state the backend reports the vendor's own view (`vendorStatus`),
+ * read from the provider's public status feed. It needs no key, so it also
+ * answers for an account this robot has no credential for, and it explains a
+ * partial outage. It never recolours the chip: an account whose own request
+ * answered stays green even while the vendor reports a fault.
  */
 
 export type ProviderHealthState = "healthy" | "unreachable" | "unknown";
+
+/** What the provider says about itself, told apart from what this robot saw. */
+export type ProviderVendorStatus = "operational" | "degraded" | "unknown";
 
 /** Whether a probe has answered yet; the chip waits while it is loading. */
 export type ProviderHealthPhase = "idle" | "loading" | "done";
@@ -33,6 +42,9 @@ export interface ProviderHealth {
     /** Remaining pib.Tokens; null with budgetKnown true means no ceiling. */
     budgetRemaining?: number | null;
     budgetKnown?: boolean;
+    /** The vendor's own status feed: operational, degraded, or unreadable. */
+    vendorStatus?: ProviderVendorStatus;
+    vendorDetail?: string | null;
 }
 
 export const UNKNOWN_PROVIDER_HEALTH: ProviderHealth = {state: "unknown"};
@@ -53,6 +65,8 @@ export const REASON_LABELS: Record<string, string> = {
     key_rejected: "key rejected",
     token_invalid: "token invalid",
     budget_exhausted: "budget exhausted",
+    no_endpoint: "no probe configured",
+    provider_outage: "provider reports an outage",
     backend_unavailable: "pib-backend unreachable",
 };
 
@@ -93,6 +107,8 @@ export function parseProviderHealth(raw: unknown): ProviderHealth {
         latencyMs: asNumber(source["latencyMs"]),
         budgetRemaining: asNumber(source["budgetRemaining"]),
         budgetKnown: source["budgetKnown"] === true,
+        vendorStatus: asVendorStatus(source["vendorStatus"]),
+        vendorDetail: asString(source["vendorDetail"]),
     };
 }
 
@@ -121,6 +137,15 @@ export function healthTooltip(
     if (health.detail) {
         parts.push(health.detail);
     }
+    if (health.vendorStatus === "degraded") {
+        const fault = health.vendorDetail?.trim();
+        parts.push(
+            `${health.provider?.trim() || providerLabel} reports a fault` +
+                (fault ? `: ${fault}` : "."),
+        );
+    } else if (health.vendorStatus === "operational") {
+        parts.push("The provider reports no fault.");
+    }
     if (health.budgetKnown) {
         parts.push(
             health.budgetRemaining == null
@@ -147,6 +172,17 @@ function formatBudget(value: number): string {
 
 function asString(value: unknown): string | null {
     return typeof value === "string" && value.trim() !== "" ? value : null;
+}
+
+function asVendorStatus(value: unknown): ProviderVendorStatus {
+    if (
+        value === "operational" ||
+        value === "degraded" ||
+        value === "unknown"
+    ) {
+        return value;
+    }
+    return "unknown";
 }
 
 function asNumber(value: unknown): number | null {

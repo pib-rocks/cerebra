@@ -113,4 +113,69 @@ describe("provider health (PC-115)", () => {
 
         expect(healthTooltip(health, "pib.Cloud")).not.toContain("Budget");
     });
+
+    it("says when the provider reports a fault beside a working account", () => {
+        const health = parseProviderHealth({
+            state: "healthy",
+            provider: "Anthropic",
+            vendorStatus: "degraded",
+            vendorDetail: "Elevated error rates",
+        });
+
+        // The chip colour stays a fact about this account; the vendor's own
+        // view only explains it.
+        expect(healthCssClass(health.state)).toBe("provider-health-healthy");
+        expect(healthTooltip(health, "Anthropic")).toContain(
+            "Anthropic reports a fault: Elevated error rates",
+        );
+    });
+
+    it("names an outage as the reason when the vendor feed agrees", () => {
+        const health = parseProviderHealth({
+            state: "unreachable",
+            reason: "provider_outage",
+            vendorStatus: "degraded",
+        });
+
+        expect(healthTooltip(health, "OpenAI")).toContain(
+            "provider reports an outage",
+        );
+    });
+
+    it("keeps a vendor fault neutral when the feed is all that answered", () => {
+        const health = parseProviderHealth({
+            state: "unknown",
+            reason: "no_key",
+            vendorStatus: "degraded",
+            vendorDetail: "Gemini API serving errors",
+        });
+
+        expect(healthCssClass(health.state)).toBe("provider-health-neutral");
+        expect(healthTooltip(health, "Google")).toContain(
+            "Gemini API serving errors",
+        );
+    });
+
+    it("reports an operational vendor without repeating a reason", () => {
+        const health = parseProviderHealth({
+            state: "healthy",
+            vendorStatus: "operational",
+        });
+
+        expect(healthTooltip(health, "OpenAI")).toContain(
+            "The provider reports no fault.",
+        );
+    });
+
+    it("treats a missing or odd vendor status as unknown", () => {
+        expect(parseProviderHealth({state: "healthy"}).vendorStatus).toBe(
+            "unknown",
+        );
+        expect(
+            parseProviderHealth({state: "healthy", vendorStatus: "weird"})
+                .vendorStatus,
+        ).toBe("unknown");
+        const health = parseProviderHealth({state: "healthy"});
+        expect(healthTooltip(health, "OpenAI")).not.toContain("fault");
+    });
 });
