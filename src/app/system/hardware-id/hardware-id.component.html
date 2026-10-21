@@ -117,14 +117,55 @@
             class="controller-section"
             data-test="GRP_Serial_Controllers">
             <h3>Serial controllers</h3>
-            @for (controller of serialControllers; track controller.number) {
-            <div
-                class="controller-detail"
-                [attr.data-test]="'TXT_Serial_Controller_' + controller.number">
-                <strong>Controller {{ controller.number }}</strong>
-                <code>{{ controller.address || 'Address not reported' }}</code>
-            </div>
-            }
+            <p class="controller-documentation">
+                The identifier of the adapter is what the motor controller opens
+                the bus with. It is read off the module, not derived by the
+                robot.
+            </p>
+            <form
+                [formGroup]="serialAddressForm"
+                (ngSubmit)="saveSerialAddresses()">
+                @for (controller of serialControllers; track controller.number)
+                {
+                <div
+                    class="controller-detail"
+                    [attr.data-test]="'TXT_Serial_Controller_' + controller.number">
+                    <strong>Controller {{ controller.number }}</strong>
+                    <input
+                        type="text"
+                        class="form-control form-control-sm serial-address-input"
+                        [attr.data-test]="'INP_Serial_Address_' + controller.number"
+                        [attr.data-test-id]="controller.number"
+                        [formControlName]="controller.number.toString()"
+                        maxlength="255"
+                        placeholder="Identifier of the adapter"
+                        autocomplete="off" />
+                </div>
+                }
+                <div class="d-flex align-items-center gap-2 mt-2">
+                    <button
+                        type="submit"
+                        class="btn btn-outline-light btn-sm"
+                        data-test="BTN_Save_Serial_Addresses"
+                        [disabled]="serialAddressSaving || !serialAddressesChanged">
+                        {{ serialAddressSaving ? 'Saving...' : 'Save addresses'
+                        }}
+                    </button>
+                    @if (serialAddressMessage) {
+                    <span
+                        class="text-success"
+                        data-test="MSG_Serial_Addresses_Saved"
+                        >{{ serialAddressMessage }}</span
+                    >
+                    } @if (serialAddressError) {
+                    <span
+                        class="text-danger"
+                        data-test="MSG_Serial_Addresses_Error"
+                        >{{ serialAddressError }}</span
+                    >
+                    }
+                </div>
+            </form>
         </section>
         } @if (showCanDocumentation) {
         <section
