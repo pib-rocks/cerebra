@@ -32,7 +32,15 @@ const EDU_FALLBACK: HardwareContext = {
             kind: "tinkerforge_bricklet",
             installedControllers: 0,
             feedback: ["current", "target_position"],
-            meaningfulSettings: [],
+            meaningfulSettings: [
+                "pulse_width",
+                "rotation_range",
+                "velocity",
+                "acceleration",
+                "deceleration",
+                "period",
+                "invert",
+            ],
         },
     ],
     controllers: [],
@@ -67,6 +75,32 @@ export class VariantService {
                         capability.feedback.includes(feedback),
                 ),
             ),
+        );
+    }
+
+    hasMeaningfulSetting(setting: string): Observable<boolean> {
+        return this.contextSubject.pipe(
+            map((context) => {
+                const active = context.capabilities.filter(
+                    (capability) => capability.installedControllers > 0,
+                );
+                const nonBrickletActive = active.filter(
+                    (capability) => capability.kind !== "tinkerforge_bricklet",
+                );
+                const pool =
+                    nonBrickletActive.length > 0
+                        ? nonBrickletActive
+                        : active.length > 0
+                        ? active
+                        : context.capabilities;
+                return pool.some((capability) =>
+                    capability.meaningfulSettings.length === 0
+                        ? setting !== "zero_calibration" &&
+                          setting !== "current_limit" &&
+                          setting !== "torque_limit"
+                        : capability.meaningfulSettings.includes(setting),
+                );
+            }),
         );
     }
 

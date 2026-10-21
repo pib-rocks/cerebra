@@ -18,7 +18,7 @@ import {
     RouterLink,
 } from "@angular/router";
 import {NgbModal, NgbModalRef} from "@ng-bootstrap/ng-bootstrap";
-import {Observable, Subject, Subscription} from "rxjs";
+import {Observable, Subject, Subscription, take} from "rxjs";
 import {SidebarElement} from "src/app/shared/interfaces/sidebar-element.interface";
 import {ChatService} from "src/app/shared/services/chat.service";
 import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
@@ -30,7 +30,11 @@ import {
     TokenProbeState,
     chatStartRefusal,
     effectiveCloudTokenStored,
+    resolveProvider,
+    selectionFromModelRef,
 } from "src/app/shared/types/provider-registry";
+import {ProviderHealth} from "src/app/shared/types/provider-health";
+import {ProviderHealthService} from "src/app/shared/services/provider-health.service";
 import {KeyStoreService} from "src/app/system/keys/key-store.service";
 import {Location} from "@angular/common";
 import {
@@ -95,6 +99,16 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
     private credentialRefs: string[] = [];
     /** Live voice telemetry for the status strip (PC-81). */
     voiceStatus: VoiceStatus = EMPTY_VOICE_STATUS;
+    /**
+     * Health of the provider this personality points at (PC-115). Probed once
+     * when the personality opens, and again on demand, so the chip can be green
+     * or red before the first turn exists.
+     */
+    providerHealth: ProviderHealth | null = null;
+    providerLabel = "";
+    providerHealthLoading = false;
+    private providerHealthSubscription?: Subscription;
+    private providerHealthModelId: number | null = null;
     /** Last turn of the shown chat, folded from the same trace events (PC-83). */
     turnTrace: TurnTrace = emptyTurnTrace();
     private lastTraceEvent: VoiceTurnTraceEvent | null = null;
@@ -111,6 +125,7 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
         private readonly route: ActivatedRoute,
         private readonly tokenService: TokenService,
         private readonly keyStore: KeyStoreService,
+        private readonly providerHealthService: ProviderHealthService,
         location: Location,
     ) {
         location.onUrlChange((url, _state) => {
@@ -136,6 +151,7 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(() => {
                 this.refreshCloudPresence();
+                this.refreshProviderHealth();
                 this.changeDetector.markForCheck();
             });
         // set current state of VA (in case another user is using it)
@@ -210,6 +226,8 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
                 } else {
                     throw Error("undefined personality and subject");
                 }
+                // The personality decides which provider the chip reports on.
+                this.refreshProviderHealth();
                 localStorage.setItem("voice-assistant-tab", "chat");
                 this.topicFormControl.setValidators([
                     Validators.required,
@@ -384,6 +402,60 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
         );
     }
 
+    /**
+     * Probe the provider of the open personality (PC-115).
+     *
+     * Runs when the personality resolves, when the catalogue arrives, and on
+     * the chip's refresh control (D4). The probe itself is pib-backend's: the
+     * provider credentials live in the robot key store, and the cloud refuses
+     * a browser preflight. A personality whose model row is gone has nothing
+     * to probe and shows no chip.
+     */
+    refreshProviderHealth(): void {
+        const personality =
+            (this.personalityId != null
+                ? this.voiceAssistantService.getPersonality(this.personalityId)
+                : undefined) ?? this.personality;
+        const models =
+            this.voiceAssistantService.assistantModelsSubject?.getValue() ?? [];
+        if (personality == null) {
+            this.providerHealth = null;
+            this.providerLabel = "";
+            this.providerHealthLoading = false;
+            this.providerHealthModelId = null;
+            this.changeDetector.markForCheck();
+            return;
+        }
+        const selection = selectionFromModelRef(personality.providerRef);
+        const model = resolveProvider(selection, models);
+        this.providerLabel = model?.visualName?.trim() ?? "";
+        if (model == null) {
+            this.providerHealth = null;
+            this.providerHealthLoading = false;
+            this.providerHealthModelId = null;
+            this.changeDetector.markForCheck();
+            return;
+        }
+        const modelId = model.id;
+        this.providerHealthModelId = modelId;
+        this.providerHealthLoading = true;
+        this.providerHealthSubscription?.unsubscribe();
+        this.providerHealthSubscription = this.providerHealthService
+            .check(modelId)
+            .pipe(take(1))
+            .subscribe((health) => {
+                // A late answer for a personality that is no longer open would
+                // paint the wrong provider.
+                if (this.providerHealthModelId !== modelId) {
+                    return;
+                }
+                this.providerHealth = health;
+                this.providerHealthLoading = false;
+                this.changeDetector.markForCheck();
+            });
+        this.changeDetector.markForCheck();
+    }
+
     toggleVoiceAssistant() {
         const turnedOn = !this.voiceAssistantActivationToggle.value;
         if (turnedOn && this.modelChoiceRefusal() != null) {
@@ -431,6 +503,7 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
         this.voiceAssistantStateSubscription?.unsubscribe();
         this.tokenStatusSubscription?.unsubscribe();
         this.routeParamMapSubscription?.unsubscribe();
+        this.providerHealthSubscription?.unsubscribe();
     }
 
     optionCallbackMethods = [

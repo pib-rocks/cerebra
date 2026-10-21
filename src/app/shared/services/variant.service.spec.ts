@@ -121,4 +121,119 @@ describe("VariantService", () => {
         expect(console.warn).toHaveBeenCalled();
         expect(snackBar.open).toHaveBeenCalled();
     });
+
+    it("hasMeaningfulSetting uses installed controllers when present", () => {
+        apiService.get.withArgs(UrlConstants.HARDWARE_VARIANT).and.returnValue(
+            of({
+                variant: "pib5advanced",
+                source: "database",
+                supported: ["pib5advanced"],
+                implementedVariants: ["pib5advanced"],
+                seedProfileImplemented: true,
+            }),
+        );
+        apiService.get
+            .withArgs(UrlConstants.HARDWARE_CAPABILITIES)
+            .and.returnValue(
+                of({
+                    capabilities: [
+                        {
+                            kind: "tinkerforge_bricklet",
+                            installedControllers: 4,
+                            feedback: ["current", "target_position"],
+                            meaningfulSettings: [
+                                "pulse_width",
+                                "period",
+                                "deceleration",
+                            ],
+                        },
+                        {
+                            kind: "feetech_st_serial",
+                            installedControllers: 4,
+                            feedback: ["actual_position"],
+                            meaningfulSettings: [
+                                "velocity",
+                                "zero_calibration",
+                            ],
+                        },
+                    ],
+                }),
+            );
+        apiService.get
+            .withArgs(UrlConstants.CONTROLLER)
+            .and.returnValue(of({controllers: []}));
+
+        const service = TestBed.inject(VariantService);
+        let hasZeroCalibration = false;
+        let hasPulseWidth = true;
+        service
+            .hasMeaningfulSetting("zero_calibration")
+            .subscribe((value) => (hasZeroCalibration = value));
+        service
+            .hasMeaningfulSetting("pulse_width")
+            .subscribe((value) => (hasPulseWidth = value));
+
+        expect(hasZeroCalibration).toBeTrue();
+        expect(hasPulseWidth).toBeFalse();
+    });
+
+    it("hasMeaningfulSetting falls back to all capabilities and classic PWM settings", () => {
+        spyOn(console, "warn");
+        apiService.get.and.returnValue(throwError(() => new Error("offline")));
+
+        const service = TestBed.inject(VariantService);
+        let hasPulseWidth = false;
+        let hasZeroCalibration = true;
+        service
+            .hasMeaningfulSetting("pulse_width")
+            .subscribe((value) => (hasPulseWidth = value));
+        service
+            .hasMeaningfulSetting("zero_calibration")
+            .subscribe((value) => (hasZeroCalibration = value));
+
+        expect(hasPulseWidth).toBeTrue();
+        expect(hasZeroCalibration).toBeFalse();
+    });
+
+    it("hasMeaningfulSetting treats empty meaningfulSettings as classic PWM sliders", () => {
+        apiService.get.withArgs(UrlConstants.HARDWARE_VARIANT).and.returnValue(
+            of({
+                variant: "pib5edu",
+                source: "database",
+                supported: ["pib5edu"],
+                implementedVariants: ["pib5edu"],
+                seedProfileImplemented: true,
+            }),
+        );
+        apiService.get
+            .withArgs(UrlConstants.HARDWARE_CAPABILITIES)
+            .and.returnValue(
+                of({
+                    capabilities: [
+                        {
+                            kind: "tinkerforge_bricklet",
+                            installedControllers: 1,
+                            feedback: ["current"],
+                            meaningfulSettings: [],
+                        },
+                    ],
+                }),
+            );
+        apiService.get
+            .withArgs(UrlConstants.CONTROLLER)
+            .and.returnValue(of({controllers: []}));
+
+        const service = TestBed.inject(VariantService);
+        let hasDeceleration = false;
+        let hasTorqueLimit = true;
+        service
+            .hasMeaningfulSetting("deceleration")
+            .subscribe((value) => (hasDeceleration = value));
+        service
+            .hasMeaningfulSetting("torque_limit")
+            .subscribe((value) => (hasTorqueLimit = value));
+
+        expect(hasDeceleration).toBeTrue();
+        expect(hasTorqueLimit).toBeFalse();
+    });
 });

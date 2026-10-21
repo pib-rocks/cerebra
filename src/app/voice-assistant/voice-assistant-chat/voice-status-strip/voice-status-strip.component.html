@@ -13,7 +13,29 @@
         data-test="VOICE_STATUS_PHASE">
         {{ phaseLabel }}
     </span>
-    @if (status.source) {
+    @if (showProviderChip) {
+    <span
+        class="voice-status-chip voice-status-provider"
+        [ngClass]="providerStateClass"
+        [title]="providerTooltip"
+        data-test="VOICE_STATUS_PROVIDER">
+        <span
+            class="provider-health-dot"
+            aria-hidden="true"></span>
+        <span class="provider-health-name">{{ providerName }}</span>
+        · {{ providerStateLabel }}
+        <button
+            type="button"
+            class="provider-health-refresh"
+            data-test="BTN_PROVIDER_HEALTH_REFRESH"
+            [disabled]="providerLoading"
+            aria-label="Check the provider again"
+            title="Check the provider again"
+            (click)="requestProviderRefresh()">
+            ⟳
+        </button>
+    </span>
+    } @if (status.source) {
     <span
         class="voice-status-chip"
         data-test="VOICE_STATUS_SOURCE">

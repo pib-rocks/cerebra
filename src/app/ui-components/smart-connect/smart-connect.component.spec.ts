@@ -242,6 +242,23 @@ describe("SmartConnectComponent", () => {
         expect(host.textContent).not.toContain("Password");
     });
 
+    it("renders dialog paragraph text in white instead of dark Bootstrap modal color", () => {
+        tokenStatus$.next({tokenExists: false, tokenActive: false});
+        fixture.detectChanges();
+
+        const host = dialog();
+        document.body.appendChild(host);
+        try {
+            const paragraph = host.querySelector("p") as HTMLElement | null;
+            expect(paragraph).not.toBeNull();
+            expect(getComputedStyle(paragraph!).color).toBe(
+                "rgb(255, 255, 255)",
+            );
+        } finally {
+            host.remove();
+        }
+    });
+
     it("treats a persisted cloud credential as stored without a token probe", () => {
         const flags = {
             tools: true,

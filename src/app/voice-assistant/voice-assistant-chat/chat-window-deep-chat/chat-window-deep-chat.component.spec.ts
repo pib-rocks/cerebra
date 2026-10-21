@@ -1,5 +1,10 @@
 import {ElementRef} from "@angular/core";
-import {ComponentFixture, TestBed} from "@angular/core/testing";
+import {
+    ComponentFixture,
+    TestBed,
+    fakeAsync,
+    tick,
+} from "@angular/core/testing";
 import {HttpClientTestingModule} from "@angular/common/http/testing";
 import {ActivatedRoute} from "@angular/router";
 import {RouterTestingModule} from "@angular/router/testing";
@@ -98,6 +103,7 @@ describe("ChatWindowDeepChatComponent", () => {
                 "getChatMessagesObservable",
                 "sendChatMessage",
                 "getMessagesByChatId",
+                "getChatMessage",
                 "getChat",
             ]);
 
@@ -627,6 +633,100 @@ describe("ChatWindowDeepChatComponent", () => {
             overwrite: true,
         });
     });
+
+    it("paints a picture a tool captured once the answer has settled", fakeAsync(() => {
+        const signals = {onResponse: jasmine.createSpy("onResponse")};
+        mockDeepChat.connect!.handler(
+            {messages: [{role: "user", text: "mach ein foto"}]},
+            signals,
+        );
+
+        messagesSubject.next([
+            {
+                messageId: "user-1",
+                timestamp: "1",
+                isUser: true,
+                content: "mach ein foto",
+            },
+            {
+                messageId: "ai-1",
+                timestamp: "2",
+                isUser: false,
+                content: "Hier ist das Bild.",
+            },
+        ]);
+
+        chatService.getChatMessage.and.returnValue(
+            of({
+                messageId: "ai-1",
+                timestamp: "2",
+                isUser: false,
+                content: "Hier ist das Bild.",
+                meta: {
+                    source: "direct-tool-loop",
+                    images: [
+                        {
+                            id: "image-1",
+                            mimeType: "image/jpeg",
+                            width: 1024,
+                            height: 768,
+                            url: `/voice-assistant/chat/${chatId}/messages/ai-1/images/0`,
+                        },
+                    ],
+                },
+            }),
+        );
+
+        tick(component["imageRefreshDelayMs"] + 10);
+
+        expect(chatService.getChatMessage).toHaveBeenCalledWith(chatId, "ai-1");
+        expect(mockDeepChat.addMessage).toHaveBeenCalledWith({
+            role: "ai",
+            text: "Hier ist das Bild.",
+            files: [
+                {
+                    src: `/api/voice-assistant/chat/${chatId}/messages/ai-1/images/0`,
+                    type: "image",
+                    name: "capture.jpg",
+                },
+            ],
+            overwrite: true,
+        });
+    }));
+
+    it("leaves the answer alone when the turn captured nothing", fakeAsync(() => {
+        const signals = {onResponse: jasmine.createSpy("onResponse")};
+        mockDeepChat.connect!.handler(
+            {messages: [{role: "user", text: "hallo"}]},
+            signals,
+        );
+        messagesSubject.next([
+            {
+                messageId: "ai-2",
+                timestamp: "3",
+                isUser: false,
+                content: "Hallo!",
+            },
+        ]);
+        chatService.getChatMessage.and.returnValue(
+            of({
+                messageId: "ai-2",
+                timestamp: "3",
+                isUser: false,
+                content: "Hallo!",
+                meta: {source: "pib-cloud"},
+            }),
+        );
+
+        tick(component["imageRefreshDelayMs"] + 10);
+
+        // One lookup per settled answer, and no attachment without a picture.
+        expect(chatService.getChatMessage).toHaveBeenCalledOnceWith(
+            chatId,
+            "ai-2",
+        );
+        expect(mockDeepChat.addMessage).not.toHaveBeenCalled();
+    }));
 
     it("handles rapid sub-1s streaming chunks without dropping overwrites", () => {
         const signals = {onResponse: jasmine.createSpy("onResponse")};

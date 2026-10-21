@@ -179,6 +179,20 @@ export class ChatService implements SidebarService {
             .pipe(map((response) => response["messages"]));
     }
 
+    /**
+     * One stored message with its meta (PC-119).
+     *
+     * The live channel carries the message text, not the facts of the turn: a
+     * picture a tool captured lands in the message meta after the answer was
+     * stored, so the chat reads that one message again instead of polling the
+     * whole history.
+     */
+    getChatMessage(chatId: string, messageId: string): Observable<ChatMessage> {
+        return this.apiService.get(
+            `${UrlConstants.CHAT}/${chatId}/messages/${messageId}`,
+        );
+    }
+
     createChatMessage(
         chatId: string,
         content: string,

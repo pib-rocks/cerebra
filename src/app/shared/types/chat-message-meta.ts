@@ -5,6 +5,25 @@
  * chat can explain an answer long after the turn: which transport answered, how
  * long each stage took and whether a local fallback ran.
  */
+/**
+ * One picture a tool captured during the turn (PC-119).
+ *
+ * The message carries the reference, never the bytes: `GET /chat/<id>/messages`
+ * answers with every message of a chat, so inline base64 would ride along on
+ * every load of the history. The picture itself is fetched from `url`.
+ */
+export interface ChatMessageImage {
+    id?: string | null;
+    mimeType?: string | null;
+    width?: number | null;
+    height?: number | null;
+    byteSize?: number | null;
+    /** Server-relative path; the chat prefixes its own API base. */
+    url?: string | null;
+    /** Position of this image among the images of the message. */
+    index?: number | null;
+}
+
 export interface ChatMessageMeta {
     /** Transport token: pib-cloud, hermes, local, direct-tool-loop. */
     source?: string;
@@ -16,6 +35,8 @@ export interface ChatMessageMeta {
     fallbackReason?: string;
     /** done, when the stream ended normally. */
     streamEnd?: string;
+    /** Pictures a tool captured during the turn (PC-119). */
+    images?: ChatMessageImage[];
     /** Tool calls of the turn, filled by PC-84. */
     toolCalls?: {
         name?: string;
@@ -45,6 +66,48 @@ const STAGE_LABELS: Record<string, string> = {
     stream_done: "stream done",
 };
 
+/** What the chat needs to paint one captured picture as an attachment. */
+export interface ChatAttachment {
+    src: string;
+    type: "image";
+    name?: string;
+}
+
+/**
+ * Turn the references of one turn into attachments for the chat element.
+ *
+ * A reference without a URL is skipped rather than painted as a broken picture:
+ * an image whose file is gone (a restored database) must not read as a failure
+ * of the answer. ``apiBase`` is the prefix the chat calls its own backend with.
+ */
+export function imageAttachments(
+    meta?: ChatMessageMeta | null,
+    apiBase = "/api",
+): ChatAttachment[] {
+    const images = meta?.images;
+    if (!images?.length) {
+        return [];
+    }
+    const attachments: ChatAttachment[] = [];
+    for (const image of images) {
+        const url = image?.url?.trim();
+        if (!url) {
+            continue;
+        }
+        const src = url.startsWith("http")
+            ? url
+            : `${apiBase.replace(/\/$/, "")}/${url.replace(/^\//, "")}`;
+        attachments.push({
+            src,
+            type: "image",
+            name: image.mimeType?.includes("png")
+                ? "capture.png"
+                : "capture.jpg",
+        });
+    }
+    return attachments;
+}
+
 export function hasMeta(meta?: ChatMessageMeta | null): boolean {
     if (!meta) {
         return false;
@@ -54,7 +117,8 @@ export function hasMeta(meta?: ChatMessageMeta | null): boolean {
             meta.model ||
             meta.fallbackReason ||
             (meta.stagesMs && Object.keys(meta.stagesMs).length) ||
-            (meta.toolCalls && meta.toolCalls.length),
+            (meta.toolCalls && meta.toolCalls.length) ||
+            (meta.images && meta.images.length),
     );
 }
 

@@ -2,8 +2,8 @@ version: "3"
 
 networks:
     pib-network:
+        name: pib-network
         driver: bridge
-
 services:
     angular-app:
         build:
