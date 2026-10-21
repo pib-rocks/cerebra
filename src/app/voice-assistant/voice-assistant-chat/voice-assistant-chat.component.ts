@@ -215,9 +215,9 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
                     .split("/")
                     .find((segment) => RegExp(CerebraRegex.UUID).test(segment));
                 this.personality = this.personalityId
-                    ? (this.voiceAssistantService.getPersonality(
+                    ? this.voiceAssistantService.getPersonality(
                           this.personalityId,
-                      ) ?? this.route.snapshot.params["personality"])
+                      ) ?? this.route.snapshot.params["personality"]
                     : this.route.snapshot.params["personality"];
                 if (this.personality) {
                     this.subject = this.chatService.getSubject(
