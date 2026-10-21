@@ -3,7 +3,10 @@ import {ComponentFixture, TestBed} from "@angular/core/testing";
 
 import {VoiceAssistantChatComponent} from "./voice-assistant-chat.component";
 import {FormsModule, ReactiveFormsModule} from "@angular/forms";
-import {HttpClientTestingModule} from "@angular/common/http/testing";
+import {
+    HttpClientTestingModule,
+    HttpTestingController,
+} from "@angular/common/http/testing";
 import {BehaviorSubject, of, Subject} from "rxjs";
 import {Chat} from "src/app/shared/types/chat.class";
 import {ChatService} from "src/app/shared/services/chat.service";
@@ -335,6 +338,80 @@ describe("VoiceAssistantChatComponent", () => {
         tokenStatusSubject.next({tokenExists: false, tokenActive: false});
 
         expect(component.cloudTokenStored).toBeTrue();
+    });
+
+    // PC-115: the personality's provider is probed when the catalogue
+    // resolves, which is what the status strip paints green or red.
+    function pushCloudModel() {
+        const voiceAssistant = TestBed.inject(VoiceAssistantService);
+        const flags = {
+            tools: true,
+            images: true,
+            live: false,
+            stt: false,
+            tts: false,
+        };
+        voiceAssistant.assistantModelsSubject.next([
+            new AssistantModel(
+                1,
+                CLOUD_TOKEN_API_NAME,
+                "pib.Cloud",
+                true,
+                "https://cloud.example/v1",
+                flags,
+                "provider-1",
+                true,
+            ),
+        ]);
+    }
+
+    it("probes the provider of the open personality (PC-115)", () => {
+        const http = TestBed.inject(HttpTestingController);
+
+        pushCloudModel();
+
+        // The chip names the provider before the answer arrives.
+        expect(component.providerLabel).toBe("pib.Cloud");
+        expect(component.providerHealthLoading).toBeTrue();
+        const request = http.expectOne("/api/provider/1/health");
+        expect(request.request.method).toBe("GET");
+
+        request.flush({
+            state: "healthy",
+            model: "pib.Cloud",
+            budgetKnown: true,
+            budgetRemaining: 120,
+        });
+
+        expect(component.providerHealth?.state).toBe("healthy");
+        expect(component.providerHealth?.budgetRemaining).toBe(120);
+        expect(component.providerHealthLoading).toBeFalse();
+    });
+
+    it("shows a red chip when the provider cannot be used (PC-115)", () => {
+        const http = TestBed.inject(HttpTestingController);
+
+        pushCloudModel();
+        http.expectOne("/api/provider/1/health").flush({
+            state: "unreachable",
+            reason: "budget_exhausted",
+        });
+
+        expect(component.providerHealth?.state).toBe("unreachable");
+        expect(component.providerHealth?.reason).toBe("budget_exhausted");
+    });
+
+    it("keeps the chip neutral when pib-backend cannot answer (PC-115)", () => {
+        const http = TestBed.inject(HttpTestingController);
+
+        pushCloudModel();
+        http.expectOne("/api/provider/1/health").flush("boom", {
+            status: 500,
+            statusText: "Server Error",
+        });
+
+        expect(component.providerHealth?.state).toBe("unknown");
+        expect(component.providerHealth?.reason).toBe("backend_unavailable");
     });
 
     it("should set smartConnectActive to true when token is active", () => {

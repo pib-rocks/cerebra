@@ -29,3 +29,60 @@
 .voice-status-model {
     opacity: 0.75;
 }
+
+// The provider chip carries the health colour (PC-115). Green means the
+// personality can talk to its provider now - for pib.Cloud that includes a
+// valid SmartConnect token with budget left - red means it cannot, and the
+// neutral class is used when no probe could run at all.
+.voice-status-provider {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.provider-health-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background-color: #7e889c;
+    flex-shrink: 0;
+}
+
+.provider-health-healthy {
+    border-color: #2fbf71;
+    color: #9ff0c0;
+
+    .provider-health-dot {
+        background-color: #2fbf71;
+    }
+}
+
+.provider-health-unreachable {
+    border-color: #ff4d4d;
+    color: #ff9d9d;
+
+    .provider-health-dot {
+        background-color: #ff4d4d;
+    }
+}
+
+.provider-health-neutral {
+    border-color: #6c7c99;
+    color: #b8c4d8;
+}
+
+.provider-health-refresh {
+    border: 0;
+    background: transparent;
+    color: inherit;
+    padding: 0;
+    margin-left: 0.15rem;
+    font-size: 0.85rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.provider-health-refresh:disabled {
+    cursor: default;
+    opacity: 0.4;
+}
