@@ -2,6 +2,7 @@ import {ComponentFixture, TestBed} from "@angular/core/testing";
 
 import {HardwareIdComponent} from "./hardware-id.component";
 import {BrickletService} from "src/app/shared/services/bricklet.service";
+import {ControllerService} from "src/app/shared/services/controller.service";
 import {
     DiagnosticsService,
     HardwareConfig,
@@ -25,6 +26,7 @@ describe("HardwareIdComponent", () => {
     let brickletServiceSpy: jasmine.SpyObj<BrickletService>;
     let diagnosticsServiceSpy: jasmine.SpyObj<DiagnosticsService>;
     let hardwareContext: BehaviorSubject<HardwareContext>;
+    let controllerServiceSpy: jasmine.SpyObj<ControllerService>;
 
     const bricklet1 = new Bricklet("AAA", 1, "Servo Bricklet");
     const bricklet2 = new Bricklet("BBB", 2, "Servo Bricklet");
@@ -127,6 +129,19 @@ describe("HardwareIdComponent", () => {
             controllers: [],
             fallback: true,
         });
+        controllerServiceSpy = jasmine.createSpyObj("ControllerService", [
+            "updateAddress",
+        ]);
+        controllerServiceSpy.updateAddress.and.callFake(
+            (number: number, address: string) =>
+                of({
+                    number,
+                    kind: "feetech_st_serial",
+                    deviceType: null,
+                    address,
+                    supplyVoltage: null,
+                }),
+        );
         const variantServiceSpy = jasmine.createSpyObj("VariantService", [
             "getContextObservable",
             "reload",
@@ -158,6 +173,7 @@ describe("HardwareIdComponent", () => {
                     useValue: diagnosticsServiceSpy,
                 },
                 {provide: VariantService, useValue: variantServiceSpy},
+                {provide: ControllerService, useValue: controllerServiceSpy},
             ],
         }).compileComponents();
 
@@ -487,7 +503,11 @@ describe("HardwareIdComponent", () => {
         ).toBeNull();
         expect(Object.keys(component.brickletUidForm.controls).length).toBe(0);
         expect(component.brickletUidForm.valid).toBeTrue();
-        expect(fixture.nativeElement.textContent).toContain("/dev/pib-head");
+        // The identifier is editable now (PC-124), so it lives in a field value.
+        const headField = fixture.nativeElement.querySelector(
+            '[data-test="INP_Serial_Address_1"]',
+        ) as HTMLInputElement;
+        expect(headField.value).toBe("/dev/pib-head");
     });
 
     it("shows the documented museum CAN interface before hardware is available", () => {
@@ -1112,12 +1132,20 @@ describe("HardwareIdComponent import preview (zoneless)", () => {
             }),
         );
 
+        const importControllerServiceSpy = jasmine.createSpyObj(
+            "ControllerService",
+            ["updateAddress"],
+        );
         await TestBed.configureTestingModule({
             imports: [ReactiveFormsModule, HardwareIdComponent],
             providers: [
                 provideZonelessChangeDetection(),
                 {provide: BrickletService, useValue: brickletServiceSpy},
                 {provide: VariantService, useValue: variantServiceSpy},
+                {
+                    provide: ControllerService,
+                    useValue: importControllerServiceSpy,
+                },
                 // Real DiagnosticsService so the exported JSON is really parsed.
                 DiagnosticsService,
                 {
@@ -1238,6 +1266,7 @@ describe("HardwareIdComponent UID save", () => {
     let variantServiceSpy: jasmine.SpyObj<VariantService>;
     let bricklets$: BehaviorSubject<Bricklet[]>;
     let hardwareContext: BehaviorSubject<HardwareContext>;
+    let controllerServiceSpy: jasmine.SpyObj<ControllerService>;
     // The service cache. renameBrickletUid replaces entries here and then
     // emits, which is what used to rebuild the form from the stale context.
     let cache: Bricklet[];
@@ -1263,6 +1292,19 @@ describe("HardwareIdComponent UID save", () => {
             "reloadBrickletsFromDb",
             "getConnectedBricklets",
         ]);
+        controllerServiceSpy = jasmine.createSpyObj("ControllerService", [
+            "updateAddress",
+        ]);
+        controllerServiceSpy.updateAddress.and.callFake(
+            (number: number, address: string) =>
+                of({
+                    number,
+                    kind: "feetech_st_serial",
+                    deviceType: null,
+                    address,
+                    supplyVoltage: null,
+                }),
+        );
         brickletServiceSpy.getBrickletObservable.and.returnValue(bricklets$);
         brickletServiceSpy.getConnectedBricklets.and.returnValue(of([]));
         brickletServiceSpy.getBricklet.and.callFake((number: number) =>
@@ -1354,5 +1396,147 @@ describe("HardwareIdComponent UID save", () => {
         );
         expect(variantServiceSpy.reload).toHaveBeenCalledTimes(1);
         expect(control.value).toBe("SF1");
+    });
+});
+
+describe("HardwareIdComponent serial controller identifiers", () => {
+    let component: HardwareIdComponent;
+    let fixture: ComponentFixture<HardwareIdComponent>;
+    let brickletServiceSpy: jasmine.SpyObj<BrickletService>;
+    let controllerServiceSpy: jasmine.SpyObj<ControllerService>;
+
+    beforeEach(async () => {
+        brickletServiceSpy = jasmine.createSpyObj("BrickletService", [
+            "getBrickletObservable",
+            "renameBrickletUid",
+            "getBricklet",
+            "reloadBrickletsFromDb",
+            "getConnectedBricklets",
+        ]);
+        brickletServiceSpy.getBrickletObservable.and.returnValue(of([]));
+        brickletServiceSpy.getConnectedBricklets.and.returnValue(of([]));
+        controllerServiceSpy = jasmine.createSpyObj("ControllerService", [
+            "updateAddress",
+        ]);
+        controllerServiceSpy.updateAddress.and.callFake(
+            (number: number, address: string) =>
+                of({
+                    number,
+                    kind: "feetech_st_serial",
+                    deviceType: null,
+                    address,
+                    supplyVoltage: null,
+                }),
+        );
+
+        const variantServiceSpy = jasmine.createSpyObj("VariantService", [
+            "getContextObservable",
+            "reload",
+        ]);
+        // Two adapters, one of them already carries its identifier.
+        variantServiceSpy.getContextObservable.and.returnValue(
+            of(
+                contextFor("pib5advanced", [
+                    controller(1, "feetech_st_serial", null, null, ""),
+                    controller(2, "feetech_st_serial", null, null, "WS-4A2F"),
+                ]),
+            ),
+        );
+
+        await TestBed.configureTestingModule({
+            imports: [ReactiveFormsModule, HardwareIdComponent],
+            providers: [
+                provideZonelessChangeDetection(),
+                {provide: BrickletService, useValue: brickletServiceSpy},
+                {provide: VariantService, useValue: variantServiceSpy},
+                {provide: ControllerService, useValue: controllerServiceSpy},
+                {
+                    provide: DiagnosticsService,
+                    useValue: jasmine.createSpyObj("DiagnosticsService", [
+                        "exportHardwareConfig",
+                        "importHardwareConfig",
+                        "parseHardwareConfigFileContent",
+                    ]),
+                },
+            ],
+        }).compileComponents();
+
+        fixture = TestBed.createComponent(HardwareIdComponent);
+        component = fixture.componentInstance;
+        await fixture.whenStable();
+    });
+
+    it("offers one field per serial controller, filled with what is stored", () => {
+        const first = fixture.nativeElement.querySelector(
+            '[data-test="INP_Serial_Address_1"]',
+        ) as HTMLInputElement;
+        const second = fixture.nativeElement.querySelector(
+            '[data-test="INP_Serial_Address_2"]',
+        ) as HTMLInputElement;
+
+        expect(first).withContext("field for controller 1").not.toBeNull();
+        expect(second).withContext("field for controller 2").not.toBeNull();
+        expect(first.value).toBe("");
+        expect(second.value).toBe("WS-4A2F");
+    });
+
+    it("saves only the identifier that changed, trimmed", async () => {
+        component.serialControl(1)?.setValue("  2mUK-01  ");
+        component.saveSerialAddresses();
+        await fixture.whenStable();
+
+        expect(controllerServiceSpy.updateAddress).toHaveBeenCalledOnceWith(
+            1,
+            "2mUK-01",
+        );
+        expect(
+            fixture.nativeElement.querySelector(
+                '[data-test="MSG_Serial_Addresses_Saved"]',
+            ),
+        ).not.toBeNull();
+        // The stored values are the new baseline: the button does not stay lit.
+        expect(component.serialAddressesChanged).toBe(false);
+    });
+
+    it("says so when nothing changed", async () => {
+        component.saveSerialAddresses();
+        await fixture.whenStable();
+
+        expect(controllerServiceSpy.updateAddress).not.toHaveBeenCalled();
+        expect(
+            fixture.nativeElement.querySelector(
+                '[data-test="MSG_Serial_Addresses_Saved"]',
+            )?.textContent,
+        ).toContain("No identifier changed");
+    });
+
+    it("refuses an identifier longer than the column", async () => {
+        component.serialControl(1)?.setValue("x".repeat(256));
+        component.saveSerialAddresses();
+        await fixture.whenStable();
+
+        expect(controllerServiceSpy.updateAddress).not.toHaveBeenCalled();
+        expect(
+            fixture.nativeElement.querySelector(
+                '[data-test="MSG_Serial_Addresses_Error"]',
+            )?.textContent,
+        ).toContain("255");
+    });
+
+    it("reports a refused save from the backend", async () => {
+        controllerServiceSpy.updateAddress.and.returnValue(
+            throwError(() => ({
+                error: {error: "address must be at most 255 characters"},
+            })),
+        );
+        component.serialControl(2)?.setValue("WS-OTHER");
+        component.saveSerialAddresses();
+        await fixture.whenStable();
+
+        expect(
+            fixture.nativeElement.querySelector(
+                '[data-test="MSG_Serial_Addresses_Error"]',
+            )?.textContent,
+        ).toContain("255");
     });
 });
