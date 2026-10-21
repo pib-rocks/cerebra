@@ -84,7 +84,15 @@ export class VariantService {
                 const active = context.capabilities.filter(
                     (capability) => capability.installedControllers > 0,
                 );
-                const pool = active.length > 0 ? active : context.capabilities;
+                const nonBrickletActive = active.filter(
+                    (capability) => capability.kind !== "tinkerforge_bricklet",
+                );
+                const pool =
+                    nonBrickletActive.length > 0
+                        ? nonBrickletActive
+                        : active.length > 0
+                        ? active
+                        : context.capabilities;
                 return pool.some((capability) =>
                     capability.meaningfulSettings.length === 0
                         ? setting !== "zero_calibration" &&
