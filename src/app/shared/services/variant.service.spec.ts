@@ -138,8 +138,18 @@ describe("VariantService", () => {
                 of({
                     capabilities: [
                         {
+                            kind: "tinkerforge_bricklet",
+                            installedControllers: 4,
+                            feedback: ["current", "target_position"],
+                            meaningfulSettings: [
+                                "pulse_width",
+                                "period",
+                                "deceleration",
+                            ],
+                        },
+                        {
                             kind: "feetech_st_serial",
-                            installedControllers: 1,
+                            installedControllers: 4,
                             feedback: ["actual_position"],
                             meaningfulSettings: [
                                 "velocity",
