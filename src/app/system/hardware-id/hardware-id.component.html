@@ -90,7 +90,53 @@
                 <ng-container
                     [ngTemplateOutlet]="uidField"
                     [ngTemplateOutletContext]="{controller: controller}"></ng-container>
-                } }
+                } } @if (serialControllers.length > 0) {
+                <div
+                    class="controller-group-heading"
+                    data-test="GRP_Serial_Controllers">
+                    Serial controllers
+                </div>
+                <div></div>
+                @for (controller of serialControllers; track controller.number)
+                {
+                <label
+                    [attr.for]="'serial-address-' + controller.number"
+                    [attr.data-test]="
+                        'TXT_Serial_Controller_' + controller.number
+                    "
+                    >Controller {{ controller.number }}:</label
+                >
+                <div class="uid-field">
+                    <input
+                        type="text"
+                        class="form-control"
+                        [attr.id]="'serial-address-' + controller.number"
+                        [attr.data-test]="
+                            'INP_Serial_Address_' + controller.number
+                        "
+                        [attr.data-test-id]="controller.number"
+                        [class.is-invalid]="serialControl(controller).invalid"
+                        [formControl]="serialControl(controller)"
+                        maxlength="255"
+                        placeholder="Identifier of the adapter"
+                        autocomplete="off" />
+                    @if (serialControl(controller).invalid) {
+                    <div
+                        class="invalid-feedback d-block"
+                        [attr.data-test]="
+                            'MSG_Serial_Address_Error_' + controller.number
+                        ">
+                        Up to 255 characters.
+                    </div>
+                    }
+                </div>
+                }
+                <p class="controller-documentation grid-note">
+                    The identifier of the adapter is what the motor controller
+                    opens the bus with. It is read off the module, not derived
+                    by the robot.
+                </p>
+                }
             </div>
 
             <div class="bricklet-grid form-content">
@@ -112,67 +158,7 @@
                 }
             </div>
         </div>
-        @if (serialControllers.length > 0) {
-        <section
-            class="controller-section"
-            data-test="GRP_Serial_Controllers">
-            <h3>Serial controllers</h3>
-            <p class="controller-documentation">
-                The identifier of the adapter is what the motor controller opens
-                the bus with. It is read off the module, not derived by the
-                robot.
-            </p>
-            <form
-                [formGroup]="serialAddressForm"
-                (ngSubmit)="saveSerialAddresses()">
-                @for (controller of serialControllers; track controller.number)
-                {
-                <div
-                    class="controller-detail"
-                    [attr.data-test]="'TXT_Serial_Controller_' + controller.number">
-                    <label
-                        class="serial-address-label"
-                        [attr.for]="'serial-address-' + controller.number"
-                        >Controller {{ controller.number }}</label
-                    >
-                    <input
-                        type="text"
-                        class="form-control form-control-sm serial-address-input"
-                        [attr.id]="'serial-address-' + controller.number"
-                        [attr.data-test]="'INP_Serial_Address_' + controller.number"
-                        [attr.data-test-id]="controller.number"
-                        [formControlName]="controller.number.toString()"
-                        maxlength="255"
-                        placeholder="Identifier of the adapter"
-                        autocomplete="off" />
-                </div>
-                }
-                <div class="d-flex align-items-center gap-2 mt-2">
-                    <button
-                        type="submit"
-                        class="btn btn-outline-light btn-sm"
-                        data-test="BTN_Save_Serial_Addresses"
-                        [disabled]="serialAddressSaving || !serialAddressesChanged">
-                        {{ serialAddressSaving ? 'Saving...' : 'Save addresses'
-                        }}
-                    </button>
-                    @if (serialAddressMessage) {
-                    <span
-                        class="text-success"
-                        data-test="MSG_Serial_Addresses_Saved"
-                        >{{ serialAddressMessage }}</span
-                    >
-                    } @if (serialAddressError) {
-                    <span
-                        class="text-danger"
-                        data-test="MSG_Serial_Addresses_Error"
-                        >{{ serialAddressError }}</span
-                    >
-                    }
-                </div>
-            </form>
-        </section>
-        } @if (showCanDocumentation) {
+        @if (showCanDocumentation) {
         <section
             class="controller-section"
             data-test="GRP_CAN_Interface">
@@ -189,7 +175,7 @@
                 SocketCAN · 1 Mbit/s · 120 Ω termination
             </p>
         </section>
-        } @if (hasEditableControllers) {
+        } @if (hasEditableControllers || serialControllers.length > 0) {
         <div class="row">
             <div class="col-auto mt-4 mb-3 uid-save-actions">
                 <button
@@ -197,13 +183,23 @@
                     data-test="BTN_Update_bricklet_UIDs"
                     class="hardware-button btn btn-regular"
                     [class.is-dirty]="hasUnsavedUidChanges"
-                    [disabled]="brickletUidForm.invalid">
+                    [disabled]="
+                        brickletUidForm.invalid || serialAddressForm.invalid
+                    ">
                     Save
                 </button>
             </div>
-            @if (brickletUidForm.invalid) {
+            @if (brickletUidForm.invalid || serialAddressForm.invalid) {
             <div class="col-auto mt-4 ms-4 mb-3 ps-2 align-self-center">
                 <span class="validation-error">{{ validationMessage }}</span>
+            </div>
+            } @if (serialAddressError) {
+            <div class="col-auto mt-4 ms-4 mb-3 ps-2 align-self-center">
+                <span
+                    class="validation-error"
+                    data-test="MSG_Serial_Addresses_Error"
+                    >{{ serialAddressError }}</span
+                >
             </div>
             }
         </div>

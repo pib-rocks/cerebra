@@ -67,8 +67,6 @@ export class HardwareIdComponent implements OnInit {
     brickletUidForm = new FormGroup({}, {validators: uniqueValuesValidator()});
     /** One identifier field per serial controller: read off the module, typed in. */
     readonly serialAddressForm = new FormRecord<FormControl<string | null>>({});
-    serialAddressSaving = false;
-    serialAddressMessage: string | null = null;
     serialAddressError: string | null = null;
     private savedSerialAddressSignature = "";
 
@@ -118,15 +116,19 @@ export class HardwareIdComponent implements OnInit {
     }
 
     /**
-     * True while the form holds UIDs that differ from the last loaded or saved state. The Save button
-     * shows it in the brand colour - the same signal the Blockly editor gives with its filled Save
-     * banner - and a successful save moves the baseline, so the colour clears without a reload.
+     * True while the form holds UIDs or serial identifiers that differ from the last loaded or
+     * saved state. The Save button shows it in the brand colour - the same signal the Blockly
+     * editor gives with its filled Save banner - and a successful save moves the baseline, so
+     * the colour clears without a reload.
      */
     get hasUnsavedUidChanges(): boolean {
-        if (!this.brickletUidForm.valid) {
+        if (!this.brickletUidForm.valid || !this.serialAddressForm.valid) {
             return false;
         }
-        return this.uidSignature() !== this.savedUidSignature;
+        return (
+            this.uidSignature() !== this.savedUidSignature ||
+            this.serialAddressesChanged
+        );
     }
 
     /** The IDs the group validator found more than once. */
@@ -145,6 +147,13 @@ export class HardwareIdComponent implements OnInit {
             FormControl
         >;
         return Object.values(controls).some((control) => control.invalid);
+    }
+
+    /** True when a serial controller identifier exceeds the 255-character column width. */
+    private get hasMalformedSerialAddress(): boolean {
+        return Object.values(this.serialAddressForm.controls).some(
+            (control) => control.invalid,
+        );
     }
 
     /**
@@ -168,6 +177,11 @@ export class HardwareIdComponent implements OnInit {
                 "IDs must be up to 6 characters long and contain only letters and numbers.",
             );
         }
+        if (this.hasMalformedSerialAddress) {
+            messages.push(
+                "An identifier is too long (255 characters at most).",
+            );
+        }
         return messages.join(" ");
     }
 
@@ -188,6 +202,13 @@ export class HardwareIdComponent implements OnInit {
     ) {}
 
     ngOnInit(): void {
+        this.brickletUidForm.valueChanges
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe(() => this.cdr.markForCheck());
+        this.serialAddressForm.valueChanges
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe(() => this.cdr.markForCheck());
+
         this.brickletService
             .getBrickletObservable()
             .pipe(takeUntilDestroyed(this.destroyRef))
@@ -273,21 +294,63 @@ export class HardwareIdComponent implements OnInit {
     }
 
     updateIds() {
-        if (!this.brickletUidForm.valid) return;
+        this.serialAddressError = null;
+        if (!this.brickletUidForm.valid || !this.serialAddressForm.valid) {
+            return;
+        }
         const newBrickletInput: Record<number, string> =
             this.brickletUidForm.getRawValue();
         const changedBricklets: Bricklet[] =
             this.detectChangedBricklets(newBrickletInput);
+        const changedSerial = this.serialControllers.filter(
+            (controller) =>
+                this.serialAddressValue(controller) !==
+                (controller.address ?? ""),
+        );
 
-        if (changedBricklets.length === 0) {
-            return;
+        if (changedBricklets.length > 0) {
+            this.brickletService
+                .renameBrickletUid(changedBricklets)
+                .pipe(takeUntilDestroyed(this.destroyRef))
+                .subscribe({
+                    next: () => this.onBrickletUidsSaved(changedBricklets),
+                });
         }
-        this.brickletService
-            .renameBrickletUid(changedBricklets)
-            .pipe(takeUntilDestroyed(this.destroyRef))
-            .subscribe({
-                next: () => this.onBrickletUidsSaved(changedBricklets),
-            });
+
+        if (changedSerial.length > 0) {
+            forkJoin(
+                changedSerial.map((controller) =>
+                    this.controllerService.updateAddress(
+                        controller.number,
+                        this.serialAddressValue(controller),
+                    ),
+                ),
+            )
+                .pipe(takeUntilDestroyed(this.destroyRef))
+                .subscribe({
+                    next: (stored) => {
+                        changedSerial.forEach((controller, index) => {
+                            const address = stored[index]?.address ?? null;
+                            controller.address = address;
+                            this.serialControl(controller).setValue(
+                                address ?? "",
+                            );
+                        });
+                        this.savedSerialAddressSignature =
+                            this.serialSignature();
+                        if (changedBricklets.length === 0) {
+                            this.variantService.reload();
+                        }
+                        this.cdr.markForCheck();
+                    },
+                    error: (err) => {
+                        this.serialAddressError =
+                            err?.error?.error ||
+                            "The identifiers were not saved.";
+                        this.cdr.markForCheck();
+                    },
+                });
+        }
     }
 
     /**
@@ -301,64 +364,16 @@ export class HardwareIdComponent implements OnInit {
     }
 
     /** The identifier field of one controller, typed so a caller can set it. */
-    serialControl(controller: HardwareController | number): FormControl | null {
+    serialControl(controller: HardwareController | number): FormControl {
         const name =
             typeof controller === "number"
                 ? String(controller)
                 : controller.number.toString();
-        return (this.serialAddressForm.get(name) as FormControl) ?? null;
+        return this.serialAddressForm.get(name) as FormControl;
     }
 
     get serialAddressesChanged(): boolean {
         return this.serialSignature() !== this.savedSerialAddressSignature;
-    }
-
-    saveSerialAddresses(): void {
-        this.serialAddressMessage = null;
-        this.serialAddressError = null;
-        if (this.serialAddressForm.invalid) {
-            this.serialAddressError =
-                "An identifier is too long (255 characters at most).";
-            this.cdr.markForCheck();
-            return;
-        }
-        const changed = this.serialControllers.filter(
-            (controller) =>
-                this.serialAddressValue(controller) !==
-                (controller.address ?? ""),
-        );
-        if (!changed.length) {
-            this.serialAddressMessage = "No identifier changed.";
-            this.cdr.markForCheck();
-            return;
-        }
-        this.serialAddressSaving = true;
-        forkJoin(
-            changed.map((controller) =>
-                this.controllerService.updateAddress(
-                    controller.number,
-                    this.serialAddressValue(controller),
-                ),
-            ),
-        )
-            .pipe(takeUntilDestroyed(this.destroyRef))
-            .subscribe({
-                next: (stored) => {
-                    changed.forEach((controller, index) => {
-                        controller.address = stored[index]?.address ?? null;
-                    });
-                    this.savedSerialAddressSignature = this.serialSignature();
-                    this.serialAddressSaving = false;
-                    this.serialAddressMessage = "Identifiers saved.";
-                    this.cdr.markForCheck();
-                },
-                error: (err) => {
-                    this.serialAddressSaving = false;
-                    this.serialAddressError =
-                        err?.error?.error || "The identifiers were not saved.";
-                    this.cdr.markForCheck();
-                },
-            });
     }
 
     private serialSignature(): string {

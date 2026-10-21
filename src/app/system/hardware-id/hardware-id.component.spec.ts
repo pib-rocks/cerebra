@@ -1404,6 +1404,7 @@ describe("HardwareIdComponent serial controller identifiers", () => {
     let fixture: ComponentFixture<HardwareIdComponent>;
     let brickletServiceSpy: jasmine.SpyObj<BrickletService>;
     let controllerServiceSpy: jasmine.SpyObj<ControllerService>;
+    let variantServiceSpy: jasmine.SpyObj<VariantService>;
 
     beforeEach(async () => {
         brickletServiceSpy = jasmine.createSpyObj("BrickletService", [
@@ -1413,7 +1414,18 @@ describe("HardwareIdComponent serial controller identifiers", () => {
             "reloadBrickletsFromDb",
             "getConnectedBricklets",
         ]);
-        brickletServiceSpy.getBrickletObservable.and.returnValue(of([]));
+        const relayBricklet = new Bricklet(
+            "2mUK",
+            5,
+            "Solid State Relay Bricklet",
+        );
+        brickletServiceSpy.getBrickletObservable.and.returnValue(
+            of([relayBricklet]),
+        );
+        brickletServiceSpy.getBricklet.and.callFake((number: number) =>
+            number === 5 ? relayBricklet : undefined,
+        );
+        brickletServiceSpy.renameBrickletUid.and.returnValue(of(undefined));
         brickletServiceSpy.getConnectedBricklets.and.returnValue(of([]));
         controllerServiceSpy = jasmine.createSpyObj("ControllerService", [
             "updateAddress",
@@ -1429,16 +1441,23 @@ describe("HardwareIdComponent serial controller identifiers", () => {
                 }),
         );
 
-        const variantServiceSpy = jasmine.createSpyObj("VariantService", [
+        variantServiceSpy = jasmine.createSpyObj("VariantService", [
             "getContextObservable",
             "reload",
         ]);
-        // Two adapters, one of them already carries its identifier.
+        // Two serial adapters on the left, one relay Bricklet on the right.
         variantServiceSpy.getContextObservable.and.returnValue(
             of(
                 contextFor("pib5advanced", [
                     controller(1, "feetech_st_serial", null, null, ""),
                     controller(2, "feetech_st_serial", null, null, "WS-4A2F"),
+                    controller(
+                        5,
+                        "tinkerforge_bricklet",
+                        "Solid State Relay Bricklet",
+                        null,
+                        "2mUK",
+                    ),
                 ]),
             ),
         );
@@ -1466,60 +1485,117 @@ describe("HardwareIdComponent serial controller identifiers", () => {
         await fixture.whenStable();
     });
 
-    it("offers one field per serial controller, filled with what is stored", () => {
-        const first = fixture.nativeElement.querySelector(
+    it("places the serial controller inputs in the left column beside the Bricklet inputs, with a single Save button", () => {
+        const compiled = fixture.nativeElement as HTMLElement;
+        const grids = compiled.querySelectorAll(".bricklet-grid");
+        expect(grids.length).toBe(2);
+
+        const leftGrid = grids[0];
+        const rightGrid = grids[1];
+        const first = leftGrid.querySelector(
             '[data-test="INP_Serial_Address_1"]',
         ) as HTMLInputElement;
-        const second = fixture.nativeElement.querySelector(
+        const second = leftGrid.querySelector(
             '[data-test="INP_Serial_Address_2"]',
         ) as HTMLInputElement;
+        const relay = rightGrid.querySelector(
+            '[data-test="TXT_Bricklet_UID_5"]',
+        ) as HTMLSelectElement;
 
-        expect(first).withContext("field for controller 1").not.toBeNull();
-        expect(second).withContext("field for controller 2").not.toBeNull();
+        expect(first)
+            .withContext("field for controller 1 in left column")
+            .not.toBeNull();
+        expect(second)
+            .withContext("field for controller 2 in left column")
+            .not.toBeNull();
+        expect(relay)
+            .withContext("relay select in right column")
+            .not.toBeNull();
         expect(first.value).toBe("");
         expect(second.value).toBe("WS-4A2F");
+
+        expect(
+            compiled.querySelector('[data-test="BTN_Save_Serial_Addresses"]'),
+        ).toBeNull();
+        expect(
+            compiled.querySelector('[data-test="BTN_Update_bricklet_UIDs"]'),
+        ).not.toBeNull();
     });
 
-    it("saves only the identifier that changed, trimmed", async () => {
-        component.serialControl(1)?.setValue("  2mUK-01  ");
-        component.saveSerialAddresses();
+    it("lights the shared Save button and saves only the identifier that changed, trimmed", async () => {
+        const saveBtn = () =>
+            fixture.nativeElement.querySelector(
+                '[data-test="BTN_Update_bricklet_UIDs"]',
+            ) as HTMLButtonElement;
+        expect(saveBtn().classList).not.toContain("is-dirty");
+
+        component.serialControl(1).setValue("  2mUK-01  ");
+        await fixture.whenStable();
+        expect(saveBtn().classList).toContain("is-dirty");
+
+        component.updateIds();
         await fixture.whenStable();
 
         expect(controllerServiceSpy.updateAddress).toHaveBeenCalledOnceWith(
             1,
             "2mUK-01",
         );
-        expect(
-            fixture.nativeElement.querySelector(
-                '[data-test="MSG_Serial_Addresses_Saved"]',
-            ),
-        ).not.toBeNull();
+        expect(brickletServiceSpy.renameBrickletUid).not.toHaveBeenCalled();
+        expect(variantServiceSpy.reload).toHaveBeenCalledTimes(1);
         // The stored values are the new baseline: the button does not stay lit.
         expect(component.serialAddressesChanged).toBe(false);
+        expect(component.hasUnsavedUidChanges).toBe(false);
+        expect(saveBtn().classList).not.toContain("is-dirty");
     });
 
-    it("says so when nothing changed", async () => {
-        component.saveSerialAddresses();
+    it("saves both Bricklet UIDs and serial identifiers together on Save", async () => {
+        component.serialControl(1).setValue("WS-LEFT-1");
+        (component.brickletUidForm.get("5") as AbstractControl).setValue(
+            "2nEW",
+        );
+
+        component.updateIds();
+        await fixture.whenStable();
+
+        expect(controllerServiceSpy.updateAddress).toHaveBeenCalledOnceWith(
+            1,
+            "WS-LEFT-1",
+        );
+        expect(brickletServiceSpy.renameBrickletUid).toHaveBeenCalledOnceWith(
+            jasmine.arrayWithExactContents([
+                jasmine.objectContaining({
+                    brickletNumber: 5,
+                    uid: "2nEW",
+                    type: "Solid State Relay Bricklet",
+                }),
+            ]),
+        );
+    });
+
+    it("sends no request when nothing changed", async () => {
+        component.updateIds();
+        await fixture.whenStable();
+
+        expect(controllerServiceSpy.updateAddress).not.toHaveBeenCalled();
+        expect(brickletServiceSpy.renameBrickletUid).not.toHaveBeenCalled();
+    });
+
+    it("refuses an identifier longer than the column and disables Save", async () => {
+        component.serialControl(1).setValue("x".repeat(256));
+        await fixture.whenStable();
+
+        const saveBtn = fixture.nativeElement.querySelector(
+            '[data-test="BTN_Update_bricklet_UIDs"]',
+        ) as HTMLButtonElement;
+        expect(saveBtn.disabled).toBe(true);
+
+        component.updateIds();
         await fixture.whenStable();
 
         expect(controllerServiceSpy.updateAddress).not.toHaveBeenCalled();
         expect(
-            fixture.nativeElement.querySelector(
-                '[data-test="MSG_Serial_Addresses_Saved"]',
-            )?.textContent,
-        ).toContain("No identifier changed");
-    });
-
-    it("refuses an identifier longer than the column", async () => {
-        component.serialControl(1)?.setValue("x".repeat(256));
-        component.saveSerialAddresses();
-        await fixture.whenStable();
-
-        expect(controllerServiceSpy.updateAddress).not.toHaveBeenCalled();
-        expect(
-            fixture.nativeElement.querySelector(
-                '[data-test="MSG_Serial_Addresses_Error"]',
-            )?.textContent,
+            fixture.nativeElement.querySelector(".validation-error")
+                ?.textContent,
         ).toContain("255");
     });
 
@@ -1529,8 +1605,8 @@ describe("HardwareIdComponent serial controller identifiers", () => {
                 error: {error: "address must be at most 255 characters"},
             })),
         );
-        component.serialControl(2)?.setValue("WS-OTHER");
-        component.saveSerialAddresses();
+        component.serialControl(2).setValue("WS-OTHER");
+        component.updateIds();
         await fixture.whenStable();
 
         expect(
