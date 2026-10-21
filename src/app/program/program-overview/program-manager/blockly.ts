@@ -365,6 +365,8 @@ export const toolbox: string = `<xml xmlns="http://www.w3.org/1999/xhtml" id="to
     <block type="get_solid_state_relay"></block>
     <block type="program_log"></block>
     <block type="program_reset_log"></block>
+    <block type="smarthome_set_device"></block>
+    <block type="smarthome_get_state"></block>
 </category>
 <sep></sep>
 <category name="Motoric skills" colour="355">
