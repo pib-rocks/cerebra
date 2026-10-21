@@ -86,7 +86,20 @@
             feedback="temperature"></app-motor-feedback>
         }
     </div>
-    } @if (displayExtended) {
+    } @if (showZeroCalibration) {
+    <div class="row justify-content-center mb-3">
+        <div class="col-9 d-flex justify-content-center">
+            <button
+                type="button"
+                id="calibrate-zero-button"
+                data-test="BTN_Motor_Settings_Calibrate_Zero"
+                class="btn btn-regular"
+                (click)="setCurrentPositionAsZero()">
+                Set current position as 0°
+            </button>
+        </div>
+    </div>
+    } @if (displayExtended) { @if (showPulseWidth) {
     <div class="row justify-content-center">
         <div class="col-9">
             <app-horizontal-slider
@@ -104,7 +117,7 @@
                 (sliderEvent)="setPulseRanges($event)"></app-horizontal-slider>
         </div>
     </div>
-    } @if (displayExtended) {
+    } } @if (displayExtended) {
     <div class="row display-flex justify-content-center">
         <div class="col-9">
             <app-horizontal-slider
@@ -123,7 +136,7 @@
                 (sliderEvent)="setDegree($event)"></app-horizontal-slider>
         </div>
     </div>
-    } @if (displayExtended) {
+    } @if (displayExtended) { @if (showPeriod) {
     <div class="row display-flex justify-content-center">
         <div class="col-9">
             <app-horizontal-slider
@@ -141,7 +154,7 @@
                 (sliderEvent)="setPeriod($event[0])"></app-horizontal-slider>
         </div>
     </div>
-    } @if (displayExtended) {
+    } } @if (displayExtended) {
     <div class="row display-flex justify-content-center">
         <div class="col-9">
             <div class="d-flex mb-3 ms-1">
@@ -185,6 +198,7 @@
                 [maxValue]="500000"
                 [defaultValue]="settings.acceleration"></app-vertical-slider>
         </div>
+        @if (showDeceleration) {
         <div class="col-3 h-100 ms-2 me-2">
             <app-vertical-slider
                 name="Deceleration"
@@ -195,6 +209,7 @@
                 [maxValue]="500000"
                 [defaultValue]="settings.deceleration"></app-vertical-slider>
         </div>
+        }
     </div>
     }
 </ng-template>

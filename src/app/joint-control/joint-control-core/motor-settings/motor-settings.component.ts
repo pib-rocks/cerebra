@@ -5,6 +5,7 @@ import {
     ChangeDetectionStrategy,
     OnInit,
     DestroyRef,
+    ChangeDetectorRef,
     inject,
 } from "@angular/core";
 import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
@@ -35,6 +36,7 @@ import {MotorFeedbackComponent} from "../motor-feedback/motor-feedback.component
 })
 export class MotorSettingsComponent implements OnInit {
     private readonly destroyRef = inject(DestroyRef);
+    private readonly cdr = inject(ChangeDetectorRef);
 
     @Input() motor!: MotorConfiguration;
     @Input() reversed!: boolean;
@@ -55,6 +57,10 @@ export class MotorSettingsComponent implements OnInit {
     displayExtended: boolean = false;
     showActualPosition = false;
     showTemperature = false;
+    showPulseWidth = true;
+    showPeriod = true;
+    showDeceleration = true;
+    showZeroCalibration = false;
 
     constructor(
         private motorService: MotorService,
@@ -94,6 +100,37 @@ export class MotorSettingsComponent implements OnInit {
             .hasFeedback("temperature")
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe((available) => (this.showTemperature = available));
+
+        if (typeof this.variantService.hasMeaningfulSetting === "function") {
+            this.variantService
+                .hasMeaningfulSetting("pulse_width")
+                .pipe(takeUntilDestroyed(this.destroyRef))
+                .subscribe((available) => {
+                    this.showPulseWidth = available;
+                    this.cdr.markForCheck();
+                });
+            this.variantService
+                .hasMeaningfulSetting("period")
+                .pipe(takeUntilDestroyed(this.destroyRef))
+                .subscribe((available) => {
+                    this.showPeriod = available;
+                    this.cdr.markForCheck();
+                });
+            this.variantService
+                .hasMeaningfulSetting("deceleration")
+                .pipe(takeUntilDestroyed(this.destroyRef))
+                .subscribe((available) => {
+                    this.showDeceleration = available;
+                    this.cdr.markForCheck();
+                });
+            this.variantService
+                .hasMeaningfulSetting("zero_calibration")
+                .pipe(takeUntilDestroyed(this.destroyRef))
+                .subscribe((available) => {
+                    this.showZeroCalibration = available;
+                    this.cdr.markForCheck();
+                });
+        }
     }
 
     openPopup(content: TemplateRef<any>) {
@@ -145,5 +182,9 @@ export class MotorSettingsComponent implements OnInit {
     setInvert() {
         this.settings.invert = !this.invertFormControl.value;
         this.motorService.applySettings(this.motor.motorName, this.settings);
+    }
+
+    setCurrentPositionAsZero(): void {
+        this.motorService.calibrateZero(this.motor.motorName);
     }
 }

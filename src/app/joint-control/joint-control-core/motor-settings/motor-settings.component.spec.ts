@@ -30,6 +30,7 @@ describe("MotorSettingsComponent", () => {
             jasmine.createSpyObj("MotorService", [
                 "getSettingsObservable",
                 "applySettings",
+                "calibrateZero",
             ]);
         settingsSubject = new Subject();
         motorServiceSpy.getSettingsObservable.and.returnValue(settingsSubject);
@@ -252,5 +253,75 @@ describe("MotorSettingsComponent", () => {
             windowClass: "cerebra-modal",
             backdropClass: "cerebra-modal-backdrop",
         });
+    });
+
+    it("gates motor settings controls from meaningful settings capabilities", () => {
+        const variantServiceSpy = jasmine.createSpyObj("VariantService", [
+            "hasFeedback",
+            "hasMeaningfulSetting",
+        ]);
+        const meaningfulSettingAvailability = new Map<
+            string,
+            BehaviorSubject<boolean>
+        >();
+        meaningfulSettingAvailability.set(
+            "pulse_width",
+            new BehaviorSubject(false),
+        );
+        meaningfulSettingAvailability.set("period", new BehaviorSubject(false));
+        meaningfulSettingAvailability.set(
+            "deceleration",
+            new BehaviorSubject(false),
+        );
+        meaningfulSettingAvailability.set(
+            "zero_calibration",
+            new BehaviorSubject(true),
+        );
+        variantServiceSpy.hasFeedback.and.callFake((feedback: string) =>
+            feedback === "actual_position"
+                ? actualPositionAvailable
+                : temperatureAvailable,
+        );
+        variantServiceSpy.hasMeaningfulSetting.and.callFake(
+            (setting: string) =>
+                meaningfulSettingAvailability.get(setting) ??
+                new BehaviorSubject(false),
+        );
+
+        TestBed.resetTestingModule();
+        TestBed.configureTestingModule({
+            providers: [
+                {provide: MotorService, useValue: motorService},
+                {provide: NgbModal, useValue: modalService},
+                {provide: VariantService, useValue: variantServiceSpy},
+            ],
+            imports: [
+                ReactiveFormsModule,
+                MotorSettingsComponent,
+                HorizontalSliderComponent,
+                VerticalSliderComponent,
+            ],
+        }).compileComponents();
+
+        const localFixture = TestBed.createComponent(MotorSettingsComponent);
+        const localComponent = localFixture.componentInstance;
+        localComponent.motor = motor;
+        localFixture.detectChanges();
+
+        expect(localComponent.showPulseWidth).toBeFalse();
+        expect(localComponent.showPeriod).toBeFalse();
+        expect(localComponent.showDeceleration).toBeFalse();
+        expect(localComponent.showZeroCalibration).toBeTrue();
+
+        localComponent.settings = structuredClone(settings);
+        localComponent.setInvert();
+        expect(motorService.applySettings).toHaveBeenCalled();
+    });
+
+    it("setCurrentPositionAsZero calls motorService.calibrateZero", () => {
+        component.setCurrentPositionAsZero();
+        expect(motorService.calibrateZero).toHaveBeenCalledOnceWith(
+            "test_motor",
+        );
     });
 });
