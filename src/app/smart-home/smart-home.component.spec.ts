@@ -86,8 +86,110 @@ describe("SmartHomeComponent", () => {
         expect(component).toBeTruthy();
         expect(smartHomeService.getDevices).toHaveBeenCalled();
         expect(smartHomeService.getStatus).toHaveBeenCalled();
-        expect(component.devices.length).toBe(2);
+        expect(component.devices).toHaveSize(2);
         expect(component.hubStatus).toEqual(hubStatus);
+    });
+
+    it("handles climate temperature adjustments, search by entityId/room, error paths, and newly added devices", () => {
+        const climateDevice: SmartHomeDevice = {
+            entityId: "climate.thermostat",
+            domain: "climate",
+            friendlyName: "Thermostat",
+            room: "Office",
+            exposeToVoice: true,
+            exposeToPrograms: true,
+            state: "heat",
+            attributes: {target_temp: 21},
+            online: false,
+        };
+        const updatedClimate = {
+            ...climateDevice,
+            attributes: {temperature: 22},
+        };
+        smartHomeService.executeAction.and.returnValue(
+            of({
+                action: "set_temperature",
+                applied: true,
+                device: updatedClimate,
+            }),
+        );
+        component.adjustClimateTemperature(climateDevice, 1);
+        expect(smartHomeService.executeAction).toHaveBeenCalledWith(
+            "climate.thermostat",
+            "set_temperature",
+            22,
+        );
+        expect(component.climateTargetTemperature(updatedClimate)).toBe(22);
+        expect(
+            component.climateTargetTemperature({
+                ...climateDevice,
+                attributes: {},
+            }),
+        ).toBe(20);
+        expect(
+            component.deviceBrightness({
+                ...lightDevice,
+                attributes: {brightness: 55},
+            }),
+        ).toBe(55);
+        expect(
+            component.deviceBrightness({...lightDevice, attributes: {}}),
+        ).toBe(0);
+        expect(
+            component.isDeviceOn({...coverDevice, state: "open"}),
+        ).toBeTrue();
+        expect(
+            component.isDeviceOn({
+                ...coverDevice,
+                domain: "lock",
+                state: "unlocked",
+            }),
+        ).toBeTrue();
+        expect(component.isToggleDomain("lock")).toBeTrue();
+        expect(component.isToggleDomain("scene")).toBeTrue();
+        expect(component.isToggleDomain("sensor")).toBeFalse();
+
+        component.onSearchInput({
+            target: {value: "living room"},
+        } as unknown as Event);
+        expect(component.filteredDevices).toEqual([coverDevice]);
+
+        component.onSearchInput({
+            target: {value: "light.kitchen"},
+        } as unknown as Event);
+        expect(component.filteredDevices).toEqual([lightDevice]);
+
+        smartHomeService.getDevices.and.returnValue(
+            throwError(() => new Error("err")),
+        );
+        component.loadDevices();
+        expect(component.devicesLoading).toBeFalse();
+
+        smartHomeService.getStatus.and.returnValue(
+            throwError(() => new Error("err")),
+        );
+        component.loadHubStatus();
+        expect(component.hubLoading).toBeFalse();
+
+        smartHomeService.initializeHub.and.returnValue(
+            throwError(() => new Error("err")),
+        );
+        component.initializeHub();
+        expect(component.hubInitializing).toBeFalse();
+
+        smartHomeService.commissionMatterDevice.and.returnValue(
+            of({commissioned: false, device: climateDevice}),
+        );
+        component.pairingForm.setValue({
+            pairingCode: "3497-011-2332",
+            friendlyName: "Thermostat",
+            room: "Office",
+            domain: "climate",
+            wifiSsid: "MyWiFi",
+            wifiPassword: "secret",
+        });
+        component.submitPairing();
+        expect(component.pairingStatusError).toBeTrue();
     });
 
     it("should filter devices by room and search", () => {

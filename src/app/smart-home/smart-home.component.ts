@@ -116,7 +116,7 @@ export class SmartHomeComponent implements OnInit {
     }
 
     controlIdForEntity(entityId: string, suffix: string): string {
-        return `${suffix}-${entityId.replace(/\./g, "-")}`;
+        return `${suffix}-${entityId.split(".").join("-")}`;
     }
 
     isToggleDomain(domain: SmartHomeDomain): boolean {
