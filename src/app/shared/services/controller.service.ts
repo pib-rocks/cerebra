@@ -10,6 +10,9 @@ export interface ConnectedSerialController {
     port: string;
     kind: string;
     name: string;
+    assignedControllerNumber?: number | null;
+    matchCount?: number;
+    expectedCount?: number;
 }
 
 /**

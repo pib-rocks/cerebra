@@ -1435,7 +1435,28 @@ describe("HardwareIdComponent serial controller identifiers", () => {
             "updateAddress",
             "getConnectedControllers",
         ]);
-        controllerServiceSpy.getConnectedControllers.and.returnValue(of([]));
+        controllerServiceSpy.getConnectedControllers.and.returnValue(
+            of([
+                {
+                    serial: "5B91030562",
+                    port: "a",
+                    kind: "feetech_st_serial",
+                    name: "Waveshare adapter",
+                    assignedControllerNumber: 1,
+                    matchCount: 3,
+                    expectedCount: 3,
+                },
+                {
+                    serial: "5B79018060",
+                    port: "b",
+                    kind: "feetech_st_serial",
+                    name: "Waveshare adapter",
+                    assignedControllerNumber: 2,
+                    matchCount: 2,
+                    expectedCount: 3,
+                },
+            ]),
+        );
         controllerServiceSpy.updateAddress.and.callFake(
             (number: number, address: string) =>
                 of({
@@ -1694,5 +1715,61 @@ describe("HardwareIdComponent serial controller identifiers", () => {
                 '[data-test="MSG_Serial_Address_Warning_2"]',
             )?.textContent,
         ).toContain("This device is not currently detected.");
+    });
+
+    it("shows detected controller assignment in the dropdown label", async () => {
+        await fixture.whenStable();
+        fixture.detectChanges();
+
+        const second = fixture.nativeElement.querySelector(
+            '[data-test="INP_Serial_Address_2"]',
+        ) as HTMLSelectElement;
+        const labels = Array.from(second.options).map(
+            (option) => option.textContent ?? "",
+        );
+        expect(
+            labels.some((label) => label.includes("detected: Controller 2")),
+        ).toBe(true);
+    });
+
+    it("fills serial selects from detected assignments when the button is clicked", async () => {
+        await fixture.whenStable();
+        fixture.detectChanges();
+
+        const applyBtn = fixture.nativeElement.querySelector(
+            '[data-test="BTN_Use_Detected_Assignments"]',
+        ) as HTMLButtonElement;
+        applyBtn.click();
+        await fixture.whenStable();
+        fixture.detectChanges();
+
+        expect(component.serialControl(1).value).toBe("5B91030562");
+        expect(component.serialControl(2).value).toBe("5B79018060");
+    });
+
+    it("disables Use detected assignments when no adapter carries assignedControllerNumber", async () => {
+        controllerServiceSpy.getConnectedControllers.and.returnValue(
+            of([
+                {
+                    serial: "5B91030562",
+                    port: "a",
+                    kind: "feetech_st_serial",
+                    name: "Waveshare adapter",
+                },
+            ]),
+        );
+        component.refreshConnectedBricklets();
+        await fixture.whenStable();
+        fixture.detectChanges();
+
+        const applyBtn = fixture.nativeElement.querySelector(
+            '[data-test="BTN_Use_Detected_Assignments"]',
+        ) as HTMLButtonElement;
+        expect(applyBtn.disabled).toBe(true);
+    });
+
+    it("does not persist when applyDetectedAssignments is called without Save", () => {
+        component.applyDetectedAssignments();
+        expect(controllerServiceSpy.updateAddress).not.toHaveBeenCalled();
     });
 });

@@ -107,6 +107,25 @@ export class HardwareIdComponent implements OnInit {
         return Object.keys(this.brickletUidForm.controls).length > 0;
     }
 
+    get hasDetectedAssignments(): boolean {
+        return this.connectedSerialControllers.some(
+            (device) => typeof device.assignedControllerNumber === "number",
+        );
+    }
+
+    /** Fill the serial selects from the scan result. Writes nothing; Save persists. */
+    applyDetectedAssignments(): void {
+        this.serialControllers.forEach((controller) => {
+            const match = this.connectedSerialControllers.find(
+                (device) =>
+                    device.assignedControllerNumber === controller.number,
+            );
+            if (!match) return;
+            this.serialControl(controller).setValue(match.serial);
+        });
+        this.cdr.markForCheck();
+    }
+
     /**
      * The form value as it was last loaded or successfully saved. A signature rather than Angular's
      * `dirty`, which stays true once a control moved - the Blockly editor compares values for the
@@ -513,16 +532,19 @@ export class HardwareIdComponent implements OnInit {
                     `${right.port}/${right.serial}`,
                 ),
             );
-        const options = detected.map((device) => ({
-            uid: device.serial,
-            label: this.withSerialAssignmentMark(
-                device.port
-                    ? `${device.serial} - ${device.name} - ${device.port}`
-                    : `${device.serial} - ${device.name}`,
-                device.serial,
-                controller.number,
-            ),
-        }));
+        const options = detected.map((device) => {
+            const base = device.port
+                ? `${device.serial} - ${device.name} - ${device.port}`
+                : `${device.serial} - ${device.name}`;
+            return {
+                uid: device.serial,
+                label: this.withSerialAssignmentMark(
+                    `${base}${this.detectedAssignmentSuffix(device)}`,
+                    device.serial,
+                    controller.number,
+                ),
+            };
+        });
         const current = this.serialAddressValue(controller);
         if (current && !options.some((option) => option.uid === current)) {
             options.push({
@@ -899,6 +921,18 @@ export class HardwareIdComponent implements OnInit {
             ? `Port ${device.port.toUpperCase()}`
             : "carrier board";
         return `${device.uid} - ${device.name} - ${port}`;
+    }
+
+    private detectedAssignmentSuffix(
+        device: ConnectedSerialController,
+    ): string {
+        const number = device.assignedControllerNumber;
+        if (typeof number !== "number") return "";
+        const matched = device.matchCount ?? 0;
+        const expected = device.expectedCount ?? 0;
+        return expected > 0
+            ? ` - detected: Controller ${number} (${matched}/${expected} servos)`
+            : ` - detected: Controller ${number}`;
     }
 
     private currentUid(slot: number): string {

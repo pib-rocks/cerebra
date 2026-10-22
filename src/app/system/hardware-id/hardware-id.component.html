@@ -97,6 +97,18 @@
                     Serial controllers
                 </div>
                 <div></div>
+                <div class="grid-note">
+                    <button
+                        type="button"
+                        id="btn-use-detected-assignments"
+                        data-test="BTN_Use_Detected_Assignments"
+                        class="btn btn-outline-light"
+                        [disabled]="!hasDetectedAssignments"
+                        (click)="applyDetectedAssignments()">
+                        <i class="fas fa-magic me-1"></i>
+                        Use detected assignments
+                    </button>
+                </div>
                 @for (controller of serialControllers; track controller.number)
                 {
                 <label
