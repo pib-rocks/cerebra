@@ -148,7 +148,29 @@ export class DiagnosticsComponent implements OnInit, OnDestroy {
     }
 
     get servoBricklets(): BrickletTelemetry[] {
-        return this.bricklets.filter((b) => b.type === "Servo Bricklet");
+        return this.bricklets.filter(
+            (b) =>
+                b.type === "Servo Bricklet" ||
+                b.kind === "feetech_st_serial" ||
+                b.kind === "robstride_can",
+        );
+    }
+
+    get motorControllersHeading(): string {
+        if (this.servoBricklets.some((b) => b.kind === "feetech_st_serial")) {
+            return "Waveshare Serial Controllers";
+        }
+        if (this.servoBricklets.some((b) => b.kind === "robstride_can")) {
+            return "CAN Motor Controllers";
+        }
+        return "Servo Bricklets";
+    }
+
+    get motorControllersEmptyText(): string {
+        if (this.motorControllersHeading === "Waveshare Serial Controllers") {
+            return "No Waveshare controller telemetry data available.";
+        }
+        return "No Servo Bricklet telemetry data available.";
     }
 
     get buttonBricklets(): BrickletTelemetry[] {
