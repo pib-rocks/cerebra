@@ -24,6 +24,7 @@ import {
     ProviderSelectionRow,
     TokenProbeState,
     DeepChatComposerState,
+    chatMessageLengthRefusal,
     chatTransportUnavailableText,
     effectiveCloudTokenStored,
     resolveDeepChatComposer,
@@ -72,6 +73,7 @@ export class ChatWindowDeepChatComponent
         inputEnabled: false,
         placeholder: "",
         turnRefusal: null,
+        characterLimit: 0,
     };
     private pendingSignals?: {onResponse: (response: unknown) => void};
     private lastStreamedMessageId: string | undefined;
@@ -199,6 +201,11 @@ export class ChatWindowDeepChatComponent
                     signals.onResponse({
                         text: refusal ?? this.composerState.placeholder,
                     });
+                    return;
+                }
+                const lengthRefusal = chatMessageLengthRefusal(text);
+                if (lengthRefusal != null) {
+                    signals.onResponse({text: lengthRefusal});
                     return;
                 }
                 this.submitClickMs = performance.now();
@@ -342,6 +349,7 @@ export class ChatWindowDeepChatComponent
         el.textInput = {
             disabled: !enabled,
             placeholder: {text: this.composerState.placeholder},
+            characterLimit: this.composerState.characterLimit,
         };
         if (typeof el.disableSubmitButton === "function") {
             el.disableSubmitButton(!enabled);

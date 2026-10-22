@@ -1,3 +1,5 @@
+import {CHAT_MESSAGE_MAX_LENGTH} from "./chat-limits";
+
 /**
  * Pointer an existing personality may store. Resolving it is a lookup of
  * whichever model row is currently the default, so changing the default
@@ -45,6 +47,8 @@ export const DEEP_CHAT_SMARTCONNECT_PLACEHOLDER =
 export const DEEP_CHAT_KEY_STORE_LOCKED_PLACEHOLDER =
     "Unlock the key store to use Smart chat and Direct chat";
 
+export {CHAT_MESSAGE_MAX_LENGTH, chatMessageLengthRefusal} from "./chat-limits";
+
 export interface DeepChatComposerInput {
     smartConnectActive: boolean;
     keyStorageEncryptionOff: boolean;
@@ -60,6 +64,7 @@ export interface DeepChatComposerState {
     inputEnabled: boolean;
     placeholder: string;
     turnRefusal: string | null;
+    characterLimit: number;
 }
 
 /**
@@ -92,7 +97,12 @@ export function resolveDeepChatComposer(
         placeholder = turnRefusal;
     }
 
-    return {inputEnabled, placeholder, turnRefusal};
+    return {
+        inputEnabled,
+        placeholder,
+        turnRefusal,
+        characterLimit: CHAT_MESSAGE_MAX_LENGTH,
+    };
 }
 
 export function chatTransportUnavailableText(error: unknown): string | null {

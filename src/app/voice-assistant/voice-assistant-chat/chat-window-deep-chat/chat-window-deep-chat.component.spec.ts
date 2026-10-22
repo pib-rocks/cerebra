@@ -25,6 +25,10 @@ import {
     MISSING_KEY_TURN,
 } from "src/app/shared/types/provider-registry";
 import {
+    CHAT_MESSAGE_MAX_LENGTH,
+    chatMessageLengthRefusal,
+} from "src/app/shared/types/chat-limits";
+import {
     DEGRADED_MODE,
     UNLOCKED_MODE,
     degradedChatReply,
@@ -850,6 +854,7 @@ describe("ChatWindowDeepChatComponent", () => {
         expect(mockDeepChat.textInput).toEqual({
             disabled: false,
             placeholder: {text: "Enter a message"},
+            characterLimit: CHAT_MESSAGE_MAX_LENGTH,
         });
         expect(chatService.sendChatMessage).toHaveBeenCalledOnceWith(
             chatId,
@@ -881,7 +886,10 @@ describe("ChatWindowDeepChatComponent", () => {
         );
         expect(signals.onClose).toHaveBeenCalledTimes(2);
         expect(mockDeepChat.textInput).toEqual(
-            jasmine.objectContaining({disabled: false}),
+            jasmine.objectContaining({
+                disabled: false,
+                characterLimit: CHAT_MESSAGE_MAX_LENGTH,
+            }),
         );
     });
 
@@ -920,6 +928,7 @@ describe("ChatWindowDeepChatComponent", () => {
         expect(mockDeepChat.textInput).toEqual({
             disabled: false,
             placeholder: {text: "Enter a message"},
+            characterLimit: CHAT_MESSAGE_MAX_LENGTH,
         });
 
         // SmartConnect on + encryption on -> enabled
@@ -933,6 +942,7 @@ describe("ChatWindowDeepChatComponent", () => {
         expect(mockDeepChat.textInput).toEqual({
             disabled: false,
             placeholder: {text: "Enter a message"},
+            characterLimit: CHAT_MESSAGE_MAX_LENGTH,
         });
 
         // both off -> disabled, placeholder names the missing prerequisite
@@ -951,6 +961,7 @@ describe("ChatWindowDeepChatComponent", () => {
             placeholder: {
                 text: "Enable SmartConnect or deactivate key storage encryption to start the Voice-Assistant",
             },
+            characterLimit: CHAT_MESSAGE_MAX_LENGTH,
         });
     });
 
@@ -1030,6 +1041,7 @@ describe("ChatWindowDeepChatComponent", () => {
         expect(mockDeepChat.textInput).toEqual({
             disabled: true,
             placeholder: {text: MISSING_KEY_TURN},
+            characterLimit: CHAT_MESSAGE_MAX_LENGTH,
         });
     });
 
@@ -1090,7 +1102,10 @@ describe("ChatWindowDeepChatComponent", () => {
         );
 
         expect(mockDeepChat.textInput).toEqual(
-            jasmine.objectContaining({disabled: false}),
+            jasmine.objectContaining({
+                disabled: false,
+                characterLimit: CHAT_MESSAGE_MAX_LENGTH,
+            }),
         );
         expect(chatService.sendChatMessage).toHaveBeenCalledOnceWith(
             chatId,
@@ -1317,5 +1332,20 @@ describe("ChatWindowDeepChatComponent", () => {
             chatId,
             "a",
         );
+    });
+
+    it("refuses a line one character over the limit and does not send it", () => {
+        const overLimit = "a".repeat(CHAT_MESSAGE_MAX_LENGTH + 1);
+        const expected = chatMessageLengthRefusal(overLimit);
+        const signals = {onResponse: jasmine.createSpy("onResponse")};
+        mockDeepChat.connect!.handler(
+            {messages: [{role: "user", text: overLimit}]},
+            signals,
+        );
+
+        expect(chatService.sendChatMessage).not.toHaveBeenCalled();
+        expect(signals.onResponse).toHaveBeenCalledOnceWith({
+            text: expected,
+        });
     });
 });
