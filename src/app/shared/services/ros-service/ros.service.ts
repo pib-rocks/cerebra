@@ -216,6 +216,11 @@ export class RosService implements IRosService {
         ModelActionResponse
     >;
 
+    private refreshColorsService!: ROSLIB.Service<
+        Record<string, never>,
+        Record<string, never>
+    >;
+
     private runProgramAction!: ROSLIB.ActionClient;
 
     private connectionStatusSubject = new BehaviorSubject<boolean>(false);
@@ -401,6 +406,10 @@ export class RosService implements IRosService {
         this.stopModelService = this.createRosService(
             rosServices.stopModel,
             rosDataTypes.stopModel,
+        );
+        this.refreshColorsService = this.createRosService(
+            rosServices.refreshColors,
+            rosDataTypes.emptyService,
         );
     }
 
@@ -867,6 +876,15 @@ export class RosService implements IRosService {
     private clearModelPipelineState() {
         this.modelStatusReceiver$.next({models: []});
         this.detectionClearReceiver$.next(undefined);
+    }
+
+    refreshButtonColors(): void {
+        this.refreshColorsService.callService(
+            {},
+            () => undefined,
+            (error: any) =>
+                console.error("failed to refresh button colors: " + error),
+        );
     }
 
     applyJointTrajectory(
