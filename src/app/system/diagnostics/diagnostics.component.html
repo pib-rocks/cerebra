@@ -101,7 +101,9 @@
     <div class="row mb-4">
         <div class="col-md-6 mb-3 mb-md-0">
             <div class="card p-3 shadow-sm h-100">
-                <h4 class="card-title text-white">Servo Bricklets</h4>
+                <h4 class="card-title text-white">
+                    {{ motorControllersHeading }}
+                </h4>
                 <div class="table-responsive">
                     <table
                         class="table table-dark table-striped table-hover mt-2 mb-0"
@@ -125,15 +127,15 @@
                                         {{ b.status | uppercase }}
                                     </span>
                                 </td>
-                                <td>{{ b.voltage }} V</td>
-                                <td>{{ b.current }} mA</td>
+                                <td>{{ formatOneDecimal(b.voltage) }} V</td>
+                                <td>{{ formatOneDecimal(b.current) }} mA</td>
                             </tr>
                             } @if (servoBricklets.length === 0) {
                             <tr>
                                 <td
                                     colspan="4"
                                     class="text-center text-muted">
-                                    No Servo Bricklet telemetry data available.
+                                    {{ motorControllersEmptyText }}
                                 </td>
                             </tr>
                             }

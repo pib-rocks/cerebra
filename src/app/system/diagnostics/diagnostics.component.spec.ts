@@ -219,6 +219,71 @@ describe("DiagnosticsComponent", () => {
         expect(component.getCpuUsagePercent()).toBe(7);
     });
 
+    it("should render Waveshare serial motor controllers in the servo table with dynamic heading", () => {
+        const feetechBricklets = [1, 2, 3, 4].map((n) => ({
+            brickletNumber: n,
+            uid: `WS${n}`,
+            type: "Motor Controller",
+            kind: "feetech_st_serial" as const,
+            voltage: 12.0 + n * 0.1,
+            current: 100.0 + n,
+            status: "ok",
+            pins: [],
+        }));
+        diagnosticsServiceSpy.getBricklets.and.returnValue(
+            of({bricklets: feetechBricklets}),
+        );
+        const feetechFixture = TestBed.createComponent(DiagnosticsComponent);
+        feetechFixture.detectChanges();
+        const compiled = feetechFixture.nativeElement as HTMLElement;
+
+        const heading = compiled
+            .querySelector("#table-servo-bricklets")
+            ?.closest(".card")
+            ?.querySelector(".card-title");
+        expect(heading?.textContent?.trim()).toBe(
+            "Waveshare Serial Controllers",
+        );
+
+        const rows = compiled.querySelectorAll(
+            "#table-servo-bricklets tbody tr",
+        );
+        expect(rows.length).toBe(4);
+        feetechBricklets.forEach((b, i) => {
+            const cells = rows[i].querySelectorAll("td");
+            expect(cells[0].textContent?.trim()).toBe(b.uid);
+            expect(cells[2].textContent?.replace(/\s+/g, " ").trim()).toBe(
+                `${b.voltage.toFixed(1)} V`,
+            );
+            expect(cells[3].textContent?.replace(/\s+/g, " ").trim()).toBe(
+                `${b.current.toFixed(1)} mA`,
+            );
+        });
+
+        diagnosticsServiceSpy.getBricklets.and.returnValue(
+            of({
+                bricklets: [
+                    {
+                        brickletNumber: 1,
+                        uid: "29FA",
+                        type: "Servo Bricklet",
+                        voltage: 5.0,
+                        current: 120.0,
+                        status: "ok",
+                        pins: [{pin: 0, voltage: 5.0, current: 20.0}],
+                    },
+                ],
+            }),
+        );
+        const servoFixture = TestBed.createComponent(DiagnosticsComponent);
+        servoFixture.detectChanges();
+        const servoHeading = (servoFixture.nativeElement as HTMLElement)
+            .querySelector("#table-servo-bricklets")
+            ?.closest(".card")
+            ?.querySelector(".card-title");
+        expect(servoHeading?.textContent?.trim()).toBe("Servo Bricklets");
+    });
+
     it("should remove ID column from servo and button bricklet tables and use colspan 4 for empty rows", () => {
         const compiled = fixture.nativeElement as HTMLElement;
 

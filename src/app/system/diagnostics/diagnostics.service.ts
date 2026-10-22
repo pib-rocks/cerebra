@@ -42,6 +42,7 @@ export interface BrickletTelemetry {
     brickletNumber: number;
     uid: string;
     type: string;
+    kind?: string;
     voltage: number;
     current: number;
     status: string;
