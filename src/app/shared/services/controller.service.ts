@@ -1,8 +1,16 @@
 import {Injectable} from "@angular/core";
-import {Observable} from "rxjs";
+import {map, Observable} from "rxjs";
 import {ApiService} from "./api.service";
 import {UrlConstants} from "./url.constants";
 import {HardwareController} from "../types/hardware-capabilities";
+
+export interface ConnectedSerialController {
+    serial: string;
+    uid?: string;
+    port: string;
+    kind: string;
+    name: string;
+}
 
 /**
  * The controller rows of one robot (PC-124).
@@ -26,5 +34,16 @@ export class ControllerService {
             `${UrlConstants.CONTROLLER}/${controllerNumber}`,
             {address},
         );
+    }
+
+    getConnectedControllers(): Observable<ConnectedSerialController[]> {
+        return this.apiService
+            .get(UrlConstants.CONTROLLER_CONNECTED)
+            .pipe(
+                map(
+                    (res: {controllers?: ConnectedSerialController[]}) =>
+                        res?.controllers ?? [],
+                ),
+            );
     }
 }

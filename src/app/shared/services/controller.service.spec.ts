@@ -9,7 +9,7 @@ describe("ControllerService", () => {
     let apiService: jasmine.SpyObj<ApiService>;
 
     beforeEach(() => {
-        apiService = jasmine.createSpyObj("ApiService", ["put"]);
+        apiService = jasmine.createSpyObj("ApiService", ["put", "get"]);
         apiService.put.and.returnValue(
             of({
                 number: 2,
@@ -49,5 +49,29 @@ describe("ControllerService", () => {
             `${UrlConstants.CONTROLLER}/3`,
             {address: ""},
         );
+    });
+
+    it("reads connected serial controllers from the hardware", () => {
+        apiService.get.and.returnValue(
+            of({
+                controllers: [
+                    {
+                        serial: "WS-4A2F",
+                        port: "a",
+                        kind: "feetech_st_serial",
+                        name: "Waveshare adapter",
+                    },
+                ],
+            }),
+        );
+        let devices: unknown;
+        service.getConnectedControllers().subscribe((rows) => (devices = rows));
+
+        expect(apiService.get).toHaveBeenCalledOnceWith(
+            UrlConstants.CONTROLLER_CONNECTED,
+        );
+        expect(devices).toEqual([
+            jasmine.objectContaining({serial: "WS-4A2F"}),
+        ]);
     });
 });

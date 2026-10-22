@@ -10,7 +10,7 @@ import {
     inject,
 } from "@angular/core";
 import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
-import {forkJoin} from "rxjs";
+import {forkJoin, of} from "rxjs";
 import {
     FormControl,
     FormRecord,
@@ -19,7 +19,10 @@ import {
     ReactiveFormsModule,
 } from "@angular/forms";
 import {BrickletService} from "src/app/shared/services/bricklet.service";
-import {ControllerService} from "src/app/shared/services/controller.service";
+import {
+    ConnectedSerialController,
+    ControllerService,
+} from "src/app/shared/services/controller.service";
 import {HardwareController} from "src/app/shared/types/hardware-capabilities";
 import {
     HardwareContext,
@@ -65,8 +68,11 @@ export class HardwareIdComponent implements OnInit {
     showCanDocumentation = false;
     usingFallback = true;
     brickletUidForm = new FormGroup({}, {validators: uniqueValuesValidator()});
-    /** One identifier field per serial controller: read off the module, typed in. */
-    readonly serialAddressForm = new FormRecord<FormControl<string | null>>({});
+    /** One identifier field per serial controller, chosen from detected adapters. */
+    readonly serialAddressForm = new FormRecord<FormControl<string | null>>(
+        {},
+        {validators: uniqueValuesValidator()},
+    );
     serialAddressError: string | null = null;
     private savedSerialAddressSignature = "";
 
@@ -93,6 +99,9 @@ export class HardwareIdComponent implements OnInit {
     // Kept separate from `error`, which belongs to export/import: a failed
     // enumeration must not be cleared by an export and vice versa.
     connectedBrickletsError: string | null = null;
+
+    connectedSerialControllers: ConnectedSerialController[] = [];
+    connectedSerialLoaded = false;
 
     get hasEditableControllers(): boolean {
         return Object.keys(this.brickletUidForm.controls).length > 0;
@@ -139,6 +148,13 @@ export class HardwareIdComponent implements OnInit {
         return error?.ids ?? [];
     }
 
+    private get duplicatedSerialIds(): string[] {
+        const error = this.serialAddressForm.errors?.["nonUnique"] as
+            | {ids?: string[]}
+            | undefined;
+        return error?.ids ?? [];
+    }
+
     /** True when a control's own value breaks the length or the character rule. */
     private get hasMalformedUid(): boolean {
         // The form group is untyped (`new FormGroup({})`), so its controls come back as unknown.
@@ -168,6 +184,17 @@ export class HardwareIdComponent implements OnInit {
             const verb = duplicates.length === 1 ? "is" : "are";
             messages.push(
                 `${subject} ${duplicates.join(
+                    ", ",
+                )} ${verb} assigned more than once.`,
+            );
+        }
+        const serialDuplicates = this.duplicatedSerialIds;
+        if (serialDuplicates.length > 0) {
+            const subject =
+                serialDuplicates.length === 1 ? "identifier" : "identifiers";
+            const verb = serialDuplicates.length === 1 ? "is" : "are";
+            messages.push(
+                `${subject} ${serialDuplicates.join(
                     ", ",
                 )} ${verb} assigned more than once.`,
             );
@@ -233,11 +260,13 @@ export class HardwareIdComponent implements OnInit {
             });
 
         this.loadConnectedBricklets();
+        this.loadConnectedSerialControllers();
     }
 
     refreshConnectedBricklets(): void {
         if (this.connectedBrickletsLoading) return;
         this.loadConnectedBricklets();
+        this.loadConnectedSerialControllers();
     }
 
     /**
@@ -291,6 +320,25 @@ export class HardwareIdComponent implements OnInit {
                     this.cdr.markForCheck();
                 },
             });
+    }
+
+    private loadConnectedSerialControllers(): void {
+        const request =
+            typeof this.controllerService.getConnectedControllers === "function"
+                ? this.controllerService.getConnectedControllers()
+                : of([]);
+        request.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+            next: (devices) => {
+                this.connectedSerialControllers = devices ?? [];
+                this.connectedSerialLoaded = true;
+                this.cdr.markForCheck();
+            },
+            error: () => {
+                this.connectedSerialControllers = [];
+                this.connectedSerialLoaded = false;
+                this.cdr.markForCheck();
+            },
+        });
     }
 
     updateIds() {
@@ -455,6 +503,69 @@ export class HardwareIdComponent implements OnInit {
             });
         }
         return options;
+    }
+
+    serialOptions(controller: HardwareController): UidSelectOption[] {
+        const detected = this.connectedSerialControllers
+            .slice()
+            .sort((left, right) =>
+                `${left.port}/${left.serial}`.localeCompare(
+                    `${right.port}/${right.serial}`,
+                ),
+            );
+        const options = detected.map((device) => ({
+            uid: device.serial,
+            label: this.withSerialAssignmentMark(
+                device.port
+                    ? `${device.serial} - ${device.name} - ${device.port}`
+                    : `${device.serial} - ${device.name}`,
+                device.serial,
+                controller.number,
+            ),
+        }));
+        const current = this.serialAddressValue(controller);
+        if (current && !options.some((option) => option.uid === current)) {
+            options.push({
+                uid: current,
+                label: this.withSerialAssignmentMark(
+                    `${current} - not detected`,
+                    current,
+                    controller.number,
+                ),
+            });
+        }
+        return options;
+    }
+
+    serialDuplicateMessage(slot: number): string | null {
+        const controller = this.serialControllers.find(
+            (candidate) => candidate.number === slot,
+        );
+        if (!controller) {
+            return null;
+        }
+        const address = this.serialAddressValue(controller);
+        const others = this.otherSerialSlotsWithAddress(address, slot);
+        if (others.length === 0) {
+            return null;
+        }
+        return this.assignmentPhrase(others);
+    }
+
+    isSerialUndetected(slot: number): boolean {
+        const controller = this.serialControllers.find(
+            (candidate) => candidate.number === slot,
+        );
+        if (!controller) {
+            return false;
+        }
+        const address = this.serialAddressValue(controller);
+        if (!address || !this.connectedSerialLoaded) {
+            return false;
+        }
+        return !this.connectedSerialControllers.some(
+            (device) => device.serial === address,
+        );
     }
 
     duplicateMessage(slot: number): string | null {
@@ -809,6 +920,23 @@ export class HardwareIdComponent implements OnInit {
             .sort((a, b) => a - b);
     }
 
+    private otherSerialSlotsWithAddress(
+        address: string,
+        slot: number,
+    ): number[] {
+        if (!address) {
+            return [];
+        }
+        return this.serialControllers
+            .filter(
+                (controller) =>
+                    controller.number !== slot &&
+                    this.serialAddressValue(controller) === address,
+            )
+            .map((controller) => controller.number)
+            .sort((left, right) => left - right);
+    }
+
     private assignmentPhrase(slots: number[]): string {
         if (slots.length === 1) {
             return `already assigned to slot ${slots[0]}`;
@@ -823,6 +951,18 @@ export class HardwareIdComponent implements OnInit {
         slot: number,
     ): string {
         const others = this.otherSlotsWithUid(uid, slot);
+        if (others.length === 0) {
+            return label;
+        }
+        return `${label} (${this.assignmentPhrase(others)})`;
+    }
+
+    private withSerialAssignmentMark(
+        label: string,
+        serial: string,
+        slot: number,
+    ): string {
+        const others = this.otherSerialSlotsWithAddress(serial, slot);
         if (others.length === 0) {
             return label;
         }

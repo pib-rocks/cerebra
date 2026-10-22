@@ -131,7 +131,9 @@ describe("HardwareIdComponent", () => {
         });
         controllerServiceSpy = jasmine.createSpyObj("ControllerService", [
             "updateAddress",
+            "getConnectedControllers",
         ]);
+        controllerServiceSpy.getConnectedControllers.and.returnValue(of([]));
         controllerServiceSpy.updateAddress.and.callFake(
             (number: number, address: string) =>
                 of({
@@ -506,7 +508,7 @@ describe("HardwareIdComponent", () => {
         // The identifier is editable now (PC-124), so it lives in a field value.
         const headField = fixture.nativeElement.querySelector(
             '[data-test="INP_Serial_Address_1"]',
-        ) as HTMLInputElement;
+        ) as HTMLSelectElement;
         expect(headField.value).toBe("/dev/pib-head");
     });
 
@@ -1294,7 +1296,9 @@ describe("HardwareIdComponent UID save", () => {
         ]);
         controllerServiceSpy = jasmine.createSpyObj("ControllerService", [
             "updateAddress",
+            "getConnectedControllers",
         ]);
+        controllerServiceSpy.getConnectedControllers.and.returnValue(of([]));
         controllerServiceSpy.updateAddress.and.callFake(
             (number: number, address: string) =>
                 of({
@@ -1429,7 +1433,9 @@ describe("HardwareIdComponent serial controller identifiers", () => {
         brickletServiceSpy.getConnectedBricklets.and.returnValue(of([]));
         controllerServiceSpy = jasmine.createSpyObj("ControllerService", [
             "updateAddress",
+            "getConnectedControllers",
         ]);
+        controllerServiceSpy.getConnectedControllers.and.returnValue(of([]));
         controllerServiceSpy.updateAddress.and.callFake(
             (number: number, address: string) =>
                 of({
@@ -1494,10 +1500,10 @@ describe("HardwareIdComponent serial controller identifiers", () => {
         const rightGrid = grids[1];
         const first = leftGrid.querySelector(
             '[data-test="INP_Serial_Address_1"]',
-        ) as HTMLInputElement;
+        ) as HTMLSelectElement;
         const second = leftGrid.querySelector(
             '[data-test="INP_Serial_Address_2"]',
-        ) as HTMLInputElement;
+        ) as HTMLSelectElement;
         const relay = rightGrid.querySelector(
             '[data-test="TXT_Bricklet_UID_5"]',
         ) as HTMLSelectElement;
@@ -1614,5 +1620,79 @@ describe("HardwareIdComponent serial controller identifiers", () => {
                 '[data-test="MSG_Serial_Addresses_Error"]',
             )?.textContent,
         ).toContain("255");
+    });
+
+    it("renders serial controller fields as selects populated from connected controllers", async () => {
+        controllerServiceSpy.getConnectedControllers.and.returnValue(
+            of([
+                {
+                    serial: "WS-HEAD",
+                    port: "a",
+                    kind: "feetech_st_serial",
+                    name: "Waveshare adapter",
+                },
+                {
+                    serial: "WS-LEFT",
+                    port: "b",
+                    kind: "feetech_st_serial",
+                    name: "Waveshare adapter",
+                },
+            ]),
+        );
+
+        component.refreshConnectedBricklets();
+        await fixture.whenStable();
+        fixture.detectChanges();
+
+        const first = fixture.nativeElement.querySelector(
+            '[data-test="INP_Serial_Address_1"]',
+        ) as HTMLSelectElement;
+        expect(first.tagName).toBe("SELECT");
+        const optionValues = Array.from(first.options).map(
+            (option) => option.value,
+        );
+        expect(optionValues).toContain("WS-HEAD");
+        expect(optionValues).toContain("WS-LEFT");
+        expect(controllerServiceSpy.getConnectedControllers).toHaveBeenCalled();
+    });
+
+    it("shows a duplicate error and disables Save when the same serial is assigned twice", async () => {
+        component.serialControl(1).setValue("WS-SHARED");
+        component.serialControl(2).setValue("WS-SHARED");
+        await fixture.whenStable();
+        fixture.detectChanges();
+
+        expect(
+            fixture.nativeElement.querySelector(
+                '[data-test="MSG_Serial_Address_Error_1"]',
+            )?.textContent,
+        ).toContain("already assigned to slot 2");
+        expect(
+            fixture.nativeElement.querySelector(
+                '[data-test="MSG_Serial_Address_Error_2"]',
+            )?.textContent,
+        ).toContain("already assigned to slot 1");
+
+        const saveBtn = fixture.nativeElement.querySelector(
+            '[data-test="BTN_Update_bricklet_UIDs"]',
+        ) as HTMLButtonElement;
+        expect(saveBtn.disabled).toBe(true);
+    });
+
+    it("keeps a stored serial selected and warns when it is not currently detected", async () => {
+        controllerServiceSpy.getConnectedControllers.and.returnValue(of([]));
+        component.refreshConnectedBricklets();
+        await fixture.whenStable();
+        fixture.detectChanges();
+
+        const second = fixture.nativeElement.querySelector(
+            '[data-test="INP_Serial_Address_2"]',
+        ) as HTMLSelectElement;
+        expect(second.value).toBe("WS-4A2F");
+        expect(
+            fixture.nativeElement.querySelector(
+                '[data-test="MSG_Serial_Address_Warning_2"]',
+            )?.textContent,
+        ).toContain("This device is not currently detected.");
     });
 });

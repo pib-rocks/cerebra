@@ -107,20 +107,39 @@
                     >Controller {{ controller.number }}:</label
                 >
                 <div class="uid-field">
-                    <input
-                        type="text"
-                        class="form-control"
+                    <select
                         [attr.id]="'serial-address-' + controller.number"
                         [attr.data-test]="
                             'INP_Serial_Address_' + controller.number
                         "
                         [attr.data-test-id]="controller.number"
-                        [class.is-invalid]="serialControl(controller).invalid"
+                        class="form-select"
+                        [class.is-invalid]="
+                            serialControl(controller).invalid ||
+                            serialDuplicateMessage(controller.number)
+                        "
+                        [class.is-warning]="
+                            !serialDuplicateMessage(controller.number) &&
+                            isSerialUndetected(controller.number)
+                        "
                         [formControl]="serialControl(controller)"
-                        maxlength="255"
-                        placeholder="Identifier of the adapter"
-                        autocomplete="off" />
-                    @if (serialControl(controller).invalid) {
+                        (focus)="refreshConnectedBricklets()">
+                        <option value="">- not configured -</option>
+                        @for (option of serialOptions(controller); track
+                        option.uid) {
+                        <option [value]="option.uid">{{ option.label }}</option>
+                        }
+                    </select>
+                    @if (serialDuplicateMessage(controller.number); as message)
+                    {
+                    <div
+                        class="invalid-feedback d-block"
+                        [attr.data-test]="
+                            'MSG_Serial_Address_Error_' + controller.number
+                        ">
+                        {{ message }}
+                    </div>
+                    } @else if (serialControl(controller).invalid) {
                     <div
                         class="invalid-feedback d-block"
                         [attr.data-test]="
@@ -128,13 +147,21 @@
                         ">
                         Up to 255 characters.
                     </div>
+                    } @else if (isSerialUndetected(controller.number)) {
+                    <div
+                        class="uid-warning"
+                        [attr.data-test]="
+                            'MSG_Serial_Address_Warning_' + controller.number
+                        ">
+                        This device is not currently detected.
+                    </div>
                     }
                 </div>
                 }
                 <p class="controller-documentation grid-note">
-                    The identifier of the adapter is what the motor controller
-                    opens the bus with. It is read off the module, not derived
-                    by the robot.
+                    Select the detected serial identifier of each Waveshare
+                    adapter. Refreshing the connected devices list does not
+                    overwrite an already selected identifier.
                 </p>
                 }
             </div>
