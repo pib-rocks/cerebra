@@ -1,4 +1,5 @@
 import {MotorSettings} from "../../types/motor-settings.class";
+import {MotorUpperEndpoint} from "../../types/motor-dto";
 
 export interface MotorSettingsMessage {
     motor_name: string;
@@ -12,7 +13,9 @@ export interface MotorSettingsMessage {
     deceleration: number;
     period: number;
     visible: boolean;
-    invert: boolean;
+    upper_endpoint: MotorUpperEndpoint;
+    /** @deprecated Legacy motor nodes; superseded by upper_endpoint. */
+    invert?: boolean;
 }
 
 export function fromMotorSettings(
@@ -31,6 +34,6 @@ export function fromMotorSettings(
         deceleration: motorSettings.deceleration,
         period: motorSettings.period,
         visible: motorSettings.visible,
-        invert: motorSettings.invert,
+        upper_endpoint: motorSettings.upperEndpoint,
     };
 }

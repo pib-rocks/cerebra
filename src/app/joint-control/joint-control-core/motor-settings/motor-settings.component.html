@@ -154,22 +154,50 @@
                 (sliderEvent)="setPeriod($event[0])"></app-horizontal-slider>
         </div>
     </div>
-    } } @if (displayExtended) {
+    } } @if (displayExtended && showEndpointMapping) {
     <div class="row display-flex justify-content-center">
         <div class="col-9">
-            <div class="d-flex mb-3 ms-1">
-                <input
-                    type="checkbox"
-                    [formControl]="invertFormControl"
-                    class="active-check me-2 mt-1"
-                    id="invertMotor"
-                    data-test="CHK_Motor_Settings_Invert_Motor"
-                    (click)="setInvert()" />
-                <label
-                    class="form-check-label"
-                    for="invertMotor"
-                    >Invert motor</label
+            <div class="d-flex align-items-center mb-3 ms-1">
+                <span class="me-3">{{ endpointLabels.first }}</span>
+                <select
+                    class="form-select form-select-sm w-auto me-2"
+                    data-test="SEL_Motor_Settings_First_Endpoint"
+                    [formControl]="upperEndpointFormControl"
+                    (change)="setUpperEndpoint(upperEndpointFormControl.value!)">
+                    <option [ngValue]="'min'">
+                        {{ settings.rotationRangeMin }}
+                    </option>
+                    <option [ngValue]="'max'">
+                        {{ settings.rotationRangeMax }}
+                    </option>
+                </select>
+                <span class="me-3">°/100</span>
+                @if (showCurrentPositionButtons) {
+                <button
+                    type="button"
+                    class="btn btn-regular btn-sm"
+                    data-test="BTN_Motor_Settings_First_Endpoint_Current_Pos"
+                    (click)="setFirstEndpointToCurrentPosition()">
+                    Current pos
+                </button>
+                }
+            </div>
+            <div class="d-flex align-items-center mb-3 ms-1">
+                <span class="me-3">{{ endpointLabels.second }}</span>
+                <span
+                    class="me-3"
+                    data-test="TXT_Motor_Settings_Second_Endpoint"
+                    >{{ secondEndpointValue }} °/100</span
                 >
+                @if (showCurrentPositionButtons) {
+                <button
+                    type="button"
+                    class="btn btn-regular btn-sm"
+                    data-test="BTN_Motor_Settings_Second_Endpoint_Current_Pos"
+                    (click)="setSecondEndpointToCurrentPosition()">
+                    Current pos
+                </button>
+                }
             </div>
         </div>
     </div>

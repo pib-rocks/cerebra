@@ -39,7 +39,7 @@ export class MotorService {
         rotationRangeMax: +9000,
         turnedOn: true,
         visible: false,
-        invert: false,
+        upperEndpoint: "max",
     };
     private readonly defaultPosition: number = 0;
     private readonly defaultCurrent: number = 0;

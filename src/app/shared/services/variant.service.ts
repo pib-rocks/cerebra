@@ -39,7 +39,7 @@ const EDU_FALLBACK: HardwareContext = {
                 "acceleration",
                 "deceleration",
                 "period",
-                "invert",
+                "endpoint_mapping",
             ],
         },
     ],
