@@ -180,7 +180,7 @@ export class MotorSettingsComponent implements OnInit {
             )
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe((value) => {
-                const parsed = value !== undefined ? Number(value) : NaN;
+                const parsed = value !== undefined ? Number(value) : Number.NaN;
                 this.actualPosition = Number.isFinite(parsed)
                     ? Math.round(parsed * 100)
                     : 0;
