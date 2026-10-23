@@ -1,5 +1,5 @@
 import {MotorSettingsMessage} from "../ros-types/msg/motor-settings-message";
-import {MotorDTO} from "./motor-dto";
+import {MotorDTO, MotorUpperEndpoint} from "./motor-dto";
 
 export interface MotorSettings {
     velocity: number;
@@ -12,7 +12,17 @@ export interface MotorSettings {
     rotationRangeMax: number;
     turnedOn: boolean;
     visible: boolean;
-    invert: boolean;
+    upperEndpoint: MotorUpperEndpoint;
+}
+
+export function resolveUpperEndpoint(source: {
+    upperEndpoint?: MotorUpperEndpoint;
+    invert?: boolean;
+}): MotorUpperEndpoint {
+    if (source.upperEndpoint === "min" || source.upperEndpoint === "max") {
+        return source.upperEndpoint;
+    }
+    return source.invert === true ? "min" : "max";
 }
 
 export function fromMotorSettingsMessage(
@@ -29,7 +39,10 @@ export function fromMotorSettingsMessage(
         rotationRangeMax: message.rotation_range_max,
         turnedOn: message.turned_on,
         visible: message.visible,
-        invert: message.invert,
+        upperEndpoint: resolveUpperEndpoint({
+            upperEndpoint: message.upper_endpoint,
+            invert: message.invert,
+        }),
     };
 }
 
@@ -45,6 +58,6 @@ export function fromMotorDTO(motor: MotorDTO): MotorSettings {
         rotationRangeMax: motor.rotationRangeMax,
         turnedOn: motor.turnedOn,
         visible: motor.visible,
-        invert: motor.invert,
+        upperEndpoint: resolveUpperEndpoint(motor),
     };
 }

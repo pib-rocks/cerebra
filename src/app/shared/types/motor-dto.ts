@@ -3,6 +3,8 @@ export interface BrickletPinDTO {
     bricklet: string;
 }
 
+export type MotorUpperEndpoint = "min" | "max";
+
 export interface MotorSettingsDTO {
     name: string;
     turnedOn: boolean;
@@ -15,7 +17,9 @@ export interface MotorSettingsDTO {
     deceleration: number;
     period: number;
     visible: boolean;
-    invert: boolean;
+    upperEndpoint: MotorUpperEndpoint;
+    /** @deprecated Legacy backends; use {@link upperEndpoint}. */
+    invert?: boolean;
 }
 
 export interface MotorDTO extends MotorSettingsDTO {

@@ -47,7 +47,9 @@ describe("JointControlCoreComponent", () => {
         temperatureAvailable = new BehaviorSubject(false);
         const variantService = jasmine.createSpyObj("VariantService", [
             "hasFeedback",
+            "getInstalledControllerKinds",
         ]);
+        variantService.getInstalledControllerKinds.and.returnValue(of([]));
         variantService.hasFeedback.and.callFake((feedback: string) =>
             feedback === "actual_position"
                 ? actualPositionAvailable
@@ -70,7 +72,7 @@ describe("JointControlCoreComponent", () => {
                 rotationRangeMax: 9000,
                 turnedOn: true,
                 visible: true,
-                invert: false,
+                upperEndpoint: "max",
             }),
         );
         motorService.getCurrentObservable.and.returnValue(of(0));

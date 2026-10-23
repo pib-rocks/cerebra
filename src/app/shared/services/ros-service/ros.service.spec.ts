@@ -35,7 +35,7 @@ describe("RosService", () => {
         deceleration: 100,
         period: 100,
         visible: true,
-        invert: false,
+        upper_endpoint: "max",
     };
 
     let subscriber: jasmine.SpyObj<any>;
