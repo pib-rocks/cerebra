@@ -8,7 +8,64 @@
         data-test="TURN_TRACE_EMPTY">
         No turn has been recorded for this chat yet.
     </p>
-    } @else {
+    } @else { @if (hasToolCalls) {
+    <section
+        class="turn-trace-tools"
+        data-test="TURN_TRACE_TOOLS">
+        <table class="turn-trace-table">
+            <thead>
+                <tr>
+                    <th>tool</th>
+                    <th>status</th>
+                    <th>since turn start</th>
+                    <th>duration</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (tool of toolRows; track tool.callId) {
+                <tr data-test="TURN_TRACE_TOOL_ROW">
+                    <td>
+                        <span data-test="TURN_TRACE_TOOL_NAME"
+                            >{{ tool.name }}</span
+                        >
+                        @if (tool.argNames.length) {
+                        <span class="turn-trace-tool-args"
+                            >({{ tool.argNames.join(", ") }})</span
+                        >
+                        }
+                    </td>
+                    <td>
+                        <span
+                            class="turn-trace-tool-status turn-trace-tool-status--{{ tool.status }}"
+                            data-test="TURN_TRACE_TOOL_STATUS"
+                            >{{ statusLabel(tool.status) }}</span
+                        >
+                    </td>
+                    <td
+                        class="turn-trace-value"
+                        data-test="TURN_TRACE_TOOL_STARTED">
+                        +{{ tool.startedMs }} ms
+                    </td>
+                    <td
+                        class="turn-trace-value"
+                        data-test="TURN_TRACE_TOOL_ELAPSED">
+                        {{ toolDurationMs(tool) }} ms
+                    </td>
+                </tr>
+                @if (tool.status === "error" && tool.error) {
+                <tr>
+                    <td
+                        colspan="4"
+                        class="turn-trace-tool-error"
+                        data-test="TURN_TRACE_TOOL_ERROR">
+                        {{ tool.error }}
+                    </td>
+                </tr>
+                } }
+            </tbody>
+        </table>
+    </section>
+    }
     <table class="turn-trace-table">
         <thead>
             <tr>

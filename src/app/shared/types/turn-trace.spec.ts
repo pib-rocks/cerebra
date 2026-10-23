@@ -5,6 +5,7 @@ import {
     hasTrace,
     reduceTurnTrace,
     stageRows,
+    toolCallRows,
     traceDeltas,
     type TurnTrace,
 } from "./turn-trace";
@@ -184,5 +185,164 @@ describe("turn-trace", () => {
             label: "some_new_stage",
             ms: 250,
         });
+    });
+
+    it("records tool_call_started as running", () => {
+        const state = fold([
+            event({stage: "end_of_speech", ts_ms: 1000}),
+            event({
+                stage: "tool_call_started",
+                ts_ms: 1100,
+                source: "list_motors",
+                detail: {call_id: "list_motors-0", arg_names: ["limit"]},
+            }),
+        ]);
+        expect(toolCallRows(state)).toEqual([
+            {
+                callId: "list_motors-0",
+                name: "list_motors",
+                status: "running",
+                startedMs: 100,
+                durationMs: null,
+                error: "",
+                argNames: ["limit"],
+            },
+        ]);
+    });
+
+    it("marks tool_call_finished as ok with duration", () => {
+        const state = fold([
+            event({stage: "end_of_speech", ts_ms: 1000}),
+            event({
+                stage: "tool_call_started",
+                ts_ms: 1100,
+                source: "list_motors",
+                detail: {call_id: "list_motors-0", arg_names: []},
+            }),
+            event({
+                stage: "tool_call_finished",
+                ts_ms: 2211,
+                source: "list_motors",
+                detail: {
+                    call_id: "list_motors-0",
+                    ok: true,
+                    duration_ms: 1111,
+                    arg_names: [],
+                    error: null,
+                },
+            }),
+        ]);
+        expect(state.toolCalls[0].status).toBe("ok");
+        expect(state.toolCalls[0].durationMs).toBe(1111);
+    });
+
+    it("marks a failed tool_call_finished as error with the message", () => {
+        const state = fold([
+            event({stage: "end_of_speech", ts_ms: 0}),
+            event({
+                stage: "tool_call_finished",
+                ts_ms: 500,
+                source: "fetch",
+                detail: {
+                    call_id: "fetch-0",
+                    ok: false,
+                    duration_ms: 500,
+                    arg_names: [],
+                    error: "timeout",
+                },
+            }),
+        ]);
+        expect(state.toolCalls[0].status).toBe("error");
+        expect(state.toolCalls[0].error).toBe("timeout");
+    });
+
+    it("keeps a finished tool when the start event was missed", () => {
+        const state = fold([
+            event({stage: "end_of_speech", ts_ms: 1000}),
+            event({
+                stage: "tool_call_finished",
+                ts_ms: 2211,
+                source: "list_motors",
+                detail: {
+                    call_id: "list_motors-0",
+                    ok: true,
+                    duration_ms: 1111,
+                    arg_names: [],
+                    error: null,
+                },
+            }),
+        ]);
+        expect(state.toolCalls.length).toBe(1);
+        expect(state.toolCalls[0].startedMs).toBe(100);
+    });
+
+    it("does not duplicate a row for legacy tool_call", () => {
+        const state = fold([
+            event({stage: "end_of_speech", ts_ms: 1000}),
+            event({
+                stage: "tool_call_started",
+                ts_ms: 1100,
+                source: "list_motors",
+                detail: {call_id: "list_motors-0", arg_names: []},
+            }),
+            event({
+                stage: "tool_call_finished",
+                ts_ms: 2211,
+                source: "list_motors",
+                detail: {
+                    call_id: "list_motors-0",
+                    ok: true,
+                    duration_ms: 1111,
+                    arg_names: [],
+                    error: null,
+                },
+            }),
+            event({
+                stage: "tool_call",
+                ts_ms: 2211,
+                source: "list_motors",
+                detail: {
+                    call_id: "list_motors-0",
+                    ok: true,
+                    duration_ms: 1111,
+                    arg_names: [],
+                    error: null,
+                },
+            }),
+        ]);
+        expect(state.toolCalls.length).toBe(1);
+        expect(state.toolCalls[0].status).toBe("ok");
+    });
+
+    it("clears tool calls on end_of_speech", () => {
+        const withTool = fold([
+            event({stage: "end_of_speech", ts_ms: 1000}),
+            event({
+                stage: "tool_call_started",
+                ts_ms: 1100,
+                source: "list_motors",
+                detail: {call_id: "list_motors-0", arg_names: []},
+            }),
+        ]);
+        expect(withTool.toolCalls.length).toBe(1);
+
+        const next = reduceTurnTrace(
+            withTool,
+            event({stage: "end_of_speech", ts_ms: 9000}),
+        );
+        expect(next.toolCalls).toEqual([]);
+    });
+
+    it("hasTrace is true for a turn with only tool calls", () => {
+        const state = fold([
+            event({stage: "end_of_speech", ts_ms: 0}),
+            event({
+                stage: "tool_call_started",
+                ts_ms: 50,
+                source: "ping",
+                detail: {call_id: "ping-0", arg_names: []},
+            }),
+        ]);
+        expect(hasTrace(state)).toBe(true);
     });
 });

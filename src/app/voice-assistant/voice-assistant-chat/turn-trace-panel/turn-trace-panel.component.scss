@@ -34,3 +34,42 @@
     font-variant-numeric: tabular-nums;
     color: #ff2f92;
 }
+
+.turn-trace-tools {
+    margin-top: 0.35rem;
+}
+
+.turn-trace-tool-args {
+    color: #7e889c;
+    margin-left: 0.25rem;
+}
+
+.turn-trace-tool-status {
+    display: inline-block;
+    padding: 0.05rem 0.35rem;
+    border-radius: 0.2rem;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+
+    &--running {
+        color: #f5d742;
+        background: rgba(245, 215, 66, 0.12);
+    }
+
+    &--ok {
+        color: #5ce0a8;
+        background: rgba(92, 224, 168, 0.12);
+    }
+
+    &--error {
+        color: #ff6b6b;
+        background: rgba(255, 107, 107, 0.12);
+    }
+}
+
+.turn-trace-tool-error {
+    color: #ff6b6b;
+    font-size: 0.72rem;
+    padding-bottom: 0.2rem;
+}
