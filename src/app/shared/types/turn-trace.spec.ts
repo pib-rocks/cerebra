@@ -345,4 +345,44 @@ describe("turn-trace", () => {
         ]);
         expect(hasTrace(state)).toBe(true);
     });
+
+    it("closes every entry when a stored trace repeats one call id", () => {
+        // PR-2042: six move_motor calls arrived as `move_motor-0`; only the first
+        // was ever finished, so the panel showed five calls as running for good.
+        const id = "move_motor-0";
+        const events: VoiceTurnTraceEvent[] = [];
+        for (let i = 0; i < 3; i++) {
+            events.push(
+                event({
+                    stage: "tool_call_started",
+                    ts_ms: 1000 + i * 100,
+                    source: "move_motor",
+                    detail: {call_id: id, arg_names: ["motor_name"]},
+                }),
+            );
+            events.push(
+                event({
+                    stage: "tool_call_finished",
+                    ts_ms: 1050 + i * 100,
+                    source: "move_motor",
+                    detail: {
+                        call_id: id,
+                        ok: true,
+                        duration_ms: 50,
+                        arg_names: [],
+                    },
+                }),
+            );
+        }
+
+        const state = fold(events);
+
+        expect(state.toolCalls.length).toBe(3);
+        expect(
+            state.toolCalls.every((call) => call.status === "ok"),
+        ).toBeTrue();
+        expect(
+            state.toolCalls.some((call) => call.status === "running"),
+        ).toBeFalse();
+    });
 });

@@ -180,7 +180,17 @@ function applyToolCallFinished(
     const {callId, argNames, ok, durationMs, error} = parseToolDetail(event);
     const name = event.source || "";
     const status = ok ? "ok" : "error";
-    const idx = state.toolCalls.findIndex((call) => call.callId === callId);
+    // Pair with the entry that is still open. A trace can carry the same call id
+    // more than once: the robot used to derive the id from the part index, so six
+    // move_motor calls in one turn all arrived as `move_motor-0` (PR-2042). Marking
+    // only the first entry left the rest "running" for good.
+    const runningIdx = state.toolCalls.findIndex(
+        (call) => call.callId === callId && call.status === "running",
+    );
+    const idx =
+        runningIdx >= 0
+            ? runningIdx
+            : state.toolCalls.findIndex((call) => call.callId === callId);
 
     if (legacyOnlyIfMissing && idx >= 0) {
         return {...state, chatId};
