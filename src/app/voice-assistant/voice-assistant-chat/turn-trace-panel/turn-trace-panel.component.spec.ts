@@ -1,4 +1,9 @@
-import {ComponentFixture, TestBed} from "@angular/core/testing";
+import {
+    ComponentFixture,
+    TestBed,
+    fakeAsync,
+    tick,
+} from "@angular/core/testing";
 import {TurnTracePanelComponent} from "./turn-trace-panel.component";
 import {emptyTurnTrace, type TurnTrace} from "src/app/shared/types/turn-trace";
 
@@ -50,6 +55,7 @@ describe("TurnTracePanelComponent", () => {
             source: "pib-cloud",
             model: "pib-cloud",
             streamEnd: "done",
+            toolCalls: [],
         });
 
         expect(text("TURN_TRACE_SUMMARY")).toBe(
@@ -80,4 +86,120 @@ describe("TurnTracePanelComponent", () => {
         );
         expect(details.open).toBe(false);
     });
+
+    it("omits the tools section when there are no tool calls", () => {
+        setTrace({
+            ...emptyTurnTrace("chat-1"),
+            startedMs: 0,
+            stages: {end_of_speech: 0},
+            source: "pib-cloud",
+        });
+        expect(all("TURN_TRACE_TOOLS").length).toBe(0);
+    });
+
+    it("renders one row per tool call with name, status, and duration", () => {
+        setTrace({
+            chatId: "chat-1",
+            startedMs: 1000,
+            stages: {end_of_speech: 0},
+            source: "pib-cloud",
+            model: "",
+            streamEnd: "",
+            toolCalls: [
+                {
+                    callId: "list_motors-0",
+                    name: "list_motors",
+                    argNames: ["limit"],
+                    status: "ok",
+                    startedMs: 100,
+                    durationMs: 1111,
+                    error: "",
+                },
+                {
+                    callId: "ping-0",
+                    name: "ping",
+                    argNames: [],
+                    status: "error",
+                    startedMs: 200,
+                    durationMs: 50,
+                    error: "refused",
+                },
+            ],
+        });
+
+        expect(all("TURN_TRACE_TOOL_ROW").length).toBe(2);
+        expect(text("TURN_TRACE_TOOL_NAME")).toBe("list_motors");
+        const statuses = all("TURN_TRACE_TOOL_STATUS").map((el) =>
+            el.textContent!.trim(),
+        );
+        expect(statuses).toEqual(["ok", "error"]);
+        expect(text("TURN_TRACE_TOOL_STARTED")).toContain("+100 ms");
+        const elapsed = all("TURN_TRACE_TOOL_ELAPSED").map((el) =>
+            el.textContent!.trim(),
+        );
+        expect(elapsed).toEqual(["1111 ms", "50 ms"]);
+        expect(text("TURN_TRACE_TOOL_ERROR")).toBe("refused");
+    });
+
+    it("grows elapsed time on a running tool between timer ticks", fakeAsync(() => {
+        setTrace({
+            chatId: "chat-1",
+            startedMs: 1000,
+            stages: {end_of_speech: 0},
+            source: "pib-cloud",
+            model: "",
+            streamEnd: "",
+            toolCalls: [
+                {
+                    callId: "list_motors-0",
+                    name: "list_motors",
+                    argNames: [],
+                    status: "running",
+                    startedMs: 0,
+                    durationMs: null,
+                    error: "",
+                },
+            ],
+        });
+
+        const elapsedEl: HTMLElement = fixture.nativeElement.querySelector(
+            '[data-test="TURN_TRACE_TOOL_ELAPSED"]',
+        );
+        const first = Number.parseFloat(elapsedEl.textContent!);
+        tick(500);
+        fixture.detectChanges();
+        const second = Number.parseFloat(elapsedEl.textContent!);
+        expect(second).toBeGreaterThan(first);
+    }));
+
+    it("clears the live timer on destroy", fakeAsync(() => {
+        setTrace({
+            chatId: "chat-1",
+            startedMs: 1000,
+            stages: {end_of_speech: 0},
+            source: "pib-cloud",
+            model: "",
+            streamEnd: "",
+            toolCalls: [
+                {
+                    callId: "list_motors-0",
+                    name: "list_motors",
+                    argNames: [],
+                    status: "running",
+                    startedMs: 0,
+                    durationMs: null,
+                    error: "",
+                },
+            ],
+        });
+
+        const component = fixture.componentInstance;
+        expect(component["liveTimer"]).not.toBeNull();
+        const markSpy = spyOn(component["cdr"], "markForCheck");
+
+        fixture.destroy();
+        expect(component["liveTimer"]).toBeNull();
+        tick(500);
+        expect(markSpy).not.toHaveBeenCalled();
+    }));
 });
