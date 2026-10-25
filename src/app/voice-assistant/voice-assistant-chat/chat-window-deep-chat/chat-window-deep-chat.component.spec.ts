@@ -1575,11 +1575,13 @@ describe("ChatWindowDeepChatComponent fresh chat without id", () => {
                     }),
             ),
         );
-        const textarea = {
-            value: "",
+        // deep-chat's live composer is a contenteditable div, not a textarea.
+        const composer = {
+            isContentEditable: true,
+            textContent: "",
             dispatchEvent: jasmine.createSpy("dispatchEvent"),
         };
-        (mockDeepChat as any).shadowRoot = {querySelector: () => textarea};
+        (mockDeepChat as any).shadowRoot = {querySelector: () => composer};
 
         const signals = {onResponse: jasmine.createSpy("onResponse")};
         mockDeepChat.connect!.handler(
@@ -1591,8 +1593,8 @@ describe("ChatWindowDeepChatComponent fresh chat without id", () => {
             signals.onResponse.calls.mostRecent()?.args[0]?.text ?? "";
         expect(shown).toMatch(/503/);
         expect(shown).toMatch(/chat store offline/);
-        expect(textarea.value).toBe("still here");
-        expect(textarea.dispatchEvent).toHaveBeenCalled();
+        expect(composer.textContent).toBe("still here");
+        expect(composer.dispatchEvent).toHaveBeenCalled();
         expect(chatService.sendChatMessage).not.toHaveBeenCalled();
     });
 
