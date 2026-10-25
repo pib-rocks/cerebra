@@ -59,7 +59,6 @@ export class ChatWindowDeepChatComponent
     currentChatId: string | undefined;
     /** Set only when the window has no way to show a message (no deep-chat element yet). */
     newChatError = "";
-    private creatingChat = false;
     personalityName: string | undefined;
 
     private probeCloudTokenStored = false;
@@ -149,11 +148,6 @@ export class ChatWindowDeepChatComponent
                     }
                     this.applyNames();
                     this.refreshComposer();
-                    // Create the chat before the first submit: deep-chat clears its
-                    // input on submit and offers no way to put the text back, so a
-                    // chat that only appears after the first message costs the user
-                    // the text when creating it fails (PR-2046).
-                    this.startNewChat(personalityId);
                     return;
                 }
 
@@ -255,28 +249,6 @@ export class ChatWindowDeepChatComponent
         };
     }
 
-    private startNewChat(personalityId: string | undefined): void {
-        if (!personalityId || this.creatingChat) {
-            return;
-        }
-        this.creatingChat = true;
-        this.sendChatMessageSubscriptions.add(
-            this.chatService
-                .createChat(new ChatDto("New chat", personalityId))
-                .subscribe({
-                    next: (chat) => {
-                        this.creatingChat = false;
-                        this.adoptCreatedChat(chat);
-                        this.refreshComposer();
-                    },
-                    error: (err) => {
-                        this.creatingChat = false;
-                        this.showNewChatError(chatCreateErrorMessage(err));
-                    },
-                }),
-        );
-    }
-
     /** A chat that could not be created has no bubble of its own; say it in the chat. */
     private showNewChatError(message: string): void {
         const el = this.deepChatRef?.nativeElement;
@@ -285,6 +257,24 @@ export class ChatWindowDeepChatComponent
             return;
         }
         this.newChatError = message;
+    }
+
+    /**
+     * deep-chat clears its input when the user submits and exposes no setter, so
+     * the text is written back into the shadow input (PR-2046).
+     */
+    private restoreComposerText(el: any, text: string): void {
+        const root = el?.shadowRoot;
+        const input =
+            root?.querySelector?.("textarea") ??
+            root?.querySelector?.("input[type=text]");
+        if (!input) {
+            return;
+        }
+        input.value = text;
+        input.dispatchEvent(
+            new Event("input", {bubbles: true, composed: true}),
+        );
     }
 
     private beginTurnWithoutChat(
@@ -297,6 +287,10 @@ export class ChatWindowDeepChatComponent
             signals.onResponse({
                 text: "Could not create chat: personality not found.",
             });
+            this.restoreComposerText(
+                this.deepChatRef?.nativeElement,
+                messageText,
+            );
             return;
         }
         const topic = messageText.trim().slice(0, 255) || "New chat";
@@ -331,6 +325,10 @@ export class ChatWindowDeepChatComponent
                         signals.onResponse({
                             text: chatCreateErrorMessage(err),
                         });
+                        this.restoreComposerText(
+                            this.deepChatRef?.nativeElement,
+                            messageText,
+                        );
                         this.pendingSignals = undefined;
                         this.submitClickMs = undefined;
                     },
