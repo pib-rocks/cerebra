@@ -9,6 +9,8 @@ import {emptyTurnTrace, type TurnTrace} from "src/app/shared/types/turn-trace";
 
 describe("TurnTracePanelComponent", () => {
     let fixture: ComponentFixture<TurnTracePanelComponent>;
+    /** Test-controlled clock: the component reads time through its `now` input. */
+    let clockMs: number;
 
     function setTrace(trace: TurnTrace) {
         fixture.componentRef.setInput("trace", trace);
@@ -32,7 +34,9 @@ describe("TurnTracePanelComponent", () => {
         await TestBed.configureTestingModule({
             imports: [TurnTracePanelComponent],
         }).compileComponents();
+        clockMs = 0;
         fixture = TestBed.createComponent(TurnTracePanelComponent);
+        fixture.componentRef.setInput("now", () => clockMs);
         fixture.detectChanges();
     });
 
@@ -166,6 +170,9 @@ describe("TurnTracePanelComponent", () => {
             '[data-test="TURN_TRACE_TOOL_ELAPSED"]',
         );
         const first = Number.parseFloat(elapsedEl.textContent!);
+        // The component reads its clock through the injected `now` function, so the
+        // test controls the advance instead of hoping that the real clock moved.
+        clockMs += 500;
         tick(500);
         fixture.detectChanges();
         const second = Number.parseFloat(elapsedEl.textContent!);

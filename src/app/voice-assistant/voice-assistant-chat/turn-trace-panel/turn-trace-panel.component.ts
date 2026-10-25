@@ -73,8 +73,15 @@ export class TurnTracePanelComponent implements OnChanges, OnDestroy {
         return `turn trace: ${source} · ${this.stageCount}/${TURN_STAGES.length} stages`;
     }
 
+    /**
+     * Clock used for the live elapsed time. Injectable so a test can advance it
+     * deterministically: fakeAsync patches Date but not performance.now(), so a
+     * test that relied on the real clock asserted growth it could not control.
+     */
+    @Input() now: () => number = () => performance.now();
+
     ngOnChanges(): void {
-        this.syncWallMs = performance.now();
+        this.syncWallMs = this.now();
         this.syncRelativeMs = this.latestRelativeMs(this.trace);
         this.syncLiveTimer();
     }
@@ -92,7 +99,7 @@ export class TurnTracePanelComponent implements OnChanges, OnDestroy {
             return call.durationMs ?? 0;
         }
         const nowRelative =
-            this.syncRelativeMs + (performance.now() - this.syncWallMs);
+            this.syncRelativeMs + (this.now() - this.syncWallMs);
         return Math.round(Math.max(0, nowRelative - call.startedMs) * 10) / 10;
     }
 
