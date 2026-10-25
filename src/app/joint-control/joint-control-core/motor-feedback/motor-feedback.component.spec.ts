@@ -52,6 +52,27 @@ describe("MotorFeedbackComponent", () => {
         expect(value?.textContent?.trim()).toBe("12.3 °");
     });
 
+    it("shows the placeholder while no value arrived", () => {
+        const value = fixture.nativeElement.querySelector(
+            "[data-test='TXT_Motor_Feedback_Value']",
+        );
+        expect(value).toBeNull();
+        expect(
+            fixture.nativeElement.querySelector(".feedback-placeholder")
+                ?.textContent,
+        ).toContain("—");
+    });
+
+    it("passes a non-numeric actual position through unchanged", () => {
+        feedback$.next("n/a");
+        fixture.detectChanges();
+
+        const value = fixture.nativeElement.querySelector(
+            "[data-test='TXT_Motor_Feedback_Value']",
+        );
+        expect(value?.textContent?.trim()).toBe("n/a");
+    });
+
     it("leaves temperature values unchanged", () => {
         component.feedback = "temperature";
         fixture.detectChanges();
