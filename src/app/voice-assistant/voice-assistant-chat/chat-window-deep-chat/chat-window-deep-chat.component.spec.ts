@@ -1526,35 +1526,50 @@ describe("ChatWindowDeepChatComponent fresh chat without id", () => {
         component.ngOnDestroy();
     });
 
-    it("creates a chat on first send then delivers the turn", () => {
-        const signals = {onResponse: jasmine.createSpy("onResponse")};
-        mockDeepChat.connect!.handler(
-            {messages: [{role: "user", text: "hello there"}]},
-            signals,
+    it("creates the chat when the window opens without an id and sends the turn with it", () => {
+        // PR-2046: the chat exists before the first submit, so a failed creation can
+        // never eat the typed text (deep-chat clears its input on submit).
+        chatService.createChat.and.returnValue(
+            of(new Chat("New chat", personalityUuid, createdChatId)),
         );
+        chatService.createChat.calls.reset();
+        chatService.sendChatMessage.calls.reset();
+        router.navigate as jasmine.Spy;
+
+        paramsSubject.next({});
 
         expect(chatService.createChat).toHaveBeenCalledOnceWith(
-            new ChatDto("hello there", personalityUuid),
-        );
-        expect(chatService.sendChatMessage).toHaveBeenCalledOnceWith(
-            createdChatId,
-            "hello there",
+            new ChatDto("New chat", personalityUuid),
         );
         expect(component.currentChatId).toBe(createdChatId);
         expect(router.navigate).toHaveBeenCalledWith(
             [createdChatId],
             jasmine.objectContaining({relativeTo: jasmine.anything()}),
         );
+
+        const signals = {onResponse: jasmine.createSpy("onResponse")};
+        mockDeepChat.connect!.handler(
+            {messages: [{role: "user", text: "hello there"}]},
+            signals,
+        );
+
+        expect(chatService.sendChatMessage).toHaveBeenCalledOnceWith(
+            createdChatId,
+            "hello there",
+        );
     });
 
     it("loadHistory without id resolves to [] and skips the API", async () => {
+        component.currentChatId = undefined;
+        chatService.getMessagesByChatId.calls.reset();
+
         const result = await mockDeepChat.loadHistory!();
 
         expect(result).toEqual([]);
         expect(chatService.getMessagesByChatId).not.toHaveBeenCalled();
     });
 
-    it("surfaces a named create failure and keeps the typed text", () => {
+    it("names a failed chat creation when the window opens", () => {
         chatService.createChat.and.returnValue(
             throwError(
                 () =>
@@ -1565,19 +1580,15 @@ describe("ChatWindowDeepChatComponent fresh chat without id", () => {
                     }),
             ),
         );
-        const signals = {onResponse: jasmine.createSpy("onResponse")};
-        mockDeepChat.connect!.handler(
-            {messages: [{role: "user", text: "still here"}]},
-            signals,
-        );
 
+        paramsSubject.next({});
+
+        expect(component.currentChatId).toBeUndefined();
         expect(chatService.sendChatMessage).not.toHaveBeenCalled();
-        expect(signals.onResponse).toHaveBeenCalledTimes(1);
-        const failureText = signals.onResponse.calls.mostRecent().args[0]
+        const shown = mockDeepChat.addMessage.calls.mostRecent().args[0]
             .text as string;
-        expect(failureText).toMatch(/503/);
-        expect(failureText).toMatch(/chat store offline/);
-        expect(mockDeepChat.defaultInput).toEqual({text: "still here"});
+        expect(shown).toMatch(/503/);
+        expect(shown).toMatch(/chat store offline/);
     });
 
     it("never calls createChat when the route already has an id", () => {
