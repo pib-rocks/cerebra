@@ -267,13 +267,23 @@ export class ChatWindowDeepChatComponent
         const root = el?.shadowRoot;
         const input =
             root?.querySelector?.("textarea") ??
-            root?.querySelector?.("input[type=text]");
+            root?.querySelector?.("input[type=text]") ??
+            root?.querySelector?.('[contenteditable="true"]');
         if (!input) {
             return;
         }
-        input.value = text;
+        if (input.isContentEditable) {
+            input.textContent = text;
+        } else {
+            input.value = text;
+        }
         input.dispatchEvent(
-            new Event("input", {bubbles: true, composed: true}),
+            new InputEvent("input", {
+                bubbles: true,
+                composed: true,
+                inputType: "insertText",
+                data: text,
+            }),
         );
     }
 
