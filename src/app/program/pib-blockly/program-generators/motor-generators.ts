@@ -17,6 +17,7 @@ import {
 } from "./util/definitions";
 import {
     APPLY_JOINT_TRAJECTORY_FUNCTION,
+    GET_HAND_POSITION_REP103_FUNCTION,
     CENTIDEGREES_TO_DEGREES_FUNCTION,
     GET_JOINT_POSITION_FUNCTION,
     GET_MOTOR_CURRENT_MA_FUNCTION,
@@ -198,10 +199,12 @@ function getHandPositionComponent(
         IMPORT_PIB_SDK_REP103,
     });
 
-    return [
-        `to_rep103(get_hand_position_xyz("${side}"))[${index}]`,
-        Order.MEMBER,
-    ];
+    const functionName = generator.provideFunction_(
+        "get_hand_position_rep103",
+        GET_HAND_POSITION_REP103_FUNCTION(generator),
+    );
+
+    return [`${functionName}("${side}")[${index}]`, Order.MEMBER];
 }
 
 export function get_hand_x(block: Block, generator: typeof pythonGenerator) {
