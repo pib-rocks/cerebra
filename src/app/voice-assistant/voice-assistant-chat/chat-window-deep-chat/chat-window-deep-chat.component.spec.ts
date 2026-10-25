@@ -1534,7 +1534,6 @@ describe("ChatWindowDeepChatComponent fresh chat without id", () => {
         );
         chatService.createChat.calls.reset();
         chatService.sendChatMessage.calls.reset();
-        router.navigate as jasmine.Spy;
 
         paramsSubject.next({});
 

@@ -20,7 +20,6 @@ import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.ser
 import {ChatMessage} from "src/app/shared/types/chat-message";
 import {imageAttachments} from "src/app/shared/types/chat-message-meta";
 import {Chat, ChatDto} from "src/app/shared/types/chat.class";
-import {keyStoreErrorMessage} from "src/app/system/keys/key-store.service";
 import {extractText, toDeepChat} from "src/app/shared/util/deep-chat-mapper";
 import {
     ProviderSelectionRow,
@@ -211,7 +210,6 @@ export class ChatWindowDeepChatComponent
         el.connect = {
             handler: (body: any, signals: any) => {
                 const text = extractText(body);
-                const el = this.deepChatRef?.nativeElement;
                 if (!this.keyStoreSession.chatsAvailable) {
                     signals.onResponse({
                         role: "ai",
@@ -235,12 +233,7 @@ export class ChatWindowDeepChatComponent
                 const messageText = joining ? text.trim() : text;
                 const chatId = this.currentChatId;
                 if (!chatId) {
-                    this.beginTurnWithoutChat(
-                        messageText,
-                        joining,
-                        signals,
-                        el,
-                    );
+                    this.beginTurnWithoutChat(messageText, joining, signals);
                     return;
                 }
                 this.dispatchTurn(chatId, messageText, joining, signals);
@@ -298,7 +291,6 @@ export class ChatWindowDeepChatComponent
         messageText: string,
         joining: boolean,
         signals: any,
-        el: any,
     ): void {
         const personalityId = this.personalityIdFromRoute();
         if (!personalityId) {
@@ -726,9 +718,13 @@ export class ChatWindowDeepChatComponent
 
 function chatCreateErrorMessage(err: unknown): string {
     if (err instanceof HttpErrorResponse && err.status) {
-        return `Could not create chat (${err.status}): ${keyStoreErrorMessage(
-            err,
-        )}`;
+        const detail =
+            (err.error && (err.error.error ?? err.error.message)) ??
+            err.statusText ??
+            "request failed";
+        return `Could not create chat (${err.status}): ${detail}`;
     }
-    return `Could not create chat: ${keyStoreErrorMessage(err)}`;
+    return `Could not create chat: ${
+        err instanceof Error ? err.message : "request failed"
+    }`;
 }
