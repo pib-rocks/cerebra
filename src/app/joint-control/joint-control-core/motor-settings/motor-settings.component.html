@@ -127,11 +127,11 @@
                 [trackHeight]="16"
                 [step]="1"
                 [unitShort]="'°'"
-                [unitLong]="'°/100'"
+                [unitLong]="'°'"
                 [name]="'Degree'"
                 [attr.data-test]="'SLD_Motor_Settings_Degree_Range'"
                 [displayName]="true"
-                [defaultValues]="[settings.rotationRangeMin, settings.rotationRangeMax]"
+                [defaultValues]="degreeSliderDefaultValues"
                 [messageReceiver$]="degreeSubject$"
                 (sliderEvent)="setDegree($event)"></app-horizontal-slider>
         </div>
@@ -170,13 +170,12 @@
                     [formControl]="upperEndpointFormControl"
                     (change)="setUpperEndpoint(upperEndpointFormControl.value!)">
                     <option [ngValue]="'min'">
-                        {{ settings.rotationRangeMin }}
+                        {{ formatCentidegrees(settings.rotationRangeMin) }}
                     </option>
                     <option [ngValue]="'max'">
-                        {{ settings.rotationRangeMax }}
+                        {{ formatCentidegrees(settings.rotationRangeMax) }}
                     </option>
                 </select>
-                <span class="me-3">°/100</span>
                 @if (showCurrentPositionButtons) {
                 <button
                     type="button"
@@ -192,7 +191,7 @@
                 <span
                     class="me-3"
                     data-test="TXT_Motor_Settings_Second_Endpoint"
-                    >{{ secondEndpointValue }} °/100</span
+                    >{{ formatCentidegrees(secondEndpointValue) }}</span
                 >
                 @if (showCurrentPositionButtons) {
                 <button
