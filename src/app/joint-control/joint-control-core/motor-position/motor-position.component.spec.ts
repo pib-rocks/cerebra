@@ -129,4 +129,12 @@ describe("MotorPositionComponent", () => {
             2000,
         );
     });
+
+    it("labels the joint control slider in degrees", () => {
+        const slider = fixture.nativeElement.querySelector(
+            "app-horizontal-slider",
+        );
+        expect(slider?.textContent).not.toContain("μs");
+        expect(slider?.textContent).toContain("°");
+    });
 });

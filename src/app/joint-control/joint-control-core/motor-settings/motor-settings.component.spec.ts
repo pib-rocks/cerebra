@@ -451,14 +451,14 @@ describe("MotorSettingsComponent", () => {
             const second = modalQuery(
                 '[data-test="TXT_Motor_Settings_Second_Endpoint"]',
             );
-            expect(second?.textContent).toContain("600");
+            expect(second?.textContent).toContain("6.0 °");
 
             component.setUpperEndpoint("min");
             fixture.detectChanges();
             expect(
                 modalQuery('[data-test="TXT_Motor_Settings_Second_Endpoint"]')
                     ?.textContent,
-            ).toContain("700");
+            ).toContain("7.0 °");
         });
 
         it("shows Current pos buttons only for feetech_st_serial", () => {
@@ -495,11 +495,32 @@ describe("MotorSettingsComponent", () => {
             component.setFirstEndpointToCurrentPosition();
             expect(component.settings.rotationRangeMax).toBe(4250);
             expect(motorService.applySettings).toHaveBeenCalled();
-            expect(degreeSpy).toHaveBeenCalledWith([6, 42]);
+            expect(degreeSpy).toHaveBeenCalledWith([6, 42.5]);
 
             component.setSecondEndpointToCurrentPosition();
             expect(component.settings.rotationRangeMin).toBe(4250);
-            expect(degreeSpy).toHaveBeenCalledWith([42, 42]);
+            expect(degreeSpy).toHaveBeenCalledWith([42.5, 42.5]);
+        });
+
+        it("labels the degree range slider and endpoints in degrees", () => {
+            renderModalContent();
+
+            const degreeSlider = modalQuery(
+                '[data-test="SLD_Motor_Settings_Degree_Range"]',
+            );
+            expect(degreeSlider?.textContent).toContain("(°)");
+            expect(degreeSlider?.textContent).not.toContain("°/100");
+
+            const select = modalQuery(
+                '[data-test="SEL_Motor_Settings_First_Endpoint"]',
+            ) as HTMLSelectElement;
+            expect(select.options[0].text).toContain("6.0 °");
+            expect(select.options[1].text).toContain("7.0 °");
+
+            const second = modalQuery(
+                '[data-test="TXT_Motor_Settings_Second_Endpoint"]',
+            );
+            expect(second?.textContent?.trim()).toBe("6.0 °");
         });
     });
 });

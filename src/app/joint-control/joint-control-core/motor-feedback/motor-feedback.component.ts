@@ -26,7 +26,7 @@ export class MotorFeedbackComponent implements OnInit {
     @Input() motor!: MotorConfiguration;
     @Input() feedback!: DiagnosticMotorFeedback;
 
-    value?: string;
+    displayValue?: string;
 
     constructor(
         private motorService: MotorService,
@@ -44,8 +44,22 @@ export class MotorFeedbackComponent implements OnInit {
             .getFeedbackObservable(this.motor.sourceMotorName, this.feedback)
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe((value) => {
-                this.value = value;
+                this.displayValue = this.formatFeedbackValue(value);
                 this.cdr.markForCheck();
             });
+    }
+
+    private formatFeedbackValue(value: string | undefined): string | undefined {
+        if (value === undefined) {
+            return undefined;
+        }
+        if (this.feedback !== "actual_position") {
+            return value;
+        }
+        const parsed = Number(value);
+        if (!Number.isFinite(parsed)) {
+            return value;
+        }
+        return `${parsed.toFixed(1)} °`;
     }
 }

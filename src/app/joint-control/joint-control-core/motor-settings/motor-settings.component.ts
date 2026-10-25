@@ -25,6 +25,7 @@ import {HorizontalSliderComponent} from "../../../sliders/horizontal-slider/hori
 import {VerticalSliderComponent} from "../../../sliders/vertical-slider/vertical-slider.component";
 import {VariantService} from "src/app/shared/services/variant.service";
 import {MotorFeedbackComponent} from "../motor-feedback/motor-feedback.component";
+import {formatCentidegrees} from "src/app/shared/types/joint-angle-format";
 
 @Component({
     selector: "app-motor-settings",
@@ -42,6 +43,8 @@ import {MotorFeedbackComponent} from "../motor-feedback/motor-feedback.component
 export class MotorSettingsComponent implements OnInit {
     private readonly destroyRef = inject(DestroyRef);
     private readonly cdr = inject(ChangeDetectorRef);
+
+    readonly formatCentidegrees = formatCentidegrees;
 
     private readonly ENDPOINT_LABELS: Array<{
         match: RegExp;
@@ -146,6 +149,13 @@ export class MotorSettingsComponent implements OnInit {
         return this.settings.upperEndpoint === "max"
             ? this.settings.rotationRangeMin
             : this.settings.rotationRangeMax;
+    }
+
+    get degreeSliderDefaultValues(): number[] {
+        return [
+            this.settings.rotationRangeMin / 100,
+            this.settings.rotationRangeMax / 100,
+        ];
     }
 
     ngOnInit(): void {
@@ -334,8 +344,8 @@ export class MotorSettingsComponent implements OnInit {
 
     private emitDegreeSubject(): void {
         this.degreeSubject$.next([
-            Math.floor(this.settings.rotationRangeMin / 100),
-            Math.floor(this.settings.rotationRangeMax / 100),
+            this.settings.rotationRangeMin / 100,
+            this.settings.rotationRangeMax / 100,
         ]);
     }
 }
