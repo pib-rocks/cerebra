@@ -12,6 +12,7 @@ import {
 import {MotorSettingsMessage} from "../../ros-types/msg/motor-settings-message";
 import {DiagnosticStatus} from "../../ros-types/msg/diagnostic-status.message";
 import {JointTrajectoryMessage} from "../../ros-types/msg/joint-trajectory-message";
+import {centidegToRad} from "../../types/joint-angle-units";
 import {rosDataTypes} from "../../ros-types/path/ros-datatypes.enum";
 import {rosTopics} from "../../ros-types/path/ros-topics.enum";
 import {rosServices} from "../../ros-types/path/ros-services.enum";
@@ -873,8 +874,15 @@ export class RosService implements IRosService {
         jointTrajectory: JointTrajectoryMessage,
     ): Observable<void> {
         const subject: Subject<void> = new ReplaySubject();
+        const rosJointTrajectory: JointTrajectoryMessage = {
+            ...jointTrajectory,
+            points: (jointTrajectory.points ?? []).map((point) => ({
+                ...point,
+                positions: (point.positions ?? []).map(centidegToRad),
+            })),
+        };
         const request: ApplyJointTrajectoryRequest = {
-            joint_trajectory: jointTrajectory,
+            joint_trajectory: rosJointTrajectory,
         };
         const successCallback = (response: ApplyJointTrajectoryResponse) => {
             if (response.successful) {
