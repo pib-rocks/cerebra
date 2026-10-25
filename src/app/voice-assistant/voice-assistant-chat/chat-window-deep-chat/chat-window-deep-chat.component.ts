@@ -8,8 +8,9 @@ import {
     OnInit,
     ViewChild,
 } from "@angular/core";
-import {ActivatedRoute, Params} from "@angular/router";
-import {firstValueFrom, Subscription} from "rxjs";
+import {HttpErrorResponse} from "@angular/common/http";
+import {ActivatedRoute, Params, Router} from "@angular/router";
+import {firstValueFrom, Subscription, switchMap} from "rxjs";
 import {ChatService} from "src/app/shared/services/chat.service";
 import {
     TokenService,
@@ -18,7 +19,7 @@ import {
 import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
 import {ChatMessage} from "src/app/shared/types/chat-message";
 import {imageAttachments} from "src/app/shared/types/chat-message-meta";
-import {Chat} from "src/app/shared/types/chat.class";
+import {Chat, ChatDto} from "src/app/shared/types/chat.class";
 import {extractText, toDeepChat} from "src/app/shared/util/deep-chat-mapper";
 import {
     ProviderSelectionRow,
@@ -56,6 +57,9 @@ export class ChatWindowDeepChatComponent
 
     chat?: Chat;
     currentChatId: string | undefined;
+    /** Set only when the window has no way to show a message (no deep-chat element yet). */
+    newChatError = "";
+    private creatingChat = false;
     personalityName: string | undefined;
 
     private probeCloudTokenStored = false;
@@ -111,6 +115,7 @@ export class ChatWindowDeepChatComponent
         private readonly chatService: ChatService,
         private readonly voiceAssistantService: VoiceAssistantService,
         private readonly route: ActivatedRoute,
+        private readonly router: Router,
         private readonly tokenService: TokenService,
         private readonly keyStore: KeyStoreService,
         private readonly keyStoreSession: KeyStoreSessionService,
@@ -133,7 +138,24 @@ export class ChatWindowDeepChatComponent
                 this.lastStreamedMessageId = undefined;
                 this.pendingSignals = undefined;
                 this.submitClickMs = undefined;
-                if (!chatId) return;
+                if (!chatId) {
+                    this.chat = undefined;
+                    const personalityId = this.personalityIdFromRoute();
+                    if (personalityId) {
+                        this.personalityName =
+                            this.voiceAssistantService.getPersonality(
+                                personalityId,
+                            )?.name;
+                    }
+                    this.applyNames();
+                    this.refreshComposer();
+                    // Create the chat before the first submit: deep-chat clears its
+                    // input on submit and offers no way to put the text back, so a
+                    // chat that only appears after the first message costs the user
+                    // the text when creating it fails (PR-2046).
+                    this.startNewChat(personalityId);
+                    return;
+                }
 
                 this.chat = this.chatService.getChat(chatId);
                 if (this.chat) {
@@ -188,7 +210,6 @@ export class ChatWindowDeepChatComponent
         el.connect = {
             handler: (body: any, signals: any) => {
                 const text = extractText(body);
-                const chatId = this.currentChatId!;
                 if (!this.keyStoreSession.chatsAvailable) {
                     signals.onResponse({
                         role: "ai",
@@ -208,54 +229,177 @@ export class ChatWindowDeepChatComponent
                     signals.onResponse({text: lengthRefusal});
                     return;
                 }
-                this.submitClickMs = performance.now();
-                console.log(
-                    `[PERF_TRACE_UI] SUBMIT_CLICK chatId=${chatId} t=${this.submitClickMs.toFixed(
-                        3,
-                    )}ms`,
-                );
                 const joining = this.typedLineJoinsOpenLive(text);
-                // A line for the open live chat joins that session. Release
-                // the composer so another line can interrupt, and let the
-                // transcript arrive as chat text.
-                this.pendingSignals = joining ? undefined : signals;
-                if (joining) {
-                    signals.onClose();
+                const messageText = joining ? text.trim() : text;
+                const chatId = this.currentChatId;
+                if (!chatId) {
+                    this.beginTurnWithoutChat(messageText, joining, signals);
+                    return;
                 }
-                const request = transportRequest(
-                    chatId,
-                    this.turnForMessage(joining ? text.trim() : text),
-                );
-                this.sendChatMessageSubscriptions.add(
-                    this.chatService
-                        .sendChatMessage(request.chat_id, request.content)
-                        .subscribe({
-                            error: (err) => {
-                                const unavailable =
-                                    chatTransportUnavailableText(err);
-                                if (unavailable != null) {
-                                    signals.onResponse({text: unavailable});
-                                } else {
-                                    signals.onResponse({error: String(err)});
-                                }
-                                this.pendingSignals = undefined;
-                                this.submitClickMs = undefined;
-                            },
-                        }),
-                );
+                this.dispatchTurn(chatId, messageText, joining, signals);
             },
         };
     }
 
     private wireLoadHistory(el: any): void {
         el.loadHistory = () => {
-            const chatId = this.currentChatId!;
+            const chatId = this.currentChatId;
+            if (!chatId) {
+                return Promise.resolve([]);
+            }
             return firstValueFrom(
                 this.chatService.getMessagesByChatId(chatId),
             ).then((msgs) =>
                 this.chatService.filterMessageUpdates(msgs).map(toDeepChat),
             );
         };
+    }
+
+    private startNewChat(personalityId: string | undefined): void {
+        if (!personalityId || this.creatingChat) {
+            return;
+        }
+        this.creatingChat = true;
+        this.sendChatMessageSubscriptions.add(
+            this.chatService
+                .createChat(new ChatDto("New chat", personalityId))
+                .subscribe({
+                    next: (chat) => {
+                        this.creatingChat = false;
+                        this.adoptCreatedChat(chat);
+                        this.refreshComposer();
+                    },
+                    error: (err) => {
+                        this.creatingChat = false;
+                        this.showNewChatError(chatCreateErrorMessage(err));
+                    },
+                }),
+        );
+    }
+
+    /** A chat that could not be created has no bubble of its own; say it in the chat. */
+    private showNewChatError(message: string): void {
+        const el = this.deepChatRef?.nativeElement;
+        if (el && typeof el.addMessage === "function") {
+            el.addMessage({role: "ai", text: message});
+            return;
+        }
+        this.newChatError = message;
+    }
+
+    private beginTurnWithoutChat(
+        messageText: string,
+        joining: boolean,
+        signals: any,
+    ): void {
+        const personalityId = this.personalityIdFromRoute();
+        if (!personalityId) {
+            signals.onResponse({
+                text: "Could not create chat: personality not found.",
+            });
+            return;
+        }
+        const topic = messageText.trim().slice(0, 255) || "New chat";
+        this.submitClickMs = performance.now();
+        console.log(
+            `[PERF_TRACE_UI] SUBMIT_CLICK chatId=undefined t=${this.submitClickMs.toFixed(
+                3,
+            )}ms`,
+        );
+        this.pendingSignals = joining ? undefined : signals;
+        if (joining) {
+            signals.onClose();
+        }
+        this.sendChatMessageSubscriptions.add(
+            this.chatService
+                .createChat(new ChatDto(topic, personalityId))
+                .pipe(
+                    switchMap((chat) => {
+                        this.adoptCreatedChat(chat);
+                        const request = transportRequest(
+                            chat.chatId,
+                            this.turnForMessage(messageText),
+                        );
+                        return this.chatService.sendChatMessage(
+                            request.chat_id,
+                            request.content,
+                        );
+                    }),
+                )
+                .subscribe({
+                    error: (err) => {
+                        signals.onResponse({
+                            text: chatCreateErrorMessage(err),
+                        });
+                        this.pendingSignals = undefined;
+                        this.submitClickMs = undefined;
+                    },
+                }),
+        );
+    }
+
+    private dispatchTurn(
+        chatId: string,
+        messageText: string,
+        joining: boolean,
+        signals: any,
+    ): void {
+        this.submitClickMs = performance.now();
+        console.log(
+            `[PERF_TRACE_UI] SUBMIT_CLICK chatId=${chatId} t=${this.submitClickMs.toFixed(
+                3,
+            )}ms`,
+        );
+        this.pendingSignals = joining ? undefined : signals;
+        if (joining) {
+            signals.onClose();
+        }
+        const request = transportRequest(
+            chatId,
+            this.turnForMessage(messageText),
+        );
+        this.sendChatMessageSubscriptions.add(
+            this.chatService
+                .sendChatMessage(request.chat_id, request.content)
+                .subscribe({
+                    error: (err) => {
+                        const unavailable = chatTransportUnavailableText(err);
+                        if (unavailable != null) {
+                            signals.onResponse({text: unavailable});
+                        } else {
+                            signals.onResponse({error: String(err)});
+                        }
+                        this.pendingSignals = undefined;
+                        this.submitClickMs = undefined;
+                    },
+                }),
+        );
+    }
+
+    private adoptCreatedChat(chat: Chat): void {
+        this.currentChatId = chat.chatId;
+        this.chat = chat;
+        this.personalityName = this.voiceAssistantService.getPersonality(
+            chat.personalityId,
+        )?.name;
+        this.applyNames();
+        this.subscribeToChatMessages(chat.chatId);
+        const parent = this.route.parent;
+        if (parent) {
+            void this.router.navigate([chat.chatId], {relativeTo: parent});
+        }
+    }
+
+    private personalityIdFromRoute(): string | undefined {
+        let route: ActivatedRoute | null = this.route;
+        while (route) {
+            const personalityUuid = route.snapshot?.params?.["personalityUuid"];
+            if (personalityUuid) {
+                return personalityUuid;
+            }
+            route = route.parent;
+        }
+        return this.chat?.personalityId;
     }
 
     private wireValidateInput(el: any): void {
@@ -372,7 +516,8 @@ export class ChatWindowDeepChatComponent
     }
 
     private personalityForTurn() {
-        const personalityId = this.chat?.personalityId;
+        const personalityId =
+            this.chat?.personalityId ?? this.personalityIdFromRoute();
         if (personalityId == null) {
             return undefined;
         }
@@ -569,4 +714,17 @@ export class ChatWindowDeepChatComponent
             },
         };
     }
+}
+
+function chatCreateErrorMessage(err: unknown): string {
+    if (err instanceof HttpErrorResponse && err.status) {
+        const detail =
+            (err.error && (err.error.error ?? err.error.message)) ??
+            err.statusText ??
+            "request failed";
+        return `Could not create chat (${err.status}): ${detail}`;
+    }
+    return `Could not create chat: ${
+        err instanceof Error ? err.message : "request failed"
+    }`;
 }
