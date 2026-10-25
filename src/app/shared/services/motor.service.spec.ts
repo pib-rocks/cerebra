@@ -244,7 +244,7 @@ describe("MotorService", () => {
         );
     });
 
-    it("should get position values from ros", () => {
+    it("should get position values from ros in centidegrees when joint trajectory is in radians", () => {
         const publishToSubjectSpy = spyOn<any>(service, "publishToSubject");
         rosService.jointTrajectoryReceiver$.next({
             header: {
@@ -257,7 +257,7 @@ describe("MotorService", () => {
             joint_names: ["test-motor"],
             points: [
                 {
-                    positions: [77],
+                    positions: [Math.PI / 2],
                     time_from_start: {sec: 0, nanosec: 0},
                 },
             ],
@@ -265,7 +265,7 @@ describe("MotorService", () => {
         expect(publishToSubjectSpy).toHaveBeenCalledOnceWith(
             "test-motor",
             service["motorNameToPositionSubject"],
-            77,
+            9000,
         );
     });
 
