@@ -7,6 +7,7 @@ import {
     IMPORT_OS,
     IMPORT_PIB_SDK,
     IMPORT_PIB_SDK_IK,
+    IMPORT_PIB_SDK_REP103,
     IMPORT_PIB_SDK_TELEMETRY,
     IMPORT_RCLPY,
     IMPORT_SYS,
@@ -164,6 +165,7 @@ export function set_hand_position_xyz(
         IMPORT_LOGGING,
         IMPORT_PIB_SDK_IK,
         IMPORT_PIB_SDK_GET_HAND_POSITION_XYZ,
+        IMPORT_PIB_SDK_REP103,
         CONFIGURE_LOGGING,
         INIT_ROS,
     });
@@ -193,9 +195,13 @@ function getHandPositionComponent(
 
     addDefinitions(generator, {
         IMPORT_PIB_SDK_GET_HAND_POSITION_XYZ,
+        IMPORT_PIB_SDK_REP103,
     });
 
-    return [`get_hand_position_xyz("${side}")[${index}]`, Order.MEMBER];
+    return [
+        `to_rep103(get_hand_position_xyz("${side}"))[${index}]`,
+        Order.MEMBER,
+    ];
 }
 
 export function get_hand_x(block: Block, generator: typeof pythonGenerator) {
