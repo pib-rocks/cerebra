@@ -33,6 +33,22 @@ export function showSmartChannelControl(smartChatsEnabled: boolean): boolean {
     return smartChatsEnabled;
 }
 
+/** Read-only installation mode label in the personality dialog and chat header. */
+export function installationModeLabel(smartChatsEnabled: boolean): string {
+    return smartChatsEnabled ? "Hermes agent" : "Direct LLM, no agent";
+}
+
+/** True when the installer flag fixes routing; the channel row is not editable. */
+export function channelFixedByInstallation(
+    smartChatsEnabled: boolean,
+): boolean {
+    return !smartChatsEnabled;
+}
+
+export function channelInstallationFixedExplanation(): string {
+    return "Set at installation. Every chat on this robot uses Direct.";
+}
+
 /** The one editable identity. Channel changes do not replace this text. */
 export function identityText(description: string | null | undefined): string {
     return description ?? "";

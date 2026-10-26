@@ -501,7 +501,13 @@ describe("VoiceAssistantComponent", () => {
             document.body.querySelector("[data-test=TGL_Channel]"),
         ).toBeNull();
         expect(
-            document.body.querySelector("[data-test=LBL_Channel_Direct]"),
+            document.body.querySelector("[data-test=LBL_Installation_Mode]")
+                ?.textContent,
+        ).toContain("Direct LLM, no agent");
+        expect(
+            document.body.querySelector(
+                "[data-test=LBL_Channel_Installation_Fixed]",
+            ),
         ).not.toBeNull();
         expect(
             document.body.querySelector(
@@ -538,6 +544,52 @@ describe("VoiceAssistantComponent", () => {
                 .args[0] as VoiceAssistant;
         expect(updated.channel).toBe(SMART_CHANNEL);
         expect(updated.description).toBe("Du bist pib.");
+        component.ngbModalRef?.close();
+    });
+
+    it("shows the Hermes agent installation mode in the personality dialog", () => {
+        fixture.detectChanges();
+        component.openAddModal();
+        fixture.detectChanges();
+        expect(
+            document.body.querySelector("[data-test=LBL_Installation_Mode]")
+                ?.textContent,
+        ).toContain("Hermes agent");
+        expect(
+            document.body.querySelector("[data-test=TGL_Channel]"),
+        ).not.toBeNull();
+        component.ngbModalRef?.close();
+    });
+
+    it("keeps a stored Smart channel visible when installation mode is Direct", () => {
+        const capability = TestBed.inject(ChannelCapabilityService);
+        capability.applyInstallerFlag(false);
+        const stored = new VoiceAssistant(
+            "persona-smart",
+            "Ada",
+            "Female",
+            0.8,
+            "Du bist pib.",
+            null,
+            10,
+            DEFAULT_PROVIDER_REF,
+            SMART_CHANNEL,
+        );
+        voiceAssistantService.personalities.push(stored);
+        voiceAssistantService.getPersonality.and.returnValue(stored);
+        fixture.detectChanges();
+        component.openEditModal(stored.personalityId);
+        fixture.detectChanges();
+        expect(
+            document.body.querySelector("[data-test=LBL_Installation_Mode]")
+                ?.textContent,
+        ).toContain("Direct LLM, no agent");
+        expect(
+            document.body.querySelector("[data-test=TGL_Channel]"),
+        ).toBeNull();
+        expect(component.personalityForm.controls["channel"].value).toBe(
+            SMART_CHANNEL,
+        );
         component.ngbModalRef?.close();
     });
 

@@ -7,6 +7,9 @@ import {
     parseChatChannel,
     routeTurn,
     showSmartChannelControl,
+    installationModeLabel,
+    channelFixedByInstallation,
+    channelInstallationFixedExplanation,
     transportRequest,
 } from "./channel-router";
 
@@ -92,6 +95,14 @@ describe("channel router", () => {
         expect(transportRequest(chatId, direct)).toEqual(
             transportRequest(chatId, smart),
         );
+    });
+
+    it("labels the installation mode for both installer flags", () => {
+        expect(installationModeLabel(true)).toBe("Hermes agent");
+        expect(installationModeLabel(false)).toBe("Direct LLM, no agent");
+        expect(channelFixedByInstallation(true)).toBeFalse();
+        expect(channelFixedByInstallation(false)).toBeTrue();
+        expect(channelInstallationFixedExplanation()).toContain("installation");
     });
 
     it("forces Direct and hides Smart when the installer disabled Hermes", () => {
