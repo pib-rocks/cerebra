@@ -107,6 +107,18 @@ def ${generator.FUNCTION_NAME_PLACEHOLDER_}(side: str, mode: str, x, y, z) -> No
             pib.move(arm, *q_deg)
 `;
 
+export const GET_HAND_POSITION_REP103_FUNCTION = (
+    generator: typeof pythonGenerator,
+) => `
+def ${generator.FUNCTION_NAME_PLACEHOLDER_}(side: str):
+
+    rosbridge_host = os.getenv("ROSBRIDGE_HOST", "rosbridge-ws")
+    try:
+        return to_rep103(get_hand_position_xyz(side, telemetry_host=rosbridge_host))
+    except Exception:
+        return to_rep103(get_hand_position_xyz(side, telemetry_host="localhost"))
+`;
+
 export const APPLY_JOINT_TRAJECTORY_FUNCTION = (
     generator: typeof pythonGenerator,
 ) => `
@@ -118,6 +130,22 @@ def ${generator.FUNCTION_NAME_PLACEHOLDER_}(motor_name: str, position) -> None:
         pib_sdk.Write(host=rosbridge_host, port=9090).move(motor_name, position)
     except Exception:
         pib_sdk.Write(host="localhost", port=9090).move(motor_name, position)
+`;
+
+export const MOVE_MOTORS_FUNCTION = (generator: typeof pythonGenerator) => `
+def ${generator.FUNCTION_NAME_PLACEHOLDER_}(*args) -> None:
+
+    if not args:
+        return
+
+    logging.info(f"moving motors in one joint trajectory: {args}.")
+    rosbridge_host = os.getenv("ROSBRIDGE_HOST", "rosbridge-ws")
+    try:
+        with pib_sdk.Write(host=rosbridge_host, port=9090) as write:
+            write.move(*args)
+    except Exception:
+        with pib_sdk.Write(host="localhost", port=9090) as write:
+            write.move(*args)
 `;
 
 export const GET_MOTOR_CURRENT_MA_FUNCTION = (
