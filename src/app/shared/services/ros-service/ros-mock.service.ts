@@ -9,6 +9,7 @@ import {
     of,
 } from "rxjs";
 import {MotorSettingsMessage} from "../../ros-types/msg/motor-settings-message";
+import {radToCentideg} from "../../types/joint-angle-units";
 import {DiagnosticStatus} from "../../ros-types/msg/diagnostic-status.message";
 import {JointTrajectoryMessage} from "../../ros-types/msg/joint-trajectory-message";
 import {ChatMessage} from "../../ros-types/msg/chat-message";
@@ -213,6 +214,16 @@ export class RosService implements IRosService {
         jointTrajectory: JointTrajectoryMessage,
     ): Observable<void> {
         console.info(JSON.stringify({joint_trajectory: jointTrajectory}));
+        jointTrajectory.points?.forEach((point) => {
+            (jointTrajectory.joint_names ?? []).forEach((name, index) => {
+                const position = point.positions?.[index];
+                if (typeof position === "number") {
+                    // The node publishes radians on the wire; the UI works in
+                    // centidegrees, like GetJointPosition returns them.
+                    this.mockJointPositions.set(name, radToCentideg(position));
+                }
+            });
+        });
         this.jointTrajectoryReceiver$.next(structuredClone(jointTrajectory));
         return of(undefined);
     }

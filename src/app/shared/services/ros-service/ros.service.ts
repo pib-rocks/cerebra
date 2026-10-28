@@ -885,7 +885,8 @@ export class RosService implements IRosService {
 
     /** Reads the servo's actual position (centidegrees) for one joint or motor. */
     getJointPosition(jointName: string): Observable<number> {
-        const subject: Subject<number> = new Subject<number>();
+        // ReplaySubject: the service call may answer before the caller subscribes.
+        const subject: ReplaySubject<number> = new ReplaySubject<number>(1);
         if (this.getJointPositionService === undefined) {
             subject.error(new Error("get_joint_position service is undefined"));
             return subject.asObservable();
@@ -903,8 +904,10 @@ export class RosService implements IRosService {
                 );
             }
         };
-        const errorCallback = (error: unknown) =>
-            subject.error(new Error(serviceErrorText(error)));
+        const errorCallback = (error: unknown) => {
+            const message = (error as {message?: string} | null)?.message;
+            subject.error(new Error(message || serviceErrorText(error)));
+        };
         this.getJointPositionService.callService(
             request,
             successCallback,
