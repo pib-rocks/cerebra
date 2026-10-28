@@ -116,6 +116,8 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
     private turnStartMs: number | null = null;
     private listeningForChatId = "";
     private listeningActive = false;
+    /** Avoid duplicate GET /chat/:id when state repeats the same chat id. */
+    private personalityFetchChatId = "";
 
     constructor(
         private readonly modalService: NgbModal,
@@ -169,12 +171,35 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
                     if (deleteChat) {
                         deleteChat.disabled = this.turnedOn;
                     }
-                    this.chatService
-                        .getChatById(state.chatId)
-                        .subscribe((chat) => {
-                            this.activePersonalityId = chat.personalityId;
+                    if (state.chatId) {
+                        const localChat = this.chatService.getChat(
+                            state.chatId,
+                        );
+                        if (localChat) {
+                            this.activePersonalityId = localChat.personalityId;
                             this.changeDetector.markForCheck();
-                        });
+                        } else if (
+                            this.personalityFetchChatId !== state.chatId
+                        ) {
+                            const chatId = state.chatId;
+                            this.personalityFetchChatId = chatId;
+                            this.chatService.getChatById(chatId).subscribe({
+                                next: (chat) => {
+                                    this.activePersonalityId =
+                                        chat.personalityId;
+                                    this.changeDetector.markForCheck();
+                                },
+                                error: (error) => {
+                                    console.error(error);
+                                    if (
+                                        this.personalityFetchChatId === chatId
+                                    ) {
+                                        this.personalityFetchChatId = "";
+                                    }
+                                },
+                            });
+                        }
+                    }
                     this.refreshVoiceStatus();
                     this.changeDetector.markForCheck();
                 },
