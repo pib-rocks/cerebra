@@ -115,6 +115,19 @@ export class DiagnosticsComponent implements OnInit, OnDestroy {
     }
 
     /**
+     * The backend sends `percentUsed` next to the figures. The disk column is headed "Free disk space" and shows
+     * the free bytes, so it has to show the free share as well - 73 % used under a "free" heading reads as a
+     * contradiction (PR-2112). Clamped, because a full or over-reserved filesystem leaves no free share.
+     */
+    formatFreePercent(percentUsed: number | null | undefined): string {
+        if (percentUsed === null || percentUsed === undefined) return "";
+        const numeric = Number(percentUsed);
+        if (!Number.isFinite(numeric)) return "";
+        const free = Math.min(100, Math.max(0, 100 - numeric));
+        return free.toFixed(1);
+    }
+
+    /**
      * The RAM and disk figures arrive as ready-made strings ("3.7 GB"), so the number inside is what has to be
      * normalised: "3 GB" becomes "3.0 GB" while "3.7 GB" stays as it is.
      */

@@ -150,7 +150,10 @@ describe("DiagnosticsComponent", () => {
         expect(headers).not.toContain("Disk Space");
     });
 
-    it("should format disk space as free / total (percentUsed%)", () => {
+    it("should show the free share for the Free disk space column", () => {
+        // The column is headed "Free disk space", so the percentage has to be the
+        // free share: 100 - 31.2 used = 68.8 free. Showing percentUsed here
+        // contradicted the heading on the device (PR-2112).
         const compiled = fixture.nativeElement as HTMLElement;
         const cells = compiled.querySelectorAll(
             "#table-system-summary tbody td",
@@ -158,8 +161,21 @@ describe("DiagnosticsComponent", () => {
         const diskCell = cells[3];
 
         expect(diskCell?.textContent?.replace(/\s+/g, " ").trim()).toContain(
-            "44.0 GB / 64.0 GB (31.2%)",
+            "44.0 GB / 64.0 GB (68.8% free)",
         );
+        expect(diskCell?.textContent).not.toContain("(31.2%");
+    });
+
+    it("should format the free disk percentage with one decimal and clamp it", () => {
+        const component = fixture.componentInstance as unknown as {
+            formatFreePercent: (value: number | null | undefined) => string;
+        };
+
+        expect(component.formatFreePercent(73.4)).toBe("26.6");
+        expect(component.formatFreePercent(0)).toBe("100.0");
+        expect(component.formatFreePercent(100)).toBe("0.0");
+        expect(component.formatFreePercent(102.5)).toBe("0.0");
+        expect(component.formatFreePercent(undefined)).toBe("");
     });
 
     it("should show the CPU load in the first column instead of the overall status", () => {
@@ -371,8 +387,8 @@ describe("DiagnosticsComponent", () => {
         expect(cells[0]).toContain("60.0%");
         expect(cells[1]).toContain("50.0 °C");
         expect(cells[2]).toContain("3.0 GB / 8.0 GB (47.0%)");
-        // The disk column shows free / total, so the normalised "free" figure is the one to look for.
-        expect(cells[3]).toContain("20.0 GB / 64.0 GB (31.0%)");
+        // The disk column shows free / total and the free share: 100 - 31 used = 69 free.
+        expect(cells[3]).toContain("20.0 GB / 64.0 GB (69.0% free)");
     });
 
     it("should round a measurement to one decimal place", () => {
