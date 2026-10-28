@@ -148,8 +148,10 @@ describe("MotorPositionComponent position seed", () => {
             "setPosition",
             "refreshPosition",
         ]);
-        motorServiceSpy.getPositionObservable.and.returnValue(new Subject());
-        motorServiceSpy.getSettingsObservable.and.returnValue(new Subject());
+        const positionSubject = new Subject<number>();
+        const settingsSubject = new Subject<MotorSettings>();
+        motorServiceSpy.getPositionObservable.and.returnValue(positionSubject);
+        motorServiceSpy.getSettingsObservable.and.returnValue(settingsSubject);
 
         const motorConfig = {
             motorName: "test_motor",
@@ -176,10 +178,32 @@ describe("MotorPositionComponent position seed", () => {
             ],
         }).compileComponents();
 
-        TestBed.createComponent(MotorPositionComponent).detectChanges();
+        const fixture = TestBed.createComponent(MotorPositionComponent);
+        fixture.detectChanges();
+
+        positionSubject.next(-4500);
+        settingsSubject.next({
+            turnedOn: true,
+            pulseWidthMin: 1,
+            pulseWidthMax: 2,
+            rotationRangeMin: -9000,
+            rotationRangeMax: 9000,
+            velocity: 5,
+            acceleration: 6,
+            deceleration: 7,
+            period: 8,
+            visible: true,
+            upperEndpoint: "max",
+        } as MotorSettings);
+        fixture.detectChanges();
 
         expect(motorServiceSpy.refreshPosition).toHaveBeenCalledWith(
             "test_motor",
         );
+        expect(fixture.componentInstance.positionReceiver$.value).toEqual([
+            -45,
+        ]);
+        expect(fixture.componentInstance.turnedOn).toBeTrue();
+        expect(fixture.componentInstance.rotationRangeMin).toBe(-90);
     });
 });
