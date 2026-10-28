@@ -29,10 +29,6 @@ export function effectiveChannel(
     return parseChatChannel(stored);
 }
 
-export function showSmartChannelControl(smartChatsEnabled: boolean): boolean {
-    return smartChatsEnabled;
-}
-
 /** Read-only installation mode label in the personality dialog and chat header. */
 export function installationModeLabel(smartChatsEnabled: boolean): string {
     return smartChatsEnabled ? "Hermes agent" : "Direct LLM, no agent";
