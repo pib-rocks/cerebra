@@ -1069,6 +1069,16 @@ describe("RosService", () => {
             expect(position).toBe(-4500);
         });
 
+        it("reports a missing service instead of returning nothing", () => {
+            (rosService as any).getJointPositionService = undefined;
+            let error: Error | undefined;
+            rosService.getJointPosition("head_pan").subscribe({
+                error: (err) => (error = err),
+            });
+
+            expect(error?.message).toContain("undefined");
+        });
+
         it("carries the node's message when the read fails", () => {
             spyOn(
                 rosService["getJointPositionService"],

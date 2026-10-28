@@ -493,4 +493,16 @@ describe("MotorService.refreshPosition", () => {
 
         expect(seen).toEqual([0]);
     });
+
+    it("ignores a non-finite position instead of showing NaN", () => {
+        rosService.getJointPosition.and.returnValue(of(Number.NaN));
+        const seen: number[] = [];
+        service
+            .getPositionObservable("head_pan")
+            .subscribe((value) => seen.push(value));
+
+        service.refreshPosition("head_pan");
+
+        expect(seen).toEqual([0]);
+    });
 });
