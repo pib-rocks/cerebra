@@ -16,6 +16,9 @@ export interface DockerContainer {
 export interface ContainerActionResponse {
     status: string;
     message?: string;
+    reclaimedBytes?: number;
+    reclaimedHuman?: string;
+    errors?: string[] | null;
 }
 
 export interface ContainerLogsResponse {
@@ -23,6 +26,22 @@ export interface ContainerLogsResponse {
     container?: string;
     logs?: string;
     message?: string;
+}
+
+/** What the purge button tells the operator after a purge call (PR-2099). */
+export function purgeOutcome(res: ContainerActionResponse): {
+    success: string;
+    error: string | null;
+} {
+    const freed = res.reclaimedHuman ? ` (${res.reclaimedHuman} freed)` : "";
+    const success = res.message || `Docker purge completed${freed}.`;
+    const failed = res.errors ?? [];
+    return {
+        success,
+        error: failed.length
+            ? `Purge finished with errors: ${failed.join(", ")}`
+            : null,
+    };
 }
 
 @Injectable({

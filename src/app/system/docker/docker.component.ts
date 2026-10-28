@@ -8,7 +8,7 @@ import {
     ElementRef,
 } from "@angular/core";
 import {CommonModule} from "@angular/common";
-import {DockerService, DockerContainer} from "./docker.service";
+import {DockerContainer, DockerService, purgeOutcome} from "./docker.service";
 
 @Component({
     selector: "app-docker-management",
@@ -135,7 +135,11 @@ export class DockerManagementComponent implements OnInit, OnDestroy {
     purgeDocker(): void {
         if (
             !confirm(
-                "Are you sure you want to purge unused Docker resources (system prune)?",
+                "Purge unused Docker resources?\n\n" +
+                    "This removes stopped containers, unused volumes and networks, " +
+                    "every image no container uses (including the local :latest tags " +
+                    "left over from test runs) and the BuildKit build cache. " +
+                    "The next deploy rebuilds those images.",
             )
         ) {
             return;
@@ -149,9 +153,16 @@ export class DockerManagementComponent implements OnInit, OnDestroy {
         this.dockerService.purgeDocker().subscribe({
             next: (res) => {
                 this.purging = false;
-                this.successMessage =
-                    res.message || "Docker purge completed successfully.";
+                // The message carries the freed size; a partial purge names the
+                // steps that failed instead of looking like a success (PR-2099).
+                const outcome = purgeOutcome(res);
+                // refreshContainers() clears this.error as it starts, so the
+                // messages have to be set after it - otherwise a partial purge
+                // loses its warning immediately (found by the spec).
                 this.refreshContainers();
+                this.successMessage = outcome.success;
+                this.error = outcome.error;
+                this.cdr.markForCheck();
             },
             error: () => {
                 this.purging = false;
