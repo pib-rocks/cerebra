@@ -18,7 +18,7 @@ import {
     RouterLink,
 } from "@angular/router";
 import {NgbModal, NgbModalRef} from "@ng-bootstrap/ng-bootstrap";
-import {Observable, Subject, Subscription, take} from "rxjs";
+import {Observable, Subject, Subscription, catchError, of, take} from "rxjs";
 import {SidebarElement} from "src/app/shared/interfaces/sidebar-element.interface";
 import {ChatService} from "src/app/shared/services/chat.service";
 import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
@@ -27,10 +27,13 @@ import {Chat, ChatDto} from "src/app/shared/types/chat.class";
 import {VoiceAssistant} from "src/app/shared/types/voice-assistant";
 import {VoiceAssistantState} from "../../shared/types/voice-assistant-state";
 import {
+    DeepChatStatusChip,
     TokenProbeState,
     chatStartRefusal,
     effectiveCloudTokenStored,
+    parseVoiceAssistantStatus,
     resolveProvider,
+    resolveVoiceAssistantChip,
     selectionFromModelRef,
 } from "src/app/shared/types/provider-registry";
 import {ProviderHealth} from "src/app/shared/types/provider-health";
@@ -104,10 +107,14 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
      * when the personality opens, and again on demand, so the chip can be green
      * or red before the first turn exists.
      */
+    /** Chip for the voice container's own health, rendered in the status strip. */
+    voiceAssistantChip: DeepChatStatusChip | null = null;
+
     providerHealth: ProviderHealth | null = null;
     providerLabel = "";
     providerHealthLoading = false;
     private providerHealthSubscription?: Subscription;
+    private voiceAssistantHealthSubscription?: Subscription;
     private providerHealthModelId: number | null = null;
     /** Last turn of the shown chat, folded from the same trace events (PC-83). */
     turnTrace: TurnTrace = emptyTurnTrace();
@@ -436,7 +443,28 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
      * a browser preflight. A personality whose model row is gone has nothing
      * to probe and shows no chip.
      */
+    /**
+     * Ask the robot whether the voice container can answer right now.
+     *
+     * The probe runs server-side (chat nodes plus a resolvable provider key), so
+     * the browser only renders its verdict. A failing call clears the chip
+     * instead of painting a fault nobody measured.
+     */
+    private refreshVoiceAssistantHealth(): void {
+        this.voiceAssistantHealthSubscription?.unsubscribe();
+        this.voiceAssistantHealthSubscription = this.voiceAssistantService
+            .voiceAssistantHealth()
+            .pipe(catchError(() => of(null)))
+            .subscribe((body: unknown) => {
+                this.voiceAssistantChip = resolveVoiceAssistantChip(
+                    parseVoiceAssistantStatus(body),
+                );
+                this.changeDetector.markForCheck();
+            });
+    }
+
     refreshProviderHealth(): void {
+        this.refreshVoiceAssistantHealth();
         const personality =
             (this.personalityId != null
                 ? this.voiceAssistantService.getPersonality(this.personalityId)
@@ -465,6 +493,7 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
         this.providerHealthModelId = modelId;
         this.providerHealthLoading = true;
         this.providerHealthSubscription?.unsubscribe();
+        this.voiceAssistantHealthSubscription?.unsubscribe();
         this.providerHealthSubscription = this.providerHealthService
             .check(modelId)
             .pipe(take(1))

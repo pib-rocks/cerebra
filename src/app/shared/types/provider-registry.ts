@@ -144,7 +144,6 @@ export interface DeepChatComposerInput {
     cloudTokenStored: boolean;
     needsNewModel: boolean;
     tokenProbe: TokenProbeState;
-    voiceAssistantStatus?: VoiceAssistantStatus | null;
 }
 
 export interface DeepChatComposerState {
@@ -152,7 +151,6 @@ export interface DeepChatComposerState {
     placeholder: string;
     turnRefusal: string | null;
     characterLimit: number;
-    voiceAssistantChip: DeepChatStatusChip | null;
 }
 
 /**
@@ -190,9 +188,6 @@ export function resolveDeepChatComposer(
         placeholder,
         turnRefusal,
         characterLimit: CHAT_MESSAGE_MAX_LENGTH,
-        voiceAssistantChip: resolveVoiceAssistantChip(
-            input.voiceAssistantStatus,
-        ),
     };
 }
 

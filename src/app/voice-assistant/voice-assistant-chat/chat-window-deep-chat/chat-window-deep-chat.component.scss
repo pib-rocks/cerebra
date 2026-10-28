@@ -1,38 +1,5 @@
 @import "src/styles";
 
-.deep-chat-status-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
-    align-items: center;
-    padding: 0.35rem 0 0.15rem 0.25rem;
-    font-size: 0.78rem;
-    line-height: 1.2;
-}
-
-.deep-chat-status-chip {
-    border: 1px solid #6c7c99;
-    border-radius: 10rem;
-    padding: 0.1rem 0.55rem;
-    color: #dfe7f5;
-    white-space: nowrap;
-}
-
-.deep-chat-status-chip-ok {
-    border-color: #2fbf71;
-    color: #9ff0c0;
-}
-
-.deep-chat-status-chip-attention {
-    border-color: #ff4d4d;
-    color: #ff9d9d;
-}
-
-.deep-chat-status-chip-neutral {
-    border-color: #6c7c99;
-    color: #b8c4d8;
-}
-
 .chat-container {
     height: 68vh;
     display: flex;
