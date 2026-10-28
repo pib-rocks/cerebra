@@ -569,6 +569,30 @@ describe("ChatService", () => {
         );
     }));
 
+    it("getChatMessagesForHistory emits when the response arrives after subscribing", waitForAsync(() => {
+        // The real GET is asynchronous: the widget subscribes first, the value
+        // arrives later. A synchronous BehaviorSubject hides the ordering bug where
+        // the "ready" flag is set after the value is pushed - the emission is then
+        // dropped by the guard and loadHistory never resolves (endless spinner).
+        const message: ChatMessage = {
+            messageId: "late-message",
+            timestamp: "tomorrow",
+            isUser: false,
+            content: "late",
+        };
+        const response$ = new Subject<{messages: ChatMessage[]}>();
+        apiService.get.and.returnValue(response$);
+        const emissions: ChatMessage[][] = [];
+        service.getChatMessagesForHistory("late-chat").subscribe((messages) => {
+            emissions.push(messages);
+        });
+        expect(emissions).toEqual([]);
+
+        response$.next({messages: [message]});
+
+        expect(emissions).toEqual([[message]]);
+    }));
+
     it("refetches after a message is deleted", waitForAsync(() => {
         apiService.get.and.returnValue(new BehaviorSubject({messages: []}));
         apiService.delete.and.returnValue(of({}));
