@@ -70,3 +70,63 @@ button {
     margin-right: 0.5rem;
     margin-top: 0.5rem;
 }
+
+.keys-provider-health {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    margin: 0.35rem 0;
+    padding: 0.1rem 0.55rem;
+    border: 1px solid #6c7c99;
+    border-radius: 10rem;
+    font-size: 0.78rem;
+    line-height: 1.2;
+    color: #dfe7f5;
+}
+
+.provider-health-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background-color: #7e889c;
+    flex-shrink: 0;
+}
+
+.provider-health-healthy {
+    border-color: #2fbf71;
+    color: #9ff0c0;
+
+    .provider-health-dot {
+        background-color: #2fbf71;
+    }
+}
+
+.provider-health-unreachable {
+    border-color: #ff4d4d;
+    color: #ff9d9d;
+
+    .provider-health-dot {
+        background-color: #ff4d4d;
+    }
+}
+
+.provider-health-neutral {
+    border-color: #6c7c99;
+    color: #b8c4d8;
+}
+
+.provider-health-refresh {
+    border: 0;
+    background: transparent;
+    color: inherit;
+    padding: 0;
+    margin: 0 0 0 0.15rem;
+    font-size: 0.85rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.provider-health-refresh:disabled {
+    cursor: default;
+    opacity: 0.4;
+}

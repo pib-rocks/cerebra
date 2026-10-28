@@ -109,6 +109,29 @@
         <p [id]="'keys-provider-state-' + account.id">
             {{ account.credentialRef ? "Key stored" : "No key" }}
         </p>
+        <div
+            class="keys-provider-health"
+            [ngClass]="providerHealthClass(account)"
+            [id]="'keys-provider-health-' + account.id"
+            [attr.data-test]="'LBL_Provider_Health_' + account.id"
+            [title]="providerHealthTooltip(account)">
+            <span
+                class="provider-health-dot"
+                aria-hidden="true"></span>
+            <span [id]="'keys-provider-health-text-' + account.id"
+                >{{ providerHealthText(account) }}</span
+            >
+            <button
+                type="button"
+                class="provider-health-refresh"
+                [id]="'keys-provider-health-refresh-' + account.id"
+                [disabled]="busy || providerHealthLoading[account.id]"
+                aria-label="Check provider key validity"
+                title="Check provider key validity"
+                (click)="probeProviderHealth(account)">
+                ⟳
+            </button>
+        </div>
         <button
             type="button"
             class="btn btn-outline-light"

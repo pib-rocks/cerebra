@@ -12,6 +12,8 @@ import {
 } from "src/app/shared/services/token.service";
 import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
 import {RosService} from "src/app/shared/services/ros-service/ros.service";
+import {ProviderHealthService} from "src/app/shared/services/provider-health.service";
+import {ProviderHealth} from "src/app/shared/types/provider-health";
 import {AssistantModel} from "src/app/shared/types/assistantModel";
 import {
     CLOUD_TOKEN_API_NAME,
@@ -27,6 +29,7 @@ describe("KeysComponent", () => {
     let keyStore: jasmine.SpyObj<KeyStoreService>;
     let voiceAssistant: jasmine.SpyObj<VoiceAssistantService>;
     let ros: jasmine.SpyObj<RosService>;
+    let providerHealth: jasmine.SpyObj<ProviderHealthService>;
     type TokenStatusInput = Parameters<typeof normalizeTokenStatus>[0];
     let tokenStatus: BehaviorSubject<TokenStatusInput>;
     let models: BehaviorSubject<AssistantModel[]>;
@@ -105,6 +108,12 @@ describe("KeysComponent", () => {
             },
         );
         ros = jasmine.createSpyObj("RosService", ["deleteTokenMessage"]);
+        providerHealth = jasmine.createSpyObj("ProviderHealthService", [
+            "check",
+        ]);
+        providerHealth.check.and.returnValue(
+            of({state: "unknown", reason: "no_key"}),
+        );
 
         await TestBed.configureTestingModule({
             imports: [KeysComponent],
@@ -112,6 +121,7 @@ describe("KeysComponent", () => {
                 {provide: KeyStoreService, useValue: keyStore},
                 {provide: VoiceAssistantService, useValue: voiceAssistant},
                 {provide: RosService, useValue: ros},
+                {provide: ProviderHealthService, useValue: providerHealth},
                 {
                     provide: TokenService,
                     useValue: {
@@ -821,6 +831,108 @@ describe("KeysComponent", () => {
         expect(text("#keys-cloud-status")).not.toContain("not stored");
         expect(text("#keys-cloud-status")).toContain("credential is stored");
     });
+
+    it("probes each provider on open and shows healthy key status", () => {
+        providerHealth.check.calls.reset();
+        providerHealth.check.and.returnValue(
+            of({state: "healthy", latencyMs: 120}),
+        );
+        fixture = TestBed.createComponent(KeysComponent);
+        fixture.detectChanges();
+
+        expect(providerHealth.check).toHaveBeenCalledWith(4);
+        const badge = fixture.nativeElement.querySelector(
+            "#keys-provider-health-4",
+        ) as HTMLElement;
+        expect(badge.classList.contains("provider-health-healthy")).toBeTrue();
+        expect(text("#keys-provider-health-text-4")).toBe("Valid (120 ms)");
+    });
+
+    it("re-probes after save and shows rejected key health", () => {
+        keyStore.putSecret.and.returnValue(
+            of({successful: true, credentialRef: "provider-4"}),
+        );
+        let probe = 0;
+        providerHealth.check.and.callFake(() => {
+            const responses: ProviderHealth[] = [
+                {state: "unknown", reason: "no_key"},
+                {
+                    state: "unreachable",
+                    reason: "key_rejected",
+                    detail: "The provider answered 401; the stored key was rejected.",
+                },
+            ];
+            return of(responses[Math.min(probe++, responses.length - 1)]);
+        });
+        fixture = TestBed.createComponent(KeysComponent);
+        component = fixture.componentInstance;
+        fixture.detectChanges();
+        expect(probe).toBe(1);
+
+        component.password = "operator-secret";
+        component.drafts = {4: "sk-bad"};
+        component.saveKey(component.keyProviders[0]);
+        fixture.detectChanges();
+
+        expect(probe).toBe(2);
+        expect(providerHealth.check).toHaveBeenCalledWith(4);
+        expect(component.providerHealth[4]?.state).toBe("unreachable");
+        const badge = fixture.nativeElement.querySelector(
+            "#keys-provider-health-4",
+        ) as HTMLElement;
+        expect(
+            badge.classList.contains("provider-health-unreachable"),
+        ).toBeTrue();
+        expect(text("#keys-provider-health-text-4")).toBe(
+            "Invalid key (key rejected): The provider answered 401; the stored key was rejected.",
+        );
+    });
+
+    it("re-probes after delete and shows no-key health", () => {
+        keyStore.deleteSecret.and.returnValue(of(""));
+        let probe = 0;
+        providerHealth.check.and.callFake(() => {
+            const responses: ProviderHealth[] = [
+                {state: "healthy", latencyMs: 50},
+                {state: "unknown", reason: "no_key"},
+            ];
+            return of(responses[Math.min(probe++, responses.length - 1)]);
+        });
+        fixture = TestBed.createComponent(KeysComponent);
+        component = fixture.componentInstance;
+        fixture.detectChanges();
+        expect(probe).toBe(1);
+
+        component.password = "operator-secret";
+        component.deleteKey(component.keyProviders[0]);
+        fixture.detectChanges();
+
+        expect(probe).toBe(2);
+        expect(providerHealth.check).toHaveBeenCalledWith(4);
+        expect(component.providerHealth[4]?.state).toBe("unknown");
+        const badge = fixture.nativeElement.querySelector(
+            "#keys-provider-health-4",
+        ) as HTMLElement;
+        expect(badge.classList.contains("provider-health-neutral")).toBeTrue();
+        expect(text("#keys-provider-health-text-4")).toBe(
+            "Not checked (no key stored)",
+        );
+    });
+
+    it("re-probes when the provider health refresh button is clicked", () => {
+        providerHealth.check.and.returnValue(
+            of({state: "healthy", latencyMs: 80}),
+        );
+        fixture = TestBed.createComponent(KeysComponent);
+        component = fixture.componentInstance;
+        fixture.detectChanges();
+        providerHealth.check.calls.reset();
+
+        click("#keys-provider-health-refresh-4");
+
+        expect(providerHealth.check).toHaveBeenCalledWith(4);
+        expect(text("#keys-provider-health-text-4")).toBe("Valid (80 ms)");
+    });
 });
 
 describe("KeysComponent (zoneless)", () => {
@@ -864,6 +976,12 @@ describe("KeysComponent (zoneless)", () => {
             ["getAllAssistantModels", "setProviderCredential"],
             {assistantModelsSubject: models},
         );
+        const providerHealth = jasmine.createSpyObj("ProviderHealthService", [
+            "check",
+        ]);
+        providerHealth.check.and.returnValue(
+            of({state: "unknown", reason: "no_key"}),
+        );
 
         await TestBed.configureTestingModule({
             imports: [KeysComponent],
@@ -871,6 +989,7 @@ describe("KeysComponent (zoneless)", () => {
                 provideZonelessChangeDetection(),
                 {provide: KeyStoreService, useValue: keyStore},
                 {provide: VoiceAssistantService, useValue: voiceAssistant},
+                {provide: ProviderHealthService, useValue: providerHealth},
                 {
                     provide: RosService,
                     useValue: jasmine.createSpyObj("RosService", [
