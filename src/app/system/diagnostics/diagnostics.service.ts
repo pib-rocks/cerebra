@@ -23,6 +23,8 @@ export interface DiagnosticsSummary {
         used: string;
         free: string;
         percentUsed: number;
+        /** Free share from the same value as `free`; absent on older backends. */
+        percentFree?: number;
     };
     diskStatus: string;
     containersStatus: string;
@@ -58,6 +60,7 @@ export interface SystemTelemetry {
         used: string;
         free: string;
         percentUsed: number;
+        percentFree?: number;
     };
     containers: Array<{
         name: string;
