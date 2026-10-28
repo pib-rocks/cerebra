@@ -10,7 +10,7 @@ import {
 } from "@angular/core";
 import {HttpErrorResponse} from "@angular/common/http";
 import {ActivatedRoute, Params, Router} from "@angular/router";
-import {Subscription, switchMap} from "rxjs";
+import {Subscription, catchError, of, switchMap} from "rxjs";
 import {ChatService} from "src/app/shared/services/chat.service";
 import {
     TokenService,
@@ -25,9 +25,13 @@ import {
     ProviderSelectionRow,
     TokenProbeState,
     DeepChatComposerState,
+    DeepChatStatusChip,
+    VoiceAssistantStatus,
     chatMessageLengthRefusal,
     chatTransportUnavailableText,
+    deepChatChipStateLabel,
     effectiveCloudTokenStored,
+    parseVoiceAssistantStatus,
     resolveDeepChatComposer,
 } from "src/app/shared/types/provider-registry";
 import {degradedChatReply} from "src/app/system/keys/key-store-session";
@@ -77,6 +81,7 @@ export class ChatWindowDeepChatComponent
         placeholder: "",
         turnRefusal: null,
         characterLimit: 0,
+        voiceAssistantChip: null,
     };
     private pendingSignals?: {onResponse: (response: unknown) => void};
     private lastStreamedMessageId: string | undefined;
@@ -95,8 +100,11 @@ export class ChatWindowDeepChatComponent
     private keyStoreStatusSubscription?: Subscription;
     private keyStoreSessionSubscription?: Subscription;
     private assistantModelsSubscription?: Subscription;
+    private voiceAssistantHealthSubscription?: Subscription;
     private voiceStateSubscription?: Subscription;
     private voiceState: VoiceAssistantState = {turnedOn: false, chatId: ""};
+    /** Undefined until the first key-store read; then unknown on failure. */
+    private voiceAssistantStatus: VoiceAssistantStatus | undefined;
     private readonly sendChatMessageSubscriptions = new Subscription();
     private previousRouteChatId: string | undefined;
 
@@ -113,6 +121,21 @@ export class ChatWindowDeepChatComponent
      * shadow root and no outer stylesheet reaches them.
      */
     readonly PARTNER_NAME_STYLE = {color: "#fff"};
+
+    get voiceAssistantChip(): DeepChatStatusChip | null {
+        return this.composerState.voiceAssistantChip;
+    }
+
+    voiceAssistantChipSummary(chip: DeepChatStatusChip): string {
+        return `${chip.label} · ${deepChatChipStateLabel(chip.tone)}`;
+    }
+
+    voiceAssistantChipTooltip(chip: DeepChatStatusChip): string {
+        if (chip.detail) {
+            return `${chip.label}: ${chip.detail}`;
+        }
+        return this.voiceAssistantChipSummary(chip);
+    }
 
     constructor(
         private readonly chatService: ChatService,
@@ -185,6 +208,7 @@ export class ChatWindowDeepChatComponent
         this.wireValidateInput(el);
         this.wireTokenStatus(el);
         this.wireKeyStoreStatus(el);
+        this.wireVoiceAssistantHealth(el);
         this.wireAssistantModels(el);
         this.wireKeyStoreSession(el);
         this.applyNames(el);
@@ -202,6 +226,7 @@ export class ChatWindowDeepChatComponent
         this.keyStoreStatusSubscription?.unsubscribe();
         this.keyStoreSessionSubscription?.unsubscribe();
         this.assistantModelsSubscription?.unsubscribe();
+        this.voiceAssistantHealthSubscription?.unsubscribe();
         this.voiceStateSubscription?.unsubscribe();
         this.sendChatMessageSubscriptions.unsubscribe();
         if (this.imageRefreshTimer !== undefined) {
@@ -485,6 +510,24 @@ export class ChatWindowDeepChatComponent
         });
     }
 
+    /**
+     * Voice container health from GET /system/voice-assistant-health.
+     *
+     * The probe runs server-side (node liveness AND a resolvable provider key); the
+     * browser only renders the verdict. A failing call leaves the chip at `unknown`,
+     * which is neutral on purpose - a robot without a voice container is not a fault.
+     */
+    private wireVoiceAssistantHealth(el: any): void {
+        this.voiceAssistantHealthSubscription?.unsubscribe();
+        this.voiceAssistantHealthSubscription = this.voiceAssistantService
+            .voiceAssistantHealth()
+            .pipe(catchError(() => of(null)))
+            .subscribe((body: unknown) => {
+                this.voiceAssistantStatus = parseVoiceAssistantStatus(body);
+                this.refreshComposer(el);
+            });
+    }
+
     private wireAssistantModels(el: any): void {
         this.assistantModelsSubscription?.unsubscribe();
         const subject = this.voiceAssistantService.assistantModelsSubject;
@@ -529,6 +572,7 @@ export class ChatWindowDeepChatComponent
             ),
             needsNewModel: personality?.needsNewModel === true,
             tokenProbe: this.tokenProbe,
+            voiceAssistantStatus: this.voiceAssistantStatus,
         });
         if (target != null) {
             this.applyTextInput(target);

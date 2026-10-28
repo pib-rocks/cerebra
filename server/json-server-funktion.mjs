@@ -805,6 +805,7 @@ server.get("/system/key-store", (req, res) => {
     return res.status(200).send({
         encryptKeyStorage: true,
         credentialRefs,
+        voiceAssistant: {state: "ok"},
     });
 });
 

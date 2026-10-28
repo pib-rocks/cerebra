@@ -1,5 +1,24 @@
 <div class="row mt-3 content-window pb-2">
     <div class="col-12 pe-2">
+        @if (voiceAssistantChip; as chip) {
+        <div
+            class="deep-chat-status-row"
+            data-test="DEEP_CHAT_STATUS_ROW">
+            <span
+                class="deep-chat-status-chip"
+                [class.deep-chat-status-chip-ok]="chip.tone === 'ok'"
+                [class.deep-chat-status-chip-attention]="
+                    chip.tone === 'attention'
+                "
+                [class.deep-chat-status-chip-neutral]="
+                    chip.tone === 'neutral'
+                "
+                [title]="voiceAssistantChipTooltip(chip)"
+                data-test="DEEP_CHAT_VOICE_ASSISTANT_CHIP">
+                {{ voiceAssistantChipSummary(chip) }}
+            </span>
+        </div>
+        }
         <div class="chat-container mb-3 p-2">
             <deep-chat #deepChat></deep-chat>
         </div>
