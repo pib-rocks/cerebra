@@ -1460,16 +1460,15 @@ describe("ChatWindowDeepChatComponent", () => {
         });
     });
 
-    it("shows the voice-assistant chip from the key-store status read (PR-2123)", () => {
-        keyStoreStatusSubject.next({
-            encryptKeyStorage: true,
-            credentialRefs: [],
-            mode: "unlocked",
-            voiceAssistant: {
+    it("shows the voice-assistant chip from the health endpoint (PR-2123)", () => {
+        // The probe runs server-side; the browser renders its verdict verbatim.
+        voiceAssistantSpy.voiceAssistantHealth.and.returnValue(
+            of({
                 state: "attention",
                 reason: "No keys are available for provider gemini.",
-            },
-        });
+            }),
+        );
+        component.ngAfterViewInit();
         fixture.detectChanges();
 
         const chip = fixture.nativeElement.querySelector(
