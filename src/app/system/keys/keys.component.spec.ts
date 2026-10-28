@@ -853,7 +853,10 @@ describe("KeysComponent", () => {
             of({successful: true, credentialRef: "provider-4"}),
         );
         let probe = 0;
-        providerHealth.check.and.callFake(() => {
+        providerHealth.check.and.callFake((id: number) => {
+            if (id !== 4) {
+                return of({state: "healthy", latencyMs: 50});
+            }
             const responses: ProviderHealth[] = [
                 {state: "unknown", reason: "no_key"},
                 {
@@ -891,7 +894,10 @@ describe("KeysComponent", () => {
     it("re-probes after delete and shows no-key health", () => {
         keyStore.deleteSecret.and.returnValue(of(""));
         let probe = 0;
-        providerHealth.check.and.callFake(() => {
+        providerHealth.check.and.callFake((id: number) => {
+            if (id !== 4) {
+                return of({state: "healthy", latencyMs: 50});
+            }
             const responses: ProviderHealth[] = [
                 {state: "healthy", latencyMs: 50},
                 {state: "unknown", reason: "no_key"},
@@ -956,6 +962,89 @@ describe("KeysComponent", () => {
         expect(component.providerHealthText(account)).toBe(
             "Unreachable (unexpected status)",
         );
+    });
+
+    it("probes pib.Cloud health with remaining budget and hides keyless offline Local models from the Keys page", () => {
+        providerHealth.check.and.callFake((id: number) => {
+            if (id === 1) {
+                return of({
+                    state: "healthy",
+                    latencyMs: 54,
+                    budgetKnown: true,
+                    budgetRemaining: 48482.43,
+                });
+            }
+            return of({state: "healthy", latencyMs: 120});
+        });
+        const localModel = new AssistantModel(
+            6,
+            "qwen-fast",
+            "Local (qwen-fast)",
+            false,
+            "http://host.docker.internal:11434/v1",
+            {
+                tools: false,
+                images: false,
+                live: false,
+                stt: false,
+                tts: false,
+                offline: true,
+            },
+            null,
+            false,
+            false,
+            5,
+            "Local",
+        );
+        models.next([
+            new AssistantModel(
+                1,
+                CLOUD_TOKEN_API_NAME,
+                "pib.Cloud",
+                true,
+                "https://cloud.example/v1",
+                flags,
+                "provider-1",
+                true,
+            ),
+            new AssistantModel(
+                4,
+                "gpt-6",
+                "GPT-6",
+                true,
+                "https://openai.example/v1",
+                flags,
+                "provider-4",
+                false,
+            ),
+            localModel,
+        ]);
+
+        fixture = TestBed.createComponent(KeysComponent);
+        component = fixture.componentInstance;
+        fixture.detectChanges();
+
+        expect(providerHealth.check).toHaveBeenCalledWith(1);
+        expect(providerHealth.check).toHaveBeenCalledWith(4);
+        expect(providerHealth.check).not.toHaveBeenCalledWith(6);
+        expect(
+            fixture.nativeElement.querySelector("#keys-provider-5"),
+        ).toBeNull();
+        expect(
+            fixture.nativeElement.querySelector("#keys-provider-6"),
+        ).toBeNull();
+        expect(text("#keys-cloud-health-text")).toBe(
+            "Valid (54 ms) · 48482.43 pib.Tokens left",
+        );
+
+        providerHealth.check.calls.reset();
+        click("#keys-cloud-health-refresh");
+        expect(providerHealth.check).toHaveBeenCalledWith(1);
+
+        component.cloudModelId = null;
+        providerHealth.check.calls.reset();
+        component.probeCloudHealth();
+        expect(providerHealth.check).not.toHaveBeenCalled();
     });
 
     it("re-probes when the provider health refresh button is clicked", () => {
