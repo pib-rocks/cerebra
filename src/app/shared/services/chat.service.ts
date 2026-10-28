@@ -282,11 +282,15 @@ export class ChatService implements SidebarService {
             return observable;
         } else {
             const messageSubject = new BehaviorSubject<ChatMessage[]>([]);
-            this.getMessagesByChatId(chatId).subscribe((messages) => {
-                messageSubject.next(messages);
-                this.chatMessagesHistoryReady.add(chatId);
-            });
             this.messagesSubjectFromChatId.set(chatId, messageSubject);
+            this.getMessagesByChatId(chatId).subscribe((messages) => {
+                // Flag FIRST: getChatMessagesForHistory drops every emission while the
+                // guard says "not ready". Setting it after next() meant a subscriber
+                // that was already waiting (deep-chat loadHistory) never received the
+                // value - the widget showed a spinner forever.
+                this.chatMessagesHistoryReady.add(chatId);
+                messageSubject.next(messages);
+            });
             return messageSubject;
         }
     }
