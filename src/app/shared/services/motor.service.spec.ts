@@ -515,6 +515,25 @@ describe("MotorService.refreshPosition", () => {
         expect(seen).toEqual([0, 1500]);
     });
 
+    it("gives up quietly when the retry fails as well", () => {
+        const connectionStatus$ = new BehaviorSubject<boolean>(false);
+        (rosService as any).connectionStatus$ = connectionStatus$;
+        rosService.getJointPosition.and.returnValue(
+            throwError(() => new Error("still down")),
+        );
+        const seen: number[] = [];
+        service
+            .getPositionObservable("head_pan")
+            .subscribe((value) => seen.push(value));
+
+        service.refreshPosition("head_pan");
+        connectionStatus$.next(true);
+
+        expect(rosService.getJointPosition).toHaveBeenCalledTimes(2);
+        // The known value stays, no error escapes to the slider.
+        expect(seen).toEqual([0]);
+    });
+
     it("ignores a non-finite position instead of showing NaN", () => {
         rosService.getJointPosition.and.returnValue(of(Number.NaN));
         const seen: number[] = [];
