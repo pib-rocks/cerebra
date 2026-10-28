@@ -19,6 +19,7 @@ import {AssistantModel} from "src/app/shared/types/assistantModel";
 import {
     ProviderKeyAccount,
     TokenProbeState,
+    isOfflineModel,
     persistedCloudCredentialPresent,
     providerKeyAccounts,
     usesCloudToken,
@@ -68,6 +69,10 @@ export class KeysComponent implements OnInit {
     error: string | null = null;
     notice: string | null = null;
     busy = false;
+    cloudHealth: ProviderHealth | null = null;
+    cloudHealthLoading = false;
+    cloudModelId: number | null = null;
+    private probedCloudModelId: number | null = null;
     providerHealth: Record<number, ProviderHealth> = {};
     providerHealthLoading: Record<number, boolean> = {};
     private readonly probedProviderIds = new Set<number>();
@@ -96,8 +101,22 @@ export class KeysComponent implements OnInit {
         this.voiceAssistantService.assistantModelsSubject
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe((models) => {
+                const cloudModel = models.find(
+                    (model) => usesCloudToken(model) && !model.retired,
+                );
+                this.cloudModelId = cloudModel?.id ?? null;
+                if (
+                    this.cloudModelId != null &&
+                    this.probedCloudModelId !== this.cloudModelId
+                ) {
+                    this.probedCloudModelId = this.cloudModelId;
+                    this.probeCloudHealth();
+                }
                 this.providers = models.filter(
-                    (model) => !usesCloudToken(model) && !model.retired,
+                    (model) =>
+                        !usesCloudToken(model) &&
+                        !isOfflineModel(model) &&
+                        !model.retired,
                 );
                 this.keyProviders = providerKeyAccounts(this.providers);
                 this.probeNewProviders();
@@ -170,6 +189,34 @@ export class KeysComponent implements OnInit {
         };
     }
 
+    cloudHealthClass(): string {
+        return healthCssClass(this.cloudHealth?.state ?? "unknown");
+    }
+
+    cloudHealthText(): string {
+        return this.formatHealthText(this.cloudHealth, this.cloudHealthLoading);
+    }
+
+    cloudHealthTooltip(): string {
+        return healthTooltip(this.cloudHealth, "pib.Cloud");
+    }
+
+    probeCloudHealth(): void {
+        if (this.cloudModelId == null) {
+            return;
+        }
+        this.cloudHealthLoading = true;
+        this.changeDetector.markForCheck();
+        this.providerHealthService
+            .check(this.cloudModelId)
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe((health) => {
+                this.cloudHealth = health;
+                this.cloudHealthLoading = false;
+                this.changeDetector.markForCheck();
+            });
+    }
+
     providerHealthClass(account: ProviderKeyAccount): string {
         return healthCssClass(
             this.providerHealth[account.id]?.state ?? "unknown",
@@ -177,17 +224,30 @@ export class KeysComponent implements OnInit {
     }
 
     providerHealthText(account: ProviderKeyAccount): string {
-        if (this.providerHealthLoading[account.id]) {
+        return this.formatHealthText(
+            this.providerHealth[account.id],
+            Boolean(this.providerHealthLoading[account.id]),
+        );
+    }
+
+    private formatHealthText(
+        h: ProviderHealth | null | undefined,
+        loading: boolean,
+    ): string {
+        if (loading) {
             return "Checking key…";
         }
-        const h = this.providerHealth[account.id];
         if (!h) {
             return "Not checked";
         }
         if (h.state === "healthy") {
+            const budgetSuffix =
+                h.budgetKnown && h.budgetRemaining != null
+                    ? ` · ${h.budgetRemaining.toFixed(2)} pib.Tokens left`
+                    : "";
             return h.latencyMs != null
-                ? `Valid (${h.latencyMs} ms)`
-                : "Valid (reachable)";
+                ? `Valid (${h.latencyMs} ms)${budgetSuffix}`
+                : `Valid (reachable)${budgetSuffix}`;
         }
         if (h.state === "unreachable") {
             if (h.reason === "key_rejected" || h.reason === "token_invalid") {
@@ -309,6 +369,7 @@ export class KeysComponent implements OnInit {
         this.tokenService.checkTokenExists();
         this.loadStatus();
         this.voiceAssistantService.getAllAssistantModels();
+        this.probeCloudHealth();
         this.notice =
             "SmartConnect token deleted. Re-enter it in SmartConnect.";
         this.error = null;

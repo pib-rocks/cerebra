@@ -77,6 +77,29 @@
             This is the SmartConnect token, not a key to type in here.
         </p>
         <p id="keys-cloud-status">{{ cloudStatus() }}</p>
+        <div
+            class="keys-provider-health"
+            [ngClass]="cloudHealthClass()"
+            id="keys-cloud-health"
+            data-test="LBL_Cloud_Health"
+            [title]="cloudHealthTooltip()">
+            <span
+                class="provider-health-dot"
+                aria-hidden="true"></span>
+            <span id="keys-cloud-health-text">{{ cloudHealthText() }}</span>
+            <button
+                type="button"
+                class="provider-health-refresh"
+                id="keys-cloud-health-refresh"
+                [disabled]="
+                    busy || cloudHealthLoading || cloudModelId === null
+                "
+                aria-label="Check pib.Cloud token validity"
+                title="Check pib.Cloud token validity"
+                (click)="probeCloudHealth()">
+                ⟳
+            </button>
+        </div>
         <p class="keys-hint">Re-enter the token in SmartConnect.</p>
         <button
             id="keys-cloud-delete"
