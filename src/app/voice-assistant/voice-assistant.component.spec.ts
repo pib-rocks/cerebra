@@ -366,13 +366,17 @@ describe("VoiceAssistantComponent", () => {
         expect(component.needsAttention("persona-1")).toBeTrue();
     });
 
-    it("keeps the identity text when the channel switches to Direct", () => {
+    it("keeps the stored channel and identity text when editing unrelated fields", () => {
         const existing = new VoiceAssistant(
             "persona-1",
             "Ada",
             "Female",
             0.8,
             "Du bist pib.",
+            null,
+            10,
+            DEFAULT_PROVIDER_REF,
+            DIRECT_CHANNEL,
         );
         voiceAssistantService.getPersonality.and.returnValue(existing);
         component.personalityForm.patchValue({
@@ -380,7 +384,6 @@ describe("VoiceAssistantComponent", () => {
             gender: "Female",
             pausethreshold: 0.8,
             messageHistory: 10,
-            channel: DIRECT_CHANNEL,
         });
         component.editPersonality("persona-1");
         const updated =
@@ -390,59 +393,22 @@ describe("VoiceAssistantComponent", () => {
         expect(updated.description).toBe("Du bist pib.");
     });
 
-    it("points the channel toggle at Smart by default and at a stored channel when editing", () => {
+    it("stores the channel from installation mode and keeps a stored channel on edit", () => {
         fixture.detectChanges();
         component.openAddModal();
         fixture.detectChanges();
-        // A closed dialog stays in the document until its fade transition
-        // ends, so the channel control is taken from the latest dialog.
-        const toggle = () => {
-            const buttons = document.body.querySelectorAll(
-                "[data-test=TGL_Channel]",
-            );
-            return buttons[buttons.length - 1] as HTMLButtonElement;
-        };
-        const toggleImage = () =>
-            toggle().querySelector("img") as HTMLImageElement;
-        const smartLabel = document.body.querySelector("#label-channel-smart");
-        const directLabel = document.body.querySelector(
-            "#label-channel-direct",
-        );
-        expect(smartLabel?.textContent).toContain("Smart");
-        expect(directLabel?.textContent).toContain("Direct");
         expect(
-            smartLabel!.compareDocumentPosition(toggle()) &
-                Node.DOCUMENT_POSITION_FOLLOWING,
-        ).toBeTruthy();
-        expect(
-            toggle().compareDocumentPosition(directLabel!) &
-                Node.DOCUMENT_POSITION_FOLLOWING,
-        ).toBeTruthy();
-        expect(toggle().disabled).toBeFalse();
+            document.body.querySelector("[data-test=TGL_Channel]"),
+        ).toBeNull();
         expect(component.personalityForm.controls["channel"].value).toBe(
             SMART_CHANNEL,
         );
-        expect(toggleImage().src).toContain("toggle-switch-left.png");
-        toggle().click();
-        TestBed.inject(ApplicationRef).tick();
-        expect(component.personalityForm.controls["channel"].value).toBe(
-            DIRECT_CHANNEL,
-        );
-        expect(toggleImage().src).toContain("toggle-switch-right.png");
-        toggle().click();
-        TestBed.inject(ApplicationRef).tick();
-        expect(component.personalityForm.controls["channel"].value).toBe(
-            SMART_CHANNEL,
-        );
-        expect(toggleImage().src).toContain("toggle-switch-left.png");
-        toggle().click();
-        TestBed.inject(ApplicationRef).tick();
         component.personalityForm.patchValue({"name-input": "Ada"});
         component.addPersonality();
         const created =
             voiceAssistantService.createPersonality.calls.mostRecent()
                 .args[0] as VoiceAssistant;
-        expect(created.channel).toBe(DIRECT_CHANNEL);
+        expect(created.channel).toBe(SMART_CHANNEL);
         component.ngbModalRef?.close();
 
         const storedDirect = new VoiceAssistant(
@@ -464,7 +430,12 @@ describe("VoiceAssistantComponent", () => {
         expect(component.personalityForm.controls["channel"].value).toBe(
             DIRECT_CHANNEL,
         );
-        expect(toggleImage().src).toContain("toggle-switch-right.png");
+        component.personalityForm.patchValue({"name-input": "Ada renamed"});
+        component.editPersonality(storedDirect.personalityId);
+        const updatedDirect =
+            voiceAssistantService.updatePersonalityById.calls.mostRecent()
+                .args[0] as VoiceAssistant;
+        expect(updatedDirect.channel).toBe(DIRECT_CHANNEL);
         component.ngbModalRef?.close();
 
         const storedSmart = new VoiceAssistant(
@@ -486,15 +457,18 @@ describe("VoiceAssistantComponent", () => {
         expect(component.personalityForm.controls["channel"].value).toBe(
             SMART_CHANNEL,
         );
-        expect(toggleImage().src).toContain("toggle-switch-left.png");
+        component.editPersonality(storedSmart.personalityId);
+        const updatedSmart =
+            voiceAssistantService.updatePersonalityById.calls.mostRecent()
+                .args[0] as VoiceAssistant;
+        expect(updatedSmart.channel).toBe(SMART_CHANNEL);
         component.ngbModalRef?.close();
     });
 
-    it("stores Direct and shows no Smart control when Hermes is disabled", () => {
+    it("stores Direct and shows the installation note when Hermes is disabled", () => {
         const capability = TestBed.inject(ChannelCapabilityService);
         capability.applyInstallerFlag(false);
         fixture.detectChanges();
-        expect(component.showSmartChannelControl).toBeFalse();
         component.openAddModal();
         fixture.detectChanges();
         expect(
@@ -519,7 +493,6 @@ describe("VoiceAssistantComponent", () => {
             gender: "Female",
             pausethreshold: 0.8,
             messageHistory: 10,
-            channel: SMART_CHANNEL,
         });
         component.addPersonality();
         const created =
@@ -547,7 +520,7 @@ describe("VoiceAssistantComponent", () => {
         component.ngbModalRef?.close();
     });
 
-    it("shows the Hermes agent installation mode in the personality dialog", () => {
+    it("shows the Hermes agent installation mode without a channel control", () => {
         fixture.detectChanges();
         component.openAddModal();
         fixture.detectChanges();
@@ -557,7 +530,12 @@ describe("VoiceAssistantComponent", () => {
         ).toContain("Hermes agent");
         expect(
             document.body.querySelector("[data-test=TGL_Channel]"),
-        ).not.toBeNull();
+        ).toBeNull();
+        expect(
+            document.body.querySelector(
+                "[data-test=LBL_Channel_Installation_Fixed]",
+            ),
+        ).toBeNull();
         component.ngbModalRef?.close();
     });
 
@@ -593,7 +571,7 @@ describe("VoiceAssistantComponent", () => {
         component.ngbModalRef?.close();
     });
 
-    it("hides Smart for the on-device model and returns the channel to Direct", () => {
+    it("stores Smart for a new on-device personality when Hermes is enabled", () => {
         const cloud = new AssistantModel(
             2,
             "gpt-6",
@@ -631,22 +609,13 @@ describe("VoiceAssistantComponent", () => {
         fixture.detectChanges();
         expect(
             document.body.querySelector("[data-test=TGL_Channel]"),
-        ).not.toBeNull();
-        component.personalityForm.controls["channel"].setValue(SMART_CHANNEL);
+        ).toBeNull();
         component.personalityForm.controls["assistantModel"].setValue(
             String(onDevice.id),
         );
         fixture.detectChanges();
-        // The selected model is the on-device one: Smart is no longer offered
-        // and the channel the dialog was holding moved back to Direct on its
-        // own. The rendered state of that dialog (Direct plus the explanation,
-        // no Smart choice) is asserted by the sibling spec that opens the
-        // dialog on such a personality - this fixture does not re-render the
-        // modal's embedded view after a later form change.
-        expect(component.offlineModelSelected).toBeTrue();
-        expect(component.showSmartChannelControl).toBeFalse();
         expect(component.personalityForm.controls["channel"].value).toBe(
-            DIRECT_CHANNEL,
+            SMART_CHANNEL,
         );
         component.personalityForm.patchValue({
             "name-input": "Ada",
@@ -658,11 +627,11 @@ describe("VoiceAssistantComponent", () => {
         const created =
             voiceAssistantService.createPersonality.calls.mostRecent()
                 .args[0] as VoiceAssistant;
-        expect(created.channel).toBe(DIRECT_CHANNEL);
+        expect(created.channel).toBe(SMART_CHANNEL);
         component.ngbModalRef?.close();
     });
 
-    it("does not rewrite Smart when an on-device personality is opened", () => {
+    it("keeps a stored Smart channel when an on-device personality is edited", () => {
         const onDevice = new AssistantModel(
             6,
             "local-model",
@@ -705,16 +674,11 @@ describe("VoiceAssistantComponent", () => {
         expect(
             document.body.querySelector("[data-test=TGL_Channel]"),
         ).toBeNull();
-        expect(
-            document.body.querySelector(
-                "[data-test=LBL_Channel_Offline_Explanation]",
-            ),
-        ).not.toBeNull();
         component.editPersonality(stored.personalityId);
         const updated =
             voiceAssistantService.updatePersonalityById.calls.mostRecent()
                 .args[0] as VoiceAssistant;
-        expect(updated.channel).toBe(DIRECT_CHANNEL);
+        expect(updated.channel).toBe(SMART_CHANNEL);
         expect(stored.channel).toBe(SMART_CHANNEL);
         component.ngbModalRef?.close();
     });
@@ -862,9 +826,6 @@ describe("VoiceAssistantComponent", () => {
         fixture.detectChanges();
         component.openAddModal();
         fixture.detectChanges();
-        expect(
-            document.body.querySelector("[data-test=TGL_Channel]"),
-        ).not.toBeNull();
         expect(
             document.body.querySelector(
                 "[data-test=DDN_Voice_Assistant_Model]",
@@ -1079,7 +1040,7 @@ describe("VoiceAssistantComponent", () => {
         component.ngbModalRef?.close();
     });
 
-    it("offers a live model in the list, and choosing it is the whole statement", () => {
+    it("does not offer live models in the personality dialog model list", () => {
         const flash = new AssistantModel(
             3,
             "gemini-3.8-flash",
@@ -1117,7 +1078,6 @@ describe("VoiceAssistantComponent", () => {
         component.openAddModal();
         fixture.detectChanges();
         TestBed.inject(ApplicationRef).tick();
-        expect(document.body.querySelector("[data-test=CHK_Live]")).toBeNull();
         const options = Array.from(
             (
                 document.body.querySelector(
@@ -1125,27 +1085,16 @@ describe("VoiceAssistantComponent", () => {
                 ) as HTMLSelectElement
             ).options,
         );
-        const liveOption = options.find(
-            (option) => option.textContent?.includes("Gemini 3.8 Live"),
-        );
-        expect(liveOption).toBeDefined();
-        expect(liveOption?.disabled).toBeFalse();
-        component.personalityForm.controls["assistantModel"].setValue(
-            String(live.id),
-        );
-        fixture.detectChanges();
-        TestBed.inject(ApplicationRef).tick();
-        expect(component.personalityForm.getRawValue()["live"]).toBeTrue();
         expect(
-            document.body.querySelector("[data-test=TXT_Idle_Timeout]"),
-        ).not.toBeNull();
-        component.personalityForm.patchValue({"name-input": "Ada"});
-        component.addPersonality();
-        const created =
-            voiceAssistantService.createPersonality.calls.mostRecent()
-                .args[0] as VoiceAssistant;
-        expect(created.providerRef).toBe(String(live.id));
-        expect(created.live).toBeTrue();
+            options.some(
+                (option) => option.textContent?.includes("Gemini 3.8 Live"),
+            ),
+        ).toBeFalse();
+        expect(
+            options.some(
+                (option) => option.textContent?.includes("Gemini 3.8 Flash"),
+            ),
+        ).toBeTrue();
         component.ngbModalRef?.close();
     });
 
@@ -1284,7 +1233,6 @@ describe("VoiceAssistantComponent", () => {
             .map((option) => option.textContent?.trim());
         expect(selectable).toEqual([
             "Gemini 3.8 Flash",
-            "Gemini 3.8 Live",
             "GPT-6",
             "Claude Sonnet 5.5",
             "pib.Cloud",
@@ -1775,7 +1723,7 @@ describe("VoiceAssistantComponent", () => {
             String(local.id),
         );
         expect(component.personalityForm.controls["channel"].value).toBe(
-            DIRECT_CHANNEL,
+            SMART_CHANNEL,
         );
         expect(modelSelect().value).toBe(String(local.id));
         expect(modelSelect().selectedOptions[0].textContent?.trim()).toBe(

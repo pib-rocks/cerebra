@@ -6,7 +6,6 @@ import {
     identityText,
     parseChatChannel,
     routeTurn,
-    showSmartChannelControl,
     installationModeLabel,
     channelFixedByInstallation,
     channelInstallationFixedExplanation,
@@ -105,9 +104,7 @@ describe("channel router", () => {
         expect(channelInstallationFixedExplanation()).toContain("installation");
     });
 
-    it("forces Direct and hides Smart when the installer disabled Hermes", () => {
-        expect(showSmartChannelControl(false)).toBeFalse();
-        expect(showSmartChannelControl(true)).toBeTrue();
+    it("forces Direct routing when the installer disabled Hermes", () => {
         expect(effectiveChannel(SMART_CHANNEL, false)).toBe(DIRECT_CHANNEL);
         const turn = routeTurn({
             channel: SMART_CHANNEL,
