@@ -44,6 +44,7 @@ describe("MotorService", () => {
                     motorSettingsReceiver$: new Subject(),
                     jointTrajectoryReceiver$: new Subject(),
                     currentReceiver$: new Subject(),
+                    connectionStatus$: new BehaviorSubject<boolean>(false),
                 },
             );
         const apiServiceSpy: jasmine.SpyObj<ApiService> = jasmine.createSpyObj(
@@ -448,6 +449,7 @@ describe("MotorService.refreshPosition", () => {
                 motorSettingsReceiver$: new Subject(),
                 jointTrajectoryReceiver$: new Subject(),
                 currentReceiver$: new Subject(),
+                connectionStatus$: new BehaviorSubject<boolean>(false),
             },
         );
         const apiService = jasmine.createSpyObj("ApiService", [
@@ -492,6 +494,25 @@ describe("MotorService.refreshPosition", () => {
         service.refreshPosition("head_pan");
 
         expect(seen).toEqual([0]);
+    });
+
+    it("retries the read once the ROS connection is up", () => {
+        const connectionStatus$ = new BehaviorSubject<boolean>(false);
+        (rosService as any).connectionStatus$ = connectionStatus$;
+        rosService.getJointPosition.and.returnValues(
+            throwError(() => new Error("not connected")),
+            of(1500),
+        );
+        const seen: number[] = [];
+        service
+            .getPositionObservable("head_pan")
+            .subscribe((value) => seen.push(value));
+
+        service.refreshPosition("head_pan");
+        connectionStatus$.next(true);
+
+        expect(rosService.getJointPosition).toHaveBeenCalledTimes(2);
+        expect(seen).toEqual([0, 1500]);
     });
 
     it("ignores a non-finite position instead of showing NaN", () => {
