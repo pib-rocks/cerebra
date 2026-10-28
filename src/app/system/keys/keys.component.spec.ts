@@ -919,6 +919,45 @@ describe("KeysComponent", () => {
         );
     });
 
+    it("formats loading, unprobed, and non-key unreachable health states", () => {
+        const account = component.keyProviders[0];
+        delete component.providerHealth[account.id];
+        component.providerHealthLoading[account.id] = false;
+        expect(component.providerHealthText(account)).toBe("Not checked");
+
+        component.providerHealthLoading[account.id] = true;
+        expect(component.providerHealthText(account)).toBe("Checking key…");
+
+        component.providerHealthLoading[account.id] = false;
+        component.providerHealth[account.id] = {state: "healthy"};
+        expect(component.providerHealthText(account)).toBe("Valid (reachable)");
+
+        component.providerHealth[account.id] = {
+            state: "unreachable",
+            reason: "key_rejected",
+        };
+        expect(component.providerHealthText(account)).toBe(
+            "Invalid key (key rejected)",
+        );
+
+        component.providerHealth[account.id] = {
+            state: "unreachable",
+            reason: "unreachable",
+            detail: "Connection timed out",
+        };
+        expect(component.providerHealthText(account)).toBe(
+            "Unreachable (no answer): Connection timed out",
+        );
+
+        component.providerHealth[account.id] = {
+            state: "unreachable",
+            reason: "http_status",
+        };
+        expect(component.providerHealthText(account)).toBe(
+            "Unreachable (unexpected status)",
+        );
+    });
+
     it("re-probes when the provider health refresh button is clicked", () => {
         providerHealth.check.and.returnValue(
             of({state: "healthy", latencyMs: 80}),
