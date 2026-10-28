@@ -106,6 +106,8 @@ describe("ChatWindowDeepChatComponent", () => {
             jasmine.createSpyObj("ChatService", [
                 "filterMessageUpdates",
                 "getChatMessagesObservable",
+                "getChatMessagesForHistory",
+                "refreshChatMessages",
                 "sendChatMessage",
                 "getMessagesByChatId",
                 "getChatMessage",
@@ -182,6 +184,7 @@ describe("ChatWindowDeepChatComponent", () => {
         ) as jasmine.SpyObj<ChatService>;
 
         chatService.getChatMessagesObservable.and.returnValue(messagesSubject);
+        chatService.getChatMessagesForHistory.and.returnValue(messagesSubject);
         chatService.filterMessageUpdates.and.callFake(
             (messages: ChatMessage[]) => messages,
         );
@@ -542,23 +545,56 @@ describe("ChatWindowDeepChatComponent", () => {
             isUser: true,
             content: "second",
         };
-        chatService.getMessagesByChatId.and.returnValue(
-            of([firstMessage, secondMessage]),
-        );
+        messagesSubject.next([firstMessage, secondMessage]);
         chatService.filterMessageUpdates.and.returnValue([
             firstMessage,
             secondMessage,
         ]);
+        chatService.getMessagesByChatId.calls.reset();
+        chatService.getChatMessagesForHistory.calls.reset();
 
         const result = await mockDeepChat.loadHistory!();
 
-        expect(chatService.getMessagesByChatId).toHaveBeenCalledWith(chatId);
+        expect(chatService.getChatMessagesForHistory).toHaveBeenCalledWith(
+            chatId,
+        );
+        expect(chatService.getMessagesByChatId).not.toHaveBeenCalled();
         expect(result).toEqual([
             toDeepChat(firstMessage),
             toDeepChat(secondMessage),
         ]);
         expect(result[0]).toEqual({role: "ai", text: "first"});
         expect(result[1]).toEqual({role: "user", text: "second"});
+    });
+
+    it("loadHistory reuses the buffered stream so deep-chat can call it repeatedly", async () => {
+        const message: ChatMessage = {
+            messageId: "message-id-1",
+            timestamp: "yesterday",
+            isUser: false,
+            content: "first",
+        };
+        messagesSubject.next([message]);
+        chatService.filterMessageUpdates.and.returnValue([message]);
+        chatService.getMessagesByChatId.calls.reset();
+        chatService.getChatMessagesForHistory.calls.reset();
+
+        await mockDeepChat.loadHistory!();
+        await mockDeepChat.loadHistory!();
+
+        expect(chatService.getChatMessagesForHistory).toHaveBeenCalledTimes(2);
+        expect(chatService.getChatMessagesForHistory).toHaveBeenCalledWith(
+            chatId,
+        );
+        expect(chatService.getMessagesByChatId).not.toHaveBeenCalled();
+    });
+
+    it("refreshes buffered history when the route chat id changes", () => {
+        chatService.refreshChatMessages.calls.reset();
+        paramsSubject.next({chatUuid: "other-chat-id"});
+        expect(chatService.refreshChatMessages).toHaveBeenCalledOnceWith(
+            "other-chat-id",
+        );
     });
 
     it("first AI chunk resolves onResponse exactly once", () => {
@@ -1416,6 +1452,8 @@ describe("ChatWindowDeepChatComponent fresh chat without id", () => {
             jasmine.createSpyObj("ChatService", [
                 "filterMessageUpdates",
                 "getChatMessagesObservable",
+                "getChatMessagesForHistory",
+                "refreshChatMessages",
                 "sendChatMessage",
                 "getMessagesByChatId",
                 "getChatMessage",
@@ -1485,6 +1523,7 @@ describe("ChatWindowDeepChatComponent fresh chat without id", () => {
             ChatService,
         ) as jasmine.SpyObj<ChatService>;
         chatService.getChatMessagesObservable.and.returnValue(messagesSubject);
+        chatService.getChatMessagesForHistory.and.returnValue(messagesSubject);
         chatService.filterMessageUpdates.and.callFake(
             (messages: ChatMessage[]) => messages,
         );
@@ -1557,11 +1596,13 @@ describe("ChatWindowDeepChatComponent fresh chat without id", () => {
     it("loadHistory without id resolves to [] and skips the API", async () => {
         component.currentChatId = undefined;
         chatService.getMessagesByChatId.calls.reset();
+        chatService.getChatMessagesForHistory.calls.reset();
 
         const result = await mockDeepChat.loadHistory!();
 
         expect(result).toEqual([]);
         expect(chatService.getMessagesByChatId).not.toHaveBeenCalled();
+        expect(chatService.getChatMessagesForHistory).not.toHaveBeenCalled();
     });
 
     it("names a failed chat creation and puts the typed text back", () => {
