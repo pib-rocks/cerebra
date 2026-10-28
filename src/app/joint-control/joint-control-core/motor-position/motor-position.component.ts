@@ -45,21 +45,15 @@ export class MotorPositionComponent implements OnInit {
                     .getPositionObservable(this.motor.sourceMotorName)
                     .pipe(takeUntilDestroyed(this.destroyRef))
                     .subscribe((position) => {
-                        this.positionReceiver$.next([
-                            Math.floor(position / 100),
-                        ]);
+                        this.positionReceiver$.next([position / 100]);
                     });
                 this.motorService
                     .getSettingsObservable(this.motor.sourceMotorName)
                     .pipe(takeUntilDestroyed(this.destroyRef))
                     .subscribe((settings) => {
                         this.turnedOn = settings.turnedOn;
-                        this.rotationRangeMin = Math.floor(
-                            settings.rotationRangeMin / 100,
-                        );
-                        this.rotationRangeMax = Math.floor(
-                            settings.rotationRangeMax / 100,
-                        );
+                        this.rotationRangeMin = settings.rotationRangeMin / 100;
+                        this.rotationRangeMax = settings.rotationRangeMax / 100;
                     });
             });
     }

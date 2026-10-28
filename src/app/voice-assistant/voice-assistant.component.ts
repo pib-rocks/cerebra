@@ -26,6 +26,9 @@ import {AssistantModel} from "../shared/types/assistantModel";
 import {
     DIRECT_CHANNEL,
     SMART_CHANNEL,
+    channelFixedByInstallation,
+    channelInstallationFixedExplanation,
+    installationModeLabel,
     parseChatChannel,
     showSmartChannelControl,
 } from "../shared/types/channel-router";
@@ -482,6 +485,17 @@ export class VoiceAssistantComponent implements OnInit {
             !this.offlineModelSelected
         );
     }
+
+    get installationModeLabel(): string {
+        return installationModeLabel(this.smartChatsEnabled);
+    }
+
+    get channelFixedByInstallation(): boolean {
+        return channelFixedByInstallation(this.smartChatsEnabled);
+    }
+
+    readonly channelInstallationFixedExplanation =
+        channelInstallationFixedExplanation();
 
     /**
      * The dialog's model control, resolved against the offered rows.

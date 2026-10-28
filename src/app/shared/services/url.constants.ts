@@ -31,5 +31,7 @@ export enum UrlConstants {
     HARDWARE_VARIANT = "/system/hardware-variant",
     HARDWARE_CAPABILITIES = "/system/hardware-capabilities",
     CONTROLLER = "/controller",
+    CONTROLLER_CONNECTED = "/controller/connected",
     MARIMO = "/marimo",
+    SMART_HOME = "/smart-home",
 }

@@ -17,6 +17,8 @@ import {NgbModal, NgbModalRef} from "@ng-bootstrap/ng-bootstrap";
 import {Observable} from "rxjs";
 import {SidebarElement} from "src/app/shared/interfaces/sidebar-element.interface";
 import {CerebraRegex} from "src/app/shared/types/cerebra-regex";
+import {ChannelCapabilityService} from "src/app/shared/services/channel-capability.service";
+import {installationModeLabel} from "src/app/shared/types/channel-router";
 import {PersonalityDescriptionComponent} from "../personality-description/personality-description.component";
 import {ConversationStatusComponent} from "../visible-state/conversation-status.component";
 
@@ -49,14 +51,23 @@ export class VoiceAssistantNavComponent implements OnInit, AfterViewChecked {
     @Input() needsAttention?: (id: string) => boolean;
     @Input() attentionLabel?: (id: string) => string;
 
+    smartChatsEnabled = true;
+
     constructor(
         private router: Router,
         private route: ActivatedRoute,
         private changeDetector: ChangeDetectorRef,
         private modalService: NgbModal,
+        private channelCapability: ChannelCapabilityService,
     ) {}
 
     ngOnInit(): void {
+        this.channelCapability.smartChatsEnabled$
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe((enabled) => {
+                this.smartChatsEnabled = enabled;
+                this.changeDetector.markForCheck();
+            });
         this.router.events
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe((event) => {
@@ -212,6 +223,10 @@ export class VoiceAssistantNavComponent implements OnInit, AfterViewChecked {
                 )
                 ?.getName() ?? ""
         );
+    }
+
+    get installationModeLabel(): string {
+        return installationModeLabel(this.smartChatsEnabled);
     }
 
     optionLabel(element: SidebarElement): string {

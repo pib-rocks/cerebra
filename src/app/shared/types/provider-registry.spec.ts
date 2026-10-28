@@ -32,6 +32,7 @@ import {
     startingModelForNewPersonality,
     ProviderSelectionRow,
 } from "./provider-registry";
+import {CHAT_MESSAGE_MAX_LENGTH, chatMessageLengthRefusal} from "./chat-limits";
 
 function row(
     id: number,
@@ -798,6 +799,30 @@ describe("resolveDeepChatComposer", () => {
         const state = base({chatsAvailable: false});
         expect(state.inputEnabled).toBeFalse();
         expect(state.turnRefusal).toBeNull();
+    });
+
+    it("exposes the chat line character limit for the deep-chat composer", () => {
+        expect(base({}).characterLimit).toBe(100_000);
+        expect(CHAT_MESSAGE_MAX_LENGTH).toBe(100_000);
+    });
+});
+
+describe("chatMessageLengthRefusal (PR-2023)", () => {
+    it("accepts a line at the limit and refuses one character over it", () => {
+        expect(chatMessageLengthRefusal("x".repeat(100_000))).toBeNull();
+        const refusal = chatMessageLengthRefusal("x".repeat(100_001));
+        expect(refusal).toContain("100001");
+        expect(refusal).toContain("100000");
+    });
+
+    it("does not reuse the chat transport unavailable sentence", () => {
+        const refusal = chatMessageLengthRefusal("x".repeat(100_001))!;
+        expect(refusal).not.toBe(CHAT_TRANSPORT_UNAVAILABLE);
+        expect(refusal).not.toBe(
+            chatTransportUnavailableText(
+                new Error("Service /send_chat_message does not exist"),
+            )!,
+        );
     });
 });
 

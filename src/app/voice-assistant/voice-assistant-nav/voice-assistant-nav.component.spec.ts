@@ -210,11 +210,31 @@ describe("VoiceAssistantNavComponent", () => {
         expect(document.body.querySelector(".modal.cerebra-modal")).toBeNull();
     });
 
+    it("shows the installation mode in the chat header for both installer flags", () => {
+        const badge = () =>
+            fixture.nativeElement.querySelector(
+                "[data-test=LBL_Installation_Mode]",
+            ) as HTMLElement;
+        expect(badge().textContent).toContain("Hermes agent");
+        const capability = TestBed.inject(ChannelCapabilityService) as {
+            applyInstallerFlag: (enabled: boolean) => void;
+        };
+        capability.applyInstallerFlag(false);
+        fixture.detectChanges();
+        expect(badge().textContent).toContain("Direct LLM, no agent");
+        capability.applyInstallerFlag(true);
+        fixture.detectChanges();
+        expect(badge().textContent).toContain("Hermes agent");
+    });
+
     it("shows who holds the voice at the right end of the personality row", () => {
         const header = fixture.nativeElement.querySelector(
             ".personality-header",
         ) as HTMLElement;
         const tools = header.querySelector(".personality-tools") as HTMLElement;
+        const mode = header.querySelector(
+            "#assistant-installation-mode",
+        ) as HTMLElement;
         const holder = header.querySelector(
             "app-conversation-status",
         ) as HTMLElement;
@@ -223,8 +243,10 @@ describe("VoiceAssistantNavComponent", () => {
         ) as HTMLElement;
 
         expect(holder).not.toBeNull();
+        expect(mode).not.toBeNull();
         expect(header.lastElementChild).toBe(holder);
-        expect(tools.nextElementSibling).toBe(holder);
+        expect(tools.nextElementSibling).toBe(mode);
+        expect(mode.nextElementSibling).toBe(holder);
         expect(line.textContent).toContain("Nobody holds the voice");
         expect(header.querySelector("#animated-face")).toBeNull();
         expect(header.querySelector("#voice-channel-holder")).toBeNull();
@@ -398,6 +420,22 @@ function navElements(): SidebarElement[] {
     ];
 }
 
+function channelCapabilityProvider(): Provider {
+    const smartChatsEnabled$ = new BehaviorSubject(true);
+    return {
+        provide: ChannelCapabilityService,
+        useValue: {
+            smartChatsEnabled$,
+            get smartChatsEnabled(): boolean {
+                return smartChatsEnabled$.getValue();
+            },
+            applyInstallerFlag(enabled: boolean): void {
+                smartChatsEnabled$.next(enabled);
+            },
+        },
+    };
+}
+
 function navProviders(personalities: VoiceAssistant[]): Provider[] {
     const voiceAssistantServiceSpy = createServiceSpy<VoiceAssistantService>(
         "VoiceAssistantService",
@@ -440,12 +478,7 @@ function navProviders(personalities: VoiceAssistant[]): Provider[] {
                 }),
             },
         },
-        {
-            provide: ChannelCapabilityService,
-            useValue: {
-                smartChatsEnabled$: new BehaviorSubject(true),
-            },
-        },
+        channelCapabilityProvider(),
     ];
 }
 

@@ -432,7 +432,7 @@ describe("RosMockService", () => {
             acceleration: 5,
             deceleration: 6,
             period: 7,
-            invert: false,
+            upper_endpoint: "max",
             visible: false,
         };
         const motorSettings = {
@@ -445,7 +445,7 @@ describe("RosMockService", () => {
             acceleration: 5,
             deceleration: 6,
             period: 7,
-            invert: false,
+            upperEndpoint: "max",
             visible: false,
         };
         apiService.put.and.returnValue(new BehaviorSubject(motorSettings));
@@ -454,7 +454,7 @@ describe("RosMockService", () => {
             motorSettingsMessage,
         );
         expect(consoleInfoSpy).toHaveBeenCalledOnceWith(
-            '{"motor_name":"test-motor","turned_on":false,"pulse_width_min":0,"pulse_width_max":1,"rotation_range_min":2,"rotation_range_max":3,"velocity":4,"acceleration":5,"deceleration":6,"period":7,"invert":false,"visible":false}',
+            '{"motor_name":"test-motor","turned_on":false,"pulse_width_min":0,"pulse_width_max":1,"rotation_range_min":2,"rotation_range_max":3,"velocity":4,"acceleration":5,"deceleration":6,"period":7,"upper_endpoint":"max","visible":false}',
         );
     });
 

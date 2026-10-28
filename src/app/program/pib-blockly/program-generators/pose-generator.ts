@@ -20,6 +20,7 @@ import {
 } from "./util/definitions";
 import {
     APPLY_POSE_FUNCTION,
+    CENTIDEGREES_TO_DEGREES_FUNCTION,
     PLAY_POSE_SEQUENCE_TIMED_FUNCTION,
     SAVE_CURRENT_POSE_FUNCTION,
 } from "./util/function-declarations";
@@ -42,6 +43,11 @@ export function moveToPoseGenerator(
         CONFIGURE_LOGGING,
         INIT_ROS,
     });
+
+    generator.provideFunction_(
+        "centidegrees_to_degrees",
+        CENTIDEGREES_TO_DEGREES_FUNCTION(generator),
+    );
 
     // declare the 'apply_pose'-function
     const functionName = generator.provideFunction_(

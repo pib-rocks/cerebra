@@ -54,6 +54,16 @@ const STAGE_LABELS: Record<string, string> = {
     stream_done: "stream done",
 };
 
+export interface ToolCallTrace {
+    callId: string;
+    name: string;
+    argNames: string[];
+    status: "running" | "ok" | "error";
+    startedMs: number;
+    durationMs: number | null;
+    error: string;
+}
+
 export interface TurnTrace {
     /** Chat this trace belongs to; events of another chat are ignored. */
     chatId: string;
@@ -66,6 +76,7 @@ export interface TurnTrace {
     model: string;
     /** done once the stream reported its end. */
     streamEnd: string;
+    toolCalls: ToolCallTrace[];
 }
 
 export function emptyTurnTrace(chatId = ""): TurnTrace {
@@ -76,11 +87,146 @@ export function emptyTurnTrace(chatId = ""): TurnTrace {
         source: "",
         model: "",
         streamEnd: "",
+        toolCalls: [],
     };
 }
 
 export function stageLabel(stage: string): string {
     return STAGE_LABELS[stage] ?? stage;
+}
+
+function relativeMs(turnStartMs: number, tsMs: number): number {
+    return Math.round(Math.max(0, tsMs - turnStartMs) * 10) / 10;
+}
+
+function parseArgNames(
+    detail: Record<string, unknown> | null | undefined,
+): string[] {
+    const raw = detail?.["arg_names"];
+    if (!Array.isArray(raw)) {
+        return [];
+    }
+    return raw.filter((name): name is string => typeof name === "string");
+}
+
+function parseToolDetail(event: VoiceTurnTraceEvent): {
+    callId: string;
+    argNames: string[];
+    ok: boolean;
+    durationMs: number | null;
+    error: string;
+} {
+    const detail = event.detail ?? {};
+    const callId =
+        typeof detail["call_id"] === "string" ? detail["call_id"] : "";
+    const argNames = parseArgNames(detail);
+    const ok = detail["ok"] === true;
+    const durationRaw = detail["duration_ms"];
+    const durationMs =
+        typeof durationRaw === "number" && !Number.isNaN(durationRaw)
+            ? durationRaw
+            : null;
+    const errorRaw = detail["error"];
+    const error =
+        typeof errorRaw === "string"
+            ? errorRaw
+            : errorRaw != null
+            ? String(errorRaw)
+            : "";
+    return {callId, argNames, ok, durationMs, error};
+}
+
+function applyToolCallStarted(
+    state: TurnTrace,
+    event: VoiceTurnTraceEvent,
+    chatId: string,
+    turnStartMs: number,
+): TurnTrace {
+    const {callId, argNames} = parseToolDetail(event);
+    if (
+        state.toolCalls.some(
+            (call) => call.callId === callId && call.status === "running",
+        )
+    ) {
+        return {...state, chatId};
+    }
+    const name = event.source || "";
+    return {
+        ...state,
+        chatId,
+        startedMs: turnStartMs,
+        toolCalls: [
+            ...state.toolCalls,
+            {
+                callId,
+                name,
+                argNames,
+                status: "running",
+                startedMs: relativeMs(turnStartMs, event.ts_ms),
+                durationMs: null,
+                error: "",
+            },
+        ],
+    };
+}
+
+function applyToolCallFinished(
+    state: TurnTrace,
+    event: VoiceTurnTraceEvent,
+    chatId: string,
+    turnStartMs: number,
+    legacyOnlyIfMissing: boolean,
+): TurnTrace {
+    const {callId, argNames, ok, durationMs, error} = parseToolDetail(event);
+    const name = event.source || "";
+    const status = ok ? "ok" : "error";
+    // Pair with the entry that is still open. A trace can carry the same call id
+    // more than once: the robot used to derive the id from the part index, so six
+    // move_motor calls in one turn all arrived as `move_motor-0` (PR-2042). Marking
+    // only the first entry left the rest "running" for good.
+    const runningIdx = state.toolCalls.findIndex(
+        (call) => call.callId === callId && call.status === "running",
+    );
+    const idx =
+        runningIdx >= 0
+            ? runningIdx
+            : state.toolCalls.findIndex((call) => call.callId === callId);
+
+    if (legacyOnlyIfMissing && idx >= 0) {
+        return {...state, chatId};
+    }
+
+    if (idx >= 0) {
+        const updated = [...state.toolCalls];
+        updated[idx] = {
+            ...updated[idx],
+            status,
+            durationMs,
+            error,
+            argNames: argNames.length ? argNames : updated[idx].argNames,
+        };
+        return {...state, chatId, startedMs: turnStartMs, toolCalls: updated};
+    }
+
+    const duration = durationMs ?? 0;
+    const startedMs = relativeMs(turnStartMs, event.ts_ms - duration);
+    return {
+        ...state,
+        chatId,
+        startedMs: turnStartMs,
+        toolCalls: [
+            ...state.toolCalls,
+            {
+                callId,
+                name,
+                argNames,
+                status,
+                startedMs,
+                durationMs,
+                error,
+            },
+        ],
+    };
 }
 
 /**
@@ -112,12 +258,24 @@ export function reduceTurnTrace(
             source: state.source,
             model: state.model,
             streamEnd: "",
+            toolCalls: [],
         };
     }
 
     const startedMs = state.startedMs ?? event.ts_ms;
+
+    if (event.stage === "tool_call_started") {
+        return applyToolCallStarted(state, event, chatId, startedMs);
+    }
+    if (event.stage === "tool_call_finished") {
+        return applyToolCallFinished(state, event, chatId, startedMs, false);
+    }
+    if (event.stage === "tool_call") {
+        return applyToolCallFinished(state, event, chatId, startedMs, true);
+    }
+
     const stages = {...state.stages};
-    const ms = Math.round(Math.max(0, event.ts_ms - startedMs) * 10) / 10;
+    const ms = relativeMs(startedMs, event.ts_ms);
     if (!(event.stage in stages) || LAST_WINS_STAGES.has(event.stage)) {
         stages[event.stage] = ms;
     }
@@ -134,6 +292,7 @@ export function reduceTurnTrace(
                 ? model
                 : state.model,
         streamEnd: event.stage === "stream_done" ? "done" : state.streamEnd,
+        toolCalls: state.toolCalls,
     };
 }
 
@@ -169,6 +328,30 @@ export function traceDeltas(state: TurnTrace): {name: string; ms: number}[] {
     return deltas;
 }
 
+export function toolCallRows(state: TurnTrace): {
+    name: string;
+    status: ToolCallTrace["status"];
+    startedMs: number;
+    durationMs: number | null;
+    error: string;
+    argNames: string[];
+    callId: string;
+}[] {
+    return state.toolCalls.map((call) => ({
+        name: call.name,
+        status: call.status,
+        startedMs: call.startedMs,
+        durationMs: call.durationMs,
+        error: call.error,
+        argNames: call.argNames,
+        callId: call.callId,
+    }));
+}
+
 export function hasTrace(state: TurnTrace): boolean {
-    return Object.keys(state.stages).length > 0 || Boolean(state.source);
+    return (
+        Object.keys(state.stages).length > 0 ||
+        Boolean(state.source) ||
+        state.toolCalls.length > 0
+    );
 }

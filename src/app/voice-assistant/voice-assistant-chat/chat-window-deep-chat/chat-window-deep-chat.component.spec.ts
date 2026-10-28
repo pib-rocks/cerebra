@@ -6,7 +6,8 @@ import {
     tick,
 } from "@angular/core/testing";
 import {HttpClientTestingModule} from "@angular/common/http/testing";
-import {ActivatedRoute} from "@angular/router";
+import {HttpErrorResponse} from "@angular/common/http";
+import {ActivatedRoute, Router} from "@angular/router";
 import {RouterTestingModule} from "@angular/router/testing";
 import {BehaviorSubject, of, Subject, throwError} from "rxjs";
 import {ChatService} from "src/app/shared/services/chat.service";
@@ -15,7 +16,7 @@ import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.ser
 import {ChatMessage} from "src/app/shared/types/chat-message";
 import {toDeepChat} from "src/app/shared/util/deep-chat-mapper";
 import {ChatWindowDeepChatComponent} from "./chat-window-deep-chat.component";
-import {Chat} from "src/app/shared/types/chat.class";
+import {Chat, ChatDto} from "src/app/shared/types/chat.class";
 import {VoiceAssistant} from "src/app/shared/types/voice-assistant";
 import {AssistantModel} from "src/app/shared/types/assistantModel";
 import {
@@ -24,6 +25,10 @@ import {
     DEEP_CHAT_SMARTCONNECT_PLACEHOLDER,
     MISSING_KEY_TURN,
 } from "src/app/shared/types/provider-registry";
+import {
+    CHAT_MESSAGE_MAX_LENGTH,
+    chatMessageLengthRefusal,
+} from "src/app/shared/types/chat-limits";
 import {
     DEGRADED_MODE,
     UNLOCKED_MODE,
@@ -105,6 +110,7 @@ describe("ChatWindowDeepChatComponent", () => {
                 "getMessagesByChatId",
                 "getChatMessage",
                 "getChat",
+                "createChat",
             ]);
 
         const tokenServiceSpy = createServiceSpy<TokenService>(
@@ -850,6 +856,7 @@ describe("ChatWindowDeepChatComponent", () => {
         expect(mockDeepChat.textInput).toEqual({
             disabled: false,
             placeholder: {text: "Enter a message"},
+            characterLimit: CHAT_MESSAGE_MAX_LENGTH,
         });
         expect(chatService.sendChatMessage).toHaveBeenCalledOnceWith(
             chatId,
@@ -881,7 +888,10 @@ describe("ChatWindowDeepChatComponent", () => {
         );
         expect(signals.onClose).toHaveBeenCalledTimes(2);
         expect(mockDeepChat.textInput).toEqual(
-            jasmine.objectContaining({disabled: false}),
+            jasmine.objectContaining({
+                disabled: false,
+                characterLimit: CHAT_MESSAGE_MAX_LENGTH,
+            }),
         );
     });
 
@@ -920,6 +930,7 @@ describe("ChatWindowDeepChatComponent", () => {
         expect(mockDeepChat.textInput).toEqual({
             disabled: false,
             placeholder: {text: "Enter a message"},
+            characterLimit: CHAT_MESSAGE_MAX_LENGTH,
         });
 
         // SmartConnect on + encryption on -> enabled
@@ -933,6 +944,7 @@ describe("ChatWindowDeepChatComponent", () => {
         expect(mockDeepChat.textInput).toEqual({
             disabled: false,
             placeholder: {text: "Enter a message"},
+            characterLimit: CHAT_MESSAGE_MAX_LENGTH,
         });
 
         // both off -> disabled, placeholder names the missing prerequisite
@@ -951,6 +963,7 @@ describe("ChatWindowDeepChatComponent", () => {
             placeholder: {
                 text: "Enable SmartConnect or deactivate key storage encryption to start the Voice-Assistant",
             },
+            characterLimit: CHAT_MESSAGE_MAX_LENGTH,
         });
     });
 
@@ -1030,6 +1043,7 @@ describe("ChatWindowDeepChatComponent", () => {
         expect(mockDeepChat.textInput).toEqual({
             disabled: true,
             placeholder: {text: MISSING_KEY_TURN},
+            characterLimit: CHAT_MESSAGE_MAX_LENGTH,
         });
     });
 
@@ -1090,7 +1104,10 @@ describe("ChatWindowDeepChatComponent", () => {
         );
 
         expect(mockDeepChat.textInput).toEqual(
-            jasmine.objectContaining({disabled: false}),
+            jasmine.objectContaining({
+                disabled: false,
+                characterLimit: CHAT_MESSAGE_MAX_LENGTH,
+            }),
         );
         expect(chatService.sendChatMessage).toHaveBeenCalledOnceWith(
             chatId,
@@ -1316,6 +1333,287 @@ describe("ChatWindowDeepChatComponent", () => {
         expect(chatService.sendChatMessage).toHaveBeenCalledOnceWith(
             chatId,
             "a",
+        );
+    });
+
+    it("refuses a line one character over the limit and does not send it", () => {
+        const overLimit = "a".repeat(CHAT_MESSAGE_MAX_LENGTH + 1);
+        const expected = chatMessageLengthRefusal(overLimit);
+        const signals = {onResponse: jasmine.createSpy("onResponse")};
+        mockDeepChat.connect!.handler(
+            {messages: [{role: "user", text: overLimit}]},
+            signals,
+        );
+
+        expect(chatService.sendChatMessage).not.toHaveBeenCalled();
+        expect(signals.onResponse).toHaveBeenCalledOnceWith({
+            text: expected,
+        });
+    });
+});
+
+describe("ChatWindowDeepChatComponent fresh chat without id", () => {
+    const personalityUuid = "persona-uuid";
+    const createdChatId = "created-chat-id";
+    const existingChatId = "chat-id";
+
+    let component: ChatWindowDeepChatComponent;
+    let fixture: ComponentFixture<ChatWindowDeepChatComponent>;
+    let chatService: jasmine.SpyObj<ChatService>;
+    let paramsSubject: Subject<{chatUuid?: string}>;
+    let messagesSubject: BehaviorSubject<ChatMessage[]>;
+    let tokenStatusSubject: BehaviorSubject<{
+        tokenExists: boolean | null;
+        tokenActive: boolean | null;
+        service?: string;
+        error?: string | null;
+    }>;
+    let keyStoreStatusSubject: BehaviorSubject<{
+        encryptKeyStorage: boolean;
+        credentialRefs: string[];
+        mode?: string;
+    }>;
+    let mockDeepChat: {
+        addMessage: jasmine.Spy;
+        disableSubmitButton: jasmine.Spy;
+        connect?: {handler: (body: any, signals: any) => void};
+        loadHistory?: () => Promise<ReturnType<typeof toDeepChat>[]>;
+        validateInput?: (text?: string) => boolean;
+        textInput?: unknown;
+        defaultInput?: {text: string};
+        [key: string]: unknown;
+    };
+    let router: Router;
+
+    beforeEach(async () => {
+        paramsSubject = new Subject<{chatUuid?: string}>();
+        tokenStatusSubject = new BehaviorSubject<{
+            tokenExists: boolean | null;
+            tokenActive: boolean | null;
+            service?: string;
+            error?: string | null;
+        }>({
+            tokenExists: true,
+            tokenActive: true,
+            service: "available",
+        });
+        keyStoreStatusSubject = new BehaviorSubject<{
+            encryptKeyStorage: boolean;
+            credentialRefs: string[];
+            mode?: string;
+        }>({
+            encryptKeyStorage: true,
+            credentialRefs: [],
+            mode: "unlocked",
+        });
+        const keyStoreSpy = jasmine.createSpyObj("KeyStoreService", ["status"]);
+        keyStoreSpy.status.and.returnValue(
+            keyStoreStatusSubject.asObservable(),
+        );
+        messagesSubject = new BehaviorSubject<ChatMessage[]>([]);
+
+        const chatServiceSpy: jasmine.SpyObj<ChatService> =
+            jasmine.createSpyObj("ChatService", [
+                "filterMessageUpdates",
+                "getChatMessagesObservable",
+                "sendChatMessage",
+                "getMessagesByChatId",
+                "getChatMessage",
+                "getChat",
+                "createChat",
+            ]);
+
+        const tokenServiceSpy = createServiceSpy<TokenService>(
+            "TokenService",
+            ["checkTokenExists"],
+            {tokenStatus$: tokenStatusSubject.asObservable()},
+        );
+
+        const voiceStateSubject = new BehaviorSubject<VoiceAssistantState>({
+            turnedOn: false,
+            chatId: "",
+        });
+        const assistantModelsSubject = new BehaviorSubject<AssistantModel[]>(
+            [],
+        );
+        const voiceAssistantSpy = createServiceSpy<VoiceAssistantService>(
+            "VoiceAssistantService",
+            ["getPersonality"],
+            {
+                voiceAssistantStateObservable: voiceStateSubject.asObservable(),
+                assistantModelsSubject,
+            },
+        );
+        voiceAssistantSpy.getPersonality.and.returnValue(
+            new VoiceAssistant(
+                personalityUuid,
+                "Ada",
+                "Female",
+                0.8,
+                "Du bist pib.",
+            ),
+        );
+
+        const parentRoute = {
+            snapshot: {params: {personalityUuid}},
+            params: of({personalityUuid}),
+        };
+
+        await TestBed.configureTestingModule({
+            imports: [
+                HttpClientTestingModule,
+                RouterTestingModule,
+                ChatWindowDeepChatComponent,
+            ],
+            providers: [
+                {
+                    provide: ActivatedRoute,
+                    useValue: {
+                        snapshot: {params: {}, parent: parentRoute},
+                        params: paramsSubject.asObservable(),
+                        parent: parentRoute,
+                    },
+                },
+                {provide: ChatService, useValue: chatServiceSpy},
+                {provide: TokenService, useValue: tokenServiceSpy},
+                {provide: KeyStoreService, useValue: keyStoreSpy},
+                {provide: VoiceAssistantService, useValue: voiceAssistantSpy},
+            ],
+        }).compileComponents();
+
+        chatService = TestBed.inject(
+            ChatService,
+        ) as jasmine.SpyObj<ChatService>;
+        chatService.getChatMessagesObservable.and.returnValue(messagesSubject);
+        chatService.filterMessageUpdates.and.callFake(
+            (messages: ChatMessage[]) => messages,
+        );
+        chatService.getMessagesByChatId.and.returnValue(of([]));
+        chatService.sendChatMessage.and.returnValue(of(undefined));
+        chatService.createChat.and.returnValue(
+            of(new Chat("hello there", personalityUuid, createdChatId)),
+        );
+        chatService.getChat.and.callFake((id: string) =>
+            id === createdChatId
+                ? new Chat("hello there", personalityUuid, createdChatId)
+                : id === existingChatId
+                ? new Chat("topic", personalityUuid, existingChatId)
+                : undefined,
+        );
+
+        TestBed.inject(KeyStoreSessionService).mode = UNLOCKED_MODE;
+
+        router = TestBed.inject(Router);
+        spyOn(router, "navigate").and.returnValue(Promise.resolve(true));
+
+        mockDeepChat = {
+            addMessage: jasmine.createSpy("addMessage"),
+            disableSubmitButton: jasmine.createSpy("disableSubmitButton"),
+        };
+
+        fixture = TestBed.createComponent(ChatWindowDeepChatComponent);
+        component = fixture.componentInstance;
+        component.deepChatRef = {
+            nativeElement: mockDeepChat,
+        } as ElementRef;
+
+        component.ngOnInit();
+        paramsSubject.next({});
+        component.ngAfterViewInit();
+    });
+
+    afterEach(() => {
+        component.ngOnDestroy();
+    });
+
+    it("creates the chat with the first message and sends the turn with the new id", () => {
+        chatService.createChat.and.returnValue(
+            of(new Chat("hello there", personalityUuid, createdChatId)),
+        );
+        chatService.createChat.calls.reset();
+        chatService.sendChatMessage.calls.reset();
+
+        paramsSubject.next({});
+        // PR-2046: no chat is created just by opening the window - the app routes
+        // /chat to the last conversation, so an eager create would leave orphans.
+        expect(chatService.createChat).not.toHaveBeenCalled();
+
+        const signals = {onResponse: jasmine.createSpy("onResponse")};
+        mockDeepChat.connect!.handler(
+            {messages: [{role: "user", text: "hello there"}]},
+            signals,
+        );
+
+        expect(chatService.createChat).toHaveBeenCalledOnceWith(
+            new ChatDto("hello there", personalityUuid),
+        );
+        expect(component.currentChatId).toBe(createdChatId);
+        expect(chatService.sendChatMessage).toHaveBeenCalledOnceWith(
+            createdChatId,
+            "hello there",
+        );
+    });
+
+    it("loadHistory without id resolves to [] and skips the API", async () => {
+        component.currentChatId = undefined;
+        chatService.getMessagesByChatId.calls.reset();
+
+        const result = await mockDeepChat.loadHistory!();
+
+        expect(result).toEqual([]);
+        expect(chatService.getMessagesByChatId).not.toHaveBeenCalled();
+    });
+
+    it("names a failed chat creation and puts the typed text back", () => {
+        chatService.createChat.and.returnValue(
+            throwError(
+                () =>
+                    new HttpErrorResponse({
+                        status: 503,
+                        statusText: "Service Unavailable",
+                        error: {error: "chat store offline"},
+                    }),
+            ),
+        );
+        // deep-chat's live composer is a contenteditable div, not a textarea.
+        const composer = {
+            isContentEditable: true,
+            textContent: "",
+            dispatchEvent: jasmine.createSpy("dispatchEvent"),
+        };
+        (mockDeepChat as any).shadowRoot = {querySelector: () => composer};
+
+        const signals = {onResponse: jasmine.createSpy("onResponse")};
+        mockDeepChat.connect!.handler(
+            {messages: [{role: "user", text: "still here"}]},
+            signals,
+        );
+
+        const shown =
+            signals.onResponse.calls.mostRecent()?.args[0]?.text ?? "";
+        expect(shown).toMatch(/503/);
+        expect(shown).toMatch(/chat store offline/);
+        expect(composer.textContent).toBe("still here");
+        expect(composer.dispatchEvent).toHaveBeenCalled();
+        expect(chatService.sendChatMessage).not.toHaveBeenCalled();
+    });
+
+    it("never calls createChat when the route already has an id", () => {
+        paramsSubject.next({chatUuid: existingChatId});
+        component.ngAfterViewInit();
+        chatService.createChat.calls.reset();
+        chatService.sendChatMessage.calls.reset();
+
+        const signals = {onResponse: jasmine.createSpy("onResponse")};
+        mockDeepChat.connect!.handler(
+            {messages: [{role: "user", text: "hello there"}]},
+            signals,
+        );
+
+        expect(chatService.createChat).not.toHaveBeenCalled();
+        expect(chatService.sendChatMessage).toHaveBeenCalledOnceWith(
+            existingChatId,
+            "hello there",
         );
     });
 });

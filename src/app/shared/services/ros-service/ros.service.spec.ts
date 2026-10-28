@@ -4,6 +4,7 @@ import {RosService} from "./ros.service";
 import {JointTrajectoryMessage} from "../../ros-types/msg/joint-trajectory-message";
 import {MotorSettingsMessage} from "../../ros-types/msg/motor-settings-message";
 import {ApplyMotorSettingsResponse} from "../../ros-types/srv/apply-motor-settings";
+import {ApplyJointTrajectoryRequest} from "../../ros-types/srv/apply-joint-trajectory";
 import {ProxyRunProgramFeedback} from "../../ros-types/msg/proxy-run-program-feedback";
 import {ProxyRunProgramStopRequest} from "../../ros-types/srv/proxy-run-program-stop";
 import {ProxyRunProgramResult} from "../../ros-types/msg/proxy-run-program-result";
@@ -35,7 +36,7 @@ describe("RosService", () => {
         deceleration: 100,
         period: 100,
         visible: true,
-        invert: false,
+        upper_endpoint: "max",
     };
 
     let subscriber: jasmine.SpyObj<any>;
@@ -465,6 +466,34 @@ describe("RosService", () => {
         rosService.applyJointTrajectory(jt).subscribe(subscriber);
         expect(subscriber.next).toHaveBeenCalled();
         expect(subscriber.error).not.toHaveBeenCalled();
+    });
+
+    it("should send joint trajectory positions in radians to apply_joint_trajectory", () => {
+        const jt: JointTrajectoryMessage = {
+            header: {
+                stamp: {sec: 0, nanosec: 0},
+                frame_id: "",
+            },
+            joint_names: ["test-motor"],
+            points: [
+                {
+                    positions: [9000],
+                    time_from_start: {sec: 0, nanosec: 0},
+                },
+            ],
+        };
+        let capturedRequest: ApplyJointTrajectoryRequest | undefined;
+        spyOn(
+            rosService["applyJointTrajectoryService"],
+            "callService",
+        ).and.callFake((request, resolve, _reject) => {
+            capturedRequest = request as ApplyJointTrajectoryRequest;
+            resolve!({successful: true});
+        });
+        rosService.applyJointTrajectory(jt).subscribe(subscriber);
+        expect(capturedRequest?.joint_trajectory.points[0].positions[0]).toBe(
+            Math.PI / 2,
+        );
     });
 
     it("should return an error, if communication with ros was not successful", () => {
