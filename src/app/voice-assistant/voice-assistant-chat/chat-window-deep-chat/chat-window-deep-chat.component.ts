@@ -275,18 +275,15 @@ export class ChatWindowDeepChatComponent
         el: any,
         history: ReturnType<typeof toDeepChat>[],
     ): void {
+        // A rendered widget ignores a later property assignment, so the shown
+        // messages are cleared first and the property is assigned again. Deliberately
+        // NO addMessage here: the streaming handler owns new messages, and pushing the
+        // same text through both paths is what produced a duplicated bubble.
         const rendered = el._hasBeenRendered === true;
         if (rendered && typeof el.clearMessages === "function") {
             el.clearMessages(true);
         }
         el.history = history;
-        if (rendered) {
-            for (const message of history) {
-                if (typeof el.addMessage === "function") {
-                    el.addMessage(message);
-                }
-            }
-        }
     }
 
     /** A chat that could not be created has no bubble of its own; say it in the chat. */

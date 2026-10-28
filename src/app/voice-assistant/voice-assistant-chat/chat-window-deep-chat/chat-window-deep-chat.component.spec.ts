@@ -9,7 +9,7 @@ import {HttpClientTestingModule} from "@angular/common/http/testing";
 import {HttpErrorResponse} from "@angular/common/http";
 import {ActivatedRoute, Router} from "@angular/router";
 import {RouterTestingModule} from "@angular/router/testing";
-import {BehaviorSubject, of, Subject, throwError} from "rxjs";
+import {BehaviorSubject, of, Subject, take, throwError} from "rxjs";
 import {ChatService} from "src/app/shared/services/chat.service";
 import {TokenService} from "src/app/shared/services/token.service";
 import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
@@ -314,6 +314,34 @@ describe("ChatWindowDeepChatComponent", () => {
         expect(chatService.getChatMessagesForHistory).toHaveBeenCalledWith(
             chatId,
         );
+    });
+
+    it("re-applies the history property without adding duplicate bubbles", () => {
+        // Regression: the re-apply used to push every entry through addMessage as
+        // well, and the streaming handler saw the same emission - two identical
+        // bubbles. The property plus clearMessages must be the only writer here.
+        const answer: ChatMessage = {
+            messageId: "rendered-answer",
+            timestamp: "2026-10-28T16:00:00",
+            isUser: false,
+            content: "rendered answer",
+        };
+        mockDeepChat["_hasBeenRendered"] = true;
+        mockDeepChat["clearMessages"] = jasmine.createSpy("clearMessages");
+        chatService.getChatMessagesForHistory.and.returnValue(
+            messagesSubject.pipe(take(1)),
+        );
+        chatService.filterMessageUpdates.and.returnValue([answer]);
+        mockDeepChat.addMessage.calls.reset();
+
+        messagesSubject.next([answer]);
+
+        expect(mockDeepChat["clearMessages"]).toHaveBeenCalledOnceWith(true);
+        expect(mockDeepChat["history"]).toEqual([toDeepChat(answer)]);
+        const newBubbles = mockDeepChat.addMessage.calls
+            .allArgs()
+            .filter((args) => !(args[0] as {overwrite?: boolean}).overwrite);
+        expect(newBubbles.length).toBeLessThanOrEqual(1);
     });
 
     it("uses one buffered history read when a chat opens", () => {
