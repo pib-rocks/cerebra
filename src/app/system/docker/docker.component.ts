@@ -156,9 +156,12 @@ export class DockerManagementComponent implements OnInit, OnDestroy {
                 // The message carries the freed size; a partial purge names the
                 // steps that failed instead of looking like a success (PR-2099).
                 const outcome = purgeOutcome(res);
+                // refreshContainers() clears this.error as it starts, so the
+                // messages have to be set after it - otherwise a partial purge
+                // loses its warning immediately (found by the spec).
+                this.refreshContainers();
                 this.successMessage = outcome.success;
                 this.error = outcome.error;
-                this.refreshContainers();
                 this.cdr.markForCheck();
             },
             error: () => {
