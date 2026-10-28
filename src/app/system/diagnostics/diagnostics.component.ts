@@ -115,16 +115,20 @@ export class DiagnosticsComponent implements OnInit, OnDestroy {
     }
 
     /**
-     * The backend sends `percentUsed` next to the figures. The disk column is headed "Free disk space" and shows
-     * the free bytes, so it has to show the free share as well - 73 % used under a "free" heading reads as a
-     * contradiction (PR-2112). Clamped, because a full or over-reserved filesystem leaves no free share.
+     * The disk column is headed "Free disk space" and shows the free bytes, so it carries the free share as well.
+     * The backend sends `percentFree` from that same value (PR-2115); older backends only send `percentUsed`, and
+     * then 100 - percentUsed is the best available answer. Clamped, because a full or over-reserved filesystem
+     * leaves no free share (PR-2114, PR-2116).
      */
-    formatFreePercent(percentUsed: number | null | undefined): string {
-        if (percentUsed === null || percentUsed === undefined) return "";
-        const numeric = Number(percentUsed);
+    formatFreeShare(disk: {percentFree?: number; percentUsed: number}): string {
+        const preferred = disk.percentFree;
+        const numeric = Number(
+            preferred === null || preferred === undefined
+                ? 100 - disk.percentUsed
+                : preferred,
+        );
         if (!Number.isFinite(numeric)) return "";
-        const free = Math.min(100, Math.max(0, 100 - numeric));
-        return free.toFixed(1);
+        return Math.min(100, Math.max(0, numeric)).toFixed(1);
     }
 
     /**
