@@ -1,29 +1,10 @@
 import {Injectable, isDevMode} from "@angular/core";
 import * as ROSLIB from "roslib";
-import {
-    BehaviorSubject,
-    Subject,
-    ReplaySubject,
-    Observable,
-    filter,
-    from,
-    map,
-} from "rxjs";
+import {BehaviorSubject, Observable, Subject} from "rxjs";
 import {MotorSettingsMessage} from "../../ros-types/msg/motor-settings-message";
-import {DiagnosticStatus} from "../../ros-types/msg/diagnostic-status.message";
 import {JointTrajectoryMessage} from "../../ros-types/msg/joint-trajectory-message";
-import {centidegToRad} from "../../types/joint-angle-units";
-import {rosDataTypes} from "../../ros-types/path/ros-datatypes.enum";
-import {rosTopics} from "../../ros-types/path/ros-topics.enum";
-import {rosServices} from "../../ros-types/path/ros-services.enum";
-import {
-    SetVoiceAssistantStateRequest,
-    SetVoiceAssistantStateResponse,
-} from "../../ros-types/srv/set-voice-assistant-state";
 import {ChatMessage} from "../../ros-types/msg/chat-message";
 import {VoiceAssistantState} from "../../ros-types/msg/voice-assistant-state";
-import {GetVoiceAssistantStateResponse} from "../../ros-types/srv/get-voice-assistant-state";
-import {MotorSettingsError} from "../../error/motor-settings-error";
 import {
     ApplyMotorSettingsRequest,
     ApplyMotorSettingsResponse,
@@ -83,6 +64,59 @@ import {
     StartModelRequest,
 } from "../../ros-types/srv/start-model";
 import {StopModelRequest} from "../../ros-types/srv/stop-model";
+import {DiagnosticStatus} from "../../ros-types/msg/diagnostic-status.message";
+import {
+    SetVoiceAssistantStateRequest,
+    SetVoiceAssistantStateResponse,
+} from "../../ros-types/srv/set-voice-assistant-state";
+import {attachRosConnectionHandlers} from "./ros-connection.helper";
+import {
+    refreshDetectionTopics,
+    startDetectionTopicDiscovery,
+    stopDetectionTopicDiscovery,
+    subscribeModelStatusTopic,
+    syncDetectionTopics,
+} from "./ros-detection-topology.helper";
+import {
+    createRosService,
+    createRosTopic,
+    wireRosTopicsAndServices,
+} from "./ros-topic-wiring.helper";
+import {
+    listModelsOnHost,
+    runProgramOnHost,
+    startModelOnHost,
+    stopModelOnHost,
+} from "./ros-run-program.helper";
+import {
+    publishDisplayTextOnHost,
+    publishExpressionOnHost,
+    publishProgramInputOnHost,
+    setPreviewSizeOnHost,
+    setQualityFactorOnHost,
+    setTimerPeriodOnHost,
+} from "./ros-publish.helper";
+import {
+    initRosTopicSubscribers,
+    subscribeCameraTopicOnHost,
+    subscribeSolidStateRelayStateTopicOnHost,
+    subscribeVoiceAssistantStateTopicOnHost,
+    unsubscribeCameraTopicOnHost,
+} from "./ros-topic-subscriptions.helper";
+import {
+    applyJointTrajectoryOnHost,
+    applyMotorSettingsOnHost,
+    checkTokenExistsOnHost,
+    decryptTokenOnHost,
+    deleteTokenMessageOnHost,
+    encryptTokenOnHost,
+    getChatIsListeningOnHost,
+    getJointPositionOnHost,
+    sendChatMessageOnHost,
+    setSolidStateRelayStateOnHost,
+    setVoiceAssistantStateOnHost,
+} from "./ros-service-api.helper";
+import {RosServiceHost} from "./ros-service-host.type";
 
 @Injectable({
     providedIn: "root",
@@ -117,7 +151,6 @@ export class RosService implements IRosService {
         new Subject<ProxyRunProgramStatus>();
     chatIsListeningReceiver$: Subject<ChatIsListening> =
         new Subject<ChatIsListening>();
-    /** Raw JSON of one `/voice_turn_trace` event (std_msgs/String). */
     voiceTurnTraceReceiver$: Subject<string> = new Subject<string>();
     voiceAssistantStateReceiver$: BehaviorSubject<VoiceAssistantState> =
         new BehaviorSubject<VoiceAssistantState>({
@@ -226,39 +259,16 @@ export class RosService implements IRosService {
         ModelActionResponse
     >;
 
-    private runProgramAction!: ROSLIB.ActionClient;
-
     private connectionStatusSubject = new BehaviorSubject<boolean>(false);
     public connectionStatus$ = this.connectionStatusSubject.asObservable();
 
+    private get host(): RosServiceHost {
+        return this as unknown as RosServiceHost;
+    }
+
     constructor() {
         this.ros = this.setUpRos();
-        this.ros.on("connection", () => {
-            console.log("Connected to ROS");
-            this.initTopicsAndServices();
-            this.initSubscribers();
-            this.connectionStatusSubject.next(true);
-        });
-        this.ros.on("error", (error: unknown) => {
-            console.log("Error connecting to ROSBridge server:", error);
-            this.connectionStatusSubject.next(false);
-        });
-
-        this.ros.on("close", () => {
-            console.log("Disconnected from ROSBridge server.");
-            this.modelStatusTopic?.unsubscribe();
-            if (this.cameraTopicSubscribed) {
-                this.cameraTopic?.unsubscribe();
-                this.cameraTopicSubscribed = false;
-            }
-            this.stopDetectionTopicDiscovery();
-            this.detectionDiscoveryGeneration++;
-            this.detectionDiscoveryInFlight = false;
-            this.clearDetectionTopics();
-            this.lastModelStatus = undefined;
-            this.modelStatusReceiver$.next({models: []});
-            this.connectionStatusSubject.next(false);
-        });
+        attachRosConnectionHandlers(this.host);
     }
 
     private setUpRos() {
@@ -274,879 +284,161 @@ export class RosService implements IRosService {
     }
 
     private initTopicsAndServices() {
-        this.cameraTopicSubscribed = false;
-        this.cameraTopic = this.createRosTopic(
-            rosTopics.cameraTopicName,
-            rosDataTypes.string,
-        );
-        this.cameraQualityFactorTopic = this.createRosTopic(
-            rosTopics.cameraQualityTopic,
-            rosDataTypes.int32,
-        );
-        this.cameraPreviewSizeTopic = this.createRosTopic(
-            rosTopics.cameraPreviewSizeTopicName,
-            rosDataTypes.int32MultiArray,
-        );
-        this.cameraTimerPeriodTopic = this.createRosTopic(
-            rosTopics.cameraTimerPeriodTopicName,
-            rosDataTypes.float64,
-        );
-        this.motorCurrentTopic = this.createRosTopic(
-            rosTopics.motorCurrentTopicName,
-            rosDataTypes.diagnosticStatus,
-        );
-        this.jointTrajectoryTopic = this.createRosTopic(
-            rosTopics.jointTrajectoryTopicName,
-            rosDataTypes.jointTrajectory,
-        );
-        this.chatMessageTopic = this.createRosTopic(
-            rosTopics.chatMessages,
-            rosDataTypes.chatMessage,
-        );
-        this.voiceAssistantStateTopic = this.createRosTopic(
-            rosTopics.voiceAssistantState,
-            rosDataTypes.voiceAssistantState,
-        );
-        this.chatIsListeningTopic = this.createRosTopic(
-            rosTopics.chatIsListening,
-            rosDataTypes.chatIsListening,
-        );
-        this.voiceTurnTraceTopic = this.createRosTopic(
-            rosTopics.voiceTurnTrace,
-            rosDataTypes.string,
-        );
-        this.expressionTopic = this.createRosTopic(
-            rosTopics.expression,
-            rosDataTypes.string,
-        );
-        this.displayTextTopic = this.createRosTopic(
-            rosTopics.displayText,
-            rosDataTypes.string,
-        );
-        this.motorSettingsTopic = this.createRosTopic(
-            rosTopics.motorSettingsTopicName,
-            rosDataTypes.motorSettings,
-        );
-        this.proxyRunProgramFeedbackTopic = this.createRosTopic(
-            rosTopics.proxyRunProgramFeedback,
-            rosDataTypes.proxyRunProgramFeedback,
-        );
-        this.proxyRunProgramResultTopic = this.createRosTopic(
-            rosTopics.proxyRunProgramResult,
-            rosDataTypes.proxyRunProgramResult,
-        );
-        this.programInputTopic = this.createRosTopic(
-            rosTopics.programInput,
-            rosDataTypes.programInput,
-        );
-        this.proxyRunProgramStatusTopic = this.createRosTopic(
-            rosTopics.proxyRunProgramStatus,
-            rosDataTypes.proxyRunProgramStatus,
-        );
-        this.deleteTokenTopic = this.createRosTopic(
-            rosTopics.deleteTokenTopic,
-            rosDataTypes.empty,
-        );
-        this.solidStateRelayStateTopic = this.createRosTopic(
-            rosTopics.solidStateRelayState,
-            rosDataTypes.solidStateRelayState,
-        );
-        this.modelStatusTopic = this.createRosTopic(
-            rosTopics.modelStatus,
-            rosDataTypes.modelStatusArray,
-        );
-
-        this.applyMotorSettingsService = this.createRosService(
-            rosServices.applyMotorSettings,
-            rosDataTypes.applyMotorSettings,
-        );
-        this.proxyProgramStartService = this.createRosService(
-            rosServices.proxyRunProgramStart,
-            rosDataTypes.proxyRunProgramStart,
-        );
-        this.proxyProgramStopService = this.createRosService(
-            rosServices.proxyRunProgramStop,
-            rosDataTypes.proxyRunProgramStop,
-        );
-        this.setVoiceAssistantStateService = this.createRosService(
-            rosServices.setVoiceAssistantState,
-            rosDataTypes.setVoiceAssistantState,
-        );
-        this.sendChatMessageService = this.createRosService(
-            rosServices.sendChatMessage,
-            rosDataTypes.sendChatMessage,
-        );
-        this.getChatIsListeningService = this.createRosService(
-            rosServices.getChatIsListening,
-            rosDataTypes.getChatIsListening,
-        );
-        this.applyJointTrajectoryService = this.createRosService(
-            rosServices.applyJointTrajectory,
-            rosDataTypes.applyJointTrajectory,
-        );
-        this.getJointPositionService = this.createRosService(
-            rosServices.getJointPosition,
-            rosDataTypes.getJointPosition,
-        );
-        this.existTokenService = this.createRosService(
-            rosServices.get_token_exists,
-            rosDataTypes.get_token_exists,
-        );
-        this.encryptTokenService = this.createRosService(
-            rosServices.encryptToken,
-            rosDataTypes.encryptToken,
-        );
-        this.decryptTokenService = this.createRosService(
-            rosServices.decryptToken,
-            rosDataTypes.decryptToken,
-        );
-        this.setSolidStateRelayStateService = this.createRosService(
-            rosServices.setSolidStateRelayState,
-            rosDataTypes.setSolidStateRelayState,
-        );
-        this.listModelsService = this.createRosService(
-            rosServices.listModels,
-            rosDataTypes.listModels,
-        );
-        this.startModelService = this.createRosService(
-            rosServices.startModel,
-            rosDataTypes.startModel,
-        );
-        this.stopModelService = this.createRosService(
-            rosServices.stopModel,
-            rosDataTypes.stopModel,
-        );
+        wireRosTopicsAndServices(this.host);
     }
 
     private createRosService(serviceName: string, serviceType: string): any {
-        return new ROSLIB.Service({
-            ros: this.ros,
-            name: serviceName,
-            serviceType: serviceType,
-        });
+        return createRosService(this.ros, serviceName, serviceType);
     }
 
     private createRosTopic<T>(
         topicName: string,
         topicMessageType: string,
     ): ROSLIB.Topic<T> {
-        return new ROSLIB.Topic({
-            ros: this.ros,
-            name: topicName,
-            messageType: topicMessageType,
-        });
+        return createRosTopic(this.ros, topicName, topicMessageType);
     }
 
     private initSubscribers() {
-        this.subscribeDefaultRosMessageTopic(
-            this.cameraPreviewSizeTopic,
-            this.cameraPreviewSizeReceiver$,
-        );
-        this.subscribeDefaultRosMessageTopic(
-            this.cameraTimerPeriodTopic,
-            this.cameraTimerPeriodReceiver$,
-        );
-        this.subscribeDefaultRosMessageTopic(
-            this.cameraQualityFactorTopic,
-            this.cameraQualityFactorReceiver$,
-        );
-
-        this.subscribeVoiceAssistantStateTopic();
-        this.subscribeChatIsListeningTopic();
-        this.subscribeVoiceTurnTraceTopic();
-        this.subscribeChatMessageTopic();
-        this.subscribeMotorSettingsTopic();
-        this.subscribeMotorCurrentTopic();
-        this.subscribeJointTrajectoryTopic();
-        this.subscribeProxyRunProgramFeedbackTopic();
-        this.subscribeProxyRunProgramResultTopic();
-        this.subscribeProxyRunProgramStatusTopic();
-        this.subscribeSolidStateRelayStateTopic();
-        this.subscribeModelStatusTopic();
-        this.startDetectionTopicDiscovery();
-        if (this.cameraSubscriptionRequested) this.subscribeCameraTopic();
+        initRosTopicSubscribers(this.host);
     }
 
     private subscribeModelStatusTopic() {
-        this.modelStatusTopic.subscribe((message) => {
-            const serializedStatus = JSON.stringify(
-                [...message.models]
-                    .sort((left, right) =>
-                        left.model_id.localeCompare(right.model_id),
-                    )
-                    .map(({model_id, state, active}) => ({
-                        model_id,
-                        state,
-                        active,
-                    })),
-            );
-            if (
-                this.lastModelStatus !== undefined &&
-                serializedStatus !== this.lastModelStatus
-            ) {
-                this.detectionClearReceiver$.next(undefined);
-            }
-            this.lastModelStatus = serializedStatus;
-            this.modelStatusReceiver$.next(message);
-            this.refreshDetectionTopics();
-        });
+        subscribeModelStatusTopic(this.host);
     }
 
     private startDetectionTopicDiscovery() {
-        this.stopDetectionTopicDiscovery();
-        this.refreshDetectionTopics();
-        this.detectionTopicRefreshTimer = setInterval(
-            () => this.refreshDetectionTopics(),
-            1000,
-        );
+        startDetectionTopicDiscovery(this.host);
     }
 
     private stopDetectionTopicDiscovery() {
-        if (this.detectionTopicRefreshTimer !== undefined) {
-            clearInterval(this.detectionTopicRefreshTimer);
-            this.detectionTopicRefreshTimer = undefined;
-        }
+        stopDetectionTopicDiscovery(this.host);
     }
 
     private refreshDetectionTopics() {
-        if (this.detectionDiscoveryInFlight) return;
-        this.detectionDiscoveryInFlight = true;
-        const generation = ++this.detectionDiscoveryGeneration;
-        this.ros.getTopics(
-            ({topics}: {topics: string[]}) => {
-                if (generation !== this.detectionDiscoveryGeneration) return;
-                this.detectionDiscoveryInFlight = false;
-                this.syncDetectionTopics(
-                    topics.filter((topic) => topic.startsWith("/detections/")),
-                );
-            },
-            (error) => {
-                if (generation === this.detectionDiscoveryGeneration) {
-                    this.detectionDiscoveryInFlight = false;
-                }
-                console.error("Could not discover detection topics:", error);
-            },
-        );
+        refreshDetectionTopics(this.host);
     }
 
     private syncDetectionTopics(topicNames: string[]) {
-        const currentTopicNames = new Set(topicNames);
-
-        for (const [topicName, topic] of this.detectionTopics) {
-            if (!currentTopicNames.has(topicName)) {
-                topic.unsubscribe();
-                this.detectionTopics.delete(topicName);
-                this.detectionClearReceiver$.next(
-                    this.modelIdFromTopic(topicName),
-                );
-            }
-        }
-
-        for (const topicName of currentTopicNames) {
-            if (this.detectionTopics.has(topicName)) continue;
-
-            const topic = this.createRosTopic<DetectionArray>(
-                topicName,
-                rosDataTypes.detectionArray,
-            );
-            topic.subscribe((message) => {
-                const detectionArray = message as DetectionArray;
-                if (!detectionArray.model_id) {
-                    detectionArray.model_id = this.modelIdFromTopic(topicName);
-                }
-                this.detectionReceiver$.next(detectionArray);
-            });
-            this.detectionTopics.set(topicName, topic);
-        }
-
-        const modelIds = [...currentTopicNames]
-            .map((topicName) => this.modelIdFromTopic(topicName))
-            .sort();
-        if (
-            modelIds.join("\0") !==
-            this.detectionModelsReceiver$.value.join("\0")
-        ) {
-            this.detectionModelsReceiver$.next(modelIds);
-        }
+        syncDetectionTopics(this.host, topicNames);
     }
 
-    private clearDetectionTopics() {
-        for (const topic of this.detectionTopics.values()) {
-            topic.unsubscribe();
-        }
-        this.detectionTopics.clear();
-        this.detectionModelsReceiver$.next([]);
-        this.detectionClearReceiver$.next(undefined);
-    }
-
-    private modelIdFromTopic(topicName: string): string {
-        return topicName.slice("/detections/".length);
-    }
-
-    private subscribeDefaultRosMessageTopic(
-        topic: ROSLIB.Topic,
-        receiver$: Subject<any>,
-    ) {
-        topic.subscribe((message: any) => {
-            receiver$.next(message.data);
-        });
-    }
-
-    //Has its own method to make it accessible by the camera components "startCamera" method
     subscribeCameraTopic() {
-        this.cameraSubscriptionRequested = true;
-        if (!this.cameraTopic || this.cameraTopicSubscribed) return;
-        this.subscribeDefaultRosMessageTopic(
-            this.cameraTopic,
-            this.cameraReceiver$,
-        );
-        this.cameraTopicSubscribed = true;
+        subscribeCameraTopicOnHost(this.host);
     }
 
     unsubscribeCameraTopic() {
-        this.cameraSubscriptionRequested = false;
-        if (!this.cameraTopic || !this.cameraTopicSubscribed) return;
-        this.cameraTopic.unsubscribe();
-        this.cameraTopicSubscribed = false;
-    }
-
-    private subscribeJointTrajectoryTopic() {
-        this.jointTrajectoryTopic.subscribe((jointTrajectoryMessage) => {
-            this.jointTrajectoryReceiver$.next(
-                jointTrajectoryMessage as JointTrajectoryMessage,
-            );
-        });
-    }
-
-    private subscribeMotorSettingsTopic() {
-        this.motorSettingsTopic.subscribe((message) => {
-            this.motorSettingsReceiver$.next(message as MotorSettingsMessage);
-        });
-    }
-
-    private subscribeMotorCurrentTopic() {
-        this.motorCurrentTopic.subscribe((message) => {
-            this.currentReceiver$.next(message as DiagnosticStatus);
-        });
-    }
-
-    private subscribeProxyRunProgramStatusTopic() {
-        this.proxyRunProgramStatusTopic.subscribe((message) => {
-            this.proxyRunProgramStatusReceiver$.next(message);
-        });
-    }
-
-    private subscribeProxyRunProgramFeedbackTopic() {
-        this.proxyRunProgramFeedbackTopic.subscribe((message) => {
-            this.proxyRunProgramFeedbackReceiver$.next(message);
-        });
-    }
-
-    private subscribeProxyRunProgramResultTopic() {
-        this.proxyRunProgramResultTopic.subscribe((message) => {
-            this.proxyRunProgramResultReceiver$.next(message);
-        });
+        unsubscribeCameraTopicOnHost(this.host);
     }
 
     private subscribeVoiceAssistantStateTopic() {
-        this.voiceAssistantStateTopic.subscribe((message: any) => {
-            this.voiceAssistantStateReceiver$.next(message);
-        });
-        const getVoiceAssistantStateService: ROSLIB.Service<
-            Record<string, never>,
-            GetVoiceAssistantStateResponse
-        > = this.createRosService(
-            rosServices.getVoiceAssistantState,
-            rosDataTypes.getVoiceAssistantState,
-        );
-        getVoiceAssistantStateService.callService(
-            {},
-            (response) =>
-                this.voiceAssistantStateReceiver$.next(
-                    response.voice_assistant_state,
-                ),
-            (error: any) => console.error("error occured: " + error),
-        );
+        subscribeVoiceAssistantStateTopicOnHost(this.host);
     }
 
-    private subscribeChatMessageTopic() {
-        this.chatMessageTopic.subscribe((message: any) => {
-            this.chatMessageReceiver$.next(message);
-        });
-    }
-    private subscribeChatIsListeningTopic() {
-        this.chatIsListeningTopic.subscribe((message: ChatIsListening) => {
-            this.chatIsListeningReceiver$.next(message);
-        });
-    }
-
-    private subscribeVoiceTurnTraceTopic() {
-        this.voiceTurnTraceTopic.subscribe((message: {data?: string}) => {
-            const raw = typeof message?.data === "string" ? message.data : "";
-            if (raw) {
-                this.voiceTurnTraceReceiver$.next(raw);
-            }
-        });
-    }
     private subscribeSolidStateRelayStateTopic() {
-        this.solidStateRelayStateTopic.subscribe(
-            (message: SolidStateRelayState) => {
-                this.solidStateRelayStateReceiver$.next(message);
-            },
-        );
+        subscribeSolidStateRelayStateTopicOnHost(this.host);
     }
 
     checkTokenExists(): Observable<ExistTokenResponse> {
-        const subject: Subject<ExistTokenResponse> = new ReplaySubject(1);
-        if (this.existTokenService === undefined) {
-            subject.error(new Error("Token service is undefined"));
-            return subject.asObservable();
-        }
-
-        const successCallback = (response: ExistTokenResponse) => {
-            subject.next(response);
-        };
-        const errorCallback = (error: unknown) => {
-            subject.error(new Error(serviceErrorText(error)));
-        };
-        this.existTokenService.callService({}, successCallback, errorCallback);
-
-        return subject.asObservable();
+        return checkTokenExistsOnHost(this.host);
     }
 
     deleteTokenMessage() {
-        const message = {};
-        this.deleteTokenTopic.publish(message);
+        deleteTokenMessageOnHost(this.host);
     }
 
     encryptToken(token: string, password: string): Observable<boolean> {
-        const subject: Subject<boolean> = new ReplaySubject();
-        if (this.encryptTokenService === undefined) {
-            subject.next(false);
-            return subject;
-        }
-
-        const request: EncryptTokenRequest = {
-            token: token,
-            password: password,
-        };
-
-        const successCallback = (response: DecryptTokenResponse) => {
-            subject.next(response.successful);
-        };
-        const errorCallback = (_error: any) => {
-            subject.next(false);
-        };
-
-        this.encryptTokenService.callService(
-            request,
-            successCallback,
-            errorCallback,
-        );
-        return subject;
+        return encryptTokenOnHost(this.host, token, password);
     }
 
     decryptToken(password: string): Observable<boolean> {
-        const subject: Subject<boolean> = new ReplaySubject();
-        if (this.decryptTokenService === undefined) {
-            subject.next(false);
-            return subject;
-        }
-        const request: DecryptTokenRequest = {
-            password: password,
-        };
-
-        const successCallback = (response: EncryptTokenResponse) => {
-            subject.next(response.successful);
-        };
-        const errorCallback = (_error: any) => {
-            subject.next(false);
-        };
-
-        this.decryptTokenService.callService(
-            request,
-            successCallback,
-            errorCallback,
-        );
-        return subject;
+        return decryptTokenOnHost(this.host, password);
     }
 
     setVoiceAssistantState(
         voiceAssistantState: VoiceAssistantState,
     ): Observable<void> {
-        const subject: Subject<void> = new ReplaySubject();
-        const request: SetVoiceAssistantStateRequest = {
-            voice_assistant_state: voiceAssistantState,
-        };
-        const successCallback = (response: SetVoiceAssistantStateResponse) => {
-            if (response.successful) {
-                subject.next();
-            } else {
-                subject.error(new Error("could not apply state..."));
-            }
-        };
-        const errorCallback = (error: any) => {
-            subject.error(new Error(error));
-        };
-        this.setVoiceAssistantStateService.callService(
-            request,
-            successCallback,
-            errorCallback,
-        );
-        return subject;
+        return setVoiceAssistantStateOnHost(this.host, voiceAssistantState);
     }
 
     setSolidStateRelayState(
         solidStateRelayState: SolidStateRelayState,
     ): Observable<void> {
-        const subject: Subject<void> = new ReplaySubject();
-        const request: SetSolidStateRelayStateRequest = {
-            solid_state_relay_state: solidStateRelayState,
-        };
-        const successCallback = (response: SetSolidStateRelayStateResponse) => {
-            if (response.successful) {
-                subject.next();
-            } else {
-                subject.error(
-                    new Error("could not apply solid state relay state..."),
-                );
-            }
-        };
-        const errorCallback = (error: any) => {
-            subject.error(new Error(error));
-        };
-        this.setSolidStateRelayStateService.callService(
-            request,
-            successCallback,
-            errorCallback,
-        );
-        return subject;
+        return setSolidStateRelayStateOnHost(this.host, solidStateRelayState);
     }
 
     listModels(): Observable<ListModelsResponse> {
-        return from(
-            new Promise<ListModelsResponse>((resolve, reject) => {
-                this.listModelsService.callService(
-                    {},
-                    (response) => resolve(response),
-                    (error) => reject(new Error(error)),
-                );
-            }),
-        );
+        return listModelsOnHost(this.host);
     }
 
     startModel(model: ModelInfo, owner: string): Observable<void> {
-        this.clearModelPipelineState();
-        return this.callModelAction(this.startModelService, {
-            model_id: model.model_id,
-            shaves: model.shaves,
+        return startModelOnHost(
+            this.host,
+            model,
             owner,
-        });
+            RosService.MODEL_LIFECYCLE_TIMEOUT_SECONDS,
+        );
     }
 
     stopModel(modelId: string, owner: string): Observable<void> {
-        this.clearModelPipelineState();
-        return this.callModelAction(this.stopModelService, {
-            model_id: modelId,
+        return stopModelOnHost(
+            this.host,
+            modelId,
             owner,
-        });
-    }
-
-    private callModelAction<Request extends object>(
-        service: ROSLIB.Service<Request, ModelActionResponse>,
-        request: Request,
-    ): Observable<void> {
-        return from(
-            new Promise<void>((resolve, reject) => {
-                service.callService(
-                    request,
-                    (response) => {
-                        if (response?.success === false) {
-                            reject(
-                                new Error(
-                                    response.message || "Model request failed",
-                                ),
-                            );
-                            return;
-                        }
-                        resolve();
-                    },
-                    (error) => reject(new Error(error)),
-                    RosService.MODEL_LIFECYCLE_TIMEOUT_SECONDS,
-                );
-            }),
+            RosService.MODEL_LIFECYCLE_TIMEOUT_SECONDS,
         );
     }
 
-    private clearModelPipelineState() {
-        this.modelStatusReceiver$.next({models: []});
-        this.detectionClearReceiver$.next(undefined);
-    }
-
-    /** Reads the servo's actual position (centidegrees) for one joint or motor. */
     getJointPosition(jointName: string): Observable<number> {
-        // ReplaySubject: the service call may answer before the caller subscribes.
-        const subject: ReplaySubject<number> = new ReplaySubject<number>(1);
-        if (this.getJointPositionService === undefined) {
-            subject.error(new Error("get_joint_position service is undefined"));
-            return subject.asObservable();
-        }
-        const request: GetJointPositionRequest = {joint_name: jointName};
-        const successCallback = (response: GetJointPositionResponse) => {
-            if (response.successful) {
-                subject.next(response.position);
-                subject.complete();
-            } else {
-                subject.error(
-                    new Error(
-                        response.message || "failed to read joint position",
-                    ),
-                );
-            }
-        };
-        const errorCallback = (error: unknown) => {
-            const message = (error as {message?: string} | null)?.message;
-            subject.error(new Error(message || serviceErrorText(error)));
-        };
-        this.getJointPositionService.callService(
-            request,
-            successCallback,
-            errorCallback,
-        );
-        return subject.asObservable();
+        return getJointPositionOnHost(this.host, jointName);
     }
 
     applyJointTrajectory(
         jointTrajectory: JointTrajectoryMessage,
     ): Observable<void> {
-        const subject: Subject<void> = new ReplaySubject();
-        const rosJointTrajectory: JointTrajectoryMessage = {
-            ...jointTrajectory,
-            points: (jointTrajectory.points ?? []).map((point) => ({
-                ...point,
-                positions: (point.positions ?? []).map(centidegToRad),
-            })),
-        };
-        const request: ApplyJointTrajectoryRequest = {
-            joint_trajectory: rosJointTrajectory,
-        };
-        const successCallback = (response: ApplyJointTrajectoryResponse) => {
-            if (response.successful) {
-                subject.next();
-            } else {
-                subject.error(new Error("failed to apply joint-trajectory."));
-            }
-        };
-        const errorCallback = (error: any) => {
-            subject.error(new Error(error));
-        };
-        this.applyJointTrajectoryService.callService(
-            request,
-            successCallback,
-            errorCallback,
-        );
-        return subject;
+        return applyJointTrajectoryOnHost(this.host, jointTrajectory);
     }
 
     sendChatMessage(chatId: string, content: string): Observable<void> {
-        const subject: Subject<void> = new ReplaySubject();
-        if (this.sendChatMessageService === undefined) {
-            subject.error(new Error("Chat service is undefined"));
-            return subject.asObservable();
-        }
-        const request: SendChatMessageRequest = {
-            chat_id: chatId,
-            content: content,
-        };
-        const successCallback = (response: SendChatMessageResponse) => {
-            if (response.successful) {
-                subject.next();
-            } else {
-                subject.error(new Error("failed to send message"));
-            }
-        };
-        const errorCallback = (error: any) => {
-            subject.error(new Error(error));
-        };
-        this.sendChatMessageService.callService(
-            request,
-            successCallback,
-            errorCallback,
-        );
-        return subject.asObservable();
+        return sendChatMessageOnHost(this.host, chatId, content);
     }
 
     getChatIsListening(chatId: string): Observable<boolean> {
-        const subject: Subject<boolean> = new ReplaySubject();
-        const request: GetChatIsListeningRequest = {
-            chat_id: chatId,
-        };
-        const successCallback = (response: GetChatIsListeningResponse) => {
-            subject.next(response.listening);
-        };
-        const errorCallback = (error: any) => {
-            subject.error(new Error(error));
-        };
-        this.getChatIsListeningService.callService(
-            request,
-            successCallback,
-            errorCallback,
-        );
-        return subject;
+        return getChatIsListeningOnHost(this.host, chatId);
     }
 
     applyMotorSettings(
         motorSettingsMessage: MotorSettingsMessage,
     ): Observable<MotorSettingsMessage> {
-        const subject: Subject<MotorSettingsMessage> = new ReplaySubject();
-        try {
-            this.applyMotorSettingsService.callService(
-                {motor_settings: motorSettingsMessage},
-                (response) => {
-                    if (response["settings_applied"]) {
-                        if (response["settings_persisted"]) {
-                            subject.next(motorSettingsMessage);
-                        } else {
-                            subject.error(
-                                new MotorSettingsError(
-                                    motorSettingsMessage,
-                                    true,
-                                ),
-                            );
-                        }
-                    } else {
-                        subject.error(
-                            new MotorSettingsError(motorSettingsMessage, false),
-                        );
-                    }
-                },
-                (errorMsg) => {
-                    subject.error(new Error(errorMsg));
-                },
-            );
-        } catch (error) {
-            subject.error(error);
-        }
-        return subject;
-    }
-
-    private getfilteredFeedback(
-        proxyGoalId: string,
-    ): Observable<RunProgramFeedback> {
-        return this.proxyRunProgramFeedbackReceiver$.pipe(
-            filter((output) => output.proxy_goal_id == proxyGoalId),
-        );
-    }
-
-    private getFilteredResult(
-        proxyGoalId: string,
-    ): Observable<RunProgramResult> {
-        return this.proxyRunProgramResultReceiver$.pipe(
-            filter((result) => result.proxy_goal_id == proxyGoalId),
-        );
-    }
-
-    private getfilteredStatus(proxyGoalId: string): Observable<number> {
-        return this.proxyRunProgramStatusReceiver$
-            .pipe(filter((status) => status.proxy_goal_id == proxyGoalId))
-            .pipe(map((status) => status.status));
-    }
-
-    private getCancelFunction(proxyGoalId: string): () => void {
-        return () => {
-            this.proxyProgramStopService.callService(
-                {proxy_goal_id: proxyGoalId},
-                () => undefined,
-                () => {
-                    throw new Error("failed to cancel...");
-                },
-            );
-        };
+        return applyMotorSettingsOnHost(this.host, motorSettingsMessage);
     }
 
     runProgram(
         programNumber: string,
     ): Observable<GoalHandle<RunProgramFeedback, RunProgramResult>> {
-        return from(
-            new Promise<GoalHandle<RunProgramFeedback, RunProgramResult>>(
-                (resolve, reject) => {
-                    this.proxyProgramStartService.callService(
-                        {program_number: programNumber},
-                        (response) => {
-                            const proxyGoalId = response.proxy_goal_id;
-                            resolve({
-                                feedback: this.getfilteredFeedback(proxyGoalId),
-                                result: this.getFilteredResult(proxyGoalId),
-                                status: this.getfilteredStatus(proxyGoalId),
-                                cancel: this.getCancelFunction(proxyGoalId),
-                            });
-                        },
-                        (errorMsg) => {
-                            reject(new Error(errorMsg));
-                        },
-                    );
-                },
-            ),
-        );
+        return runProgramOnHost(this.host, programNumber);
     }
 
     setTimerPeriod(period: number) {
-        if (!this.cameraTimerPeriodTopic) {
-            console.error("ROS is not connected.");
-            return;
-        }
-        const message = {data: period};
-        this.cameraTimerPeriodTopic.publish(message);
+        setTimerPeriodOnHost(this.host, period);
     }
 
     setPreviewSize(width: number, height: number) {
-        if (!this.cameraPreviewSizeTopic) {
-            console.error("ROS is not connected.");
-            return;
-        }
-        const message = {data: [width, height]};
-        this.cameraPreviewSizeTopic.publish(message);
+        setPreviewSizeOnHost(this.host, width, height);
     }
 
     setQualityFactor(factor: number) {
-        if (!this.cameraQualityFactorTopic) {
-            console.error("ROS is not connected.");
-            return;
-        }
-        const message = {data: factor};
-        this.cameraQualityFactorTopic.publish(message);
+        setQualityFactorOnHost(this.host, factor);
     }
 
     publishProgramInput(input: string, mpid: number) {
-        this.programInputTopic.publish({input, mpid});
+        publishProgramInputOnHost(this.host, input, mpid);
     }
 
-    /** std_msgs/String on /pib/expression. The face node already consumes this. */
     publishExpression(expression: string): void {
-        if (!this.expressionTopic) {
-            return;
-        }
-        this.expressionTopic.publish({data: expression});
+        publishExpressionOnHost(this.host, expression);
     }
 
-    /** std_msgs/String on /pib/display_text. The display node already consumes this. */
     publishDisplayText(text: string): void {
-        if (!this.displayTextTopic) {
-            return;
-        }
-        this.displayTextTopic.publish({data: text});
+        publishDisplayTextOnHost(this.host, text);
     }
-}
-
-function serviceErrorText(error: unknown): string {
-    if (typeof error === "string" && error.trim() !== "") {
-        return error;
-    }
-    if (error instanceof Error && error.message.trim() !== "") {
-        return error.message;
-    }
-    if (error == null) {
-        return "Token service error";
-    }
-    return String(error);
 }
