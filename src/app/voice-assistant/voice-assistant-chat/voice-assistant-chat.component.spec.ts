@@ -7,7 +7,8 @@ import {
     HttpClientTestingModule,
     HttpTestingController,
 } from "@angular/common/http/testing";
-import {BehaviorSubject, of, Subject} from "rxjs";
+import {BehaviorSubject, of, Subject, throwError} from "rxjs";
+import {RosService} from "src/app/shared/services/ros-service/ros.service";
 import {Chat} from "src/app/shared/types/chat.class";
 import {ChatService} from "src/app/shared/services/chat.service";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
@@ -500,6 +501,87 @@ describe("VoiceAssistantChatComponent", () => {
         if (previous != null) {
             Object.defineProperty(router, "url", previous);
         }
+    });
+
+    describe("voice assistant state and activePersonalityId", () => {
+        let getChatByIdSpy: jasmine.Spy;
+        let rosService: RosService;
+
+        beforeEach(() => {
+            rosService = TestBed.inject(RosService);
+            getChatByIdSpy = spyOn(chatService, "getChatById").and.returnValue(
+                of(new Chat("Topic", "personality-from-api", "chat-from-api")),
+            );
+            getChatByIdSpy.calls.reset();
+        });
+
+        it("does not call getChatById when chatId is empty", () => {
+            rosService.voiceAssistantStateReceiver$.next({
+                turned_on: false,
+                chat_id: "",
+            });
+
+            expect(getChatByIdSpy).not.toHaveBeenCalled();
+        });
+
+        it("calls getChatById once for a real chat id and sets activePersonalityId", () => {
+            const chatId = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
+            const personalityId = "bbbbbbbb-cccc-dddd-eeee-ffffffffffff";
+            getChatByIdSpy.and.returnValue(
+                of(new Chat("Active", personalityId, chatId)),
+            );
+
+            rosService.voiceAssistantStateReceiver$.next({
+                turned_on: true,
+                chat_id: chatId,
+            });
+
+            expect(getChatByIdSpy).toHaveBeenCalledTimes(1);
+            expect(getChatByIdSpy).toHaveBeenCalledWith(chatId);
+            expect(component.activePersonalityId).toBe(personalityId);
+        });
+
+        it("calls getChatById only once when the same chat id is emitted twice", () => {
+            const chatId = "cccccccc-dddd-eeee-ffff-111111111111";
+            getChatByIdSpy.and.returnValue(
+                of(new Chat("Dup", "personality-dup", chatId)),
+            );
+
+            rosService.voiceAssistantStateReceiver$.next({
+                turned_on: true,
+                chat_id: chatId,
+            });
+            rosService.voiceAssistantStateReceiver$.next({
+                turned_on: true,
+                chat_id: chatId,
+            });
+
+            expect(getChatByIdSpy).toHaveBeenCalledTimes(1);
+        });
+
+        it("survives a rejected getChatById and still handles the next chat id", () => {
+            const failedId = "dddddddd-eeee-ffff-1111-222222222222";
+            const nextId = "eeeeeeee-ffff-1111-2222-333333333333";
+            const nextPersonality = "ffffffff-1111-2222-3333-444444444444";
+            getChatByIdSpy.and.callFake((id: string) => {
+                if (id === failedId) {
+                    return throwError(() => new Error("not found"));
+                }
+                return of(new Chat("Recovered", nextPersonality, nextId));
+            });
+
+            rosService.voiceAssistantStateReceiver$.next({
+                turned_on: true,
+                chat_id: failedId,
+            });
+            rosService.voiceAssistantStateReceiver$.next({
+                turned_on: true,
+                chat_id: nextId,
+            });
+
+            expect(getChatByIdSpy).toHaveBeenCalledTimes(2);
+            expect(component.activePersonalityId).toBe(nextPersonality);
+        });
     });
 });
 
