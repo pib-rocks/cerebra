@@ -1,10 +1,15 @@
 import {
     ChangeDetectionStrategy,
+    ChangeDetectorRef,
     Component,
     EventEmitter,
     Input,
     Output,
+    inject,
 } from "@angular/core";
+import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
+import {catchError, of} from "rxjs";
+import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
 import {NgClass} from "@angular/common";
 import {
     EMPTY_VOICE_STATUS,
@@ -21,6 +26,8 @@ import {
 import {
     DeepChatStatusChip,
     deepChatChipStateLabel,
+    parseVoiceAssistantStatus,
+    resolveVoiceAssistantChip,
 } from "src/app/shared/types/provider-registry";
 
 /**
@@ -36,6 +43,27 @@ import {
     imports: [NgClass],
 })
 export class VoiceStatusStripComponent {
+    private readonly voiceAssistant = inject(VoiceAssistantService);
+    private readonly changeDetector = inject(ChangeDetectorRef);
+
+    constructor() {
+        // The probe runs server-side (chat nodes plus a resolvable provider key),
+        // so the strip renders the verdict instead of guessing. An unreadable
+        // probe stays neutral: unmeasured is not the same as broken.
+        this.voiceAssistant
+            .voiceAssistantHealth()
+            .pipe(
+                catchError(() => of(null)),
+                takeUntilDestroyed(),
+            )
+            .subscribe((body: unknown) => {
+                this.voiceAssistantChip = resolveVoiceAssistantChip(
+                    parseVoiceAssistantStatus(body),
+                );
+                this.changeDetector.markForCheck();
+            });
+    }
+
     @Input() status: VoiceStatus = EMPTY_VOICE_STATUS;
 
     /**
@@ -58,7 +86,7 @@ export class VoiceStatusStripComponent {
      * assistant talk right now", so the container verdict belongs next to the
      * microphone and phase chips instead of costing a row of its own.
      */
-    @Input() voiceAssistantChip: DeepChatStatusChip | null = null;
+    voiceAssistantChip: DeepChatStatusChip | null = null;
 
     /** Asks the chat component to probe again (D4: manual refresh). */
     @Output() providerRefresh = new EventEmitter<void>();

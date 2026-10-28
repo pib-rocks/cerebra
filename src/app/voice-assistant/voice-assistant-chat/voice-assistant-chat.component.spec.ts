@@ -310,36 +310,6 @@ describe("VoiceAssistantChatComponent", () => {
         expect(component.cloudTokenStored).toBeTrue();
     });
 
-    // PR-2126: the verdict lives in the strip's row, so the page fetches it and
-    // hands it down. Both branches are load-bearing: a verdict renders with its
-    // tone, and an unreadable probe stays neutral instead of painting a fault.
-    it("hands the voice container verdict to the status strip", () => {
-        const voiceAssistant = TestBed.inject(VoiceAssistantService);
-        spyOn(voiceAssistant, "voiceAssistantHealth").and.returnValue(
-            of({state: "attention", reason: "No keys are available."}),
-        );
-
-        component.refreshProviderHealth();
-
-        expect(component.voiceAssistantChip?.tone).toBe("attention");
-        expect(component.voiceAssistantChip?.detail).toBe(
-            "No keys are available.",
-        );
-    });
-
-    it("keeps the strip neutral when the verdict cannot be read", () => {
-        const voiceAssistant = TestBed.inject(VoiceAssistantService);
-        spyOn(voiceAssistant, "voiceAssistantHealth").and.returnValue(
-            throwError(() => new Error("offline")),
-        );
-
-        component.refreshProviderHealth();
-
-        // Neutral, not absent and never red: an unreadable probe is not a fault.
-        expect(component.voiceAssistantChip?.tone).toBe("neutral");
-        expect(component.voiceAssistantChip?.detail).toBeNull();
-    });
-
     it("records that no cloud token is stored", () => {
         tokenStatusSubject.next({tokenExists: false, tokenActive: false});
 
