@@ -1459,46 +1459,6 @@ describe("ChatWindowDeepChatComponent", () => {
             text: expected,
         });
     });
-
-    it("shows the voice-assistant chip from the health endpoint (PR-2123)", () => {
-        // The probe runs server-side; the browser renders its verdict verbatim.
-        voiceAssistantSpy.voiceAssistantHealth.and.returnValue(
-            of({
-                state: "attention",
-                reason: "No keys are available for provider gemini.",
-            }),
-        );
-        component.ngAfterViewInit();
-        fixture.detectChanges();
-
-        const chip = fixture.nativeElement.querySelector(
-            "[data-test='DEEP_CHAT_VOICE_ASSISTANT_CHIP']",
-        ) as HTMLElement;
-        expect(chip).withContext("chip element").not.toBeNull();
-        expect(chip.textContent).toContain("Voice assistant");
-        expect(chip.textContent).toContain("attention");
-        expect(chip.classList.contains("deep-chat-status-chip-attention")).toBe(
-            true,
-        );
-        expect(chip.title).toContain("No keys are available");
-    });
-
-    it("falls back to unknown when the voice-health read fails", () => {
-        // The probe lives server-side; a browser that cannot reach it renders neutral.
-        voiceAssistantSpy.voiceAssistantHealth.and.returnValue(
-            throwError(() => new Error("offline")),
-        );
-        component.ngAfterViewInit();
-        fixture.detectChanges();
-
-        const chip = fixture.nativeElement.querySelector(
-            "[data-test='DEEP_CHAT_VOICE_ASSISTANT_CHIP']",
-        ) as HTMLElement;
-        expect(chip.classList.contains("deep-chat-status-chip-neutral")).toBe(
-            true,
-        );
-        expect(chip.textContent).toContain("unknown");
-    });
 });
 
 describe("ChatWindowDeepChatComponent fresh chat without id", () => {

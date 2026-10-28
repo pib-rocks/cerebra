@@ -5,6 +5,7 @@ import {
     VoiceStatus,
 } from "src/app/shared/types/voice-status";
 import {ProviderHealth} from "src/app/shared/types/provider-health";
+import {DeepChatStatusChip} from "src/app/shared/types/provider-registry";
 
 describe("VoiceStatusStripComponent", () => {
     let fixture: ComponentFixture<VoiceStatusStripComponent>;
@@ -184,5 +185,75 @@ describe("VoiceStatusStripComponent", () => {
         fixture.componentInstance.requestProviderRefresh();
 
         expect(emitted.length).toBe(0);
+    });
+
+    function setVoiceAssistantChip(chip: DeepChatStatusChip | null) {
+        fixture.componentRef.setInput("voiceAssistantChip", chip);
+        fixture.detectChanges();
+    }
+
+    function voiceAssistantChipElement(): HTMLElement | null {
+        return fixture.nativeElement.querySelector(
+            '[data-test="DEEP_CHAT_VOICE_ASSISTANT_CHIP"]',
+        );
+    }
+
+    it("renders the voice container verdict inside the same row", () => {
+        setVoiceAssistantChip({
+            id: "voice-assistant",
+            label: "Voice assistant",
+            tone: "ok",
+            detail: null,
+        });
+
+        const strip = fixture.nativeElement.querySelector(
+            '[data-test="VOICE_STATUS_STRIP"]',
+        ) as HTMLElement;
+        const chip = voiceAssistantChipElement();
+
+        expect(chip).not.toBeNull();
+        // Same row means same parent as the microphone chip: no extra line.
+        expect(chip!.parentElement).toBe(strip);
+        expect(chip!.textContent).toContain("Voice assistant · ok");
+        expect(chip!.classList.contains("voice-status-chip-ok")).toBe(true);
+    });
+
+    it("marks a failing node or key as attention and keeps the reason as tooltip", () => {
+        setVoiceAssistantChip({
+            id: "voice-assistant",
+            label: "Voice assistant",
+            tone: "attention",
+            detail: "No keys are available for provider gemini.",
+        });
+
+        const chip = voiceAssistantChipElement()!;
+        expect(chip.textContent).toContain("Voice assistant · attention");
+        expect(chip.classList.contains("voice-status-chip-attention")).toBe(
+            true,
+        );
+        expect(chip.getAttribute("title")).toContain(
+            "No keys are available for provider gemini.",
+        );
+    });
+
+    it("keeps an unmeasured verdict neutral, not red", () => {
+        setVoiceAssistantChip({
+            id: "voice-assistant",
+            label: "Voice assistant",
+            tone: "neutral",
+            detail: null,
+        });
+
+        const chip = voiceAssistantChipElement()!;
+        expect(chip.classList.contains("voice-status-chip-neutral")).toBe(true);
+        expect(chip.classList.contains("voice-status-chip-attention")).toBe(
+            false,
+        );
+        expect(chip.classList.contains("voice-status-chip-ok")).toBe(false);
+    });
+
+    it("shows no chip at all while no verdict has been read", () => {
+        setVoiceAssistantChip(null);
+        expect(voiceAssistantChipElement()).toBeNull();
     });
 });

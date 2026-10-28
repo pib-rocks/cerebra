@@ -18,6 +18,10 @@ import {
     healthLabel,
     healthTooltip,
 } from "src/app/shared/types/provider-health";
+import {
+    DeepChatStatusChip,
+    deepChatChipStateLabel,
+} from "src/app/shared/types/provider-registry";
 
 /**
  * Live state of the voice turn: microphone, phase, the provider of the open
@@ -47,8 +51,34 @@ export class VoiceStatusStripComponent {
     /** True only while a probe is in flight. */
     @Input() providerLoading = false;
 
+    /**
+     * Server-side voice-container health (node liveness and a resolvable key).
+     *
+     * Renderd in this row on purpose: the strip already answers "can the
+     * assistant talk right now", so the container verdict belongs next to the
+     * microphone and phase chips instead of costing a row of its own.
+     */
+    @Input() voiceAssistantChip: DeepChatStatusChip | null = null;
+
     /** Asks the chat component to probe again (D4: manual refresh). */
     @Output() providerRefresh = new EventEmitter<void>();
+
+    get voiceAssistantSummary(): string {
+        const chip = this.voiceAssistantChip;
+        return chip
+            ? `${chip.label} · ${deepChatChipStateLabel(chip.tone)}`
+            : "";
+    }
+
+    get voiceAssistantTooltipText(): string {
+        const chip = this.voiceAssistantChip;
+        if (chip == null) {
+            return "";
+        }
+        return chip.detail
+            ? `${chip.label}: ${chip.detail}`
+            : this.voiceAssistantSummary;
+    }
 
     get micLabel(): string {
         return MIC_LABELS[this.status.mic];

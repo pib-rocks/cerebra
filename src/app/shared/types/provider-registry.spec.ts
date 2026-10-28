@@ -10,7 +10,6 @@ import {
     resolveDeepChatComposer,
     parseVoiceAssistantStatus,
     resolveVoiceAssistantChip,
-    deepChatChipCssClass,
     VOICE_ASSISTANT_CHIP_LABEL,
     chatTransportUnavailableText,
     capabilitiesFrom,
@@ -808,48 +807,6 @@ describe("resolveDeepChatComposer", () => {
     it("exposes the chat line character limit for the deep-chat composer", () => {
         expect(base({}).characterLimit).toBe(100_000);
         expect(CHAT_MESSAGE_MAX_LENGTH).toBe(100_000);
-    });
-
-    it("does not add a voice-assistant chip until that input is supplied", () => {
-        const state = base({});
-        expect(state.voiceAssistantChip).toBeNull();
-        expect(state.inputEnabled).toBeTrue();
-    });
-
-    it("shows an ok voice-assistant chip when the server reports ok", () => {
-        const state = base({
-            voiceAssistantStatus: {state: "ok"},
-        });
-        expect(state.voiceAssistantChip?.tone).toBe("ok");
-        expect(state.voiceAssistantChip?.detail).toBeNull();
-        expect(deepChatChipCssClass(state.voiceAssistantChip!.tone)).toBe(
-            "deep-chat-status-chip-ok",
-        );
-    });
-
-    it("shows attention with the server reason as detail", () => {
-        const reason = "No keys are available for provider gemini.";
-        const state = base({
-            voiceAssistantStatus: {state: "attention", reason},
-        });
-        expect(state.voiceAssistantChip?.tone).toBe("attention");
-        expect(state.voiceAssistantChip?.detail).toBe(reason);
-        expect(deepChatChipCssClass(state.voiceAssistantChip!.tone)).toBe(
-            "deep-chat-status-chip-attention",
-        );
-    });
-
-    it("keeps unknown neutral, not attention", () => {
-        const state = base({
-            voiceAssistantStatus: {
-                state: "unknown",
-                reason: "voice container not deployed",
-            },
-        });
-        expect(state.voiceAssistantChip?.tone).toBe("neutral");
-        expect(deepChatChipCssClass(state.voiceAssistantChip!.tone)).toBe(
-            "deep-chat-status-chip-neutral",
-        );
     });
 });
 

@@ -35,6 +35,16 @@
             ⟳
         </button>
     </span>
+    } @if (voiceAssistantChip; as chip) {
+    <span
+        class="voice-status-chip voice-status-assistant"
+        [class.voice-status-chip-ok]="chip.tone === 'ok'"
+        [class.voice-status-chip-attention]="chip.tone === 'attention'"
+        [class.voice-status-chip-neutral]="chip.tone === 'neutral'"
+        [title]="voiceAssistantTooltipText"
+        data-test="DEEP_CHAT_VOICE_ASSISTANT_CHIP">
+        {{ voiceAssistantSummary }}
+    </span>
     } @if (status.source) {
     <span
         class="voice-status-chip"
