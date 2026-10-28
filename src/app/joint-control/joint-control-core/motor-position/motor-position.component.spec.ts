@@ -27,6 +27,7 @@ describe("MotorPositionComponent", () => {
                 "getPositionObservable",
                 "getSettingsObservable",
                 "setPosition",
+                "refreshPosition",
             ]);
 
         motorConfig = {
@@ -136,5 +137,73 @@ describe("MotorPositionComponent", () => {
         );
         expect(slider?.textContent).not.toContain("μs");
         expect(slider?.textContent).toContain("°");
+    });
+});
+
+describe("MotorPositionComponent position seed", () => {
+    it("asks the servo for its position when the view opens", async () => {
+        const motorServiceSpy = jasmine.createSpyObj("MotorService", [
+            "getPositionObservable",
+            "getSettingsObservable",
+            "setPosition",
+            "refreshPosition",
+        ]);
+        const positionSubject = new Subject<number>();
+        const settingsSubject = new Subject<MotorSettings>();
+        motorServiceSpy.getPositionObservable.and.returnValue(positionSubject);
+        motorServiceSpy.getSettingsObservable.and.returnValue(settingsSubject);
+
+        const motorConfig = {
+            motorName: "test_motor",
+            motorPathName: "test-motor",
+            label: "Test Motor",
+            sliderIconLeft: "/left",
+            sliderIconRight: "/right",
+            captionLeft: "closed",
+            captionRight: "open",
+            touchPointCenterX: 0.3,
+            touchPointCenterY: 0.6,
+            isMultiMotor: false,
+            sourceMotorName: "test_motor",
+        };
+
+        await TestBed.configureTestingModule({
+            imports: [RouterTestingModule, ReactiveFormsModule],
+            providers: [
+                {
+                    provide: ActivatedRoute,
+                    useValue: {data: new BehaviorSubject({motor: motorConfig})},
+                },
+                {provide: MotorService, useValue: motorServiceSpy},
+            ],
+        }).compileComponents();
+
+        const fixture = TestBed.createComponent(MotorPositionComponent);
+        fixture.detectChanges();
+
+        positionSubject.next(-4500);
+        settingsSubject.next({
+            turnedOn: true,
+            pulseWidthMin: 1,
+            pulseWidthMax: 2,
+            rotationRangeMin: -9000,
+            rotationRangeMax: 9000,
+            velocity: 5,
+            acceleration: 6,
+            deceleration: 7,
+            period: 8,
+            visible: true,
+            upperEndpoint: "max",
+        } as MotorSettings);
+        fixture.detectChanges();
+
+        expect(motorServiceSpy.refreshPosition).toHaveBeenCalledWith(
+            "test_motor",
+        );
+        expect(fixture.componentInstance.positionReceiver$.value).toEqual([
+            -45,
+        ]);
+        expect(fixture.componentInstance.turnedOn).toBeTrue();
+        expect(fixture.componentInstance.rotationRangeMin).toBe(-90);
     });
 });

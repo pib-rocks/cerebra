@@ -9,6 +9,7 @@ import {
     of,
 } from "rxjs";
 import {MotorSettingsMessage} from "../../ros-types/msg/motor-settings-message";
+import {radToCentideg} from "../../types/joint-angle-units";
 import {DiagnosticStatus} from "../../ros-types/msg/diagnostic-status.message";
 import {JointTrajectoryMessage} from "../../ros-types/msg/joint-trajectory-message";
 import {ChatMessage} from "../../ros-types/msg/chat-message";
@@ -39,6 +40,8 @@ import {ListModelsResponse, ModelInfo} from "../../ros-types/srv/list-models";
     providedIn: "root",
 })
 export class RosService implements IRosService {
+    private readonly mockJointPositions = new Map<string, number>();
+
     private setIsListening(chatId: string, listening: boolean) {
         this.isListeningFromChatId.set(chatId, listening);
         this.chatIsListeningReceiver$.next({
@@ -201,10 +204,26 @@ export class RosService implements IRosService {
         }, 1000);
     }
 
+    /** The mock keeps whatever the last trajectory set, like the real node. */
+    getJointPosition(jointName: string): Observable<number> {
+        const position = this.mockJointPositions.get(jointName) ?? 0;
+        return of(position);
+    }
+
     applyJointTrajectory(
         jointTrajectory: JointTrajectoryMessage,
     ): Observable<void> {
         console.info(JSON.stringify({joint_trajectory: jointTrajectory}));
+        jointTrajectory.points?.forEach((point) => {
+            (jointTrajectory.joint_names ?? []).forEach((name, index) => {
+                const position = point.positions?.[index];
+                if (typeof position === "number") {
+                    // The node publishes radians on the wire; the UI works in
+                    // centidegrees, like GetJointPosition returns them.
+                    this.mockJointPositions.set(name, radToCentideg(position));
+                }
+            });
+        });
         this.jointTrajectoryReceiver$.next(structuredClone(jointTrajectory));
         return of(undefined);
     }

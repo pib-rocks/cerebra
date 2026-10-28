@@ -4,8 +4,10 @@ import {
     BehaviorSubject,
     Observable,
     catchError,
+    filter,
     map,
     switchMap,
+    take,
     throwError,
 } from "rxjs";
 import {
@@ -30,6 +32,8 @@ export class ChatService implements SidebarService {
         string,
         BehaviorSubject<ChatMessage[]>
     > = new Map();
+    /** Chat ids whose initial GET has completed (including an empty thread). */
+    private chatMessagesHistoryReady = new Set<string>();
     private IsListeningFromChatId: Map<string, BehaviorSubject<boolean>> =
         new Map();
     /** Tracks send start times so FIRST_TOKEN can report elapsed ms per chat. */
@@ -278,12 +282,53 @@ export class ChatService implements SidebarService {
             return observable;
         } else {
             const messageSubject = new BehaviorSubject<ChatMessage[]>([]);
-            this.getMessagesByChatId(chatId).subscribe((messages) =>
-                messageSubject.next(messages),
-            );
             this.messagesSubjectFromChatId.set(chatId, messageSubject);
+            this.getMessagesByChatId(chatId).subscribe((messages) => {
+                // Flag FIRST: getChatMessagesForHistory drops every emission while the
+                // guard says "not ready". Setting it after next() meant a subscriber
+                // that was already waiting (deep-chat loadHistory) never received the
+                // value - the widget showed a spinner forever.
+                this.chatMessagesHistoryReady.add(chatId);
+                messageSubject.next(messages);
+            });
             return messageSubject;
         }
+    }
+
+    /**
+     * Same buffered list as {@link getChatMessagesObservable}, but the first
+     * emission waits until the initial GET settles (may be an empty thread).
+     * Used by deep-chat `loadHistory` so repeated calls share one request.
+     */
+    getChatMessagesForHistory(chatId: string): Observable<ChatMessage[]> {
+        return this.getChatMessagesObservable(chatId).pipe(
+            filter(() => this.chatMessagesHistoryReady.has(chatId)),
+            take(1),
+        );
+    }
+
+    /**
+     * Drops the in-memory history buffer for `chatId`. The next reader refetches
+     * from the server. Call on chat switch, newly created chat, and after a
+     * deleted message so stale history is not served without reloading the page.
+     */
+    refreshChatMessages(chatId: string): void {
+        if (!chatId) {
+            return;
+        }
+        this.messagesSubjectFromChatId.delete(chatId);
+        this.chatMessagesHistoryReady.delete(chatId);
+    }
+
+    deleteChatMessageById(chatId: string, messageId: string): Observable<void> {
+        return UtilService.createResultObservable(
+            this.apiService.delete(
+                `${UrlConstants.CHAT}/${chatId}/messages/${messageId}`,
+            ),
+            () => {
+                this.refreshChatMessages(chatId);
+            },
+        );
     }
 
     getIsListeningObservable(chatId: string): Observable<boolean> {

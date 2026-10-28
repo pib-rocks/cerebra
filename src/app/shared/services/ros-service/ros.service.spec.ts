@@ -1052,4 +1052,46 @@ describe("RosService", () => {
             jasmine.any(Function),
         );
     });
+
+    describe("getJointPosition", () => {
+        it("reports the position the node returns", () => {
+            spyOn(
+                rosService["getJointPositionService"],
+                "callService",
+            ).and.callFake((_request: unknown, success: any) => {
+                success({successful: true, position: -4500, message: ""});
+            });
+            let position: number | undefined;
+            rosService
+                .getJointPosition("head_pan")
+                .subscribe((value) => (position = value));
+
+            expect(position).toBe(-4500);
+        });
+
+        it("reports a missing service instead of returning nothing", () => {
+            (rosService as any).getJointPositionService = undefined;
+            let error: Error | undefined;
+            rosService.getJointPosition("head_pan").subscribe({
+                error: (err) => (error = err),
+            });
+
+            expect(error?.message).toContain("undefined");
+        });
+
+        it("carries the node's message when the read fails", () => {
+            spyOn(
+                rosService["getJointPositionService"],
+                "callService",
+            ).and.callFake((_request: unknown, _success: any, failure: any) => {
+                failure(new Error("boom"));
+            });
+            let error: Error | undefined;
+            rosService.getJointPosition("head_pan").subscribe({
+                error: (err) => (error = err),
+            });
+
+            expect(error?.message).toContain("boom");
+        });
+    });
 });

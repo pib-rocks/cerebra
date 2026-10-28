@@ -10,7 +10,7 @@ import {
 } from "@angular/core";
 import {HttpErrorResponse} from "@angular/common/http";
 import {ActivatedRoute, Params, Router} from "@angular/router";
-import {firstValueFrom, Subscription, switchMap} from "rxjs";
+import {Subscription, switchMap} from "rxjs";
 import {ChatService} from "src/app/shared/services/chat.service";
 import {
     TokenService,
@@ -80,6 +80,9 @@ export class ChatWindowDeepChatComponent
     };
     private pendingSignals?: {onResponse: (response: unknown) => void};
     private lastStreamedMessageId: string | undefined;
+    private chatHistorySubscription?: Subscription;
+    /** Chat whose history subscription is live - keeps init from reading twice. */
+    private historySyncedChatId: string | undefined;
     /** Debounce of the stored-message lookup that brings the captured pictures. */
     private imageRefreshTimer: ReturnType<typeof setTimeout> | undefined;
     private readonly imageRefreshDelayMs = 700;
@@ -95,6 +98,7 @@ export class ChatWindowDeepChatComponent
     private voiceStateSubscription?: Subscription;
     private voiceState: VoiceAssistantState = {turnedOn: false, chatId: ""};
     private readonly sendChatMessageSubscriptions = new Subscription();
+    private previousRouteChatId: string | undefined;
 
     readonly USER_ICON =
         "../../../../assets/voice-assistant-svgs/chat/user.svg";
@@ -131,8 +135,13 @@ export class ChatWindowDeepChatComponent
         this.routeParamsSubscription = this.route.params.subscribe(
             (params: Params) => {
                 this.chatMessagesSubscription?.unsubscribe();
+                this.chatHistorySubscription?.unsubscribe();
 
                 const chatId = params["chatUuid"];
+                if (chatId && chatId !== this.previousRouteChatId) {
+                    this.chatService.refreshChatMessages(chatId);
+                }
+                this.previousRouteChatId = chatId;
                 this.currentChatId = chatId;
                 this.lastStreamedMessageId = undefined;
                 this.pendingSignals = undefined;
@@ -160,6 +169,7 @@ export class ChatWindowDeepChatComponent
                 }
 
                 this.applyNames();
+                this.syncHistoryFromBuffer(this.currentChatId);
                 this.subscribeToChatMessages(chatId);
                 this.refreshComposer();
             },
@@ -172,7 +182,6 @@ export class ChatWindowDeepChatComponent
 
         this.applyStyles(el);
         this.wireConnect(el);
-        this.wireLoadHistory(el);
         this.wireValidateInput(el);
         this.wireTokenStatus(el);
         this.wireKeyStoreStatus(el);
@@ -180,6 +189,7 @@ export class ChatWindowDeepChatComponent
         this.wireKeyStoreSession(el);
         this.applyNames(el);
 
+        this.syncHistoryFromBuffer(this.currentChatId, el);
         if (this.currentChatId) {
             this.subscribeToChatMessages(this.currentChatId);
         }
@@ -235,18 +245,46 @@ export class ChatWindowDeepChatComponent
         };
     }
 
-    private wireLoadHistory(el: any): void {
-        el.loadHistory = () => {
-            const chatId = this.currentChatId;
-            if (!chatId) {
-                return Promise.resolve([]);
-            }
-            return firstValueFrom(
-                this.chatService.getMessagesByChatId(chatId),
-            ).then((msgs) =>
-                this.chatService.filterMessageUpdates(msgs).map(toDeepChat),
-            );
-        };
+    /**
+     * Drives the widget's history property from the buffered stream.
+     *
+     * deep-chat 2.5.1 accepts a property assignment after it has rendered (2.5.0
+     * did not - that is why PR-2094 was abandoned), so no `loadHistory` callback and
+     * no addMessage loop is needed. The streaming handler remains the only writer for
+     * new messages, which removes the duplicated-bubble risk structurally.
+     */
+    private syncHistoryFromBuffer(chatId: string | undefined, el?: any): void {
+        const target = el ?? this.deepChatRef?.nativeElement;
+        if (!target) return;
+
+        if (chatId && chatId === this.historySyncedChatId) return;
+
+        this.chatHistorySubscription?.unsubscribe();
+        this.historySyncedChatId = undefined;
+
+        if (!chatId) {
+            target.history = [];
+            return;
+        }
+
+        this.chatHistorySubscription = this.chatService
+            .getChatMessagesForHistory(chatId)
+            .subscribe((msgs) => {
+                const history = this.chatService
+                    .filterMessageUpdates(msgs)
+                    .map(toDeepChat);
+                const newest = msgs[msgs.length - 1];
+                if (newest && !this.pendingSignals) {
+                    // Already on screen through the property: the same message
+                    // arriving from the stream takes the overwrite path in
+                    // handleStreamedMessages instead of appending a second bubble.
+                    // During a live turn the stream owns the newest message, so the
+                    // marker stays where the turn put it.
+                    this.lastStreamedMessageId = newest.messageId;
+                }
+                target.history = history;
+            });
+        this.historySyncedChatId = chatId;
     }
 
     /** A chat that could not be created has no bubble of its own; say it in the chat. */
@@ -385,6 +423,7 @@ export class ChatWindowDeepChatComponent
     }
 
     private adoptCreatedChat(chat: Chat): void {
+        this.chatService.refreshChatMessages(chat.chatId);
         this.currentChatId = chat.chatId;
         this.chat = chat;
         this.personalityName = this.voiceAssistantService.getPersonality(

@@ -47,6 +47,7 @@ export class MotorPositionComponent implements OnInit {
                     .subscribe((position) => {
                         this.positionReceiver$.next([position / 100]);
                     });
+                this.motorService.refreshPosition(this.motor.sourceMotorName);
                 this.motorService
                     .getSettingsObservable(this.motor.sourceMotorName)
                     .pipe(takeUntilDestroyed(this.destroyRef))

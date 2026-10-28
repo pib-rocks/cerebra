@@ -1,3 +1,5 @@
+import {radToCentideg} from "../../types/joint-angle-units";
+import {createDefaultStdMessageHeader} from "../../ros-types/msg/std-message-header";
 import {
     TestBed,
     discardPeriodicTasks,
@@ -733,4 +735,23 @@ describe("RosMockService", () => {
             }),
         );
     }));
+
+    it("reports the last commanded position per joint", () => {
+        service
+            .applyJointTrajectory({
+                header: createDefaultStdMessageHeader(),
+                joint_names: ["head_pan"],
+                points: [
+                    {positions: [0.25], time_from_start: {sec: 0, nanosec: 0}},
+                ],
+            })
+            .subscribe();
+
+        let position: number | undefined;
+        service
+            .getJointPosition("head_pan")
+            .subscribe((value) => (position = value));
+
+        expect(position).toBe(radToCentideg(0.25));
+    });
 });

@@ -28,6 +28,7 @@ export enum rosDataTypes {
     getVoiceAssistantState = "datatypes/srv/GetVoiceAssistantState",
     getChatIsListening = "datatypes/srv/GetChatIsListening",
     applyJointTrajectory = "datatypes/srv/ApplyJointTrajectory",
+    getJointPosition = "datatypes/srv/GetJointPosition",
     get_token_exists = "datatypes/srv/GetTokenExists",
     encryptToken = "datatypes/srv/EncryptToken",
     decryptToken = "datatypes/srv/DecryptToken",

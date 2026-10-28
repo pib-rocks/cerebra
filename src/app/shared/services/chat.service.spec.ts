@@ -522,4 +522,86 @@ describe("ChatService", () => {
         });
         expect(next.calls.allArgs()).toEqual([[true], [false]]);
     });
+
+    it("shares one GET across repeated getChatMessagesObservable readers", waitForAsync(() => {
+        apiService.get.and.returnValue(new BehaviorSubject({messages: []}));
+        service.getChatMessagesObservable("chat-a").subscribe();
+        service.getChatMessagesObservable("chat-a").subscribe();
+        expect(apiService.get).toHaveBeenCalledTimes(1);
+        expect(apiService.get).toHaveBeenCalledWith(
+            "/voice-assistant/chat/chat-a/messages",
+        );
+    }));
+
+    it("loads a different chat id with a separate GET", waitForAsync(() => {
+        apiService.get.and.returnValue(new BehaviorSubject({messages: []}));
+        service.getChatMessagesObservable("chat-a").subscribe();
+        service.getChatMessagesObservable("chat-b").subscribe();
+        expect(apiService.get).toHaveBeenCalledTimes(2);
+    }));
+
+    it("refetches history after refreshChatMessages", waitForAsync(() => {
+        apiService.get.and.returnValue(new BehaviorSubject({messages: []}));
+        service.getChatMessagesObservable("chat-a").subscribe();
+        service.refreshChatMessages("chat-a");
+        service.getChatMessagesObservable("chat-a").subscribe();
+        expect(apiService.get).toHaveBeenCalledTimes(2);
+    }));
+
+    it("getChatMessagesForHistory waits for the initial GET before emitting", waitForAsync(() => {
+        const message: ChatMessage = {
+            messageId: "message_id",
+            timestamp: "tomorrow",
+            isUser: false,
+            content: "world",
+        };
+        const response$ = new BehaviorSubject<{messages: ChatMessage[]}>({
+            messages: [message],
+        });
+        apiService.get.and.returnValue(response$);
+        const emissions: ChatMessage[][] = [];
+        service.getChatMessagesForHistory("chat-id").subscribe((messages) => {
+            emissions.push(messages);
+        });
+        expect(emissions).toEqual([[message]]);
+        expect(apiService.get).toHaveBeenCalledOnceWith(
+            "/voice-assistant/chat/chat-id/messages",
+        );
+    }));
+
+    it("getChatMessagesForHistory emits when the response arrives after subscribing", waitForAsync(() => {
+        // The real GET is asynchronous: the widget subscribes first, the value
+        // arrives later. A synchronous BehaviorSubject hides the ordering bug where
+        // the "ready" flag is set after the value is pushed - the emission is then
+        // dropped by the guard and loadHistory never resolves (endless spinner).
+        const message: ChatMessage = {
+            messageId: "late-message",
+            timestamp: "tomorrow",
+            isUser: false,
+            content: "late",
+        };
+        const response$ = new Subject<{messages: ChatMessage[]}>();
+        apiService.get.and.returnValue(response$);
+        const emissions: ChatMessage[][] = [];
+        service.getChatMessagesForHistory("late-chat").subscribe((messages) => {
+            emissions.push(messages);
+        });
+        expect(emissions).toEqual([]);
+
+        response$.next({messages: [message]});
+
+        expect(emissions).toEqual([[message]]);
+    }));
+
+    it("refetches after a message is deleted", waitForAsync(() => {
+        apiService.get.and.returnValue(new BehaviorSubject({messages: []}));
+        apiService.delete.and.returnValue(of({}));
+        service.getChatMessagesObservable("chat-a").subscribe();
+        service.deleteChatMessageById("chat-a", "message-1").subscribe();
+        service.getChatMessagesObservable("chat-a").subscribe();
+        expect(apiService.get).toHaveBeenCalledTimes(2);
+        expect(apiService.delete).toHaveBeenCalledOnceWith(
+            "/voice-assistant/chat/chat-a/messages/message-1",
+        );
+    }));
 });
