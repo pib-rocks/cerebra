@@ -51,6 +51,11 @@ export class VoiceAssistantService implements SidebarService {
     voiceAssistantActiveStatusSubject: Subject<boolean> =
         new Subject<boolean>();
 
+    /** Server-side voice-container health (node liveness + resolvable key). */
+    voiceAssistantHealth(): Observable<unknown> {
+        return this.apiService.get(UrlConstants.VOICE_ASSISTANT_HEALTH);
+    }
+
     constructor(
         private apiService: ApiService,
         private rosService: RosService,

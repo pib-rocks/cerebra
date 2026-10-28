@@ -57,10 +57,12 @@ describe("ChatWindowDeepChatComponent", () => {
         service?: string;
         error?: string | null;
     }>;
+    let voiceAssistantSpy: jasmine.SpyObj<VoiceAssistantService>;
     let keyStoreStatusSubject: BehaviorSubject<{
         encryptKeyStorage: boolean;
         credentialRefs: string[];
         mode?: string;
+        voiceAssistant?: {state: string; reason?: string};
     }>;
     let mockDeepChat: {
         addMessage: jasmine.Spy;
@@ -133,14 +135,15 @@ describe("ChatWindowDeepChatComponent", () => {
         const assistantModelsSubject = new BehaviorSubject<AssistantModel[]>(
             [],
         );
-        const voiceAssistantSpy = createServiceSpy<VoiceAssistantService>(
+        voiceAssistantSpy = createServiceSpy<VoiceAssistantService>(
             "VoiceAssistantService",
-            ["getPersonality"],
+            ["getPersonality", "voiceAssistantHealth"],
             {
                 voiceAssistantStateObservable: voiceStateSubject.asObservable(),
                 assistantModelsSubject,
             },
         );
+        voiceAssistantSpy.voiceAssistantHealth.and.returnValue(of(null));
 
         await TestBed.configureTestingModule({
             imports: [
@@ -1456,6 +1459,47 @@ describe("ChatWindowDeepChatComponent", () => {
             text: expected,
         });
     });
+
+    it("shows the voice-assistant chip from the key-store status read (PR-2123)", () => {
+        keyStoreStatusSubject.next({
+            encryptKeyStorage: true,
+            credentialRefs: [],
+            mode: "unlocked",
+            voiceAssistant: {
+                state: "attention",
+                reason: "No keys are available for provider gemini.",
+            },
+        });
+        fixture.detectChanges();
+
+        const chip = fixture.nativeElement.querySelector(
+            "[data-test='DEEP_CHAT_VOICE_ASSISTANT_CHIP']",
+        ) as HTMLElement;
+        expect(chip).withContext("chip element").not.toBeNull();
+        expect(chip.textContent).toContain("Voice assistant");
+        expect(chip.textContent).toContain("attention");
+        expect(chip.classList.contains("deep-chat-status-chip-attention")).toBe(
+            true,
+        );
+        expect(chip.title).toContain("No keys are available");
+    });
+
+    it("falls back to unknown when the voice-health read fails", () => {
+        // The probe lives server-side; a browser that cannot reach it renders neutral.
+        voiceAssistantSpy.voiceAssistantHealth.and.returnValue(
+            throwError(() => new Error("offline")),
+        );
+        component.ngAfterViewInit();
+        fixture.detectChanges();
+
+        const chip = fixture.nativeElement.querySelector(
+            "[data-test='DEEP_CHAT_VOICE_ASSISTANT_CHIP']",
+        ) as HTMLElement;
+        expect(chip.classList.contains("deep-chat-status-chip-neutral")).toBe(
+            true,
+        );
+        expect(chip.textContent).toContain("unknown");
+    });
 });
 
 describe("ChatWindowDeepChatComponent fresh chat without id", () => {
@@ -1478,6 +1522,7 @@ describe("ChatWindowDeepChatComponent fresh chat without id", () => {
         encryptKeyStorage: boolean;
         credentialRefs: string[];
         mode?: string;
+        voiceAssistant?: {state: string; reason?: string};
     }>;
     let mockDeepChat: {
         addMessage: jasmine.Spy;
@@ -1546,12 +1591,13 @@ describe("ChatWindowDeepChatComponent fresh chat without id", () => {
         );
         const voiceAssistantSpy = createServiceSpy<VoiceAssistantService>(
             "VoiceAssistantService",
-            ["getPersonality"],
+            ["getPersonality", "voiceAssistantHealth"],
             {
                 voiceAssistantStateObservable: voiceStateSubject.asObservable(),
                 assistantModelsSubject,
             },
         );
+        voiceAssistantSpy.voiceAssistantHealth.and.returnValue(of(null));
         voiceAssistantSpy.getPersonality.and.returnValue(
             new VoiceAssistant(
                 personalityUuid,

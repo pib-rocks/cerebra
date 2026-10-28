@@ -15,6 +15,7 @@ export enum UrlConstants {
     RGB_BUTTON = "/button-programs",
     DIAGNOSTICS = "/diagnostics",
     DOCKER = "/docker",
+    VOICE_ASSISTANT_HEALTH = "/system/voice-assistant-health",
     SYSTEM_REVISION = "/system/revision",
     SYSTEM_UPDATE = "/system/update",
     SYSTEM_UPDATE_STATUS = "/system/update/status",
