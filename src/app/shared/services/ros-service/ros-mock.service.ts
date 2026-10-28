@@ -39,6 +39,8 @@ import {ListModelsResponse, ModelInfo} from "../../ros-types/srv/list-models";
     providedIn: "root",
 })
 export class RosService implements IRosService {
+    private readonly mockJointPositions = new Map<string, number>();
+
     private setIsListening(chatId: string, listening: boolean) {
         this.isListeningFromChatId.set(chatId, listening);
         this.chatIsListeningReceiver$.next({
@@ -199,6 +201,12 @@ export class RosService implements IRosService {
                 });
             }
         }, 1000);
+    }
+
+    /** The mock keeps whatever the last trajectory set, like the real node. */
+    getJointPosition(jointName: string): Observable<number> {
+        const position = this.mockJointPositions.get(jointName) ?? 0;
+        return of(position);
     }
 
     applyJointTrajectory(

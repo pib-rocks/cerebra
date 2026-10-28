@@ -203,6 +203,30 @@ export class MotorService {
         ).pipe(map((settings) => structuredClone(settings)));
     }
 
+    /**
+     * Seeds the position cache from the servo itself.
+     *
+     * The position subject only carried the last *commanded* trajectory point, so
+     * a freshly opened view started at 0 although the joint stood somewhere else
+     * (PR-2105). The motors node can read the servo, so ask it once per view.
+     */
+    refreshPosition(motorName: string): void {
+        this.rosService.getJointPosition(motorName).subscribe({
+            next: (position: number) => {
+                if (!Number.isFinite(position)) {
+                    return;
+                }
+                this.publishToSubject(
+                    motorName,
+                    this.motorNameToPositionSubject,
+                    position,
+                );
+            },
+            // Keep the last known value: a failed read must not reset the slider.
+            error: () => undefined,
+        });
+    }
+
     getPositionObservable(motorName: string): Observable<number> {
         return this.getObservable(
             motorName,

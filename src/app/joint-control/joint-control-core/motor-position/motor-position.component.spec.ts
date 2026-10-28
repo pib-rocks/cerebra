@@ -27,6 +27,7 @@ describe("MotorPositionComponent", () => {
                 "getPositionObservable",
                 "getSettingsObservable",
                 "setPosition",
+                "refreshPosition",
             ]);
 
         motorConfig = {
@@ -136,5 +137,49 @@ describe("MotorPositionComponent", () => {
         );
         expect(slider?.textContent).not.toContain("μs");
         expect(slider?.textContent).toContain("°");
+    });
+});
+
+describe("MotorPositionComponent position seed", () => {
+    it("asks the servo for its position when the view opens", async () => {
+        const motorServiceSpy = jasmine.createSpyObj("MotorService", [
+            "getPositionObservable",
+            "getSettingsObservable",
+            "setPosition",
+            "refreshPosition",
+        ]);
+        motorServiceSpy.getPositionObservable.and.returnValue(new Subject());
+        motorServiceSpy.getSettingsObservable.and.returnValue(new Subject());
+
+        const motorConfig = {
+            motorName: "test_motor",
+            motorPathName: "test-motor",
+            label: "Test Motor",
+            sliderIconLeft: "/left",
+            sliderIconRight: "/right",
+            captionLeft: "closed",
+            captionRight: "open",
+            touchPointCenterX: 0.3,
+            touchPointCenterY: 0.6,
+            isMultiMotor: false,
+            sourceMotorName: "test_motor",
+        };
+
+        await TestBed.configureTestingModule({
+            imports: [RouterTestingModule, ReactiveFormsModule],
+            providers: [
+                {
+                    provide: ActivatedRoute,
+                    useValue: {data: new BehaviorSubject({motor: motorConfig})},
+                },
+                {provide: MotorService, useValue: motorServiceSpy},
+            ],
+        }).compileComponents();
+
+        TestBed.createComponent(MotorPositionComponent).detectChanges();
+
+        expect(motorServiceSpy.refreshPosition).toHaveBeenCalledWith(
+            "test_motor",
+        );
     });
 });

@@ -29,6 +29,10 @@ import {
     ApplyMotorSettingsResponse,
 } from "../../ros-types/srv/apply-motor-settings";
 import {
+    GetJointPositionRequest,
+    GetJointPositionResponse,
+} from "../../ros-types/srv/get-joint-position";
+import {
     RunProgramFeedback,
     RunProgramResult,
 } from "../../ros-types/action/run-program";
@@ -198,6 +202,11 @@ export class RosService implements IRosService {
     private applyJointTrajectoryService!: ROSLIB.Service<
         ApplyJointTrajectoryRequest,
         ApplyJointTrajectoryResponse
+    >;
+
+    private getJointPositionService!: ROSLIB.Service<
+        GetJointPositionRequest,
+        GetJointPositionResponse
     >;
 
     private setSolidStateRelayStateService!: ROSLIB.Service<
@@ -374,6 +383,10 @@ export class RosService implements IRosService {
         this.applyJointTrajectoryService = this.createRosService(
             rosServices.applyJointTrajectory,
             rosDataTypes.applyJointTrajectory,
+        );
+        this.getJointPositionService = this.createRosService(
+            rosServices.getJointPosition,
+            rosDataTypes.getJointPosition,
         );
         this.existTokenService = this.createRosService(
             rosServices.get_token_exists,
@@ -868,6 +881,36 @@ export class RosService implements IRosService {
     private clearModelPipelineState() {
         this.modelStatusReceiver$.next({models: []});
         this.detectionClearReceiver$.next(undefined);
+    }
+
+    /** Reads the servo's actual position (centidegrees) for one joint or motor. */
+    getJointPosition(jointName: string): Observable<number> {
+        const subject: Subject<number> = new Subject<number>();
+        if (this.getJointPositionService === undefined) {
+            subject.error(new Error("get_joint_position service is undefined"));
+            return subject.asObservable();
+        }
+        const request: GetJointPositionRequest = {joint_name: jointName};
+        const successCallback = (response: GetJointPositionResponse) => {
+            if (response.successful) {
+                subject.next(response.position);
+                subject.complete();
+            } else {
+                subject.error(
+                    new Error(
+                        response.message || "failed to read joint position",
+                    ),
+                );
+            }
+        };
+        const errorCallback = (error: unknown) =>
+            subject.error(new Error(serviceErrorText(error)));
+        this.getJointPositionService.callService(
+            request,
+            successCallback,
+            errorCallback,
+        );
+        return subject.asObservable();
     }
 
     applyJointTrajectory(
