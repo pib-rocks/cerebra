@@ -3,7 +3,7 @@ import {TestBed} from "@angular/core/testing";
 import {MotorService} from "./motor.service";
 import {ApiService} from "./api.service";
 import {RosService} from "./ros-service/ros.service";
-import {BehaviorSubject, Observable, Subject} from "rxjs";
+import {BehaviorSubject, Observable, Subject, of, throwError} from "rxjs";
 import {MotorDTO} from "../types/motor-dto";
 import {MotorSettings} from "../types/motor-settings.class";
 import {MotorSettingsMessage} from "../ros-types/msg/motor-settings-message";
@@ -35,7 +35,11 @@ describe("MotorService", () => {
         const rosServiceSpy: jasmine.SpyObj<RosService> =
             createServiceSpy<RosService>(
                 "RosService",
-                ["applyMotorSettings", "applyJointTrajectory"],
+                [
+                    "applyMotorSettings",
+                    "applyJointTrajectory",
+                    "getJointPosition",
+                ],
                 {
                     motorSettingsReceiver$: new Subject(),
                     jointTrajectoryReceiver$: new Subject(),
@@ -429,5 +433,76 @@ describe("MotorService", () => {
                 ]),
             }),
         );
+    });
+});
+
+describe("MotorService.refreshPosition", () => {
+    let service: MotorService;
+    let rosService: jasmine.SpyObj<RosService>;
+
+    beforeEach(() => {
+        rosService = createServiceSpy<RosService>(
+            "RosService",
+            ["applyMotorSettings", "applyJointTrajectory", "getJointPosition"],
+            {
+                motorSettingsReceiver$: new Subject(),
+                jointTrajectoryReceiver$: new Subject(),
+                currentReceiver$: new Subject(),
+            },
+        );
+        const apiService = jasmine.createSpyObj("ApiService", [
+            "get",
+            "delete",
+            "put",
+            "post",
+        ]);
+        apiService.get.and.returnValue(new BehaviorSubject({motors: []}));
+        TestBed.configureTestingModule({
+            providers: [
+                MotorService,
+                {provide: RosService, useValue: rosService},
+                {provide: ApiService, useValue: apiService},
+            ],
+        });
+        service = TestBed.inject(MotorService);
+    });
+
+    it("publishes the position the servo reports", () => {
+        rosService.getJointPosition.and.returnValue(of(-4500));
+        const seen: number[] = [];
+        service
+            .getPositionObservable("head_pan")
+            .subscribe((value) => seen.push(value));
+
+        service.refreshPosition("head_pan");
+
+        expect(rosService.getJointPosition).toHaveBeenCalledWith("head_pan");
+        expect(seen).toEqual([0, -4500]);
+    });
+
+    it("keeps the last known position when the read fails", () => {
+        rosService.getJointPosition.and.returnValue(
+            throwError(() => new Error("service unavailable")),
+        );
+        const seen: number[] = [];
+        service
+            .getPositionObservable("head_pan")
+            .subscribe((value) => seen.push(value));
+
+        service.refreshPosition("head_pan");
+
+        expect(seen).toEqual([0]);
+    });
+
+    it("ignores a non-finite position instead of showing NaN", () => {
+        rosService.getJointPosition.and.returnValue(of(Number.NaN));
+        const seen: number[] = [];
+        service
+            .getPositionObservable("head_pan")
+            .subscribe((value) => seen.push(value));
+
+        service.refreshPosition("head_pan");
+
+        expect(seen).toEqual([0]);
     });
 });

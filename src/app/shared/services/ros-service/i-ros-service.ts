@@ -58,6 +58,7 @@ export interface IRosService {
     ) => Observable<GoalHandle<RunProgramFeedback, RunProgramResult>>;
 
     applyJointTrajectory: (jointTrajectory: JointTrajectoryMessage) => void;
+    getJointPosition: (jointName: string) => Observable<number>;
 
     setTimerPeriod: (period: number) => void;
 
