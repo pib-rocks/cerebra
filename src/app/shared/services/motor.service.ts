@@ -1,7 +1,7 @@
 import {Injectable} from "@angular/core";
 import {RosService} from "./ros-service/ros.service";
 import {ApiService} from "./api.service";
-import {BehaviorSubject, Observable, map} from "rxjs";
+import {BehaviorSubject, Observable, filter, map, take} from "rxjs";
 import {
     MotorSettings,
     fromMotorDTO,
@@ -211,6 +211,17 @@ export class MotorService {
      * (PR-2105). The motors node can read the servo, so ask it once per view.
      */
     refreshPosition(motorName: string): void {
+        this.readPosition(motorName, true);
+    }
+
+    /**
+     * One position read, retried once when the ROS connection comes up.
+     *
+     * The joint view is usually opened before rosbridge has finished connecting,
+     * and a view-level read then fails silently - which is exactly how the slider
+     * stayed at 0 (PR-2105). A failed read never resets a known position.
+     */
+    private readPosition(motorName: string, retryWhenConnected: boolean): void {
         this.rosService.getJointPosition(motorName).subscribe({
             next: (position: number) => {
                 if (!Number.isFinite(position)) {
@@ -222,8 +233,14 @@ export class MotorService {
                     position,
                 );
             },
-            // Keep the last known value: a failed read must not reset the slider.
-            error: () => undefined,
+            error: () => {
+                if (!retryWhenConnected) {
+                    return;
+                }
+                this.rosService.connectionStatus$
+                    .pipe(filter(Boolean), take(1))
+                    .subscribe(() => this.readPosition(motorName, false));
+            },
         });
     }
 
