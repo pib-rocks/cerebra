@@ -1053,6 +1053,162 @@ describe("RosService", () => {
         );
     });
 
+    describe("one-shot service observables complete", () => {
+        const expectCompletesAfterEmit = (
+            observableFactory: () => Observable<unknown>,
+            setupSpy: () => void,
+        ) => {
+            setupSpy();
+            let completed = false;
+            observableFactory().subscribe({
+                next: () => {},
+                error: () => {},
+                complete: () => (completed = true),
+            });
+            expect(completed).withContext("complete callback").toBeTrue();
+        };
+
+        it("checkTokenExists completes after emitting", () => {
+            expectCompletesAfterEmit(
+                () => rosService.checkTokenExists(),
+                () =>
+                    spyOn(
+                        rosService["existTokenService"],
+                        "callService",
+                    ).and.callFake((_r, success) =>
+                        success!({token_exists: true, token_active: true}),
+                    ),
+            );
+        });
+
+        it("encryptToken completes after emitting", () => {
+            expectCompletesAfterEmit(
+                () => rosService.encryptToken("t", "p"),
+                () =>
+                    spyOn(
+                        rosService["encryptTokenService"],
+                        "callService",
+                    ).and.callFake((_r, success) =>
+                        success!({successful: true}),
+                    ),
+            );
+        });
+
+        it("decryptToken completes after emitting", () => {
+            expectCompletesAfterEmit(
+                () => rosService.decryptToken("p"),
+                () =>
+                    spyOn(
+                        rosService["decryptTokenService"],
+                        "callService",
+                    ).and.callFake((_r, success) =>
+                        success!({successful: true}),
+                    ),
+            );
+        });
+
+        it("setVoiceAssistantState completes after emitting", () => {
+            expectCompletesAfterEmit(
+                () =>
+                    rosService.setVoiceAssistantState({
+                        turned_on: true,
+                        chat_id: "c",
+                    }),
+                () =>
+                    spyOn(
+                        rosService["setVoiceAssistantStateService"],
+                        "callService",
+                    ).and.callFake((_r, success) =>
+                        success!({successful: true}),
+                    ),
+            );
+        });
+
+        it("setSolidStateRelayState completes after emitting", () => {
+            expectCompletesAfterEmit(
+                () => rosService.setSolidStateRelayState({turned_on: true}),
+                () =>
+                    spyOn(
+                        rosService["setSolidStateRelayStateService"],
+                        "callService",
+                    ).and.callFake((_r, success) =>
+                        success!({successful: true}),
+                    ),
+            );
+        });
+
+        it("getJointPosition completes after emitting", () => {
+            expectCompletesAfterEmit(
+                () => rosService.getJointPosition("head_pan"),
+                () =>
+                    spyOn(
+                        rosService["getJointPositionService"],
+                        "callService",
+                    ).and.callFake((_r, success) =>
+                        success!({successful: true, position: 1, message: ""}),
+                    ),
+            );
+        });
+
+        it("applyJointTrajectory completes after emitting", () => {
+            expectCompletesAfterEmit(
+                () =>
+                    rosService.applyJointTrajectory(
+                        {} as JointTrajectoryMessage,
+                    ),
+                () =>
+                    spyOn(
+                        rosService["applyJointTrajectoryService"],
+                        "callService",
+                    ).and.callFake((_r, success) =>
+                        success!({successful: true}),
+                    ),
+            );
+        });
+
+        it("sendChatMessage completes after emitting", () => {
+            expectCompletesAfterEmit(
+                () => rosService.sendChatMessage(chatId, chatMessageContent),
+                () =>
+                    spyOn(
+                        rosService["sendChatMessageService"],
+                        "callService",
+                    ).and.callFake((_r, success) =>
+                        success!({successful: true}),
+                    ),
+            );
+        });
+
+        it("getChatIsListening completes after emitting", () => {
+            expectCompletesAfterEmit(
+                () => rosService.getChatIsListening(chatId),
+                () =>
+                    spyOn(
+                        rosService["getChatIsListeningService"],
+                        "callService",
+                    ).and.callFake((_r, success) =>
+                        success!({listening: true}),
+                    ),
+            );
+        });
+
+        it("applyMotorSettings completes after emitting", () => {
+            expectCompletesAfterEmit(
+                () => rosService.applyMotorSettings(motorSettingsMessage),
+                () =>
+                    spyOn(
+                        rosService["applyMotorSettingsService"],
+                        "callService",
+                    ).and.callFake((_r, success) =>
+                        success!({
+                            settings_applied: true,
+                            settings_persisted: true,
+                        }),
+                    ),
+            );
+        });
+    });
+
     describe("getJointPosition", () => {
         it("reports the position the node returns", () => {
             spyOn(
