@@ -95,6 +95,7 @@ export class ChatWindowDeepChatComponent
     private voiceStateSubscription?: Subscription;
     private voiceState: VoiceAssistantState = {turnedOn: false, chatId: ""};
     private readonly sendChatMessageSubscriptions = new Subscription();
+    private previousRouteChatId: string | undefined;
 
     readonly USER_ICON =
         "../../../../assets/voice-assistant-svgs/chat/user.svg";
@@ -133,6 +134,10 @@ export class ChatWindowDeepChatComponent
                 this.chatMessagesSubscription?.unsubscribe();
 
                 const chatId = params["chatUuid"];
+                if (chatId && chatId !== this.previousRouteChatId) {
+                    this.chatService.refreshChatMessages(chatId);
+                }
+                this.previousRouteChatId = chatId;
                 this.currentChatId = chatId;
                 this.lastStreamedMessageId = undefined;
                 this.pendingSignals = undefined;
@@ -242,7 +247,7 @@ export class ChatWindowDeepChatComponent
                 return Promise.resolve([]);
             }
             return firstValueFrom(
-                this.chatService.getMessagesByChatId(chatId),
+                this.chatService.getChatMessagesForHistory(chatId),
             ).then((msgs) =>
                 this.chatService.filterMessageUpdates(msgs).map(toDeepChat),
             );
@@ -385,6 +390,7 @@ export class ChatWindowDeepChatComponent
     }
 
     private adoptCreatedChat(chat: Chat): void {
+        this.chatService.refreshChatMessages(chat.chatId);
         this.currentChatId = chat.chatId;
         this.chat = chat;
         this.personalityName = this.voiceAssistantService.getPersonality(
