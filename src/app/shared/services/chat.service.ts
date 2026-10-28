@@ -294,7 +294,7 @@ export class ChatService implements SidebarService {
     /**
      * Same buffered list as {@link getChatMessagesObservable}, but the first
      * emission waits until the initial GET settles (may be an empty thread).
-     * Used by deep-chat `loadHistory` so repeated calls share one request.
+     * Used when driving deep-chat's `history` property so reads share one request.
      */
     getChatMessagesForHistory(chatId: string): Observable<ChatMessage[]> {
         return this.getChatMessagesObservable(chatId).pipe(

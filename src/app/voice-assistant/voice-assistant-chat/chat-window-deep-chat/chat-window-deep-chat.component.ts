@@ -10,7 +10,7 @@ import {
 } from "@angular/core";
 import {HttpErrorResponse} from "@angular/common/http";
 import {ActivatedRoute, Params, Router} from "@angular/router";
-import {firstValueFrom, Subscription, switchMap} from "rxjs";
+import {Subscription, switchMap} from "rxjs";
 import {ChatService} from "src/app/shared/services/chat.service";
 import {
     TokenService,
@@ -87,6 +87,7 @@ export class ChatWindowDeepChatComponent
     private submitClickMs: number | undefined;
 
     private routeParamsSubscription?: Subscription;
+    private chatHistorySubscription?: Subscription;
     private chatMessagesSubscription?: Subscription;
     private tokenStatusSubscription?: Subscription;
     private keyStoreStatusSubscription?: Subscription;
@@ -152,6 +153,7 @@ export class ChatWindowDeepChatComponent
                             )?.name;
                     }
                     this.applyNames();
+                    this.syncHistoryFromBuffer(undefined);
                     this.refreshComposer();
                     return;
                 }
@@ -166,6 +168,7 @@ export class ChatWindowDeepChatComponent
 
                 this.applyNames();
                 this.subscribeToChatMessages(chatId);
+                this.syncHistoryFromBuffer(chatId);
                 this.refreshComposer();
             },
         );
@@ -176,8 +179,8 @@ export class ChatWindowDeepChatComponent
         if (!el) return;
 
         this.applyStyles(el);
+        this.syncHistoryFromBuffer(this.currentChatId, el);
         this.wireConnect(el);
-        this.wireLoadHistory(el);
         this.wireValidateInput(el);
         this.wireTokenStatus(el);
         this.wireKeyStoreStatus(el);
@@ -192,6 +195,7 @@ export class ChatWindowDeepChatComponent
 
     ngOnDestroy(): void {
         this.routeParamsSubscription?.unsubscribe();
+        this.chatHistorySubscription?.unsubscribe();
         this.chatMessagesSubscription?.unsubscribe();
         this.tokenStatusSubscription?.unsubscribe();
         this.keyStoreStatusSubscription?.unsubscribe();
@@ -240,18 +244,49 @@ export class ChatWindowDeepChatComponent
         };
     }
 
-    private wireLoadHistory(el: any): void {
-        el.loadHistory = () => {
-            const chatId = this.currentChatId;
-            if (!chatId) {
-                return Promise.resolve([]);
+    /**
+     * Pushes buffered REST history into deep-chat's `history` property
+     * ({@link MessageContent}[]) instead of wiring `loadHistory`.
+     */
+    private syncHistoryFromBuffer(chatId: string | undefined, el?: any): void {
+        const target = el ?? this.deepChatRef?.nativeElement;
+        if (!target) {
+            return;
+        }
+
+        this.chatHistorySubscription?.unsubscribe();
+
+        if (!chatId) {
+            target.history = [];
+            return;
+        }
+
+        this.chatHistorySubscription = this.chatService
+            .getChatMessagesForHistory(chatId)
+            .subscribe((msgs) => {
+                const history = this.chatService
+                    .filterMessageUpdates(msgs)
+                    .map(toDeepChat);
+                this.applyHistoryProperty(target, history);
+            });
+    }
+
+    private applyHistoryProperty(
+        el: any,
+        history: ReturnType<typeof toDeepChat>[],
+    ): void {
+        const rendered = el._hasBeenRendered === true;
+        if (rendered && typeof el.clearMessages === "function") {
+            el.clearMessages(true);
+        }
+        el.history = history;
+        if (rendered) {
+            for (const message of history) {
+                if (typeof el.addMessage === "function") {
+                    el.addMessage(message);
+                }
             }
-            return firstValueFrom(
-                this.chatService.getChatMessagesForHistory(chatId),
-            ).then((msgs) =>
-                this.chatService.filterMessageUpdates(msgs).map(toDeepChat),
-            );
-        };
+        }
     }
 
     /** A chat that could not be created has no bubble of its own; say it in the chat. */
@@ -398,6 +433,7 @@ export class ChatWindowDeepChatComponent
         )?.name;
         this.applyNames();
         this.subscribeToChatMessages(chat.chatId);
+        this.syncHistoryFromBuffer(chat.chatId);
         const parent = this.route.parent;
         if (parent) {
             void this.router.navigate([chat.chatId], {relativeTo: parent});
