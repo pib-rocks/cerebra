@@ -15,7 +15,14 @@ export function serviceErrorText(error: unknown): string {
     if (error == null) {
         return "Token service error";
     }
-    return String(error);
+    if (typeof error === "number" || typeof error === "boolean") {
+        return `${error}`;
+    }
+    try {
+        return JSON.stringify(error);
+    } catch {
+        return "Unknown service error";
+    }
 }
 
 function replaySubject$<T>(): ReplaySubject<T> {
@@ -56,7 +63,9 @@ export function callRosServiceReplay$<Req extends object, Res, T>(
                 subject.complete();
             } catch (error) {
                 subject.error(
-                    error instanceof Error ? error : new Error(String(error)),
+                    error instanceof Error
+                        ? error
+                        : new Error(serviceErrorText(error)),
                 );
             }
         },

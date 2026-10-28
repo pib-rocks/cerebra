@@ -1,6 +1,5 @@
 import * as ROSLIB from "roslib";
-import {Subject} from "rxjs";
-import {BehaviorSubject} from "rxjs";
+import {BehaviorSubject, Subject} from "rxjs";
 import {DetectionArray} from "../../ros-types/msg/detection-array";
 import {rosDataTypes} from "../../ros-types/path/ros-datatypes.enum";
 import {ModelStatusArray} from "../../ros-types/msg/model-status";
@@ -75,7 +74,7 @@ export function syncDetectionTopics(
 
     const modelIds = [...currentTopicNames]
         .map((topicName) => modelIdFromTopic(topicName))
-        .sort();
+        .sort((left, right) => left.localeCompare(right));
     if (
         modelIds.join("\0") !== host.detectionModelsReceiver$.value.join("\0")
     ) {
