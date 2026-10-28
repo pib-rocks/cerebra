@@ -71,8 +71,7 @@
                                 class="badge">
                                 {{ formatMeasure(summary.diskSpace.free) }} / {{
                                 formatMeasure(summary.diskSpace.total) }} ({{
-                                formatOneDecimal(summary.diskSpace.percentUsed)
-                                }}%)
+                                formatFreeShare(summary.diskSpace) }}% free)
                             </span>
                         </td>
                         <td>

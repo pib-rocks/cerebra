@@ -56,3 +56,6 @@ Thumbs.db
 .env
 *.env
 !*.env.example
+
+# Karma sandbox HOME (test runs must point HOME outside the repo)
+.karma-home/

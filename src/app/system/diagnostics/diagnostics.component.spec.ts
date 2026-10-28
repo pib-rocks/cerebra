@@ -41,6 +41,7 @@ describe("DiagnosticsComponent", () => {
                     used: "20.0 GB",
                     free: "44.0 GB",
                     percentUsed: 31.2,
+                    percentFree: 23.2,
                 },
                 diskStatus: "ok",
                 containersStatus: "ok",
@@ -150,7 +151,10 @@ describe("DiagnosticsComponent", () => {
         expect(headers).not.toContain("Disk Space");
     });
 
-    it("should format disk space as free / total (percentUsed%)", () => {
+    it("should show the free share for the Free disk space column", () => {
+        // The column is headed "Free disk space", so the percentage has to be the free
+        // share the backend computed from the same value as the free bytes (23.2),
+        // not 100 - 31.2 = 68.8, which counts the reserved blocks as used.
         const compiled = fixture.nativeElement as HTMLElement;
         const cells = compiled.querySelectorAll(
             "#table-system-summary tbody td",
@@ -158,8 +162,33 @@ describe("DiagnosticsComponent", () => {
         const diskCell = cells[3];
 
         expect(diskCell?.textContent?.replace(/\s+/g, " ").trim()).toContain(
-            "44.0 GB / 64.0 GB (31.2%)",
+            "44.0 GB / 64.0 GB (23.2% free)",
         );
+        expect(diskCell?.textContent).not.toContain("(31.2%");
+    });
+
+    it("should prefer the backend free share and fall back to 100 - percentUsed", () => {
+        const component = fixture.componentInstance as unknown as {
+            formatFreeShare: (disk: {
+                percentFree?: number;
+                percentUsed: number;
+            }) => string;
+        };
+
+        expect(
+            component.formatFreeShare({percentUsed: 76.8, percentFree: 23.2}),
+        ).toBe("23.2");
+        // Older backends send no percentFree.
+        expect(component.formatFreeShare({percentUsed: 73.4})).toBe("26.6");
+        expect(component.formatFreeShare({percentUsed: 0})).toBe("100.0");
+        expect(component.formatFreeShare({percentUsed: 100})).toBe("0.0");
+        expect(component.formatFreeShare({percentUsed: 102.5})).toBe("0.0");
+        expect(
+            component.formatFreeShare({
+                percentUsed: Number.NaN,
+                percentFree: Number.NaN,
+            }),
+        ).toBe("");
     });
 
     it("should show the CPU load in the first column instead of the overall status", () => {
@@ -371,8 +400,8 @@ describe("DiagnosticsComponent", () => {
         expect(cells[0]).toContain("60.0%");
         expect(cells[1]).toContain("50.0 °C");
         expect(cells[2]).toContain("3.0 GB / 8.0 GB (47.0%)");
-        // The disk column shows free / total, so the normalised "free" figure is the one to look for.
-        expect(cells[3]).toContain("20.0 GB / 64.0 GB (31.0%)");
+        // The disk column shows free / total and the free share: 100 - 31 used = 69 free.
+        expect(cells[3]).toContain("20.0 GB / 64.0 GB (69.0% free)");
     });
 
     it("should round a measurement to one decimal place", () => {
