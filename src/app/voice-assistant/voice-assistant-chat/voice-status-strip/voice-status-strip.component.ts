@@ -29,6 +29,12 @@ import {
     parseVoiceAssistantStatus,
     resolveVoiceAssistantChip,
 } from "src/app/shared/types/provider-registry";
+import {
+    PersonalityWarmth,
+    warmthCssClass,
+    warmthLabel,
+    warmthTooltip,
+} from "src/app/shared/types/personality-warmth";
 
 /**
  * Live state of the voice turn: microphone, phase, the provider of the open
@@ -80,6 +86,15 @@ export class VoiceStatusStripComponent {
     @Input() providerLoading = false;
 
     /**
+     * Cold/warm state of the open personality's Hermes agent (PR-2130).
+     *
+     * Shown in this row on purpose: it answers the same question as the chips
+     * beside it - how fast will the next turn be - and the page already owns
+     * the probe. Null means the page has no personality to report on.
+     */
+    @Input() warmth: PersonalityWarmth | null = null;
+
+    /**
      * Server-side voice-container health (node liveness and a resolvable key).
      *
      * Renderd in this row on purpose: the strip already answers "can the
@@ -106,6 +121,23 @@ export class VoiceStatusStripComponent {
         return chip.detail
             ? `${chip.label}: ${chip.detail}`
             : this.voiceAssistantSummary;
+    }
+
+    /** The warmth chip exists once a personality is open. */
+    get showWarmthChip(): boolean {
+        return this.warmth != null;
+    }
+
+    get warmthChipLabel(): string {
+        return warmthLabel(this.warmth);
+    }
+
+    get warmthChipClass(): string {
+        return warmthCssClass(this.warmth?.state ?? "unknown");
+    }
+
+    get warmthChipTooltip(): string {
+        return warmthTooltip(this.warmth);
     }
 
     get micLabel(): string {

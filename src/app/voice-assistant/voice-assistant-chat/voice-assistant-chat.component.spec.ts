@@ -540,6 +540,54 @@ describe("VoiceAssistantChatComponent", () => {
         }
     });
 
+    // PR-2130: opening a personality warms its Hermes agent. The GET reads the
+    // daemon's cache; only a cold answer triggers the POST, and the warm-up runs
+    // no model request, so it costs no tokens.
+    it("warms a cold personality when it is opened", () => {
+        const http = TestBed.inject(HttpTestingController);
+
+        const cold = http.expectOne(
+            "/api/voice-assistant/personality/1234/warm",
+        );
+        expect(cold.request.method).toBe("GET");
+        cold.flush({state: "cold", warm: false});
+
+        expect(component.personalityWarmth.state).toBe("warming");
+
+        const warm = http.expectOne(
+            "/api/voice-assistant/personality/1234/warm",
+        );
+        expect(warm.request.method).toBe("POST");
+        warm.flush({state: "warm", warm: true, elapsedMs: 1980});
+
+        expect(component.personalityWarmth.state).toBe("warm");
+        expect(component.personalityWarmth.elapsedMs).toBe(1980);
+    });
+
+    it("does not warm a personality that is already warm", () => {
+        const http = TestBed.inject(HttpTestingController);
+
+        const state = http.expectOne(
+            "/api/voice-assistant/personality/1234/warm",
+        );
+        state.flush({state: "warm", warm: true});
+
+        expect(component.personalityWarmth.state).toBe("warm");
+        http.expectNone((request) => request.method === "POST");
+    });
+
+    it("keeps an unreadable warm state unknown instead of claiming cold", () => {
+        const http = TestBed.inject(HttpTestingController);
+
+        const state = http.expectOne(
+            "/api/voice-assistant/personality/1234/warm",
+        );
+        state.flush("boom", {status: 500, statusText: "Server Error"});
+
+        expect(component.personalityWarmth.state).toBe("unknown");
+        http.expectNone((request) => request.method === "POST");
+    });
+
     describe("voice assistant state and activePersonalityId", () => {
         let getChatByIdSpy: jasmine.Spy;
         let rosService: RosService;
