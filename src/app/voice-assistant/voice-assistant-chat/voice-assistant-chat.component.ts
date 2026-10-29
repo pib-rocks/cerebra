@@ -344,10 +344,12 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
 
     /**
      * faster-whisper and Supertone do not use the key store.
-     * Degraded mode leaves this control on.
+     * Degraded mode leaves this control on. A persisted cloud credential in
+     * the key store / catalogue also enables voice interaction when the
+     * rosbridge token probe is slow or unavailable.
      */
     localVoiceEnabled(): boolean {
-        return this.smartConnectActive;
+        return this.smartConnectActive || this.cloudTokenStored;
     }
 
     /**

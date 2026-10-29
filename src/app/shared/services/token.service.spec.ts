@@ -1,4 +1,4 @@
-import {TestBed} from "@angular/core/testing";
+import {TestBed, fakeAsync, tick} from "@angular/core/testing";
 
 import {
     TokenService,
@@ -172,6 +172,31 @@ describe("TokenServiceService", () => {
         connectionStatusSubject.next(false);
         expect(latest).toEqual(UNKNOWN_TOKEN_STATUS);
     });
+
+    it("transitions from loading to unavailable when /get_token_exists times out", fakeAsync(() => {
+        const neverResponds = new Subject<{
+            token_exists: boolean;
+            token_active: boolean;
+        }>();
+        rosService.checkTokenExists.and.returnValue(
+            neverResponds.asObservable(),
+        );
+
+        let latest = UNKNOWN_TOKEN_STATUS;
+        tokenService.tokenStatus$.subscribe((status) => {
+            latest = status;
+        });
+
+        tokenService.checkTokenExists();
+        expect(latest.service).toBe("loading");
+
+        tick(TokenService.PROBE_TIMEOUT_MS + 50);
+
+        expect(latest.service).toBe("unavailable");
+        expect(latest.tokenExists).toBeNull();
+        expect(latest.tokenActive).toBeNull();
+        expect(latest.error).toBeTruthy();
+    }));
 });
 
 describe("normalizeTokenStatus", () => {

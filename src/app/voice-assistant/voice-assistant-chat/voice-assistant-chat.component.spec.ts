@@ -316,6 +316,43 @@ describe("VoiceAssistantChatComponent", () => {
         expect(component.cloudTokenStored).toBeFalse();
     });
 
+    it("enables the voice interaction toggle when a cloud credential is stored even if the rosbridge token probe is unavailable", () => {
+        const voiceAssistant = TestBed.inject(VoiceAssistantService);
+        const flags = {
+            tools: true,
+            images: true,
+            live: false,
+            stt: false,
+            tts: false,
+        };
+        const cloud = new AssistantModel(
+            1,
+            CLOUD_TOKEN_API_NAME,
+            "pib.Cloud",
+            true,
+            "https://cloud.example/v1",
+            flags,
+            "provider-1",
+            true,
+        );
+        voiceAssistant.assistantModelsSubject.next([cloud]);
+        tokenStatusSubject.next({
+            tokenExists: null,
+            tokenActive: null,
+            service: "unavailable",
+            error: "Timeout has occurred",
+        });
+        fixture.detectChanges();
+
+        const button = fixture.nativeElement.querySelector(
+            "#sidebar-right-toggle-voice-assistant",
+        ) as HTMLButtonElement;
+        expect(component.smartConnectActive).toBeFalse();
+        expect(component.cloudTokenStored).toBeTrue();
+        expect(component.localVoiceEnabled()).toBeTrue();
+        expect(button.disabled).toBeFalse();
+    });
+
     it("treats a persisted cloud credential as stored for chat refusal", () => {
         const voiceAssistant = TestBed.inject(VoiceAssistantService);
         const flags = {

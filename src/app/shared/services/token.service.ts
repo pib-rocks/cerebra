@@ -1,5 +1,5 @@
 import {Injectable} from "@angular/core";
-import {BehaviorSubject} from "rxjs";
+import {BehaviorSubject, timeout} from "rxjs";
 import {TokenProbeState} from "../types/provider-registry";
 import {RosService} from "./ros-service/ros.service";
 
@@ -57,6 +57,7 @@ export function normalizeTokenStatus(status: {
     providedIn: "root",
 })
 export class TokenService {
+    static readonly PROBE_TIMEOUT_MS = 5000;
     private readonly tokenStatusSubject = new BehaviorSubject<TokenStatus>(
         UNKNOWN_TOKEN_STATUS,
     );
@@ -82,30 +83,33 @@ export class TokenService {
             service: "loading",
             error: null,
         });
-        this.rosService.checkTokenExists().subscribe({
-            next: (response) => {
-                if (generation !== this.probeGeneration) {
-                    return;
-                }
-                this.tokenStatusSubject.next({
-                    tokenExists: response.token_exists,
-                    tokenActive: response.token_active,
-                    service: "available",
-                    error: null,
-                });
-            },
-            error: (error: unknown) => {
-                if (generation !== this.probeGeneration) {
-                    return;
-                }
-                this.tokenStatusSubject.next({
-                    tokenExists: null,
-                    tokenActive: null,
-                    service: "unavailable",
-                    error: serviceErrorText(error),
-                });
-            },
-        });
+        this.rosService
+            .checkTokenExists()
+            .pipe(timeout({first: TokenService.PROBE_TIMEOUT_MS}))
+            .subscribe({
+                next: (response) => {
+                    if (generation !== this.probeGeneration) {
+                        return;
+                    }
+                    this.tokenStatusSubject.next({
+                        tokenExists: response.token_exists,
+                        tokenActive: response.token_active,
+                        service: "available",
+                        error: null,
+                    });
+                },
+                error: (error: unknown) => {
+                    if (generation !== this.probeGeneration) {
+                        return;
+                    }
+                    this.tokenStatusSubject.next({
+                        tokenExists: null,
+                        tokenActive: null,
+                        service: "unavailable",
+                        error: serviceErrorText(error),
+                    });
+                },
+            });
     }
 }
 
