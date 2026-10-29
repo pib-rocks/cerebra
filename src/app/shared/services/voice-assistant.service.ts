@@ -26,6 +26,10 @@ import {
 } from "src/app/shared/types/voice-status";
 import {AssistantModel} from "../types/assistantModel";
 import {
+    PersonalityWarmth,
+    parsePersonalityWarmth,
+} from "../types/personality-warmth";
+import {
     CatalogueProviderRecord,
     flattenProviderCatalogue,
     providerIdOf,
@@ -54,6 +58,31 @@ export class VoiceAssistantService implements SidebarService {
     /** Server-side voice-container health (node liveness + resolvable key). */
     voiceAssistantHealth(): Observable<unknown> {
         return this.apiService.get(UrlConstants.VOICE_ASSISTANT_HEALTH);
+    }
+
+    /**
+     * Whether the Hermes daemon already holds this personality's warm agent
+     * (PR-2130). Reads the daemon's agent cache; it never warms anything.
+     */
+    personalityWarmth(personalityId: string): Observable<PersonalityWarmth> {
+        return this.apiService
+            .get(this.warmthUrl(personalityId))
+            .pipe(map((raw: unknown) => parsePersonalityWarmth(raw)));
+    }
+
+    /**
+     * Warm one personality (PR-2130). The daemon builds the cached agent and
+     * runs no model request, so this costs no tokens. Answers the state after
+     * the attempt.
+     */
+    warmPersonality(personalityId: string): Observable<PersonalityWarmth> {
+        return this.apiService
+            .post(this.warmthUrl(personalityId), {})
+            .pipe(map((raw: unknown) => parsePersonalityWarmth(raw)));
+    }
+
+    private warmthUrl(personalityId: string): string {
+        return `${UrlConstants.PERSONALITY}/${personalityId}/warm`;
     }
 
     constructor(

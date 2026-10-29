@@ -45,6 +45,14 @@
         data-test="DEEP_CHAT_VOICE_ASSISTANT_CHIP">
         {{ voiceAssistantSummary }}
     </span>
+    } @if (showWarmthChip) {
+    <span
+        class="voice-status-chip voice-status-warmth"
+        [ngClass]="warmthChipClass"
+        [title]="warmthChipTooltip"
+        data-test="VOICE_STATUS_WARMTH">
+        Personality: {{ warmthChipLabel }}
+    </span>
     } @if (status.source) {
     <span
         class="voice-status-chip"
