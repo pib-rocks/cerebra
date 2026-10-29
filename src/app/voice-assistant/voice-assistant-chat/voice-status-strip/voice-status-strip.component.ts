@@ -1,10 +1,15 @@
 import {
     ChangeDetectionStrategy,
+    ChangeDetectorRef,
     Component,
     EventEmitter,
     Input,
     Output,
+    inject,
 } from "@angular/core";
+import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
+import {catchError, of} from "rxjs";
+import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
 import {NgClass} from "@angular/common";
 import {
     EMPTY_VOICE_STATUS,
@@ -18,6 +23,12 @@ import {
     healthLabel,
     healthTooltip,
 } from "src/app/shared/types/provider-health";
+import {
+    DeepChatStatusChip,
+    deepChatChipStateLabel,
+    parseVoiceAssistantStatus,
+    resolveVoiceAssistantChip,
+} from "src/app/shared/types/provider-registry";
 
 /**
  * Live state of the voice turn: microphone, phase, the provider of the open
@@ -32,6 +43,27 @@ import {
     imports: [NgClass],
 })
 export class VoiceStatusStripComponent {
+    private readonly voiceAssistant = inject(VoiceAssistantService);
+    private readonly changeDetector = inject(ChangeDetectorRef);
+
+    constructor() {
+        // The probe runs server-side (chat nodes plus a resolvable provider key),
+        // so the strip renders the verdict instead of guessing. An unreadable
+        // probe stays neutral: unmeasured is not the same as broken.
+        this.voiceAssistant
+            .voiceAssistantHealth()
+            .pipe(
+                catchError(() => of(null)),
+                takeUntilDestroyed(),
+            )
+            .subscribe((body: unknown) => {
+                this.voiceAssistantChip = resolveVoiceAssistantChip(
+                    parseVoiceAssistantStatus(body),
+                );
+                this.changeDetector.markForCheck();
+            });
+    }
+
     @Input() status: VoiceStatus = EMPTY_VOICE_STATUS;
 
     /**
@@ -47,8 +79,34 @@ export class VoiceStatusStripComponent {
     /** True only while a probe is in flight. */
     @Input() providerLoading = false;
 
+    /**
+     * Server-side voice-container health (node liveness and a resolvable key).
+     *
+     * Renderd in this row on purpose: the strip already answers "can the
+     * assistant talk right now", so the container verdict belongs next to the
+     * microphone and phase chips instead of costing a row of its own.
+     */
+    voiceAssistantChip: DeepChatStatusChip | null = null;
+
     /** Asks the chat component to probe again (D4: manual refresh). */
     @Output() providerRefresh = new EventEmitter<void>();
+
+    get voiceAssistantSummary(): string {
+        const chip = this.voiceAssistantChip;
+        return chip
+            ? `${chip.label} · ${deepChatChipStateLabel(chip.tone)}`
+            : "";
+    }
+
+    get voiceAssistantTooltipText(): string {
+        const chip = this.voiceAssistantChip;
+        if (chip == null) {
+            return "";
+        }
+        return chip.detail
+            ? `${chip.label}: ${chip.detail}`
+            : this.voiceAssistantSummary;
+    }
 
     get micLabel(): string {
         return MIC_LABELS[this.status.mic];

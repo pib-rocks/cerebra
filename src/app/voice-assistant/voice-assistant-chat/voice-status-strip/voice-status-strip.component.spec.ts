@@ -1,13 +1,16 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
+import {BehaviorSubject} from "rxjs";
 import {VoiceStatusStripComponent} from "./voice-status-strip.component";
 import {
     EMPTY_VOICE_STATUS,
     VoiceStatus,
 } from "src/app/shared/types/voice-status";
 import {ProviderHealth} from "src/app/shared/types/provider-health";
+import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
 
 describe("VoiceStatusStripComponent", () => {
     let fixture: ComponentFixture<VoiceStatusStripComponent>;
+    let healthSubject: BehaviorSubject<unknown>;
 
     function setStatus(status: VoiceStatus) {
         fixture.componentRef.setInput("status", status);
@@ -22,8 +25,15 @@ describe("VoiceStatusStripComponent", () => {
     }
 
     beforeEach(async () => {
+        healthSubject = new BehaviorSubject<unknown>(null);
         await TestBed.configureTestingModule({
             imports: [VoiceStatusStripComponent],
+            providers: [
+                {
+                    provide: VoiceAssistantService,
+                    useValue: {voiceAssistantHealth: () => healthSubject},
+                },
+            ],
         }).compileComponents();
         fixture = TestBed.createComponent(VoiceStatusStripComponent);
         fixture.detectChanges();
@@ -184,5 +194,64 @@ describe("VoiceStatusStripComponent", () => {
         fixture.componentInstance.requestProviderRefresh();
 
         expect(emitted.length).toBe(0);
+    });
+
+    function emitVoiceAssistantStatus(status: unknown) {
+        healthSubject.next(status);
+        fixture.detectChanges();
+    }
+
+    function voiceAssistantChipElement(): HTMLElement | null {
+        return fixture.nativeElement.querySelector(
+            '[data-test="DEEP_CHAT_VOICE_ASSISTANT_CHIP"]',
+        );
+    }
+
+    it("renders the voice container verdict inside the same row", () => {
+        emitVoiceAssistantStatus({state: "ok"});
+
+        const strip = fixture.nativeElement.querySelector(
+            '[data-test="VOICE_STATUS_STRIP"]',
+        ) as HTMLElement;
+        const chip = voiceAssistantChipElement();
+
+        expect(chip).not.toBeNull();
+        // Same row means same parent as the microphone chip: no extra line.
+        expect(chip!.parentElement).toBe(strip);
+        expect(chip!.textContent).toContain("Voice assistant · ok");
+        expect(chip!.classList.contains("voice-status-chip-ok")).toBe(true);
+    });
+
+    it("marks a failing node or key as attention and keeps the reason as tooltip", () => {
+        emitVoiceAssistantStatus({
+            state: "attention",
+            reason: "No keys are available for provider gemini.",
+        });
+
+        const chip = voiceAssistantChipElement()!;
+        expect(chip.textContent).toContain("Voice assistant · attention");
+        expect(chip.classList.contains("voice-status-chip-attention")).toBe(
+            true,
+        );
+        expect(chip.getAttribute("title")).toContain(
+            "No keys are available for provider gemini.",
+        );
+    });
+
+    it("keeps an unmeasured verdict neutral, not red", () => {
+        emitVoiceAssistantStatus({state: "unknown"});
+
+        const chip = voiceAssistantChipElement()!;
+        expect(chip.classList.contains("voice-status-chip-neutral")).toBe(true);
+        expect(chip.classList.contains("voice-status-chip-attention")).toBe(
+            false,
+        );
+        expect(chip.classList.contains("voice-status-chip-ok")).toBe(false);
+    });
+
+    it("still shows a chip before the verdict arrives, in the neutral tone", () => {
+        // The initial read is async; the chip is present and neutral until it lands.
+        const chip = voiceAssistantChipElement()!;
+        expect(chip.classList.contains("voice-status-chip-neutral")).toBe(true);
     });
 });

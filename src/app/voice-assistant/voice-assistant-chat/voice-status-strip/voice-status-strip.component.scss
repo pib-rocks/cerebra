@@ -26,6 +26,30 @@
     color: #7e889c;
 }
 
+// Health of the voice container itself (PR-2123). Green means the nodes answer
+// and a provider key resolves; amber means one of them does not; the neutral
+// class is used when no verdict could be obtained at all - never red, because a
+// robot without a voice container is not a fault.
+.voice-status-assistant {
+    display: inline-flex;
+    align-items: center;
+}
+
+.voice-status-chip-ok {
+    border-color: #2fbf71;
+    color: #9ff0c0;
+}
+
+.voice-status-chip-attention {
+    border-color: #f0a93b;
+    color: #ffd79b;
+}
+
+.voice-status-chip-neutral {
+    border-color: #464f63;
+    color: #7e889c;
+}
+
 .voice-status-model {
     opacity: 0.75;
 }

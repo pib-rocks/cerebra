@@ -49,6 +49,92 @@ export const DEEP_CHAT_KEY_STORE_LOCKED_PLACEHOLDER =
 
 export {CHAT_MESSAGE_MAX_LENGTH, chatMessageLengthRefusal} from "./chat-limits";
 
+/** Server-side voice container health from GET /api/system/voice-assistant-health. */
+export type VoiceAssistantStatusState = "ok" | "attention" | "unknown";
+
+export interface VoiceAssistantStatus {
+    state: VoiceAssistantStatusState;
+    /** Human-readable detail when the server names a fault or cannot check. */
+    reason?: string | null;
+}
+
+export type DeepChatChipTone = "ok" | "attention" | "neutral";
+
+export interface DeepChatStatusChip {
+    id: "voice-assistant";
+    label: string;
+    detail: string | null;
+    tone: DeepChatChipTone;
+}
+
+export const VOICE_ASSISTANT_CHIP_LABEL = "Voice assistant";
+
+export function parseVoiceAssistantStatus(raw: unknown): VoiceAssistantStatus {
+    if (raw == null || typeof raw !== "object") {
+        return {state: "unknown"};
+    }
+    const source = raw as Record<string, unknown>;
+    const state = source["state"];
+    if (state !== "ok" && state !== "attention" && state !== "unknown") {
+        return {state: "unknown"};
+    }
+    const reason = source["reason"];
+    return {
+        state,
+        reason:
+            typeof reason === "string" && reason.trim() !== ""
+                ? reason.trim()
+                : null,
+    };
+}
+
+/**
+ * One status chip for the voice assistant row. Absent input means no chip yet
+ * so older callers stay unchanged.
+ */
+export function resolveVoiceAssistantChip(
+    status: VoiceAssistantStatus | null | undefined,
+): DeepChatStatusChip | null {
+    if (status === undefined) {
+        return null;
+    }
+    const resolved = status ?? {state: "unknown" as const};
+    const tone: DeepChatChipTone =
+        resolved.state === "ok"
+            ? "ok"
+            : resolved.state === "attention"
+            ? "attention"
+            : "neutral";
+    const detail =
+        resolved.state === "ok" ? null : resolved.reason?.trim() || null;
+    return {
+        id: "voice-assistant",
+        label: VOICE_ASSISTANT_CHIP_LABEL,
+        detail,
+        tone,
+    };
+}
+
+export function deepChatChipCssClass(tone: DeepChatChipTone): string {
+    if (tone === "ok") {
+        return "deep-chat-status-chip-ok";
+    }
+    if (tone === "attention") {
+        return "deep-chat-status-chip-attention";
+    }
+    return "deep-chat-status-chip-neutral";
+}
+
+export function deepChatChipStateLabel(tone: DeepChatChipTone): string {
+    if (tone === "ok") {
+        return "ok";
+    }
+    if (tone === "attention") {
+        return "attention";
+    }
+    return "unknown";
+}
+
 export interface DeepChatComposerInput {
     smartConnectActive: boolean;
     keyStorageEncryptionOff: boolean;

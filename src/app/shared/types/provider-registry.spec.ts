@@ -8,6 +8,9 @@ import {
     credentialState,
     credentialNotice,
     resolveDeepChatComposer,
+    parseVoiceAssistantStatus,
+    resolveVoiceAssistantChip,
+    VOICE_ASSISTANT_CHIP_LABEL,
     chatTransportUnavailableText,
     capabilitiesFrom,
     isCapabilityControlDisabled,
@@ -804,6 +807,25 @@ describe("resolveDeepChatComposer", () => {
     it("exposes the chat line character limit for the deep-chat composer", () => {
         expect(base({}).characterLimit).toBe(100_000);
         expect(CHAT_MESSAGE_MAX_LENGTH).toBe(100_000);
+    });
+});
+
+describe("voice assistant status chip (PR-2123)", () => {
+    it("parses invalid payloads as unknown", () => {
+        expect(parseVoiceAssistantStatus(null).state).toBe("unknown");
+        expect(parseVoiceAssistantStatus({state: "broken"}).state).toBe(
+            "unknown",
+        );
+    });
+
+    it("leaves the chip out when status input is undefined", () => {
+        expect(resolveVoiceAssistantChip(undefined)).toBeNull();
+    });
+
+    it("maps null status to a neutral unknown chip", () => {
+        const chip = resolveVoiceAssistantChip(null);
+        expect(chip?.tone).toBe("neutral");
+        expect(chip?.label).toBe(VOICE_ASSISTANT_CHIP_LABEL);
     });
 });
 

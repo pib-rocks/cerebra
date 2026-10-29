@@ -57,10 +57,12 @@ describe("ChatWindowDeepChatComponent", () => {
         service?: string;
         error?: string | null;
     }>;
+    let voiceAssistantSpy: jasmine.SpyObj<VoiceAssistantService>;
     let keyStoreStatusSubject: BehaviorSubject<{
         encryptKeyStorage: boolean;
         credentialRefs: string[];
         mode?: string;
+        voiceAssistant?: {state: string; reason?: string};
     }>;
     let mockDeepChat: {
         addMessage: jasmine.Spy;
@@ -133,14 +135,15 @@ describe("ChatWindowDeepChatComponent", () => {
         const assistantModelsSubject = new BehaviorSubject<AssistantModel[]>(
             [],
         );
-        const voiceAssistantSpy = createServiceSpy<VoiceAssistantService>(
+        voiceAssistantSpy = createServiceSpy<VoiceAssistantService>(
             "VoiceAssistantService",
-            ["getPersonality"],
+            ["getPersonality", "voiceAssistantHealth"],
             {
                 voiceAssistantStateObservable: voiceStateSubject.asObservable(),
                 assistantModelsSubject,
             },
         );
+        voiceAssistantSpy.voiceAssistantHealth.and.returnValue(of(null));
 
         await TestBed.configureTestingModule({
             imports: [
@@ -1478,6 +1481,7 @@ describe("ChatWindowDeepChatComponent fresh chat without id", () => {
         encryptKeyStorage: boolean;
         credentialRefs: string[];
         mode?: string;
+        voiceAssistant?: {state: string; reason?: string};
     }>;
     let mockDeepChat: {
         addMessage: jasmine.Spy;
@@ -1546,12 +1550,13 @@ describe("ChatWindowDeepChatComponent fresh chat without id", () => {
         );
         const voiceAssistantSpy = createServiceSpy<VoiceAssistantService>(
             "VoiceAssistantService",
-            ["getPersonality"],
+            ["getPersonality", "voiceAssistantHealth"],
             {
                 voiceAssistantStateObservable: voiceStateSubject.asObservable(),
                 assistantModelsSubject,
             },
         );
+        voiceAssistantSpy.voiceAssistantHealth.and.returnValue(of(null));
         voiceAssistantSpy.getPersonality.and.returnValue(
             new VoiceAssistant(
                 personalityUuid,

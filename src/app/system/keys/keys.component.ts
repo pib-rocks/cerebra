@@ -1,3 +1,4 @@
+import {NgClass} from "@angular/common";
 import {
     ChangeDetectionStrategy,
     ChangeDetectorRef,
@@ -7,10 +8,18 @@ import {
     inject,
 } from "@angular/core";
 import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
+import {ProviderHealthService} from "src/app/shared/services/provider-health.service";
+import {
+    ProviderHealth,
+    healthCssClass,
+    healthTooltip,
+    reasonLabel,
+} from "src/app/shared/types/provider-health";
 import {AssistantModel} from "src/app/shared/types/assistantModel";
 import {
     ProviderKeyAccount,
     TokenProbeState,
+    isOfflineModel,
     persistedCloudCredentialPresent,
     providerKeyAccounts,
     usesCloudToken,
@@ -34,6 +43,7 @@ import {
     templateUrl: "./keys.component.html",
     styleUrls: ["./keys.component.scss"],
     changeDetection: ChangeDetectionStrategy.Eager,
+    imports: [NgClass],
 })
 export class KeysComponent implements OnInit {
     private readonly destroyRef = inject(DestroyRef);
@@ -59,6 +69,13 @@ export class KeysComponent implements OnInit {
     error: string | null = null;
     notice: string | null = null;
     busy = false;
+    cloudHealth: ProviderHealth | null = null;
+    cloudHealthLoading = false;
+    cloudModelId: number | null = null;
+    private probedCloudModelId: number | null = null;
+    providerHealth: Record<number, ProviderHealth> = {};
+    providerHealthLoading: Record<number, boolean> = {};
+    private readonly probedProviderIds = new Set<number>();
 
     constructor(
         private readonly keyStore: KeyStoreService,
@@ -66,6 +83,7 @@ export class KeysComponent implements OnInit {
         private readonly tokenService: TokenService,
         private readonly voiceAssistantService: VoiceAssistantService,
         private readonly rosService: RosService,
+        private readonly providerHealthService: ProviderHealthService,
     ) {}
 
     ngOnInit(): void {
@@ -83,10 +101,25 @@ export class KeysComponent implements OnInit {
         this.voiceAssistantService.assistantModelsSubject
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe((models) => {
+                const cloudModel = models.find(
+                    (model) => usesCloudToken(model) && !model.retired,
+                );
+                this.cloudModelId = cloudModel?.id ?? null;
+                if (
+                    this.cloudModelId != null &&
+                    this.probedCloudModelId !== this.cloudModelId
+                ) {
+                    this.probedCloudModelId = this.cloudModelId;
+                    this.probeCloudHealth();
+                }
                 this.providers = models.filter(
-                    (model) => !usesCloudToken(model) && !model.retired,
+                    (model) =>
+                        !usesCloudToken(model) &&
+                        !isOfflineModel(model) &&
+                        !model.retired,
                 );
                 this.keyProviders = providerKeyAccounts(this.providers);
+                this.probeNewProviders();
                 this.refreshCloudPresence();
                 this.changeDetector.markForCheck();
             });
@@ -156,6 +189,116 @@ export class KeysComponent implements OnInit {
         };
     }
 
+    cloudHealthClass(): string {
+        return healthCssClass(this.cloudHealth?.state ?? "unknown");
+    }
+
+    cloudHealthText(): string {
+        return this.formatHealthText(this.cloudHealth, this.cloudHealthLoading);
+    }
+
+    cloudHealthTooltip(): string {
+        return healthTooltip(this.cloudHealth, "pib.Cloud");
+    }
+
+    probeCloudHealth(): void {
+        if (this.cloudModelId == null) {
+            return;
+        }
+        this.cloudHealthLoading = true;
+        this.changeDetector.markForCheck();
+        this.providerHealthService
+            .check(this.cloudModelId)
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe((health) => {
+                this.cloudHealth = health;
+                this.cloudHealthLoading = false;
+                this.changeDetector.markForCheck();
+            });
+    }
+
+    providerHealthClass(account: ProviderKeyAccount): string {
+        return healthCssClass(
+            this.providerHealth[account.id]?.state ?? "unknown",
+        );
+    }
+
+    providerHealthText(account: ProviderKeyAccount): string {
+        return this.formatHealthText(
+            this.providerHealth[account.id],
+            Boolean(this.providerHealthLoading[account.id]),
+        );
+    }
+
+    private formatHealthText(
+        h: ProviderHealth | null | undefined,
+        loading: boolean,
+    ): string {
+        if (loading) {
+            return "Checking key…";
+        }
+        if (!h) {
+            return "Not checked";
+        }
+        if (h.state === "healthy") {
+            const budgetSuffix =
+                h.budgetKnown && h.budgetRemaining != null
+                    ? ` · ${h.budgetRemaining.toFixed(2)} pib.Tokens left`
+                    : "";
+            return h.latencyMs != null
+                ? `Valid (${h.latencyMs} ms)${budgetSuffix}`
+                : `Valid (reachable)${budgetSuffix}`;
+        }
+        if (h.state === "unreachable") {
+            if (h.reason === "key_rejected" || h.reason === "token_invalid") {
+                return h.detail
+                    ? `Invalid key (${reasonLabel(h.reason)}): ${h.detail}`
+                    : `Invalid key (${reasonLabel(h.reason)})`;
+            }
+            return h.detail
+                ? `Unreachable (${reasonLabel(h.reason)}): ${h.detail}`
+                : `Unreachable (${reasonLabel(h.reason)})`;
+        }
+        return `Not checked (${reasonLabel(h.reason)})`;
+    }
+
+    providerHealthTooltip(account: ProviderKeyAccount): string {
+        return healthTooltip(this.providerHealth[account.id], account.name);
+    }
+
+    probeProviderHealth(account: ProviderKeyAccount): void {
+        const modelId = account.modelIds[0] ?? account.id;
+        this.providerHealthLoading = {
+            ...this.providerHealthLoading,
+            [account.id]: true,
+        };
+        this.changeDetector.markForCheck();
+        this.providerHealthService
+            .check(modelId)
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe((health) => {
+                this.providerHealth = {
+                    ...this.providerHealth,
+                    [account.id]: health,
+                };
+                this.providerHealthLoading = {
+                    ...this.providerHealthLoading,
+                    [account.id]: false,
+                };
+                this.changeDetector.markForCheck();
+            });
+    }
+
+    private probeNewProviders(): void {
+        for (const account of this.keyProviders) {
+            if (this.probedProviderIds.has(account.id)) {
+                continue;
+            }
+            this.probedProviderIds.add(account.id);
+            this.probeProviderHealth(account);
+        }
+    }
+
     saveKey(account: ProviderKeyAccount): void {
         const secret = (this.drafts[account.id] ?? "").trim();
         if (secret === "" || (this.encryptKeyStorage && this.password === "")) {
@@ -179,6 +322,7 @@ export class KeysComponent implements OnInit {
                     this.voiceAssistantService.getAllAssistantModels();
                     this.notice = `Key stored for ${account.name}.`;
                     this.loadStatus();
+                    this.probeProviderHealth(account);
                 },
                 error: (err: unknown) => {
                     this.busy = false;
@@ -210,6 +354,7 @@ export class KeysComponent implements OnInit {
                     this.voiceAssistantService.getAllAssistantModels();
                     this.notice = `Key deleted for ${account.name}. Personalities that use it need a key.`;
                     this.loadStatus();
+                    this.probeProviderHealth(account);
                 },
                 error: (err: unknown) => {
                     this.busy = false;
@@ -224,6 +369,7 @@ export class KeysComponent implements OnInit {
         this.tokenService.checkTokenExists();
         this.loadStatus();
         this.voiceAssistantService.getAllAssistantModels();
+        this.probeCloudHealth();
         this.notice =
             "SmartConnect token deleted. Re-enter it in SmartConnect.";
         this.error = null;

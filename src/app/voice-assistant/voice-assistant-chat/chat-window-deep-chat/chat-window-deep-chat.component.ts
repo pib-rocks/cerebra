@@ -97,6 +97,7 @@ export class ChatWindowDeepChatComponent
     private assistantModelsSubscription?: Subscription;
     private voiceStateSubscription?: Subscription;
     private voiceState: VoiceAssistantState = {turnedOn: false, chatId: ""};
+    /** Undefined until the first key-store read; then unknown on failure. */
     private readonly sendChatMessageSubscriptions = new Subscription();
     private previousRouteChatId: string | undefined;
 
