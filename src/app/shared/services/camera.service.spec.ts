@@ -69,18 +69,23 @@ describe("CameraService", () => {
         expect(service.cameraSettings.getValue().resY).toBe(480);
     });
 
-    it("should save refresh rate without changing the camera publisher", () => {
+    it("should save refresh rate and publish the timer period to the hardware encoder", () => {
         service.cameraSettings.next(updateCameraSettings);
         const setTimerPeriod = spyOn(rosService, "setTimerPeriod");
         const putCameraSettings = spyOn(apiService, "put").and.returnValue(
             behaviorSubjectOfUpdatedCameraSettings,
         );
 
-        service.refreshRatePublish(0.7);
+        service.refreshRatePublish(0.03);
 
-        expect(service.cameraSettings.getValue().refreshRate).toBe(0.7);
+        expect(service.cameraSettings.getValue().refreshRate).toBe(0.03);
         expect(putCameraSettings).toHaveBeenCalled();
-        expect(setTimerPeriod).not.toHaveBeenCalled();
+        expect(setTimerPeriod).toHaveBeenCalledWith(0.03);
+    });
+
+    it("should build the direct HTTP MJPEG stream URL", () => {
+        expect(service.streamUrl()).toBe("/api/camera/stream");
+        expect(service.streamUrl(42)).toBe("/api/camera/stream?t=42");
     });
 
     it("should return camera imageString over ros topic", () => {

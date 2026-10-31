@@ -3,7 +3,6 @@ export enum rosTopics {
     motorCurrentTopicName = "/motor_current",
     cameraPreviewSizeTopicName = "/size_topic",
     cameraTimerPeriodTopicName = "/timer_period_topic",
-    cameraTopicName = "/camera_topic",
     cameraQualityTopic = "/quality_factor_topic",
     chatMessages = "/chat_messages",
     voiceAssistantState = "/voice_assistant_state",

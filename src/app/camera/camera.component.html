@@ -115,9 +115,9 @@
                     [name]="'refreshRate'"
                     [unitLong]="'s'"
                     [messageReceiver$]="refreshRateReceiver$"
-                    [leftValue]="0.1"
+                    [leftValue]="0.03"
                     [rightValue]="1"
-                    [step]="0.1"
+                    [step]="0.01"
                     [defaultValues]="[cameraSettings?.refreshRate ?? 0.1]"
                     (sliderEvent)="
                         updateRefreshRateLabel($event[0]);
@@ -153,9 +153,13 @@
             #videobox>
             <div class="camera-image">
                 <img
+                    id="camera-stream"
+                    data-test="IMG_Camera_Stream"
                     [src]="imageSrc"
                     alt="camera"
-                    width="auto" />
+                    width="auto"
+                    (load)="onStreamLoad()"
+                    (error)="onStreamError()" />
                 @for (layer of visibleDetectionLayers; track layer.modelId) {
                 <svg
                     class="detection-overlay"
