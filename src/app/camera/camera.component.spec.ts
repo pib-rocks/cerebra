@@ -167,18 +167,21 @@ describe("CameraComponent", () => {
         expect(rosService["cameraSubscriptionRequested"]).toBeTrue();
     });
 
-    it("startCamera should subscribe to the camera topic idempotently", () => {
+    it("startCamera should bind img#camera-stream to the native HTTP MJPEG stream", () => {
         rosService["initTopicsAndServices"]();
         const spySubscribe = spyOn(
             rosService,
             "subscribeCameraTopic",
         ).and.callThrough();
-        const topicSubscribe = spyOn(rosService["cameraTopic"], "subscribe");
         component.startCamera();
         component.startCamera();
         expect(spySubscribe).toHaveBeenCalledTimes(2);
-        expect(topicSubscribe).toHaveBeenCalledTimes(1);
+        expect(component.imageSrc).toBe("/api/camera/stream");
         expect(rosService["cameraTopicSubscribed"]).toBeTrue();
+        const streamImg = fixture.debugElement.query(
+            By.css("img#camera-stream"),
+        );
+        expect(streamImg).not.toBeNull();
     });
 
     it("should refresh the displayed frame at the configured UI rate", fakeAsync(() => {

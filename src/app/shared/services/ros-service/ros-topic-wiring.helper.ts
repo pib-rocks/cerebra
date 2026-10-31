@@ -88,7 +88,6 @@ export interface RosTopicServiceWiring {
     ros: ROSLIB.Ros;
     cameraTopicSubscribed: boolean;
     motorCurrentTopic: ROSLIB.Topic;
-    cameraTopic: ROSLIB.Topic;
     cameraTimerPeriodTopic: ROSLIB.Topic;
     cameraPreviewSizeTopic: ROSLIB.Topic;
     cameraQualityFactorTopic: ROSLIB.Topic;
@@ -171,7 +170,6 @@ export function wireRosTopicsAndServices(target: RosTopicServiceWiring): void {
     const service = (name: string, type: string): any =>
         createRosService(ros, name, type);
 
-    target.cameraTopic = topic(rosTopics.cameraTopicName, rosDataTypes.string);
     target.cameraQualityFactorTopic = topic(
         rosTopics.cameraQualityTopic,
         rosDataTypes.int32,

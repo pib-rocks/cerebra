@@ -106,8 +106,14 @@ export class CameraService {
         this.publishCameraSettings(this.cameraSettings.getValue());
     }
 
+    streamUrl(cacheBust?: number): string {
+        const suffix = cacheBust !== undefined ? `?t=${cacheBust}` : "";
+        return `${UrlConstants.CAMERA_STREAM}${suffix}`;
+    }
+
     refreshRatePublish = (formControlValue: number) => {
         this.cameraSettings.getValue().refreshRate = formControlValue;
+        this.rosService.setTimerPeriod(formControlValue);
         this.publishCameraSettings(this.cameraSettings.getValue());
     };
 

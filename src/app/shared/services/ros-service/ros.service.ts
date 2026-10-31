@@ -169,7 +169,6 @@ export class RosService implements IRosService {
     private ros!: ROSLIB.Ros;
 
     private motorCurrentTopic!: ROSLIB.Topic;
-    private cameraTopic!: ROSLIB.Topic;
     private cameraTimerPeriodTopic!: ROSLIB.Topic;
     private cameraPreviewSizeTopic!: ROSLIB.Topic;
     private cameraQualityFactorTopic!: ROSLIB.Topic;
