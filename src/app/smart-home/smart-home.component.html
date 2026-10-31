@@ -5,8 +5,9 @@
             [class.navbar-btn-active]="activeTab === 'devices'">
             <button
                 type="button"
-                class="nav-link sidebar-btn border-0 bg-transparent"
+                class="nav-link sidebar-btn"
                 data-test="TAB_SmartHome_Devices"
+                [attr.aria-selected]="activeTab === 'devices'"
                 (click)="selectTab('devices')">
                 Devices
             </button>
@@ -16,8 +17,9 @@
             [class.navbar-btn-active]="activeTab === 'pairing'">
             <button
                 type="button"
-                class="nav-link sidebar-btn border-0 bg-transparent"
+                class="nav-link sidebar-btn"
                 data-test="TAB_SmartHome_Pairing"
+                [attr.aria-selected]="activeTab === 'pairing'"
                 (click)="selectTab('pairing')">
                 Matter Pairing
             </button>
@@ -27,8 +29,9 @@
             [class.navbar-btn-active]="activeTab === 'hub'">
             <button
                 type="button"
-                class="nav-link sidebar-btn border-0 bg-transparent"
+                class="nav-link sidebar-btn"
                 data-test="TAB_SmartHome_Hub"
+                [attr.aria-selected]="activeTab === 'hub'"
                 (click)="selectTab('hub')">
                 Hub &amp; Settings
             </button>
