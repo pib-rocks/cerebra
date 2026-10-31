@@ -13,8 +13,12 @@ describe("DockerManagementComponent purge", () => {
         service = jasmine.createSpyObj<DockerService>("DockerService", [
             "getContainers",
             "purgeDocker",
+            "getContainerLogs",
         ]);
         service.getContainers.and.returnValue(of([]));
+        service.getContainerLogs.and.returnValue(
+            of({status: "ok", logs: "line 1"}),
+        );
 
         await TestBed.configureTestingModule({
             imports: [DockerManagementComponent],
@@ -75,5 +79,25 @@ describe("DockerManagementComponent purge", () => {
 
         expect(component.successMessage).toContain("1.0 GB");
         expect(component.error).toContain("images: 500");
+    });
+
+    it("renders the live log modal with cerebra-modal and cerebra-modal-backdrop classes", () => {
+        component.openLogsModal("ros-motors");
+        fixture.detectChanges();
+        component.stopLogStreaming();
+
+        const modal = fixture.nativeElement.querySelector(
+            ".modal.cerebra-modal",
+        ) as HTMLElement;
+        const backdrop = fixture.nativeElement.querySelector(
+            ".modal-backdrop.cerebra-modal-backdrop",
+        ) as HTMLElement;
+        expect(modal).not.toBeNull();
+        expect(backdrop).not.toBeNull();
+        expect(
+            modal
+                .querySelector(".modal-content")
+                ?.classList.contains("bg-dark"),
+        ).toBeFalse();
     });
 });
