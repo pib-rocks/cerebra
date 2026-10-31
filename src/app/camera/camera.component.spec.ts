@@ -167,6 +167,29 @@ describe("CameraComponent", () => {
         expect(rosService["cameraSubscriptionRequested"]).toBeTrue();
     });
 
+    it("onStreamLoad records a frame when the stream is active and ignores placeholders", () => {
+        component.imageSrc = "../../assets/camera-placeholder.jpg";
+        component.onStreamLoad();
+        expect(component.cameraFramesLastWindow).toBe(0);
+
+        component.startCamera();
+        component.onStreamLoad();
+        expect(component.cameraFramesLastWindow).toBe(1);
+    });
+
+    it("onStreamError switches to the error image and clears detections", () => {
+        component.imageSrc = "../../assets/camera-placeholder.jpg";
+        component.onStreamError();
+        expect(component.imageSrc).toContain("camera-placeholder");
+
+        component.startCamera();
+        rosService.detectionModelsReceiver$.next(["hand_tracking"]);
+        rosService.detectionReceiver$.next(detectionMessage("hand_tracking"));
+        component.onStreamError();
+        expect(component.imageSrc).toContain("camera-error-image");
+        expect(component.visibleDetectionLayers).toEqual([]);
+    });
+
     it("startCamera should bind img#camera-stream to the native HTTP MJPEG stream", () => {
         rosService["initTopicsAndServices"]();
         const spySubscribe = spyOn(
