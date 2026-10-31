@@ -1,4 +1,8 @@
-@import "src/styles";
+$pink-color: #e10072;
+$blue-color: #0094df;
+$red-color: #ff0000;
+$white-color: #fff;
+$blue-dark-1: #344a69;
 
 label {
     font-weight: normal !important;
@@ -8,21 +12,210 @@ label {
     border: 1px solid $red-color !important;
 }
 
-#pause-threshold-input {
-    width: 60px;
+.personality-modal-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    padding: 0.9rem 1.25rem 0.9rem;
+}
+
+.personality-name-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+
+    input {
+        width: 100%;
+        padding: 0.45rem 0.7rem;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-radius: 6px;
+        background-color: $blue-dark-1;
+
+        &:focus {
+            border-color: $blue-color;
+        }
+    }
+}
+
+.personality-field-label {
+    display: block;
+    margin-bottom: 0.3rem;
+    font-size: 0.85rem;
+    color: #c9d7ee;
+    letter-spacing: 0.2px;
+}
+
+.personality-advanced-wrapper,
+#advanced-details {
+    width: 100%;
+}
+
+#advanced-details > summary {
+    cursor: pointer;
+    user-select: none;
+    padding: 0.5rem 0.75rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 6px;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: #e6eefc;
+
+    &:hover {
+        background: rgba(0, 148, 223, 0.12);
+        border-color: rgba(0, 148, 223, 0.45);
+    }
+}
+
+#advanced-details[open] > summary {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+    background: rgba(0, 148, 223, 0.14);
+}
+
+.personality-advanced-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    padding: 0.75rem 0.9rem;
+    background: rgba(4, 18, 42, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-top: none;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+}
+
+.advanced-mode-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.35rem 0.65rem;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-left: 3px solid $pink-color;
+    border-radius: 6px;
+}
+
+.advanced-mode-label {
+    margin: 0;
+    font-size: 0.85rem;
+    color: #c9d7ee;
+}
+
+.advanced-mode-pill {
+    padding: 0.15rem 0.65rem;
+    border-radius: 10rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #8fd8ff;
+    background: rgba(0, 148, 223, 0.18);
+    border: 1px solid rgba(0, 148, 223, 0.45);
+}
+
+.advanced-two-col {
+    margin-left: 0;
+    margin-right: 0;
+
+    > .col {
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    > .col + .col {
+        padding-left: 0.75rem;
+    }
+}
+
+.advanced-controls-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 0.65rem;
+    padding-top: 0.55rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.advanced-inline-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.35rem 0.65rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+}
+
+.advanced-toggle-control {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+
+    label {
+        cursor: pointer;
+    }
+}
+
+.threshold-stepper {
+    display: inline-flex;
+    align-items: stretch;
     background-color: $blue-dark-1;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+#pause-threshold-input {
+    width: 68px;
+    height: 32px;
+    padding: 0 0.5rem;
+    text-align: center;
+    font-weight: 600;
+    background-color: transparent;
     border: none;
-    height: 30px;
+    border-radius: 0;
+}
+
+.threshold-stepper-buttons {
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid rgba(255, 255, 255, 0.16);
 }
 
 #up,
 #down {
-    background-color: transparent;
+    width: 24px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(255, 255, 255, 0.05);
     color: $white-color;
     border: none;
-    font-size: 10px;
-    line-height: 10px;
+    font-size: 9px;
+    line-height: 1;
     padding: 0;
+    cursor: pointer;
+
+    &:hover {
+        background-color: $blue-color;
+    }
+}
+
+#up {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.idle-timeout-field {
+    width: 92px;
+    height: 32px;
+    padding: 0.25rem 0.55rem;
+    text-align: center;
+    background-color: $blue-dark-1;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 6px;
 }
 
 .pointer :hover {
@@ -36,7 +229,13 @@ label {
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
     color: #ffffff;
     background-color: #344a69;
-    border: 0;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 6px;
+
+    &:focus {
+        border-color: $blue-color;
+        box-shadow: none;
+    }
 }
 
 #personality-advanced input:disabled,
@@ -46,17 +245,40 @@ label {
 
 .advanced-reason {
     font-weight: normal;
-    font-size: 0.85rem;
-    opacity: 0.85;
-    margin: 0.25rem 0 0;
-}
-
-#advanced-details > summary {
-    cursor: pointer;
-    margin-bottom: 0.5rem;
+    font-size: 0.8rem;
+    color: #b8c4d8;
+    margin: 0.3rem 0 0;
 }
 
 #tool-calling-input {
-    width: auto;
-    margin-right: 0.5rem;
+    width: 1.05rem;
+    height: 1.05rem;
+    margin: 0;
+    accent-color: $pink-color;
+    cursor: pointer;
+}
+
+.personality-modal-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.65rem;
+    padding-top: 0.85rem;
+    border-top: 1px solid rgba(0, 148, 223, 0.35);
+
+    .btn-regular {
+        min-width: 5.5rem;
+        padding: 0.4rem 1rem !important;
+        border-radius: 6px;
+        font-weight: 600;
+    }
+
+    .delete {
+        margin-right: auto;
+        background-color: rgba(220, 53, 69, 0.85);
+
+        &:hover {
+            background-color: #dc3545;
+        }
+    }
 }
