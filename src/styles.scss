@@ -132,10 +132,15 @@ span {
         url("assets/ep-br.png") bottom right no-repeat,
         url("assets/ep-tr.png") top right no-repeat,
         url("assets/ep-tl.png") top left no-repeat,
-        url("assets/ep-bl.png") bottom left no-repeat;
-    background-color: $blue-dark-5;
+        url("assets/ep-bl.png") bottom left no-repeat,
+        linear-gradient(165deg, #1b2b44 0%, #0d2242 100%);
+    background-color: $blue-dark-4;
     color: $white-color;
+    border: 1px solid rgba(0, 148, 223, 0.55);
     border-radius: 0;
+    box-shadow:
+        0 18px 48px rgba(0, 0, 0, 0.78),
+        0 0 0 1px rgba(255, 255, 255, 0.08);
 }
 
 .videoSettingsPopOver .popover-body {
@@ -147,7 +152,8 @@ span {
 
 .cerebra-modal-backdrop {
     z-index: 1040 !important;
-    background-color: transparent !important;
+    background-color: rgba(2, 10, 24, 0.65) !important;
+    backdrop-filter: blur(3px);
 }
 
 input {

@@ -1088,6 +1088,27 @@ describe("KeysComponent", () => {
         expect(statePill.classList.contains("keys-state-pill")).toBeTrue();
         expect(statePill.classList.contains("keys-state-stored")).toBeTrue();
     });
+
+    it("visually separates cerebra-modal dialogs from the page via border, shadow, elevated surface, and dimmed backdrop", () => {
+        click("#keys-change-password");
+        const modalContent = fixture.nativeElement.querySelector(
+            "#keys-password-modal .modal-content",
+        ) as HTMLElement;
+        const backdrop = fixture.nativeElement.querySelector(
+            "#keys-password-backdrop",
+        ) as HTMLElement;
+        expect(modalContent).not.toBeNull();
+        expect(backdrop).not.toBeNull();
+
+        const contentStyle = getComputedStyle(modalContent);
+        const backdropStyle = getComputedStyle(backdrop);
+
+        expect(contentStyle.borderTopWidth).toBe("1px");
+        expect(contentStyle.borderTopStyle).toBe("solid");
+        expect(contentStyle.boxShadow).not.toBe("none");
+        expect(contentStyle.backgroundColor).not.toBe("rgb(4, 25, 57)");
+        expect(backdropStyle.backgroundColor).not.toBe("rgba(0, 0, 0, 0)");
+    });
 });
 
 describe("KeysComponent (zoneless)", () => {
