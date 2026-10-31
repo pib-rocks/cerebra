@@ -1,3 +1,11 @@
+@import "src/styles";
+@import "src/app/shared/styles/app-tabs";
+
+.background-image {
+    background: url("../../assets/bg-gesamt.png") left no-repeat;
+    background-size: cover;
+}
+
 .smart-home-device-card {
     border: 1px solid rgba(0, 0, 0, 0.1);
     border-radius: 0.25rem;

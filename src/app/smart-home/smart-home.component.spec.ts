@@ -350,4 +350,54 @@ describe("SmartHomeComponent", () => {
         expect(component.isToggleDomain("scene")).toBeTrue();
         expect(component.isToggleDomain("cover")).toBeFalse();
     });
+
+    // The section pages share one tab bar (src/app/shared/styles/_app-tabs.scss,
+    // imported by joint-control, system, program-overview and this page). The
+    // markup has to match theirs, otherwise the shared styling cannot apply.
+    it("uses the standard tab markup of the other section pages", () => {
+        const tabList = fixture.nativeElement.querySelector(
+            "ul.nav.nav-tabs",
+        ) as HTMLElement | null;
+
+        expect(tabList).not.toBeNull();
+        const items = Array.from(
+            tabList!.querySelectorAll("li.nav-item"),
+        ) as HTMLElement[];
+        expect(items).toHaveSize(3);
+        for (const item of items) {
+            const link = item.querySelector(".nav-link.sidebar-btn");
+            expect(link).not.toBeNull();
+            // A button inside a nav-item is what the active-state class needs.
+            expect(link!.tagName).toBe("BUTTON");
+        }
+    });
+
+    it("marks exactly the selected tab with navbar-btn-active", () => {
+        const active = (): string[] =>
+            Array.from(
+                fixture.nativeElement.querySelectorAll(
+                    "li.nav-item.navbar-btn-active .nav-link",
+                ) as NodeListOf<HTMLElement>,
+            ).map((element) => (element.textContent || "").trim());
+
+        expect(active()).toEqual(["Devices"]);
+        component.selectTab("hub");
+        fixture.detectChanges();
+        expect(active()).toEqual(["Hub & Settings"]);
+        component.selectTab("pairing");
+        fixture.detectChanges();
+        expect(active()).toEqual(["Matter Pairing"]);
+    });
+
+    it("keeps the tab test ids the E2E suites use", () => {
+        for (const id of [
+            "TAB_SmartHome_Devices",
+            "TAB_SmartHome_Pairing",
+            "TAB_SmartHome_Hub",
+        ]) {
+            expect(
+                fixture.nativeElement.querySelector(`[data-test="${id}"]`),
+            ).not.toBeNull();
+        }
+    });
 });
