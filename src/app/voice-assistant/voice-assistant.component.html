@@ -28,75 +28,81 @@
             class="col-12"
             id="header-title">
             <span id="header-title-text"
-                >{{ uuid?"EDIT ":"ADD "}}PERSONALITY</span
+                >{{ uuid ? "EDIT " : "ADD " }}PERSONALITY</span
             >
         </div>
     </div>
-    <form [formGroup]="personalityForm">
+    <form
+        class="personality-modal-form"
+        [formGroup]="personalityForm">
         <div
-            class="row m-2 mt-4 pe-2"
+            class="personality-name-field"
             id="row-name">
             <label
                 for="name-input"
-                class="col-3 mt-2 justify-content-end"
+                class="personality-field-label"
                 id="label-name"
                 >Name</label
             >
             <input
-                [ngClass]="(!this.personalityForm.controls['name-input'].valid && !this.personalityForm.controls['name-input'].pristine) ? 'invalid-form' : '' "
+                [ngClass]="
+                    !this.personalityForm.controls['name-input'].valid &&
+                    !this.personalityForm.controls['name-input'].pristine
+                        ? 'invalid-form'
+                        : ''
+                "
                 ngbAutofocus
-                class="col-9"
                 type="text"
+                placeholder="Enter personality name…"
                 data-test="TXT_Name"
                 formControlName="name-input"
                 id="name-input" />
         </div>
-        <div class="row m-2">
+        <div class="personality-advanced-wrapper">
             <details
                 id="advanced-details"
-                class="col-12"
                 data-test="SEC_Advanced">
                 <summary
                     id="advanced-summary"
                     data-test="TGL_Advanced">
                     Advanced
                 </summary>
-                <div id="personality-advanced">
+                <div
+                    class="personality-advanced-panel"
+                    id="personality-advanced">
                     <div
-                        class="row mt-3 m-2 ms-3"
+                        class="advanced-mode-bar"
                         id="row-installation-mode">
                         <label
                             id="label-installation-mode"
-                            class="col-12"
+                            class="advanced-mode-label"
                             >Installation mode</label
                         >
                         <p
-                            class="col-12 mb-0"
+                            class="advanced-mode-pill mb-0"
                             id="installation-mode-value"
                             data-test="LBL_Installation_Mode">
                             {{ installationModeLabel }}
                         </p>
                     </div>
                     @if (channelFixedByInstallation) {
-                    <div class="row mt-3 m-2 ms-3">
-                        <p
-                            class="col-12 text-white mb-0"
-                            id="channel-installation-fixed"
-                            data-test="LBL_Channel_Installation_Fixed">
-                            {{ channelInstallationFixedExplanation }}
-                        </p>
-                    </div>
+                    <p
+                        class="advanced-reason mb-0"
+                        id="channel-installation-fixed"
+                        data-test="LBL_Channel_Installation_Fixed">
+                        {{ channelInstallationFixedExplanation }}
+                    </p>
                     }
                     <div
-                        class="row ms-3 m-2 mt-3 pe-2"
+                        class="row g-3 advanced-two-col"
                         id="row-model">
-                        <label
-                            for="voice-assistant-model-select"
-                            id="label-model"
-                            class="col-12"
-                            >Model</label
-                        >
-                        <div class="col pe-0">
+                        <div class="col">
+                            <label
+                                for="voice-assistant-model-select"
+                                class="personality-field-label"
+                                id="label-model"
+                                >Model</label
+                            >
                             <select
                                 id="voice-assistant-model-select"
                                 formControlName="assistantModel"
@@ -120,7 +126,13 @@
                                 }
                             </select>
                         </div>
-                        <div class="col ps-0">
+                        <div class="col">
+                            <label
+                                for="reasoning-effort-select"
+                                class="personality-field-label"
+                                id="label-reasoning-effort"
+                                >Reasoning level</label
+                            >
                             <select
                                 id="reasoning-effort-select"
                                 class="form-select"
@@ -153,10 +165,13 @@
                         </p>
                         }
                     </div>
-                    <div class="row ms-3 m-2 mt-3 pe-2">
-                        <div class="col pe-0">
+                    <div
+                        class="row g-3 advanced-two-col"
+                        id="row-voice-io">
+                        <div class="col">
                             <label
                                 for="voice-input-select"
+                                class="personality-field-label"
                                 id="label-voice-input"
                                 >Voice input</label
                             >
@@ -173,9 +188,10 @@
                                 }
                             </select>
                         </div>
-                        <div class="col ps-0">
+                        <div class="col">
                             <label
                                 for="voice-output-select"
+                                class="personality-field-label"
                                 id="label-voice-output"
                                 >Voice output</label
                             >
@@ -193,128 +209,121 @@
                             </select>
                         </div>
                     </div>
-                    <div
-                        class="row m-2"
-                        id="row-pause-threshold"
-                        lang="en-US">
-                        <label
-                            for="pause-threshold-input"
-                            class="col-6 mt-1"
-                            id="label-pause-threshold"
-                            >Pause threshold</label
-                        >
-                        <div class="col-3">
-                            <div class="row">
-                                <div class="col-10 p-0">
-                                    <input
-                                        type="text"
-                                        id="pause-threshold-input"
-                                        data-test="TXT_Threshold"
-                                        [(ngModel)]="thresholdString"
-                                        [ngModelOptions]="{standalone: true}"
-                                        readonly />
-                                </div>
-                                <div class="col-2 p-0">
-                                    <div class="row mt-1 p-0">
-                                        <button
-                                            id="up"
-                                            data-test="BTN_Threshold_up"
-                                            type="button"
-                                            (click)="adjustThreshold('0.1')">
-                                            &#9650;
-                                        </button>
-                                    </div>
-                                    <div class="row p-0">
-                                        <button
-                                            id="down"
-                                            data-test="BTN_Threshold_down"
-                                            type="button"
-                                            (click)="adjustThreshold('-0.1')">
-                                            &#9660;
-                                        </button>
-                                    </div>
+                    <div class="advanced-controls-grid">
+                        <div
+                            class="advanced-inline-row"
+                            id="row-pause-threshold"
+                            lang="en-US">
+                            <label
+                                for="pause-threshold-input"
+                                class="personality-field-label mb-0"
+                                id="label-pause-threshold"
+                                >Pause threshold</label
+                            >
+                            <div class="threshold-stepper">
+                                <input
+                                    type="text"
+                                    id="pause-threshold-input"
+                                    data-test="TXT_Threshold"
+                                    [(ngModel)]="thresholdString"
+                                    [ngModelOptions]="{standalone: true}"
+                                    readonly />
+                                <div class="threshold-stepper-buttons">
+                                    <button
+                                        id="up"
+                                        data-test="BTN_Threshold_up"
+                                        type="button"
+                                        aria-label="Increase pause threshold"
+                                        (click)="adjustThreshold('0.1')">
+                                        &#9650;
+                                    </button>
+                                    <button
+                                        id="down"
+                                        data-test="BTN_Threshold_down"
+                                        type="button"
+                                        aria-label="Decrease pause threshold"
+                                        (click)="adjustThreshold('-0.1')">
+                                        &#9660;
+                                    </button>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div
-                        class="row m-2"
-                        id="row-tool-calling">
-                        <input
-                            type="checkbox"
-                            id="tool-calling-input"
-                            data-test="CHK_Tool_Calling"
-                            formControlName="toolCalling" />
-                        <label
-                            for="tool-calling-input"
-                            id="label-tool-calling"
-                            >Use tools</label
-                        >
-                        @if (toolCallingReason) {
-                        <p
-                            class="advanced-reason"
-                            data-test="LBL_Tool_Calling_Reason">
-                            {{ toolCallingReason }}
-                        </p>
+                        <div
+                            class="advanced-inline-row advanced-toggle-row"
+                            id="row-tool-calling">
+                            <div class="advanced-toggle-control">
+                                <input
+                                    type="checkbox"
+                                    id="tool-calling-input"
+                                    data-test="CHK_Tool_Calling"
+                                    formControlName="toolCalling" />
+                                <label
+                                    for="tool-calling-input"
+                                    class="personality-field-label mb-0"
+                                    id="label-tool-calling"
+                                    >Use tools</label
+                                >
+                            </div>
+                            @if (toolCallingReason) {
+                            <p
+                                class="advanced-reason w-100"
+                                data-test="LBL_Tool_Calling_Reason">
+                                {{ toolCallingReason }}
+                            </p>
+                            }
+                        </div>
+                        @if (showIdleTimeout) {
+                        <div
+                            class="advanced-inline-row"
+                            id="row-idle-timeout">
+                            <label
+                                for="idle-timeout-input"
+                                class="personality-field-label mb-0"
+                                id="label-idle-timeout"
+                                >Idle timeout (s)</label
+                            >
+                            <input
+                                type="number"
+                                id="idle-timeout-input"
+                                class="idle-timeout-field"
+                                data-test="TXT_Idle_Timeout"
+                                formControlName="idleTimeoutSeconds"
+                                min="1" />
+                        </div>
                         }
                     </div>
-                    @if (showIdleTimeout) {
-                    <div
-                        class="row m-2"
-                        id="row-idle-timeout">
-                        <label
-                            for="idle-timeout-input"
-                            class="col-6 mt-1"
-                            id="label-idle-timeout"
-                            >Idle timeout (s)</label
-                        >
-                        <input
-                            type="number"
-                            id="idle-timeout-input"
-                            class="col-3"
-                            data-test="TXT_Idle_Timeout"
-                            formControlName="idleTimeoutSeconds"
-                            min="1" />
-                    </div>
-                    }
                 </div>
             </details>
         </div>
-        <div class="row justify-content-center mt-2 mb-3">
+        <div class="personality-modal-actions">
             @if (uuid) {
-            <div class="col-3 align-self-center">
-                <button
-                    type="button"
-                    class="btn btn-regular delete"
-                    id="modal-delete-button"
-                    data-test="BTN_Delete_Persona"
-                    (click)="deleteCurrentPersonality()">
-                    Delete
-                </button>
-            </div>
+            <button
+                type="button"
+                class="btn btn-regular delete"
+                id="modal-delete-button"
+                data-test="BTN_Delete_Persona"
+                (click)="deleteCurrentPersonality()">
+                Delete
+            </button>
             }
-            <div class="col-3 align-self-center">
-                <button
-                    type="button"
-                    [disabled]="personalityForm.invalid"
-                    class="btn btn-regular"
-                    id="modal-save-button"
-                    data-test="BTN_Save"
-                    (keydown.enter)="savePersonality()"
-                    (click)="savePersonality()">
-                    Save
-                </button>
-            </div>
-            <div class="col-3 align-self-center">
-                <button
-                    type="button"
-                    class="btn btn-regular"
-                    id="modal-cancel-button"
-                    data-test="BTN_Cancel"
-                    (click)="closeModal()">
-                    Cancel
-                </button>
-            </div>
+            <button
+                type="button"
+                [disabled]="personalityForm.invalid"
+                class="btn btn-regular"
+                id="modal-save-button"
+                data-test="BTN_Save"
+                (keydown.enter)="savePersonality()"
+                (click)="savePersonality()">
+                Save
+            </button>
+            <button
+                type="button"
+                class="btn btn-regular"
+                id="modal-cancel-button"
+                data-test="BTN_Cancel"
+                (click)="closeModal()">
+                Cancel
+            </button>
         </div>
     </form>
 </ng-template>
