@@ -1,4 +1,5 @@
 import {
+    failureNotice,
     hasMeta,
     imageAttachments,
     metaHtml,
@@ -35,7 +36,7 @@ describe("chat-message-meta", () => {
         expect(lines.join("|")).not.toContain("stream done");
     });
 
-    it("names the fallback and the tool calls", () => {
+    it("names the cause and the tool calls", () => {
         const lines = metaSummary({
             source: "local",
             fallbackReason: "cloud_token_unavailable",
@@ -45,7 +46,8 @@ describe("chat-message-meta", () => {
             ],
         });
         expect(lines[0]).toBe("On-device");
-        expect(lines).toContain("fallback: cloud_token_unavailable");
+        // An unknown code stays readable as itself; a known one gets a label.
+        expect(lines).toContain("cause: cloud_token_unavailable");
         expect(lines).toContain("tool capture_image failed 12 ms");
         expect(lines).toContain("tool set_led ok");
     });
@@ -62,6 +64,51 @@ describe("chat-message-meta", () => {
         expect(html).toContain("&lt;script&gt;");
         expect(html).toContain("&quot;quoted&quot;");
         expect(html).not.toContain("<details open");
+    });
+
+    // PR-2132: a failed turn says why. The old answer claimed a timeout for
+    // every failure; the cause is what the operator needs.
+    it("labels a known failure cause instead of only the code", () => {
+        const lines = metaSummary({
+            source: "hermes",
+            fallbackReason: "hermes_home_read_only",
+        });
+
+        expect(lines).toContain("cause: Speicher schreibgeschützt (Errno 30)");
+    });
+
+    it("puts a visible failure line above the collapsed details", () => {
+        const html = metaHtml({
+            source: "hermes",
+            fallbackReason: "hermes_home_read_only",
+        });
+
+        expect(html).toContain('data-test="CHAT_MESSAGE_FAILURE"');
+        expect(html).toContain("⚠ Speicher schreibgeschützt (Errno 30)");
+        expect(html.indexOf("CHAT_MESSAGE_FAILURE")).toBeLessThan(
+            html.indexOf("CHAT_MESSAGE_META"),
+        );
+    });
+
+    it("adds no failure line to an answer that worked", () => {
+        expect(failureNotice({source: "hermes", streamEnd: "done"})).toBe("");
+        expect(failureNotice(null)).toBe("");
+        expect(failureNotice({fallbackReason: "something_new_entirely"})).toBe(
+            "",
+        );
+        expect(metaHtml({source: "hermes"})).not.toContain(
+            "CHAT_MESSAGE_FAILURE",
+        );
+    });
+
+    it("escapes the visible failure line", () => {
+        const html = metaHtml({
+            fallbackReason: "hermes_home_read_only",
+            source: "<b>hermes</b>",
+        });
+
+        expect(html).not.toContain("<b>hermes</b>");
+        expect(html).toContain("&lt;b&gt;hermes&lt;/b&gt;");
     });
 
     it("turns a captured picture into an attachment under the API base", () => {

@@ -46,6 +46,38 @@ export interface ChatMessageMeta {
     }[];
 }
 
+/**
+ * Why a turn produced no answer, in the robot's own words (PR-2132). The code
+ * comes from the backend classifier; the label is what a person reads.
+ */
+const FAILURE_REASON_LABELS: Record<string, string> = {
+    hermes_home_read_only: "Speicher schreibgeschützt (Errno 30)",
+    disk_full: "Speicher voll (Errno 28)",
+    hermes_binary_missing: "Antwortprogramm nicht installiert",
+    hermes_daemon_unreachable: "Antwortdienst nicht erreichbar",
+    provider_key_rejected: "Schlüssel abgelehnt",
+    provider_budget_exhausted: "Guthaben aufgebraucht",
+    incomplete_stream: "Antwort abgebrochen",
+    turn_timeout: "Zeitüberschreitung",
+    turn_failed: "Antwort fehlgeschlagen",
+};
+
+/**
+ * A short, visible line for an answer that is a failure notice instead of an
+ * answer. Empty for a normal turn, so the chat does not decorate good answers.
+ */
+export function failureNotice(meta?: ChatMessageMeta | null): string {
+    const reason = meta?.fallbackReason?.trim();
+    if (!reason) {
+        return "";
+    }
+    const label = FAILURE_REASON_LABELS[reason];
+    if (!label) {
+        return "";
+    }
+    return `⚠ ${label}`;
+}
+
 const SOURCE_LABELS: Record<string, string> = {
     "pib-cloud": "pib.Cloud",
     hermes: "Hermes",
@@ -159,7 +191,8 @@ export function metaSummary(meta?: ChatMessageMeta | null): string[] {
     }
 
     if (meta!.fallbackReason) {
-        lines.push(`fallback: ${meta!.fallbackReason}`);
+        const reason = meta!.fallbackReason;
+        lines.push(`cause: ${FAILURE_REASON_LABELS[reason] ?? reason}`);
     }
     for (const call of meta!.toolCalls ?? []) {
         const name = call?.name ?? "tool";
@@ -184,12 +217,21 @@ function escapeHtml(value: string): string {
 
 /** A collapsed detail block for deep-chat; empty when there is nothing to show. */
 export function metaHtml(meta?: ChatMessageMeta | null): string {
+    const notice = failureNotice(meta);
     const lines = metaSummary(meta);
     if (!lines.length) {
         return "";
     }
     const items = lines.map((line) => `<li>${escapeHtml(line)}</li>`).join("");
+    // A failed turn says why above the collapsed details: the answer text is a
+    // sentence, and the cause is the fact the operator needs (PR-2132).
+    const visible = notice
+        ? `<p class="chat-message-failure" data-test="CHAT_MESSAGE_FAILURE">${escapeHtml(
+              notice,
+          )}</p>`
+        : "";
     return (
+        visible +
         '<details class="chat-message-meta" data-test="CHAT_MESSAGE_META">' +
         `<summary>turn details</summary><ul>${items}</ul></details>`
     );
