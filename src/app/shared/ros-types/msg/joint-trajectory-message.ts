@@ -33,9 +33,14 @@ export function fromMotorPositions(motorPositions: MotorPosition[]) {
             frame_id: "",
         },
         joint_names: motorPositions.map((mp) => mp.motorName),
-        points: motorPositions.map((mp) => ({
-            positions: [mp.position],
-            time_from_start: {sec: 0, nanosec: 0},
-        })),
+        points:
+            motorPositions.length > 0
+                ? [
+                      {
+                          positions: motorPositions.map((mp) => mp.position),
+                          time_from_start: {sec: 0, nanosec: 0},
+                      },
+                  ]
+                : [],
     };
 }

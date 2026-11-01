@@ -195,7 +195,7 @@ export class PoseService {
     }
 
     private publishPoses() {
-        this.posesSubject.next(this.poses);
+        this.posesSubject.next([...this.poses]);
     }
 
     private getCachedPoseOfId(poseId: string): Pose | undefined {

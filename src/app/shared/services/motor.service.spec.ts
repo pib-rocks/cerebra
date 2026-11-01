@@ -412,7 +412,7 @@ describe("MotorService", () => {
         );
     });
 
-    it("should a joint-trajectory-messages, when setting the positions", () => {
+    it("should send a single-point joint-trajectory-message when setting multiple positions", () => {
         const motorPositions: MotorPosition[] = [
             {motorName: "test-motor-1", position: 1000},
             {motorName: "test-motor-2", position: 2000},
@@ -420,18 +420,15 @@ describe("MotorService", () => {
         service.setPositions(motorPositions);
         expect(rosService.applyJointTrajectory).toHaveBeenCalledOnceWith(
             jasmine.objectContaining({
-                joint_names: jasmine.arrayWithExactContents([
+                joint_names: [
                     motorPositions[0].motorName,
                     motorPositions[1].motorName,
-                ]),
-                points: jasmine.arrayWithExactContents([
+                ],
+                points: [
                     jasmine.objectContaining({
-                        positions: jasmine.arrayWithExactContents([1000]),
+                        positions: [1000, 2000],
                     }),
-                    jasmine.objectContaining({
-                        positions: jasmine.arrayWithExactContents([2000]),
-                    }),
-                ]),
+                ],
             }),
         );
     });
