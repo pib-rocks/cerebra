@@ -8,13 +8,19 @@ import {
     provideRouter,
 } from "@angular/router";
 import {RouterTestingHarness} from "@angular/router/testing";
-import {Subject} from "rxjs";
+import {Subject, of, throwError} from "rxjs";
 import {routes} from "src/app/app-routing.module";
 import {JointControlComponent} from "src/app/joint-control/joint-control.component";
 import {RosService} from "src/app/shared/services/ros-service/ros.service";
 import {JointStateMessage} from "src/app/shared/ros-types/msg/joint-state-message";
-import {PibRobotView} from "@pib/robot-view";
-import {Robot3DComponent, jointStateStampMs} from "./robot-3d.component";
+import {CommandRequestDetail, PibRobotView} from "@pib/robot-view";
+import {ApiService} from "src/app/shared/services/api.service";
+import {
+    Robot3DComponent,
+    jointStateStampMs,
+    jointTrajectoryFromCommandMotors,
+    trajectoryPointPositionsRad,
+} from "./robot-3d.component";
 
 @Component({
     selector: "app-route-stub",
@@ -69,20 +75,64 @@ describe("jointStateStampMs", () => {
     });
 });
 
+describe("jointTrajectoryFromCommandMotors", () => {
+    it("builds one trajectory point with motor names and centidegree positions", () => {
+        const motors = {head_pan: 9000, head_tilt: -4500};
+        const trajectory = jointTrajectoryFromCommandMotors(motors);
+
+        expect(trajectory.joint_names).toEqual(["head_pan", "head_tilt"]);
+        expect(trajectory.points.length).toBe(1);
+        expect(trajectory.points[0].positions).toEqual([9000, -4500]);
+    });
+});
+
+describe("trajectoryPointPositionsRad", () => {
+    it("converts centidegrees to radians", () => {
+        expect(trajectoryPointPositionsRad({head_pan: 9000})[0]).toBeCloseTo(
+            1.5708,
+            4,
+        );
+    });
+});
+
 describe("Robot3DComponent", () => {
     let fixture: ComponentFixture<Robot3DComponent>;
     let jointStates$: Subject<JointStateMessage>;
+    let applyJointTrajectory$: Subject<void>;
+    let applyJointTrajectory: jasmine.Spy;
+    let apiService: jasmine.SpyObj<ApiService>;
     let viewer: PibRobotView;
 
     beforeEach(async () => {
         jointStates$ = new Subject<JointStateMessage>();
+        applyJointTrajectory$ = new Subject<void>();
+        applyJointTrajectory = jasmine
+            .createSpy("applyJointTrajectory")
+            .and.returnValue(applyJointTrajectory$.asObservable());
+        apiService = jasmine.createSpyObj("ApiService", ["get"]);
+        apiService.get.and.returnValue(
+            of({
+                motors: [
+                    {
+                        name: "head_pan",
+                        rotationRangeMin: -9000,
+                        rotationRangeMax: 9000,
+                    },
+                ],
+            }),
+        );
+
         await TestBed.configureTestingModule({
             imports: [Robot3DComponent],
             providers: [
                 {
                     provide: RosService,
-                    useValue: {jointStatesReceiver$: jointStates$},
+                    useValue: {
+                        jointStatesReceiver$: jointStates$,
+                        applyJointTrajectory,
+                    },
                 },
+                {provide: ApiService, useValue: apiService},
             ],
         }).compileComponents();
 
@@ -93,6 +143,8 @@ describe("Robot3DComponent", () => {
         ) as PibRobotView;
         spyOn(viewer, "setJointStateSample");
         spyOn(viewer, "dispose");
+        spyOn(viewer, "confirmCommand");
+        spyOn(viewer, "rejectCommand");
     });
 
     it("forwards joint state samples to the viewer", () => {
@@ -112,6 +164,67 @@ describe("Robot3DComponent", () => {
             positions: [0.1, -0.2],
             stampMs: 5000,
         });
+    });
+
+    it("sets motor limits on the viewer when the model is ready", () => {
+        viewer.dispatchEvent(new CustomEvent("ready"));
+
+        expect(viewer.limits).toEqual({
+            head_pan: {minDeg: -90, maxDeg: 90},
+        });
+    });
+
+    it("confirms a successful command and logs audit data", () => {
+        const detail: CommandRequestDetail = {
+            commandId: "cmd-1",
+            values: {head_pan: 0.5},
+            motors: {head_pan: 9000},
+            source: "ui",
+        };
+        spyOn(console, "info");
+
+        viewer.dispatchEvent(
+            new CustomEvent("commandrequest", {detail, cancelable: true}),
+        );
+        applyJointTrajectory$.next();
+        applyJointTrajectory$.complete();
+        fixture.detectChanges();
+
+        expect(applyJointTrajectory).toHaveBeenCalledOnceWith(
+            jointTrajectoryFromCommandMotors(detail.motors),
+        );
+        expect(viewer.confirmCommand).toHaveBeenCalledWith("cmd-1");
+        expect(console.info).toHaveBeenCalledWith("command", {
+            commandId: "cmd-1",
+            joints: {head_pan: 0.5},
+            source: "ui",
+            ok: true,
+        });
+    });
+
+    it("rejects a failed command and shows per-motor errors", () => {
+        const detail: CommandRequestDetail = {
+            commandId: "cmd-2",
+            values: {head_pan: 0.5, head_tilt: 0.1},
+            motors: {head_pan: 100, head_tilt: 200},
+            source: "api",
+        };
+        applyJointTrajectory.and.returnValue(
+            throwError(() => new Error("trajectory rejected")),
+        );
+
+        viewer.dispatchEvent(
+            new CustomEvent("commandrequest", {detail, cancelable: true}),
+        );
+        fixture.detectChanges();
+
+        expect(viewer.rejectCommand).toHaveBeenCalledWith(
+            "cmd-2",
+            "trajectory rejected",
+        );
+        expect(fixture.componentInstance.commandError).toBe(
+            "head_pan: trajectory rejected; head_tilt: trajectory rejected",
+        );
     });
 
     it("unsubscribes and disposes the viewer on destroy", () => {
@@ -138,6 +251,15 @@ describe("joint-control 3d route", () => {
                     provide: RosService,
                     useValue: {
                         jointStatesReceiver$: new Subject(),
+                    },
+                },
+                {
+                    provide: ApiService,
+                    useValue: {
+                        get: () =>
+                            of({
+                                motors: [],
+                            }),
                     },
                 },
             ],
