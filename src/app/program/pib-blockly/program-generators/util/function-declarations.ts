@@ -334,15 +334,92 @@ export const PLAY_POSE_SEQUENCE_TIMED_FUNCTION = (
     generator: typeof pythonGenerator,
 ) => `
 def ${generator.FUNCTION_NAME_PLACEHOLDER_}(sequence) -> None:
+    steps = [
+        (str(item[0]), float(item[1]))
+        for item in (sequence or [])
+        if item and len(item) >= 2 and str(item[0]).strip() and str(item[0]).strip() != "LOADING"
+    ]
+    if not steps:
+        return
 
-    steps = [(str(item[0]), float(item[1])) for item in (sequence or [])]
-    rosbridge_host = os.getenv("ROSBRIDGE_HOST", "rosbridge-ws")
-    try:
-        with pib_sdk.Write(host=rosbridge_host, port=9090) as writer:
-            play_pose_sequence_timed(writer, pose_backend, steps)
-    except Exception:
-        with pib_sdk.Write(host="localhost", port=9090) as writer:
-            play_pose_sequence_timed(writer, pose_backend, steps)
+    resolved_poses = []
+    for identifier, leg_seconds in steps:
+        pose = None
+        try:
+            pose = get_pose(pose_backend, pose_id=identifier)
+        except Exception:
+            pose = get_pose(pose_backend, name=identifier)
+        resolved_poses.append((pose, max(0.1, float(leg_seconds))))
+
+    joint_names = []
+    seen = set()
+    for pose, _leg_seconds in resolved_poses:
+        for motor_name in pose.motor_angles_deg:
+            if motor_name not in seen:
+                seen.add(motor_name)
+                joint_names.append(motor_name)
+    if not joint_names:
+        return
+
+    filled = []
+    previous = {}
+    for pose, _leg_seconds in resolved_poses:
+        current = dict(previous)
+        current.update(pose.motor_angles_deg)
+        filled.append(current)
+        previous = current
+
+    first_known = {}
+    for angle_map in filled:
+        for motor_name, angle_deg in angle_map.items():
+            first_known.setdefault(motor_name, float(angle_deg))
+    for angle_map in filled:
+        for motor_name in joint_names:
+            angle_map.setdefault(motor_name, first_known[motor_name])
+
+    initial_angles = dict(first_known)
+    for host in (rosbridge_host, "localhost"):
+        try:
+            with Telemetry(host=host, port=9090) as telemetry:
+                live_joints = telemetry.get_joints(joint_names)
+                for motor_name, angle_deg in (live_joints or {}).items():
+                    if angle_deg is not None:
+                        initial_angles[motor_name] = float(angle_deg)
+                break
+        except Exception:
+            continue
+
+    waypoints = [
+        (
+            [float(round(initial_angles[motor_name] * 100.0)) for motor_name in joint_names],
+            0.0,
+        )
+    ]
+    time_from_start = 0.0
+    for (_pose, leg_seconds), angle_map in zip(resolved_poses, filled):
+        time_from_start += leg_seconds
+        waypoints.append(
+            (
+                [float(round(angle_map[motor_name] * 100.0)) for motor_name in joint_names],
+                time_from_start,
+            )
+        )
+
+    for host in (rosbridge_host, "localhost"):
+        try:
+            with pib_sdk.Write(host=host, port=9090) as writer:
+                if hasattr(writer, "send_timed_trajectory"):
+                    writer.send_timed_trajectory(joint_names, waypoints)
+                else:
+                    play_pose_sequence_timed(writer, pose_backend, steps)
+                break
+        except Exception:
+            if host == "localhost":
+                raise
+            continue
+
+    if time_from_start > 0.0:
+        time.sleep(time_from_start)
 `;
 
 // model inference
