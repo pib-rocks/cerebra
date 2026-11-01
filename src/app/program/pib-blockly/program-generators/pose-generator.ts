@@ -35,7 +35,9 @@ type PlayPoseSequenceGeneratorBlock = Block & {
 };
 
 function quotePythonString(value: string): string {
-    return `'${value.replace(/\\/g, "\\\\").replace(/'/g, "\\'")}'`;
+    return `'${value
+        .replaceAll("\\", "\\\\")
+        .replaceAll("'", String.raw`\'`)}'`;
 }
 
 function addPoseSdkDefinitions(generator: typeof pythonGenerator): void {
@@ -209,20 +211,29 @@ export function pose_count(_block: Block, generator: typeof pythonGenerator) {
     return ["len(list_poses(pose_backend))", Order.FUNCTION_CALL];
 }
 
+function resolveSequenceArgument(
+    block: Block,
+    generator: typeof pythonGenerator,
+): string {
+    const dynamicLiteral = extractDynamicPoseSequenceLiteral(
+        block as PlayPoseSequenceGeneratorBlock,
+    );
+    if (dynamicLiteral !== null) {
+        return dynamicLiteral;
+    }
+    if (typeof generator.valueToCode === "function") {
+        return (
+            generator.valueToCode(block, "SEQUENCE", Order.NONE).trim() || "[]"
+        );
+    }
+    return "[]";
+}
+
 export function play_pose_sequence(
     block: Block,
     generator: typeof pythonGenerator,
 ) {
-    const dynamicLiteral = extractDynamicPoseSequenceLiteral(
-        block as PlayPoseSequenceGeneratorBlock,
-    );
-    const sequenceCode =
-        dynamicLiteral !== null
-            ? dynamicLiteral
-            : typeof generator.valueToCode === "function"
-            ? generator.valueToCode(block, "SEQUENCE", Order.NONE).trim() ||
-              "[]"
-            : "[]";
+    const sequenceCode = resolveSequenceArgument(block, generator);
 
     addPoseSdkDefinitions(generator);
     addDefinitions(generator, {

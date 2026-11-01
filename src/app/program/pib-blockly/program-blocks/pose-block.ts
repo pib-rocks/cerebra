@@ -36,6 +36,17 @@ export interface PlayPoseSequenceBlock extends Blockly.Block {
     getStepsState: () => PoseSequenceStepState[];
     insertStepAt: (index: number, pose?: string, duration?: number) => void;
     removeStepAt: (index: number) => void;
+    saveExtraState: () => {
+        itemCount: number;
+        steps?: PoseSequenceStepState[];
+    };
+    loadExtraState: (state: {
+        itemCount?: number;
+        steps?: PoseSequenceStepState[];
+    }) => void;
+    decompose: (workspace: Blockly.Workspace) => Blockly.Block;
+    compose: (containerBlock: Blockly.Block) => void;
+    saveConnections: (containerBlock: Blockly.Block) => void;
 }
 
 interface PoseSequenceItemBlock extends Blockly.Block {
@@ -209,12 +220,12 @@ export const moveToPose = {
             this: PlayPoseSequenceBlock,
             state: {itemCount?: number; steps?: PoseSequenceStepState[]},
         ): void {
-            const rawCount =
-                typeof state?.itemCount === "number"
-                    ? state.itemCount
-                    : Array.isArray(state?.steps)
-                    ? state.steps.length
-                    : DEFAULT_POSE_SEQUENCE_COUNT;
+            let rawCount = DEFAULT_POSE_SEQUENCE_COUNT;
+            if (typeof state?.itemCount === "number") {
+                rawCount = state.itemCount;
+            } else if (Array.isArray(state?.steps)) {
+                rawCount = state.steps.length;
+            }
             this.itemCount_ = Math.max(MIN_POSE_SEQUENCE_COUNT, rawCount);
             this.updateShape_(
                 Array.isArray(state?.steps) ? state.steps : undefined,
