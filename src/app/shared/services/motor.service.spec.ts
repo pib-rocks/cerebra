@@ -43,6 +43,7 @@ describe("MotorService", () => {
                 {
                     motorSettingsReceiver$: new Subject(),
                     jointTrajectoryReceiver$: new Subject(),
+                    jointStatesReceiver$: new Subject(),
                     currentReceiver$: new Subject(),
                     connectionStatus$: new BehaviorSubject<boolean>(false),
                 },
@@ -431,6 +432,21 @@ describe("MotorService", () => {
                 ],
             }),
         );
+    });
+
+    it("should update motor position subjects in centidegrees when joint_states arrive in radians", () => {
+        const seen: number[] = [];
+        service
+            .getPositionObservable("shoulder_horizontal_right")
+            .subscribe((value) => seen.push(value));
+
+        rosService.jointStatesReceiver$.next({
+            header: {stamp: {sec: 0, nanosec: 0}, frame_id: ""},
+            name: ["shoulder_horizontal_right", "invalid_motor"],
+            position: [Math.PI / 4, Number.NaN],
+        });
+
+        expect(seen).toEqual([0, 4500]);
     });
 });
 
