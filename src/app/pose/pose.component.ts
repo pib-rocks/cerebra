@@ -1,4 +1,5 @@
 import {
+    ChangeDetectorRef,
     Component,
     ElementRef,
     OnInit,
@@ -10,7 +11,7 @@ import {
 } from "@angular/core";
 import {FormControl, Validators, ReactiveFormsModule} from "@angular/forms";
 import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
-import {Observable, from, map} from "rxjs";
+import {Observable, from, map, tap} from "rxjs";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {PoseService} from "src/app/shared/services/pose.service";
 import {PoseTransferService} from "src/app/shared/services/pose-transfer.service";
@@ -57,10 +58,13 @@ export class PoseComponent implements OnInit {
         private poseTransferService: PoseTransferService,
         private modalService: NgbModal,
         private matSnackBarService: MatSnackBar,
+        private changeDetectorRef: ChangeDetectorRef,
     ) {}
 
     ngOnInit(): void {
-        this.poses = this.poseService.getPosesObservable();
+        this.poses = this.poseService
+            .getPosesObservable()
+            .pipe(tap(() => this.changeDetectorRef.markForCheck()));
     }
 
     savePose() {
