@@ -172,11 +172,11 @@ describe("Robot3DComponent", () => {
         });
     });
 
-    it("switches the viewer to command mode once the limits are in", () => {
-        // The element decides on its own gate (verified mapping, model/robot match); the tab only
-        // has to ask for command at all - it was hardcoded to read before.
-        viewer.dispatchEvent(new CustomEvent("ready"));
-        expect(modeSpy).toHaveBeenCalledWith("command");
+    it("asks the viewer for command mode without waiting for a ready event", () => {
+        // The element's `ready` can fire before this component attaches its listener (warm cache),
+        // which left the tab read-only and the sliders dead. The mode is therefore a static
+        // attribute; the element gates itself until mapping and limits are there.
+        expect(viewer.getAttribute("mode")).toBe("command");
     });
 
     it("sets motor limits on the viewer when the model is ready", () => {
