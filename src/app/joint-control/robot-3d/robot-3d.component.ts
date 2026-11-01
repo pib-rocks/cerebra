@@ -180,6 +180,10 @@ export class Robot3DComponent implements AfterViewInit, OnDestroy {
             return;
         }
         element.limits = this.limitsMap;
+        // The same list the limits come from: if the model's mapping names a motor this robot
+        // does not have (or misses one), the viewer goes read-only instead of posing a robot
+        // that does not exist.
+        element.setExpectedMotors(Object.keys(this.limitsMap));
     }
 
     private handleCommandRequest(detail: CommandRequestDetail): void {
