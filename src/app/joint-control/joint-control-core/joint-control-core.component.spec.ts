@@ -136,5 +136,8 @@ describe("JointControlCoreComponent", () => {
         expect(
             fixture.nativeElement.querySelector(".feedback-placeholder").title,
         ).toContain("not published");
+        expect(
+            fixture.nativeElement.querySelectorAll(".feedback-label").length,
+        ).toBe(0);
     });
 });

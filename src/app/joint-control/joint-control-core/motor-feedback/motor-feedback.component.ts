@@ -25,6 +25,7 @@ export class MotorFeedbackComponent implements OnInit {
 
     @Input() motor!: MotorConfiguration;
     @Input() feedback!: DiagnosticMotorFeedback;
+    @Input() showLabel = true;
 
     displayValue?: string;
 
