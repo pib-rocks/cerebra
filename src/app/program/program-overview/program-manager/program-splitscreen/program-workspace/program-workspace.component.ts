@@ -168,6 +168,7 @@ export class ProgramWorkspaceComponent
     ngAfterViewInit() {
         this.observer.observe(this.blocklyDiv.nativeElement);
         this.workspaceContent = this.codeVisual;
+        this.codePythonChange.emit(this.codePython);
     }
 
     ngOnDestroy(): void {
