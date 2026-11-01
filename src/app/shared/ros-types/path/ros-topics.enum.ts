@@ -1,4 +1,5 @@
 export enum rosTopics {
+    jointStates = "/joint_states",
     jointTrajectoryTopicName = "/joint_trajectory",
     motorCurrentTopicName = "/motor_current",
     cameraPreviewSizeTopicName = "/size_topic",
