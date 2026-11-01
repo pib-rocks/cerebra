@@ -168,6 +168,7 @@ export class ProgramWorkspaceComponent
     ngAfterViewInit() {
         this.observer.observe(this.blocklyDiv.nativeElement);
         this.workspaceContent = this.codeVisual;
+        this.codePythonChange.emit(this.codePython);
     }
 
     ngOnDestroy(): void {
@@ -191,24 +192,43 @@ export class ProgramWorkspaceComponent
 
     updatePoseBlockDropdown(poses: Pose[]): void {
         const poseOptions = poses.map((pose) => [pose.name, pose.poseId]);
+        const fallbackValue = poseOptions[0]?.[1];
         Blockly.Blocks["move_to_pose"].getPoses = () => poseOptions;
         if (!this.workspace) {
             return;
         }
+        const refreshPoseField = (field: Blockly.FieldDropdown | null) => {
+            if (!field) {
+                return;
+            }
+            const currentValue = field.getValue();
+            field.getOptions(false);
+            if (currentValue && currentValue !== "LOADING") {
+                field.setValue(currentValue);
+            } else if (fallbackValue) {
+                field.setValue(fallbackValue);
+            }
+        };
         for (const block of this.workspace.getBlocksByType(
             "move_to_pose",
             false,
         )) {
-            const field = block.getField(
-                "POSE",
-            ) as Blockly.FieldDropdown | null;
-            if (!field) {
-                continue;
-            }
-            const currentValue = field.getValue();
-            field.getOptions(false);
-            if (currentValue) {
-                field.setValue(currentValue);
+            refreshPoseField(
+                block.getField("POSE") as Blockly.FieldDropdown | null,
+            );
+        }
+        for (const block of this.workspace.getBlocksByType(
+            "play_pose_sequence",
+            false,
+        )) {
+            let rowIndex = 0;
+            while (block.getInput(`STEP_${rowIndex}`)) {
+                refreshPoseField(
+                    block.getField(
+                        `POSE_${rowIndex}`,
+                    ) as Blockly.FieldDropdown | null,
+                );
+                rowIndex++;
             }
         }
     }

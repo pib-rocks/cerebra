@@ -9,38 +9,187 @@
 }
 
 .keys-hint {
-    color: white;
-    opacity: 0.85;
+    color: #b8c4d8;
+    font-size: 0.85rem;
+    margin-bottom: 0;
 }
 
 .keys-row {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    font-weight: 600;
 }
 
-.keys-password,
+.keys-security-panel {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+    align-items: center;
+    padding: 0.9rem 1.1rem;
+    margin-bottom: 1.25rem;
+    background: rgba(27, 43, 68, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-left: 3px solid $pink-color;
+    border-radius: 8px;
+}
+
+.keys-encryption-block {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.keys-password {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    padding-left: 1rem;
+    border-left: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.keys-password-inline {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.keys-password-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+
+    input {
+        flex: 1 1 180px;
+        min-width: 150px;
+    }
+}
+
+.keys-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+    align-items: stretch;
+}
+
 .keys-card {
-    margin-top: 1rem;
-    padding: 0.75rem;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 1rem 1.1rem;
+    background: linear-gradient(
+        165deg,
+        rgba(27, 43, 68, 0.72) 0%,
+        rgba(4, 25, 57, 0.85) 100%
+    );
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 8px;
+    transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease;
+
+    &:hover {
+        border-color: rgba(0, 148, 223, 0.55);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28);
+    }
+}
+
+.keys-card-cloud {
+    border-top: 2px solid $blue-color;
+}
+
+.keys-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding-bottom: 0.55rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .keys-card-title {
     font-weight: bold;
-    margin-bottom: 0.5rem;
+    font-size: 1.05rem;
+    margin-bottom: 0;
+    letter-spacing: 0.2px;
+}
+
+.keys-state-pill {
+    margin: 0;
+    padding: 0.15rem 0.6rem;
+    border-radius: 10rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #b8c4d8;
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    white-space: nowrap;
+}
+
+.keys-state-stored {
+    color: #9ff0c0;
+    background: rgba(47, 191, 113, 0.14);
+    border-color: rgba(47, 191, 113, 0.45);
+}
+
+.keys-state-pill-cloud {
+    color: #8fd8ff;
+    background: rgba(0, 148, 223, 0.16);
+    border-color: rgba(0, 148, 223, 0.45);
+}
+
+.keys-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    flex: 1 1 auto;
+    justify-content: center;
+}
+
+.keys-status-line {
+    margin: 0;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: #ffffff;
 }
 
 .keys-pair {
     display: flex;
-    gap: 1rem;
+    gap: 0.65rem;
     align-items: center;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0;
+
+    input {
+        flex: 1 1 auto;
+        width: 100%;
+        min-width: 0;
+    }
 }
 
 .keys-label {
-    min-width: 6rem;
+    min-width: 2.5rem;
     margin-bottom: 0;
+    font-size: 0.88rem;
+    color: #dfe7f5;
+}
+
+.keys-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding-top: 0.55rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.keys-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-left: auto;
 }
 
 .keys-password-fields .keys-label,
@@ -58,30 +207,30 @@
     margin-bottom: 0;
 }
 
-input {
+input:not([type="checkbox"]) {
     color: $white-color;
     background-color: $blue-dark-2;
-    border: none;
+    border: 1px solid rgba(255, 255, 255, 0.14);
     border-radius: 5px;
-    padding: 0.25rem 0.5rem;
-}
+    padding: 0.32rem 0.6rem;
 
-button {
-    margin-right: 0.5rem;
-    margin-top: 0.5rem;
+    &:focus {
+        border-color: $blue-color;
+    }
 }
 
 .keys-provider-health {
     display: inline-flex;
     align-items: center;
     gap: 0.3rem;
-    margin: 0.35rem 0;
-    padding: 0.1rem 0.55rem;
+    margin: 0;
+    padding: 0.18rem 0.6rem;
     border: 1px solid #6c7c99;
     border-radius: 10rem;
     font-size: 0.78rem;
     line-height: 1.2;
     color: #dfe7f5;
+    max-width: 100%;
 }
 
 .provider-health-dot {

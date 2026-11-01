@@ -18,6 +18,8 @@ import {MotorDTO} from "../types/motor-dto";
 import {MotorSettingsError} from "../error/motor-settings-error";
 import {MotorPosition, fromJointTrajectory} from "../types/motor-position";
 import {HardwareFeedback} from "../types/hardware-capabilities";
+import {JointStateMessage} from "../ros-types/msg/joint-state-message";
+import {radToCentideg} from "../types/joint-angle-units";
 
 export type DiagnosticMotorFeedback = Extract<
     HardwareFeedback,
@@ -193,6 +195,26 @@ export class MotorService {
                 }
             },
         );
+
+        this.rosService.jointStatesReceiver$?.subscribe(
+            (msg: JointStateMessage) => {
+                const names = msg?.name ?? [];
+                const positions = msg?.position ?? [];
+                const count = Math.min(names.length, positions.length);
+                for (let i = 0; i < count; i++) {
+                    const motorName = names[i];
+                    const posRad = positions[i];
+                    if (!motorName || !Number.isFinite(posRad)) {
+                        continue;
+                    }
+                    this.publishToSubject(
+                        motorName,
+                        this.motorNameToPositionSubject,
+                        Math.round(radToCentideg(posRad)),
+                    );
+                }
+            },
+        );
     }
 
     getSettingsObservable(motorName: string): Observable<MotorSettings> {
@@ -315,6 +337,15 @@ export class MotorService {
     }
 
     setPositions(motorPositions: MotorPosition[]): Observable<void> {
+        for (const {motorName, position} of motorPositions) {
+            if (Number.isFinite(position)) {
+                this.publishToSubject(
+                    motorName,
+                    this.motorNameToPositionSubject,
+                    position,
+                );
+            }
+        }
         const message = fromMotorPositions(motorPositions);
         return this.rosService.applyJointTrajectory(message);
     }

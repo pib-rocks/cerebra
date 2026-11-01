@@ -1781,6 +1781,35 @@ describe("VoiceAssistantComponent", () => {
         expect(stored.providerRef).toBe(String(keyed.id));
         component.ngbModalRef?.close();
     });
+
+    it("structures the Advanced section with a mode bar, paired Model/Reasoning labels, and a grouped controls panel", () => {
+        fixture.detectChanges();
+        openNewPersonality();
+
+        const advancedPanel = document.body.querySelector(
+            "#personality-advanced.personality-advanced-panel",
+        ) as HTMLElement;
+        expect(advancedPanel).not.toBeNull();
+        expect(
+            advancedPanel.querySelector(
+                "#row-installation-mode.advanced-mode-bar .advanced-mode-pill",
+            ),
+        ).not.toBeNull();
+        expect(
+            advancedPanel.querySelector("#label-reasoning-effort")?.textContent,
+        ).toContain("Reasoning level");
+        expect(
+            advancedPanel.querySelector(
+                ".threshold-stepper #pause-threshold-input",
+            ),
+        ).not.toBeNull();
+        expect(
+            advancedPanel.querySelector(
+                ".advanced-controls-grid #row-tool-calling",
+            ),
+        ).not.toBeNull();
+        component.ngbModalRef?.close();
+    });
 });
 
 describe("VoiceAssistantComponent (zoneless)", () => {

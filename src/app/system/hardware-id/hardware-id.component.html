@@ -331,9 +331,9 @@
 
     <!-- Import Hardware-IDs Modal -->
     @if (showImportModal) {
-    <div class="modal-backdrop fade show"></div>
+    <div class="modal-backdrop fade show cerebra-modal-backdrop"></div>
     <div
-        class="modal d-block fade show"
+        class="modal d-block fade show cerebra-modal"
         tabindex="-1"
         role="dialog"
         aria-modal="true"
@@ -341,10 +341,9 @@
         <div
             class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable"
             role="document">
-            <div
-                class="modal-content bg-dark text-white border-secondary shadow-lg">
+            <div class="modal-content">
                 <div
-                    class="modal-header border-secondary d-flex justify-content-between align-items-center">
+                    class="modal-header d-flex justify-content-between align-items-center">
                     <h5 class="modal-title fw-bold mb-0">Import IDs</h5>
                     <button
                         type="button"

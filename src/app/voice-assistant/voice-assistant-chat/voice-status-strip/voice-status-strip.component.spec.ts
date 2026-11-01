@@ -254,4 +254,61 @@ describe("VoiceStatusStripComponent", () => {
         const chip = voiceAssistantChipElement()!;
         expect(chip.classList.contains("voice-status-chip-neutral")).toBe(true);
     });
+
+    it("shows the personality's warm state in the same row as the other chips", () => {
+        fixture.componentRef.setInput("warmth", {state: "warm", warm: true});
+        fixture.detectChanges();
+
+        const chip: HTMLElement = fixture.nativeElement.querySelector(
+            '[data-test="VOICE_STATUS_WARMTH"]',
+        );
+        expect(chip).not.toBeNull();
+        expect(chip.textContent!.trim()).toBe("Personality: warm");
+        expect(chip.classList.contains("voice-status-chip-warm")).toBeTrue();
+        expect(chip.closest(".voice-status")).toBe(
+            fixture.nativeElement.querySelector(".voice-status"),
+        );
+    });
+
+    it("shows a cold personality as cold, not as a fault", () => {
+        fixture.componentRef.setInput("warmth", {
+            state: "cold",
+            warm: false,
+            reason: "no_provider_key",
+        });
+        fixture.detectChanges();
+
+        const chip: HTMLElement = fixture.nativeElement.querySelector(
+            '[data-test="VOICE_STATUS_WARMTH"]',
+        );
+        expect(chip.textContent!.trim()).toBe("Personality: cold");
+        expect(chip.classList.contains("voice-status-chip-cold")).toBeTrue();
+        expect(chip.getAttribute("title")).toContain("no provider key stored");
+    });
+
+    it("shows a warm-up in flight and a direct personality neutrally", () => {
+        fixture.componentRef.setInput("warmth", {
+            state: "warming",
+            warm: false,
+        });
+        fixture.detectChanges();
+        expect(text("VOICE_STATUS_WARMTH")).toBe("Personality: warming…");
+
+        fixture.componentRef.setInput("warmth", {
+            state: "notSupported",
+            warm: false,
+        });
+        fixture.detectChanges();
+        expect(text("VOICE_STATUS_WARMTH")).toBe(
+            "Personality: direct · no warm-up",
+        );
+    });
+
+    it("shows no warmth chip while no personality is open", () => {
+        expect(
+            fixture.nativeElement.querySelector(
+                '[data-test="VOICE_STATUS_WARMTH"]',
+            ),
+        ).toBeNull();
+    });
 });

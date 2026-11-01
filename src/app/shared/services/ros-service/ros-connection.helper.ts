@@ -12,7 +12,6 @@ export interface RosConnectionHost extends RosDetectionTopologyHost {
     initSubscribers: () => void;
     connectionStatusSubject: BehaviorSubject<boolean>;
     modelStatusTopic?: ROSLIB.Topic<ModelStatusArray>;
-    cameraTopic?: ROSLIB.Topic;
     cameraTopicSubscribed: boolean;
     detectionDiscoveryGeneration: number;
     detectionDiscoveryInFlight: boolean;
@@ -34,10 +33,6 @@ export function attachRosConnectionHandlers(host: RosConnectionHost): void {
     host.ros.on("close", () => {
         console.log("Disconnected from ROSBridge server.");
         host.modelStatusTopic?.unsubscribe();
-        if (host.cameraTopicSubscribed) {
-            host.cameraTopic?.unsubscribe();
-            host.cameraTopicSubscribed = false;
-        }
         stopDetectionTopicDiscovery(host);
         host.detectionDiscoveryGeneration++;
         host.detectionDiscoveryInFlight = false;

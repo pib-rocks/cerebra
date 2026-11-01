@@ -559,9 +559,19 @@ describe("HardwareIdComponent", () => {
         fixture.detectChanges();
 
         expect(component.showImportModal).toBeTrue();
+        const modal = compiled.querySelector(
+            "#hardware-ids-import-modal",
+        ) as HTMLElement;
+        expect(modal).toBeTruthy();
+        expect(modal.classList.contains("cerebra-modal")).toBeTrue();
         expect(
-            compiled.querySelector("#hardware-ids-import-modal"),
-        ).toBeTruthy();
+            compiled.querySelector(".modal-backdrop.cerebra-modal-backdrop"),
+        ).not.toBeNull();
+        expect(
+            modal
+                .querySelector(".modal-content")
+                ?.classList.contains("bg-dark"),
+        ).toBeFalse();
     });
 
     it("should validate selected JSON and show import preview", () => {

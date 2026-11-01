@@ -4,6 +4,8 @@ export enum UrlConstants {
     CHAT_CHANNEL = "/voice-assistant/channel",
     MOTOR = "/motor",
     CAMERA = "/camera-settings",
+    CAMERA_STREAM = "/api/camera/stream",
+    CAMERA_SNAPSHOT = "/api/camera/snapshot",
     PROGRAM = "/program",
     CODE = "code",
     ASSISTANT_MODEL = "/assistant-model",

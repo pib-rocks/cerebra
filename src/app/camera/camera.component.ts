@@ -189,7 +189,6 @@ export class CameraComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit(): void {
-        this.imageSrc = "../../assets/camera-placeholder.jpg";
         this.startCamera();
         // Entering the page starts the camera, so the picture is live immediately. Mirror that in the
         // toggle instead of the stored settings, which left a running video looking switched off.
@@ -275,6 +274,9 @@ export class CameraComponent implements OnInit, OnDestroy {
 
     startCamera() {
         this.cameraService.startCamera();
+        this.imageSrc = this.cameraService.streamUrl();
+        this.imageIsLive = true;
+        this.changeDetectorRef.markForCheck();
     }
 
     stopCamera() {
@@ -285,6 +287,33 @@ export class CameraComponent implements OnInit, OnDestroy {
         this.clearDetectionFlushTimer();
         this.clearDiagnostics();
         this.imageSrc = "../../assets/camera-placeholder.jpg";
+        this.imageIsLive = false;
+        this.clearDetections();
+    }
+
+    onStreamLoad() {
+        if (
+            !this.imageSrc ||
+            this.imageSrc.includes("camera-placeholder") ||
+            this.imageSrc.includes("camera-error")
+        ) {
+            return;
+        }
+        this.imageIsLive = true;
+        this.cameraFrameTimes.push(Date.now());
+        this.updateDiagnostics();
+        this.changeDetectorRef.markForCheck();
+    }
+
+    onStreamError() {
+        if (!this.imageSrc || this.imageSrc.includes("camera-placeholder")) {
+            return;
+        }
+        this.pendingCameraFrame = undefined;
+        this.pendingDetections.clear();
+        this.clearDisplayRefreshTimer();
+        this.clearDetectionFlushTimer();
+        this.imageSrc = "../../assets/camera-error-image.svg";
         this.imageIsLive = false;
         this.clearDetections();
     }

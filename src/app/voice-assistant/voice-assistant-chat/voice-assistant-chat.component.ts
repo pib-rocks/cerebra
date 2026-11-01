@@ -18,7 +18,7 @@ import {
     RouterLink,
 } from "@angular/router";
 import {NgbModal, NgbModalRef} from "@ng-bootstrap/ng-bootstrap";
-import {Observable, Subject, Subscription, take} from "rxjs";
+import {Observable, Subject, Subscription, catchError, of, take} from "rxjs";
 import {SidebarElement} from "src/app/shared/interfaces/sidebar-element.interface";
 import {ChatService} from "src/app/shared/services/chat.service";
 import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
@@ -34,6 +34,11 @@ import {
     selectionFromModelRef,
 } from "src/app/shared/types/provider-registry";
 import {ProviderHealth} from "src/app/shared/types/provider-health";
+import {
+    PersonalityWarmth,
+    UNKNOWN_PERSONALITY_WARMTH,
+    warmingPersonality,
+} from "src/app/shared/types/personality-warmth";
 import {ProviderHealthService} from "src/app/shared/services/provider-health.service";
 import {KeyStoreService} from "src/app/system/keys/key-store.service";
 import {Location} from "@angular/common";
@@ -107,6 +112,14 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
     providerHealth: ProviderHealth | null = null;
     providerLabel = "";
     providerHealthLoading = false;
+    /**
+     * Cold/warm state of this personality's Hermes agent (PR-2130). Opening a
+     * personality warms it, so its first turn does not pay the local cold start.
+     */
+    personalityWarmth: PersonalityWarmth = {...UNKNOWN_PERSONALITY_WARMTH};
+    private warmthPersonalityId = "";
+    private warmthSubscription?: Subscription;
+    private warmUpSubscription?: Subscription;
     private providerHealthSubscription?: Subscription;
     private providerHealthModelId: number | null = null;
     /** Last turn of the shown chat, folded from the same trace events (PC-83). */
@@ -154,6 +167,7 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
             .subscribe(() => {
                 this.refreshCloudPresence();
                 this.refreshProviderHealth();
+                this.refreshPersonalityWarmth();
                 this.changeDetector.markForCheck();
             });
         // set current state of VA (in case another user is using it)
@@ -253,6 +267,7 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
                 }
                 // The personality decides which provider the chip reports on.
                 this.refreshProviderHealth();
+                this.refreshPersonalityWarmth();
                 localStorage.setItem("voice-assistant-tab", "chat");
                 this.topicFormControl.setValidators([
                     Validators.required,
@@ -344,10 +359,12 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
 
     /**
      * faster-whisper and Supertone do not use the key store.
-     * Degraded mode leaves this control on.
+     * Degraded mode leaves this control on. A persisted cloud credential in
+     * the key store / catalogue also enables voice interaction when the
+     * rosbridge token probe is slow or unavailable.
      */
     localVoiceEnabled(): boolean {
-        return this.smartConnectActive;
+        return this.smartConnectActive || this.cloudTokenStored;
     }
 
     /**
@@ -436,6 +453,63 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
      * a browser preflight. A personality whose model row is gone has nothing
      * to probe and shows no chip.
      */
+    /**
+     * Read this personality's warm state and, when it is cold, warm it (PR-2130).
+     *
+     * The read is the daemon's agent cache; the warm-up builds that agent and
+     * runs no model request, so it costs no tokens. The probe runs once per
+     * personality: the catalogue emits and the route changes both call here.
+     */
+    private refreshPersonalityWarmth(): void {
+        const personalityId = this.openPersonalityId();
+        if (personalityId == null) {
+            return;
+        }
+        if (personalityId === this.warmthPersonalityId) {
+            return;
+        }
+        this.warmthPersonalityId = personalityId;
+        this.warmUpSubscription?.unsubscribe();
+        this.warmthSubscription?.unsubscribe();
+        this.warmthSubscription = this.voiceAssistantService
+            .personalityWarmth(personalityId)
+            .pipe(catchError(() => of(null)))
+            .subscribe((warmth) => {
+                if (warmth == null || warmth.state !== "cold") {
+                    this.personalityWarmth = warmth ?? {
+                        ...UNKNOWN_PERSONALITY_WARMTH,
+                    };
+                    this.changeDetector.markForCheck();
+                    return;
+                }
+                // Show the warm-up while it runs instead of a stale "cold".
+                this.personalityWarmth = warmingPersonality(warmth);
+                this.changeDetector.markForCheck();
+                this.warmUpSubscription = this.voiceAssistantService
+                    .warmPersonality(personalityId)
+                    .pipe(catchError(() => of(null)))
+                    .subscribe((warmed) => {
+                        this.personalityWarmth = warmed ?? {
+                            ...UNKNOWN_PERSONALITY_WARMTH,
+                        };
+                        this.changeDetector.markForCheck();
+                    });
+            });
+    }
+
+    /** The id of the personality the page currently shows. */
+    private openPersonalityId(): string | null {
+        const fromRoute = this.personalityId;
+        if (typeof fromRoute === "string" && fromRoute.trim() !== "") {
+            return fromRoute;
+        }
+        const fromPersonality = this.personality?.personalityId;
+        return typeof fromPersonality === "string" &&
+            fromPersonality.trim() !== ""
+            ? fromPersonality
+            : null;
+    }
+
     refreshProviderHealth(): void {
         const personality =
             (this.personalityId != null
@@ -529,6 +603,8 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
         this.tokenStatusSubscription?.unsubscribe();
         this.routeParamMapSubscription?.unsubscribe();
         this.providerHealthSubscription?.unsubscribe();
+        this.warmthSubscription?.unsubscribe();
+        this.warmUpSubscription?.unsubscribe();
     }
 
     optionCallbackMethods = [

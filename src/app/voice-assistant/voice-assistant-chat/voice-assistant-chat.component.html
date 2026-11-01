@@ -6,6 +6,7 @@
                 [provider]="providerHealth"
                 [providerLabel]="providerLabel"
                 [providerLoading]="providerHealthLoading"
+                [warmth]="personalityWarmth"
                 (providerRefresh)="refreshProviderHealth()" />
             <app-turn-trace-panel [trace]="turnTrace" />
             <router-outlet></router-outlet>
@@ -26,7 +27,7 @@
                     <div class="col pe-0 ps-0">
                         <div
                             id="tooltip-smart-connect-disabled"
-                            [title]="smartConnectActive ? '' : 'Enable SmartConnect to start the Voice-Assistant' ">
+                            [title]="localVoiceEnabled() ? '' : 'Enable SmartConnect to start the Voice-Assistant' ">
                             <button
                                 class="btn border-0 p-0"
                                 id="sidebar-right-toggle-voice-assistant"

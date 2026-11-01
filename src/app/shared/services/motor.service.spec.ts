@@ -43,6 +43,7 @@ describe("MotorService", () => {
                 {
                     motorSettingsReceiver$: new Subject(),
                     jointTrajectoryReceiver$: new Subject(),
+                    jointStatesReceiver$: new Subject(),
                     currentReceiver$: new Subject(),
                     connectionStatus$: new BehaviorSubject<boolean>(false),
                 },
@@ -412,7 +413,7 @@ describe("MotorService", () => {
         );
     });
 
-    it("should a joint-trajectory-messages, when setting the positions", () => {
+    it("should send a single-point joint-trajectory-message when setting multiple positions", () => {
         const motorPositions: MotorPosition[] = [
             {motorName: "test-motor-1", position: 1000},
             {motorName: "test-motor-2", position: 2000},
@@ -420,20 +421,32 @@ describe("MotorService", () => {
         service.setPositions(motorPositions);
         expect(rosService.applyJointTrajectory).toHaveBeenCalledOnceWith(
             jasmine.objectContaining({
-                joint_names: jasmine.arrayWithExactContents([
+                joint_names: [
                     motorPositions[0].motorName,
                     motorPositions[1].motorName,
-                ]),
-                points: jasmine.arrayWithExactContents([
+                ],
+                points: [
                     jasmine.objectContaining({
-                        positions: jasmine.arrayWithExactContents([1000]),
+                        positions: [1000, 2000],
                     }),
-                    jasmine.objectContaining({
-                        positions: jasmine.arrayWithExactContents([2000]),
-                    }),
-                ]),
+                ],
             }),
         );
+    });
+
+    it("should update motor position subjects in centidegrees when joint_states arrive in radians", () => {
+        const seen: number[] = [];
+        service
+            .getPositionObservable("shoulder_horizontal_right")
+            .subscribe((value) => seen.push(value));
+
+        rosService.jointStatesReceiver$.next({
+            header: {stamp: {sec: 0, nanosec: 0}, frame_id: ""},
+            name: ["shoulder_horizontal_right", "invalid_motor"],
+            position: [Math.PI / 4, Number.NaN],
+        });
+
+        expect(seen).toEqual([0, 4500]);
     });
 });
 

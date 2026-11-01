@@ -1,8 +1,9 @@
 <div
     class="feedback"
     [attr.data-test]="'Motor_Feedback_' + feedback + '_' + motor.motorPathName">
+    @if (showLabel) {
     <span class="feedback-label">{{ label }}</span>
-    @if (displayValue !== undefined) {
+    } @if (displayValue !== undefined) {
     <strong data-test="TXT_Motor_Feedback_Value">{{ displayValue }}</strong>
     } @else {
     <strong

@@ -1061,6 +1061,54 @@ describe("KeysComponent", () => {
         expect(providerHealth.check).toHaveBeenCalledWith(4);
         expect(text("#keys-provider-health-text-4")).toBe("Valid (80 ms)");
     });
+
+    it("renders provider cards inside the responsive grid container with structured header/body/footer", () => {
+        const grid = fixture.nativeElement.querySelector(
+            "#keys-provider-grid",
+        ) as HTMLElement;
+        expect(grid).not.toBeNull();
+        expect(grid.classList.contains("keys-grid")).toBeTrue();
+        expect(grid.getAttribute("data-test")).toBe("GRID_Provider_Keys");
+
+        const cardsInGrid = Array.from(
+            grid.querySelectorAll(".keys-card"),
+        ) as HTMLElement[];
+        expect(cardsInGrid.map((c) => c.id)).toEqual([
+            "keys-cloud-entry",
+            "keys-provider-4",
+        ]);
+        for (const card of cardsInGrid) {
+            expect(card.querySelector(".keys-card-header")).not.toBeNull();
+            expect(card.querySelector(".keys-card-body")).not.toBeNull();
+            expect(card.querySelector(".keys-card-footer")).not.toBeNull();
+        }
+        const statePill = fixture.nativeElement.querySelector(
+            "#keys-provider-state-4",
+        ) as HTMLElement;
+        expect(statePill.classList.contains("keys-state-pill")).toBeTrue();
+        expect(statePill.classList.contains("keys-state-stored")).toBeTrue();
+    });
+
+    it("visually separates cerebra-modal dialogs from the page via border, shadow, elevated surface, and dimmed backdrop", () => {
+        click("#keys-change-password");
+        const modalContent = fixture.nativeElement.querySelector(
+            "#keys-password-modal .modal-content",
+        ) as HTMLElement;
+        const backdrop = fixture.nativeElement.querySelector(
+            "#keys-password-backdrop",
+        ) as HTMLElement;
+        expect(modalContent).not.toBeNull();
+        expect(backdrop).not.toBeNull();
+
+        const contentStyle = getComputedStyle(modalContent);
+        const backdropStyle = getComputedStyle(backdrop);
+
+        expect(contentStyle.borderTopWidth).toBe("1px");
+        expect(contentStyle.borderTopStyle).toBe("solid");
+        expect(contentStyle.boxShadow).not.toBe("none");
+        expect(contentStyle.backgroundColor).not.toBe("rgb(4, 25, 57)");
+        expect(backdropStyle.backgroundColor).not.toBe("rgba(0, 0, 0, 0)");
+    });
 });
 
 describe("KeysComponent (zoneless)", () => {

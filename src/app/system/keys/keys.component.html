@@ -1,24 +1,6 @@
 <div class="keys-tab">
     <div class="form-headline mb-3">Keys</div>
 
-    <div class="keys-row">
-        <input
-            id="encrypt-key-storage"
-            data-test="CHK_Encrypt_Key_Storage"
-            type="checkbox"
-            [checked]="encryptKeyStorage"
-            [disabled]="busy"
-            (change)="onEncryptionToggle($event)" />
-        <label for="encrypt-key-storage">
-            Encrypt Key Storage (requires password at robot start)
-        </label>
-    </div>
-    <p
-        class="keys-hint"
-        data-test="LBL_Key_Storage">
-        {{ keyStorageHint() }}
-    </p>
-
     @if (error) {
     <div
         class="alert alert-danger"
@@ -33,146 +15,206 @@
     </div>
     }
 
-    <div class="keys-password">
-        <div class="keys-card-title">Operator password</div>
-        @if (encryptKeyStorage) {
-        <label
-            class="keys-label"
-            for="keys-operator-password">
-            One password for every provider key
-        </label>
-        <input
-            id="keys-operator-password"
-            type="password"
-            autocomplete="current-password"
-            [value]="password"
-            (input)="onPasswordInput($event)" />
-        <button
-            id="keys-change-password"
-            data-test="BTN_Change_Operator_Password"
-            type="button"
-            class="btn btn-outline-light"
-            [disabled]="busy"
-            (click)="openPasswordDialog('change')">
-            Change
-        </button>
-        } @else {
-        <button
-            id="keys-enable-encryption"
-            data-test="BTN_Turn_Encryption_On"
-            type="button"
-            class="btn btn-outline-light"
-            [disabled]="busy"
-            (click)="openPasswordDialog('enable')">
-            Set a password to turn encryption on
-        </button>
+    <div class="keys-security-panel">
+        <div class="keys-encryption-block">
+            <div class="keys-row">
+                <input
+                    id="encrypt-key-storage"
+                    data-test="CHK_Encrypt_Key_Storage"
+                    type="checkbox"
+                    [checked]="encryptKeyStorage"
+                    [disabled]="busy"
+                    (change)="onEncryptionToggle($event)" />
+                <label for="encrypt-key-storage">
+                    Encrypt Key Storage (requires password at robot start)
+                </label>
+            </div>
+            <p
+                class="keys-hint"
+                data-test="LBL_Key_Storage">
+                {{ keyStorageHint() }}
+            </p>
+        </div>
+
+        <div class="keys-password">
+            <div class="keys-card-title">Operator password</div>
+            @if (encryptKeyStorage) {
+            <div class="keys-password-inline">
+                <label
+                    class="keys-label"
+                    for="keys-operator-password">
+                    One password for every provider key
+                </label>
+                <div class="keys-password-controls">
+                    <input
+                        id="keys-operator-password"
+                        type="password"
+                        autocomplete="current-password"
+                        [value]="password"
+                        (input)="onPasswordInput($event)" />
+                    <button
+                        id="keys-change-password"
+                        data-test="BTN_Change_Operator_Password"
+                        type="button"
+                        class="btn btn-outline-light btn-sm"
+                        [disabled]="busy"
+                        (click)="openPasswordDialog('change')">
+                        Change
+                    </button>
+                </div>
+            </div>
+            } @else {
+            <button
+                id="keys-enable-encryption"
+                data-test="BTN_Turn_Encryption_On"
+                type="button"
+                class="btn btn-outline-light btn-sm"
+                [disabled]="busy"
+                (click)="openPasswordDialog('enable')">
+                Set a password to turn encryption on
+            </button>
+            }
+        </div>
+    </div>
+
+    <div
+        class="keys-grid"
+        id="keys-provider-grid"
+        data-test="GRID_Provider_Keys">
+        <div
+            class="keys-card keys-card-cloud"
+            id="keys-cloud-entry">
+            <div class="keys-card-header">
+                <div class="keys-card-title">pib.Cloud</div>
+                <span class="keys-state-pill keys-state-pill-cloud">
+                    SmartConnect
+                </span>
+            </div>
+            <div class="keys-card-body">
+                <p
+                    class="keys-status-line"
+                    id="keys-cloud-status">
+                    {{ cloudStatus() }}
+                </p>
+                <p class="keys-hint">
+                    This is the SmartConnect token, not a key to type in here.
+                    Re-enter the token in SmartConnect.
+                </p>
+            </div>
+            <div class="keys-card-footer">
+                <div
+                    class="keys-provider-health"
+                    [ngClass]="cloudHealthClass()"
+                    id="keys-cloud-health"
+                    data-test="LBL_Cloud_Health"
+                    [title]="cloudHealthTooltip()">
+                    <span
+                        class="provider-health-dot"
+                        aria-hidden="true"></span>
+                    <span id="keys-cloud-health-text"
+                        >{{ cloudHealthText() }}</span
+                    >
+                    <button
+                        type="button"
+                        class="provider-health-refresh"
+                        id="keys-cloud-health-refresh"
+                        [disabled]="
+                            busy || cloudHealthLoading || cloudModelId === null
+                        "
+                        aria-label="Check pib.Cloud token validity"
+                        title="Check pib.Cloud token validity"
+                        (click)="probeCloudHealth()">
+                        ⟳
+                    </button>
+                </div>
+                <div class="keys-card-actions">
+                    <button
+                        id="keys-cloud-delete"
+                        type="button"
+                        class="btn btn-outline-light btn-sm"
+                        [disabled]="!cloudDeleteEnabled()"
+                        (click)="deleteCloudToken()">
+                        Delete token
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        @for (account of keyProviders; track account.id) {
+        <div
+            class="keys-card"
+            [id]="'keys-provider-' + account.id">
+            <div class="keys-card-header">
+                <div class="keys-card-title">{{ account.name }}</div>
+                <p
+                    class="keys-state-pill"
+                    [class.keys-state-stored]="account.credentialRef"
+                    [id]="'keys-provider-state-' + account.id">
+                    {{ account.credentialRef ? "Key stored" : "No key" }}
+                </p>
+            </div>
+            <div class="keys-card-body">
+                <div class="keys-pair">
+                    <label
+                        class="keys-label"
+                        [for]="'keys-provider-key-' + account.id">
+                        Key
+                    </label>
+                    <input
+                        [id]="'keys-provider-key-' + account.id"
+                        type="password"
+                        autocomplete="off"
+                        placeholder="Enter API key…"
+                        [value]="drafts[account.id] ?? ''"
+                        (input)="onDraft(account.id, $event)" />
+                </div>
+            </div>
+            <div class="keys-card-footer">
+                <div
+                    class="keys-provider-health"
+                    [ngClass]="providerHealthClass(account)"
+                    [id]="'keys-provider-health-' + account.id"
+                    [attr.data-test]="'LBL_Provider_Health_' + account.id"
+                    [title]="providerHealthTooltip(account)">
+                    <span
+                        class="provider-health-dot"
+                        aria-hidden="true"></span>
+                    <span [id]="'keys-provider-health-text-' + account.id"
+                        >{{ providerHealthText(account) }}</span
+                    >
+                    <button
+                        type="button"
+                        class="provider-health-refresh"
+                        [id]="'keys-provider-health-refresh-' + account.id"
+                        [disabled]="busy || providerHealthLoading[account.id]"
+                        aria-label="Check provider key validity"
+                        title="Check provider key validity"
+                        (click)="probeProviderHealth(account)">
+                        ⟳
+                    </button>
+                </div>
+                <div class="keys-card-actions">
+                    <button
+                        type="button"
+                        class="btn btn-outline-light btn-sm"
+                        [id]="'keys-provider-save-' + account.id"
+                        [disabled]="busy"
+                        (click)="saveKey(account)">
+                        Save key
+                    </button>
+                    <button
+                        type="button"
+                        class="btn btn-outline-light btn-sm"
+                        [id]="'keys-provider-delete-' + account.id"
+                        [disabled]="busy || !account.credentialRef"
+                        (click)="deleteKey(account)">
+                        Delete key
+                    </button>
+                </div>
+            </div>
+        </div>
         }
     </div>
-
-    <div
-        class="keys-card"
-        id="keys-cloud-entry">
-        <div class="keys-card-title">pib.Cloud</div>
-        <p class="keys-hint">
-            This is the SmartConnect token, not a key to type in here.
-        </p>
-        <p id="keys-cloud-status">{{ cloudStatus() }}</p>
-        <div
-            class="keys-provider-health"
-            [ngClass]="cloudHealthClass()"
-            id="keys-cloud-health"
-            data-test="LBL_Cloud_Health"
-            [title]="cloudHealthTooltip()">
-            <span
-                class="provider-health-dot"
-                aria-hidden="true"></span>
-            <span id="keys-cloud-health-text">{{ cloudHealthText() }}</span>
-            <button
-                type="button"
-                class="provider-health-refresh"
-                id="keys-cloud-health-refresh"
-                [disabled]="
-                    busy || cloudHealthLoading || cloudModelId === null
-                "
-                aria-label="Check pib.Cloud token validity"
-                title="Check pib.Cloud token validity"
-                (click)="probeCloudHealth()">
-                ⟳
-            </button>
-        </div>
-        <p class="keys-hint">Re-enter the token in SmartConnect.</p>
-        <button
-            id="keys-cloud-delete"
-            type="button"
-            class="btn btn-outline-light"
-            [disabled]="!cloudDeleteEnabled()"
-            (click)="deleteCloudToken()">
-            Delete token
-        </button>
-    </div>
-
-    @for (account of keyProviders; track account.id) {
-    <div
-        class="keys-card"
-        [id]="'keys-provider-' + account.id">
-        <div class="keys-card-title">{{ account.name }}</div>
-        <div class="keys-pair">
-            <label
-                class="keys-label"
-                [for]="'keys-provider-key-' + account.id">
-                Key
-            </label>
-            <input
-                [id]="'keys-provider-key-' + account.id"
-                type="password"
-                autocomplete="off"
-                [value]="drafts[account.id] ?? ''"
-                (input)="onDraft(account.id, $event)" />
-        </div>
-        <p [id]="'keys-provider-state-' + account.id">
-            {{ account.credentialRef ? "Key stored" : "No key" }}
-        </p>
-        <div
-            class="keys-provider-health"
-            [ngClass]="providerHealthClass(account)"
-            [id]="'keys-provider-health-' + account.id"
-            [attr.data-test]="'LBL_Provider_Health_' + account.id"
-            [title]="providerHealthTooltip(account)">
-            <span
-                class="provider-health-dot"
-                aria-hidden="true"></span>
-            <span [id]="'keys-provider-health-text-' + account.id"
-                >{{ providerHealthText(account) }}</span
-            >
-            <button
-                type="button"
-                class="provider-health-refresh"
-                [id]="'keys-provider-health-refresh-' + account.id"
-                [disabled]="busy || providerHealthLoading[account.id]"
-                aria-label="Check provider key validity"
-                title="Check provider key validity"
-                (click)="probeProviderHealth(account)">
-                ⟳
-            </button>
-        </div>
-        <button
-            type="button"
-            class="btn btn-outline-light"
-            [id]="'keys-provider-save-' + account.id"
-            [disabled]="busy"
-            (click)="saveKey(account)">
-            Save key
-        </button>
-        <button
-            type="button"
-            class="btn btn-outline-light"
-            [id]="'keys-provider-delete-' + account.id"
-            [disabled]="busy || !account.credentialRef"
-            (click)="deleteKey(account)">
-            Delete key
-        </button>
-    </div>
-    }
 </div>
 @if (passwordDialog) {
 <div

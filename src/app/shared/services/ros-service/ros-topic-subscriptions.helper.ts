@@ -106,8 +106,6 @@ export function subscribeCameraTopicOnHost(
     host: RosTopicSubscriptionHost,
 ): void {
     host.cameraSubscriptionRequested = true;
-    if (!host.cameraTopic || host.cameraTopicSubscribed) return;
-    subscribeDefaultRosMessageTopic(host.cameraTopic, host.cameraReceiver$);
     host.cameraTopicSubscribed = true;
 }
 
@@ -115,8 +113,6 @@ export function unsubscribeCameraTopicOnHost(
     host: RosTopicSubscriptionHost,
 ): void {
     host.cameraSubscriptionRequested = false;
-    if (!host.cameraTopic || !host.cameraTopicSubscribed) return;
-    host.cameraTopic.unsubscribe();
     host.cameraTopicSubscribed = false;
 }
 

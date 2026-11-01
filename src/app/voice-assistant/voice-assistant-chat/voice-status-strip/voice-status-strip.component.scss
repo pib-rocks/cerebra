@@ -110,3 +110,21 @@
     cursor: default;
     opacity: 0.4;
 }
+
+// Cold/warm state of the open personality's Hermes agent (PR-2130). Warm means
+// the next turn skips the local cold start; cold means it will pay it, and the
+// neutral class covers a warm-up in flight or a state nobody measured.
+.voice-status-warmth {
+    display: inline-flex;
+    align-items: center;
+}
+
+.voice-status-chip-warm {
+    border-color: #2fbf71;
+    color: #9ff0c0;
+}
+
+.voice-status-chip-cold {
+    border-color: #f0a93b;
+    color: #ffd79b;
+}

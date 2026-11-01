@@ -128,14 +128,46 @@ span {
 }
 
 .cerebra-modal .modal-content {
+    position: relative;
     background:
-        url("assets/ep-br.png") bottom right no-repeat,
-        url("assets/ep-tr.png") top right no-repeat,
-        url("assets/ep-tl.png") top left no-repeat,
-        url("assets/ep-bl.png") bottom left no-repeat;
-    background-color: $blue-dark-5;
+        url("assets/ep-br.png") bottom right / 14px 14px no-repeat,
+        url("assets/ep-tr.png") top right / 14px 14px no-repeat,
+        url("assets/ep-tl.png") top left / 14px 14px no-repeat,
+        url("assets/ep-bl.png") bottom left / 14px 14px no-repeat,
+        linear-gradient(165deg, #213656 0%, #12284a 100%);
+    background-color: $blue-dark-4;
     color: $white-color;
+    border: 1px solid rgba(0, 148, 223, 0.55);
     border-radius: 0;
+    box-shadow:
+        0 24px 64px rgba(0, 0, 0, 0.92),
+        0 0 28px rgba(0, 148, 223, 0.22),
+        0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+
+.cerebra-modal .modal-content::after {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    pointer-events: none;
+    z-index: 1065;
+    background:
+        linear-gradient(to right, $pink-color, $pink-color) top left / 18px 3px
+            no-repeat,
+        linear-gradient(to bottom, $pink-color, $pink-color) top left / 3px 18px
+            no-repeat,
+        linear-gradient(to left, $pink-color, $pink-color) top right / 18px 3px
+            no-repeat,
+        linear-gradient(to bottom, $pink-color, $pink-color) top right / 3px
+            18px no-repeat,
+        linear-gradient(to right, $pink-color, $pink-color) bottom left / 18px
+            3px no-repeat,
+        linear-gradient(to top, $pink-color, $pink-color) bottom left / 3px 18px
+            no-repeat,
+        linear-gradient(to left, $pink-color, $pink-color) bottom right / 18px
+            3px no-repeat,
+        linear-gradient(to top, $pink-color, $pink-color) bottom right / 3px
+            18px no-repeat;
 }
 
 .videoSettingsPopOver .popover-body {
@@ -147,7 +179,8 @@ span {
 
 .cerebra-modal-backdrop {
     z-index: 1040 !important;
-    background-color: transparent !important;
+    background-color: rgba(1, 6, 16, 0.82) !important;
+    backdrop-filter: blur(7px);
 }
 
 input {

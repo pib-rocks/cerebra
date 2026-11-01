@@ -67,7 +67,6 @@ describe("RosService", () => {
     it("should create all ROSLIB topics and services", () => {
         expect(rosService["jointTrajectoryTopic"]).toBeTruthy();
         expect(rosService["motorCurrentTopic"]).toBeTruthy();
-        expect(rosService["cameraTopic"]).toBeTruthy();
         expect(rosService["cameraTimerPeriodTopic"]).toBeTruthy();
         expect(rosService["cameraQualityFactorTopic"]).toBeTruthy();
         expect(rosService["cameraPreviewSizeTopic"]).toBeTruthy();
@@ -88,17 +87,14 @@ describe("RosService", () => {
         expect(rosService["stopModelService"]).toBeTruthy();
     });
 
-    it("should make the camera subscription lifecycle idempotent", () => {
-        const subscribe = spyOn(rosService["cameraTopic"], "subscribe");
-        const unsubscribe = spyOn(rosService["cameraTopic"], "unsubscribe");
-
+    it("should make the camera subscription lifecycle idempotent without a /camera_topic subscription", () => {
         rosService.subscribeCameraTopic();
         rosService.subscribeCameraTopic();
-        expect(subscribe).toHaveBeenCalledTimes(1);
+        expect(rosService["cameraTopicSubscribed"]).toBeTrue();
 
         rosService.unsubscribeCameraTopic();
         rosService.unsubscribeCameraTopic();
-        expect(unsubscribe).toHaveBeenCalledTimes(1);
+        expect(rosService["cameraTopicSubscribed"]).toBeFalse();
     });
 
     it("should subscribe to multiple discovered detection topics", () => {

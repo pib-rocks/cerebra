@@ -153,4 +153,33 @@ describe("ProgramWorkspaceComponent", () => {
         ]);
         freshFixture.destroy();
     });
+
+    it("should update all dynamic pose dropdown rows on play_pose_sequence blocks including LOADING fallback", () => {
+        const block = component.workspace.newBlock(
+            "play_pose_sequence",
+        ) as Blockly.Block & {
+            insertStepAt?: (
+                index: number,
+                pose?: string,
+                duration?: number,
+            ) => void;
+        };
+        // Keep POSE_0 at LOADING so the fallbackValue branch is exercised
+        block.setFieldValue("LOADING", "POSE_0");
+        block.setFieldValue("pose-w2", "POSE_1");
+        block.insertStepAt?.(1, "pose-mid", 1.2);
+
+        poseSubject.next([
+            new Pose("Wave 1", "pose-w1", false),
+            new Pose("Middle Pose", "pose-mid", false),
+            new Pose("Wave 2", "pose-w2", false),
+        ]);
+
+        expect(block.getFieldValue("POSE_0")).toBe("pose-w1");
+        expect(block.getField("POSE_0")?.getText()).toBe("Wave 1");
+        expect(block.getFieldValue("POSE_1")).toBe("pose-mid");
+        expect(block.getField("POSE_1")?.getText()).toBe("Middle Pose");
+        expect(block.getFieldValue("POSE_2")).toBe("pose-w2");
+        expect(block.getField("POSE_2")?.getText()).toBe("Wave 2");
+    });
 });
