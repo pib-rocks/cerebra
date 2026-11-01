@@ -102,7 +102,6 @@ describe("Robot3DComponent", () => {
     let applyJointTrajectory: jasmine.Spy;
     let apiService: jasmine.SpyObj<ApiService>;
     let viewer: PibRobotView;
-    let modeSpy: jasmine.Spy;
 
     beforeEach(async () => {
         jointStates$ = new Subject<JointStateMessage>();
@@ -147,10 +146,9 @@ describe("Robot3DComponent", () => {
         spyOn(viewer, "confirmCommand");
         spyOn(viewer, "rejectCommand");
         spyOn(viewer, "setExpectedMotors");
-        // The component switches the element to command mode when the limits arrive. Spy on the
-        // setter: a real switch would make the element fetch model.json and mapping.json, which
-        // this test does not stub.
-        modeSpy = spyOnProperty(viewer, "mode", "set");
+        // The mode is a static attribute now; keep the element from acting on it so it does
+        // not fetch model.json and mapping.json, which this test does not stub.
+        spyOnProperty(viewer, "mode", "set");
     });
 
     it("forwards joint state samples to the viewer", () => {
