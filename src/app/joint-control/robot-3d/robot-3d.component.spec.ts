@@ -102,7 +102,6 @@ describe("Robot3DComponent", () => {
     let applyJointTrajectory: jasmine.Spy;
     let apiService: jasmine.SpyObj<ApiService>;
     let viewer: PibRobotView;
-    let modeSpy: jasmine.Spy;
 
     beforeEach(async () => {
         jointStates$ = new Subject<JointStateMessage>();
@@ -147,10 +146,9 @@ describe("Robot3DComponent", () => {
         spyOn(viewer, "confirmCommand");
         spyOn(viewer, "rejectCommand");
         spyOn(viewer, "setExpectedMotors");
-        // The component switches the element to command mode when the limits arrive. Spy on the
-        // setter: a real switch would make the element fetch model.json and mapping.json, which
-        // this test does not stub.
-        modeSpy = spyOnProperty(viewer, "mode", "set");
+        // The mode is a static attribute now; keep the element from acting on it so it does
+        // not fetch model.json and mapping.json, which this test does not stub.
+        spyOnProperty(viewer, "mode", "set");
     });
 
     it("forwards joint state samples to the viewer", () => {
@@ -172,11 +170,11 @@ describe("Robot3DComponent", () => {
         });
     });
 
-    it("switches the viewer to command mode once the limits are in", () => {
-        // The element decides on its own gate (verified mapping, model/robot match); the tab only
-        // has to ask for command at all - it was hardcoded to read before.
-        viewer.dispatchEvent(new CustomEvent("ready"));
-        expect(modeSpy).toHaveBeenCalledWith("command");
+    it("asks the viewer for command mode without waiting for a ready event", () => {
+        // The element's `ready` can fire before this component attaches its listener (warm cache),
+        // which left the tab read-only and the sliders dead. The mode is therefore a static
+        // attribute; the element gates itself until mapping and limits are there.
+        expect(viewer.getAttribute("mode")).toBe("command");
     });
 
     it("sets motor limits on the viewer when the model is ready", () => {
