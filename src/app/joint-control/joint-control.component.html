@@ -1,5 +1,16 @@
 <div class="pt-4 ps-2 pe-2">
     <ul class="nav nav-tabs">
+        <li
+            class="nav-item"
+            routerLinkActive="navbar-btn-active">
+            <a
+                id="3d-nav"
+                data-test="LNK_Joint_3d"
+                class="nav-link sidebar-btn"
+                routerLink="3d">
+                3D
+            </a>
+        </li>
         @for (joint of joints; track joint) {
         <li
             class="nav-item"

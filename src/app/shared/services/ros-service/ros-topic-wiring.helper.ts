@@ -59,6 +59,7 @@ import {
     StartModelRequest,
 } from "../../ros-types/srv/start-model";
 import {StopModelRequest} from "../../ros-types/srv/stop-model";
+import {JointStateMessage} from "../../ros-types/msg/joint-state-message";
 
 export function createRosTopic<T>(
     ros: ROSLIB.Ros,
@@ -93,6 +94,7 @@ export interface RosTopicServiceWiring {
     cameraPreviewSizeTopic: ROSLIB.Topic;
     cameraQualityFactorTopic: ROSLIB.Topic;
     jointTrajectoryTopic: ROSLIB.Topic;
+    jointStatesTopic: ROSLIB.Topic<JointStateMessage>;
     motorSettingsTopic: ROSLIB.Topic;
     deleteTokenTopic: ROSLIB.Topic;
     proxyRunProgramFeedbackTopic: ROSLIB.Topic<ProxyRunProgramFeedback>;
@@ -191,6 +193,10 @@ export function wireRosTopicsAndServices(target: RosTopicServiceWiring): void {
     target.jointTrajectoryTopic = topic(
         rosTopics.jointTrajectoryTopicName,
         rosDataTypes.jointTrajectory,
+    );
+    target.jointStatesTopic = topic(
+        rosTopics.jointStates,
+        rosDataTypes.jointState,
     );
     target.chatMessageTopic = topic(
         rosTopics.chatMessages,
