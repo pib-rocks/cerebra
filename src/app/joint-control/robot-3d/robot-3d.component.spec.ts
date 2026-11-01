@@ -145,6 +145,7 @@ describe("Robot3DComponent", () => {
         spyOn(viewer, "dispose");
         spyOn(viewer, "confirmCommand");
         spyOn(viewer, "rejectCommand");
+        spyOn(viewer, "setExpectedMotors");
     });
 
     it("forwards joint state samples to the viewer", () => {
@@ -172,6 +173,12 @@ describe("Robot3DComponent", () => {
         expect(viewer.limits).toEqual({
             head_pan: {minDeg: -90, maxDeg: 90},
         });
+    });
+
+    it("hands the robot's motor names to the viewer for the consistency check", () => {
+        viewer.dispatchEvent(new CustomEvent("ready"));
+
+        expect(viewer.setExpectedMotors).toHaveBeenCalledWith(["head_pan"]);
     });
 
     it("confirms a successful command and logs audit data", () => {
