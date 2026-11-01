@@ -5,6 +5,7 @@ import {rosServices} from "../../ros-types/path/ros-services.enum";
 import {MotorSettingsMessage} from "../../ros-types/msg/motor-settings-message";
 import {DiagnosticStatus} from "../../ros-types/msg/diagnostic-status.message";
 import {JointTrajectoryMessage} from "../../ros-types/msg/joint-trajectory-message";
+import {JointStateMessage} from "../../ros-types/msg/joint-state-message";
 import {ChatMessage} from "../../ros-types/msg/chat-message";
 import {VoiceAssistantState} from "../../ros-types/msg/voice-assistant-state";
 import {ChatIsListening} from "../../ros-types/msg/chat-is-listening";
@@ -34,6 +35,7 @@ export interface RosTopicSubscriptionHost extends RosTopicServiceWiring {
     motorSettingsReceiver$: Subject<MotorSettingsMessage>;
     currentReceiver$: Subject<DiagnosticStatus>;
     jointTrajectoryReceiver$: Subject<JointTrajectoryMessage>;
+    jointStatesReceiver$: Subject<JointStateMessage>;
     proxyRunProgramFeedbackReceiver$: Subject<ProxyRunProgramFeedback>;
     proxyRunProgramResultReceiver$: Subject<ProxyRunProgramResult>;
     proxyRunProgramStatusReceiver$: Subject<ProxyRunProgramStatus>;
@@ -90,6 +92,7 @@ export function initRosTopicSubscribers(host: RosTopicSubscriptionHost): void {
     subscribeMotorSettingsTopic(host);
     subscribeMotorCurrentTopic(host);
     subscribeJointTrajectoryTopic(host);
+    subscribeJointStatesTopic(host);
     subscribeProxyRunProgramFeedbackTopic(host);
     subscribeProxyRunProgramResultTopic(host);
     subscribeProxyRunProgramStatusTopic(host);
@@ -120,6 +123,14 @@ export function subscribeJointTrajectoryTopicOnHost(
         host.jointTrajectoryReceiver$.next(
             jointTrajectoryMessage as JointTrajectoryMessage,
         );
+    });
+}
+
+export function subscribeJointStatesTopicOnHost(
+    host: RosTopicSubscriptionHost,
+): void {
+    host.jointStatesTopic.subscribe((message) => {
+        host.jointStatesReceiver$.next(message as JointStateMessage);
     });
 }
 
@@ -222,6 +233,10 @@ export function subscribeSolidStateRelayStateTopicOnHost(
 
 function subscribeJointTrajectoryTopic(host: RosTopicSubscriptionHost): void {
     subscribeJointTrajectoryTopicOnHost(host);
+}
+
+function subscribeJointStatesTopic(host: RosTopicSubscriptionHost): void {
+    subscribeJointStatesTopicOnHost(host);
 }
 
 function subscribeMotorSettingsTopic(host: RosTopicSubscriptionHost): void {

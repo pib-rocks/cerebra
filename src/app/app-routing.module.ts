@@ -7,6 +7,7 @@ import {JointControlComponent} from "./joint-control/joint-control.component";
 import {JointControlCoreComponent} from "./joint-control/joint-control-core/joint-control-core.component";
 import {jointResolver} from "./joint-control/joint-resolver/joint-resolver";
 import {MotorPositionComponent} from "./joint-control/joint-control-core/motor-position/motor-position.component";
+import {Robot3DComponent} from "./joint-control/robot-3d/robot-3d.component";
 import {motorResolver} from "./joint-control/joint-control-core/motor-position/motor-resolver/motor.resolver";
 import {motorGuard} from "./security/motor-guard";
 import {SaveConfirmationGuard} from "./security/save-confirmation.guard";
@@ -17,6 +18,10 @@ export const routes: Routes = [
         path: "joint-control",
         component: JointControlComponent,
         children: [
+            {
+                path: "3d",
+                component: Robot3DComponent,
+            },
             {
                 path: ":joint-name",
                 component: JointControlCoreComponent,

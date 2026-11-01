@@ -11,6 +11,7 @@ export enum rosDataTypes {
     voiceAssistantState = "datatypes/msg/VoiceAssistantState",
     chatIsListening = "datatypes/msg/ChatIsListening",
     jointTrajectory = "trajectory_msgs/msg/JointTrajectory",
+    jointState = "sensor_msgs/msg/JointState",
     diagnosticStatus = "diagnostic_msgs/msg/DiagnosticStatus",
     proxyRunProgramFeedback = "datatypes/msg/ProxyRunProgramFeedback",
     proxyRunProgramResult = "datatypes/msg/ProxyRunProgramResult",

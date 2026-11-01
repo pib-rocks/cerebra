@@ -3,6 +3,7 @@ import * as ROSLIB from "roslib";
 import {BehaviorSubject, Observable, Subject} from "rxjs";
 import {MotorSettingsMessage} from "../../ros-types/msg/motor-settings-message";
 import {JointTrajectoryMessage} from "../../ros-types/msg/joint-trajectory-message";
+import {JointStateMessage} from "../../ros-types/msg/joint-state-message";
 import {ChatMessage} from "../../ros-types/msg/chat-message";
 import {VoiceAssistantState} from "../../ros-types/msg/voice-assistant-state";
 import {
@@ -141,6 +142,8 @@ export class RosService implements IRosService {
         new BehaviorSubject<number>(80);
     jointTrajectoryReceiver$: Subject<JointTrajectoryMessage> =
         new Subject<JointTrajectoryMessage>();
+    jointStatesReceiver$: Subject<JointStateMessage> =
+        new Subject<JointStateMessage>();
     motorSettingsReceiver$: Subject<MotorSettingsMessage> =
         new Subject<MotorSettingsMessage>();
     proxyRunProgramFeedbackReceiver$: Subject<ProxyRunProgramFeedback> =
@@ -173,6 +176,7 @@ export class RosService implements IRosService {
     private cameraPreviewSizeTopic!: ROSLIB.Topic;
     private cameraQualityFactorTopic!: ROSLIB.Topic;
     private jointTrajectoryTopic!: ROSLIB.Topic;
+    private jointStatesTopic!: ROSLIB.Topic<JointStateMessage>;
     private motorSettingsTopic!: ROSLIB.Topic;
     private deleteTokenTopic!: ROSLIB.Topic;
     private proxyRunProgramFeedbackTopic!: ROSLIB.Topic<ProxyRunProgramFeedback>;
