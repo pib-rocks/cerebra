@@ -7,8 +7,10 @@
 .sidebar-label {
     color: $white-color;
     font-weight: bolder;
-    font-size: 1.33vw;
+    font-size: 1.15vw;
+    line-height: 1.2;
     text-align: center;
+    white-space: nowrap;
 }
 
 .touchpoint {
