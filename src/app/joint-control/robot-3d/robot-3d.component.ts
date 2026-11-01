@@ -66,7 +66,7 @@ export function trajectoryPointPositionsRad(
         <pib-robot-view
             #robotView
             class="robot-3d-view"
-            [mode]="viewerMode"
+            mode="read"
             model-url="/api/robot-model/model.json"
             mapping-url="/api/robot-model/mapping.json"
             [class.d-none]="loadError"></pib-robot-view>
@@ -99,13 +99,6 @@ export class Robot3DComponent implements AfterViewInit, OnDestroy {
 
     loadError: string | null = null;
     commandError: string | null = null;
-    /** `command` only once the model and the limits are there; before that the element would
-     *  request a mapping it has not fetched yet. The element still falls back to preview when its
-     *  own gate refuses (unverified mapping, model/robot mismatch) and shows why in its banner. */
-    get viewerMode(): "read" | "command" {
-        return this.modelReady && this.limitsMap !== null ? "command" : "read";
-    }
-
     private subscription?: Subscription;
     private limitsSubscription?: Subscription;
     private errorListener?: (event: Event) => void;
@@ -186,6 +179,12 @@ export class Robot3DComponent implements AfterViewInit, OnDestroy {
             return;
         }
         element.limits = this.limitsMap;
+        // Straight to the property, not through a template binding: the limits arrive from an
+        // HTTP call that is synchronous when the service answers from its cache, and a binding
+        // that flips inside the same change-detection pass throws NG0100. The element applies
+        // its own gate on top - unverified mapping or a model/robot mismatch still forces
+        // preview.
+        element.mode = "command";
         // The same list the limits come from: if the model's mapping names a motor this robot
         // does not have (or misses one), the viewer goes read-only instead of posing a robot
         // that does not exist.
