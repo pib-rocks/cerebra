@@ -26,7 +26,7 @@ export const joints: JointConfiguration[] = [
     {
         jointPathName: JointPathName.HEAD,
         label: "Head",
-        background: "/joint-control/background/head_background.png",
+        background: "/movement/background/head_background.png",
         reversed: false,
         segmentHeight: 0.1508620689655172,
         segmentOffset: 0.3646551724137931,
@@ -38,7 +38,7 @@ export const joints: JointConfiguration[] = [
     {
         jointPathName: JointPathName.LEFT_HAND,
         label: "Left Hand",
-        background: "/joint-control/background/hand_left_background.png",
+        background: "/movement/background/hand_left_background.png",
         reversed: true,
         segmentHeight: 0.1301724137931034,
         segmentOffset: 0.1637931034482759,
@@ -55,7 +55,7 @@ export const joints: JointConfiguration[] = [
     {
         jointPathName: JointPathName.RIGHT_HAND,
         label: "Right Hand",
-        background: "/joint-control/background/hand_right_background.png",
+        background: "/movement/background/hand_right_background.png",
         reversed: false,
         segmentHeight: 0.1301724137931034,
         segmentOffset: 0.1637931034482759,
@@ -72,7 +72,7 @@ export const joints: JointConfiguration[] = [
     {
         jointPathName: JointPathName.LEFT_ARM,
         label: "Left Arm",
-        background: "/joint-control/background/arm_left_background.png",
+        background: "/movement/background/arm_left_background.png",
         reversed: true,
         segmentHeight: 0.1318965517241379,
         segmentOffset: 0.1586206896551724,
@@ -88,7 +88,7 @@ export const joints: JointConfiguration[] = [
     {
         jointPathName: JointPathName.RIGHT_ARM,
         label: "Right Arm",
-        background: "/joint-control/background/arm_right_background.png",
+        background: "/movement/background/arm_right_background.png",
         reversed: false,
         segmentHeight: 0.1318965517241379,
         segmentOffset: 0.1586206896551724,
