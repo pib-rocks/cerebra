@@ -27,7 +27,7 @@
     "@angular/platform-browser-dynamic": "^22.0.8",
     "@angular/router": "^22.0.8",
     "@ng-bootstrap/ng-bootstrap": "^21.0.0",
-    "@pib/robot-view": "https://github.com/pib-rocks/pib-3d/releases/download/v0.10.1/pib-robot-view-0.10.1.tgz",
+    "@pib/robot-view": "https://github.com/pib-rocks/pib-3d/releases/download/v0.10.2/pib-robot-view-0.10.2.tgz",
     "@popperjs/core": "^2.11.6",
     "angular-split": "^20.0.0",
     "bootstrap": "^5.3.3",
