@@ -107,3 +107,18 @@ export const jointPathNameToConfig = new Map<string, JointConfiguration>();
 for (const joint of joints) {
     jointPathNameToConfig.set(joint.jointPathName, joint);
 }
+
+/**
+ * Motor name to the name the joint tabs show, prefixed with the tab itself: "Index Finger"
+ * appears in both hands, so the tab is what makes it unambiguous.
+ */
+export const motorLabels: Record<string, string> = Object.fromEntries(
+    joints.flatMap((joint) =>
+        joint.motors
+            .filter((motor) => !motor.isMultiMotor)
+            .map((motor) => [
+                motor.motorName,
+                `${joint.label} · ${motor.label}`,
+            ]),
+    ),
+);
