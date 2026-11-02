@@ -1,18 +1,17 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
-
-import {JointControlComponent} from "./joint-control.component";
 import {RouterTestingModule} from "@angular/router/testing";
+import {MovementComponent} from "./movement.component";
 
-describe("JointControlComponent", () => {
-    let component: JointControlComponent;
-    let fixture: ComponentFixture<JointControlComponent>;
+describe("MovementComponent", () => {
+    let component: MovementComponent;
+    let fixture: ComponentFixture<MovementComponent>;
 
     beforeEach(async () => {
         await TestBed.configureTestingModule({
-            imports: [RouterTestingModule, JointControlComponent],
+            imports: [RouterTestingModule, MovementComponent],
         }).compileComponents();
 
-        fixture = TestBed.createComponent(JointControlComponent);
+        fixture = TestBed.createComponent(MovementComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
     });

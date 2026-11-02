@@ -3,12 +3,12 @@ import {joints} from "../shared/types/joint-configuration";
 import {RouterLinkActive, RouterLink, RouterOutlet} from "@angular/router";
 
 @Component({
-    selector: "app-joint-control",
-    templateUrl: "./joint-control.component.html",
-    styleUrls: ["./joint-control.component.scss"],
+    selector: "app-movement",
+    templateUrl: "./movement.component.html",
+    styleUrls: ["./movement.component.scss"],
     changeDetection: ChangeDetectionStrategy.Eager,
     imports: [RouterLinkActive, RouterLink, RouterOutlet],
 })
-export class JointControlComponent {
+export class MovementComponent {
     joints = joints;
 }
