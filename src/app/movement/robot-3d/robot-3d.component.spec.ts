@@ -10,7 +10,7 @@ import {
 import {RouterTestingHarness} from "@angular/router/testing";
 import {Subject, of, throwError} from "rxjs";
 import {routes} from "src/app/app-routing.module";
-import {JointControlComponent} from "src/app/joint-control/joint-control.component";
+import {MovementComponent} from "src/app/movement/movement.component";
 import {RosService} from "src/app/shared/services/ros-service/ros.service";
 import {JointStateMessage} from "src/app/shared/ros-types/msg/joint-state-message";
 import {CommandRequestDetail, PibRobotView} from "@pib/robot-view";
@@ -50,8 +50,8 @@ function stubbed(route: Route): Route {
     return copy;
 }
 
-function jointControlRoute(): Route {
-    const route = routes.find((item) => item.path === "joint-control");
+function movementRoute(): Route {
+    const route = routes.find((item) => item.path === "movement");
     expect(route).toBeDefined();
     return stubbed(route as Route);
 }
@@ -255,15 +255,15 @@ describe("Robot3DComponent", () => {
     });
 });
 
-describe("joint-control 3d route", () => {
+describe("movement 3d route", () => {
     let harness: RouterTestingHarness;
     let router: Router;
 
     beforeEach(async () => {
         TestBed.configureTestingModule({
-            imports: [JointControlComponent, Robot3DComponent],
+            imports: [MovementComponent, Robot3DComponent],
             providers: [
-                provideRouter([jointControlRoute()]),
+                provideRouter([movementRoute()]),
                 {
                     provide: RosService,
                     useValue: {
@@ -285,17 +285,17 @@ describe("joint-control 3d route", () => {
         router = TestBed.inject(Router);
     });
 
-    it("activates Robot3DComponent at /joint-control/3d", async () => {
-        await harness.navigateByUrl("/joint-control/3d");
+    it("activates Robot3DComponent at /movement/3d", async () => {
+        await harness.navigateByUrl("/movement/3d");
 
-        expect(router.url).toBe("/joint-control/3d");
+        expect(router.url).toBe("/movement/3d");
         const active = leaf(router.routerState.snapshot.root);
         expect(active.routeConfig?.path).toBe("3d");
         expect(active.routeConfig?.component).toBe(Robot3DComponent);
     });
 
     it("does not treat 3d as a joint-name parameter route", async () => {
-        await harness.navigateByUrl("/joint-control/3d");
+        await harness.navigateByUrl("/movement/3d");
 
         const active = leaf(router.routerState.snapshot.root);
         expect(active.routeConfig?.path).not.toBe(":joint-name");

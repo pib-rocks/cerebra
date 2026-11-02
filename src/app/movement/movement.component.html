@@ -11,6 +11,17 @@
                 3D
             </a>
         </li>
+        <li
+            class="nav-item"
+            routerLinkActive="navbar-btn-active">
+            <a
+                id="pose-tab"
+                data-test="LNK_Movement_Poses"
+                class="nav-link sidebar-btn"
+                routerLink="pose">
+                Poses
+            </a>
+        </li>
         @for (joint of joints; track joint) {
         <li
             class="nav-item"

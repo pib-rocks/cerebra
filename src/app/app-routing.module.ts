@@ -3,28 +3,36 @@ import {RouterModule, Routes} from "@angular/router";
 import {jointGuard} from "./security/joint-guard";
 import {voiceAssistantResolver} from "./voice-assistant/voice-assistant-resolver/voice-assistant.resolver";
 import {chatResolver} from "./voice-assistant/voice-assistant-resolver/chat.resolver";
-import {JointControlComponent} from "./joint-control/joint-control.component";
-import {JointControlCoreComponent} from "./joint-control/joint-control-core/joint-control-core.component";
-import {jointResolver} from "./joint-control/joint-resolver/joint-resolver";
-import {MotorPositionComponent} from "./joint-control/joint-control-core/motor-position/motor-position.component";
-import {Robot3DComponent} from "./joint-control/robot-3d/robot-3d.component";
-import {motorResolver} from "./joint-control/joint-control-core/motor-position/motor-resolver/motor.resolver";
+import {MovementComponent} from "./movement/movement.component";
+import {MovementCoreComponent} from "./movement/movement-core/movement-core.component";
+import {jointResolver} from "./movement/joint-resolver/joint-resolver";
+import {MotorPositionComponent} from "./movement/movement-core/motor-position/motor-position.component";
+import {Robot3DComponent} from "./movement/robot-3d/robot-3d.component";
+import {motorResolver} from "./movement/movement-core/motor-position/motor-resolver/motor.resolver";
 import {motorGuard} from "./security/motor-guard";
 import {SaveConfirmationGuard} from "./security/save-confirmation.guard";
 import {programCodeResolver} from "./program/program-overview/program-manager/program-splitscreen/resolver/program-code.resolver";
 
 export const routes: Routes = [
     {
-        path: "joint-control",
-        component: JointControlComponent,
+        path: "movement",
+        component: MovementComponent,
         children: [
+            {path: "", redirectTo: "3d", pathMatch: "full"},
             {
                 path: "3d",
                 component: Robot3DComponent,
             },
             {
+                path: "pose",
+                loadComponent: () =>
+                    import("./movement/pose/pose.component").then(
+                        (m) => m.PoseComponent,
+                    ),
+            },
+            {
                 path: ":joint-name",
-                component: JointControlCoreComponent,
+                component: MovementCoreComponent,
                 resolve: {joint: jointResolver},
                 canActivate: [jointGuard],
                 children: [
@@ -38,6 +46,26 @@ export const routes: Routes = [
             },
         ],
     },
+    {path: "joint-control", redirectTo: "movement", pathMatch: "full"},
+    {
+        path: "joint-control/3d",
+        redirectTo: "movement/3d",
+        pathMatch: "full",
+    },
+    {
+        path: "joint-control/pose",
+        redirectTo: "movement/pose",
+        pathMatch: "full",
+    },
+    {
+        path: "joint-control/:jointName",
+        redirectTo: "movement/:jointName",
+    },
+    {
+        path: "joint-control/:jointName/motor/:motorName",
+        redirectTo: "movement/:jointName/motor/:motorName",
+    },
+    {path: "pose", redirectTo: "movement/pose", pathMatch: "full"},
     {
         path: "smart-home",
         loadComponent: () =>
@@ -96,15 +124,11 @@ export const routes: Routes = [
         ],
     },
     {
-        path: "pose",
+        path: "vision",
         loadComponent: () =>
-            import("./pose/pose.component").then((m) => m.PoseComponent),
+            import("./vision/vision.component").then((m) => m.VisionComponent),
     },
-    {
-        path: "camera",
-        loadComponent: () =>
-            import("./camera/camera.component").then((m) => m.CameraComponent),
-    },
+    {path: "camera", redirectTo: "vision", pathMatch: "full"},
     {
         path: "voice-assistant",
         loadComponent: () =>
@@ -214,8 +238,8 @@ export const routes: Routes = [
                 (m) => m.DisplayUnlockComponent,
             ),
     },
-    {path: "", redirectTo: "joint-control/head", pathMatch: "full"},
-    {path: "**", redirectTo: "joint-control/head"},
+    {path: "", redirectTo: "movement/3d", pathMatch: "full"},
+    {path: "**", redirectTo: "movement/3d"},
 ];
 
 @NgModule({

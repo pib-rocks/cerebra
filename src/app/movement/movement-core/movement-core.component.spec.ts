@@ -1,6 +1,6 @@
 import {ComponentFixture, TestBed} from "@angular/core/testing";
 
-import {JointControlCoreComponent} from "./joint-control-core.component";
+import {MovementCoreComponent} from "./movement-core.component";
 import {RouterTestingModule} from "@angular/router/testing";
 import {ActivatedRoute} from "@angular/router";
 import {BehaviorSubject, of} from "rxjs";
@@ -8,9 +8,9 @@ import {JointConfiguration} from "src/app/shared/types/joint-configuration";
 import {VariantService} from "src/app/shared/services/variant.service";
 import {MotorService} from "src/app/shared/services/motor.service";
 
-describe("JointControlCoreComponent", () => {
-    let component: JointControlCoreComponent;
-    let fixture: ComponentFixture<JointControlCoreComponent>;
+describe("MovementCoreComponent", () => {
+    let component: MovementCoreComponent;
+    let fixture: ComponentFixture<MovementCoreComponent>;
 
     let initialConfig: JointConfiguration;
     let data: BehaviorSubject<any>;
@@ -87,10 +87,10 @@ describe("JointControlCoreComponent", () => {
                 {provide: VariantService, useValue: variantService},
                 {provide: MotorService, useValue: motorService},
             ],
-            imports: [RouterTestingModule, JointControlCoreComponent],
+            imports: [RouterTestingModule, MovementCoreComponent],
         }).compileComponents();
 
-        fixture = TestBed.createComponent(JointControlCoreComponent);
+        fixture = TestBed.createComponent(MovementCoreComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
     });
