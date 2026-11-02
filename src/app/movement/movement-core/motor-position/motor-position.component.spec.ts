@@ -79,6 +79,28 @@ describe("MotorPositionComponent", () => {
         fixture.detectChanges();
     });
 
+    it("uses the slider icon path as configured, without prefixing it again", () => {
+        // The icons live under /assets/movement/slider-icons since the navigation rename.
+        // A template that still prepends "../../../assets" asks for /assets/assets/... and
+        // the SPA fallback answers 200 text/html - a broken image, silently.
+        data.next({
+            motor: {
+                ...motorConfig,
+                sliderIconLeft: "/assets/movement/slider-icons/minimum.svg",
+                sliderIconRight: "/assets/movement/slider-icons/maximum.svg",
+            },
+        });
+        fixture.detectChanges();
+
+        const icons = fixture.nativeElement.querySelectorAll("img.slider-icon");
+        expect(icons[0].getAttribute("src")).toBe(
+            "/assets/movement/slider-icons/minimum.svg",
+        );
+        expect(icons[1].getAttribute("src")).toBe(
+            "/assets/movement/slider-icons/maximum.svg",
+        );
+    });
+
     it("should create", () => {
         expect(component).toBeTruthy();
     });

@@ -51,6 +51,16 @@ export class HorizontalSliderComponent
     resizeSubscription?: Subscription;
     messageReceiverSubscription?: Subscription;
 
+    /**
+     * Live feedback must not fight the pointer. While a thumb is drag-selected the operator
+     * owns its position; incoming values are then dropped. After the drag the thumb holds
+     * the value that was sent until the reported position has caught up (or the hold times
+     * out), because the servos lag behind - without this the thumb springs back to the old
+     * position on release and then chases the servo.
+     */
+    private heldValues: number[] | null = null;
+    private holdTimer?: ReturnType<typeof setTimeout>;
+
     screenHeight = window.innerHeight;
     screenWidth = window.innerWidth;
 
@@ -138,9 +148,19 @@ export class HorizontalSliderComponent
         this.setAllThumbValues(this.defaultValues);
         this.messageReceiverSubscription = this.messageReceiver$?.subscribe(
             (values: number[] | number) => {
-                this.setAllThumbValues(
-                    typeof values === "number" ? [values] : values,
-                );
+                const incoming = typeof values === "number" ? [values] : values;
+                if (this.thumbSelected) {
+                    // The operator is dragging: the pointer owns the thumb, not the robot.
+                    return;
+                }
+                if (
+                    this.heldValues &&
+                    !this.reportedPositionCaughtUp(incoming)
+                ) {
+                    return;
+                }
+                this.clearHold();
+                this.setAllThumbValues(incoming);
             },
         );
         this.ref.detectChanges();
@@ -157,6 +177,7 @@ export class HorizontalSliderComponent
 
     ngOnDestroy() {
         this.resizeSubscription?.unsubscribe();
+        clearTimeout(this.holdTimer);
         this.messageReceiverSubscription?.unsubscribe();
         this.sliderResizeObserver.disconnect();
     }
@@ -297,8 +318,55 @@ export class HorizontalSliderComponent
     }
 
     unselectSlider() {
+        if (this.thumbSelected) {
+            this.startHold();
+        }
         this.thumbSelected = null;
     }
+
+    /**
+     * Remember what the operator last sent so the thumb can keep it while the servos travel.
+     * The hold ends as soon as the reported positions arrive, or after HOLD_TIMEOUT_MS so a
+     * joint that cannot follow never freezes the display.
+     */
+    private startHold(): void {
+        if (this.numberOfThumbs !== 1) {
+            // With several thumbs the reported values cannot be assigned to a thumb without
+            // guessing which is which, so only the drag guard applies there.
+            return;
+        }
+        this.heldValues = this.thumbs.map((thumb) => thumb.valueSanitized);
+        clearTimeout(this.holdTimer);
+        this.holdTimer = setTimeout(() => {
+            this.heldValues = null;
+            this.holdTimer = undefined;
+        }, HorizontalSliderComponent.HOLD_TIMEOUT_MS);
+    }
+
+    private clearHold(): void {
+        this.heldValues = null;
+        if (this.holdTimer !== undefined) {
+            clearTimeout(this.holdTimer);
+            this.holdTimer = undefined;
+        }
+    }
+
+    /** True once every reported value is close to what the operator sent. */
+    private reportedPositionCaughtUp(incoming: number[]): boolean {
+        if (!this.heldValues || incoming.length !== this.heldValues.length) {
+            return true;
+        }
+        const tolerance =
+            Math.abs(this.rightValue - this.leftValue) *
+            HorizontalSliderComponent.HOLD_TOLERANCE_RATIO;
+        return incoming.every(
+            (value, idx) =>
+                Math.abs(value - this.heldValues![idx]) <= tolerance,
+        );
+    }
+
+    private static readonly HOLD_TIMEOUT_MS = 2000;
+    private static readonly HOLD_TOLERANCE_RATIO = 0.02;
 
     primaryButtonPressed(buttons: number): boolean {
         return (buttons & 1) === 1;
