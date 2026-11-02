@@ -71,6 +71,7 @@ export function trajectoryPointPositionsRad(
             model-url="/api/robot-model/model.json"
             mapping-url="/api/robot-model/mapping.json"
             ik-url="/api/kinematics/inverse"
+            poses-url="/api/pose"
             [class.d-none]="loadError"></pib-robot-view>
     `,
     styles: [
