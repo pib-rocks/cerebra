@@ -8,7 +8,12 @@ import {
 
 /** Local speech engines. They need no provider key. */
 export const LOCAL_VOICE_INPUT = "faster-whisper";
+export const LOCAL_VOICE_INPUT_STORED = "local_whisper";
 export const LOCAL_VOICE_OUTPUT = "supertone";
+
+/** Backend canonical ids for pib.Cloud STT and TTS (PC-43 / PC-109). */
+export const CLOUD_VOICE_INPUT_STORED = "cloud_whisper";
+export const CLOUD_VOICE_OUTPUT_STORED = "cloud_tts";
 
 /**
  * Initial idle timeout when Live is selected. The concept requires the
@@ -94,7 +99,11 @@ const OPEN: DialogBlock = {disabled: false, reason: null};
 export function readPersonalityDialog(
     source: Partial<PersonalityDialogValues> | null | undefined,
 ): PersonalityDialogValues {
-    const voiceInput = source?.voiceInput?.trim();
+    const rawVoiceInput = source?.voiceInput?.trim();
+    const voiceInput =
+        rawVoiceInput === LOCAL_VOICE_INPUT_STORED
+            ? LOCAL_VOICE_INPUT
+            : rawVoiceInput;
     const voiceOutput = source?.voiceOutput?.trim();
     return {
         voiceInput:
@@ -273,12 +282,39 @@ export function reconcileVoiceSelection(
     options: readonly VoiceBackendOption[],
     fallback: string,
     tokenProbe: TokenProbeState,
+    models: readonly ProviderSelectionRow[] = [],
 ): string {
-    if (options.some((option) => option.id === current)) {
-        return current;
+    const normalized = normalizeStoredVoiceSelection(current, models);
+    if (options.some((option) => option.id === normalized)) {
+        return normalized;
     }
     if (tokenProbe !== "available" || options.length === 0) {
-        return current;
+        return normalized;
     }
     return fallback;
+}
+
+/**
+ * Maps canonical backend engine ids ("local_whisper", "cloud_whisper",
+ * "cloud_tts") onto the option values rendered by the dialog select
+ * ("faster-whisper" or the pib.Cloud catalogue row id).
+ */
+export function normalizeStoredVoiceSelection(
+    current: string,
+    models: readonly ProviderSelectionRow[] = [],
+): string {
+    const trimmed = current.trim();
+    if (trimmed === LOCAL_VOICE_INPUT_STORED) {
+        return LOCAL_VOICE_INPUT;
+    }
+    if (
+        trimmed === CLOUD_VOICE_INPUT_STORED ||
+        trimmed === CLOUD_VOICE_OUTPUT_STORED
+    ) {
+        const cloud = models.find(usesCloudToken);
+        if (cloud != null) {
+            return String(cloud.id);
+        }
+    }
+    return trimmed;
 }
