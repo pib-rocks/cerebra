@@ -214,6 +214,27 @@
                             class="advanced-inline-row"
                             id="row-pause-threshold"
                             lang="en-US">
+                            <div class="voice-gender-group">
+                                <label
+                                    for="voice-gender-select"
+                                    class="personality-field-label mb-0"
+                                    id="label-voice-gender"
+                                    >Voice</label
+                                >
+                                <select
+                                    id="voice-gender-select"
+                                    formControlName="gender"
+                                    class="form-select"
+                                    data-test="DDN_Voice"
+                                    aria-label="Voice">
+                                    @for (option of voiceGenders; track
+                                    option.id) {
+                                    <option [value]="option.id">
+                                        {{ option.label }}
+                                    </option>
+                                    }
+                                </select>
+                            </div>
                             <label
                                 for="pause-threshold-input"
                                 class="personality-field-label mb-0"

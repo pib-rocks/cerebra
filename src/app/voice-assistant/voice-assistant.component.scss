@@ -136,6 +136,17 @@ label {
     border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+.voice-gender-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    select {
+        width: auto;
+        min-width: 7rem;
+    }
+}
+
 .advanced-inline-row {
     display: flex;
     align-items: center;

@@ -85,6 +85,19 @@ export interface DialogBlock {
     reason: string | null;
 }
 
+/** Default of the "Voice" dropdown: the gender the spoken answer is synthesised in. */
+export const DEFAULT_VOICE_GENDER = "Female";
+
+/**
+ * The two voices the cloud speech endpoint can be asked for. The robot maps the gender to the
+ * provider voice code (F3 for Female, M3 = Adam for Male), so the dialog only carries the
+ * choice, not a provider id.
+ */
+export const VOICE_GENDER_OPTIONS: readonly VoiceBackendOption[] = [
+    {id: "Female", label: "Female"},
+    {id: "Male", label: "Male"},
+];
+
 export interface VoiceBackendOption {
     id: string;
     label: string;

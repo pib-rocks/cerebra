@@ -849,6 +849,30 @@ describe("VoiceAssistantComponent", () => {
         expect(
             document.body.querySelector("[data-test=TXT_Threshold]"),
         ).not.toBeNull();
+        // The voice of the spoken answer sits in the advanced row, in front of the pause
+        // threshold, and defaults to Female. It carries the gender; the robot maps it to the
+        // cloud voice (F3 for Female, M3 = Adam for Male).
+        const voiceSelect = document.body.querySelector(
+            "[data-test=DDN_Voice]",
+        ) as HTMLSelectElement;
+        expect(voiceSelect).not.toBeNull();
+        expect(
+            Array.from(voiceSelect.options).map((option) => option.value),
+        ).toEqual(["Female", "Male"]);
+        expect(voiceSelect.value).toBe("Female");
+        expect(voiceSelect.closest("#row-pause-threshold")).toBe(
+            document.body.querySelector("#row-pause-threshold"),
+        );
+        const row = voiceSelect.closest("#row-pause-threshold")!;
+        const following = row.querySelector("[data-test=TXT_Threshold]")!;
+        expect(
+            voiceSelect.compareDocumentPosition(following) &
+                Node.DOCUMENT_POSITION_FOLLOWING,
+        ).toBeTruthy();
+        voiceSelect.value = "Male";
+        voiceSelect.dispatchEvent(new Event("change"));
+        fixture.detectChanges();
+        expect(component.personalityForm.controls["gender"].value).toBe("Male");
         expect(
             document.body.querySelector("[data-test=CHK_Tool_Calling]"),
         ).not.toBeNull();
