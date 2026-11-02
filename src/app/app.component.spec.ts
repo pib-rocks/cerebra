@@ -68,11 +68,9 @@ describe("AppComponent", () => {
         expect(app.showStartupPassword()).toBeFalse();
     });
 
-    it("asks once the backend reports a locked store, and cancel enters degraded mode", () => {
+    it("never blocks the start screen with the startup password modal even when the store is locked", () => {
         const app = fixture.componentInstance;
         app.ngOnInit();
-        // Nothing is asked before the backend has answered: asking first and
-        // correcting afterwards would flash the dialog on a cleartext robot.
         expect(app.session.mode).toBe(STARTING_MODE);
         expect(app.showStartupPassword()).toBeFalse();
 
@@ -83,14 +81,14 @@ describe("AppComponent", () => {
                 credentialRefs: [],
                 mode: "degraded",
             });
-        expect(app.session.mode).toBe(PROMPT_MODE);
-        expect(app.showStartupPassword()).toBeTrue();
-
-        app.session.cancel();
-
-        expect(app.session.mode).toBe(DEGRADED_MODE);
-        expect(app.session.error).toBeNull();
+        fixture.detectChanges();
         expect(app.showStartupPassword()).toBeFalse();
+        expect(
+            fixture.nativeElement.querySelector("#startup-password-modal"),
+        ).toBeNull();
+        expect(
+            fixture.nativeElement.querySelector("#startup-password-backdrop"),
+        ).toBeNull();
     });
 
     it("does not render the voice holder outside the voice assistant", () => {
