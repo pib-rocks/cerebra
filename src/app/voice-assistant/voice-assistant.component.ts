@@ -33,6 +33,7 @@ import {
 import {ChannelCapabilityService} from "../shared/services/channel-capability.service";
 import {
     DEFAULT_IDLE_TIMEOUT_SECONDS,
+    DEFAULT_VOICE_GENDER,
     LOCAL_VOICE_INPUT,
     LOCAL_VOICE_OUTPUT,
     NEW_PERSONALITY_REASONING_EFFORT,
@@ -47,6 +48,7 @@ import {
     reasoningEffortFromStored,
     reasoningEffortLabel,
     toolCallingAvailability,
+    VOICE_GENDER_OPTIONS,
     voiceInputOptions,
     voiceOutputOptions,
     reconcileVoiceSelection,
@@ -97,6 +99,8 @@ export class VoiceAssistantComponent implements OnInit {
     thresholdString: string | undefined;
     voiceInputs: VoiceBackendOption[] = [];
     voiceOutputs: VoiceBackendOption[] = [];
+    /** "Voice" in the advanced row: Male or Female, see VOICE_GENDER_OPTIONS. */
+    readonly voiceGenders = VOICE_GENDER_OPTIONS;
     toolCallingReason: string | null = null;
     reasoningReason: string | null = null;
     /**
@@ -188,7 +192,7 @@ export class VoiceAssistantComponent implements OnInit {
                     Validators.maxLength(255),
                 ],
             }),
-            gender: new FormControl("Female", {
+            gender: new FormControl(DEFAULT_VOICE_GENDER, {
                 nonNullable: true,
                 validators: [Validators.required],
             }),
@@ -321,7 +325,7 @@ export class VoiceAssistantComponent implements OnInit {
             {emitEvent: false},
         );
         this.personalityForm.reset({
-            gender: "Female",
+            gender: DEFAULT_VOICE_GENDER,
             pausethreshold: 0.8,
             messageHistory: 10,
             assistantModel,
