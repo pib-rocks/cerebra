@@ -1,10 +1,5 @@
 <header class="personality-header">
     <div class="personality-tools">
-        <span
-            id="active-personality-name"
-            class="active-personality-name">
-            {{ activePersonalityName }}
-        </span>
         @if (activeNeedsAttention()) {
         <span
             class="speech-attention"
@@ -66,12 +61,6 @@
                 aria-hidden="true"></i>
         </button>
     </div>
-    <span
-        id="assistant-installation-mode"
-        class="installation-mode"
-        data-test="LBL_Installation_Mode">
-        {{ installationModeLabel }}
-    </span>
     <app-conversation-status
         class="personality-voice-holder"
         surface="assistant"></app-conversation-status>

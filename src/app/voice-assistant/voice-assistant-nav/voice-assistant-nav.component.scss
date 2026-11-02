@@ -26,16 +26,6 @@
     min-width: 0;
 }
 
-.installation-mode {
-    flex: 0 1 auto;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-size: 14px;
-    color: $blue-color;
-}
-
 .personality-voice-holder {
     display: block;
     margin-left: auto;
@@ -52,18 +42,6 @@
     font-weight: bold;
     text-transform: uppercase;
     font-size: 16px;
-}
-
-.active-personality-name {
-    flex: 0 1 auto;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-weight: bold;
-    text-transform: uppercase;
-    font-size: 16px;
-    color: $white-color;
 }
 
 .speech-attention {

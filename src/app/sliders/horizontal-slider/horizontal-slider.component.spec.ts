@@ -196,3 +196,101 @@ describe("HorizontalSliderComponent", () => {
         expect(sendEventSpy).toHaveBeenCalled();
     });
 });
+
+describe("HorizontalSliderComponent live feedback", () => {
+    let component: HorizontalSliderComponent;
+    let fixture: ComponentFixture<HorizontalSliderComponent>;
+
+    /**
+     * Every builder call gets its own subject: a component that is not destroyed keeps
+     * listening, and a shared subject would feed values into sliders with a different
+     * number of thumbs.
+     */
+    function buildSlider(numberOfThumbs: number): Subject<number[]> {
+        const feed = new Subject<number[]>();
+        fixture = TestBed.createComponent(HorizontalSliderComponent);
+        component = fixture.componentInstance;
+        component.messageReceiver$ = feed;
+        component.leftValue = -200;
+        component.rightValue = 200;
+        component.minBubblePosition = 20;
+        component.maxBubblePosition = 80;
+        component.step = 1;
+        component.name = "test";
+        component.thumbRadius = 12;
+        component.numberOfThumbs = numberOfThumbs;
+        component.defaultValues = new Array<number>(numberOfThumbs).fill(0);
+        component.sliderWidth = 1000;
+        component.sliderEvent = new EventEmitter<number[]>();
+        component.ngOnInit();
+        fixture.detectChanges();
+        return feed;
+    }
+
+    beforeEach(async () => {
+        TestBed.resetTestingModule();
+        await TestBed.configureTestingModule({
+            imports: [ReactiveFormsModule, HorizontalSliderComponent],
+        }).compileComponents();
+    });
+
+    it("ignores the reported position while the operator drags the thumb", () => {
+        // /joint_states arrives at ~10 Hz. Applying it mid-drag moves the thumb out from
+        // under the pointer, so dragging became a fight between operator and robot.
+        const feed = buildSlider(1);
+        component.setAllThumbValues([-100]);
+        component.thumbSelected = component.thumbs[0];
+        feed.next([0]);
+        expect(component.thumbs[0].valueSanitized).toBe(-100);
+    });
+
+    it("keeps the value it sent until the reported position has caught up", fakeAsync(() => {
+        const feed = buildSlider(1);
+        component.setAllThumbValues([0]);
+        component.thumbSelected = component.thumbs[0];
+        component.setThumbValue(component.thumbs[0], 120);
+        component.unselectSlider();
+
+        // The servo is still travelling: the thumb must not fall back to the old position.
+        feed.next([-40]);
+        expect(component.thumbs[0].valueSanitized).toBe(120);
+
+        // Inside 2% of the 400 wide range the reported position takes over again.
+        feed.next([124]);
+        expect(component.thumbs[0].valueSanitized).toBe(124);
+        feed.next([60]);
+        expect(component.thumbs[0].valueSanitized).toBe(60);
+
+        // A joint that never follows must not freeze the display forever.
+        component.thumbSelected = component.thumbs[0];
+        component.setThumbValue(component.thumbs[0], -80);
+        component.unselectSlider();
+        feed.next([-300]);
+        expect(component.thumbs[0].valueSanitized).toBe(-80);
+        tick(2100);
+        feed.next([-120]);
+        expect(component.thumbs[0].valueSanitized).toBe(-120);
+    }));
+
+    it("applies the reported positions again after the drag", () => {
+        const feed = buildSlider(1);
+        component.setAllThumbValues([0]);
+        component.thumbSelected = component.thumbs[0];
+        feed.next([50]);
+        expect(component.thumbs[0].valueSanitized).toBe(0);
+        component.thumbSelected = null;
+        feed.next([70]);
+        expect(component.thumbs[0].valueSanitized).toBe(70);
+    });
+
+    it("does not hold values for a two thumb slider, where they are not assignable to a thumb", () => {
+        const feed = buildSlider(2);
+        component.setAllThumbValues([0, 100]);
+        component.thumbSelected = component.thumbs[0];
+        component.unselectSlider();
+        feed.next([10, 104]);
+        expect(component.thumbs.map((t) => t.valueSanitized)).toEqual([
+            10, 104,
+        ]);
+    });
+});

@@ -79,6 +79,28 @@ describe("MotorPositionComponent", () => {
         fixture.detectChanges();
     });
 
+    it("uses the slider icon path as configured, without prefixing it again", () => {
+        // The icons live under /assets/movement/slider-icons since the navigation rename.
+        // A template that still prepends "../../../assets" asks for /assets/assets/... and
+        // the SPA fallback answers 200 text/html - a broken image, silently.
+        data.next({
+            motor: {
+                ...motorConfig,
+                sliderIconLeft: "/assets/movement/slider-icons/minimum.svg",
+                sliderIconRight: "/assets/movement/slider-icons/maximum.svg",
+            },
+        });
+        fixture.detectChanges();
+
+        const icons = fixture.nativeElement.querySelectorAll("img.slider-icon");
+        expect(icons[0].getAttribute("src")).toBe(
+            "/assets/movement/slider-icons/minimum.svg",
+        );
+        expect(icons[1].getAttribute("src")).toBe(
+            "/assets/movement/slider-icons/maximum.svg",
+        );
+    });
+
     it("should create", () => {
         expect(component).toBeTruthy();
     });
@@ -205,5 +227,79 @@ describe("MotorPositionComponent position seed", () => {
         ]);
         expect(fixture.componentInstance.turnedOn).toBeTrue();
         expect(fixture.componentInstance.rotationRangeMin).toBe(-90);
+    });
+});
+
+describe("MotorPositionComponent slider ownership", () => {
+    let component: MotorPositionComponent;
+    let positionSubject: Subject<number>;
+    let motorService: jasmine.SpyObj<MotorService>;
+
+    beforeEach(async () => {
+        const spy: jasmine.SpyObj<MotorService> = jasmine.createSpyObj(
+            "MotorService",
+            [
+                "getPositionObservable",
+                "getSettingsObservable",
+                "setPosition",
+                "refreshPosition",
+            ],
+        );
+        positionSubject = new Subject<number>();
+        spy.getPositionObservable.and.returnValue(positionSubject);
+        spy.getSettingsObservable.and.returnValue(new Subject<MotorSettings>());
+
+        const motorConfig = {
+            motorName: "test_motor",
+            motorPathName: "test-motor",
+            label: "Test Motor",
+            sliderIconLeft: "/l",
+            sliderIconRight: "/r",
+            captionLeft: "closed",
+            captionRight: "open",
+            touchPointCenterX: 0.3,
+            touchPointCenterY: 0.6,
+            isMultiMotor: false,
+            sourceMotorName: "test_motor",
+        } as MotorConfiguration;
+
+        await TestBed.configureTestingModule({
+            providers: [
+                {
+                    provide: ActivatedRoute,
+                    useValue: {data: new BehaviorSubject({motor: motorConfig})},
+                },
+                {provide: MotorService, useValue: spy},
+            ],
+            imports: [
+                RouterTestingModule,
+                ReactiveFormsModule,
+                MotorPositionComponent,
+                HorizontalSliderComponent,
+            ],
+        }).compileComponents();
+
+        motorService = TestBed.inject(
+            MotorService,
+        ) as jasmine.SpyObj<MotorService>;
+        const fixture = TestBed.createComponent(MotorPositionComponent);
+        component = fixture.componentInstance;
+        fixture.detectChanges();
+    });
+
+    it("seeds the slider once from the measured position", () => {
+        positionSubject.next(1500);
+        expect(component.positionReceiver$.value).toEqual([15]);
+    });
+
+    it("ignores measured positions once the user moved the slider", () => {
+        positionSubject.next(1500);
+        component.setPosition(40);
+        positionSubject.next(-2000);
+        expect(component.positionReceiver$.value).toEqual([15]);
+        expect(motorService.setPosition).toHaveBeenCalledWith(
+            "test_motor",
+            4000,
+        );
     });
 });

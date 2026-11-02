@@ -31,6 +31,13 @@ export class MotorPositionComponent implements OnInit {
 
     turnedOn: boolean = false;
 
+    /**
+     * The slider is the master of the motor: the first measured value seeds it, everything after
+     * that is ignored. Feeding live positions back made the thumb run after the robot and jump
+     * between Soll and Ist while dragging.
+     */
+    private seedFromMeasurement = true;
+
     constructor(
         private motorService: MotorService,
         private route: ActivatedRoute,
@@ -41,10 +48,13 @@ export class MotorPositionComponent implements OnInit {
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe((data) => {
                 this.motor = data["motor"];
+                this.seedFromMeasurement = true;
                 this.motorService
                     .getPositionObservable(this.motor.sourceMotorName)
                     .pipe(takeUntilDestroyed(this.destroyRef))
                     .subscribe((position) => {
+                        if (!this.seedFromMeasurement) return;
+                        this.seedFromMeasurement = false;
                         this.positionReceiver$.next([position / 100]);
                     });
                 this.motorService.refreshPosition(this.motor.sourceMotorName);
@@ -60,6 +70,7 @@ export class MotorPositionComponent implements OnInit {
     }
 
     setPosition(position: number) {
+        this.seedFromMeasurement = false;
         this.motorService.setPosition(this.motor.motorName, position * 100);
     }
 }

@@ -12,7 +12,6 @@ import {NgbModal} from "@ng-bootstrap/ng-bootstrap";
 import {VoiceAssistant} from "src/app/shared/types/voice-assistant";
 import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
 import {TokenService} from "src/app/shared/services/token.service";
-import {ChannelCapabilityService} from "src/app/shared/services/channel-capability.service";
 import {VisibleStateService} from "src/app/shared/services/visible-state.service";
 import {visibleConversation} from "src/app/shared/types/visible-state";
 import {createServiceSpy} from "src/app/shared/testing/create-service-spy";
@@ -83,11 +82,11 @@ describe("VoiceAssistantNavComponent", () => {
             elements.map((element) => element.getName()),
         );
         expect(select.value).toBe(elements[0].getUUID());
+        // One place, one name: the drop-down shows it, the header does not repeat it.
         expect(
-            fixture.nativeElement
-                .querySelector("#active-personality-name")
-                .textContent.trim(),
-        ).toBe(elements[0].getName());
+            fixture.nativeElement.querySelector("#active-personality-name"),
+        ).toBeNull();
+        expect(optionLabels(select)).toContain(elements[0].getName());
     });
 
     it("navigates to the personality chosen in the drop-down", () => {
@@ -123,11 +122,15 @@ describe("VoiceAssistantNavComponent", () => {
             (option) => option.selected,
         );
         expect(selected?.value).toBe(created.getUUID());
+        // The name lives in the drop-down only; the header must not repeat it.
         expect(
-            fixture.nativeElement
-                .querySelector("#active-personality-name")
-                .textContent.trim(),
-        ).toBe("Fresh Persona");
+            fixture.nativeElement.querySelector("#active-personality-name"),
+        ).toBeNull();
+        expect(
+            optionLabels(select).filter((label) =>
+                label.includes("Fresh Persona"),
+            ),
+        ).toHaveSize(1);
     });
 
     it("places labelled person and settings buttons beside the add button", () => {
@@ -210,21 +213,24 @@ describe("VoiceAssistantNavComponent", () => {
         expect(document.body.querySelector(".modal.cerebra-modal")).toBeNull();
     });
 
-    it("shows the installation mode in the chat header for both installer flags", () => {
-        const badge = () =>
+    it("does not repeat the installation mode at the right of the chat header", () => {
+        // The header carries the personality drop-down and the voice holder; the
+        // installation mode is not a UI fact and must not be rendered at all.
+        expect(
             fixture.nativeElement.querySelector(
                 "[data-test=LBL_Installation_Mode]",
-            ) as HTMLElement;
-        expect(badge().textContent).toContain("Hermes agent");
-        const capability = TestBed.inject(ChannelCapabilityService) as {
-            applyInstallerFlag: (enabled: boolean) => void;
-        };
-        capability.applyInstallerFlag(false);
-        fixture.detectChanges();
-        expect(badge().textContent).toContain("Direct LLM, no agent");
-        capability.applyInstallerFlag(true);
-        fixture.detectChanges();
-        expect(badge().textContent).toContain("Hermes agent");
+            ),
+        ).toBeNull();
+        expect(
+            fixture.nativeElement.querySelector("#assistant-installation-mode"),
+        ).toBeNull();
+        const headerText = (
+            fixture.nativeElement.querySelector(
+                ".personality-header",
+            ) as HTMLElement
+        ).textContent;
+        expect(headerText).not.toContain("Hermes agent");
+        expect(headerText).not.toContain("Direct LLM");
     });
 
     it("shows who holds the voice at the right end of the personality row", () => {
@@ -232,9 +238,6 @@ describe("VoiceAssistantNavComponent", () => {
             ".personality-header",
         ) as HTMLElement;
         const tools = header.querySelector(".personality-tools") as HTMLElement;
-        const mode = header.querySelector(
-            "#assistant-installation-mode",
-        ) as HTMLElement;
         const holder = header.querySelector(
             "app-conversation-status",
         ) as HTMLElement;
@@ -243,10 +246,8 @@ describe("VoiceAssistantNavComponent", () => {
         ) as HTMLElement;
 
         expect(holder).not.toBeNull();
-        expect(mode).not.toBeNull();
         expect(header.lastElementChild).toBe(holder);
-        expect(tools.nextElementSibling).toBe(mode);
-        expect(mode.nextElementSibling).toBe(holder);
+        expect(tools.nextElementSibling).toBe(holder);
         expect(line.textContent).toContain("Nobody holds the voice");
         expect(header.querySelector("#animated-face")).toBeNull();
         expect(header.querySelector("#voice-channel-holder")).toBeNull();
@@ -322,11 +323,10 @@ describe("VoiceAssistantNavComponent", () => {
         );
         expect(component.selectedPersonalityId).toBe(remaining[0].getUUID());
         expect(personalitySelect(fixture).value).toBe(remaining[0].getUUID());
+        // The remaining personality is shown by the drop-down alone.
         expect(
-            fixture.nativeElement
-                .querySelector("#active-personality-name")
-                .textContent.trim(),
-        ).toBe(remaining[0].getName());
+            fixture.nativeElement.querySelector("#active-personality-name"),
+        ).toBeNull();
     });
 
     it("lands on the empty voice assistant root without a loop when the last personality is deleted", () => {
@@ -338,7 +338,6 @@ describe("VoiceAssistantNavComponent", () => {
 
         expect(navigate).toHaveBeenCalledOnceWith(["/voice-assistant"]);
         expect(component.selectedPersonalityId).toBe("");
-        expect(component.activePersonalityName).toBe("");
         expect(optionLabels(personalitySelect(fixture))).toEqual([]);
 
         (router.events as Subject<Event>).next(
@@ -396,10 +395,8 @@ describe("VoiceAssistantNavComponent (zoneless)", () => {
         );
         expect(personalitySelect(fixture).value).toBe(remaining[0].getUUID());
         expect(
-            fixture.nativeElement
-                .querySelector("#active-personality-name")
-                .textContent.trim(),
-        ).toBe(remaining[0].getName());
+            fixture.nativeElement.querySelector("#active-personality-name"),
+        ).toBeNull();
         TestBed.inject(NgbModal).dismissAll();
     });
 });
@@ -418,22 +415,6 @@ function navElements(): SidebarElement[] {
         new VoiceAssistant("423", "424", "", 0, ""),
         new VoiceAssistant("525", "525", "", 0, ""),
     ];
-}
-
-function channelCapabilityProvider(): Provider {
-    const smartChatsEnabled$ = new BehaviorSubject(true);
-    return {
-        provide: ChannelCapabilityService,
-        useValue: {
-            smartChatsEnabled$,
-            get smartChatsEnabled(): boolean {
-                return smartChatsEnabled$.getValue();
-            },
-            applyInstallerFlag(enabled: boolean): void {
-                smartChatsEnabled$.next(enabled);
-            },
-        },
-    };
 }
 
 function navProviders(personalities: VoiceAssistant[]): Provider[] {
@@ -478,7 +459,6 @@ function navProviders(personalities: VoiceAssistant[]): Provider[] {
                 }),
             },
         },
-        channelCapabilityProvider(),
     ];
 }
 
