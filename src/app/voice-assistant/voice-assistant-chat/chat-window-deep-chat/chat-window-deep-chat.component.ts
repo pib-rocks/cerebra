@@ -79,6 +79,7 @@ export class ChatWindowDeepChatComponent
         characterLimit: 0,
     };
     private pendingSignals?: {onResponse: (response: unknown) => void};
+    private awaitingTypedUserEcho = false;
     private lastStreamedMessageId: string | undefined;
     private chatHistorySubscription?: Subscription;
     /** Chat whose history subscription is live - keeps init from reading twice. */
@@ -146,6 +147,7 @@ export class ChatWindowDeepChatComponent
                 this.currentChatId = chatId;
                 this.lastStreamedMessageId = undefined;
                 this.pendingSignals = undefined;
+                this.awaitingTypedUserEcho = false;
                 this.submitClickMs = undefined;
                 if (!chatId) {
                     this.chat = undefined;
@@ -350,6 +352,7 @@ export class ChatWindowDeepChatComponent
             )}ms`,
         );
         this.pendingSignals = joining ? undefined : signals;
+        this.awaitingTypedUserEcho = true;
         if (joining) {
             signals.onClose();
         }
@@ -379,6 +382,7 @@ export class ChatWindowDeepChatComponent
                             messageText,
                         );
                         this.pendingSignals = undefined;
+                        this.awaitingTypedUserEcho = false;
                         this.submitClickMs = undefined;
                     },
                 }),
@@ -398,6 +402,7 @@ export class ChatWindowDeepChatComponent
             )}ms`,
         );
         this.pendingSignals = joining ? undefined : signals;
+        this.awaitingTypedUserEcho = true;
         if (joining) {
             signals.onClose();
         }
@@ -417,6 +422,7 @@ export class ChatWindowDeepChatComponent
                             signals.onResponse({error: String(err)});
                         }
                         this.pendingSignals = undefined;
+                        this.awaitingTypedUserEcho = false;
                         this.submitClickMs = undefined;
                     },
                 }),
@@ -605,9 +611,25 @@ export class ChatWindowDeepChatComponent
         if (!messages?.length) return;
 
         const newest = messages[messages.length - 1];
-        if (newest.isUser) return;
-
         const {messageId, content} = newest;
+
+        if (newest.isUser) {
+            if (this.awaitingTypedUserEcho) {
+                this.awaitingTypedUserEcho = false;
+                this.lastStreamedMessageId = messageId;
+                return;
+            }
+            if (!content) return;
+            if (typeof el.addMessage === "function") {
+                el.addMessage(
+                    messageId && messageId === this.lastStreamedMessageId
+                        ? {role: "user", text: content, overwrite: true}
+                        : {role: "user", text: content},
+                );
+            }
+            this.lastStreamedMessageId = messageId;
+            return;
+        }
 
         if (this.pendingSignals && content) {
             this.logTtftIfPending();
