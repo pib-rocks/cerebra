@@ -8,12 +8,7 @@ import {
 import {SmartConnectComponent} from "./ui-components/smart-connect/smart-connect.component";
 import {RelayControlComponent} from "./ui-components/relay-control/relay-control.component";
 import {IpRetrieverComponent} from "./ui-components/ip-retriever/ip-retriever.component";
-import {
-    DEGRADED_MODE,
-    PROMPT_MODE,
-    STARTING_MODE,
-    UNLOCKED_MODE,
-} from "./system/keys/key-store-session";
+import {STARTING_MODE, UNLOCKED_MODE} from "./system/keys/key-store-session";
 import {routes} from "./app-routing.module";
 
 describe("AppComponent", () => {
