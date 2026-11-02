@@ -144,7 +144,7 @@ describe("Robot3DComponent", () => {
         spyOn(viewer, "setJointStateSample");
         spyOn(viewer, "dispose");
         spyOn(viewer, "confirmCommand");
-        spyOn(viewer, "rejectCommand");
+        spyOn(viewer, "reportCommandFailure");
         spyOn(viewer, "setExpectedMotors");
         // The mode is a static attribute now; keep the element from acting on it so it does
         // not fetch model.json and mapping.json, which this test does not stub.
@@ -203,6 +203,9 @@ describe("Robot3DComponent", () => {
         viewer.dispatchEvent(
             new CustomEvent("commandrequest", {detail, cancelable: true}),
         );
+        // Acknowledged at dispatch: the service only answers once the motion is done, which used to
+        // show up as "no acknowledgement" for slow joints.
+        expect(viewer.confirmCommand).toHaveBeenCalledWith("cmd-1");
         applyJointTrajectory$.next();
         applyJointTrajectory$.complete();
         fixture.detectChanges();
@@ -235,7 +238,7 @@ describe("Robot3DComponent", () => {
         );
         fixture.detectChanges();
 
-        expect(viewer.rejectCommand).toHaveBeenCalledWith(
+        expect(viewer.reportCommandFailure).toHaveBeenCalledWith(
             "cmd-2",
             "trajectory rejected",
         );

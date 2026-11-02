@@ -196,10 +196,13 @@ export class Robot3DComponent implements AfterViewInit, OnDestroy {
             return;
         }
         const trajectory = jointTrajectoryFromCommandMotors(detail.motors);
+        // apply_joint_trajectory only answers once the motion is done - seconds for a big move. The
+        // dispatch itself is the acknowledgement: waiting for the service made the viewer report
+        // "no acknowledgement" for every slow joint. A real failure still arrives below.
+        viewer.confirmCommand(detail.commandId);
         this.rosService.applyJointTrajectory(trajectory).subscribe({
             next: () => {
                 this.commandError = null;
-                viewer.confirmCommand(detail.commandId);
                 console.info("command", {
                     commandId: detail.commandId,
                     joints: detail.values,
@@ -212,7 +215,7 @@ export class Robot3DComponent implements AfterViewInit, OnDestroy {
                     err instanceof Error
                         ? err.message
                         : "failed to apply joint-trajectory.";
-                viewer.rejectCommand(detail.commandId, message);
+                viewer.reportCommandFailure(detail.commandId, message);
                 this.commandError = Object.keys(detail.motors)
                     .map((motor) => `${motor}: ${message}`)
                     .join("; ");
