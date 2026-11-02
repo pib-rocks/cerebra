@@ -849,9 +849,8 @@ describe("VoiceAssistantComponent", () => {
         expect(
             document.body.querySelector("[data-test=TXT_Threshold]"),
         ).not.toBeNull();
-        // The voice of the spoken answer sits in the advanced row, in front of the pause
-        // threshold, and defaults to Female. It carries the gender; the robot maps it to the
-        // cloud voice (F3 for Female, M3 = Adam for Male).
+        // The voice of the spoken answer sits in its own bordered card (#row-voice-gender)
+        // in the 3-column advanced-controls-grid, in front of the pause threshold and Use tools.
         const voiceSelect = document.body.querySelector(
             "[data-test=DDN_Voice]",
         ) as HTMLSelectElement;
@@ -860,13 +859,31 @@ describe("VoiceAssistantComponent", () => {
             Array.from(voiceSelect.options).map((option) => option.value),
         ).toEqual(["Female", "Male"]);
         expect(voiceSelect.value).toBe("Female");
-        expect(voiceSelect.closest("#row-pause-threshold")).toBe(
-            document.body.querySelector("#row-pause-threshold"),
+        const voiceCard = voiceSelect.closest(
+            "#row-voice-gender.advanced-inline-row",
         );
-        const row = voiceSelect.closest("#row-pause-threshold")!;
-        const following = row.querySelector("[data-test=TXT_Threshold]")!;
+        const thresholdCard = document.body.querySelector(
+            "#row-pause-threshold.advanced-inline-row",
+        );
+        const toolsCard = document.body.querySelector(
+            "#row-tool-calling.advanced-inline-row",
+        );
+        expect(voiceCard).not.toBeNull();
+        expect(thresholdCard).not.toBeNull();
+        expect(toolsCard).not.toBeNull();
+        expect(voiceCard).not.toBe(thresholdCard);
+        const grid = document.body.querySelector(
+            ".advanced-controls-grid",
+        ) as HTMLElement;
+        expect(voiceCard?.parentElement).toBe(grid);
+        expect(thresholdCard?.parentElement).toBe(grid);
+        expect(toolsCard?.parentElement).toBe(grid);
         expect(
-            voiceSelect.compareDocumentPosition(following) &
+            voiceCard!.compareDocumentPosition(thresholdCard!) &
+                Node.DOCUMENT_POSITION_FOLLOWING,
+        ).toBeTruthy();
+        expect(
+            thresholdCard!.compareDocumentPosition(toolsCard!) &
                 Node.DOCUMENT_POSITION_FOLLOWING,
         ).toBeTruthy();
         voiceSelect.value = "Male";
