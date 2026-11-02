@@ -59,6 +59,12 @@ jobs:
       - name: Install dependencies   
         run: npm ci
         
+      - name: Check asset references
+        # A renamed asset folder only shows up as a blank <img> at runtime: the movement tabs were
+        # empty because the background paths still pointed at /joint-control. This step fails the
+        # build instead.
+        run: node scripts/check-asset-references.mjs
+
       - name: Run Unit Tests
         if: ( success() || failure() ) && github.event_name == 'pull_request' 
         run: npx ng test --code-coverage --watch=false --browsers=NoSandbox

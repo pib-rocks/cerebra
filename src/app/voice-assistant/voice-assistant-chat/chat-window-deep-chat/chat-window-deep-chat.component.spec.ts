@@ -1004,7 +1004,7 @@ describe("ChatWindowDeepChatComponent", () => {
         );
     });
 
-    it("isUser messages are ignored", () => {
+    it("ignores the typed isUser echo but renders spoken isUser messages from Voice Interaction", () => {
         const signals = {onResponse: jasmine.createSpy("onResponse")};
         mockDeepChat.connect!.handler(
             {messages: [{role: "user", text: "hi there"}]},
@@ -1022,6 +1022,37 @@ describe("ChatWindowDeepChatComponent", () => {
 
         expect(signals.onResponse).not.toHaveBeenCalled();
         expect(mockDeepChat.addMessage).not.toHaveBeenCalled();
+
+        // Subsequent spoken user utterance (no typed submit) is rendered in deep-chat
+        messagesSubject.next([
+            {
+                messageId: "user-spoken-2",
+                timestamp: "2",
+                isUser: true,
+                content: "Hallo pib, wie geht es dir?",
+            },
+        ]);
+
+        expect(mockDeepChat.addMessage).toHaveBeenCalledWith({
+            role: "user",
+            text: "Hallo pib, wie geht es dir?",
+        });
+
+        // Streaming update to the same spoken user messageId overwrites in place
+        messagesSubject.next([
+            {
+                messageId: "user-spoken-2",
+                timestamp: "3",
+                isUser: true,
+                content: "Hallo pib, wie geht es dir heute?",
+            },
+        ]);
+
+        expect(mockDeepChat.addMessage).toHaveBeenCalledWith({
+            role: "user",
+            text: "Hallo pib, wie geht es dir heute?",
+            overwrite: true,
+        });
     });
 
     it("enables input when SmartConnect is on or key storage encryption is off", () => {

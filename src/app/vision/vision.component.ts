@@ -86,9 +86,9 @@ interface OverlayAxis extends OverlayConnection {
 const DEGREE_SCALAR_NAMES = ["yaw", "pitch", "roll", "gaze_yaw", "gaze_pitch"];
 
 @Component({
-    selector: "app-camera",
-    templateUrl: "./camera.component.html",
-    styleUrls: ["./camera.component.scss"],
+    selector: "app-vision",
+    templateUrl: "./vision.component.html",
+    styleUrls: ["./vision.component.scss"],
     changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [
         ReactiveFormsModule,
@@ -102,7 +102,7 @@ const DEGREE_SCALAR_NAMES = ["yaw", "pitch", "roll", "gaze_yaw", "gaze_pitch"];
         ModelListComponent,
     ],
 })
-export class CameraComponent implements OnInit, OnDestroy {
+export class VisionComponent implements OnInit, OnDestroy {
     private static readonly DETECTION_STALE_MS = 1500;
     private static readonly DIAGNOSTIC_WINDOW_MS = 5000;
     private static readonly DEFAULT_REFRESH_RATE_SECONDS = 0.1;
@@ -220,7 +220,7 @@ export class CameraComponent implements OnInit, OnDestroy {
         this.refreshRateReceiver$ = this.cameraService.cameraSettings.pipe(
             map((settings) => [
                 settings.refreshRate ??
-                    CameraComponent.DEFAULT_REFRESH_RATE_SECONDS,
+                    VisionComponent.DEFAULT_REFRESH_RATE_SECONDS,
             ]),
         );
         this.connectionStatusSubscription =
@@ -474,7 +474,7 @@ export class CameraComponent implements OnInit, OnDestroy {
             Math.min(
                 detection.x_max - detection.x_min,
                 detection.y_max - detection.y_min,
-            ) * CameraComponent.GAZE_RAY_SCALE;
+            ) * VisionComponent.GAZE_RAY_SCALE;
         if (!Number.isFinite(length) || length <= 0) return undefined;
 
         const radians = Math.PI / 180;
@@ -738,7 +738,7 @@ export class CameraComponent implements OnInit, OnDestroy {
                 modelId,
                 setTimeout(
                     () => this.clearDetections(modelId),
-                    CameraComponent.DETECTION_STALE_MS,
+                    VisionComponent.DETECTION_STALE_MS,
                 ),
             );
             const countable =
@@ -787,9 +787,9 @@ export class CameraComponent implements OnInit, OnDestroy {
         return message.detections.some((detection) => {
             const points = this.keypoints(detection);
             return (
-                points.length === CameraComponent.HAND_KEYPOINT_COUNT &&
+                points.length === VisionComponent.HAND_KEYPOINT_COUNT &&
                 detection.keypoint_z.length ===
-                    CameraComponent.HAND_KEYPOINT_COUNT
+                    VisionComponent.HAND_KEYPOINT_COUNT
             );
         });
     }
@@ -799,7 +799,7 @@ export class CameraComponent implements OnInit, OnDestroy {
         const seconds =
             refreshRate !== undefined && refreshRate > 0
                 ? refreshRate
-                : CameraComponent.DEFAULT_REFRESH_RATE_SECONDS;
+                : VisionComponent.DEFAULT_REFRESH_RATE_SECONDS;
         return seconds * 1000;
     }
 
@@ -830,7 +830,7 @@ export class CameraComponent implements OnInit, OnDestroy {
 
     private updateDiagnostics() {
         const now = Date.now();
-        const cutoff = now - CameraComponent.DIAGNOSTIC_WINDOW_MS;
+        const cutoff = now - VisionComponent.DIAGNOSTIC_WINDOW_MS;
         this.cameraFrameTimes = this.cameraFrameTimes.filter(
             (timestamp) => timestamp >= cutoff,
         );
@@ -858,7 +858,7 @@ export class CameraComponent implements OnInit, OnDestroy {
                 Math.max(
                     0,
                     oldestTimestamp +
-                        CameraComponent.DIAGNOSTIC_WINDOW_MS -
+                        VisionComponent.DIAGNOSTIC_WINDOW_MS -
                         now +
                         1,
                 ),

@@ -16,9 +16,9 @@ import {MotorFeedbackComponent} from "./motor-feedback/motor-feedback.component"
 import {VariantService} from "src/app/shared/services/variant.service";
 
 @Component({
-    selector: "app-joint-control-core",
-    templateUrl: "./joint-control-core.component.html",
-    styleUrls: ["./joint-control-core.component.scss"],
+    selector: "app-movement-core",
+    templateUrl: "./movement-core.component.html",
+    styleUrls: ["./movement-core.component.scss"],
     changeDetection: ChangeDetectionStrategy.Eager,
     imports: [
         NgClass,
@@ -28,7 +28,7 @@ import {VariantService} from "src/app/shared/services/variant.service";
         RouterOutlet,
     ],
 })
-export class JointControlCoreComponent implements OnInit {
+export class MovementCoreComponent implements OnInit {
     private readonly destroyRef = inject(DestroyRef);
 
     joint!: JointConfiguration;

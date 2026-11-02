@@ -5,7 +5,7 @@ import {
     tick,
 } from "@angular/core/testing";
 import {ReactiveFormsModule} from "@angular/forms";
-import {CameraComponent} from "./camera.component";
+import {VisionComponent} from "./vision.component";
 import {RosService} from "../shared/services/ros-service/ros.service";
 import {By} from "@angular/platform-browser";
 import {NgbPopover} from "@ng-bootstrap/ng-bootstrap";
@@ -19,9 +19,9 @@ import {
 } from "../shared/ros-types/msg/detection-array";
 import {HAND_KEYPOINT_NAMES} from "./hand-skeleton";
 
-describe("CameraComponent", () => {
-    let component: CameraComponent;
-    let fixture: ComponentFixture<CameraComponent>;
+describe("VisionComponent", () => {
+    let component: VisionComponent;
+    let fixture: ComponentFixture<VisionComponent>;
     let rosService: RosService;
     let spyUnsubscribeCamera: jasmine.Spy<() => void>;
     let cameraService: CameraService;
@@ -85,14 +85,14 @@ describe("CameraComponent", () => {
                 ReactiveFormsModule,
                 NgbPopover,
                 HttpClientTestingModule,
-                CameraComponent,
+                VisionComponent,
                 HorizontalSliderComponent,
             ],
             providers: [RosService, CameraService, ApiService],
         }).compileComponents();
         rosService = TestBed.inject(RosService);
         cameraService = TestBed.inject(CameraService);
-        fixture = TestBed.createComponent(CameraComponent);
+        fixture = TestBed.createComponent(VisionComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
         spyUnsubscribeCamera = spyOn(rosService, "unsubscribeCameraTopic");

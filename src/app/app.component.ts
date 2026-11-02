@@ -55,13 +55,15 @@ export class AppComponent implements OnInit {
     sidebarCollapsed = false;
     navigationOverlaid = false;
     appVersion: string = APP_VERSION;
-    jointControlNavItemGroup = [
-        "/joint-control/",
-        "/joint-control/head",
-        "/joint-control/left-hand",
-        "/joint-control/right-hand",
-        "/joint-control/left-arm",
-        "/joint-control/right-arm",
+    movementNavItemGroup = [
+        "/movement/",
+        "/movement/3d",
+        "/movement/pose",
+        "/movement/head",
+        "/movement/left-hand",
+        "/movement/right-hand",
+        "/movement/left-arm",
+        "/movement/right-arm",
     ];
 
     constructor(
@@ -98,7 +100,7 @@ export class AppComponent implements OnInit {
             .subscribe((event) => {
                 if (event instanceof NavigationEnd) {
                     this.isActiveRoute =
-                        event.urlAfterRedirects.includes("joint-control");
+                        event.urlAfterRedirects.includes("movement");
                     this.onDisplayPath = this.isDisplayUrl(
                         event.urlAfterRedirects,
                     );

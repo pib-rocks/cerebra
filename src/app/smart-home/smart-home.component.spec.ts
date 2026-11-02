@@ -352,7 +352,7 @@ describe("SmartHomeComponent", () => {
     });
 
     // The section pages share one tab bar (src/app/shared/styles/_app-tabs.scss,
-    // imported by joint-control, system, program-overview and this page). The
+    // imported by movement, system, program-overview and this page). The
     // markup has to match theirs, otherwise the shared styling cannot apply.
     it("uses the standard tab markup of the other section pages", () => {
         const tabList = fixture.nativeElement.querySelector(

@@ -661,6 +661,7 @@ export class VoiceAssistantComponent implements OnInit {
             options,
             fallback,
             this.tokenProbe,
+            this.models,
         );
         if (next !== current) {
             control.setValue(next, {emitEvent: false});

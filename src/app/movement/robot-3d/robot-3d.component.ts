@@ -12,6 +12,7 @@ import {
 import {Subscription} from "rxjs";
 import {CommandRequestDetail, PibRobotView} from "@pib/robot-view";
 import {RosService} from "src/app/shared/services/ros-service/ros.service";
+import {motorLabels} from "src/app/shared/types/joint-configuration";
 import {JointStateMessage} from "src/app/shared/ros-types/msg/joint-state-message";
 import {StdMessageHeader} from "src/app/shared/ros-types/msg/std-message-header";
 import {
@@ -66,9 +67,11 @@ export function trajectoryPointPositionsRad(
         <pib-robot-view
             #robotView
             class="robot-3d-view"
-            mode="read"
+            mode="command"
             model-url="/api/robot-model/model.json"
             mapping-url="/api/robot-model/mapping.json"
+            ik-url="/api/kinematics/inverse"
+            poses-url="/api/pose"
             [class.d-none]="loadError"></pib-robot-view>
     `,
     styles: [
@@ -179,12 +182,8 @@ export class Robot3DComponent implements AfterViewInit, OnDestroy {
             return;
         }
         element.limits = this.limitsMap;
-        // Straight to the property, not through a template binding: the limits arrive from an
-        // HTTP call that is synchronous when the service answers from its cache, and a binding
-        // that flips inside the same change-detection pass throws NG0100. The element applies
-        // its own gate on top - unverified mapping or a model/robot mismatch still forces
-        // preview.
-        element.mode = "command";
+        // The panel names each row after the same motor names the joint tabs use.
+        element.labels = motorLabels;
         // The same list the limits come from: if the model's mapping names a motor this robot
         // does not have (or misses one), the viewer goes read-only instead of posing a robot
         // that does not exist.
