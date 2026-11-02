@@ -12,6 +12,7 @@ import {
 import {Subscription} from "rxjs";
 import {CommandRequestDetail, PibRobotView} from "@pib/robot-view";
 import {RosService} from "src/app/shared/services/ros-service/ros.service";
+import {motorLabels} from "src/app/shared/types/joint-configuration";
 import {JointStateMessage} from "src/app/shared/ros-types/msg/joint-state-message";
 import {StdMessageHeader} from "src/app/shared/ros-types/msg/std-message-header";
 import {
@@ -179,6 +180,8 @@ export class Robot3DComponent implements AfterViewInit, OnDestroy {
             return;
         }
         element.limits = this.limitsMap;
+        // The panel names each row after the same motor names the joint tabs use.
+        element.labels = motorLabels;
         // The same list the limits come from: if the model's mapping names a motor this robot
         // does not have (or misses one), the viewer goes read-only instead of posing a robot
         // that does not exist.
