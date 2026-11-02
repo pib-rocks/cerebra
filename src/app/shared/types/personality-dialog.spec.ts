@@ -360,4 +360,61 @@ describe("personality dialog rules", () => {
             ),
         ).toBe(LOCAL_VOICE_INPUT);
     });
+
+    it("maps stored backend engine ids cloud_whisper, cloud_tts and local_whisper onto the dialog option values", () => {
+        const cloud = new AssistantModel(
+            5,
+            CLOUD_TOKEN_API_NAME,
+            "pib.Cloud",
+            true,
+            null,
+            flags({stt: true, tts: true, tools: true, images: true}),
+            "provider-4",
+            true,
+        );
+        const flash = new AssistantModel(
+            1,
+            "gemini-3.8-flash",
+            "Gemini 3.8 Flash",
+            true,
+            null,
+            flags({stt: false, tts: false, tools: true, images: true}),
+            "provider-1",
+            false,
+        );
+        const models = [flash, cloud];
+        const inOpts = voiceInputOptions(models, true, "available");
+        const outOpts = voiceOutputOptions(models, true, "available");
+
+        expect(
+            reconcileVoiceSelection(
+                "cloud_whisper",
+                inOpts,
+                LOCAL_VOICE_INPUT,
+                "available",
+                models,
+            ),
+        ).toBe("5");
+        expect(
+            reconcileVoiceSelection(
+                "cloud_tts",
+                outOpts,
+                LOCAL_VOICE_OUTPUT,
+                "available",
+                models,
+            ),
+        ).toBe("5");
+        expect(
+            reconcileVoiceSelection(
+                "local_whisper",
+                inOpts,
+                LOCAL_VOICE_INPUT,
+                "available",
+                models,
+            ),
+        ).toBe(LOCAL_VOICE_INPUT);
+        expect(
+            readPersonalityDialog({voiceInput: "local_whisper"}).voiceInput,
+        ).toBe(LOCAL_VOICE_INPUT);
+    });
 });
