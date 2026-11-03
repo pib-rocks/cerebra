@@ -23,6 +23,8 @@ import {
     CHAT_TRANSPORT_UNAVAILABLE,
     CLOUD_TOKEN_API_NAME,
     DEEP_CHAT_SMARTCONNECT_PLACEHOLDER,
+    DEEP_CHAT_LIVE_SESSION_IDLE_PLACEHOLDER,
+    DEEP_CHAT_BACKEND_DISCONNECTED_PLACEHOLDER,
     MISSING_KEY_TURN,
 } from "src/app/shared/types/provider-registry";
 import {
@@ -44,6 +46,7 @@ import {
 } from "src/app/shared/types/channel-router";
 import {VoiceAssistantState} from "src/app/shared/types/voice-assistant-state";
 import {createServiceSpy} from "src/app/shared/testing/create-service-spy";
+import {RosService} from "src/app/shared/services/ros-service/ros.service";
 
 describe("ChatWindowDeepChatComponent", () => {
     let component: ChatWindowDeepChatComponent;
@@ -75,6 +78,7 @@ describe("ChatWindowDeepChatComponent", () => {
         [key: string]: unknown;
     };
     let voiceStateSubject: BehaviorSubject<VoiceAssistantState>;
+    let connectionStatusSubject: BehaviorSubject<boolean>;
 
     const chatId = "chat-id";
 
@@ -145,6 +149,8 @@ describe("ChatWindowDeepChatComponent", () => {
         );
         voiceAssistantSpy.voiceAssistantHealth.and.returnValue(of(null));
 
+        connectionStatusSubject = new BehaviorSubject<boolean>(true);
+
         await TestBed.configureTestingModule({
             imports: [
                 HttpClientTestingModule,
@@ -179,6 +185,13 @@ describe("ChatWindowDeepChatComponent", () => {
                 {
                     provide: VoiceAssistantService,
                     useValue: voiceAssistantSpy,
+                },
+                {
+                    provide: RosService,
+                    useValue: {
+                        connectionStatus$:
+                            connectionStatusSubject.asObservable(),
+                    },
                 },
             ],
         }).compileComponents();
@@ -930,6 +943,121 @@ describe("ChatWindowDeepChatComponent", () => {
         );
     });
 
+    it("disables Natural Chat typing until the voice session is active", () => {
+        const personality = new VoiceAssistant(
+            "persona-1",
+            "Ada",
+            "Female",
+            0.8,
+            "Du bist pib.",
+            11,
+            10,
+            "11",
+            SMART_CHANNEL,
+            {live: true},
+        );
+        voiceAssistantSpy.getPersonality.and.returnValue(personality);
+        chatService.getChat.and.returnValue(
+            new Chat("topic", "persona-1", chatId),
+        );
+        paramsSubject.next({chatUuid: chatId});
+        voiceStateSubject.next({turnedOn: false, chatId: ""});
+
+        expect(mockDeepChat.textInput).toEqual({
+            disabled: true,
+            placeholder: {text: DEEP_CHAT_LIVE_SESSION_IDLE_PLACEHOLDER},
+            characterLimit: CHAT_MESSAGE_MAX_LENGTH,
+        });
+        expect(mockDeepChat.disableSubmitButton).toHaveBeenCalledWith(true);
+    });
+
+    it("re-enables Natural Chat typing when the live session opens for this chat", () => {
+        const personality = new VoiceAssistant(
+            "persona-1",
+            "Ada",
+            "Female",
+            0.8,
+            "Du bist pib.",
+            11,
+            10,
+            "11",
+            SMART_CHANNEL,
+            {live: true},
+        );
+        voiceAssistantSpy.getPersonality.and.returnValue(personality);
+        chatService.getChat.and.returnValue(
+            new Chat("topic", "persona-1", chatId),
+        );
+        paramsSubject.next({chatUuid: chatId});
+        voiceStateSubject.next({turnedOn: false, chatId: ""});
+        mockDeepChat.disableSubmitButton.calls.reset();
+
+        voiceStateSubject.next({turnedOn: true, chatId});
+
+        expect(mockDeepChat.textInput).toEqual({
+            disabled: false,
+            placeholder: {text: "Enter a message"},
+            characterLimit: CHAT_MESSAGE_MAX_LENGTH,
+        });
+        expect(mockDeepChat.disableSubmitButton).toHaveBeenCalledWith(false);
+    });
+
+    it("keeps turn_based chat typable while the voice session is off", () => {
+        const personality = new VoiceAssistant(
+            "persona-1",
+            "Ada",
+            "Female",
+            0.8,
+            "Du bist pib.",
+            11,
+            10,
+            "11",
+            SMART_CHANNEL,
+            {live: false},
+        );
+        voiceAssistantSpy.getPersonality.and.returnValue(personality);
+        chatService.getChat.and.returnValue(
+            new Chat("topic", "persona-1", chatId),
+        );
+        paramsSubject.next({chatUuid: chatId});
+        voiceStateSubject.next({turnedOn: false, chatId: ""});
+
+        expect(mockDeepChat.textInput).toEqual({
+            disabled: false,
+            placeholder: {text: "Enter a message"},
+            characterLimit: CHAT_MESSAGE_MAX_LENGTH,
+        });
+    });
+
+    it("shows a disconnect hint for Natural Chat when the robot link drops", () => {
+        const personality = new VoiceAssistant(
+            "persona-1",
+            "Ada",
+            "Female",
+            0.8,
+            "Du bist pib.",
+            11,
+            10,
+            "11",
+            SMART_CHANNEL,
+            {live: true},
+        );
+        voiceAssistantSpy.getPersonality.and.returnValue(personality);
+        chatService.getChat.and.returnValue(
+            new Chat("topic", "persona-1", chatId),
+        );
+        paramsSubject.next({chatUuid: chatId});
+        voiceStateSubject.next({turnedOn: true, chatId});
+
+        connectionStatusSubject.next(false);
+
+        expect(mockDeepChat.textInput).toEqual({
+            disabled: true,
+            placeholder: {text: DEEP_CHAT_BACKEND_DISCONNECTED_PLACEHOLDER},
+            characterLimit: CHAT_MESSAGE_MAX_LENGTH,
+        });
+    });
+
     it("keeps typed input working while a live model holds this chat", () => {
         const personality = new VoiceAssistant(
             "persona-1",
@@ -1622,6 +1750,12 @@ describe("ChatWindowDeepChatComponent fresh chat without id", () => {
                 {provide: TokenService, useValue: tokenServiceSpy},
                 {provide: KeyStoreService, useValue: keyStoreSpy},
                 {provide: VoiceAssistantService, useValue: voiceAssistantSpy},
+                {
+                    provide: RosService,
+                    useValue: {
+                        connectionStatus$: of(true),
+                    },
+                },
             ],
         }).compileComponents();
 

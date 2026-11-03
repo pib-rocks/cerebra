@@ -5,6 +5,8 @@ import {
     TOKEN_PROBE_UNAVAILABLE,
     CHAT_TRANSPORT_UNAVAILABLE,
     DEEP_CHAT_SMARTCONNECT_PLACEHOLDER,
+    DEEP_CHAT_LIVE_SESSION_IDLE_PLACEHOLDER,
+    DEEP_CHAT_BACKEND_DISCONNECTED_PLACEHOLDER,
     credentialState,
     credentialNotice,
     resolveDeepChatComposer,
@@ -802,6 +804,38 @@ describe("resolveDeepChatComposer", () => {
         const state = base({chatsAvailable: false});
         expect(state.inputEnabled).toBeFalse();
         expect(state.turnRefusal).toBeNull();
+    });
+
+    it("disables Natural Chat typing until the live voice session is open", () => {
+        const state = base({
+            liveVoicePersonality: true,
+            liveSessionActive: false,
+            backendConnected: true,
+        });
+        expect(state.inputEnabled).toBeFalse();
+        expect(state.placeholder).toBe(DEEP_CHAT_LIVE_SESSION_IDLE_PLACEHOLDER);
+    });
+
+    it("keeps turn_based personalities typable without a live voice session", () => {
+        const state = base({
+            liveVoicePersonality: false,
+            liveSessionActive: false,
+            backendConnected: true,
+        });
+        expect(state.inputEnabled).toBeTrue();
+        expect(state.placeholder).toBe("Enter a message");
+    });
+
+    it("blocks Natural Chat typing when the robot connection is lost", () => {
+        const state = base({
+            liveVoicePersonality: true,
+            liveSessionActive: true,
+            backendConnected: false,
+        });
+        expect(state.inputEnabled).toBeFalse();
+        expect(state.placeholder).toBe(
+            DEEP_CHAT_BACKEND_DISCONNECTED_PLACEHOLDER,
+        );
     });
 
     it("exposes the chat line character limit for the deep-chat composer", () => {
