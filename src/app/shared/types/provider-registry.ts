@@ -47,6 +47,12 @@ export const DEEP_CHAT_SMARTCONNECT_PLACEHOLDER =
 export const DEEP_CHAT_KEY_STORE_LOCKED_PLACEHOLDER =
     "Unlock the key store to use Smart chat and Direct chat";
 
+export const DEEP_CHAT_LIVE_SESSION_IDLE_PLACEHOLDER =
+    "Natural Chat: start the voice session to type";
+
+export const DEEP_CHAT_BACKEND_DISCONNECTED_PLACEHOLDER =
+    "Robot connection lost. Reconnect to type in Natural Chat.";
+
 export {CHAT_MESSAGE_MAX_LENGTH, chatMessageLengthRefusal} from "./chat-limits";
 
 /** Server-side voice container health from GET /api/system/voice-assistant-health. */
@@ -144,6 +150,12 @@ export interface DeepChatComposerInput {
     cloudTokenStored: boolean;
     needsNewModel: boolean;
     tokenProbe: TokenProbeState;
+    /** Personality uses the live voice path (Natural Chat). */
+    liveVoicePersonality?: boolean;
+    /** Voice session is open for the chat being composed. */
+    liveSessionActive?: boolean;
+    /** ROS bridge connected; live session state is not trusted when false. */
+    backendConnected?: boolean;
 }
 
 export interface DeepChatComposerState {
@@ -171,7 +183,7 @@ export function resolveDeepChatComposer(
               input.tokenProbe,
           )
         : null;
-    const inputEnabled =
+    let inputEnabled =
         input.chatsAvailable && sessionGate && turnRefusal == null;
 
     let placeholder = "Enter a message";
@@ -181,6 +193,21 @@ export function resolveDeepChatComposer(
         placeholder = DEEP_CHAT_SMARTCONNECT_PLACEHOLDER;
     } else if (turnRefusal != null) {
         placeholder = turnRefusal;
+    }
+
+    if (
+        input.liveVoicePersonality === true &&
+        input.chatsAvailable &&
+        sessionGate &&
+        turnRefusal == null
+    ) {
+        if (input.backendConnected === false) {
+            inputEnabled = false;
+            placeholder = DEEP_CHAT_BACKEND_DISCONNECTED_PLACEHOLDER;
+        } else if (input.liveSessionActive !== true) {
+            inputEnabled = false;
+            placeholder = DEEP_CHAT_LIVE_SESSION_IDLE_PLACEHOLDER;
+        }
     }
 
     return {
