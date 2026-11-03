@@ -366,7 +366,8 @@ def ${generator.FUNCTION_NAME_PLACEHOLDER_}(sequence) -> None:
     for pose, _leg_seconds in resolved_poses:
         current = dict(previous)
         for k, v in pose.motor_angles_deg.items():
-            current[k] = min(90.0, max(-90.0, float(v)))
+            limit = 180.0 if ("stretch" in k or "opposition" in k) else 90.0
+            current[k] = min(limit, max(-limit, float(v)))
         filled.append(current)
         previous = current
 
@@ -382,10 +383,34 @@ def ${generator.FUNCTION_NAME_PLACEHOLDER_}(sequence) -> None:
     for host in (rosbridge_host, "localhost"):
         try:
             with Telemetry(host=host, port=9090) as telemetry:
-                live_joints = telemetry.get_positions_deg(joint_names)
-                for motor_name, angle_deg in (live_joints or {}).items():
-                    if angle_deg is not None:
-                        initial_angles[motor_name] = min(90.0, max(-90.0, float(angle_deg)))
+                batch_loaded = False
+                try:
+                    import roslibpy as _roslibpy
+                    _srv = _roslibpy.Service(
+                        telemetry.ros,
+                        "/get_all_joint_positions",
+                        "datatypes/srv/GetAllJointPositions",
+                    )
+                    _resp = _srv.call(
+                        _roslibpy.ServiceRequest({"joint_names": joint_names}),
+                        timeout=3.0,
+                    )
+                    for _res, _pos_cdeg in zip(
+                        _resp.get("results", []), _resp.get("positions", [])
+                    ):
+                        if _res.get("successful"):
+                            _m = _res["motor_name"]
+                            _lim = 180.0 if ("stretch" in _m or "opposition" in _m) else 90.0
+                            initial_angles[_m] = min(_lim, max(-_lim, float(_pos_cdeg) / 100.0))
+                            batch_loaded = True
+                except Exception:
+                    batch_loaded = False
+                if not batch_loaded:
+                    live_joints = telemetry.get_positions_deg(joint_names)
+                    for motor_name, angle_deg in (live_joints or {}).items():
+                        if angle_deg is not None:
+                            limit = 180.0 if ("stretch" in motor_name or "opposition" in motor_name) else 90.0
+                            initial_angles[motor_name] = min(limit, max(-limit, float(angle_deg)))
                 break
         except Exception:
             continue
@@ -404,8 +429,13 @@ def ${generator.FUNCTION_NAME_PLACEHOLDER_}(sequence) -> None:
     prev_cdeg = [float(round(initial_angles[motor_name] * 100.0)) for motor_name in joint_names]
     waypoints = [(prev_cdeg, 0.0)]
     time_from_start = 0.0
-    for (_pose, leg_seconds), angle_map in zip(resolved_poses, filled):
+    for step_idx, ((_pose, leg_seconds), angle_map) in enumerate(zip(resolved_poses, filled)):
         target_cdeg = [float(round(angle_map[motor_name] * 100.0)) for motor_name in joint_names]
+        max_delta = max((abs(p_to - p_from) for p_from, p_to in zip(prev_cdeg, target_cdeg)), default=0.0)
+        if step_idx == 0 and max_delta < 200.0:
+            waypoints[0] = (target_cdeg, 0.0)
+            prev_cdeg = target_cdeg
+            continue
         min_phys_sec = 0.0
         for motor_name, p_from, p_to in zip(joint_names, prev_cdeg, target_cdeg):
             delta = abs(p_to - p_from)
@@ -415,6 +445,10 @@ def ${generator.FUNCTION_NAME_PLACEHOLDER_}(sequence) -> None:
         time_from_start = round(time_from_start + eff_seconds, 4)
         waypoints.append((target_cdeg, time_from_start))
         prev_cdeg = target_cdeg
+
+    if len(waypoints) < 2:
+        waypoints.append((prev_cdeg, 0.05))
+        time_from_start = 0.05
 
     for host in (rosbridge_host, "localhost"):
         try:
