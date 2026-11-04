@@ -134,11 +134,14 @@ describe("shipped personalities", () => {
             expect(model).not.toBeNull();
             expect(isProviderOptionDisabled(model!, true)).toBeFalse();
             expect(CLOUD_TOKEN_API_NAME).toBe("pib-cloud");
+            // The live catalogue row is offered too (it becomes the single
+            // "pib.Cloud - Natural Chat" entry in the dialog), so the default
+            // route is asserted by presence, not by being the only row.
             expect(
                 providersForSelection(models, persona.providerRef, true).map(
                     (offered) => offered.apiName,
                 ),
-            ).toEqual([CLOUD_TOKEN_API_NAME]);
+            ).toContain(CLOUD_TOKEN_API_NAME);
         }
     });
 

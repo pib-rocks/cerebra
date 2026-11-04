@@ -1277,6 +1277,7 @@ describe("VoiceAssistantComponent", () => {
             "GPT-6",
             "Claude Sonnet 5.5",
             "pib.Cloud",
+            "pib.Cloud - Natural Chat",
         ]);
         expect(selectable).not.toContain(retired.visualName);
         expect(
@@ -1517,7 +1518,7 @@ describe("VoiceAssistantComponent", () => {
                 options
                     .filter((option) => !option.disabled)
                     .map((option) => option.textContent?.trim()),
-            ).toEqual(["pib.Cloud"]);
+            ).toEqual(["pib.Cloud", "pib.Cloud - Natural Chat"]);
             expect(select.value).toBe(DEFAULT_PROVIDER_REF);
             const selected = options.find(
                 (option) => option.value === select.value,
