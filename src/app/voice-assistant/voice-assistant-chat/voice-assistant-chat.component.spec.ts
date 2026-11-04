@@ -225,6 +225,135 @@ describe("VoiceAssistantChatComponent", () => {
         }
     });
 
+    it("starts the voice for a cloud Natural Chat personality when the SmartConnect token is stored", () => {
+        const service = TestBed.inject(VoiceAssistantService);
+        const flags = {
+            tools: true,
+            images: false,
+            live: true,
+            stt: false,
+            tts: false,
+        };
+        const textCloud = new AssistantModel(
+            10,
+            CLOUD_TOKEN_API_NAME,
+            "pib.Cloud",
+            true,
+            null,
+            {...flags, live: false, images: true},
+            null,
+            true,
+            false,
+            4,
+            "pib.Cloud",
+        );
+        const liveCloud = new AssistantModel(
+            11,
+            "gemini-3.8-live",
+            "Gemini 3.8 Live",
+            false,
+            null,
+            flags,
+            null,
+            false,
+            false,
+            4,
+            "pib.Cloud",
+        );
+        service.assistantModelsSubject.next([textCloud, liveCloud]);
+        tokenStatusSubject.next({tokenExists: true, tokenActive: true});
+        const persona = new VoiceAssistant(
+            "live-persona",
+            "Live",
+            "Female",
+            0.8,
+            "",
+            liveCloud.id,
+            10,
+            String(liveCloud.id),
+        );
+        persona.live = true;
+        service.personalities = [persona];
+        component.personalityId = persona.personalityId;
+        component.personality = persona;
+        fixture.detectChanges();
+
+        const start = spyOn(service, "setVoiceAssistantState").and.returnValue(
+            of(undefined),
+        );
+        const router = TestBed.inject(Router);
+        const previous = Object.getOwnPropertyDescriptor(router, "url");
+        Object.defineProperty(router, "url", {
+            configurable: true,
+            get: () =>
+                "/voice-assistant/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee/chat/ffffffff-1111-2222-3333-444444444444",
+        });
+        component.voiceAssistantActivationToggle.setValue(false);
+        component.toggleVoiceAssistant();
+        expect(start).toHaveBeenCalled();
+        if (previous != null) {
+            Object.defineProperty(router, "url", previous);
+        }
+    });
+
+    it("refuses the voice for a cloud Natural Chat personality without the SmartConnect token", () => {
+        const service = TestBed.inject(VoiceAssistantService);
+        const flags = {
+            tools: true,
+            images: false,
+            live: true,
+            stt: false,
+            tts: false,
+        };
+        const liveCloud = new AssistantModel(
+            11,
+            CLOUD_TOKEN_API_NAME,
+            "Internal",
+            false,
+            null,
+            flags,
+            null,
+            false,
+            false,
+            4,
+            "pib.Cloud",
+        );
+        service.assistantModelsSubject.next([liveCloud]);
+        tokenStatusSubject.next({tokenExists: false, tokenActive: false});
+        const persona = new VoiceAssistant(
+            "live-persona",
+            "Live",
+            "Female",
+            0.8,
+            "",
+            liveCloud.id,
+            10,
+            String(liveCloud.id),
+        );
+        persona.live = true;
+        service.personalities = [persona];
+        component.personalityId = persona.personalityId;
+        component.personality = persona;
+        fixture.detectChanges();
+
+        const start = spyOn(service, "setVoiceAssistantState").and.returnValue(
+            of(undefined),
+        );
+        const router = TestBed.inject(Router);
+        const previous = Object.getOwnPropertyDescriptor(router, "url");
+        Object.defineProperty(router, "url", {
+            configurable: true,
+            get: () =>
+                "/voice-assistant/aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee/chat/ffffffff-1111-2222-3333-444444444444",
+        });
+        component.voiceAssistantActivationToggle.setValue(false);
+        component.toggleVoiceAssistant();
+        expect(start).not.toHaveBeenCalled();
+        if (previous != null) {
+            Object.defineProperty(router, "url", previous);
+        }
+    });
+
     it("should edit a chat when calling editChat", () => {
         const spyOnEditChat = spyOn(component, "editChat").and.callThrough();
         const spyOnGetChat = spyOn(chatService, "getChat").and.returnValue(
