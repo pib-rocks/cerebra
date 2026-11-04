@@ -15,8 +15,13 @@ import {
     voiceInputOptions,
     voiceOutputOptions,
     reconcileVoiceSelection,
+    chatModelOptions,
 } from "./personality-dialog";
-import {CLOUD_TOKEN_API_NAME, ProviderCapabilities} from "./provider-registry";
+import {
+    CLOUD_TOKEN_API_NAME,
+    PIB_CLOUD_NATURAL_CHAT_LABEL,
+    ProviderCapabilities,
+} from "./provider-registry";
 
 function flags(partial: Partial<ProviderCapabilities>): ProviderCapabilities {
     return {
@@ -416,5 +421,51 @@ describe("personality dialog rules", () => {
         expect(
             readPersonalityDialog({voiceInput: "local_whisper"}).voiceInput,
         ).toBe(LOCAL_VOICE_INPUT);
+    });
+
+    it("shows one Natural Chat model option with pib.Cloud only when the cloud token is stored", () => {
+        const textCloud = new AssistantModel(
+            10,
+            CLOUD_TOKEN_API_NAME,
+            "pib.Cloud",
+            true,
+            null,
+            flags({tools: true, live: false}),
+            null,
+            true,
+            false,
+            4,
+            "pib.Cloud",
+        );
+        const liveCloud = new AssistantModel(
+            11,
+            "gemini-3.8-live",
+            "Gemini 3.8 Live",
+            false,
+            null,
+            flags({tools: true, live: true, images: false}),
+            null,
+            false,
+            false,
+            4,
+            "pib.Cloud",
+        );
+        const catalogue = [textCloud, liveCloud];
+        const offered = [textCloud, liveCloud];
+        expect(
+            chatModelOptions(offered, catalogue, true).map(
+                (model) => model.visualName,
+            ),
+        ).toEqual(["pib.Cloud", PIB_CLOUD_NATURAL_CHAT_LABEL]);
+        expect(
+            chatModelOptions(offered, catalogue, false).map(
+                (model) => model.visualName,
+            ),
+        ).toEqual(["pib.Cloud"]);
+        expect(
+            chatModelOptions(offered, catalogue, true).map(
+                (model) => model.visualName,
+            ),
+        ).not.toContain("Gemini 3.8 Live");
     });
 });

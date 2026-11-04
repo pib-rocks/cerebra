@@ -52,6 +52,7 @@ import {
     voiceInputOptions,
     voiceOutputOptions,
     reconcileVoiceSelection,
+    chatModelOptions,
 } from "../shared/types/personality-dialog";
 import {
     DEFAULT_PROVIDER_REF,
@@ -498,7 +499,7 @@ export class VoiceAssistantComponent implements OnInit {
             this.uuid == null
                 ? undefined
                 : this.voiceAssistantService.getPersonality(this.uuid);
-        this.selectionModels = chatModelsForPersonalityDialog(
+        this.selectionModels = chatModelOptions(
             providersForSelection(
                 retainGoneReference(
                     this.models,
@@ -509,6 +510,9 @@ export class VoiceAssistantComponent implements OnInit {
                 this.cloudTokenStored,
                 this.tokenProbe,
             ),
+            this.models,
+            this.cloudTokenStored,
+            this.tokenProbe,
         );
         this.voiceInputs = voiceInputOptions(
             this.models,
@@ -715,11 +719,4 @@ export class VoiceAssistantComponent implements OnInit {
             control.enable({emitEvent: false});
         }
     }
-}
-
-/** Speech-to-speech catalogue rows are not chat models in the personality dialog. */
-export function chatModelsForPersonalityDialog(
-    models: AssistantModel[],
-): AssistantModel[] {
-    return models.filter((model) => !model.apiName?.endsWith("-live"));
 }
