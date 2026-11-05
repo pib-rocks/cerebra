@@ -5,6 +5,8 @@ import {
     TOKEN_PROBE_UNAVAILABLE,
     CHAT_TRANSPORT_UNAVAILABLE,
     DEEP_CHAT_SMARTCONNECT_PLACEHOLDER,
+    DEEP_CHAT_LIVE_SESSION_IDLE_PLACEHOLDER,
+    DEEP_CHAT_BACKEND_DISCONNECTED_PLACEHOLDER,
     credentialState,
     credentialNotice,
     resolveDeepChatComposer,
@@ -31,6 +33,8 @@ import {
     providerOptionValue,
     providerRefFromSelection,
     providersForSelection,
+    chatModelsForPersonalityDialog,
+    PIB_CLOUD_NATURAL_CHAT_LABEL,
     resolveProvider,
     startingModelForNewPersonality,
     ProviderSelectionRow,
@@ -738,6 +742,117 @@ describe("credential probe vs stored ref (PC-51)", () => {
     });
 });
 
+describe("pib.Cloud Natural Chat catalogue row", () => {
+    function cloudNaturalRows(): {
+        catalogue: (ProviderSelectionRow & {apiName: string})[];
+        text: ProviderSelectionRow & {apiName: string};
+        live: ProviderSelectionRow & {apiName: string};
+    } {
+        const text = row(10, true, true, CLOUD_TOKEN_API_NAME, null);
+        text.providerId = 4;
+        text.providerName = "pib.Cloud";
+        text.visualName = "pib.Cloud";
+        text.isDefault = true;
+        const live = row(11, false, false, "gemini-3.8-live", null);
+        // The real catalogue files the live row under its provider (Google);
+        // the pib.Cloud row is a different provider. The Natural Chat entry
+        // must still resolve, because pib.Cloud serves the session.
+        live.providerId = 1;
+        live.providerName = "Google";
+        live.visualName = "Gemini 3.8 Live";
+        live.capabilities = {
+            tools: true,
+            images: false,
+            live: true,
+            stt: false,
+            tts: false,
+        };
+        return {catalogue: [text, live], text, live};
+    }
+
+    it("marks a cloud live row present on the stored SmartConnect token without a provider paste key", () => {
+        const {catalogue, live} = cloudNaturalRows();
+        expect(credentialState(live, true, catalogue, "available")).toBe(
+            "present",
+        );
+        expect(
+            personalityAttention(String(live.id), catalogue, true),
+        ).toBeNull();
+        expect(chatStartRefusal(String(live.id), catalogue, true)).toBeNull();
+    });
+
+    it("refuses a cloud live row when the SmartConnect token is missing", () => {
+        const {catalogue, live} = cloudNaturalRows();
+        expect(credentialState(live, false, catalogue, "available")).toBe(
+            "absent",
+        );
+        expect(chatStartRefusal(String(live.id), catalogue, false)).toBe(
+            MISSING_KEY_TURN,
+        );
+    });
+
+    it("keeps a text cloud row on the previous credential rules", () => {
+        const {catalogue, text} = cloudNaturalRows();
+        expect(credentialState(text, false, catalogue, "available")).toBe(
+            "absent",
+        );
+        expect(credentialState(text, true, catalogue, "available")).toBe(
+            "present",
+        );
+    });
+
+    it("offers one Natural Chat entry beside pib.Cloud only while the token is stored", () => {
+        const {catalogue, text, live} = cloudNaturalRows();
+        const offered = providersForSelection(catalogue, null, true);
+        expect(offered.map((model) => model.id).sort()).toEqual([10, 11]);
+        const withToken = chatModelsForPersonalityDialog(
+            offered,
+            catalogue,
+            true,
+        );
+        expect(withToken.map((model) => model.visualName)).toEqual([
+            text.visualName,
+            PIB_CLOUD_NATURAL_CHAT_LABEL,
+        ]);
+        expect(
+            withToken.some((model) => model.visualName === live.visualName),
+        ).toBeFalse();
+        expect(
+            chatModelsForPersonalityDialog(offered, catalogue, false),
+        ).toEqual(offered.filter((model) => model.id !== live.id));
+    });
+
+    it("collapses several cloud live rows to the first id deterministically", () => {
+        const {catalogue, text} = cloudNaturalRows();
+        const secondLive = row(12, false, false, "other-live", null);
+        secondLive.providerId = 1;
+        secondLive.providerName = "Google";
+        secondLive.capabilities = {
+            tools: true,
+            images: false,
+            live: true,
+            stt: false,
+            tts: false,
+        };
+        const full = catalogue.concat([secondLive]);
+        const offered = providersForSelection(full, null, true);
+        const labels = chatModelsForPersonalityDialog(offered, full, true).map(
+            (model) => model.visualName,
+        );
+        const naturalEntries = chatModelsForPersonalityDialog(
+            offered,
+            full,
+            true,
+        ).filter((model) => model.visualName === PIB_CLOUD_NATURAL_CHAT_LABEL);
+        expect(
+            labels.filter((label) => label === PIB_CLOUD_NATURAL_CHAT_LABEL)
+                .length,
+        ).toBe(1);
+        expect(naturalEntries[0]?.id).toBe(11);
+        expect(text.visualName).toBe("pib.Cloud");
+    });
+});
+
 describe("resolveDeepChatComposer", () => {
     const flash = row(7, true, false, "gemini-3.8-flash", "provider-1");
 
@@ -802,6 +917,38 @@ describe("resolveDeepChatComposer", () => {
         const state = base({chatsAvailable: false});
         expect(state.inputEnabled).toBeFalse();
         expect(state.turnRefusal).toBeNull();
+    });
+
+    it("disables Natural Chat typing until the live voice session is open", () => {
+        const state = base({
+            liveVoicePersonality: true,
+            liveSessionActive: false,
+            backendConnected: true,
+        });
+        expect(state.inputEnabled).toBeFalse();
+        expect(state.placeholder).toBe(DEEP_CHAT_LIVE_SESSION_IDLE_PLACEHOLDER);
+    });
+
+    it("keeps turn_based personalities typable without a live voice session", () => {
+        const state = base({
+            liveVoicePersonality: false,
+            liveSessionActive: false,
+            backendConnected: true,
+        });
+        expect(state.inputEnabled).toBeTrue();
+        expect(state.placeholder).toBe("Enter a message");
+    });
+
+    it("blocks Natural Chat typing when the robot connection is lost", () => {
+        const state = base({
+            liveVoicePersonality: true,
+            liveSessionActive: true,
+            backendConnected: false,
+        });
+        expect(state.inputEnabled).toBeFalse();
+        expect(state.placeholder).toBe(
+            DEEP_CHAT_BACKEND_DISCONNECTED_PLACEHOLDER,
+        );
     });
 
     it("exposes the chat line character limit for the deep-chat composer", () => {

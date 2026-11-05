@@ -34,6 +34,7 @@ import {degradedChatReply} from "src/app/system/keys/key-store-session";
 import {KeyStoreService} from "src/app/system/keys/key-store.service";
 import {KeyStoreSessionService} from "src/app/system/keys/key-store-session.service";
 import {ChannelCapabilityService} from "src/app/shared/services/channel-capability.service";
+import {RosService} from "src/app/shared/services/ros-service/ros.service";
 import {
     RoutedTurn,
     routeTurn,
@@ -97,7 +98,9 @@ export class ChatWindowDeepChatComponent
     private keyStoreSessionSubscription?: Subscription;
     private assistantModelsSubscription?: Subscription;
     private voiceStateSubscription?: Subscription;
+    private rosConnectionSubscription?: Subscription;
     private voiceState: VoiceAssistantState = {turnedOn: false, chatId: ""};
+    private backendConnected = false;
     /** Undefined until the first key-store read; then unknown on failure. */
     private readonly sendChatMessageSubscriptions = new Subscription();
     private previousRouteChatId: string | undefined;
@@ -125,6 +128,7 @@ export class ChatWindowDeepChatComponent
         private readonly keyStore: KeyStoreService,
         private readonly keyStoreSession: KeyStoreSessionService,
         private readonly channelCapability: ChannelCapabilityService,
+        private readonly rosService: RosService,
     ) {}
 
     ngOnInit(): void {
@@ -132,8 +136,14 @@ export class ChatWindowDeepChatComponent
             this.voiceAssistantService.voiceAssistantStateObservable?.subscribe(
                 (state) => {
                     this.voiceState = state;
+                    this.refreshComposer();
                 },
             );
+        this.rosConnectionSubscription =
+            this.rosService.connectionStatus$.subscribe((connected) => {
+                this.backendConnected = connected;
+                this.refreshComposer();
+            });
         this.routeParamsSubscription = this.route.params.subscribe(
             (params: Params) => {
                 this.chatMessagesSubscription?.unsubscribe();
@@ -206,6 +216,7 @@ export class ChatWindowDeepChatComponent
         this.keyStoreSessionSubscription?.unsubscribe();
         this.assistantModelsSubscription?.unsubscribe();
         this.voiceStateSubscription?.unsubscribe();
+        this.rosConnectionSubscription?.unsubscribe();
         this.sendChatMessageSubscriptions.unsubscribe();
         if (this.imageRefreshTimer !== undefined) {
             clearTimeout(this.imageRefreshTimer);
@@ -523,6 +534,7 @@ export class ChatWindowDeepChatComponent
             this.assistantModels = liveModels;
         }
         const personality = this.personalityForTurn();
+        const liveVoicePersonality = personality?.live === true;
         this.composerState = resolveDeepChatComposer({
             smartConnectActive: this.smartConnectActive,
             keyStorageEncryptionOff: this.keyStorageEncryptionOff,
@@ -536,6 +548,10 @@ export class ChatWindowDeepChatComponent
             ),
             needsNewModel: personality?.needsNewModel === true,
             tokenProbe: this.tokenProbe,
+            liveVoicePersonality,
+            liveSessionActive:
+                this.liveSessionActiveForView(liveVoicePersonality),
+            backendConnected: this.backendConnected,
         });
         if (target != null) {
             this.applyTextInput(target);
@@ -576,6 +592,18 @@ export class ChatWindowDeepChatComponent
             return undefined;
         }
         return this.voiceAssistantService.getPersonality(personalityId);
+    }
+
+    /** Open live voice session for the chat shown in this window. */
+    private liveSessionActiveForView(liveVoicePersonality: boolean): boolean {
+        if (!liveVoicePersonality) {
+            return true;
+        }
+        return (
+            this.voiceState.turnedOn &&
+            this.voiceState.chatId !== "" &&
+            this.voiceState.chatId === this.currentChatId
+        );
     }
 
     /**

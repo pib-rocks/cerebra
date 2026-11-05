@@ -2,6 +2,7 @@ import {
     isRetired,
     ProviderSelectionRow,
     TokenProbeState,
+    chatModelsForPersonalityDialog,
     credentialState,
     usesCloudToken,
 } from "./provider-registry";
@@ -273,9 +274,26 @@ function speechOptions(
         id: String(model.id),
         label: model.visualName,
     });
-    const cloud = offered.filter(usesCloudToken).map(toOption);
-    const providers = offered.filter((model) => !usesCloudToken(model));
+    const cloud = offered
+        .filter((model) => usesCloudToken(model, models))
+        .map(toOption);
+    const providers = offered.filter((model) => !usesCloudToken(model, models));
     return [...cloud, local, ...providers.map(toOption)];
+}
+
+/** Collapses cloud live rows to the single Natural Chat entry for the model select. */
+export function chatModelOptions<T extends SpeechProviderRow>(
+    offered: T[],
+    catalogue: readonly T[],
+    cloudTokenStored: boolean,
+    tokenProbe: TokenProbeState = "available",
+): T[] {
+    return chatModelsForPersonalityDialog(
+        offered,
+        catalogue,
+        cloudTokenStored,
+        tokenProbe,
+    );
 }
 
 function idleTimeoutOrDefault(value: number | null | undefined): number {
@@ -324,7 +342,7 @@ export function normalizeStoredVoiceSelection(
         trimmed === CLOUD_VOICE_INPUT_STORED ||
         trimmed === CLOUD_VOICE_OUTPUT_STORED
     ) {
-        const cloud = models.find(usesCloudToken);
+        const cloud = models.find((row) => usesCloudToken(row, models));
         if (cloud != null) {
             return String(cloud.id);
         }

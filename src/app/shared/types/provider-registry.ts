@@ -16,6 +16,9 @@ export const DEFAULT_PROVIDER_REF = "default";
  */
 export const CLOUD_TOKEN_API_NAME = "pib-cloud";
 
+/** Single pib-facing label for the cloud live catalogue row in the personality dialog. */
+export const PIB_CLOUD_NATURAL_CHAT_LABEL = "pib.Cloud - Natural Chat";
+
 export const MISSING_KEY_MARK = "Needs a key";
 
 export const MISSING_KEY_TURN =
@@ -46,6 +49,12 @@ export const DEEP_CHAT_SMARTCONNECT_PLACEHOLDER =
 
 export const DEEP_CHAT_KEY_STORE_LOCKED_PLACEHOLDER =
     "Unlock the key store to use Smart chat and Direct chat";
+
+export const DEEP_CHAT_LIVE_SESSION_IDLE_PLACEHOLDER =
+    "Natural Chat: start the voice session to type";
+
+export const DEEP_CHAT_BACKEND_DISCONNECTED_PLACEHOLDER =
+    "Robot connection lost. Reconnect to type in Natural Chat.";
 
 export {CHAT_MESSAGE_MAX_LENGTH, chatMessageLengthRefusal} from "./chat-limits";
 
@@ -144,6 +153,12 @@ export interface DeepChatComposerInput {
     cloudTokenStored: boolean;
     needsNewModel: boolean;
     tokenProbe: TokenProbeState;
+    /** Personality uses the live voice path (Natural Chat). */
+    liveVoicePersonality?: boolean;
+    /** Voice session is open for the chat being composed. */
+    liveSessionActive?: boolean;
+    /** ROS bridge connected; live session state is not trusted when false. */
+    backendConnected?: boolean;
 }
 
 export interface DeepChatComposerState {
@@ -171,7 +186,7 @@ export function resolveDeepChatComposer(
               input.tokenProbe,
           )
         : null;
-    const inputEnabled =
+    let inputEnabled =
         input.chatsAvailable && sessionGate && turnRefusal == null;
 
     let placeholder = "Enter a message";
@@ -181,6 +196,21 @@ export function resolveDeepChatComposer(
         placeholder = DEEP_CHAT_SMARTCONNECT_PLACEHOLDER;
     } else if (turnRefusal != null) {
         placeholder = turnRefusal;
+    }
+
+    if (
+        input.liveVoicePersonality === true &&
+        input.chatsAvailable &&
+        sessionGate &&
+        turnRefusal == null
+    ) {
+        if (input.backendConnected === false) {
+            inputEnabled = false;
+            placeholder = DEEP_CHAT_BACKEND_DISCONNECTED_PLACEHOLDER;
+        } else if (input.liveSessionActive !== true) {
+            inputEnabled = false;
+            placeholder = DEEP_CHAT_LIVE_SESSION_IDLE_PLACEHOLDER;
+        }
     }
 
     return {
@@ -286,8 +316,38 @@ export function isListedModel(model: ProviderSelectionRow): boolean {
     );
 }
 
-export function usesCloudToken(model: ProviderSelectionRow): boolean {
-    return model.apiName === CLOUD_TOKEN_API_NAME;
+export function usesCloudToken(
+    model: ProviderSelectionRow,
+    models?: readonly ProviderSelectionRow[],
+): boolean {
+    if (model.apiName === CLOUD_TOKEN_API_NAME) {
+        return true;
+    }
+    if (models == null || model.capabilities?.live !== true) {
+        return false;
+    }
+    // A live row belongs to its provider (the catalogue files gemini-3.8-live
+    // under Google), but the product serves it through pib.Cloud: the session
+    // token comes from the cloud, not from a provider key. The presence of the
+    // pib.Cloud row in the catalogue is what makes that true.
+    return models.some((row) => row.apiName === CLOUD_TOKEN_API_NAME);
+}
+
+export function isCloudNaturalChatCatalogueRow(
+    model: ProviderSelectionRow,
+    models?: readonly ProviderSelectionRow[],
+): boolean {
+    return model.capabilities?.live === true && usesCloudToken(model, models);
+}
+
+export function firstCloudNaturalChatModel<T extends ProviderSelectionRow>(
+    models: readonly T[],
+): T | null {
+    const candidates = models
+        .filter((model) => isCloudNaturalChatCatalogueRow(model, models))
+        .slice()
+        .sort((left, right) => left.id - right.id);
+    return candidates[0] ?? null;
 }
 
 /**
@@ -298,7 +358,7 @@ export function persistedCloudCredentialPresent(
     models: readonly ProviderSelectionRow[],
     credentialRefs: readonly string[] = [],
 ): boolean {
-    const cloudRows = models.filter(usesCloudToken);
+    const cloudRows = models.filter((model) => usesCloudToken(model));
     if (cloudRows.length === 0) {
         return false;
     }
@@ -361,10 +421,10 @@ export function credentialState(
     if (storedCredential(model, models) != null) {
         return "present";
     }
-    if (usesCloudToken(model) && tokenProbe !== "available") {
+    if (usesCloudToken(model, models) && tokenProbe !== "available") {
         return "unresolved";
     }
-    if (usesCloudToken(model) && cloudTokenStored) {
+    if (usesCloudToken(model, models) && cloudTokenStored) {
         return "present";
     }
     return "absent";
@@ -601,6 +661,54 @@ export function providersForSelection<T extends ProviderSelectionRow>(
 }
 
 /**
+ * Chat-model rows for the personality dialog. Legacy provider live api names
+ * stay hidden. Cloud live catalogue rows collapse to one Natural Chat entry
+ * beside pib.Cloud while the SmartConnect token is stored.
+ */
+export function chatModelsForPersonalityDialog<T extends ProviderSelectionRow>(
+    offered: T[],
+    catalogue: readonly T[],
+    cloudTokenStored: boolean,
+    tokenProbe: TokenProbeState = "available",
+): T[] {
+    const natural = firstCloudNaturalChatModel(catalogue);
+    const showNatural =
+        natural != null &&
+        cloudTokenStored &&
+        credentialState(natural, cloudTokenStored, catalogue, tokenProbe) ===
+            "present";
+
+    const base = offered.filter(
+        (model) =>
+            !model.apiName?.endsWith("-live") &&
+            !isCloudNaturalChatCatalogueRow(model, catalogue),
+    );
+
+    if (!showNatural || natural == null) {
+        return base;
+    }
+
+    const naturalEntry = {
+        ...natural,
+        visualName: PIB_CLOUD_NATURAL_CHAT_LABEL,
+    } as T;
+
+    const result: T[] = [];
+    let naturalPlaced = false;
+    for (const model of base) {
+        result.push(model);
+        if (usesCloudToken(model, catalogue) && !naturalPlaced) {
+            result.push(naturalEntry);
+            naturalPlaced = true;
+        }
+    }
+    if (!naturalPlaced) {
+        result.unshift(naturalEntry);
+    }
+    return result;
+}
+
+/**
  * The row the backend offers as the on-device model. That row is added only
  * when Ollama lists qwen-fast, so its presence in the catalogue is the
  * availability signal. There is no separate order field on a catalogue row;
@@ -631,14 +739,14 @@ export function startingModelForNewPersonality<T extends ProviderSelectionRow>(
         cloudTokenStored,
         tokenProbe,
     );
-    const cloud = offered.find((model) => usesCloudToken(model));
+    const cloud = offered.find((model) => usesCloudToken(model, catalogue));
     if (cloud != null) {
         return cloud;
     }
     const external = offered.find(
         (model) =>
             !isOfflineModel(model) &&
-            !usesCloudToken(model) &&
+            !usesCloudToken(model, catalogue) &&
             credentialState(model, cloudTokenStored, catalogue, tokenProbe) ===
                 "present",
     );
