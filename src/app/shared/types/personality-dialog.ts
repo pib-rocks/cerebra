@@ -1,4 +1,5 @@
 import {
+    CLOUD_TOKEN_API_NAME,
     isRetired,
     ProviderSelectionRow,
     TokenProbeState,
@@ -202,10 +203,29 @@ export function liveFromChosenModel(
     return model?.capabilities?.live === true;
 }
 
+export function cloudSpeechOption(
+    models: readonly SpeechProviderRow[] = [],
+): VoiceBackendOption {
+    const cloud = models.find(
+        (model) => model.apiName === CLOUD_TOKEN_API_NAME,
+    );
+    if (cloud != null) {
+        return {
+            id: String(cloud.id),
+            label: cloud.visualName || "pib.Cloud",
+        };
+    }
+    return {
+        id: CLOUD_TOKEN_API_NAME,
+        label: "pib.Cloud",
+    };
+}
+
 export function enforcePersonalityDialog(
     values: PersonalityDialogValues,
     model: ProviderSelectionRow | null,
     registryLoaded: boolean,
+    models: readonly SpeechProviderRow[] = [],
 ): PersonalityDialogValues {
     const next = readPersonalityDialog(values);
     if (toolCallingAvailability(model, registryLoaded).disabled) {
@@ -214,6 +234,11 @@ export function enforcePersonalityDialog(
     // images is not a control any more. It is carried through unchanged so
     // a stored value survives an unrelated edit.
     next.live = liveFromChosenModel(model, registryLoaded, next.live);
+    if (next.live && registryLoaded) {
+        const cloud = cloudSpeechOption(models);
+        next.voiceInput = cloud.id;
+        next.voiceOutput = cloud.id;
+    }
     return next;
 }
 

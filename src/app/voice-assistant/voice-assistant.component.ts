@@ -42,6 +42,7 @@ import {
     REASONING_EFFORT_UNMANAGED,
     REASONING_EFFORT_UNMANAGED_LABEL,
     VoiceBackendOption,
+    cloudSpeechOption,
     enforcePersonalityDialog,
     readPersonalityDialog,
     reasoningAvailability,
@@ -548,6 +549,7 @@ export class VoiceAssistantComponent implements OnInit {
             },
             this.resolvedModel(),
             this.models.length > 0,
+            this.models,
         );
     }
 
@@ -581,6 +583,39 @@ export class VoiceAssistantComponent implements OnInit {
             reasoning.disabled,
         );
         this.applyDerivedLive(model, loaded);
+        this.applyLiveVoiceConstraints(model, loaded);
+        this.toolCallingReason = tools.reason;
+        this.reasoningReason = reasoning.reason;
+        this.retiredNotice = this.retiredNoticeForSelection();
+    }
+
+    private applyLiveVoiceConstraints(
+        model: AssistantModel | null,
+        registryLoaded: boolean,
+    ): void {
+        const voiceInputControl = this.personalityForm.controls["voiceInput"];
+        const voiceOutputControl = this.personalityForm.controls["voiceOutput"];
+        const isLive = registryLoaded && model?.capabilities?.live === true;
+        if (isLive) {
+            const cloud = cloudSpeechOption(this.models);
+            if (!this.voiceInputs.some((option) => option.id === cloud.id)) {
+                this.voiceInputs = [cloud, ...this.voiceInputs];
+            }
+            if (!this.voiceOutputs.some((option) => option.id === cloud.id)) {
+                this.voiceOutputs = [cloud, ...this.voiceOutputs];
+            }
+            if (voiceInputControl.value !== cloud.id) {
+                voiceInputControl.setValue(cloud.id, {emitEvent: false});
+            }
+            if (voiceOutputControl.value !== cloud.id) {
+                voiceOutputControl.setValue(cloud.id, {emitEvent: false});
+            }
+            this.setDisabled(voiceInputControl, true);
+            this.setDisabled(voiceOutputControl, true);
+            return;
+        }
+        this.setDisabled(voiceInputControl, false);
+        this.setDisabled(voiceOutputControl, false);
         this.keepVoiceSelection(
             "voiceInput",
             this.voiceInputs,
@@ -591,9 +626,6 @@ export class VoiceAssistantComponent implements OnInit {
             this.voiceOutputs,
             LOCAL_VOICE_OUTPUT,
         );
-        this.toolCallingReason = tools.reason;
-        this.reasoningReason = reasoning.reason;
-        this.retiredNotice = this.retiredNoticeForSelection();
     }
 
     /** The Live control is not a switch. It follows the chosen model. */
