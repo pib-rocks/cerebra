@@ -296,6 +296,29 @@ describe("VoiceAssistantChatComponent", () => {
         }
     });
 
+    it("resolves the personality chatId when starting voice directly from /voice-assistant/<id>", () => {
+        const service = TestBed.inject(VoiceAssistantService);
+        const chatService = TestBed.inject(ChatService);
+        chatService.chats = [new Chat("Default", "123", "chat-123")];
+        const start = spyOn(service, "setVoiceAssistantState").and.returnValue(
+            of(undefined),
+        );
+        const router = TestBed.inject(Router);
+        const previous = Object.getOwnPropertyDescriptor(router, "url");
+        Object.defineProperty(router, "url", {
+            configurable: true,
+            get: () => "/voice-assistant/123",
+        });
+        component.personalityId = "123";
+        component.voiceAssistantActivationToggle.setValue(false);
+        component.toggleVoiceAssistant();
+        expect(start).toHaveBeenCalledWith({turnedOn: true, chatId: "chat-123"});
+        expect(component.activeChatId).toBe("chat-123");
+        if (previous != null) {
+            Object.defineProperty(router, "url", previous);
+        }
+    });
+
     it("refuses the voice for a cloud Natural Chat personality without the SmartConnect token", () => {
         const service = TestBed.inject(VoiceAssistantService);
         const flags = {

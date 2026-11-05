@@ -185,6 +185,28 @@ describe("Robot3DComponent", () => {
         });
     });
 
+    it("replays the latest joint state sample when the model fires ready", () => {
+        const message: JointStateMessage = {
+            header: {
+                stamp: {sec: 9, nanosec: 0},
+                frame_id: "base",
+            },
+            name: ["elbow_left", "index_left_stretch"],
+            position: [0.52, -1.57],
+        };
+
+        jointStates$.next(message);
+        (viewer.setJointStateSample as jasmine.Spy).calls.reset();
+
+        viewer.dispatchEvent(new CustomEvent("ready"));
+
+        expect(viewer.setJointStateSample).toHaveBeenCalledWith({
+            names: ["elbow_left", "index_left_stretch"],
+            positions: [0.52, -1.57],
+            stampMs: 9000,
+        });
+    });
+
     it("hands the robot's motor names to the viewer for the consistency check", () => {
         viewer.dispatchEvent(new CustomEvent("ready"));
 

@@ -468,4 +468,39 @@ describe("personality dialog rules", () => {
             ),
         ).not.toContain("Gemini 3.8 Live");
     });
+
+    it("enforces pib.Cloud for both voiceInput and voiceOutput when a live model is chosen", () => {
+        const textCloud = new AssistantModel(
+            10,
+            CLOUD_TOKEN_API_NAME,
+            "pib.Cloud",
+            true,
+            null,
+            flags({tools: true, live: false, stt: true, tts: true}),
+            null,
+            true,
+        );
+        const liveCloud = new AssistantModel(
+            11,
+            "gemini-3.8-live",
+            "Gemini 3.8 Live",
+            false,
+            null,
+            flags({tools: true, live: true, images: false}),
+            null,
+            false,
+        );
+        const enforced = enforcePersonalityDialog(
+            readPersonalityDialog({
+                voiceInput: LOCAL_VOICE_INPUT,
+                voiceOutput: LOCAL_VOICE_OUTPUT,
+            }),
+            liveCloud,
+            true,
+            [textCloud, liveCloud],
+        );
+        expect(enforced.live).toBeTrue();
+        expect(enforced.voiceInput).toBe("10");
+        expect(enforced.voiceOutput).toBe("10");
+    });
 });
