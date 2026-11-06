@@ -75,6 +75,7 @@ import {
     TokenService,
     normalizeTokenStatus,
 } from "../shared/services/token.service";
+import {Program} from "../shared/types/program";
 import {VoiceAssistantNavComponent} from "./voice-assistant-nav/voice-assistant-nav.component";
 import {RouterOutlet} from "@angular/router";
 import {NgClass} from "@angular/common";
@@ -101,6 +102,7 @@ export class VoiceAssistantComponent implements OnInit {
     thresholdString: string | undefined;
     voiceInputs: VoiceBackendOption[] = [];
     voiceOutputs: VoiceBackendOption[] = [];
+    programs: Program[] = [];
     /** "Voice" in the advanced row: Male or Female, see VOICE_GENDER_OPTIONS. */
     readonly voiceGenders = VOICE_GENDER_OPTIONS;
     toolCallingReason: string | null = null;
@@ -182,6 +184,12 @@ export class VoiceAssistantComponent implements OnInit {
                 this.smartChatsEnabled = enabled;
                 this.changeDetector.markForCheck();
             });
+        this.voiceAssistantService.programsSubject
+            ?.pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe((programs) => {
+                this.programs = programs ?? [];
+                this.changeDetector.markForCheck();
+            });
         this.button.enabled = true;
         this.button.func = this.openAddModal;
         this.subject = this.voiceAssistantService.getSubject();
@@ -239,6 +247,9 @@ export class VoiceAssistantComponent implements OnInit {
             reasoningEffort: new FormControl(NEW_PERSONALITY_REASONING_EFFORT, {
                 nonNullable: true,
             }),
+            useWakeWord: new FormControl(false, {nonNullable: true}),
+            wakeUpProgram: new FormControl("", {nonNullable: true}),
+            goSleepProgram: new FormControl("", {nonNullable: true}),
         });
         this.personalityForm.valueChanges
             .pipe(takeUntilDestroyed(this.destroyRef))
@@ -338,6 +349,9 @@ export class VoiceAssistantComponent implements OnInit {
             live: false,
             idleTimeoutSeconds: DEFAULT_IDLE_TIMEOUT_SECONDS,
             reasoningEffort: NEW_PERSONALITY_REASONING_EFFORT,
+            useWakeWord: false,
+            wakeUpProgram: "",
+            goSleepProgram: "",
         });
         this.thresholdString =
             this.personalityForm.controls["pausethreshold"].value + "s";
@@ -369,6 +383,9 @@ export class VoiceAssistantComponent implements OnInit {
                 idleTimeoutSeconds: dialog.idleTimeoutSeconds,
                 reasoningEffort:
                     dialog.reasoningEffort ?? REASONING_EFFORT_UNMANAGED,
+                useWakeWord: dialog.useWakeWord,
+                wakeUpProgram: dialog.wakeUpProgram ?? "",
+                goSleepProgram: dialog.goSleepProgram ?? "",
             });
             this.thresholdString =
                 this.personalityForm.controls["pausethreshold"].value + "s";
@@ -546,6 +563,15 @@ export class VoiceAssistantComponent implements OnInit {
                         ? null
                         : String(raw["reasoningEffort"]),
                 ),
+                useWakeWord: raw["useWakeWord"] === true,
+                wakeUpProgram:
+                    raw["wakeUpProgram"] == null
+                        ? null
+                        : String(raw["wakeUpProgram"]),
+                goSleepProgram:
+                    raw["goSleepProgram"] == null
+                        ? null
+                        : String(raw["goSleepProgram"]),
             },
             this.resolvedModel(),
             this.models.length > 0,
@@ -584,9 +610,23 @@ export class VoiceAssistantComponent implements OnInit {
         );
         this.applyDerivedLive(model, loaded);
         this.applyLiveVoiceConstraints(model, loaded);
+        this.applyWakeWordConstraints();
         this.toolCallingReason = tools.reason;
         this.reasoningReason = reasoning.reason;
         this.retiredNotice = this.retiredNoticeForSelection();
+    }
+
+    private applyWakeWordConstraints(): void {
+        const useWakeWord =
+            this.personalityForm.controls["useWakeWord"]?.value === true;
+        this.setDisabled(
+            this.personalityForm.controls["wakeUpProgram"],
+            !useWakeWord,
+        );
+        this.setDisabled(
+            this.personalityForm.controls["goSleepProgram"],
+            !useWakeWord,
+        );
     }
 
     private applyLiveVoiceConstraints(

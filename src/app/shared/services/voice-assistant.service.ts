@@ -25,6 +25,7 @@ import {
     parseTurnTrace,
 } from "src/app/shared/types/voice-status";
 import {AssistantModel} from "../types/assistantModel";
+import {Program} from "../types/program";
 import {
     PersonalityWarmth,
     parsePersonalityWarmth,
@@ -52,6 +53,9 @@ export class VoiceAssistantService implements SidebarService {
     voiceAssistantActiveStatus: boolean = false;
     assistantModelsSubject: BehaviorSubject<AssistantModel[]> =
         new BehaviorSubject<AssistantModel[]>([]);
+    programsSubject: BehaviorSubject<Program[]> = new BehaviorSubject<
+        Program[]
+    >([]);
     voiceAssistantActiveStatusSubject: Subject<boolean> =
         new Subject<boolean>();
 
@@ -93,6 +97,7 @@ export class VoiceAssistantService implements SidebarService {
     ) {
         this.getAllPersonalities();
         this.getAllAssistantModels();
+        this.getAllPrograms();
 
         this.voiceAssistantStateObservable =
             this.rosService.voiceAssistantStateReceiver$.pipe(
@@ -245,6 +250,21 @@ export class VoiceAssistantService implements SidebarService {
                     ),
                 );
             });
+    }
+
+    getAllPrograms() {
+        this.apiService.get(UrlConstants.PROGRAM).subscribe({
+            next: (response) => {
+                const raw = (response as {programs?: unknown[]})?.programs;
+                const programs = Array.isArray(raw)
+                    ? raw.map((dto) => Program.fromDTO(dto as Program))
+                    : [];
+                this.programsSubject.next(programs);
+            },
+            error: () => {
+                this.programsSubject.next([]);
+            },
+        });
     }
 
     createPersonality(personality: VoiceAssistant) {

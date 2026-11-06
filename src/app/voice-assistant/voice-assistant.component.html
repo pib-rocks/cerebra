@@ -313,6 +313,71 @@
                                 min="1" />
                         </div>
                         }
+                        <div
+                            class="advanced-inline-row advanced-toggle-row"
+                            id="row-use-wake-word">
+                            <div class="advanced-toggle-control">
+                                <input
+                                    type="checkbox"
+                                    id="use-wake-word-input"
+                                    data-test="CHK_Use_Wake_Word"
+                                    formControlName="useWakeWord" />
+                                <label
+                                    for="use-wake-word-input"
+                                    class="personality-field-label mb-0"
+                                    id="label-use-wake-word"
+                                    >Use wake word ("Hey, pib!")</label
+                                >
+                            </div>
+                        </div>
+                    </div>
+                    <div
+                        class="row g-3 advanced-two-col mt-1"
+                        id="row-wake-word-programs">
+                        <div class="col">
+                            <label
+                                for="wake-up-program-select"
+                                class="personality-field-label"
+                                id="label-wake-up-program"
+                                >Wake up</label
+                            >
+                            <select
+                                id="wake-up-program-select"
+                                formControlName="wakeUpProgram"
+                                class="form-select"
+                                data-test="DDN_Wake_Up_Program"
+                                aria-label="Wake up program">
+                                <option value="">None</option>
+                                @for (program of programs; track
+                                program.programNumber) {
+                                <option [value]="program.programNumber">
+                                    {{ program.name }}
+                                </option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col">
+                            <label
+                                for="go-sleep-program-select"
+                                class="personality-field-label"
+                                id="label-go-sleep-program"
+                                >Go sleep</label
+                            >
+                            <select
+                                id="go-sleep-program-select"
+                                formControlName="goSleepProgram"
+                                class="form-select"
+                                data-test="DDN_Go_Sleep_Program"
+                                aria-label="Go sleep program">
+                                <option value="">None</option>
+                                @for (program of programs; track
+                                program.programNumber) {
+                                <option [value]="program.programNumber">
+                                    {{ program.name }}
+                                </option>
+                                }
+                            </select>
+                        </div>
                     </div>
                 </div>
             </details>

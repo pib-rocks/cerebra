@@ -1758,6 +1758,53 @@ describe("VoiceAssistantComponent", () => {
         component.ngbModalRef?.close();
     });
 
+    it("toggles Use wake word and enables or disables the Wake up and Go sleep program dropdowns", () => {
+        component.programs = [
+            {programNumber: "prog-wake", name: "Wave Hello"} as any,
+            {programNumber: "prog-sleep", name: "Rest Pose"} as any,
+        ];
+        fixture.detectChanges();
+        openNewPersonality();
+
+        const useWakeWord = document.body.querySelector(
+            "#use-wake-word-input",
+        ) as HTMLInputElement;
+        const wakeUpSelect = document.body.querySelector(
+            "#wake-up-program-select",
+        ) as HTMLSelectElement;
+        const goSleepSelect = document.body.querySelector(
+            "#go-sleep-program-select",
+        ) as HTMLSelectElement;
+
+        expect(useWakeWord.checked).toBeFalse();
+        expect(wakeUpSelect.disabled).toBeTrue();
+        expect(goSleepSelect.disabled).toBeTrue();
+
+        component.personalityForm.controls["useWakeWord"].setValue(true);
+        fixture.detectChanges();
+        TestBed.inject(ApplicationRef).tick();
+
+        expect(wakeUpSelect.disabled).toBeFalse();
+        expect(goSleepSelect.disabled).toBeFalse();
+        expect(
+            Array.from(wakeUpSelect.options).map((option) => option.value),
+        ).toEqual(["", "prog-wake", "prog-sleep"]);
+
+        component.personalityForm.patchValue({
+            "name-input": "Wake Ada",
+            wakeUpProgram: "prog-wake",
+            goSleepProgram: "prog-sleep",
+        });
+        component.addPersonality();
+        const created =
+            voiceAssistantService.createPersonality.calls.mostRecent()
+                .args[0] as VoiceAssistant;
+        expect(created.useWakeWord).toBeTrue();
+        expect(created.wakeUpProgram).toBe("prog-wake");
+        expect(created.goSleepProgram).toBe("prog-sleep");
+        component.ngbModalRef?.close();
+    });
+
     it("keeps an existing personality on its stored speech engines", () => {
         const cloud = new AssistantModel(
             10,

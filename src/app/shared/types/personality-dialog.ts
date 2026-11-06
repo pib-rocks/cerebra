@@ -80,6 +80,9 @@ export interface PersonalityDialogValues {
      * operator chose it.
      */
     reasoningEffort: ReasoningEffort | null;
+    useWakeWord: boolean;
+    wakeUpProgram: string | null;
+    goSleepProgram: string | null;
 }
 
 export interface DialogBlock {
@@ -134,7 +137,20 @@ export function readPersonalityDialog(
         live: source?.live === true,
         idleTimeoutSeconds: idleTimeoutOrDefault(source?.idleTimeoutSeconds),
         reasoningEffort: reasoningEffortFromStored(source?.reasoningEffort),
+        useWakeWord: source?.useWakeWord === true,
+        wakeUpProgram: normalizeProgramSelection(source?.wakeUpProgram),
+        goSleepProgram: normalizeProgramSelection(source?.goSleepProgram),
     };
+}
+
+export function normalizeProgramSelection(
+    value: string | null | undefined,
+): string | null {
+    if (typeof value !== "string") {
+        return null;
+    }
+    const trimmed = value.trim();
+    return trimmed !== "" ? trimmed : null;
 }
 
 export function reasoningEffortLabel(level: ReasoningEffort): string {

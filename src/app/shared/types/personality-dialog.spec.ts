@@ -44,6 +44,9 @@ describe("personality dialog rules", () => {
             live: false,
             idleTimeoutSeconds: DEFAULT_IDLE_TIMEOUT_SECONDS,
             reasoningEffort: null,
+            useWakeWord: false,
+            wakeUpProgram: null,
+            goSleepProgram: null,
         });
     });
 
