@@ -126,9 +126,7 @@ describe("VisibleStateService", () => {
         expect(service.snapshot.activity).toBe(LISTENING);
         expect(service.snapshot.holderLine).toBe("Ada holds the voice");
         expect(service.snapshot.fallback).toBeTrue();
-        expect(ros.publishDisplayText).toHaveBeenCalledWith(
-            "Listening · Ada · Fallback",
-        );
+        expect(ros.publishDisplayText).not.toHaveBeenCalled();
         expect(microphone.connect).toHaveBeenCalled();
         expect(microphone.updateTuning).toHaveBeenCalledWith({
             led_ring: {mode: "listen"},
@@ -137,7 +135,7 @@ describe("VisibleStateService", () => {
         listening$.next({chat_id: "chat-1", listening: false});
 
         expect(service.snapshot.activity).toBe(THINKING);
-        expect(ros.publishExpression).toHaveBeenCalledWith("thinking");
+        expect(ros.publishExpression).not.toHaveBeenCalled();
         expect(microphone.updateTuning).toHaveBeenCalledWith({
             led_ring: {mode: "think"},
         });
