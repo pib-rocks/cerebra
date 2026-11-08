@@ -312,7 +312,10 @@ describe("VoiceAssistantChatComponent", () => {
         component.personalityId = "123";
         component.voiceAssistantActivationToggle.setValue(false);
         component.toggleVoiceAssistant();
-        expect(start).toHaveBeenCalledWith({turnedOn: true, chatId: "chat-123"});
+        expect(start).toHaveBeenCalledWith({
+            turnedOn: true,
+            chatId: "chat-123",
+        });
         expect(component.activeChatId).toBe("chat-123");
         if (previous != null) {
             Object.defineProperty(router, "url", previous);

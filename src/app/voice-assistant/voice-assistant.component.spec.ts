@@ -1699,10 +1699,7 @@ describe("VoiceAssistantComponent", () => {
             null,
             false,
         );
-        voiceAssistantService.assistantModelsSubject.next([
-            cloud,
-            naturalChat,
-        ]);
+        voiceAssistantService.assistantModelsSubject.next([cloud, naturalChat]);
         fixture.detectChanges();
         openNewPersonality();
 
