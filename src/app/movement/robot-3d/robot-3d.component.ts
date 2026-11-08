@@ -109,6 +109,7 @@ export class Robot3DComponent implements AfterViewInit, OnDestroy {
     private commandListener?: (event: Event) => void;
     private modelReady = false;
     private limitsMap: RobotMotorLimitsMap | null = null;
+    private latestJointState: JointStateMessage | null = null;
 
     constructor(
         private readonly rosService: RosService,
@@ -130,6 +131,9 @@ export class Robot3DComponent implements AfterViewInit, OnDestroy {
             this.readyListener = () => {
                 this.modelReady = true;
                 this.applyLimitsToViewer();
+                if (this.latestJointState) {
+                    this.forwardJointState(this.latestJointState);
+                }
             };
             element.addEventListener("ready", this.readyListener);
 
@@ -224,6 +228,7 @@ export class Robot3DComponent implements AfterViewInit, OnDestroy {
     }
 
     private forwardJointState(message: JointStateMessage): void {
+        this.latestJointState = message;
         if (this.loadError) {
             return;
         }

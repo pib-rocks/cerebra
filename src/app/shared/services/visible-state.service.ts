@@ -168,7 +168,6 @@ export class VisibleStateService {
         });
         this.snapshot = next;
         this.snapshot$.next(next);
-        this.publishFace(next);
         this.syncLed(next.ledMode);
     }
 

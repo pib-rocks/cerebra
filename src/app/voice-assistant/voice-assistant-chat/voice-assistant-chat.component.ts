@@ -565,8 +565,25 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
             const match = RegExp(
                 `/voice-assistant/${CerebraRegex.UUID}/chat/(${CerebraRegex.UUID})`,
             ).exec(this.router.url);
-            if (match) nextState.chatId = match[1];
-            else throw new Error("no chat selected");
+            if (match) {
+                nextState.chatId = match[1];
+            } else {
+                // A fresh personality can sit on /voice-assistant/<id> without a
+                // chat in the URL. Throwing here made the switch look dead: no
+                // state change, no message (reported on 192.168.1.168). Take the
+                // personality's own chat instead.
+                const chat = this.chatService.chats.find(
+                    (candidate) =>
+                        candidate.personalityId === this.personalityId,
+                );
+                if (chat == null) {
+                    console.error(
+                        "voice assistant: no chat for this personality",
+                    );
+                    return;
+                }
+                nextState.chatId = chat.chatId;
+            }
         }
 
         this.turnedOn = turnedOn;

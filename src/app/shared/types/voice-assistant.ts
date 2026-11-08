@@ -30,6 +30,9 @@ export class VoiceAssistant implements SidebarElement {
     idleTimeoutSeconds: number;
     /** null means unmanaged: the Hermes profile keeps its own level. */
     reasoningEffort: ReasoningEffort | null;
+    useWakeWord: boolean;
+    wakeUpProgram: string | null;
+    goSleepProgram: string | null;
     /** Set by the API when the selected catalogue row is retired. */
     needsNewModel = false;
 
@@ -71,6 +74,9 @@ export class VoiceAssistant implements SidebarElement {
         this.live = settings.live;
         this.idleTimeoutSeconds = settings.idleTimeoutSeconds;
         this.reasoningEffort = settings.reasoningEffort;
+        this.useWakeWord = settings.useWakeWord;
+        this.wakeUpProgram = settings.wakeUpProgram;
+        this.goSleepProgram = settings.goSleepProgram;
     }
 
     assignDialog(settings: PersonalityDialogValues): void {
@@ -82,6 +88,9 @@ export class VoiceAssistant implements SidebarElement {
         this.live = next.live;
         this.idleTimeoutSeconds = next.idleTimeoutSeconds;
         this.reasoningEffort = next.reasoningEffort;
+        this.useWakeWord = next.useWakeWord;
+        this.wakeUpProgram = next.wakeUpProgram;
+        this.goSleepProgram = next.goSleepProgram;
     }
     getName(): string {
         return this.name;
@@ -140,6 +149,9 @@ export interface VoiceAssistantDto {
     toolCalling: boolean;
     /** null is unmanaged. One of the eight levels is an explicit choice. */
     reasoningEffort: ReasoningEffort | null;
+    useWakeWord: boolean;
+    wakeUpProgram: string | null;
+    goSleepProgram: string | null;
     messageHistory: number;
     pauseThreshold: number;
 }
@@ -167,6 +179,9 @@ export function personalityDialogFromRecord(
         live: liveFromStored(source),
         idleTimeoutSeconds: idleFromStored(source),
         reasoningEffort: source?.reasoningEffort,
+        useWakeWord: source?.useWakeWord,
+        wakeUpProgram: source?.wakeUpProgram,
+        goSleepProgram: source?.goSleepProgram,
     });
 }
 
@@ -185,6 +200,9 @@ export function parseVoiceAssistantToDto(
         liveIdleTimeout: dialog.idleTimeoutSeconds,
         toolCalling: dialog.toolCalling,
         reasoningEffort: dialog.reasoningEffort,
+        useWakeWord: dialog.useWakeWord,
+        wakeUpProgram: dialog.wakeUpProgram,
+        goSleepProgram: dialog.goSleepProgram,
         messageHistory: voiceAssistant.messageHistory ?? 10,
         pauseThreshold: voiceAssistant.pauseThreshold,
     };

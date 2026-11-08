@@ -18,6 +18,7 @@ const PERSONALITY_WRITE_KEYS = [
     "channel",
     "description",
     "gender",
+    "goSleepProgram",
     "liveIdleTimeout",
     "messageHistory",
     "modelRef",
@@ -27,6 +28,8 @@ const PERSONALITY_WRITE_KEYS = [
     "sttEngine",
     "toolCalling",
     "ttsEngine",
+    "useWakeWord",
+    "wakeUpProgram",
 ];
 
 describe("personality write body", () => {

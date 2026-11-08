@@ -485,6 +485,7 @@ describe("VoiceAssistantService", () => {
             "channel",
             "description",
             "gender",
+            "goSleepProgram",
             "liveIdleTimeout",
             "messageHistory",
             "modelRef",
@@ -494,6 +495,8 @@ describe("VoiceAssistantService", () => {
             "sttEngine",
             "toolCalling",
             "ttsEngine",
+            "useWakeWord",
+            "wakeUpProgram",
         ]);
         expect(created["modelRef"]).toBe(DEFAULT_PROVIDER_REF);
         expect(created["channel"]).toBe(SMART_CHANNEL);

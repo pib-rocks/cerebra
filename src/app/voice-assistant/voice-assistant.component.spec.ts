@@ -1664,6 +1664,144 @@ describe("VoiceAssistantComponent", () => {
         component.ngbModalRef?.close();
     });
 
+    it("locks Voice input and Voice output to pib.Cloud and disables both when Natural Chat is selected", () => {
+        const cloud = new AssistantModel(
+            10,
+            CLOUD_TOKEN_API_NAME,
+            "pib.Cloud",
+            true,
+            null,
+            {
+                tools: true,
+                images: true,
+                live: false,
+                stt: true,
+                tts: true,
+                reasoning: false,
+            },
+            null,
+            true,
+        );
+        const naturalChat = new AssistantModel(
+            11,
+            "gemini-3.8-live",
+            "Gemini 3.8 Live",
+            false,
+            null,
+            {
+                tools: true,
+                images: false,
+                live: true,
+                stt: false,
+                tts: false,
+                reasoning: false,
+            },
+            null,
+            false,
+        );
+        voiceAssistantService.assistantModelsSubject.next([cloud, naturalChat]);
+        fixture.detectChanges();
+        openNewPersonality();
+
+        const voiceInput = document.body.querySelector(
+            "#voice-input-select",
+        ) as HTMLSelectElement;
+        const voiceOutput = document.body.querySelector(
+            "#voice-output-select",
+        ) as HTMLSelectElement;
+
+        component.personalityForm.controls["voiceInput"].setValue(
+            LOCAL_VOICE_INPUT,
+        );
+        component.personalityForm.controls["voiceOutput"].setValue(
+            LOCAL_VOICE_OUTPUT,
+        );
+        fixture.detectChanges();
+        expect(voiceInput.disabled).toBeFalse();
+        expect(voiceOutput.disabled).toBeFalse();
+
+        component.personalityForm.controls["assistantModel"].setValue(
+            String(naturalChat.id),
+        );
+        fixture.detectChanges();
+        TestBed.inject(ApplicationRef).tick();
+
+        expect(voiceInput.value).toBe(String(cloud.id));
+        expect(voiceOutput.value).toBe(String(cloud.id));
+        expect(voiceInput.selectedOptions[0]?.textContent?.trim()).toBe(
+            "pib.Cloud",
+        );
+        expect(voiceOutput.selectedOptions[0]?.textContent?.trim()).toBe(
+            "pib.Cloud",
+        );
+        expect(voiceInput.disabled).toBeTrue();
+        expect(voiceOutput.disabled).toBeTrue();
+
+        component.personalityForm.patchValue({"name-input": "Natural Ada"});
+        component.addPersonality();
+        const created =
+            voiceAssistantService.createPersonality.calls.mostRecent()
+                .args[0] as VoiceAssistant;
+        expect(created.voiceInput).toBe(String(cloud.id));
+        expect(created.voiceOutput).toBe(String(cloud.id));
+
+        component.personalityForm.controls["assistantModel"].setValue(
+            String(cloud.id),
+        );
+        fixture.detectChanges();
+        TestBed.inject(ApplicationRef).tick();
+        expect(voiceInput.disabled).toBeFalse();
+        expect(voiceOutput.disabled).toBeFalse();
+        component.ngbModalRef?.close();
+    });
+
+    it("toggles Use wake word and enables or disables the Wake up and Go sleep program dropdowns", () => {
+        component.programs = [
+            {programNumber: "prog-wake", name: "Wave Hello"} as any,
+            {programNumber: "prog-sleep", name: "Rest Pose"} as any,
+        ];
+        fixture.detectChanges();
+        openNewPersonality();
+
+        const useWakeWord = document.body.querySelector(
+            "#use-wake-word-input",
+        ) as HTMLInputElement;
+        const wakeUpSelect = document.body.querySelector(
+            "#wake-up-program-select",
+        ) as HTMLSelectElement;
+        const goSleepSelect = document.body.querySelector(
+            "#go-sleep-program-select",
+        ) as HTMLSelectElement;
+
+        expect(useWakeWord.checked).toBeFalse();
+        expect(wakeUpSelect.disabled).toBeTrue();
+        expect(goSleepSelect.disabled).toBeTrue();
+
+        component.personalityForm.controls["useWakeWord"].setValue(true);
+        fixture.detectChanges();
+        TestBed.inject(ApplicationRef).tick();
+
+        expect(wakeUpSelect.disabled).toBeFalse();
+        expect(goSleepSelect.disabled).toBeFalse();
+        expect(
+            Array.from(wakeUpSelect.options).map((option) => option.value),
+        ).toEqual(["", "prog-wake", "prog-sleep"]);
+
+        component.personalityForm.patchValue({
+            "name-input": "Wake Ada",
+            wakeUpProgram: "prog-wake",
+            goSleepProgram: "prog-sleep",
+        });
+        component.addPersonality();
+        const created =
+            voiceAssistantService.createPersonality.calls.mostRecent()
+                .args[0] as VoiceAssistant;
+        expect(created.useWakeWord).toBeTrue();
+        expect(created.wakeUpProgram).toBe("prog-wake");
+        expect(created.goSleepProgram).toBe("prog-sleep");
+        component.ngbModalRef?.close();
+    });
+
     it("keeps an existing personality on its stored speech engines", () => {
         const cloud = new AssistantModel(
             10,
