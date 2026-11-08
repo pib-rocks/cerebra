@@ -79,6 +79,8 @@ export class ChatWindowDeepChatComponent
         turnRefusal: null,
         characterLimit: 0,
     };
+    /** Last applied composer key; skips redundant textInput writes that clear typing. */
+    private lastComposerKey: string | null = null;
     private pendingSignals?: {onResponse: (response: unknown) => void};
     private awaitingTypedUserEcho = false;
     private lastStreamedMessageId: string | undefined;
@@ -560,6 +562,9 @@ export class ChatWindowDeepChatComponent
 
     private applyTextInput(el: any): void {
         const enabled = this.composerState.inputEnabled;
+        const key = `${enabled}|${this.composerState.placeholder}|${this.composerState.characterLimit}`;
+        if (key === this.lastComposerKey) return;
+        this.lastComposerKey = key;
         el.textInput = {
             disabled: !enabled,
             placeholder: {text: this.composerState.placeholder},
