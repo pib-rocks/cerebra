@@ -276,8 +276,7 @@ describe("ChatWindowDeepChatComponent", () => {
     it("leaves out the chat and personality view toggle", () => {
         const registered = customElements.get("deep-chat");
         const prototype = registered?.prototype as
-            | {connectedCallback?: () => void}
-            | undefined;
+            {connectedCallback?: () => void} | undefined;
         const connected = prototype?.connectedCallback;
         if (prototype != null) {
             prototype.connectedCallback = () => undefined;
@@ -1029,6 +1028,34 @@ describe("ChatWindowDeepChatComponent", () => {
         });
     });
 
+    it("does not rewrite the composer when an identical voice state arrives again", () => {
+        const personality = new VoiceAssistant(
+            "persona-1",
+            "Ada",
+            "Female",
+            0.8,
+            "Du bist pib.",
+            11,
+            10,
+            "11",
+            SMART_CHANNEL,
+            {live: false},
+        );
+        voiceAssistantSpy.getPersonality.and.returnValue(personality);
+        chatService.getChat.and.returnValue(
+            new Chat("topic", "persona-1", chatId),
+        );
+        paramsSubject.next({chatUuid: chatId});
+        voiceStateSubject.next({turnedOn: false, chatId: ""});
+        mockDeepChat.disableSubmitButton.calls.reset();
+
+        // The ~1 Hz voice-state topic re-emits the identical state. Re-applying
+        // textInput would clear the user's in-progress text, so it must be skipped.
+        voiceStateSubject.next({turnedOn: false, chatId: ""});
+
+        expect(mockDeepChat.disableSubmitButton).not.toHaveBeenCalled();
+    });
+
     it("shows a disconnect hint for Natural Chat when the robot link drops", () => {
         const personality = new VoiceAssistant(
             "persona-1",
@@ -1776,8 +1803,8 @@ describe("ChatWindowDeepChatComponent fresh chat without id", () => {
             id === createdChatId
                 ? new Chat("hello there", personalityUuid, createdChatId)
                 : id === existingChatId
-                ? new Chat("topic", personalityUuid, existingChatId)
-                : undefined,
+                  ? new Chat("topic", personalityUuid, existingChatId)
+                  : undefined,
         );
 
         TestBed.inject(KeyStoreSessionService).mode = UNLOCKED_MODE;
