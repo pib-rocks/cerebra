@@ -47,6 +47,11 @@ p span {
 
 .range-slider .input-range {
     --pos-relative: 0;
+    --thumb-size: clamp(20px, 1.5vw, 28px);
+    --fill-stop: calc(
+        (var(--thumb-size) / 2) + (100% - var(--thumb-size)) *
+            var(--pos-ratio, 0)
+    );
     -webkit-appearance: none;
     /* -webkit-appearance: slider-vertical; */
     height: 100%;
@@ -55,8 +60,8 @@ p span {
     background: linear-gradient(
         to right,
         $pink-color,
-        $pink-color var(--pos-relative),
-        $blue-dark-3 var(--pos-relative),
+        $pink-color var(--fill-stop, var(--pos-relative)),
+        $blue-dark-3 var(--fill-stop, var(--pos-relative)),
         $blue-dark-3
     );
     cursor: pointer;
@@ -65,8 +70,8 @@ p span {
 input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
     border: none;
-    height: clamp(20px, 1.5vw, 28px);
-    width: clamp(20px, 1.5vw, 28px);
+    height: var(--thumb-size);
+    width: var(--thumb-size);
     border-radius: 50%;
     background: $pink-color;
 }
