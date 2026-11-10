@@ -45,6 +45,9 @@ describe("MotorService", () => {
                     jointTrajectoryReceiver$: new Subject(),
                     jointStatesReceiver$: new Subject(),
                     currentReceiver$: new Subject(),
+                    solidStateRelayStateReceiver$: new BehaviorSubject({
+                        turned_on: true,
+                    }),
                     connectionStatus$: new BehaviorSubject<boolean>(false),
                 },
             );
@@ -288,6 +291,40 @@ describe("MotorService", () => {
             service["motorNameToCurrentSubject"],
             27,
         );
+    });
+
+    it("emits zero current for all motors when solid state relay is turned off", () => {
+        const motorOneCurrent: number[] = [];
+        const motorTwoCurrent: number[] = [];
+        service
+            .getCurrentObservable("motor-one")
+            .subscribe((value) => motorOneCurrent.push(value));
+        service
+            .getCurrentObservable("motor-two")
+            .subscribe((value) => motorTwoCurrent.push(value));
+
+        rosService.currentReceiver$.next({
+            level: "arraybuffer",
+            name: "motor-one",
+            hardware_id: "",
+            values: [{key: "current", value: "12"}],
+        });
+        rosService.currentReceiver$.next({
+            level: "arraybuffer",
+            name: "motor-two",
+            hardware_id: "",
+            values: [{key: "current", value: "8"}],
+        });
+        (
+            rosService.solidStateRelayStateReceiver$ as BehaviorSubject<{
+                turned_on: boolean;
+            }>
+        ).next({turned_on: false});
+
+        expect(motorOneCurrent).toContain(0);
+        expect(motorTwoCurrent).toContain(0);
+        expect(motorOneCurrent[motorOneCurrent.length - 1]).toBe(0);
+        expect(motorTwoCurrent[motorTwoCurrent.length - 1]).toBe(0);
     });
 
     it("exposes actual position and temperature from diagnostic key/value pairs", () => {
