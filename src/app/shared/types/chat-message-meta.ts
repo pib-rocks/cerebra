@@ -215,8 +215,12 @@ function escapeHtml(value: string): string {
         .replace(/'/g, "&#39;");
 }
 
+/** Selector for the per-message turn detail block inside deep-chat's shadow root. */
+export const TURN_DETAILS_SELECTOR =
+    "details.chat-message-meta, details.turn-details";
+
 /** A collapsed detail block for deep-chat; empty when there is nothing to show. */
-export function metaHtml(meta?: ChatMessageMeta | null): string {
+export function metaHtml(meta?: ChatMessageMeta | null, open = false): string {
     const notice = failureNotice(meta);
     const lines = metaSummary(meta);
     if (!lines.length) {
@@ -230,9 +234,10 @@ export function metaHtml(meta?: ChatMessageMeta | null): string {
               notice,
           )}</p>`
         : "";
+    const openAttr = open ? " open" : "";
     return (
         visible +
-        '<details class="chat-message-meta" data-test="CHAT_MESSAGE_META">' +
+        `<details class="chat-message-meta turn-details" data-test="CHAT_MESSAGE_META"${openAttr}>` +
         `<summary>turn details</summary><ul>${items}</ul></details>`
     );
 }

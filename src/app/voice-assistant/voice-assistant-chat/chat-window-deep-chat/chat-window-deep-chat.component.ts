@@ -18,7 +18,11 @@ import {
 } from "src/app/shared/services/token.service";
 import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
 import {ChatMessage} from "src/app/shared/types/chat-message";
-import {imageAttachments} from "src/app/shared/types/chat-message-meta";
+import {
+    imageAttachments,
+    metaHtml,
+    TURN_DETAILS_SELECTOR,
+} from "src/app/shared/types/chat-message-meta";
 import {Chat, ChatDto} from "src/app/shared/types/chat.class";
 import {extractText, toDeepChat} from "src/app/shared/util/deep-chat-mapper";
 import {
@@ -90,6 +94,11 @@ export class ChatWindowDeepChatComponent
     /** Debounce of the stored-message lookup that brings the captured pictures. */
     private imageRefreshTimer: ReturnType<typeof setTimeout> | undefined;
     private readonly imageRefreshDelayMs = 700;
+    private readonly turnDetailsListenerAttached = new WeakSet<object>();
+    private readonly cachedOpenTurnDetailIndices = new WeakMap<
+        object,
+        number[]
+    >();
     /** Timestamp of the latest user submit, used to measure TTFT. */
     private submitClickMs: number | undefined;
 
@@ -203,6 +212,7 @@ export class ChatWindowDeepChatComponent
         this.wireAssistantModels(el);
         this.wireKeyStoreSession(el);
         this.applyNames(el);
+        this.wireTurnDetailsPreservation(el);
 
         this.syncHistoryFromBuffer(this.currentChatId, el);
         if (this.currentChatId) {
@@ -279,7 +289,7 @@ export class ChatWindowDeepChatComponent
         this.historySyncedChatId = undefined;
 
         if (!chatId) {
-            target.history = [];
+            this.assignHistoryPreservingTurnDetails(target, []);
             return;
         }
 
@@ -298,9 +308,105 @@ export class ChatWindowDeepChatComponent
                     // marker stays where the turn put it.
                     this.lastStreamedMessageId = newest.messageId;
                 }
-                target.history = history;
+                this.assignHistoryPreservingTurnDetails(target, history);
             });
         this.historySyncedChatId = chatId;
+    }
+
+    /**
+     * deep-chat rebuilds message markup on history sync and overwrite, which
+     * drops any `<details>` the user opened. Snapshot open blocks first; the
+     * toggle listener keeps a cache when the shadow DOM is briefly inconsistent.
+     */
+    private wireTurnDetailsPreservation(el: any): void {
+        const root = el?.shadowRoot as ShadowRoot | undefined;
+        if (
+            !root?.addEventListener ||
+            this.turnDetailsListenerAttached.has(el)
+        ) {
+            return;
+        }
+        this.turnDetailsListenerAttached.add(el);
+        const recordOpen = (): void => {
+            this.cachedOpenTurnDetailIndices.set(
+                el,
+                this.openTurnDetailIndices(el),
+            );
+        };
+        root.addEventListener(
+            "toggle",
+            (event) => {
+                const target = event.target;
+                if (
+                    target instanceof HTMLDetailsElement &&
+                    target.matches(TURN_DETAILS_SELECTOR)
+                ) {
+                    recordOpen();
+                }
+            },
+            true,
+        );
+    }
+
+    private openTurnDetailIndices(el: any): number[] {
+        const root = el?.shadowRoot as ShadowRoot | undefined;
+        if (!root?.querySelectorAll) {
+            return [];
+        }
+        const nodes = root.querySelectorAll(TURN_DETAILS_SELECTOR);
+        const indices: number[] = [];
+        nodes.forEach((node, index) => {
+            if (node instanceof HTMLDetailsElement && node.open) {
+                indices.push(index);
+            }
+        });
+        return indices;
+    }
+
+    private restoreOpenTurnDetails(el: any, indices: number[]): void {
+        if (!indices.length) {
+            return;
+        }
+        const root = el?.shadowRoot as ShadowRoot | undefined;
+        if (!root?.querySelectorAll) {
+            return;
+        }
+        const nodes = root.querySelectorAll(TURN_DETAILS_SELECTOR);
+        for (const index of indices) {
+            const details = nodes.item(index);
+            if (details instanceof HTMLDetailsElement) {
+                details.open = true;
+            }
+        }
+    }
+
+    private preserveTurnDetailsDuring(el: any, update: () => void): void {
+        const live = this.openTurnDetailIndices(el);
+        const cached = this.cachedOpenTurnDetailIndices.get(el);
+        const indices = live.length > 0 ? live : cached?.length ? cached : live;
+        update();
+        queueMicrotask(() => {
+            this.restoreOpenTurnDetails(el, indices);
+            if (indices.length) {
+                this.cachedOpenTurnDetailIndices.set(el, indices);
+            }
+        });
+    }
+
+    private addMessagePreservingTurnDetails(el: any, message: unknown): void {
+        if (typeof el.addMessage !== "function") {
+            return;
+        }
+        this.preserveTurnDetailsDuring(el, () => el.addMessage(message));
+    }
+
+    private assignHistoryPreservingTurnDetails(
+        el: any,
+        history: unknown[],
+    ): void {
+        this.preserveTurnDetailsDuring(el, () => {
+            el.history = history;
+        });
     }
 
     /** A chat that could not be created has no bubble of its own; say it in the chat. */
@@ -653,13 +759,12 @@ export class ChatWindowDeepChatComponent
                 return;
             }
             if (!content) return;
-            if (typeof el.addMessage === "function") {
-                el.addMessage(
-                    messageId && messageId === this.lastStreamedMessageId
-                        ? {role: "user", text: content, overwrite: true}
-                        : {role: "user", text: content},
-                );
-            }
+            this.addMessagePreservingTurnDetails(
+                el,
+                messageId && messageId === this.lastStreamedMessageId
+                    ? {role: "user", text: content, overwrite: true}
+                    : {role: "user", text: content},
+            );
             this.lastStreamedMessageId = messageId;
             return;
         }
@@ -670,18 +775,17 @@ export class ChatWindowDeepChatComponent
             this.lastStreamedMessageId = messageId;
             this.pendingSignals = undefined;
         } else if (messageId === this.lastStreamedMessageId) {
-            if (typeof el.addMessage === "function") {
-                el.addMessage({
-                    role: "ai",
-                    text: content,
-                    overwrite: true,
-                });
-            }
+            this.addMessagePreservingTurnDetails(el, {
+                role: "ai",
+                text: content,
+                overwrite: true,
+            });
         } else {
-            if (typeof el.addMessage === "function") {
-                this.logTtftIfPending();
-                el.addMessage({role: "ai", text: content});
-            }
+            this.logTtftIfPending();
+            this.addMessagePreservingTurnDetails(el, {
+                role: "ai",
+                text: content,
+            });
             this.lastStreamedMessageId = messageId;
         }
 
@@ -725,10 +829,12 @@ export class ChatWindowDeepChatComponent
                     if (messageId !== this.lastStreamedMessageId) {
                         return;
                     }
-                    el.addMessage({
+                    const details = metaHtml(stored?.meta);
+                    this.addMessagePreservingTurnDetails(el, {
                         role: "ai",
                         text: stored.content || content,
                         files: attachments,
+                        ...(details ? {html: details} : {}),
                         overwrite: true,
                     });
                 });
