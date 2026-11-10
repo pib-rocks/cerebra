@@ -103,11 +103,17 @@
                         id="btn-use-detected-assignments"
                         data-test="BTN_Use_Detected_Assignments"
                         class="btn btn-outline-light"
-                        [disabled]="!hasDetectedAssignments"
+                        [disabled]="!canUseDetectedAssignments"
+                        [attr.title]="useDetectedAssignmentsHint"
                         (click)="applyDetectedAssignments()">
                         <i class="fas fa-magic me-1"></i>
                         Use detected assignments
                     </button>
+                    <small
+                        class="text-muted d-block mt-1"
+                        data-test="TXT_Use_Detected_Assignments_Hint"
+                        >{{ useDetectedAssignmentsHint }}</small
+                    >
                 </div>
                 @for (controller of serialControllers; track controller.number)
                 {
