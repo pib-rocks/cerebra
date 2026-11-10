@@ -14,6 +14,7 @@ import {MotorSettingsComponent} from "./motor-settings/motor-settings.component"
 import {MotorCurrentComponent} from "./motor-current/motor-current.component";
 import {MotorFeedbackComponent} from "./motor-feedback/motor-feedback.component";
 import {VariantService} from "src/app/shared/services/variant.service";
+import {MotorService} from "src/app/shared/services/motor.service";
 
 @Component({
     selector: "app-movement-core",
@@ -36,11 +37,13 @@ export class MovementCoreComponent implements OnInit {
     displayMotors: MotorConfiguration[] = [];
     showActualPosition = false;
     showTemperature = false;
+    relayTurnedOn: boolean | null = null;
 
     constructor(
         private route: ActivatedRoute,
         private router: Router,
         private variantService: VariantService,
+        private motorService: MotorService,
     ) {}
 
     get primaryColumnClass(): string {
@@ -72,6 +75,10 @@ export class MovementCoreComponent implements OnInit {
             .hasFeedback("temperature")
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe((available) => (this.showTemperature = available));
+        this.motorService
+            .getRelayTurnedOnObservable()
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe((turnedOn) => (this.relayTurnedOn = turnedOn));
     }
 
     selectMotor(motor: any) {

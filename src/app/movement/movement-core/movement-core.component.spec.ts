@@ -16,6 +16,7 @@ describe("MovementCoreComponent", () => {
     let data: BehaviorSubject<any>;
     let actualPositionAvailable: BehaviorSubject<boolean>;
     let temperatureAvailable: BehaviorSubject<boolean>;
+    let relayTurnedOn$: BehaviorSubject<boolean | null>;
 
     beforeEach(async () => {
         initialConfig = {
@@ -45,6 +46,7 @@ describe("MovementCoreComponent", () => {
         data = new BehaviorSubject({joint: initialConfig});
         actualPositionAvailable = new BehaviorSubject(false);
         temperatureAvailable = new BehaviorSubject(false);
+        relayTurnedOn$ = new BehaviorSubject<boolean | null>(null);
         const variantService = jasmine.createSpyObj("VariantService", [
             "hasFeedback",
             "getInstalledControllerKinds",
@@ -59,7 +61,9 @@ describe("MovementCoreComponent", () => {
             "getSettingsObservable",
             "getCurrentObservable",
             "getFeedbackObservable",
+            "getRelayTurnedOnObservable",
         ]);
+        motorService.getRelayTurnedOnObservable.and.returnValue(relayTurnedOn$);
         motorService.getSettingsObservable.and.returnValue(
             of({
                 velocity: 0,
@@ -118,6 +122,20 @@ describe("MovementCoreComponent", () => {
         const text = fixture.nativeElement.textContent;
         expect(text).not.toContain("Actual position");
         expect(text).not.toContain("Temperature");
+    });
+
+    it("shows motor power off warning when relay is off and hides it when on", () => {
+        const warningSelector = '[data-test="TXT_Motor_Power_Off_Warning"]';
+
+        relayTurnedOn$.next(false);
+        fixture.detectChanges();
+        expect(
+            fixture.nativeElement.querySelector(warningSelector),
+        ).not.toBeNull();
+
+        relayTurnedOn$.next(true);
+        fixture.detectChanges();
+        expect(fixture.nativeElement.querySelector(warningSelector)).toBeNull();
     });
 
     it("shows temperature and actual position for advanced capabilities", () => {
