@@ -51,24 +51,38 @@
             </button>
         </div>
     </div>
-    <div class="row display-flex mt-5 mb-3">
-        <div class="row">
-            <div class="col text-end">
-                <span class="align-middle"> SPEED SETTINGS </span>
-            </div>
-            <div class="col col-md-auto d-flex justify-content-center">
+    <div class="row display-flex mt-5 mb-3 justify-content-center">
+        <div class="col-9">
+            <div
+                class="motor-settings-tabs nav nav-pills justify-content-center"
+                role="tablist">
                 <button
-                    class="btn pe-0 ps-0 "
-                    (click)="displayExtended = !displayExtended"
+                    type="button"
+                    class="btn tab-btn"
+                    [class.active]="!displayExtended"
+                    data-test="TAB_Motor_Settings_Speed"
+                    (click)="selectSettingsTab(false)">
+                    SPEED SETTINGS
+                </button>
+                <button
+                    type="button"
+                    class="btn tab-btn"
+                    [class.active]="displayExtended"
                     id="toggle-settings"
-                    data-test="BTN_Motor_Settings_Toggle_Extended">
-                    <img
-                        [src]="'../../assets/toggle-switch-' + (displayExtended ? 'right' : 'left') + '.png'"
-                        alt="Toggle for switching between speed settings and extended values" />
+                    data-test="BTN_Motor_Settings_Toggle_Extended"
+                    (click)="displayExtended = !displayExtended">
+                    EXTENDED VALUES
                 </button>
             </div>
-            <div class="col text-start">
-                <span class="align-middle"> EXTENDED VALUES </span>
+            <div class="d-flex justify-content-end mt-2">
+                <button
+                    type="button"
+                    id="reset-defaults-button"
+                    data-test="BTN_Motor_Settings_Reset_Defaults"
+                    class="btn btn-outline-light btn-sm"
+                    (click)="resetToDefaults()">
+                    Reset to defaults
+                </button>
             </div>
         </div>
     </div>
@@ -102,6 +116,11 @@
     } @if (displayExtended) { @if (showPulseWidth) {
     <div class="row justify-content-center">
         <div class="col-9">
+            <small
+                class="text-muted d-block mb-1"
+                data-test="TXT_Motor_Settings_Pulse_Width_Desc"
+                >PWM min/max pulse width range in microseconds (μs).</small
+            >
             <app-horizontal-slider
                 [leftValue]="0"
                 [rightValue]="65535"
@@ -120,6 +139,11 @@
     } } @if (displayExtended) {
     <div class="row display-flex justify-content-center">
         <div class="col-9">
+            <small
+                class="text-muted d-block mb-1"
+                data-test="TXT_Motor_Settings_Degree_Desc"
+                >Allowed physical joint rotation range in degrees (°).</small
+            >
             <app-horizontal-slider
                 [leftValue]="-90"
                 [rightValue]="90"
@@ -139,6 +163,11 @@
     } @if (displayExtended) { @if (showPeriod) {
     <div class="row display-flex justify-content-center">
         <div class="col-9">
+            <small
+                class="text-muted d-block mb-1"
+                data-test="TXT_Motor_Settings_Period_Desc"
+                >PWM signal cycle period in microseconds (μs).</small
+            >
             <app-horizontal-slider
                 [name]="'Period'"
                 [attr.data-test]="'SLD_Motor_Settings_Period'"

@@ -370,6 +370,77 @@ describe("MotorSettingsComponent", () => {
         );
     });
 
+    describe("settings tabs and reset", () => {
+        let modalHost: ViewContainerRef;
+        let modalView: EmbeddedViewRef<unknown>;
+
+        function renderModalContent(): void {
+            component.settings = structuredClone(settings);
+            modalHost.clear();
+            modalView = modalHost.createEmbeddedView(component.content);
+            fixture.detectChanges();
+        }
+
+        function modalQuery(selector: string): Element | null {
+            for (const node of modalView.rootNodes) {
+                if (!(node instanceof HTMLElement)) {
+                    continue;
+                }
+                const match =
+                    node.querySelector(selector) ??
+                    (node.matches(selector) ? node : null);
+                if (match) {
+                    return match;
+                }
+            }
+            return null;
+        }
+
+        beforeEach(() => {
+            modalHost = fixture.debugElement.injector.get(ViewContainerRef);
+            settingsSubject.next(settings);
+            renderModalContent();
+        });
+
+        it("switches between Speed and Extended tabs without toggle-switch images", () => {
+            expect(component.displayExtended).toBeFalse();
+
+            const extendedBtn = modalQuery(
+                '[data-test="BTN_Motor_Settings_Toggle_Extended"]',
+            ) as HTMLButtonElement;
+            extendedBtn.click();
+            fixture.detectChanges();
+            expect(component.displayExtended).toBeTrue();
+
+            const speedTab = modalQuery(
+                '[data-test="TAB_Motor_Settings_Speed"]',
+            ) as HTMLButtonElement;
+            speedTab.click();
+            fixture.detectChanges();
+            expect(component.displayExtended).toBeFalse();
+
+            expect(modalQuery('img[src*="toggle-switch-"]')).toBeNull();
+        });
+
+        it("restores initial settings when Reset to defaults is clicked", () => {
+            component.settings = structuredClone(settings);
+            component.settings.velocity = 99999;
+            motorService.applySettings.calls.reset();
+
+            const resetBtn = modalQuery(
+                '[data-test="BTN_Motor_Settings_Reset_Defaults"]',
+            ) as HTMLButtonElement;
+            resetBtn.click();
+            fixture.detectChanges();
+
+            expect(component.settings).toEqual(structuredClone(settings));
+            expect(motorService.applySettings).toHaveBeenCalledOnceWith(
+                "test_motor",
+                structuredClone(settings),
+            );
+        });
+    });
+
     describe("endpoint mapping rows", () => {
         let modalHost: ViewContainerRef;
 

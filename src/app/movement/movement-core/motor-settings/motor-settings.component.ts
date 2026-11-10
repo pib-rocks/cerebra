@@ -107,6 +107,7 @@ export class MotorSettingsComponent implements OnInit {
     upperEndpointFormControl = new FormControl<MotorUpperEndpoint>("max");
 
     settings!: MotorSettings;
+    private defaultSettings?: MotorSettings;
     actualPosition = 0;
 
     displayExtended: boolean = false;
@@ -166,6 +167,9 @@ export class MotorSettingsComponent implements OnInit {
                 takeUntilDestroyed(this.destroyRef),
             )
             .subscribe((settings) => {
+                if (!this.defaultSettings) {
+                    this.defaultSettings = structuredClone(settings);
+                }
                 this.settings = settings;
                 this.pulseWidthSubject$.next([
                     settings.pulseWidthMin,
@@ -261,6 +265,33 @@ export class MotorSettingsComponent implements OnInit {
                     this.cdr.markForCheck();
                 });
         }
+    }
+
+    selectSettingsTab(extended: boolean): void {
+        this.displayExtended = extended;
+        this.cdr.markForCheck();
+    }
+
+    resetToDefaults(): void {
+        if (!this.defaultSettings) {
+            return;
+        }
+        this.settings = structuredClone(this.defaultSettings);
+        this.pulseWidthSubject$.next([
+            this.settings.pulseWidthMin,
+            this.settings.pulseWidthMax,
+        ]);
+        this.emitDegreeSubject();
+        this.periodSubject$.next([this.settings.period]);
+        this.decelerationSubject$.next(this.settings.deceleration);
+        this.accelerationSubject$.next(this.settings.acceleration);
+        this.velocitySubject$.next(this.settings.velocity);
+        this.upperEndpointFormControl.setValue(
+            resolveUpperEndpoint(this.settings),
+            {emitEvent: false},
+        );
+        this.motorService.applySettings(this.motor.motorName, this.settings);
+        this.cdr.markForCheck();
     }
 
     openPopup(content: TemplateRef<any>) {
