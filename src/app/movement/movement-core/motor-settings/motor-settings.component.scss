@@ -77,6 +77,21 @@ span {
     font-size: clamp(16px, 1vw, 30px);
 }
 
+.motor-settings-tabs {
+    gap: 0.5rem;
+
+    .tab-btn {
+        border-radius: 0.25rem;
+        color: $white-color;
+        opacity: 0.7;
+
+        &.active {
+            opacity: 1;
+            background-color: $grey-transparent;
+        }
+    }
+}
+
 @media only screen and (max-width: 1050px) {
     text {
         y: 0.5vw;
