@@ -406,6 +406,7 @@ export const toolbox: string = `<xml xmlns="http://www.w3.org/1999/xhtml" id="to
     <block type="vision_describe_image"></block>
     <block type="start_model"></block>
     <block type="stop_model"></block>
+    <block type="imitate_hands"></block>
     <block type="camera_get_depth_frame"></block>
     <block type="camera_get_distance_at_px"></block>
     <block type="imu_get_acceleration"></block>
