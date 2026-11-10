@@ -14,6 +14,7 @@ import {ChatService} from "src/app/shared/services/chat.service";
 import {TokenService} from "src/app/shared/services/token.service";
 import {VoiceAssistantService} from "src/app/shared/services/voice-assistant.service";
 import {ChatMessage} from "src/app/shared/types/chat-message";
+import {metaHtml} from "src/app/shared/types/chat-message-meta";
 import {toDeepChat} from "src/app/shared/util/deep-chat-mapper";
 import {ChatWindowDeepChatComponent} from "./chat-window-deep-chat.component";
 import {Chat, ChatDto} from "src/app/shared/types/chat.class";
@@ -242,6 +243,51 @@ describe("ChatWindowDeepChatComponent", () => {
      * with no catalogue at all: every missing-key assertion in this file
      * passed vacuously (PC-63).
      */
+    /**
+     * deep-chat re-renders bubbles on overwrite and history sync; the mock
+     * closes every turn-details block the way the real shadow DOM would.
+     */
+    const attachTurnDetailsShadow = (
+        openAt: number[],
+        count = 2,
+    ): HTMLDetailsElement[] => {
+        const details = Array.from({length: count}, (_, i) => {
+            const el = document.createElement("details");
+            el.className = "chat-message-meta turn-details";
+            el.open = openAt.includes(i);
+            return el;
+        });
+        const closeOnUpdate = (): void => {
+            for (const d of details) {
+                d.open = false;
+            }
+        };
+        const shadow = {
+            querySelectorAll: (sel: string) => {
+                if (sel.includes("details")) {
+                    return details;
+                }
+                return [] as HTMLDetailsElement[];
+            },
+            addEventListener: jasmine.createSpy("shadowToggleListen"),
+        };
+        (mockDeepChat as any).shadowRoot = shadow;
+        mockDeepChat.addMessage.and.callFake((msg: unknown) => {
+            closeOnUpdate();
+            return msg;
+        });
+        let historyValue: ReturnType<typeof toDeepChat>[] | undefined;
+        Object.defineProperty(mockDeepChat, "history", {
+            configurable: true,
+            get: () => historyValue,
+            set: (v: ReturnType<typeof toDeepChat>[]) => {
+                closeOnUpdate();
+                historyValue = v;
+            },
+        });
+        return details;
+    };
+
     const publishModels = (models: AssistantModel[]): void => {
         const service = TestBed.inject(
             VoiceAssistantService,
@@ -808,18 +854,110 @@ describe("ChatWindowDeepChatComponent", () => {
         tick(component["imageRefreshDelayMs"] + 10);
 
         expect(chatService.getChatMessage).toHaveBeenCalledWith(chatId, "ai-1");
-        expect(mockDeepChat.addMessage).toHaveBeenCalledWith({
-            role: "ai",
-            text: "Hier ist das Bild.",
-            files: [
-                {
-                    src: `/api/voice-assistant/chat/${chatId}/messages/ai-1/images/0`,
-                    type: "image",
-                    name: "capture.jpg",
+        expect(mockDeepChat.addMessage).toHaveBeenCalledWith(
+            jasmine.objectContaining({
+                role: "ai",
+                text: "Hier ist das Bild.",
+                html: metaHtml({
+                    source: "direct-tool-loop",
+                    images: [
+                        {
+                            id: "image-1",
+                            mimeType: "image/jpeg",
+                            width: 1024,
+                            height: 768,
+                            url: `/voice-assistant/chat/${chatId}/messages/ai-1/images/0`,
+                        },
+                    ],
+                }),
+                files: [
+                    {
+                        src: `/api/voice-assistant/chat/${chatId}/messages/ai-1/images/0`,
+                        type: "image",
+                        name: "capture.jpg",
+                    },
+                ],
+                overwrite: true,
+            }),
+        );
+    }));
+
+    it("re-opens turn details after a streaming overwrite", fakeAsync(() => {
+        const detailsEls = attachTurnDetailsShadow([0]);
+        const signals = {onResponse: jasmine.createSpy("onResponse")};
+        mockDeepChat.connect!.handler(
+            {messages: [{role: "user", text: "hi"}]},
+            signals,
+        );
+        mockDeepChat.addMessage.calls.reset();
+
+        messagesSubject.next([
+            {
+                messageId: "ai-1",
+                timestamp: "2",
+                isUser: false,
+                content: "Hel",
+            },
+        ]);
+        tick(0);
+        expect(detailsEls[0].open).toBeTrue();
+
+        messagesSubject.next([
+            {
+                messageId: "ai-1",
+                timestamp: "2",
+                isUser: false,
+                content: "Hello",
+            },
+        ]);
+        tick(0);
+        expect(detailsEls[0].open).toBeTrue();
+    }));
+
+    it("re-opens turn details after history sync", fakeAsync(() => {
+        const detailsEls = attachTurnDetailsShadow([1]);
+        component["assignHistoryPreservingTurnDetails"](mockDeepChat, [
+            {role: "ai", text: "first"},
+        ]);
+        tick(0);
+        expect(detailsEls[1].open).toBeTrue();
+    }));
+
+    it("re-opens turn details after image refresh overwrite", fakeAsync(() => {
+        const detailsEls = attachTurnDetailsShadow([0]);
+        const signals = {onResponse: jasmine.createSpy("onResponse")};
+        mockDeepChat.connect!.handler(
+            {messages: [{role: "user", text: "foto"}]},
+            signals,
+        );
+        messagesSubject.next([
+            {
+                messageId: "ai-1",
+                timestamp: "2",
+                isUser: false,
+                content: "Bild.",
+            },
+        ]);
+        chatService.getChatMessage.and.returnValue(
+            of({
+                messageId: "ai-1",
+                timestamp: "2",
+                isUser: false,
+                content: "Bild.",
+                meta: {
+                    source: "direct-tool-loop",
+                    images: [
+                        {
+                            url: `/voice-assistant/chat/${chatId}/messages/ai-1/images/0`,
+                            mimeType: "image/jpeg",
+                        },
+                    ],
                 },
-            ],
-            overwrite: true,
-        });
+            }),
+        );
+        tick(component["imageRefreshDelayMs"] + 10);
+        tick(0);
+        expect(detailsEls[0].open).toBeTrue();
     }));
 
     it("leaves the answer alone when the turn captured nothing", fakeAsync(() => {

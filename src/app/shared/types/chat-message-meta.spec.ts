@@ -66,6 +66,15 @@ describe("chat-message-meta", () => {
         expect(html).not.toContain("<details open");
     });
 
+    it("renders an expanded details block when open is true", () => {
+        const html = metaHtml({source: "hermes"}, true);
+        expect(html).toContain(
+            '<details class="chat-message-meta turn-details"',
+        );
+        expect(html).toContain("<details");
+        expect(html).toMatch(/<details[^>]*\sopen(?:\s|>)/);
+    });
+
     // PR-2132: a failed turn says why. The old answer claimed a timeout for
     // every failure; the cause is what the operator needs.
     it("labels a known failure cause instead of only the code", () => {
