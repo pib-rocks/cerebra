@@ -123,6 +123,32 @@ describe("DiagnosticsComponent", () => {
         expect(servoCol?.parentElement).toBe(buttonCol?.parentElement);
     });
 
+    it("should render the diagnostics summary table cleanly", () => {
+        const compiled = fixture.nativeElement as HTMLElement;
+        const summaryTable = compiled.querySelector(
+            "#table-system-summary",
+        ) as HTMLTableElement;
+
+        expect(summaryTable).toBeTruthy();
+        expect(summaryTable.closest(".table-responsive")).toBeTruthy();
+
+        const headers = summaryTable.querySelectorAll("thead th");
+        const dataRow = summaryTable.querySelector("tbody tr");
+        expect(headers.length).toBe(6);
+        expect(dataRow?.querySelectorAll("td").length).toBe(6);
+
+        const tableStyle = getComputedStyle(summaryTable);
+        expect(tableStyle.tableLayout).toBe("fixed");
+        expect(tableStyle.fontVariantNumeric).toBe("tabular-nums");
+
+        const sampleCell = summaryTable.querySelector(
+            "tbody td",
+        ) as HTMLElement;
+        const cellStyle = getComputedStyle(sampleCell);
+        expect(cellStyle.fontVariantNumeric).toBe("tabular-nums");
+        expect(cellStyle.overflowWrap).toBe("break-word");
+    });
+
     it("should apply native dark mode styling (table-dark) and mb-0 to all diagnostics tables", () => {
         const compiled = fixture.nativeElement as HTMLElement;
         const summaryTable = compiled.querySelector("#table-system-summary");
