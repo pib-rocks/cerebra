@@ -3,6 +3,7 @@ import {BehaviorSubject, Subject} from "rxjs";
 import {DetectionArray} from "../../ros-types/msg/detection-array";
 import {rosDataTypes} from "../../ros-types/path/ros-datatypes.enum";
 import {ModelStatusArray} from "../../ros-types/msg/model-status";
+import {RosTopicOptions} from "./ros-topic-wiring.helper";
 
 export function modelIdFromTopic(topicName: string): string {
     return topicName.slice("/detections/".length);
@@ -20,6 +21,7 @@ export interface RosDetectionTopologyHost {
     createRosTopic<T>(
         topicName: string,
         topicMessageType: string,
+        options?: RosTopicOptions,
     ): ROSLIB.Topic<T>;
 }
 
@@ -61,6 +63,7 @@ export function syncDetectionTopics(
         const topic = host.createRosTopic<DetectionArray>(
             topicName,
             rosDataTypes.detectionArray,
+            {throttle_rate: 50, queue_length: 1},
         );
         topic.subscribe((message) => {
             const detectionArray = message as DetectionArray;

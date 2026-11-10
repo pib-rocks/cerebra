@@ -1245,4 +1245,32 @@ describe("VisionComponent", () => {
 
         expect(component.showsBox("yolov6n_coco_640x640", empty)).toBeFalse();
     });
+
+    it("collapses and expands the model list with the handle on the column edge, the arrow showing the way", () => {
+        fixture.detectChanges();
+        const workspace: HTMLElement =
+            fixture.nativeElement.querySelector(".camera-workspace");
+        const handle: HTMLButtonElement = fixture.nativeElement.querySelector(
+            "#model-list-toggle-button",
+        );
+        const icon = handle.querySelector("i");
+        expect(workspace.classList.contains("model-list-collapse")).toBeFalse();
+        expect(icon?.classList.contains("bi-chevron-right")).toBeTrue();
+        expect(icon?.classList.contains("bi-chevron-left")).toBeFalse();
+        expect(handle.getAttribute("aria-expanded")).toBe("true");
+        expect(handle.getAttribute("aria-label")).toBe("Hide models");
+
+        handle.click();
+        fixture.detectChanges();
+        expect(workspace.classList.contains("model-list-collapse")).toBeTrue();
+        expect(icon?.classList.contains("bi-chevron-left")).toBeTrue();
+        expect(icon?.classList.contains("bi-chevron-right")).toBeFalse();
+        expect(handle.getAttribute("aria-expanded")).toBe("false");
+        expect(handle.getAttribute("aria-label")).toBe("Show models");
+
+        handle.click();
+        fixture.detectChanges();
+        expect(workspace.classList.contains("model-list-collapse")).toBeFalse();
+        expect(icon?.classList.contains("bi-chevron-right")).toBeTrue();
+    });
 });

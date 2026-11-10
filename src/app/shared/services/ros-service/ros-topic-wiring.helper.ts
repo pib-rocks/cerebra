@@ -61,15 +61,22 @@ import {
 import {StopModelRequest} from "../../ros-types/srv/stop-model";
 import {JointStateMessage} from "../../ros-types/msg/joint-state-message";
 
+export interface RosTopicOptions {
+    throttle_rate?: number;
+    queue_length?: number;
+}
+
 export function createRosTopic<T>(
     ros: ROSLIB.Ros,
     topicName: string,
     topicMessageType: string,
+    options?: RosTopicOptions,
 ): ROSLIB.Topic<T> {
     return new ROSLIB.Topic({
         ros,
         name: topicName,
         messageType: topicMessageType,
+        ...options,
     });
 }
 
@@ -167,8 +174,11 @@ export interface RosTopicServiceWiring {
 export function wireRosTopicsAndServices(target: RosTopicServiceWiring): void {
     target.cameraTopicSubscribed = false;
     const {ros} = target;
-    const topic = (name: string, type: string): any =>
-        createRosTopic(ros, name, type);
+    const topic = (
+        name: string,
+        type: string,
+        options?: RosTopicOptions,
+    ): any => createRosTopic(ros, name, type, options);
     const service = (name: string, type: string): any =>
         createRosService(ros, name, type);
 
@@ -187,14 +197,17 @@ export function wireRosTopicsAndServices(target: RosTopicServiceWiring): void {
     target.motorCurrentTopic = topic(
         rosTopics.motorCurrentTopicName,
         rosDataTypes.diagnosticStatus,
+        {throttle_rate: 250, queue_length: 1},
     );
     target.jointTrajectoryTopic = topic(
         rosTopics.jointTrajectoryTopicName,
         rosDataTypes.jointTrajectory,
+        {throttle_rate: 50, queue_length: 1},
     );
     target.jointStatesTopic = topic(
         rosTopics.jointStates,
         rosDataTypes.jointState,
+        {throttle_rate: 100, queue_length: 1},
     );
     target.chatMessageTopic = topic(
         rosTopics.chatMessages,
@@ -245,6 +258,7 @@ export function wireRosTopicsAndServices(target: RosTopicServiceWiring): void {
     target.modelStatusTopic = topic(
         rosTopics.modelStatus,
         rosDataTypes.modelStatusArray,
+        {queue_length: 1},
     );
 
     target.applyMotorSettingsService = service(
