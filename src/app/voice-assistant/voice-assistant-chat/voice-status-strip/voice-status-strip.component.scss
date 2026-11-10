@@ -26,6 +26,12 @@
     color: #7e889c;
 }
 
+.chip-error {
+    background: #3d1214;
+    border-color: #f85149;
+    color: #ffa198;
+}
+
 // Health of the voice container itself (PR-2123). Green means the nodes answer
 // and a provider key resolves; amber means one of them does not; the neutral
 // class is used when no verdict could be obtained at all - never red, because a

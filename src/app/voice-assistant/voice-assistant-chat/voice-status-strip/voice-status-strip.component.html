@@ -1,6 +1,13 @@
 <div
     class="voice-status"
     data-test="VOICE_STATUS_STRIP">
+    @if (status.sessionError) {
+    <span
+        class="voice-status-chip chip-error"
+        data-test="VOICE_STATUS_SESSION_ERROR">
+        {{ status.sessionError }}
+    </span>
+    }
     <span
         class="voice-status-chip"
         [class.voice-status-chip-active]="status.mic === 'listening'"

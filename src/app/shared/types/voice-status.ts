@@ -34,16 +34,92 @@ export interface VoiceStatus {
     lastStage: string;
     /** Milliseconds since the turn started, null without a turn start. */
     lastStageElapsedMs: number | null;
+    /** User-visible pib.Cloud live session fault, null when healthy. */
+    sessionError: string | null;
 }
 
-export const EMPTY_VOICE_STATUS: VoiceStatus = {
-    mic: "off",
-    phase: "idle",
-    source: "",
-    model: "",
-    lastStage: "",
-    lastStageElapsedMs: null,
+export function initialVoiceStatus(): VoiceStatus {
+    return {
+        mic: "off",
+        phase: "idle",
+        source: "",
+        model: "",
+        lastStage: "",
+        lastStageElapsedMs: null,
+        sessionError: null,
+    };
+}
+
+export const EMPTY_VOICE_STATUS: VoiceStatus = initialVoiceStatus();
+
+const LIVE_SESSION_END_REASON_MESSAGES: Record<string, string> = {
+    daily_live_quota_exhausted: "pib.Cloud daily live quota exhausted",
+    mint_failed: "pib.Cloud session authentication failed",
+    connection_failed: "pib.Cloud live connection failed",
 };
+
+/** Map a `live_session_ended` detail reason to text for the status strip. */
+export function formatLiveSessionEndReason(reason: string): string {
+    const key = reason.trim();
+    if (!key) {
+        return "";
+    }
+    const known = LIVE_SESSION_END_REASON_MESSAGES[key];
+    if (known) {
+        return known;
+    }
+    return `pib.Cloud live session ended: ${key}`;
+}
+
+const SESSION_ERROR_CLEAR_STAGES = new Set([
+    "turn_started",
+    "first_llm_Delta",
+    "live_session_started",
+]);
+
+const SESSION_ERROR_BENIGN_END_REASONS = new Set([
+    "closed",
+    "stopped",
+    "idle_timeout",
+]);
+
+export type VoiceStatusReduceEvent =
+    | {kind: "trace"; trace: VoiceTurnTraceEvent}
+    | {kind: "enabled"; enabled: boolean};
+
+/** Fold trace and enablement into `sessionError` on an otherwise computed status. */
+export function reduceVoiceStatus(
+    status: VoiceStatus,
+    event: VoiceStatusReduceEvent,
+): VoiceStatus {
+    if (event.kind === "enabled") {
+        if (event.enabled) {
+            return {...status, sessionError: null};
+        }
+        return status;
+    }
+
+    const t = event.trace;
+    if (t.stage === "live_session_ended") {
+        const reason =
+            typeof t.detail?.["reason"] === "string"
+                ? t.detail["reason"].trim()
+                : "";
+        if (reason && !SESSION_ERROR_BENIGN_END_REASONS.has(reason)) {
+            return {
+                ...status,
+                sessionError: formatLiveSessionEndReason(reason),
+            };
+        }
+        return status;
+    }
+
+    if (SESSION_ERROR_CLEAR_STAGES.has(t.stage)) {
+        return {...status, sessionError: null};
+    }
+
+    return status;
+}
 
 /** Transport tokens the chat node publishes with `turn_path`. */
 export const TURN_PATH_LABELS: Record<string, string> = {
@@ -148,6 +224,8 @@ export interface VoiceStatusInput {
     turnStartMs: number | null;
     /** Transport of the last completed answer, kept while the next turn starts. */
     lastAnswer?: VoiceTurnTraceEvent | null;
+    /** Optional sticky session error from a live_session_ended trace event. */
+    sessionError?: string | null;
 }
 
 /**
@@ -178,6 +256,22 @@ export function toVoiceStatus(input: VoiceStatusInput): VoiceStatus {
             ? Math.max(0, Math.round(lastEvent.ts_ms - input.turnStartMs))
             : null;
 
+    let sessionError = input.sessionError ?? null;
+    if (lastEvent) {
+        sessionError = reduceVoiceStatus(
+            {
+                mic,
+                phase: "idle",
+                source: "",
+                model: "",
+                lastStage: "",
+                lastStageElapsedMs: null,
+                sessionError,
+            },
+            {kind: "trace", trace: lastEvent},
+        ).sessionError;
+    }
+
     return {
         mic,
         phase: lastEvent ? phaseForStage(lastEvent.stage) : "idle",
@@ -185,5 +279,6 @@ export function toVoiceStatus(input: VoiceStatusInput): VoiceStatus {
         model: modelFor(transport),
         lastStage: lastEvent ? stageLabel(lastEvent.stage) : "",
         lastStageElapsedMs: elapsed,
+        sessionError,
     };
 }

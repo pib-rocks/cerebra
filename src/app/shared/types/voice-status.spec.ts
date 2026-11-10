@@ -172,5 +172,22 @@ describe("voice-status", () => {
             });
             expect(status).toEqual(EMPTY_VOICE_STATUS);
         });
+
+        it("maps live_session_ended daily_live_quota_exhausted to sessionError", () => {
+            const status = toVoiceStatus({
+                turnedOn: false,
+                chatId: "chat-1",
+                listening: false,
+                lastEvent: event({
+                    stage: "live_session_ended",
+                    source: "pib-cloud",
+                    detail: {reason: "daily_live_quota_exhausted"},
+                }),
+                turnStartMs: null,
+            });
+            expect(status.sessionError).toBe(
+                "pib.Cloud daily live quota exhausted",
+            );
+        });
     });
 });

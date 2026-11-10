@@ -430,6 +430,7 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
             lastEvent: this.lastTraceEvent,
             turnStartMs: this.turnStartMs,
             lastAnswer: this.lastAnswerTrace,
+            sessionError: this.voiceStatus.sessionError,
         });
         this.changeDetector.markForCheck();
     }

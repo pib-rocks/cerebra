@@ -67,6 +67,7 @@ describe("VoiceStatusStripComponent", () => {
             model: "pib-cloud",
             lastStage: "first audio",
             lastStageElapsedMs: 1141,
+            sessionError: null,
         });
 
         expect(text("VOICE_STATUS_MIC")).toBe("Listening");
@@ -99,6 +100,7 @@ describe("VoiceStatusStripComponent", () => {
             model: "",
             lastStage: "end of speech",
             lastStageElapsedMs: null,
+            sessionError: null,
         });
 
         expect(text("VOICE_STATUS_PHASE")).toBe("Thinking");
@@ -310,5 +312,15 @@ describe("VoiceStatusStripComponent", () => {
                 '[data-test="VOICE_STATUS_WARMTH"]',
             ),
         ).toBeNull();
+    });
+
+    it("renders VOICE_STATUS_SESSION_ERROR when sessionError is set", () => {
+        setStatus({
+            ...EMPTY_VOICE_STATUS,
+            sessionError: "pib.Cloud daily live quota exhausted",
+        });
+        expect(text("VOICE_STATUS_SESSION_ERROR")).toBe(
+            "pib.Cloud daily live quota exhausted",
+        );
     });
 });
