@@ -186,11 +186,11 @@
             }} on channel {{ status?.channel || "not reported" }}. A second
             update cannot be started.
         </div>
-        } @if (installBlocker && !isActive) {
+        } @if (visibleInstallBlocker && !isActive) {
         <p
             class="text-muted"
             data-test="TXT_Install_Blocker">
-            {{ installBlocker }}
+            {{ visibleInstallBlocker }}
         </p>
         }
 

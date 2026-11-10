@@ -310,6 +310,50 @@ describe("UpdateComponent", () => {
         );
     }));
 
+    it("omits the confirmation-type install blocker from the DOM while other blockers render", () => {
+        component.status = {
+            state: "idle",
+            classification: "idle",
+            readiness: {ready: true, checks: []},
+        };
+        component.confirmation = "";
+        fixture.detectChanges();
+
+        expect(component.installBlocker).toBe("Type UPDATE to confirm.");
+        expect(
+            (fixture.nativeElement as HTMLElement).querySelector(
+                '[data-test="TXT_Install_Blocker"]',
+            ),
+        ).toBeNull();
+
+        component.confirmation = "UPDATE";
+        component.channel = "release";
+        component.chosenTag = "v0.6.2";
+        component.availability = {
+            ...availability,
+            checkId: "check-1",
+            state: "completed",
+            channel: "release",
+            releases: [
+                {
+                    tag: "v0.6.2",
+                    relation: "current",
+                    installable: true,
+                },
+            ],
+        };
+        fixture.detectChanges();
+
+        expect(component.installBlocker).toBe(
+            "That published release is already installed.",
+        );
+        expect(
+            (fixture.nativeElement as HTMLElement).querySelector(
+                '[data-test="TXT_Install_Blocker"]',
+            )?.textContent,
+        ).toContain("That published release is already installed.");
+    });
+
     it("accepts only release or develop and the exact confirmation token", () => {
         component.confirmation = "UPDATE";
         component.channel = "main";

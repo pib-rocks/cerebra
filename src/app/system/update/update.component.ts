@@ -224,6 +224,14 @@ export class UpdateComponent implements OnInit, OnDestroy {
         return "Channel must be release or develop.";
     }
 
+    get visibleInstallBlocker(): string | null {
+        const blocker = this.installBlocker;
+        if (blocker === `Type ${this.confirmationToken} to confirm.`) {
+            return null;
+        }
+        return blocker;
+    }
+
     get developPinned(): boolean {
         const repositories = this.availability?.repositories ?? {};
         return ["pib-backend", "cerebra"].every((name) => {
