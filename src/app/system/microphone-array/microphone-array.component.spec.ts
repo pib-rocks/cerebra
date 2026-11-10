@@ -70,7 +70,7 @@ describe("MicrophoneArrayComponent live cockpit", () => {
             led_mode: "off",
             led_brightness: 16,
             led_color: "#000000",
-            vad_led: 0,
+            vad_led: false,
             AGCONOFF: 1,
             AGCMAXGAIN: 31.6,
             AGCDESIREDLEVEL: 0.005,
@@ -233,6 +233,43 @@ describe("MicrophoneArrayComponent live cockpit", () => {
         expect(component.tuning?.agcMaxGain).toBe(31.6);
         expect(component.tuning?.agcEnabled).toBeTrue();
         expect(serviceCalls("/rosapi/get_param").length).toBe(0);
+    });
+
+    it("writes vad_led as a JSON boolean", () => {
+        openAndLoadParameters();
+        component.tuning!.vadLed = true;
+        component.onLedChange("vad_led");
+
+        let request = serviceCalls("/rosapi/set_param")[0];
+        expect(request.args).toEqual({
+            name: "/doa_publisher:vad_led",
+            value: "true",
+        });
+        respondedIds.add(request.id);
+        parameterValues["vad_led"] = true;
+        socket.receive({
+            op: "service_response",
+            id: request.id,
+            service: "/rosapi/set_param",
+            result: true,
+            values: {successful: true, reason: ""},
+        });
+        respondToParameterReads();
+
+        component.tuning!.vadLed = false;
+        component.onLedChange("vad_led");
+        request = serviceCalls("/rosapi/set_param")[0];
+        expect(request.args).toEqual({
+            name: "/doa_publisher:vad_led",
+            value: "false",
+        });
+        socket.receive({
+            op: "service_response",
+            id: request.id,
+            service: "/rosapi/set_param",
+            result: true,
+            values: {successful: false, reason: "test cleanup"},
+        });
     });
 
     it("writes one JSON-in-string parameter and re-reads device values", () => {

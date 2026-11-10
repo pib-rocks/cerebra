@@ -254,9 +254,7 @@ export class MicrophoneArrayComponent implements OnInit, OnDestroy {
             vad_led:
                 this.tuning.vadLed === undefined
                     ? undefined
-                    : this.tuning.vadLed
-                    ? 1
-                    : 0,
+                    : this.tuning.vadLed,
         };
         const value = values[name];
         if (value !== undefined) {
