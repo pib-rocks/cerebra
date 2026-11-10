@@ -244,6 +244,28 @@ describe("Robot3DComponent", () => {
         });
     });
 
+    it("renders command errors as an overlay without displacing the 3D viewer", () => {
+        const host = fixture.nativeElement as HTMLElement;
+        const viewer = host.querySelector("pib-robot-view") as HTMLElement;
+        const viewerOffsetBefore = viewer.offsetTop;
+
+        fixture.componentInstance.commandError =
+            "head_pan: trajectory rejected";
+        fixture.detectChanges();
+
+        const errorEl = host.querySelector(".robot-3d-error") as HTMLElement;
+        expect(errorEl).not.toBeNull();
+        expect(errorEl.textContent).toContain("head_pan: trajectory rejected");
+
+        const errorStyle = getComputedStyle(errorEl);
+        expect(errorStyle.position).toBe("absolute");
+        expect(errorStyle.pointerEvents).toBe("none");
+
+        expect(
+            (host.querySelector("pib-robot-view") as HTMLElement).offsetTop,
+        ).toBe(viewerOffsetBefore);
+    });
+
     it("rejects a failed command and shows per-motor errors", () => {
         const detail: CommandRequestDetail = {
             commandId: "cmd-2",

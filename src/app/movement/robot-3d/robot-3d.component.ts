@@ -77,6 +77,7 @@ export function trajectoryPointPositionsRad(
     styles: [
         `
             :host {
+                position: relative;
                 display: block;
                 width: 100%;
                 min-height: 28rem;
@@ -89,8 +90,18 @@ export function trajectoryPointPositionsRad(
             }
 
             .robot-3d-error {
+                position: absolute;
+                top: 0.75rem;
+                left: 50%;
+                transform: translateX(-50%);
+                z-index: 10;
+                background: rgba(61, 18, 20, 0.92);
+                border: 1px solid #f85149;
+                color: #ffa198;
+                border-radius: 6px;
+                padding: 0.5rem 1rem;
                 margin: 0;
-                padding: 1rem;
+                pointer-events: none;
             }
         `,
     ],
