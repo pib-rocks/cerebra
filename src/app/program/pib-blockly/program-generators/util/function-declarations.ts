@@ -687,14 +687,14 @@ def ${generator.FUNCTION_NAME_PLACEHOLDER_}(side: str = "both", parts: str = "al
                 "upper_arm_left_rotation": 0.0,
                 "elbow_left": 0.0,
                 "lower_arm_left_rotation": 0.0,
-                "shoulder_horizontal_left": -9000.0,
+                "shoulder_horizontal_left": 9000.0,
             }
             rest_right = {
                 "shoulder_vertical_right": -7300.0,
                 "upper_arm_right_rotation": 0.0,
                 "elbow_right": 500.0,
                 "lower_arm_right_rotation": 1100.0,
-                "shoulder_horizontal_right": -7500.0,
+                "shoulder_horizontal_right": 7500.0,
             }
             if side in ("both", "left"):
                 targets.update(rest_left)
