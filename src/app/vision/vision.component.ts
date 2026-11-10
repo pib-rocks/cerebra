@@ -112,6 +112,7 @@ export class VisionComponent implements OnInit, OnDestroy {
      * enough to read as a direction, short enough to stay next to the face.
      */
     private static readonly GAZE_RAY_SCALE = 0.5;
+    private static readonly RECONFIGURING_TIMEOUT_MS = 8000;
 
     @ViewChild("videobox") videoBox?: ElementRef;
     @ViewChild("refreshRate") refreshRateSlider!: ElementRef;
@@ -119,6 +120,7 @@ export class VisionComponent implements OnInit, OnDestroy {
     qualityReceiver$!: Observable<number[]>;
     refreshRateReceiver$!: Observable<number[]>;
     isLoading = false;
+    cameraReconfiguring = false;
     toggleCamera = new FormControl(false);
 
     /**
@@ -158,6 +160,7 @@ export class VisionComponent implements OnInit, OnDestroy {
     private pendingDetections = new Map<string, PendingDetection>();
     private nextDetectionSequence = 0;
     private imageIsLive = false;
+    private reconfiguringTimer?: ReturnType<typeof setTimeout>;
 
     /** Hand results written onto hand layers. Camera redraws do not increment this. */
     get appliedHandUpdates(): number {
@@ -246,6 +249,7 @@ export class VisionComponent implements OnInit, OnDestroy {
         this.detectionModelsSubscription?.unsubscribe();
         this.detectionClearSubscription?.unsubscribe();
         this.connectionStatusSubscription?.unsubscribe();
+        this.clearCameraReconfiguring();
         this.clearDisplayRefreshTimer();
         this.clearDetectionFlushTimer();
         this.pendingCameraFrame = undefined;
@@ -253,6 +257,24 @@ export class VisionComponent implements OnInit, OnDestroy {
         this.clearDetections();
         this.stopCamera();
         if (this.cameraSettings) this.cameraSettings.isActive = false;
+    }
+
+    setResolution(
+        width: number,
+        height: number,
+        resolution: string,
+        publish: boolean = true,
+    ): void {
+        const settings = this.cameraSettings;
+        const resolutionChanged =
+            settings === undefined ||
+            settings.resolution !== resolution ||
+            settings.resX !== width ||
+            settings.resY !== height;
+        if (publish && resolutionChanged) {
+            this.markCameraReconfiguring();
+        }
+        this.setSize(width, height, resolution, publish);
     }
 
     setSize(
@@ -298,6 +320,11 @@ export class VisionComponent implements OnInit, OnDestroy {
         this.imageSrc = "../../assets/camera-placeholder.jpg";
         this.imageIsLive = false;
         this.clearDetections();
+    }
+
+    onMjpegLoad(): void {
+        this.clearCameraReconfiguring();
+        this.onStreamLoad();
     }
 
     onStreamLoad() {
@@ -666,13 +693,40 @@ export class VisionComponent implements OnInit, OnDestroy {
         this.cameraService.publishCameraSettings(cameraSettings);
     }
 
+    updateCameraSettings(): void {
+        this.markCameraReconfiguring();
+    }
+
     qualityControlPublish = (formControlValue: number) => {
+        this.updateCameraSettings();
         this.cameraService.qualityControlPublish(formControlValue);
     };
 
     refreshRatePublish = (formControlValue: number) => {
+        this.updateCameraSettings();
         this.cameraService.refreshRatePublish(formControlValue);
     };
+
+    markCameraReconfiguring(): void {
+        this.cameraReconfiguring = true;
+        if (this.reconfiguringTimer !== undefined) {
+            clearTimeout(this.reconfiguringTimer);
+        }
+        this.reconfiguringTimer = setTimeout(
+            () => this.clearCameraReconfiguring(),
+            VisionComponent.RECONFIGURING_TIMEOUT_MS,
+        );
+        this.changeDetectorRef.markForCheck();
+    }
+
+    clearCameraReconfiguring(): void {
+        this.cameraReconfiguring = false;
+        if (this.reconfiguringTimer !== undefined) {
+            clearTimeout(this.reconfiguringTimer);
+            this.reconfiguringTimer = undefined;
+        }
+        this.changeDetectorRef.markForCheck();
+    }
 
     private receiveCameraFrame(message: string) {
         this.cameraFrameTimes.push(Date.now());
@@ -689,6 +743,9 @@ export class VisionComponent implements OnInit, OnDestroy {
             return;
         }
 
+        if (this.cameraReconfiguring) {
+            this.clearCameraReconfiguring();
+        }
         this.pendingCameraFrame = "data:image/jpeg;base64," + message;
         this.scheduleDisplayFlush();
     }
