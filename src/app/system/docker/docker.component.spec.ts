@@ -101,3 +101,130 @@ describe("DockerManagementComponent purge", () => {
         ).toBeFalse();
     });
 });
+
+describe("DockerManagementComponent table and logs", () => {
+    let fixture: ComponentFixture<DockerManagementComponent>;
+    let component: DockerManagementComponent;
+    let service: jasmine.SpyObj<DockerService>;
+
+    beforeEach(async () => {
+        service = jasmine.createSpyObj<DockerService>("DockerService", [
+            "getContainers",
+            "startContainer",
+            "stopContainer",
+            "getContainerLogs",
+        ]);
+        service.getContainers.and.returnValue(
+            of([
+                {
+                    name: "app-one",
+                    status: "running",
+                    health: "healthy",
+                    image: "app:latest",
+                },
+                {
+                    name: "app-two",
+                    status: "exited",
+                    health: "unknown",
+                    image: "app:latest",
+                },
+            ]),
+        );
+        service.getContainerLogs.and.returnValue(
+            of({status: "ok", logs: "line 1\nline 2"}),
+        );
+        service.startContainer.and.returnValue(
+            of({status: "ok", message: "started"}),
+        );
+        service.stopContainer.and.returnValue(
+            of({status: "ok", message: "stopped"}),
+        );
+
+        await TestBed.configureTestingModule({
+            imports: [DockerManagementComponent],
+            providers: [{provide: DockerService, useValue: service}],
+        }).compileComponents();
+
+        fixture = TestBed.createComponent(DockerManagementComponent);
+        component = fixture.componentInstance;
+        fixture.detectChanges();
+    });
+
+    it("renders a combined status and health badge", () => {
+        const badges = fixture.nativeElement.querySelectorAll(
+            "#table-docker-containers tbody tr td .badge",
+        ) as NodeListOf<HTMLElement>;
+        expect(badges.length).toBeGreaterThanOrEqual(1);
+        expect(badges[0].textContent?.trim()).toBe("RUNNING (HEALTHY)");
+        expect(badges[0].classList.contains("text-bg-success")).toBeTrue();
+        expect(badges[1].textContent?.trim()).toBe("STOPPED");
+        expect(badges[1].classList.contains("text-bg-danger")).toBeTrue();
+    });
+
+    it("shows a state-aware Start/Stop toggle button per container", () => {
+        const stopBtn = fixture.nativeElement.querySelector(
+            '[data-test="BTN_Toggle_Container_app-one"]',
+        ) as HTMLButtonElement;
+        const startBtn = fixture.nativeElement.querySelector(
+            '[data-test="BTN_Toggle_Container_app-two"]',
+        ) as HTMLButtonElement;
+        expect(stopBtn).not.toBeNull();
+        expect(stopBtn.textContent).toContain("Stop");
+        expect(stopBtn.classList.contains("btn-warning")).toBeTrue();
+        expect(startBtn).not.toBeNull();
+        expect(startBtn.textContent).toContain("Start");
+        expect(startBtn.classList.contains("btn-success")).toBeTrue();
+    });
+
+    it("calls stopContainer when toggling a running container", () => {
+        const stopBtn = fixture.nativeElement.querySelector(
+            '[data-test="BTN_Toggle_Container_app-one"]',
+        ) as HTMLButtonElement;
+        stopBtn.click();
+        expect(service.stopContainer).toHaveBeenCalledWith("app-one");
+    });
+
+    it("pauses autoScroll when the user scrolls up in the log viewer", () => {
+        component.openLogsModal("app-one");
+        fixture.detectChanges();
+        component.stopLogStreaming();
+
+        const el = component.logContainerElement?.nativeElement as HTMLElement;
+        expect(el).toBeTruthy();
+
+        Object.defineProperty(el, "scrollHeight", {
+            configurable: true,
+            value: 1000,
+        });
+        Object.defineProperty(el, "clientHeight", {
+            configurable: true,
+            value: 100,
+        });
+        el.scrollTop = 400;
+        component.autoScroll = true;
+
+        component.onLogScroll({target: el} as unknown as Event);
+        expect(component.autoScroll).toBeFalse();
+    });
+
+    it("re-enables autoScroll when scrolled back to the bottom", () => {
+        component.openLogsModal("app-one");
+        fixture.detectChanges();
+        component.stopLogStreaming();
+
+        const el = component.logContainerElement?.nativeElement as HTMLElement;
+        Object.defineProperty(el, "scrollHeight", {
+            configurable: true,
+            value: 1000,
+        });
+        Object.defineProperty(el, "clientHeight", {
+            configurable: true,
+            value: 100,
+        });
+        el.scrollTop = 868;
+        component.autoScroll = false;
+
+        component.onLogScroll({target: el} as unknown as Event);
+        expect(component.autoScroll).toBeTrue();
+    });
+});
