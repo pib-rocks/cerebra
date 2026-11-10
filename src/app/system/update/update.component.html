@@ -77,12 +77,14 @@
         <p class="text-light mb-1">
             Image version:
             <strong data-test="TXT_Image_Version">
-                {{ installed.imageVersion || "not reported" }}
+                {{ installedVersionLabel(installed) }}
             </strong>
         </p>
         <p class="text-light mb-0">
             Device channel:
-            <strong data-test="TXT_Device_Channel">{{ deviceChannel }}</strong>
+            <strong data-test="TXT_Device_Channel"
+                >{{ installedChannelLabel(installed) }}</strong
+            >
         </p>
         @if (deviceChannel === "develop") {
         <p

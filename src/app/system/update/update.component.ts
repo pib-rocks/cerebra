@@ -11,6 +11,7 @@ import {HttpErrorResponse} from "@angular/common/http";
 import {
     AvailableUpdates,
     InstalledRevisions,
+    SystemRevisionResponse,
     PublishedRelease,
     ReleaseRecommendation,
     RepositoryAvailability,
@@ -658,6 +659,42 @@ export class UpdateComponent implements OnInit, OnDestroy {
 
     shortRevision(revision: string | undefined): string {
         return revision ? revision.slice(0, 12) : "unknown";
+    }
+
+    installedVersionLabel(rev: SystemRevisionResponse | null): string {
+        if (rev === null) {
+            return "unknown";
+        }
+        if (!rev.isReleaseTag) {
+            const repository =
+                rev.repositories?.["pib-backend"] ??
+                rev.repositories?.["cerebra"];
+            const gitSha = repository?.gitSha;
+            if (gitSha && gitSha !== "unknown") {
+                const shortSha = gitSha.slice(0, 8);
+                const imageVersion = rev.imageVersion || "unknown";
+                const buildTime = repository?.buildTime;
+                const datePrefix =
+                    buildTime &&
+                    buildTime !== "unknown" &&
+                    /^(\d{4}-\d{2}-\d{2})/.exec(buildTime)?.[1];
+                if (datePrefix) {
+                    return `${imageVersion} (${shortSha}, ${datePrefix})`;
+                }
+                return `${imageVersion} (${shortSha})`;
+            }
+        }
+        return rev.imageVersion || "unknown";
+    }
+
+    installedChannelLabel(rev: SystemRevisionResponse | null): string {
+        if (rev?.channel && rev.channel !== "unknown") {
+            return rev.channel;
+        }
+        if (rev?.imageVersion === "develop") {
+            return "develop";
+        }
+        return "unknown";
     }
 
     availabilityText(repository: RepositoryAvailability): string {
