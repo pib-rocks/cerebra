@@ -144,6 +144,7 @@ export class VisionComponent implements OnInit, OnDestroy {
     cameraFramesLastWindow = 0;
     detectionMessagesLastWindow = 0;
     rosbridgeConnected = false;
+    modelListCollapsed = false;
     private detectionExpiryTimers = new Map<
         string,
         ReturnType<typeof setTimeout>
@@ -179,6 +180,14 @@ export class VisionComponent implements OnInit, OnDestroy {
         return this.detectionModels.filter(
             (layer) => layer.message !== undefined,
         );
+    }
+
+    toggleModelList(): void {
+        this.modelListCollapsed = !this.modelListCollapsed;
+    }
+
+    isModelListVisible(): boolean {
+        return !this.modelListCollapsed;
     }
 
     constructor(

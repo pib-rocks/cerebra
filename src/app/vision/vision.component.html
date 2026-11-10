@@ -146,7 +146,9 @@
             </ng-template>
         </div>
     </div>
-    <div class="camera-workspace px-3 pb-5 mb-5">
+    <div
+        class="camera-workspace px-3 pb-5 mb-5"
+        [class.model-list-collapse]="modelListCollapsed">
         <div
             class="d-flex justify-content-center"
             id="cameraColumn"
@@ -275,7 +277,25 @@
             </div>
         </div>
         <div class="model-column">
-            <app-model-list></app-model-list>
+            <button
+                id="model-list-toggle-button"
+                data-test="BTN_ModelListToggle"
+                type="button"
+                class="model-list-toggle"
+                [attr.aria-expanded]="isModelListVisible()"
+                [attr.aria-label]="
+                    isModelListVisible() ? 'Hide models' : 'Show models'
+                "
+                [title]="isModelListVisible() ? 'Hide models' : 'Show models'"
+                (click)="toggleModelList()">
+                <i
+                    class="bi"
+                    [class.bi-chevron-right]="isModelListVisible()"
+                    [class.bi-chevron-left]="!isModelListVisible()"></i>
+            </button>
+            <div class="model-column-content">
+                <app-model-list></app-model-list>
+            </div>
         </div>
     </div>
 </div>
