@@ -56,10 +56,8 @@ describe("VerticalSliderComponent", () => {
         const testValue = "this can be anything";
         component.rangeFormControl.setValue(testValue);
         expect(sanitizeSpy).toHaveBeenCalledOnceWith(testValue);
-        expect(setPropertySpy).toHaveBeenCalledOnceWith(
-            "--pos-relative",
-            "40%",
-        );
+        expect(setPropertySpy).toHaveBeenCalledWith("--pos-relative", "40%");
+        expect(setPropertySpy).toHaveBeenCalledWith("--pos-ratio", "0.4");
         expect(setValueSpy).toHaveBeenCalledTimes(2);
         expect(setValueSpy).toHaveBeenCalledWith(400);
     });
