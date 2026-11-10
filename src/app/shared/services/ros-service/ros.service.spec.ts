@@ -85,6 +85,19 @@ describe("RosService", () => {
         expect(rosService["listModelsService"]).toBeTruthy();
         expect(rosService["startModelService"]).toBeTruthy();
         expect(rosService["stopModelService"]).toBeTruthy();
+        expect((rosService["motorCurrentTopic"] as any).throttle_rate).toBe(
+            250,
+        );
+        expect((rosService["motorCurrentTopic"] as any).queue_length).toBe(1);
+        expect((rosService["jointTrajectoryTopic"] as any).throttle_rate).toBe(
+            50,
+        );
+        expect((rosService["jointTrajectoryTopic"] as any).queue_length).toBe(
+            1,
+        );
+        expect((rosService["jointStatesTopic"] as any).throttle_rate).toBe(100);
+        expect((rosService["jointStatesTopic"] as any).queue_length).toBe(1);
+        expect((rosService["modelStatusTopic"] as any).queue_length).toBe(1);
     });
 
     it("should make the camera subscription lifecycle idempotent without a /camera_topic subscription", () => {

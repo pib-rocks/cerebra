@@ -79,6 +79,7 @@ import {
     syncDetectionTopics,
 } from "./ros-detection-topology.helper";
 import {
+    RosTopicOptions,
     createRosService,
     createRosTopic,
     wireRosTopicsAndServices,
@@ -297,8 +298,9 @@ export class RosService implements IRosService {
     private createRosTopic<T>(
         topicName: string,
         topicMessageType: string,
+        options?: RosTopicOptions,
     ): ROSLIB.Topic<T> {
-        return createRosTopic(this.ros, topicName, topicMessageType);
+        return createRosTopic(this.ros, topicName, topicMessageType, options);
     }
 
     private initSubscribers() {
