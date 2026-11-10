@@ -8,7 +8,21 @@ import {
 import {RosService} from "src/app/shared/services/ros-service/ros.service";
 import {BrickletService} from "src/app/shared/services/bricklet.service";
 import {MatSnackBar} from "@angular/material/snack-bar";
-import {Subscription} from "rxjs";
+import {
+    Observable,
+    Subscription,
+    catchError,
+    map,
+    of,
+    switchMap,
+    take,
+    throwError,
+    timer,
+} from "rxjs";
+import {timeout} from "rxjs/operators";
+import {PoseService} from "src/app/shared/services/pose.service";
+import {MotorService} from "src/app/shared/services/motor.service";
+import {MotorPosition} from "src/app/shared/types/motor-position";
 
 @Component({
     selector: "app-relay-control",
@@ -22,6 +36,11 @@ export class RelayControlComponent implements OnInit, OnDestroy {
      * node's state message arrives well inside this window.
      */
     private static readonly RELAY_ACK_TIMEOUT_MS = 5000;
+    private static readonly POSE_LOOKUP_TIMEOUT_MS = 1500;
+    private static readonly RESTING_POSE_NAME = "Startup/Resting";
+
+    /** Delay after moving to resting pose before cutting SSR motor power (tests may shorten). */
+    restBeforeOffDelayMs = 1200;
 
     turnedOn = false;
     isRelayAvailable = false;
@@ -37,6 +56,8 @@ export class RelayControlComponent implements OnInit, OnDestroy {
         private brickletService: BrickletService,
         private matSnackBarService: MatSnackBar,
         private changeDetectorRef: ChangeDetectorRef,
+        private poseService: PoseService,
+        private motorService: MotorService,
     ) {}
 
     ngOnInit(): void {
@@ -88,8 +109,65 @@ export class RelayControlComponent implements OnInit, OnDestroy {
         this.isLoading = true;
         const previousState = this.turnedOn;
         this.turnedOn = !previousState;
+
+        if (previousState) {
+            this.moveToRestingPoseThenTurnOffRelay(previousState);
+        } else {
+            this.applySolidStateRelayState(true, previousState);
+        }
+    }
+
+    private moveToRestingPoseThenTurnOffRelay(previousState: boolean): void {
+        this.lookupRestingPoseMotorPositions()
+            .pipe(
+                switchMap((motorPositions) => {
+                    if (!motorPositions) {
+                        return of(void 0);
+                    }
+                    return this.motorService.setPositions(motorPositions).pipe(
+                        catchError(() => of(void 0)),
+                        switchMap(() => timer(this.restBeforeOffDelayMs)),
+                    );
+                }),
+            )
+            .subscribe(() => {
+                this.applySolidStateRelayState(false, previousState);
+            });
+    }
+
+    private lookupRestingPoseMotorPositions(): Observable<
+        MotorPosition[] | null
+    > {
+        return this.poseService.getPosesObservable().pipe(
+            take(1),
+            switchMap((poses) => {
+                const restingPose = poses.find(
+                    (pose) =>
+                        pose.name === RelayControlComponent.RESTING_POSE_NAME,
+                );
+                if (!restingPose) {
+                    return throwError(
+                        () =>
+                            new Error(
+                                `${RelayControlComponent.RESTING_POSE_NAME} pose not found`,
+                            ),
+                    );
+                }
+                return this.poseService
+                    .exportPose(restingPose.poseId)
+                    .pipe(map((transfer) => transfer.motorPositions));
+            }),
+            timeout(RelayControlComponent.POSE_LOOKUP_TIMEOUT_MS),
+            catchError(() => of(null as MotorPosition[] | null)),
+        );
+    }
+
+    private applySolidStateRelayState(
+        turnedOn: boolean,
+        previousState: boolean,
+    ): void {
         this.rosService
-            .setSolidStateRelayState({turned_on: this.turnedOn})
+            .setSolidStateRelayState({turned_on: turnedOn})
             .subscribe({
                 next: () => {
                     this.releaseRelayLoading();
