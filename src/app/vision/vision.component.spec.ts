@@ -126,6 +126,42 @@ describe("VisionComponent", () => {
         expect(component.isLoading).toBeFalse();
     }));
 
+    it("setResolution should show the reconfiguring overlay until a frame arrives", fakeAsync(() => {
+        component.cameraSettings!.resolution = "HD";
+        component.cameraSettings!.resX = 1280;
+        component.cameraSettings!.resY = 720;
+        component.setResolution(1920, 1080, "FHD");
+        fixture.detectChanges();
+
+        expect(component.cameraReconfiguring).toBeTrue();
+        expect(
+            fixture.debugElement.query(
+                By.css('[data-test="TXT_Camera_Reconfiguring"]'),
+            ),
+        ).not.toBeNull();
+
+        rosService.cameraReceiver$.next("fresh-frame");
+        tick(1);
+        fixture.detectChanges();
+        expect(component.cameraReconfiguring).toBeFalse();
+        expect(
+            fixture.debugElement.query(
+                By.css('[data-test="TXT_Camera_Reconfiguring"]'),
+            ),
+        ).toBeNull();
+    }));
+
+    it("onMjpegLoad should clear the reconfiguring overlay", () => {
+        component.startCamera();
+        component.markCameraReconfiguring();
+        fixture.detectChanges();
+        expect(component.cameraReconfiguring).toBeTrue();
+
+        component.onMjpegLoad();
+        fixture.detectChanges();
+        expect(component.cameraReconfiguring).toBeFalse();
+    });
+
     it("should toggle the camera when i click on the camera icon", () => {
         const spyStartCamera = spyOn(component, "startCamera");
         const spyStopCamera = spyOn(component, "stopCamera");

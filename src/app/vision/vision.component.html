@@ -56,21 +56,21 @@
                         id="dropdownbutton-item-480px"
                         data-test="BTN_Camera_resolution_480p"
                         ngbDropdownItem
-                        (click)="setSize(640, 480, 'SD')">
+                        (click)="setResolution(640, 480, 'SD')">
                         480p (SD)
                     </button>
                     <button
                         id="dropdownbutton-item-720px"
                         data-test="BTN_Camera_resolution_720p"
                         ngbDropdownItem
-                        (click)="setSize(1280, 720, 'HD')">
+                        (click)="setResolution(1280, 720, 'HD')">
                         720p (HD)
                     </button>
                     <button
                         id="dropdownbutton-item-1080px"
                         data-test="BTN_Camera_resolution_1080p"
                         ngbDropdownItem
-                        (click)="setSize(1920, 1080, 'FHD')">
+                        (click)="setResolution(1920, 1080, 'FHD')">
                         1080p (FHD)
                     </button>
                 </div>
@@ -153,16 +153,28 @@
             class="d-flex justify-content-center"
             id="cameraColumn"
             #videobox>
-            <div class="camera-image">
+            <div
+                id="cameraFrame"
+                class="camera-frame camera-image">
                 <img
                     id="camera-stream"
                     data-test="IMG_Camera_Stream"
                     [src]="imageSrc"
                     alt="camera"
                     width="auto"
-                    (load)="onStreamLoad()"
+                    (load)="onMjpegLoad()"
                     (error)="onStreamError()" />
-                @for (layer of visibleDetectionLayers; track layer.modelId) {
+                @if (cameraReconfiguring) {
+                <div
+                    class="camera-reconfiguring-overlay"
+                    data-test="TXT_Camera_Reconfiguring">
+                    <span
+                        class="spinner-border spinner-border-sm me-2"
+                        role="status"
+                        aria-hidden="true"></span
+                    >Reconfiguring camera...
+                </div>
+                } @for (layer of visibleDetectionLayers; track layer.modelId) {
                 <svg
                     class="detection-overlay"
                     preserveAspectRatio="xMidYMid meet"

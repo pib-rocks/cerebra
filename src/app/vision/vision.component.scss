@@ -24,12 +24,30 @@ video {
     padding-top: 8px;
 }
 
-.camera-image {
+.camera-image,
+.camera-frame {
     position: relative;
     display: inline-block;
     width: 100%;
     max-height: inherit;
     line-height: 0;
+}
+
+.camera-reconfiguring-overlay {
+    position: absolute;
+    top: 0.75rem;
+    left: 50%;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    padding: 0.45rem 0.85rem;
+    border-radius: 999px;
+    color: $white-color;
+    background: rgb(0 0 0 / 72%);
+    font-size: 0.85rem;
+    line-height: 1.2;
+    transform: translateX(-50%);
+    pointer-events: none;
 }
 
 #cameraColumn img {
