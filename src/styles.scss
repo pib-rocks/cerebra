@@ -33,6 +33,11 @@ $blue-dark-5: #041939 !default;
     font-family: Titillium, sans-serif;
 }
 
+img {
+    -webkit-user-drag: none;
+    user-select: none;
+}
+
 .btn {
     color: $white-color;
 }
