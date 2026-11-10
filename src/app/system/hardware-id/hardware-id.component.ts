@@ -113,6 +113,43 @@ export class HardwareIdComponent implements OnInit {
         );
     }
 
+    get detectedAssignmentsAlreadyApplied(): boolean {
+        if (!this.hasDetectedAssignments) {
+            return false;
+        }
+        return this.connectedSerialControllers
+            .filter(
+                (device) => typeof device.assignedControllerNumber === "number",
+            )
+            .every((device) => {
+                const controller = this.serialControllers.find(
+                    (candidate) =>
+                        candidate.number === device.assignedControllerNumber,
+                );
+                if (!controller) {
+                    return false;
+                }
+                return this.serialAddressValue(controller) === device.serial;
+            });
+    }
+
+    get canUseDetectedAssignments(): boolean {
+        return (
+            this.hasDetectedAssignments &&
+            !this.detectedAssignmentsAlreadyApplied
+        );
+    }
+
+    get useDetectedAssignmentsHint(): string {
+        if (!this.hasDetectedAssignments) {
+            return "No automatic controller assignments were detected from the connected serial bus scan.";
+        }
+        if (this.detectedAssignmentsAlreadyApplied) {
+            return "All detected controller assignments already match the selected slots.";
+        }
+        return "Copy the auto-detected controller assignments from the bus scan into the slots below.";
+    }
+
     /** Fill the serial selects from the scan result. Writes nothing; Save persists. */
     applyDetectedAssignments(): void {
         this.serialControllers.forEach((controller) => {
