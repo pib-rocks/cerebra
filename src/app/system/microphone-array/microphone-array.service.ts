@@ -46,7 +46,7 @@ export interface MicrophoneArrayLedRingDocument {
     mode: LedRingMode;
     brightness: number;
     color: string;
-    vad_led: 0 | 1;
+    vad_led: boolean;
 }
 
 export interface MicrophoneArrayHealthDocument {
@@ -203,7 +203,7 @@ export class MicrophoneArrayService {
                     ledMode: values[1] as LedRingMode,
                     ledBrightness: values[2] as number,
                     ledColor: values[3] as string,
-                    vadLed: values[4] as 0 | 1,
+                    vadLed: values[4] as boolean | 0 | 1,
                     agcEnabled: values[5] as 0 | 1,
                     agcMaxGain: values[6] as number,
                     agcDesiredLevel: values[7] as number,
@@ -217,7 +217,8 @@ export class MicrophoneArrayService {
                 };
                 return {
                     ...parameters,
-                    vadLed: parameters.vadLed === 1,
+                    vadLed:
+                        parameters.vadLed === true || parameters.vadLed === 1,
                     agcEnabled: parameters.agcEnabled === 1,
                     echoEnabled: parameters.echoEnabled === 1,
                     stationaryNoiseSuppression:

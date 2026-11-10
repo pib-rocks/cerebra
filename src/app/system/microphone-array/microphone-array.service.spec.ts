@@ -1,5 +1,5 @@
 import {TestBed} from "@angular/core/testing";
-import {Subject} from "rxjs";
+import {of, Subject} from "rxjs";
 import {ApiService} from "src/app/shared/services/api.service";
 import {MicrophoneArrayRosbridgeService} from "./microphone-array-rosbridge.service";
 import {
@@ -33,18 +33,22 @@ interface RecordedRead {
 describe("MicrophoneArrayService", () => {
     let service: MicrophoneArrayService;
     let reads: RecordedRead[];
+    let rosbridge: jasmine.SpyObj<MicrophoneArrayRosbridgeService>;
 
     beforeEach(() => {
         reads = [];
-        const rosbridge = jasmine.createSpyObj(
-            "MicrophoneArrayRosbridgeService",
-            ["connect", "disconnect", "getParameter", "setParameter"],
-        );
+        rosbridge = jasmine.createSpyObj("MicrophoneArrayRosbridgeService", [
+            "connect",
+            "disconnect",
+            "getParameter",
+            "setParameter",
+        ]);
         rosbridge.getParameter.and.callFake((name: string) => {
-            const subject = new Subject<unknown>();
+            const subject = new Subject<any>();
             reads.push({name, subject});
             return subject.asObservable();
         });
+        rosbridge.setParameter.and.returnValue(of(undefined));
 
         TestBed.configureTestingModule({
             providers: [
@@ -142,6 +146,52 @@ describe("MicrophoneArrayService", () => {
             nonStationaryNoiseSuppression: true,
             nonStationaryNoiseSuppressionSr: false,
         });
+    });
+
+    it("maps boolean vad_led answers onto vadLed", () => {
+        let viewModel: MicrophoneArrayViewModel | undefined;
+        service.getTuning().subscribe((value) => {
+            viewModel = value;
+        });
+
+        const answers: unknown[] = [
+            "Standard",
+            "off",
+            16,
+            "#000000",
+            true,
+            0,
+            31.6,
+            0.005,
+            1,
+            2,
+            1,
+            0,
+            1,
+            1,
+            0,
+        ];
+        for (let index = 0; index < answers.length; index++) {
+            answer(index, answers[index]);
+        }
+
+        expect(viewModel?.vadLed).toBeTrue();
+    });
+
+    it("passes boolean vad_led to setParameter", () => {
+        service.updateTuning({led_ring: {vad_led: true}}).subscribe();
+
+        expect(rosbridge.setParameter).toHaveBeenCalledOnceWith(
+            "/doa_publisher:vad_led",
+            true,
+        );
+
+        service.updateTuning({led_ring: {vad_led: false}}).subscribe();
+
+        expect(rosbridge.setParameter).toHaveBeenCalledWith(
+            "/doa_publisher:vad_led",
+            false,
+        );
     });
 
     it("stops the sequence when a read fails and surfaces that cause", () => {
