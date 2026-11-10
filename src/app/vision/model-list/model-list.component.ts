@@ -47,6 +47,8 @@ export class ModelListComponent implements OnInit, OnDestroy {
 
     /** Starts accepted locally, before `/models_status` confirms or rejects them. */
     private reservedModelIds = new Set<string>();
+    /** Stops requested locally, before `/models_status` confirms the model is idle. */
+    private stoppingModelIds = new Set<string>();
     private readonly subscriptions = new Subscription();
     private statusExpiryTimer?: ReturnType<typeof setTimeout>;
 
@@ -70,6 +72,7 @@ export class ModelListComponent implements OnInit, OnDestroy {
                     this.models = [];
                     this.totalShaves = 0;
                     this.reservedModelIds = new Set();
+                    this.stoppingModelIds = new Set();
                     this.loading = false;
                     this.clearStatuses();
                 }
@@ -87,8 +90,13 @@ export class ModelListComponent implements OnInit, OnDestroy {
         this.runAction(
             model.model_id,
             () => {
-                if (active) this.reserve(model.model_id);
-                else this.release(model.model_id);
+                if (active) {
+                    this.clearStopping(model.model_id);
+                    this.reserve(model.model_id);
+                } else {
+                    this.release(model.model_id);
+                    this.markStopping(model.model_id);
+                }
                 return active
                     ? this.rosService.startModel(
                           model,
@@ -149,10 +157,12 @@ export class ModelListComponent implements OnInit, OnDestroy {
     }
 
     isActive(model: ModelInfo): boolean {
+        if (this.stoppingModelIds.has(model.model_id)) return false;
         return this.statusFor(model.model_id)?.active ?? model.active;
     }
 
     stateFor(model: ModelInfo): ModelState {
+        if (this.stoppingModelIds.has(model.model_id)) return "stopping";
         return (
             this.statusFor(model.model_id)?.state ??
             (this.isActive(model) ? "running" : "idle")
@@ -196,7 +206,9 @@ export class ModelListComponent implements OnInit, OnDestroy {
         const status = this.statusFor(model.model_id);
         if (status?.state === "failed") return false;
         return (
-            this.reservedModelIds.has(model.model_id) || this.isActive(model)
+            this.reservedModelIds.has(model.model_id) ||
+            this.stoppingModelIds.has(model.model_id) ||
+            this.isActive(model)
         );
     }
 
@@ -210,6 +222,18 @@ export class ModelListComponent implements OnInit, OnDestroy {
         const reserved = new Set(this.reservedModelIds);
         reserved.delete(modelId);
         this.reservedModelIds = reserved;
+    }
+
+    private markStopping(modelId: string): void {
+        if (this.stoppingModelIds.has(modelId)) return;
+        this.stoppingModelIds = new Set(this.stoppingModelIds).add(modelId);
+    }
+
+    private clearStopping(modelId: string): void {
+        if (!this.stoppingModelIds.has(modelId)) return;
+        const stopping = new Set(this.stoppingModelIds);
+        stopping.delete(modelId);
+        this.stoppingModelIds = stopping;
     }
 
     private markInactive(modelId: string): void {
@@ -235,6 +259,23 @@ export class ModelListComponent implements OnInit, OnDestroy {
             if (model) model.active = true;
         }
         if (changed) this.reservedModelIds = reserved;
+
+        const stopping = new Set(this.stoppingModelIds);
+        let stoppingChanged = false;
+        for (const modelId of stopping) {
+            const status = this.statuses.get(modelId);
+            if (
+                !status ||
+                !status.active ||
+                status.state === "idle" ||
+                status.state === "failed"
+            ) {
+                stopping.delete(modelId);
+                stoppingChanged = true;
+                this.markInactive(modelId);
+            }
+        }
+        if (stoppingChanged) this.stoppingModelIds = stopping;
     }
 
     private sortModels(models: ModelInfo[]): ModelInfo[] {
@@ -253,8 +294,10 @@ export class ModelListComponent implements OnInit, OnDestroy {
             .map(({model}) => model);
     }
 
-    private loadModels(): void {
-        this.loading = true;
+    private loadModels(silent = false): void {
+        if (!silent && this.models.length === 0) {
+            this.loading = true;
+        }
         this.subscriptions.add(
             this.rosService
                 .listModels()
@@ -263,7 +306,11 @@ export class ModelListComponent implements OnInit, OnDestroy {
                     next: (response) => {
                         const models = this.sortModels(response.models ?? []);
                         for (const model of models) {
-                            if (this.reservedModelIds.has(model.model_id)) {
+                            if (this.stoppingModelIds.has(model.model_id)) {
+                                model.active = false;
+                            } else if (
+                                this.reservedModelIds.has(model.model_id)
+                            ) {
                                 model.active = true;
                             }
                         }
@@ -298,7 +345,7 @@ export class ModelListComponent implements OnInit, OnDestroy {
                         const actionsInFlight = new Set(this.actionsInFlight);
                         actionsInFlight.delete(modelId);
                         this.actionsInFlight = actionsInFlight;
-                        this.loadModels();
+                        this.loadModels(true);
                     }),
                 )
                 .subscribe({

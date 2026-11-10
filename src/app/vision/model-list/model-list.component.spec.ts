@@ -397,6 +397,54 @@ describe("ModelListComponent", () => {
         expect(toggle(started.model_id).disabled).toBeFalse();
     });
 
+    it("does not set loading when refreshing the list after a toggle", () => {
+        const action = new Subject<void>();
+        rosService.startModel.and.returnValue(action);
+        component.loading = false;
+
+        component.setModelActive(handTracking, true);
+        expect(component.loading).toBeFalse();
+
+        action.next();
+        action.complete();
+        fixture.detectChanges();
+        expect(component.loading).toBeFalse();
+        expect(rosService.listModels).toHaveBeenCalled();
+    });
+
+    it("shows stopping while deactivating even if status briefly reports starting", () => {
+        const running = {...handTracking, active: true};
+        showModels([running], 16);
+        status$.next({
+            models: [modelStatus(running.model_id, "running", true, 18)],
+        });
+        fixture.detectChanges();
+
+        rosService.stopModel.and.returnValue(of(undefined));
+        const listed = component.models.find(
+            (model) => model.model_id === running.model_id,
+        )!;
+        component.setModelActive(listed, false);
+        fixture.detectChanges();
+
+        expect(component.stateFor(listed)).toBe("stopping");
+        expect(fixture.nativeElement.textContent).toContain("stopping");
+
+        status$.next({
+            models: [modelStatus(running.model_id, "starting", true, 0)],
+        });
+        fixture.detectChanges();
+        expect(component.stateFor(listed)).toBe("stopping");
+        expect(fixture.nativeElement.textContent).toContain("stopping");
+
+        status$.next({
+            models: [modelStatus(running.model_id, "idle", false, 0)],
+        });
+        fixture.detectChanges();
+        expect(component.stateFor(listed)).toBe("idle");
+        expect(toggle(running.model_id).checked).toBeFalse();
+    });
+
     it("releases the reservation when the start request errors", () => {
         const started = named("face_detection_yunet_160x120", 6);
         const other = named("yolov6n_coco_640x640", 6);
