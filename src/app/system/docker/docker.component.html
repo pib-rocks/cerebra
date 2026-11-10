@@ -48,8 +48,7 @@
                     <tr>
                         <th>Name</th>
                         <th>Image</th>
-                        <th>Status</th>
-                        <th>Health</th>
+                        <th>Status / Health</th>
                         <th class="text-end">Actions</th>
                     </tr>
                 </thead>
@@ -63,52 +62,51 @@
                         <td class="align-middle">
                             <span
                                 class="badge"
-                                [ngClass]="getStatusBadgeClass(c.status)">
-                                {{ (c.status === 'exited' ? 'STOPPED' :
-                                c.status) | uppercase }}
-                            </span>
-                        </td>
-                        <td class="align-middle">
-                            <span
-                                class="badge"
-                                [ngClass]="getStatusBadgeClass(c.health)">
-                                {{ (c.health || 'unknown') | uppercase }}
+                                [ngClass]="combinedStatusBadgeClass(c)">
+                                {{ combinedStatusLabel(c) }}
                             </span>
                         </td>
                         <td class="align-middle text-end">
-                            <button
-                                class="btn btn-sm btn-success me-1"
-                                [disabled]="actionLoading[c.name] || c.status === 'running'"
-                                (click)="startContainer(c.name)"
-                                title="Start Container">
-                                <i class="fas fa-play"></i> Start
-                            </button>
-                            <button
-                                class="btn btn-sm btn-warning me-1"
-                                [disabled]="actionLoading[c.name] || c.status !== 'running'"
-                                (click)="stopContainer(c.name)"
-                                title="Stop Container">
-                                <i class="fas fa-stop"></i> Stop
-                            </button>
-                            <button
-                                class="btn btn-sm btn-info me-1"
-                                [disabled]="actionLoading[c.name]"
-                                (click)="restartContainer(c.name)"
-                                title="Restart Container">
-                                <i class="fas fa-redo"></i> Restart
-                            </button>
-                            <button
-                                class="btn btn-sm btn-secondary"
-                                (click)="openLogsModal(c.name)"
-                                title="View Live Logs">
-                                <i class="fas fa-file-alt"></i> Logs
-                            </button>
+                            <div class="docker-actions">
+                                @if (c.status === 'running') {
+                                <button
+                                    class="btn btn-sm btn-warning"
+                                    [attr.data-test]="'BTN_Toggle_Container_' + c.name"
+                                    [disabled]="actionLoading[c.name]"
+                                    (click)="toggleContainerStartStop(c)"
+                                    title="Stop Container">
+                                    <i class="fas fa-stop"></i> Stop
+                                </button>
+                                } @else {
+                                <button
+                                    class="btn btn-sm btn-success"
+                                    [attr.data-test]="'BTN_Toggle_Container_' + c.name"
+                                    [disabled]="actionLoading[c.name]"
+                                    (click)="toggleContainerStartStop(c)"
+                                    title="Start Container">
+                                    <i class="fas fa-play"></i> Start
+                                </button>
+                                }
+                                <button
+                                    class="btn btn-sm btn-info"
+                                    [disabled]="actionLoading[c.name]"
+                                    (click)="restartContainer(c.name)"
+                                    title="Restart Container">
+                                    <i class="fas fa-redo"></i> Restart
+                                </button>
+                                <button
+                                    class="btn btn-sm btn-secondary"
+                                    (click)="openLogsModal(c.name)"
+                                    title="View Live Logs">
+                                    <i class="fas fa-file-alt"></i> Logs
+                                </button>
+                            </div>
                         </td>
                     </tr>
                     } @if (containers.length === 0 && !loading) {
                     <tr>
                         <td
-                            colspan="5"
+                            colspan="4"
                             class="text-center text-muted">
                             No Docker containers found.
                         </td>
@@ -167,7 +165,8 @@
                 <div class="modal-body p-0 bg-black">
                     <div
                         #logContainer
-                        class="log-viewer-box p-3 font-monospace">
+                        class="log-viewer-box p-3 font-monospace"
+                        (scroll)="onLogScroll($event)">
                         <pre class="m-0 text-light log-text">
 {{ logsText }}</pre
                         >
