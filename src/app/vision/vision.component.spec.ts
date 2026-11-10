@@ -352,9 +352,8 @@ describe("VisionComponent", () => {
             tick(step);
             elapsed += step;
             const sequence =
-                component.detectionLayers.get(
-                    "hand_tracking_fast",
-                )?.sourceSequence;
+                component.detectionLayers.get("hand_tracking_fast")
+                    ?.sourceSequence;
             if (
                 sequence !== undefined &&
                 appliedSequences[appliedSequences.length - 1] !== sequence
