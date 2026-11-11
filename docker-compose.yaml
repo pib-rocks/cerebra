@@ -6,6 +6,7 @@ networks:
         driver: bridge
 services:
     angular-app:
+        image: ${PIB_CEREBRA_IMAGE:-ghcr.io/pib-rocks/cerebra}:${PIB_IMAGE_TAG:-develop}
         build:
             context: .
             dockerfile: Dockerfile
