@@ -851,7 +851,7 @@ describe("UpdateComponent operator contract", () => {
         expect(updateServiceSpy.getStatus.calls.count()).toBe(4);
         tick(15000);
         expect(updateServiceSpy.getStatus.calls.count()).toBe(5);
-        tick(75000);
+        tick(285000);
         expect(component.persistentConnectionFailure).toBeTrue();
         expect(component.maintenanceMessage).toBeNull();
         expect(component.statusError).toContain(
@@ -860,15 +860,12 @@ describe("UpdateComponent operator contract", () => {
         expect(component.status).toEqual(running);
         expect(component.isTerminal).toBeFalse();
         expect(render("[data-test='TXT_Update_Connection_Failure']")).toContain(
-            "not a completed or failed",
+            "not a finished update result",
         );
-        const calls = updateServiceSpy.getStatus.calls.count();
-        tick(30000);
-        expect(updateServiceSpy.getStatus.calls.count()).toBe(calls);
         updateServiceSpy.getStatus.and.returnValue(
             of({...running, state: "done", classification: "succeeded"}),
         );
-        component.refreshStatus();
+        tick(15000);
         expect(component.persistentConnectionFailure).toBeFalse();
         expect(component.statusError).toBeNull();
         expect(component.status?.state).toBe("done");
