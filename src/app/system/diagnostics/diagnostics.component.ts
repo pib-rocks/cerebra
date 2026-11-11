@@ -58,12 +58,11 @@ export class DiagnosticsComponent implements OnInit, OnDestroy {
         // Skipping it keeps one round in flight instead of stacking three requests every second.
         if (this.refreshInFlight) return;
         this.refreshInFlight = true;
-        this.error = null;
-        this.cdr.markForCheck();
 
         this.diagnosticsService.getSummary().subscribe({
             next: (sum) => {
                 this.summary = sum;
+                this.error = null;
                 this.cdr.markForCheck();
             },
             error: () => {
