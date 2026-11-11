@@ -23,6 +23,8 @@ describe("UpdateComponent", () => {
     // Copy of the live GET /api/system/revision document (192.168.1.217, 2026-09-21).
     const installed: InstalledRevisions = {
         imageVersion: "v0.6.2",
+        isReleaseTag: true,
+        channel: "release",
         repositories: {
             cerebra: {
                 buildTime: "2026-09-21T13:21:15.376559+00:00",
@@ -308,6 +310,50 @@ describe("UpdateComponent", () => {
         );
     }));
 
+    it("omits the confirmation-type install blocker from the DOM while other blockers render", () => {
+        component.status = {
+            state: "idle",
+            classification: "idle",
+            readiness: {ready: true, checks: []},
+        };
+        component.confirmation = "";
+        fixture.detectChanges();
+
+        expect(component.installBlocker).toBe("Type UPDATE to confirm.");
+        expect(
+            (fixture.nativeElement as HTMLElement).querySelector(
+                '[data-test="TXT_Install_Blocker"]',
+            ),
+        ).toBeNull();
+
+        component.confirmation = "UPDATE";
+        component.channel = "release";
+        component.chosenTag = "v0.6.2";
+        component.availability = {
+            ...availability,
+            checkId: "check-1",
+            state: "completed",
+            channel: "release",
+            releases: [
+                {
+                    tag: "v0.6.2",
+                    relation: "current",
+                    installable: true,
+                },
+            ],
+        };
+        fixture.detectChanges();
+
+        expect(component.installBlocker).toBe(
+            "That published release is already installed.",
+        );
+        expect(
+            (fixture.nativeElement as HTMLElement).querySelector(
+                '[data-test="TXT_Install_Blocker"]',
+            )?.textContent,
+        ).toContain("That published release is already installed.");
+    });
+
     it("accepts only release or develop and the exact confirmation token", () => {
         component.confirmation = "UPDATE";
         component.channel = "main";
@@ -570,5 +616,55 @@ describe("UpdateComponent", () => {
         expect(text).toContain("running programs to stop");
         expect(text).toContain("git reset --hard");
         expect(text).toContain("git clean -fd");
+    });
+
+    it("shows release image version and channel on the installed-version card", () => {
+        component.installed = {
+            imageVersion: "v0.7.12",
+            isReleaseTag: true,
+            channel: "release",
+            repositories: {},
+        };
+        fixture.detectChanges();
+
+        const el = fixture.nativeElement as HTMLElement;
+        expect(
+            el
+                .querySelector('[data-test="TXT_Image_Version"]')
+                ?.textContent?.trim(),
+        ).toBe("v0.7.12");
+        expect(
+            el
+                .querySelector('[data-test="TXT_Device_Channel"]')
+                ?.textContent?.trim(),
+        ).toBe("release");
+    });
+
+    it("formats develop installs with git revision and date on the installed-version card", () => {
+        component.installed = {
+            imageVersion: "develop",
+            isReleaseTag: false,
+            channel: "unknown",
+            repositories: {
+                "pib-backend": {
+                    gitSha: "47021d5a99887766",
+                    buildTime: "2026-11-10T14:00:00Z",
+                    channel: "unknown",
+                },
+            },
+        };
+        fixture.detectChanges();
+
+        const el = fixture.nativeElement as HTMLElement;
+        expect(
+            el
+                .querySelector('[data-test="TXT_Image_Version"]')
+                ?.textContent?.trim(),
+        ).toBe("develop (47021d5a, 2026-11-10)");
+        expect(
+            el
+                .querySelector('[data-test="TXT_Device_Channel"]')
+                ?.textContent?.trim(),
+        ).toBe("develop");
     });
 });

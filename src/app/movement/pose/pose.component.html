@@ -78,6 +78,33 @@
             </button>
         </div>
     </div>
+    } @if (pendingUpdatePose) {
+    <div
+        class="pose-import-preview m-3"
+        data-test="BOX_Pose_Update_Confirm">
+        <div class="mb-2">
+            <strong
+                >Overwrite pose "{{ pendingUpdatePose.name }}" with current
+                motor positions?</strong
+            >
+        </div>
+        <div class="d-flex flex-row mt-2">
+            <button
+                type="button"
+                class="btn btn-regular me-2"
+                data-test="BTN_Pose_Update_Confirm"
+                (click)="confirmUpdatePoseMotorPositions()">
+                Confirm update
+            </button>
+            <button
+                type="button"
+                class="btn btn-regular"
+                data-test="BTN_Pose_Update_Cancel"
+                (click)="cancelUpdatePoseMotorPositions()">
+                Cancel
+            </button>
+        </div>
+    </div>
     }
 
     <div class="pose-list-scroll">
@@ -109,7 +136,7 @@
                 class="update-button flex-shrink-0"
                 data-test="BTN_Update_pose"
                 title="Update pose"
-                (click)="updatePoseMotorPositions(pose)">
+                (click)="requestUpdatePose(pose)">
                 <img
                     class="update-icon"
                     src="../../../assets/movement/other/update-pose.svg"

@@ -15,8 +15,13 @@ export interface RepositoryRevision {
 
 export interface InstalledRevisions {
     imageVersion?: string;
+    channel?: string;
+    isReleaseTag?: boolean;
     repositories: Record<string, RepositoryRevision>;
 }
+
+/** GET /api/system/revision response shape used for installed-version display. */
+export type SystemRevisionResponse = InstalledRevisions;
 
 export interface RepositoryAvailability {
     installed: string;

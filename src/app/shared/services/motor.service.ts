@@ -54,6 +54,8 @@ export class MotorService {
         new Map();
     private motorNameToCurrentSubject: Map<string, BehaviorSubject<number>> =
         new Map();
+    private relayTurnedOn: BehaviorSubject<boolean | null> =
+        new BehaviorSubject<boolean | null>(null);
     private motorNameToFeedbackSubject: Map<
         string,
         BehaviorSubject<Partial<Record<DiagnosticMotorFeedback, string>>>
@@ -215,6 +217,21 @@ export class MotorService {
                 }
             },
         );
+
+        this.rosService.solidStateRelayStateReceiver$?.subscribe((state) => {
+            if (state?.turned_on === false) {
+                for (const subject of this.motorNameToCurrentSubject.values()) {
+                    subject.next(0);
+                }
+            }
+            if (state != null && typeof state.turned_on === "boolean") {
+                this.relayTurnedOn.next(state.turned_on);
+            }
+        });
+    }
+
+    getRelayTurnedOnObservable(): Observable<boolean | null> {
+        return this.relayTurnedOn;
     }
 
     getSettingsObservable(motorName: string): Observable<MotorSettings> {

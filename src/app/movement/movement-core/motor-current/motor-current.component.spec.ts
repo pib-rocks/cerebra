@@ -100,4 +100,15 @@ describe("MotorCurrentComponent", () => {
             "0.4, 360",
         );
     });
+
+    it("should expose a descriptive title on the motor current gauge ring", async () => {
+        currentSubject.next(456);
+        await fixture.whenStable();
+        fixture.detectChanges();
+        const ring = (fixture.nativeElement as HTMLElement).querySelector(
+            '[data-test="RING_Motor_Current"]',
+        );
+        expect(ring).toBeTruthy();
+        expect(ring?.getAttribute("title")).toBe("Motor current gauge: 456 mA");
+    });
 });

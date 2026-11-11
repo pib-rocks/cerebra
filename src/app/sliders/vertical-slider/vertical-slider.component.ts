@@ -68,9 +68,17 @@ export class VerticalSliderComponent implements OnInit, AfterViewInit {
                     const sliderPercentage: number =
                         (100 * (this.rangeFormControl.value - this.minValue)) /
                         (this.maxValue - this.minValue);
+                    const posRatio = Math.min(
+                        1,
+                        Math.max(0, sliderPercentage / 100),
+                    );
                     slider.style.setProperty(
                         "--pos-relative",
                         sliderPercentage.toString() + "%",
+                    );
+                    slider.style.setProperty(
+                        "--pos-ratio",
+                        posRatio.toString(),
                     );
                 } else {
                     const sanitizedValue = this.sanitizedSliderValue(

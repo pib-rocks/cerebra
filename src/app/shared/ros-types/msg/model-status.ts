@@ -1,4 +1,9 @@
-export type ModelState = "idle" | "starting" | "running" | "failed";
+export type ModelState =
+    | "idle"
+    | "starting"
+    | "running"
+    | "stopping"
+    | "failed";
 
 export interface ModelStatus {
     model_id: string;

@@ -141,6 +141,24 @@ describe("VoiceAssistantChatComponent", () => {
         expect(component).toBeTruthy();
     });
 
+    it("keeps nested layout rows flush so the chat frame is not clipped on the left (PR-2275)", () => {
+        const outerRow = fixture.nativeElement.querySelector(
+            ".row.mt-4",
+        ) as HTMLElement;
+        const frameRow = fixture.nativeElement.querySelector(
+            ".row.pink-corner-frame",
+        ) as HTMLElement;
+        const mainCol = fixture.nativeElement.querySelector(
+            ".col-sm-9.col-xl-10",
+        ) as HTMLElement;
+
+        expect(outerRow.classList.contains("mx-0")).toBeTrue();
+        expect(frameRow.classList.contains("mx-0")).toBeTrue();
+        expect(getComputedStyle(frameRow).marginLeft).toBe("0px");
+        expect(mainCol.classList.contains("px-3")).toBeTrue();
+        expect(mainCol.classList.contains("py-2")).toBeTrue();
+    });
+
     it("should initialize component correctly on ngOnInit", () => {
         component.ngOnInit();
 

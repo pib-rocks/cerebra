@@ -67,6 +67,14 @@ export class MicrophoneArrayComponent implements OnInit, OnDestroy {
         {value: 3, label: "150Hz"},
     ];
 
+    readonly presetOptions: readonly string[] = [
+        "default",
+        "conference",
+        "near_field",
+        "far_field",
+        "noisy_environment",
+    ];
+
     private readonly subscriptions = new Subscription();
     private lastConnectionState: string | null = null;
 
@@ -199,6 +207,14 @@ export class MicrophoneArrayComponent implements OnInit, OnDestroy {
         }
     }
 
+    selectPreset(preset: string): void {
+        if (!this.tuning) {
+            return;
+        }
+        this.tuning.preset = preset;
+        this.onPresetChange(preset);
+    }
+
     onPresetChange(preset: MicrophoneArrayPreset): void {
         if (this.tuning) {
             this.tuning.preset = preset;
@@ -254,9 +270,7 @@ export class MicrophoneArrayComponent implements OnInit, OnDestroy {
             vad_led:
                 this.tuning.vadLed === undefined
                     ? undefined
-                    : this.tuning.vadLed
-                    ? 1
-                    : 0,
+                    : this.tuning.vadLed,
         };
         const value = values[name];
         if (value !== undefined) {

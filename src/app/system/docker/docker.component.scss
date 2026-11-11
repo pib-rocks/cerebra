@@ -33,15 +33,33 @@
         background-color: #17a2b8 !important;
         color: #ffffff !important;
     }
+
+    .docker-actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        align-items: stretch;
+        gap: 0.35rem;
+
+        .btn {
+            min-width: 6.25rem;
+        }
+    }
 }
 
 .bg-black {
     background-color: #0d1117 !important;
 }
 
+.cerebra-modal .modal-header {
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+}
+
 .log-viewer-box {
-    height: 500px;
-    max-height: 70vh;
+    height: min(440px, calc(100vh - 16rem));
+    max-height: calc(100vh - 16rem);
     overflow-y: auto;
     overflow-x: auto;
     font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier,

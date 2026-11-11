@@ -90,6 +90,14 @@ export class DockerManagementComponent implements OnInit, OnDestroy {
         });
     }
 
+    toggleContainerStartStop(container: DockerContainer): void {
+        if (container.status === "running") {
+            this.stopContainer(container.name);
+        } else {
+            this.startContainer(container.name);
+        }
+    }
+
     stopContainer(name: string): void {
         this.actionLoading[name] = true;
         this.error = null;
@@ -248,6 +256,48 @@ export class DockerManagementComponent implements OnInit, OnDestroy {
             this.scrollToBottom();
         }
         this.cdr.markForCheck();
+    }
+
+    onLogScroll(event?: Event): void {
+        const el =
+            (event?.target as HTMLElement | undefined) ??
+            this.logContainerElement?.nativeElement;
+        if (!el) return;
+
+        const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight <= 32;
+        this.autoScroll = atBottom;
+        this.cdr.markForCheck();
+    }
+
+    combinedStatusLabel(container: DockerContainer): string {
+        const statusPart =
+            container.status === "exited"
+                ? "STOPPED"
+                : (container.status || "unknown").toUpperCase();
+        const health = (container.health || "").toLowerCase();
+        if (health && health !== "unknown" && health !== "none") {
+            return `${statusPart} (${health.toUpperCase()})`;
+        }
+        return statusPart;
+    }
+
+    combinedStatusBadgeClass(container: DockerContainer): string {
+        const st = (container.status || "").toLowerCase();
+        const h = (container.health || "").toLowerCase();
+
+        if (st === "exited" || st === "stopped" || h === "unhealthy") {
+            return "text-bg-danger";
+        }
+        if (h === "starting") {
+            return "text-bg-warning";
+        }
+        if (st === "running" && h === "healthy") {
+            return "text-bg-success";
+        }
+        if (st === "running") {
+            return "text-bg-success";
+        }
+        return this.getStatusBadgeClass(container.status);
     }
 
     private scrollToBottom(): void {

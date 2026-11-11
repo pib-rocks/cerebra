@@ -59,6 +59,15 @@
         --bs-table-hover-bg: rgba(255, 255, 255, 0.08);
 
         color: #ffffff !important;
+        table-layout: fixed;
+        width: 100%;
+        font-variant-numeric: tabular-nums;
+
+        th,
+        td {
+            font-variant-numeric: tabular-nums;
+            overflow-wrap: break-word;
+        }
 
         th {
             color: #e83e8c !important; /* Cerebra pink table headers */

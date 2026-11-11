@@ -1775,7 +1775,54 @@ describe("HardwareIdComponent serial controller identifiers", () => {
         const applyBtn = fixture.nativeElement.querySelector(
             '[data-test="BTN_Use_Detected_Assignments"]',
         ) as HTMLButtonElement;
+        const hint = fixture.nativeElement.querySelector(
+            '[data-test="TXT_Use_Detected_Assignments_Hint"]',
+        ) as HTMLElement;
         expect(applyBtn.disabled).toBe(true);
+        expect(hint.textContent).toContain(
+            "No automatic controller assignments were detected",
+        );
+        expect(applyBtn.getAttribute("title")).toContain(
+            "No automatic controller assignments were detected",
+        );
+    });
+
+    it("enables Use detected assignments with a copy hint when detected slots differ from the form", async () => {
+        await fixture.whenStable();
+        fixture.detectChanges();
+
+        const applyBtn = fixture.nativeElement.querySelector(
+            '[data-test="BTN_Use_Detected_Assignments"]',
+        ) as HTMLButtonElement;
+        const hint = fixture.nativeElement.querySelector(
+            '[data-test="TXT_Use_Detected_Assignments_Hint"]',
+        ) as HTMLElement;
+        expect(applyBtn.disabled).toBe(false);
+        expect(hint.textContent).toContain(
+            "Copy the auto-detected controller assignments",
+        );
+        expect(applyBtn.getAttribute("title")).toContain(
+            "Copy the auto-detected controller assignments",
+        );
+    });
+
+    it("disables Use detected assignments when every detected assignment already matches the form", async () => {
+        component.serialControl(1).setValue("5B91030562");
+        component.serialControl(2).setValue("5B79018060");
+        await fixture.whenStable();
+        fixture.detectChanges();
+
+        const applyBtn = fixture.nativeElement.querySelector(
+            '[data-test="BTN_Use_Detected_Assignments"]',
+        ) as HTMLButtonElement;
+        const hint = fixture.nativeElement.querySelector(
+            '[data-test="TXT_Use_Detected_Assignments_Hint"]',
+        ) as HTMLElement;
+        expect(applyBtn.disabled).toBe(true);
+        expect(hint.textContent).toContain("already match the selected slots");
+        expect(applyBtn.getAttribute("title")).toContain(
+            "already match the selected slots",
+        );
     });
 
     it("does not persist when applyDetectedAssignments is called without Save", () => {
