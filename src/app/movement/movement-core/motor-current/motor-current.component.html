@@ -1,12 +1,19 @@
 <div class="row h-100 w-100 m-0 p-0">
     <div class="col m-0 p-0 d-flex align-items-center justify-content-center">
         <div
-            class="col m-0 p-0 d-flex h-100 circleSliderLimit align-items-center justify-content-center">
+            class="col m-0 p-0 d-flex h-100 circleSliderLimit align-items-center justify-content-center"
+            [attr.title]="'Motor current gauge: ' + currentValue + ' mA'"
+            [attr.aria-label]="'Motor current gauge: ' + currentValue + ' mA'"
+            data-test="RING_Motor_Current">
             <svg
                 class="circular-slider m-0 p-0"
                 id="{{ motor.motorName }}_currentDisplay"
                 viewBox="0 0 100 100"
-                xmlns="http://www.w3.org/2000/svg">
+                xmlns="http://www.w3.org/2000/svg"
+                [attr.title]="'Motor current gauge: ' + currentValue + ' mA'"
+                [attr.aria-label]="'Motor current gauge: ' + currentValue + ' mA'"
+                data-test="RING_Motor_Current">
+                <title>Motor current gauge: {{ currentValue }} mA</title>
                 <circle
                     class="circle2"
                     id="{{motor.motorName}}_backgroundCircle"
