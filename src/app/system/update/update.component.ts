@@ -258,6 +258,33 @@ export class UpdateComponent implements OnInit, OnDestroy {
             .join(" ");
     }
 
+    get readinessChecks() {
+        return this.status?.readiness?.checks ?? [];
+    }
+
+    readinessCheckLabel(name: string): string {
+        switch (name) {
+            case "disk_space":
+                return "Free disk space";
+            case "shared_directory":
+                return "Update directory";
+            case "runner":
+                return "Update runner";
+            case "host_units":
+                return "Systemd units";
+            case "update_check":
+                return "Release checker";
+            default:
+                return name.replace(/_/g, " ");
+        }
+    }
+
+    isReadinessCheckOk(status: string): boolean {
+        return (
+            status === "ok" || status === "attested" || status === "declared"
+        );
+    }
+
     get isActive(): boolean {
         return this.isActiveStatus(this.status);
     }
