@@ -353,11 +353,36 @@
                     id="microphone-array-preset"
                     type="text"
                     class="form-control"
+                    list="microphone-array-preset-list"
                     data-test="SEL_Microphone_Array_Preset"
                     [(ngModel)]="tuning.preset"
                     [ngModelOptions]="{standalone: true}"
                     [disabled]="saving || tuning.preset === undefined"
                     (change)="onPresetChange(tuning.preset!)" />
+                <datalist id="microphone-array-preset-list">
+                    @for (p of presetOptions; track p) {
+                    <option [value]="p"></option>
+                    }
+                </datalist>
+                <div
+                    class="d-flex flex-wrap gap-1 mt-2"
+                    data-test="GRP_Microphone_Presets">
+                    @for (preset of presetOptions; track preset) {
+                    <button
+                        type="button"
+                        class="btn btn-sm"
+                        [ngClass]="
+                            tuning.preset === preset
+                                ? 'btn-info'
+                                : 'btn-outline-secondary'
+                        "
+                        [attr.data-test]="'BTN_Microphone_Preset_' + preset"
+                        [disabled]="saving || tuning.preset === undefined"
+                        (click)="selectPreset(preset)">
+                        {{ preset }}
+                    </button>
+                    }
+                </div>
                 @if (tuning.preset === undefined) {
                 <span class="text-white-50 small">not reported</span>
                 }
