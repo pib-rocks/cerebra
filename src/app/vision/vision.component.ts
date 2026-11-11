@@ -4,6 +4,7 @@ import {
     ElementRef,
     OnDestroy,
     OnInit,
+    Optional,
     ViewChild,
     ChangeDetectionStrategy,
 } from "@angular/core";
@@ -11,6 +12,7 @@ import {FormControl, ReactiveFormsModule} from "@angular/forms";
 import {Observable, Subscription, map} from "rxjs";
 import {CameraSettings} from "../shared/types/camera-settings";
 import {CameraService} from "../shared/services/camera.service";
+import {MotorService} from "../shared/services/motor.service";
 import {
     NgbDropdown,
     NgbDropdownToggle,
@@ -147,6 +149,15 @@ export class VisionComponent implements OnInit, OnDestroy {
     detectionMessagesLastWindow = 0;
     rosbridgeConnected = false;
     modelListCollapsed = false;
+    zoomLevel = 1;
+    readonly minZoom = 1;
+    readonly maxZoom = 3;
+    readonly zoomStep = 0.5;
+    headPanCentideg = 0;
+    headTiltCentideg = 0;
+    readonly headStepCentideg = 1000;
+    private headPanSubscription?: Subscription;
+    private headTiltSubscription?: Subscription;
     private detectionExpiryTimers = new Map<
         string,
         ReturnType<typeof setTimeout>
@@ -185,6 +196,78 @@ export class VisionComponent implements OnInit, OnDestroy {
         );
     }
 
+    zoomIn(): void {
+        this.zoomLevel = Math.min(
+            this.maxZoom,
+            +(this.zoomLevel + this.zoomStep).toFixed(2),
+        );
+        this.changeDetectorRef.markForCheck();
+    }
+
+    zoomOut(): void {
+        this.zoomLevel = Math.max(
+            this.minZoom,
+            +(this.zoomLevel - this.zoomStep).toFixed(2),
+        );
+        this.changeDetectorRef.markForCheck();
+    }
+
+    resetZoom(): void {
+        this.zoomLevel = 1;
+        this.changeDetectorRef.markForCheck();
+    }
+
+    nudgeHead(direction: "left" | "right" | "up" | "down" | "center"): void {
+        switch (direction) {
+            case "left":
+                this.headPanCentideg = Math.max(
+                    -9000,
+                    this.headPanCentideg - this.headStepCentideg,
+                );
+                this.motorService?.setPosition(
+                    "turn_head_motor",
+                    this.headPanCentideg,
+                );
+                break;
+            case "right":
+                this.headPanCentideg = Math.min(
+                    9000,
+                    this.headPanCentideg + this.headStepCentideg,
+                );
+                this.motorService?.setPosition(
+                    "turn_head_motor",
+                    this.headPanCentideg,
+                );
+                break;
+            case "up":
+                this.headTiltCentideg = Math.min(
+                    4500,
+                    this.headTiltCentideg + this.headStepCentideg,
+                );
+                this.motorService?.setPosition(
+                    "tilt_forward_motor",
+                    this.headTiltCentideg,
+                );
+                break;
+            case "down":
+                this.headTiltCentideg = Math.max(
+                    -4500,
+                    this.headTiltCentideg - this.headStepCentideg,
+                );
+                this.motorService?.setPosition(
+                    "tilt_forward_motor",
+                    this.headTiltCentideg,
+                );
+                break;
+            case "center":
+                this.headPanCentideg = 0;
+                this.headTiltCentideg = 0;
+                this.motorService?.setPosition("turn_head_motor", 0);
+                this.motorService?.setPosition("tilt_forward_motor", 0);
+                break;
+        }
+    }
+
     toggleModelList(): void {
         this.modelListCollapsed = !this.modelListCollapsed;
     }
@@ -196,6 +279,7 @@ export class VisionComponent implements OnInit, OnDestroy {
     constructor(
         private cameraService: CameraService,
         private changeDetectorRef: ChangeDetectorRef,
+        @Optional() private motorService?: MotorService,
     ) {
         this.subscribeCameraSettings();
     }
@@ -240,6 +324,20 @@ export class VisionComponent implements OnInit, OnDestroy {
                 this.rosbridgeConnected = connected;
                 this.changeDetectorRef.markForCheck();
             });
+        if (this.motorService) {
+            this.headPanSubscription = this.motorService
+                .getPositionObservable("turn_head_motor")
+                .subscribe((position) => {
+                    this.headPanCentideg = position;
+                    this.changeDetectorRef.markForCheck();
+                });
+            this.headTiltSubscription = this.motorService
+                .getPositionObservable("tilt_forward_motor")
+                .subscribe((position) => {
+                    this.headTiltCentideg = position;
+                    this.changeDetectorRef.markForCheck();
+                });
+        }
     }
 
     ngOnDestroy(): void {
@@ -249,6 +347,8 @@ export class VisionComponent implements OnInit, OnDestroy {
         this.detectionModelsSubscription?.unsubscribe();
         this.detectionClearSubscription?.unsubscribe();
         this.connectionStatusSubscription?.unsubscribe();
+        this.headPanSubscription?.unsubscribe();
+        this.headTiltSubscription?.unsubscribe();
         this.clearCameraReconfiguring();
         this.clearDisplayRefreshTimer();
         this.clearDetectionFlushTimer();
