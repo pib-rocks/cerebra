@@ -30,8 +30,8 @@
     <div
         class="alert alert-danger"
         data-test="TXT_Update_Connection_Failure">
-        The update service stayed unreachable. This is not a completed or failed
-        install result.
+        {{ statusError || "The update service stayed unreachable. This is not a
+        completed or failed install result." }}
     </div>
     } @if (isStale) {
     <div
@@ -61,7 +61,7 @@
         data-test="TXT_Update_Service_Repair">
         {{ serviceUnavailable }}
     </div>
-    } @if (statusError) {
+    } @if (statusError && !persistentConnectionFailure) {
     <div class="alert alert-danger">{{ statusError }}</div>
     } @if (actionError) {
     <div class="alert alert-danger">{{ actionError }}</div>

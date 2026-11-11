@@ -53,7 +53,7 @@ export class UpdateComponent implements OnInit, OnDestroy {
     readonly jobStorageKey = "pib.update.jobId";
     private readonly pollMs = 2000;
     private readonly checkTimeoutMs = 120000;
-    private readonly maintenanceLimitMs = 90000;
+    private readonly maintenanceLimitMs = 300000;
     private readonly maxLogChars = 100000;
     private readonly maxLogFailures = 5;
 
@@ -874,7 +874,11 @@ export class UpdateComponent implements OnInit, OnDestroy {
             this.maintenanceMessage = null;
             this.statusError =
                 "The update service stayed unreachable after the maintenance window. This is a connection failure, not a finished update result.";
-            this.stopStatusPolling();
+            if (this.isActive || this.attachedJobId) {
+                this.scheduleStatusPoll(15000);
+            } else {
+                this.stopStatusPolling();
+            }
             this.cdr.markForCheck();
             return;
         }
