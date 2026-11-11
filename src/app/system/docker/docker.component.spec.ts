@@ -227,4 +227,54 @@ describe("DockerManagementComponent table and logs", () => {
         component.onLogScroll({target: el} as unknown as Event);
         expect(component.autoScroll).toBeTrue();
     });
+
+    it("documents Purge Docker and requires inline confirmation before stopping a core container", () => {
+        component.containers = [
+            {
+                name: "cerebra-angular-app-1",
+                status: "running",
+                health: "none",
+                image: "ghcr.io/pib-rocks/cerebra:v0.7.13",
+            },
+            {
+                name: "pib-backend-flask-app-1",
+                status: "running",
+                health: "none",
+                image: "ghcr.io/pib-rocks/pib-backend-flask-app:v0.7.13",
+            },
+        ];
+        fixture.detectChanges();
+
+        const el = fixture.nativeElement as HTMLElement;
+        expect(
+            el.querySelector('[data-test="TXT_Purge_Docker_Help"]')
+                ?.textContent,
+        ).toContain("safely removes stopped containers");
+        expect(
+            el.querySelector(
+                '[data-test="BADGE_Core_Container_cerebra-angular-app-1"]',
+            ),
+        ).toBeTruthy();
+
+        const stopBtn = el.querySelector<HTMLButtonElement>(
+            '[data-test="BTN_Toggle_Container_cerebra-angular-app-1"]',
+        );
+        stopBtn!.click();
+        fixture.detectChanges();
+
+        expect(service.stopContainer).not.toHaveBeenCalled();
+        expect(
+            el.querySelector('[data-test="ALERT_Confirm_Stop_Core"]'),
+        ).toBeTruthy();
+
+        const confirmBtn = el.querySelector<HTMLButtonElement>(
+            '[data-test="BTN_Confirm_Stop_Core_cerebra-angular-app-1"]',
+        );
+        confirmBtn!.click();
+        fixture.detectChanges();
+
+        expect(service.stopContainer).toHaveBeenCalledWith(
+            "cerebra-angular-app-1",
+        );
+    });
 });
