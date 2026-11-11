@@ -139,6 +139,7 @@ describe("UpdateComponent", () => {
             "getLog",
             "startUpdate",
             "cancelUpdate",
+            "purgeDockerCache",
         ]);
         updateServiceSpy.getInstalledRevisions.and.returnValue(of(installed));
         updateServiceSpy.getAvailableUpdates.and.returnValue(of(availability));
@@ -738,5 +739,50 @@ describe("UpdateComponent", () => {
         expect(diskChip?.classList.contains("preflight-failed")).toBeTrue();
         expect(diskChip?.textContent).toContain("Free disk space");
         expect(diskChip?.textContent).toContain("15597 MiB");
+
+        const purgeBtn = el.querySelector<HTMLButtonElement>(
+            '[data-test="BTN_Update_Purge_Docker"]',
+        );
+        expect(purgeBtn).toBeTruthy();
+        updateServiceSpy.purgeDockerCache.and.returnValue(
+            of({
+                status: "success",
+                message: "Docker purge completed: 4.2 GB freed.",
+                reclaimedHuman: "4.2 GB",
+            }),
+        );
+        purgeBtn!.click();
+        fixture.detectChanges();
+        expect(updateServiceSpy.purgeDockerCache).toHaveBeenCalled();
+        expect(component.purgeNotice).toContain("4.2 GB freed");
+    });
+
+    it("does not collapse release notes when only 1 or 2 lines would be hidden", () => {
+        const notes = [
+            "## Highlights",
+            ...Array.from({length: 6}, (_, index) => `* Bullet ${index + 1}`),
+        ].join("\n");
+        component.availability = {
+            ...availability,
+            checkedAt: "2026-10-14T00:00:00Z",
+            checkId: "check-1",
+            state: "completed",
+            channel: "release",
+            recommendation: {
+                tag: "v0.6.5",
+                relation: "newer",
+                installable: true,
+                ordinaryUpdate: true,
+                notes,
+            },
+        };
+        fixture.detectChanges();
+
+        expect(component.hasMoreReleaseNotes).toBeFalse();
+        const notesBox = (fixture.nativeElement as HTMLElement).querySelector(
+            '[data-test="TXT_Release_Notes"]',
+        ) as HTMLElement;
+        expect(notesBox.textContent).toContain("Bullet 6");
+        expect(notesBox.querySelector("#btn-toggle-release-notes")).toBeNull();
     });
 });

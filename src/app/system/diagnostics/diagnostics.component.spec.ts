@@ -6,8 +6,12 @@ import {
     tick,
 } from "@angular/core/testing";
 import {DiagnosticsComponent} from "./diagnostics.component";
-import {DiagnosticsService, SystemTelemetry} from "./diagnostics.service";
-import {Subject, of} from "rxjs";
+import {
+    DiagnosticsService,
+    DiagnosticsSummary,
+    SystemTelemetry,
+} from "./diagnostics.service";
+import {Subject, of, throwError} from "rxjs";
 import {provideHttpClient} from "@angular/common/http";
 import {provideHttpClientTesting} from "@angular/common/http/testing";
 
@@ -533,4 +537,67 @@ describe("DiagnosticsComponent", () => {
         fixture.destroy();
         discardPeriodicTasks();
     }));
+
+    it("should keep error banner visible while subsequent poll is in flight and clear it only on success", () => {
+        diagnosticsServiceSpy.getSummary.and.returnValue(
+            throwError(() => new Error("unavailable")),
+        );
+        component.refreshDiagnostics();
+        fixture.detectChanges();
+
+        expect(component.error).toBe(
+            "Failed to load system diagnostics summary.",
+        );
+        expect(
+            (fixture.nativeElement as HTMLElement).querySelector(
+                ".alert.alert-danger",
+            )?.textContent,
+        ).toContain("Failed to load system diagnostics summary.");
+
+        const pendingSummary = new Subject<DiagnosticsSummary>();
+        diagnosticsServiceSpy.getSummary.and.returnValue(
+            pendingSummary.asObservable(),
+        );
+        component.refreshDiagnostics();
+        fixture.detectChanges();
+
+        // Must NOT flicker to null while the retry request is still in flight
+        expect(component.error).toBe(
+            "Failed to load system diagnostics summary.",
+        );
+        expect(
+            (fixture.nativeElement as HTMLElement).querySelector(
+                ".alert.alert-danger",
+            ),
+        ).not.toBeNull();
+
+        pendingSummary.next({
+            overallStatus: "ok",
+            cpuTemperature: 48.0,
+            cpuStatus: "ok",
+            cpuPercent: 20.0,
+            diskSpace: {
+                total: "64.0 GB",
+                used: "20.0 GB",
+                free: "44.0 GB",
+                percentUsed: 31.2,
+                percentFree: 68.8,
+            },
+            diskStatus: "ok",
+            containersStatus: "ok",
+            brickletsStatus: "ok",
+            healthyContainersCount: 6,
+            totalContainersCount: 6,
+            totalBrickletsCount: 7,
+        });
+        pendingSummary.complete();
+        fixture.detectChanges();
+
+        expect(component.error).toBeNull();
+        expect(
+            (fixture.nativeElement as HTMLElement).querySelector(
+                ".alert.alert-danger",
+            ),
+        ).toBeNull();
+    });
 });

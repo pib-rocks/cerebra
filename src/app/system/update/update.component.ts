@@ -81,6 +81,8 @@ export class UpdateComponent implements OnInit, OnDestroy {
     confirmation = "";
     starting = false;
     cancelling = false;
+    purgingDocker = false;
+    purgeNotice: string | null = null;
     actionError: string | null = null;
     attachedJobId: string | null = null;
 
@@ -285,6 +287,80 @@ export class UpdateComponent implements OnInit, OnDestroy {
         );
     }
 
+    get needsDiskCleanup(): boolean {
+        const diskFailed = this.readinessChecks.some(
+            (c) =>
+                c.name === "disk_space" && !this.isReadinessCheckOk(c.status),
+        );
+        const statusMsg = this.status?.message ?? "";
+        return (
+            diskFailed ||
+            (this.status?.state === "failed" &&
+                statusMsg.includes("Insufficient free disk space"))
+        );
+    }
+
+    purgeDockerForUpdate(): void {
+        if (this.purgingDocker || this.isActive || this.starting) {
+            return;
+        }
+        this.purgingDocker = true;
+        this.purgeNotice = null;
+        this.actionError = null;
+        this.cdr.markForCheck();
+
+        this.updateService.purgeDockerCache().subscribe({
+            next: (res) => {
+                this.purgingDocker = false;
+                this.purgeNotice =
+                    res.message ||
+                    `Docker cleanup finished (${
+                        res.reclaimedHuman ?? "space"
+                    } freed).`;
+                this.refreshStatus();
+                this.cdr.markForCheck();
+            },
+            error: (err: HttpErrorResponse) => {
+                this.purgingDocker = false;
+                this.actionError = this.httpErrorMessage(
+                    err,
+                    "Failed to clean up Docker cache.",
+                );
+                this.cdr.markForCheck();
+            },
+        });
+    }
+
+    get activeLogTail(): string {
+        const tailLength = 1200;
+        return this.log.length > tailLength
+            ? this.log.slice(-tailLength)
+            : this.log;
+    }
+
+    get elapsedDurationLabel(): string | null {
+        const started = this.status?.startedAt;
+        if (!started) {
+            return null;
+        }
+        const startMs = Date.parse(started);
+        if (!Number.isFinite(startMs)) {
+            return null;
+        }
+        const endIso =
+            this.status?.completedAt ||
+            this.status?.finishedAt ||
+            this.status?.updatedAt;
+        const endMs =
+            !this.isActive && endIso && Number.isFinite(Date.parse(endIso))
+                ? Date.parse(endIso)
+                : Date.now();
+        const seconds = Math.max(0, Math.floor((endMs - startMs) / 1000));
+        const mins = Math.floor(seconds / 60);
+        const rem = seconds % 60;
+        return mins > 0 ? `${mins}m ${rem}s` : `${rem}s`;
+    }
+
     get isActive(): boolean {
         return this.isActiveStatus(this.status);
     }
@@ -342,6 +418,7 @@ export class UpdateComponent implements OnInit, OnDestroy {
 
     /** How many lines the collapsed notes keep - six fit next to "Available release". */
     private readonly releaseNotePreviewLines = 6;
+    private readonly minHiddenReleaseNoteLines = 3;
 
     releaseNotesExpanded = false;
 
@@ -360,12 +437,18 @@ export class UpdateComponent implements OnInit, OnDestroy {
         kind: "heading" | "bullets" | "text";
         lines: string[];
     }[] {
-        return this.releaseNotesExpanded
-            ? this.releaseNoteGroups
-            : this.limitReleaseNoteLines(
-                  this.releaseNoteGroups,
-                  this.releaseNotePreviewLines,
-              );
+        const total = this.countReleaseNoteLines(this.releaseNoteGroups);
+        if (
+            this.releaseNotesExpanded ||
+            total - this.releaseNotePreviewLines <
+                this.minHiddenReleaseNoteLines
+        ) {
+            return this.releaseNoteGroups;
+        }
+        return this.limitReleaseNoteLines(
+            this.releaseNoteGroups,
+            this.releaseNotePreviewLines,
+        );
     }
 
     /** How many lines stay behind the "Show all" button. */

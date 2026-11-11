@@ -213,4 +213,12 @@ export class UpdateService {
     getAvailableUpdates(): Observable<AvailableUpdates> {
         return this.apiService.get(UrlConstants.SYSTEM_UPDATE_AVAILABLE);
     }
+
+    purgeDockerCache(): Observable<{
+        status: string;
+        message?: string;
+        reclaimedHuman?: string;
+    }> {
+        return this.apiService.post(`${UrlConstants.DOCKER}/admin/purge`, {});
+    }
 }

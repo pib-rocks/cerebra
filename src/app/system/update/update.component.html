@@ -65,6 +65,12 @@
     <div class="alert alert-danger">{{ statusError }}</div>
     } @if (actionError) {
     <div class="alert alert-danger">{{ actionError }}</div>
+    } @if (purgeNotice) {
+    <div
+        class="alert alert-success"
+        data-test="TXT_Update_Purge_Notice">
+        {{ purgeNotice }}
+    </div>
     }
 
     <div class="update-overview-grid mb-4">
@@ -221,6 +227,22 @@
             </div>
             }
         </div>
+        } @if (needsDiskCleanup && !isActive) {
+        <div class="mb-3">
+            <button
+                type="button"
+                id="btn-update-purge-docker"
+                data-test="BTN_Update_Purge_Docker"
+                class="btn btn-outline-warning btn-sm"
+                [disabled]="purgingDocker || isActive || starting"
+                (click)="purgeDockerForUpdate()">
+                <i
+                    class="fas fa-broom me-1"
+                    [class.fa-spin]="purgingDocker"></i>
+                {{ purgingDocker ? "Cleaning up Docker cache..." : "Free disk
+                space (Purge unused Docker cache)" }}
+            </button>
+        </div>
         }
 
         <div class="alert alert-warning py-2 mb-3">
@@ -294,7 +316,16 @@
     <div class="card p-3 shadow-sm mb-4">
         <div
             class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
-            <h4 class="card-title text-white mb-0">Current phase</h4>
+            <div class="d-flex align-items-center gap-2">
+                <h4 class="card-title text-white mb-0">Current phase</h4>
+                @if (elapsedDurationLabel) {
+                <span
+                    class="badge bg-secondary"
+                    data-test="TXT_Update_Elapsed">
+                    {{ elapsedDurationLabel }}
+                </span>
+                }
+            </div>
             @if (isActive) {
             <button
                 id="btn-cancel-update"
@@ -335,6 +366,13 @@
             data-test="TXT_Update_Progress">
             {{ status.message || "No progress message reported." }}
         </p>
+        @if (isActive && activeLogTail) {
+        <pre
+            class="log-viewer log-viewer-compact mb-3"
+            data-test="TXT_Update_Active_Log_Preview">
+{{ activeLogTail }}</pre
+        >
+        }
         <dl class="row update-metadata mb-0">
             <dt class="col-sm-3">Started</dt>
             <dd
@@ -454,239 +492,263 @@
             release install does not need these.
         </p>
 
-        <div class="row g-3 mb-3">
-            <div class="col-md-6">
-                <label
-                    class="text-light form-label"
-                    for="update-channel">
-                    Channel
-                </label>
-                <select
-                    id="update-channel"
-                    data-test="INP_Update_Channel"
-                    class="form-select"
-                    [disabled]="isActive || starting"
-                    [(ngModel)]="channel">
-                    <option value="release">
-                        release — published stable pair
-                    </option>
-                    <option value="develop">
-                        develop — expert / development operation
-                    </option>
-                </select>
-            </div>
-
-            @if ((availability?.releases ?? []).length > 0) {
-            <div class="col-md-6">
-                <label
-                    class="text-light form-label"
-                    for="update-release-choice">
-                    Release to install
-                </label>
-                <select
-                    id="update-release-choice"
-                    class="form-select"
-                    [disabled]="isActive || starting || channel !== 'release'"
-                    [(ngModel)]="chosenTag">
-                    <option value="">Latest installable pair</option>
-                    @for (release of availability?.releases ?? []; track
-                    release.tag) {
-                    <option [value]="release.tag">
-                        {{ release.tag }} — {{ relationText(release.relation) }}
-                    </option>
-                    }
-                </select>
-            </div>
-            }
-        </div>
-
-        @if (channel === "develop") {
         <div
-            class="alert alert-warning"
-            data-test="TXT_Develop_Targets">
-            Development mode installs the commits from the latest develop check,
-            not a published system release. @for (repository of
-            availableRepositories; track repository.name) {
-            <div>
-                {{ repository.name }}:
-                <code class="revision"
-                    >{{ shortRevision(repository.target) }}</code
-                >
+            class="expert-section mb-4"
+            data-test="SEC_Expert_Channel">
+            <h5 class="text-white mb-3">1. Channel &amp; Target Override</h5>
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <label
+                        class="text-light form-label"
+                        for="update-channel">
+                        Channel
+                    </label>
+                    <select
+                        id="update-channel"
+                        data-test="INP_Update_Channel"
+                        class="form-select"
+                        [disabled]="isActive || starting"
+                        [(ngModel)]="channel">
+                        <option value="release">
+                            release — published stable pair
+                        </option>
+                        <option value="develop">
+                            develop — expert / development operation
+                        </option>
+                    </select>
+                </div>
+
+                @if ((availability?.releases ?? []).length > 0) {
+                <div class="col-md-6">
+                    <label
+                        class="text-light form-label"
+                        for="update-release-choice">
+                        Release to install
+                    </label>
+                    <select
+                        id="update-release-choice"
+                        class="form-select"
+                        [disabled]="
+                            isActive || starting || channel !== 'release'
+                        "
+                        [(ngModel)]="chosenTag">
+                        <option value="">Latest installable pair</option>
+                        @for (release of availability?.releases ?? []; track
+                        release.tag) {
+                        <option [value]="release.tag">
+                            {{ release.tag }} — {{
+                            relationText(release.relation) }}
+                        </option>
+                        }
+                    </select>
+                </div>
+                }
+            </div>
+
+            @if (channel === "develop") {
+            <div
+                class="alert alert-warning"
+                data-test="TXT_Develop_Targets">
+                Development mode installs the commits from the latest develop
+                check, not a published system release. @for (repository of
+                availableRepositories; track repository.name) {
+                <div>
+                    {{ repository.name }}:
+                    <code class="revision"
+                        >{{ shortRevision(repository.target) }}</code
+                    >
+                </div>
+                }
+            </div>
+            } @if ((availability?.incomplete ?? []).length > 0) {
+            <div class="alert alert-secondary">
+                <strong>Incomplete or unpublished pairs</strong>
+                <ul class="mb-0 mt-2">
+                    @for (gap of availability?.incomplete ?? []; track gap.tag)
+                    {
+                    <li>{{ gap.tag }}: {{ gap.reason }}</li>
+                    }
+                </ul>
+            </div>
+            }
+
+            <div class="form-check mb-3">
+                <input
+                    id="update-acknowledge"
+                    data-test="CHK_Update_Exception"
+                    class="form-check-input"
+                    type="checkbox"
+                    [disabled]="isActive || starting"
+                    [(ngModel)]="acknowledgeException" />
+                <label
+                    class="form-check-label text-light"
+                    for="update-acknowledge">
+                    I understand this is not an ordinary newer-release update
+                    (development channel, older release, channel change, or
+                    drift).
+                </label>
+            </div>
+
+            <div class="alert alert-warning mb-2">
+                Force update discards local repository changes using
+                <code>git reset --hard</code> and <code>git clean -fd</code>. It
+                is not required for a normal install and does not hide a stale
+                job.
+            </div>
+            <div class="form-check form-switch mb-0">
+                <input
+                    id="update-force-expert"
+                    data-test="SWT_Update_Force_Expert"
+                    class="form-check-input"
+                    type="checkbox"
+                    role="switch"
+                    [disabled]="isActive || starting"
+                    [(ngModel)]="force" />
+                <label
+                    class="form-check-label text-light"
+                    for="update-force-expert">
+                    Force update and discard local changes
+                </label>
+            </div>
+        </div>
+
+        <div
+            class="expert-section mb-4"
+            data-test="SEC_Expert_Revisions">
+            <h5 class="text-white mb-2">
+                2. Installed &amp; Available Revisions
+            </h5>
+            <h6 class="text-light mt-3">Installed revisions</h6>
+            <div class="table-responsive mb-3">
+                <table
+                    id="table-installed-revisions"
+                    class="table table-dark table-striped mb-0">
+                    <thead>
+                        <tr>
+                            <th>Repository</th>
+                            <th>Revision</th>
+                            <th>Channel</th>
+                            <th>Build time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (repository of installedRepositories; track
+                        repository.name) {
+                        <tr>
+                            <td>{{ repository.name }}</td>
+                            <td>
+                                <code
+                                    class="revision"
+                                    [title]="repository.gitSha">
+                                    {{ shortRevision(repository.gitSha) }}
+                                </code>
+                            </td>
+                            <td>{{ repository.channel || "not reported" }}</td>
+                            <td>
+                                {{ repository.buildTime ? (repository.buildTime
+                                | date: "medium") : "not reported" }}
+                            </td>
+                        </tr>
+                        } @empty {
+                        <tr>
+                            <td
+                                colspan="4"
+                                class="text-muted text-center">
+                                No repository revisions were reported.
+                            </td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <h6 class="text-light">Availability details</h6>
+            <p class="text-muted small mb-2">
+                Checked: {{ availability?.checkedAt ? (availability?.checkedAt |
+                date: "medium") : "time not reported" }}
+            </p>
+            <div class="table-responsive mb-0">
+                <table
+                    id="table-update-availability"
+                    class="table table-dark table-striped mb-0">
+                    <thead>
+                        <tr>
+                            <th>Repository</th>
+                            <th>Installed</th>
+                            <th>Availability</th>
+                            <th>Target</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (repository of availableRepositories; track
+                        repository.name) {
+                        <tr>
+                            <td>{{ repository.name }}</td>
+                            <td>
+                                <code
+                                    class="revision"
+                                    [title]="repository.installed">
+                                    {{ shortRevision(repository.installed) }}
+                                </code>
+                            </td>
+                            <td [ngClass]="availabilityClass(repository)">
+                                {{ availabilityText(repository) }}
+                            </td>
+                            <td>
+                                @if (repository.target) {
+                                <code
+                                    class="revision"
+                                    [title]="repository.target">
+                                    {{ shortRevision(repository.target) }}
+                                </code>
+                                } @else {
+                                <span class="text-muted">not reported</span>
+                                }
+                            </td>
+                        </tr>
+                        } @empty {
+                        <tr>
+                            <td
+                                colspan="4"
+                                class="text-muted text-center">
+                                No repository availability was reported.
+                            </td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div
+            class="expert-section"
+            data-test="SEC_Expert_Log">
+            <div
+                class="d-flex justify-content-between align-items-center flex-wrap mb-2">
+                <h5 class="text-white mb-0">3. Update Log</h5>
+                @if (status) {
+                <span class="text-muted small">
+                    Attempt {{ status.attempt ?? "not reported" }} / {{
+                    status.maxAttempts ?? "not reported" }}
+                </span>
+                }
+            </div>
+            <pre
+                id="update-live-log"
+                class="log-viewer mb-0"
+                data-test="TXT_Update_Live_Log">
+{{ logExcerpt || "No log output was returned." }}</pre
+            >
+            @if (logError) {
+            <div class="alert alert-danger mt-2 mb-0">
+                {{ logError }}
+                <button
+                    class="btn btn-sm btn-outline-light ms-2"
+                    (click)="retryLog()">
+                    Retry log
+                </button>
             </div>
             }
         </div>
-        } @if ((availability?.incomplete ?? []).length > 0) {
-        <div class="alert alert-secondary">
-            <strong>Incomplete or unpublished pairs</strong>
-            <ul class="mb-0 mt-2">
-                @for (gap of availability?.incomplete ?? []; track gap.tag) {
-                <li>{{ gap.tag }}: {{ gap.reason }}</li>
-                }
-            </ul>
-        </div>
-        }
-
-        <div class="form-check mb-3">
-            <input
-                id="update-acknowledge"
-                data-test="CHK_Update_Exception"
-                class="form-check-input"
-                type="checkbox"
-                [disabled]="isActive || starting"
-                [(ngModel)]="acknowledgeException" />
-            <label
-                class="form-check-label text-light"
-                for="update-acknowledge">
-                I understand this is not an ordinary newer-release update
-                (development channel, older release, channel change, or drift).
-            </label>
-        </div>
-
-        <div class="alert alert-warning">
-            Force update discards local repository changes using
-            <code>git reset --hard</code> and <code>git clean -fd</code>. It is
-            not required for a normal install and does not hide a stale job.
-        </div>
-        <div class="form-check form-switch mb-3">
-            <input
-                id="update-force-expert"
-                data-test="SWT_Update_Force_Expert"
-                class="form-check-input"
-                type="checkbox"
-                role="switch"
-                [disabled]="isActive || starting"
-                [(ngModel)]="force" />
-            <label
-                class="form-check-label text-light"
-                for="update-force-expert">
-                Force update and discard local changes
-            </label>
-        </div>
-
-        <h5 class="text-white">Installed revisions</h5>
-        <div class="table-responsive mb-3">
-            <table
-                id="table-installed-revisions"
-                class="table table-dark table-striped mb-0">
-                <thead>
-                    <tr>
-                        <th>Repository</th>
-                        <th>Revision</th>
-                        <th>Channel</th>
-                        <th>Build time</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @for (repository of installedRepositories; track
-                    repository.name) {
-                    <tr>
-                        <td>{{ repository.name }}</td>
-                        <td>
-                            <code
-                                class="revision"
-                                [title]="repository.gitSha">
-                                {{ shortRevision(repository.gitSha) }}
-                            </code>
-                        </td>
-                        <td>{{ repository.channel || "not reported" }}</td>
-                        <td>
-                            {{ repository.buildTime ? (repository.buildTime |
-                            date: "medium") : "not reported" }}
-                        </td>
-                    </tr>
-                    } @empty {
-                    <tr>
-                        <td
-                            colspan="4"
-                            class="text-muted text-center">
-                            No repository revisions were reported.
-                        </td>
-                    </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-
-        <h5 class="text-white">Availability details</h5>
-        <p class="text-muted">
-            Checked: {{ availability?.checkedAt ? (availability?.checkedAt |
-            date: "medium") : "time not reported" }}
-        </p>
-        <div class="table-responsive mb-3">
-            <table
-                id="table-update-availability"
-                class="table table-dark table-striped mb-0">
-                <thead>
-                    <tr>
-                        <th>Repository</th>
-                        <th>Installed</th>
-                        <th>Availability</th>
-                        <th>Target</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @for (repository of availableRepositories; track
-                    repository.name) {
-                    <tr>
-                        <td>{{ repository.name }}</td>
-                        <td>
-                            <code
-                                class="revision"
-                                [title]="repository.installed">
-                                {{ shortRevision(repository.installed) }}
-                            </code>
-                        </td>
-                        <td [ngClass]="availabilityClass(repository)">
-                            {{ availabilityText(repository) }}
-                        </td>
-                        <td>
-                            @if (repository.target) {
-                            <code
-                                class="revision"
-                                [title]="repository.target">
-                                {{ shortRevision(repository.target) }}
-                            </code>
-                            } @else {
-                            <span class="text-muted">not reported</span>
-                            }
-                        </td>
-                    </tr>
-                    } @empty {
-                    <tr>
-                        <td
-                            colspan="4"
-                            class="text-muted text-center">
-                            No repository availability was reported.
-                        </td>
-                    </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-
-        @if (status) {
-        <p class="text-light">
-            Attempt {{ status.attempt ?? "not reported" }} / {{
-            status.maxAttempts ?? "not reported" }}
-        </p>
-        }
-
-        <h5 class="text-white">Log</h5>
-        <pre
-            id="update-live-log"
-            class="log-viewer"
-            data-test="TXT_Update_Live_Log">
-{{ logExcerpt || "No log output was returned." }}</pre
-        >
-        @if (logError) {
-        <div class="alert alert-danger">
-            {{ logError }}
-            <button
-                class="btn btn-sm btn-outline-light ms-2"
-                (click)="retryLog()">
-                Retry log
-            </button>
-        </div>
-        }
     </details>
 </div>

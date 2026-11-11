@@ -245,6 +245,20 @@ details summary {
     white-space: pre-wrap;
 }
 
+.log-viewer-compact {
+    max-height: 11rem;
+    min-height: 4rem;
+    font-size: 0.8rem;
+    padding: 0.65rem 0.85rem;
+}
+
+.expert-section {
+    background-color: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 0.5rem;
+    padding: 1rem;
+}
+
 .result-success {
     border-left: 4px solid #28a745 !important;
 }
