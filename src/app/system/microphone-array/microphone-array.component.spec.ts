@@ -445,6 +445,35 @@ describe("MicrophoneArrayComponent live cockpit", () => {
         });
     });
 
+    it("renders preset quick-select buttons and selects conference via quick-select", () => {
+        openAndLoadParameters();
+        const element = fixture.nativeElement as HTMLElement;
+
+        expect(
+            element.querySelector("[data-test='GRP_Microphone_Presets']"),
+        ).toBeTruthy();
+        for (const preset of component.presetOptions) {
+            expect(
+                element.querySelector(
+                    `[data-test='BTN_Microphone_Preset_${preset}']`,
+                ),
+            ).toBeTruthy();
+        }
+
+        const onPresetChangeSpy = spyOn(
+            component,
+            "onPresetChange",
+        ).and.callThrough();
+        const conferenceButton = element.querySelector(
+            "[data-test='BTN_Microphone_Preset_conference']",
+        ) as HTMLButtonElement;
+        conferenceButton.click();
+        fixture.detectChanges();
+
+        expect(component.tuning?.preset).toBe("conference");
+        expect(onPresetChangeSpy).toHaveBeenCalledWith("conference");
+    });
+
     it("JSON-encodes a string parameter inside the service argument", () => {
         openAndLoadParameters();
         component.onPresetChange("Raw");

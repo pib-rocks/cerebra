@@ -67,6 +67,14 @@ export class MicrophoneArrayComponent implements OnInit, OnDestroy {
         {value: 3, label: "150Hz"},
     ];
 
+    readonly presetOptions: readonly string[] = [
+        "default",
+        "conference",
+        "near_field",
+        "far_field",
+        "noisy_environment",
+    ];
+
     private readonly subscriptions = new Subscription();
     private lastConnectionState: string | null = null;
 
@@ -197,6 +205,14 @@ export class MicrophoneArrayComponent implements OnInit, OnDestroy {
         if (this.telemetry?.connectionState === "live") {
             this.loadTuning();
         }
+    }
+
+    selectPreset(preset: string): void {
+        if (!this.tuning) {
+            return;
+        }
+        this.tuning.preset = preset;
+        this.onPresetChange(preset);
     }
 
     onPresetChange(preset: MicrophoneArrayPreset): void {
