@@ -667,4 +667,76 @@ describe("UpdateComponent", () => {
                 ?.textContent?.trim(),
         ).toBe("develop");
     });
+
+    it("offers a one-click Retry with force update button when an update fails due to local changes", fakeAsync(() => {
+        updateServiceSpy.getStatus.and.returnValue(
+            of({
+                state: "failed",
+                classification: "failed",
+                message:
+                    "pib-backend has local changes; retry with force=true to discard: ?? tests/results/",
+            }),
+        );
+        component.refreshStatus();
+        tick();
+        fixture.detectChanges();
+
+        const el = fixture.nativeElement as HTMLElement;
+        const retryBtn = el.querySelector<HTMLButtonElement>(
+            '[data-test="BTN_Retry_Force_Update"]',
+        );
+        expect(retryBtn).toBeTruthy();
+
+        retryBtn!.click();
+        tick();
+
+        expect(component.force).toBeTrue();
+        expect(updateServiceSpy.startUpdate).toHaveBeenCalledWith(
+            jasmine.objectContaining({
+                channel: "release",
+                force: true,
+                confirmation: "UPDATE",
+            }),
+        );
+    }));
+
+    it("renders preflight readiness checks and blocks update start when disk_space fails", () => {
+        component.status = {
+            state: "idle",
+            classification: "idle",
+            readiness: {
+                ready: false,
+                checks: [
+                    {
+                        name: "shared_directory",
+                        status: "ok",
+                        detail: "Shared update directory is mounted and writable.",
+                    },
+                    {
+                        name: "disk_space",
+                        status: "failed",
+                        detail: "Insufficient free disk space for this update: required 16384 MiB (16777216 KiB), available 15597 MiB (15971308 KiB).",
+                        repair: "Free space (docker builder prune -af; docker image prune -f), then retry.",
+                    },
+                ],
+            },
+        };
+        component.confirmation = "UPDATE";
+        fixture.detectChanges();
+
+        const el = fixture.nativeElement as HTMLElement;
+        expect(component.canStart).toBeFalse();
+        expect(
+            el
+                .querySelector('[data-test="BADGE_Update_Readiness"]')
+                ?.textContent?.trim(),
+        ).toBe("Prerequisites not met");
+        const diskChip = el.querySelector(
+            '[data-test="CHK_Preflight_disk_space"]',
+        );
+        expect(diskChip).toBeTruthy();
+        expect(diskChip?.classList.contains("preflight-failed")).toBeTrue();
+        expect(diskChip?.textContent).toContain("Free disk space");
+        expect(diskChip?.textContent).toContain("15597 MiB");
+    });
 });

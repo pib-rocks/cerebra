@@ -53,7 +53,7 @@ export class UpdateComponent implements OnInit, OnDestroy {
     readonly jobStorageKey = "pib.update.jobId";
     private readonly pollMs = 2000;
     private readonly checkTimeoutMs = 120000;
-    private readonly maintenanceLimitMs = 90000;
+    private readonly maintenanceLimitMs = 300000;
     private readonly maxLogChars = 100000;
     private readonly maxLogFailures = 5;
 
@@ -258,6 +258,33 @@ export class UpdateComponent implements OnInit, OnDestroy {
             .join(" ");
     }
 
+    get readinessChecks() {
+        return this.status?.readiness?.checks ?? [];
+    }
+
+    readinessCheckLabel(name: string): string {
+        switch (name) {
+            case "disk_space":
+                return "Free disk space";
+            case "shared_directory":
+                return "Update directory";
+            case "runner":
+                return "Update runner";
+            case "host_units":
+                return "Systemd units";
+            case "update_check":
+                return "Release checker";
+            default:
+                return name.replace(/_/g, " ");
+        }
+    }
+
+    isReadinessCheckOk(status: string): boolean {
+        return (
+            status === "ok" || status === "attested" || status === "declared"
+        );
+    }
+
     get isActive(): boolean {
         return this.isActiveStatus(this.status);
     }
@@ -268,6 +295,31 @@ export class UpdateComponent implements OnInit, OnDestroy {
 
     get isStale(): boolean {
         return this.status?.classification === "stale";
+    }
+
+    get canRetryWithForce(): boolean {
+        if (this.isActive || this.starting) {
+            return false;
+        }
+        const message = this.status?.message ?? "";
+        return (
+            this.status?.state === "failed" &&
+            (message.includes("retry with force=true") ||
+                message.includes("has local changes"))
+        );
+    }
+
+    retryWithForce(): void {
+        this.force = true;
+        this.confirmation = this.confirmationToken;
+        if (!this.ordinaryUpdate && this.channel === "release") {
+            this.acknowledgeException = true;
+        }
+        if (this.channel === "develop") {
+            this.acknowledgeException = true;
+        }
+        this.cdr.markForCheck();
+        this.startUpdate();
     }
 
     get logExcerpt(): string {
@@ -822,7 +874,11 @@ export class UpdateComponent implements OnInit, OnDestroy {
             this.maintenanceMessage = null;
             this.statusError =
                 "The update service stayed unreachable after the maintenance window. This is a connection failure, not a finished update result.";
-            this.stopStatusPolling();
+            if (this.isActive || this.attachedJobId) {
+                this.scheduleStatusPoll(15000);
+            } else {
+                this.stopStatusPolling();
+            }
             this.cdr.markForCheck();
             return;
         }

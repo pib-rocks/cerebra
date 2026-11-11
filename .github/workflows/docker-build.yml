@@ -6,10 +6,12 @@ name: Docker Build Pipeline
 on:
   release:
     types: [published]
+  push:
+    branches: [develop]
   workflow_dispatch:
     inputs:
       tag:
-        description: "Release tag to build (e.g. v0.6.4)"
+        description: "Release tag to build (e.g. v0.6.4) or develop"
         required: true
         type: string
 
@@ -19,7 +21,7 @@ jobs:
     # github.event.head_commit.message cannot see '[skip ci]'. Publishing the
     # release always builds.
     name: Build & Push Docker Image
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
 
     permissions:
       contents: read
@@ -31,11 +33,12 @@ jobs:
       uses: actions/checkout@v7
       with:
         fetch-depth: 0  # Fetch all history for tags
-        # Dispatch builds the requested tag. A published release already
-        # checks out that tag (github.ref is refs/tags/<tag>). An empty
+        # Dispatch builds the requested tag or develop branch. A published
+        # release already checks out that tag (github.ref is refs/tags/<tag>).
+        # Push to develop checks out the pushed commit on develop. An empty
         # dispatch tag is falsy, so this falls through to github.ref and the
         # next step rejects the run instead of guessing a version.
-        ref: ${{ (github.event_name == 'workflow_dispatch' && inputs.tag) || github.ref }}
+        ref: ${{ (github.event_name == 'workflow_dispatch' && inputs.tag == 'develop' && 'develop') || (github.event_name == 'workflow_dispatch' && inputs.tag) || github.ref }}
 
     - name: Resolve and validate the release tag
       id: get_tag
@@ -43,7 +46,24 @@ jobs:
         EVENT_NAME: ${{ github.event_name }}
         RELEASE_TAG: ${{ github.event.release.tag_name }}
         INPUT_TAG: ${{ inputs.tag }}
+        REF_NAME: ${{ github.ref_name }}
       run: |
+        if [ "$EVENT_NAME" = "push" ] && [ "$REF_NAME" = "develop" ]; then
+          echo "channel=develop" >> "$GITHUB_OUTPUT"
+          echo "tag=develop" >> "$GITHUB_OUTPUT"
+          echo "Resolved develop channel build for commit ${GITHUB_SHA}"
+          exit 0
+        fi
+
+        if [ "$EVENT_NAME" = "workflow_dispatch" ] && [ "$INPUT_TAG" = "develop" ]; then
+          echo "channel=develop" >> "$GITHUB_OUTPUT"
+          echo "tag=develop" >> "$GITHUB_OUTPUT"
+          echo "Resolved develop channel build (manual dispatch)"
+          exit 0
+        fi
+
+        echo "channel=release" >> "$GITHUB_OUTPUT"
+
         # The tag is the only source of truth: the published release supplies
         # it, or a manual run supplies inputs.tag. Never fall back to the
         # newest tag on HEAD^2 or HEAD. Two releases can point at the same
@@ -83,6 +103,7 @@ jobs:
     # backend release already exists. A cerebra image must never be published
     # against a backend version that was never released.
     - name: Require the same published release in pib-backend
+      if: steps.get_tag.outputs.channel != 'develop'
       env:
         # Optional: a token with read access to pib-backend raises the API rate
         # limit from 60/h (unauthenticated) to 5000/h. Both repos are public,
@@ -138,13 +159,28 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
-    # No `if:` guard needed - the run has already failed if there is no tag.
-    # source must be the checkout. With no source, bake-action builds the Git
-    # context https://github.com/<owner>/<repo>.git#<github.sha>. On
-    # workflow_dispatch that SHA is the branch tip, not the tag this job
+    # No `if:` guard needed on release builds - the run has already failed if
+    # there is no tag. source must be the checkout. With no source, bake-action
+    # builds the Git context https://github.com/<owner>/<repo>.git#<github.sha>.
+    # On workflow_dispatch that SHA is the branch tip, not the tag this job
     # checked out and validated. A local path follows that checkout, which is
     # the tag on both the dispatch path and the release path.
-    - name: Build and push Docker with tags
+    - name: Build and push Docker with tags (develop)
+      if: steps.get_tag.outputs.channel == 'develop'
+      uses: docker/bake-action@v7
+      with:
+        source: .
+        push: true
+        set: |
+          *.platform=linux/arm64
+          *.cache-from=type=registry,ref=ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}-cache:buildcache
+          *.cache-to=type=registry,ref=ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}-cache:buildcache,mode=max
+          *.tags=ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:${{ github.sha }}
+          *.tags+=ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:develop
+          *.args.APP_VERSION=develop
+
+    - name: Build and push Docker with tags (release)
+      if: steps.get_tag.outputs.channel == 'release'
       uses: docker/bake-action@v7
       with:
         source: .
