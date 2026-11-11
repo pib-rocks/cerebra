@@ -667,4 +667,36 @@ describe("UpdateComponent", () => {
                 ?.textContent?.trim(),
         ).toBe("develop");
     });
+
+    it("offers a one-click Retry with force update button when an update fails due to local changes", fakeAsync(() => {
+        updateServiceSpy.getStatus.and.returnValue(
+            of({
+                state: "failed",
+                classification: "failed",
+                message:
+                    "pib-backend has local changes; retry with force=true to discard: ?? tests/results/",
+            }),
+        );
+        component.refreshStatus();
+        tick();
+        fixture.detectChanges();
+
+        const el = fixture.nativeElement as HTMLElement;
+        const retryBtn = el.querySelector<HTMLButtonElement>(
+            '[data-test="BTN_Retry_Force_Update"]',
+        );
+        expect(retryBtn).toBeTruthy();
+
+        retryBtn!.click();
+        tick();
+
+        expect(component.force).toBeTrue();
+        expect(updateServiceSpy.startUpdate).toHaveBeenCalledWith(
+            jasmine.objectContaining({
+                channel: "release",
+                force: true,
+                confirmation: "UPDATE",
+            }),
+        );
+    }));
 });

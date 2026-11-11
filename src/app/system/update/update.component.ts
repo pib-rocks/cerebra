@@ -270,6 +270,31 @@ export class UpdateComponent implements OnInit, OnDestroy {
         return this.status?.classification === "stale";
     }
 
+    get canRetryWithForce(): boolean {
+        if (this.isActive || this.starting) {
+            return false;
+        }
+        const message = this.status?.message ?? "";
+        return (
+            this.status?.state === "failed" &&
+            (message.includes("retry with force=true") ||
+                message.includes("has local changes"))
+        );
+    }
+
+    retryWithForce(): void {
+        this.force = true;
+        this.confirmation = this.confirmationToken;
+        if (!this.ordinaryUpdate && this.channel === "release") {
+            this.acknowledgeException = true;
+        }
+        if (this.channel === "develop") {
+            this.acknowledgeException = true;
+        }
+        this.cdr.markForCheck();
+        this.startUpdate();
+    }
+
     get logExcerpt(): string {
         const excerptLength = 4000;
         return this.log.length > excerptLength
