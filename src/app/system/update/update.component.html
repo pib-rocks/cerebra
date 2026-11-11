@@ -1,5 +1,5 @@
 <div class="update-container p-3">
-    <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="update-header mb-4">
         <div>
             <h3 class="text-white mb-1">System Update</h3>
             <p class="text-muted mb-0">
@@ -10,7 +10,7 @@
         <button
             id="btn-refresh-update-status"
             data-test="BTN_Refresh_Update_Status"
-            class="btn btn-outline-light"
+            class="btn btn-outline-light btn-sm px-3"
             [disabled]="statusLoading"
             (click)="refreshStatus()">
             <i
@@ -67,113 +67,163 @@
     <div class="alert alert-danger">{{ actionError }}</div>
     }
 
-    <div class="card p-3 shadow-sm mb-4">
-        <h4 class="card-title text-white">Installed version</h4>
-        @if (installedError) {
-        <div class="alert alert-danger">{{ installedError }}</div>
-        } @if (installedLoading && !installed) {
-        <p class="text-muted">Loading installed version...</p>
-        } @if (installed) {
-        <p class="text-light mb-1">
-            Image version:
-            <strong data-test="TXT_Image_Version">
-                {{ installedVersionLabel(installed) }}
-            </strong>
-        </p>
-        <p class="text-light mb-0">
-            Device channel:
-            <strong data-test="TXT_Device_Channel"
-                >{{ installedChannelLabel(installed) }}</strong
-            >
-        </p>
-        @if (deviceChannel === "develop") {
-        <p
-            class="text-warning mt-2 mb-0"
-            data-test="TXT_Develop_Device">
-            This device is on the development channel. A stable release install
-            leaves that channel; it is not an ordinary newer-version update.
-        </p>
-        } }
-    </div>
-
-    <div class="card p-3 shadow-sm mb-4">
-        <div
-            class="d-flex justify-content-between align-items-center flex-wrap mb-3">
-            <h4 class="card-title text-white mb-2">Available release</h4>
-            <button
-                id="btn-check-updates"
-                data-test="BTN_Check_Updates"
-                class="btn btn-info mb-2"
-                [disabled]="availabilityLoading || isActive"
-                (click)="checkForUpdates()">
-                <i
-                    class="fas fa-search me-1"
-                    [class.fa-spin]="availabilityLoading"></i>
-                {{ availabilityLoading ? "Checking..." : "Check again" }}
-            </button>
+    <div class="update-overview-grid mb-4">
+        <div class="card p-3 shadow-sm h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="card-title text-white mb-0">Installed version</h4>
+                <span class="badge bg-secondary text-uppercase">Current</span>
+            </div>
+            @if (installedError) {
+            <div class="alert alert-danger mb-0">{{ installedError }}</div>
+            } @if (installedLoading && !installed) {
+            <p class="text-muted mb-0">Loading installed version...</p>
+            } @if (installed) {
+            <div class="version-kv-grid">
+                <div class="version-kv-item">
+                    <span class="version-kv-label">Image version</span>
+                    <strong
+                        class="version-kv-value"
+                        data-test="TXT_Image_Version">
+                        {{ installedVersionLabel(installed) }}
+                    </strong>
+                </div>
+                <div class="version-kv-item">
+                    <span class="version-kv-label">Device channel</span>
+                    <strong
+                        class="version-kv-value"
+                        data-test="TXT_Device_Channel"
+                        >{{ installedChannelLabel(installed) }}</strong
+                    >
+                </div>
+            </div>
+            @if (deviceChannel === "develop") {
+            <p
+                class="text-warning mt-3 mb-0 small"
+                data-test="TXT_Develop_Device">
+                This device is on the development channel. A stable release
+                install leaves that channel; it is not an ordinary newer-version
+                update.
+            </p>
+            } }
         </div>
 
-        @if (availabilityUnavailable) {
-        <div
-            class="alert alert-secondary"
-            data-test="TXT_Availability_Unavailable">
-            {{ availabilityUnavailable }}
-        </div>
-        } @if (availabilityError) {
-        <div class="alert alert-danger">{{ availabilityError }}</div>
-        } @if (previousAvailability && availabilityLoading) {
-        <p class="text-muted">
-            Showing the previous result while check {{ pendingCheckLabel }} is
-            still running.
-        </p>
-        } @if (recommendation) {
-        <p class="text-light">
-            <strong data-test="TXT_Available_Release"
-                >{{ recommendation.tag }}</strong
-            >
-            — {{ relationText(recommendation.relation) }}
-        </p>
-        <div
-            class="release-notes"
-            data-test="TXT_Release_Notes">
-            @for (group of visibleReleaseNoteGroups; track $index) { @if
-            (group.kind === "heading") {
-            <p class="release-notes-heading">{{ group.lines[0] }}</p>
-            } @else if (group.kind === "bullets") {
-            <ul class="release-notes-list">
-                @for (line of group.lines; track $index) {
-                <li>{{ line }}</li>
+        <div class="card p-3 shadow-sm h-100">
+            <div
+                class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                <h4 class="card-title text-white mb-0">Available release</h4>
+                <button
+                    id="btn-check-updates"
+                    data-test="BTN_Check_Updates"
+                    class="btn btn-info btn-sm px-3"
+                    [disabled]="availabilityLoading || isActive"
+                    (click)="checkForUpdates()">
+                    <i
+                        class="fas fa-search me-1"
+                        [class.fa-spin]="availabilityLoading"></i>
+                    {{ availabilityLoading ? "Checking..." : "Check again" }}
+                </button>
+            </div>
+
+            @if (availabilityUnavailable) {
+            <div
+                class="alert alert-secondary mb-0"
+                data-test="TXT_Availability_Unavailable">
+                {{ availabilityUnavailable }}
+            </div>
+            } @if (availabilityError) {
+            <div class="alert alert-danger mb-0">{{ availabilityError }}</div>
+            } @if (previousAvailability && availabilityLoading) {
+            <p class="text-muted small">
+                Showing the previous result while check {{ pendingCheckLabel }}
+                is still running.
+            </p>
+            } @if (recommendation) {
+            <div class="available-release-header mb-2">
+                <strong
+                    class="available-tag"
+                    data-test="TXT_Available_Release"
+                    >{{ recommendation.tag }}</strong
+                >
+                <span class="badge bg-info text-dark ms-2">
+                    {{ relationText(recommendation.relation) }}
+                </span>
+            </div>
+            <div
+                class="release-notes"
+                data-test="TXT_Release_Notes">
+                @for (group of visibleReleaseNoteGroups; track $index) { @if
+                (group.kind === "heading") {
+                <p class="release-notes-heading">{{ group.lines[0] }}</p>
+                } @else if (group.kind === "bullets") {
+                <ul class="release-notes-list">
+                    @for (line of group.lines; track $index) {
+                    <li>{{ line }}</li>
+                    }
+                </ul>
+                } @else {
+                <p class="release-notes-text">{{ group.lines[0] }}</p>
+                } } @if (hasMoreReleaseNotes && !releaseNotesExpanded) {
+                <p class="release-notes-more">...</p>
+                } @if (hasMoreReleaseNotes || releaseNotesExpanded) {
+                <button
+                    id="btn-toggle-release-notes"
+                    data-test="BTN_Toggle_Release_Notes"
+                    type="button"
+                    class="btn btn-link p-0 release-notes-toggle"
+                    (click)="toggleReleaseNotes()">
+                    {{ releaseNotesExpanded ? "Show fewer release notes" : "Show
+                    all release notes (" + hiddenReleaseNoteLineCount + " more
+                    lines)" }}
+                </button>
                 }
-            </ul>
-            } @else {
-            <p class="release-notes-text">{{ group.lines[0] }}</p>
-            } } @if (hasMoreReleaseNotes && !releaseNotesExpanded) {
-            <p class="release-notes-more">...</p>
-            } @if (hasMoreReleaseNotes || releaseNotesExpanded) {
-            <button
-                id="btn-toggle-release-notes"
-                data-test="BTN_Toggle_Release_Notes"
-                type="button"
-                class="btn btn-link p-0 release-notes-toggle"
-                (click)="toggleReleaseNotes()">
-                {{ releaseNotesExpanded ? "Show fewer release notes" : "Show all
-                release notes (" + hiddenReleaseNoteLineCount + " more lines)"
-                }}
-            </button>
+            </div>
+            } @else if (availability) {
+            <p class="text-muted mb-0">
+                No installable published release pair was reported. Checked: {{
+                availability.checkedAt ? (availability.checkedAt | date:
+                "medium") : "time not reported" }}
+            </p>
             }
         </div>
-        } @else if (availability) {
-        <p class="text-muted">
-            No installable published release pair was reported. Checked: {{
-            availability.checkedAt ? (availability.checkedAt | date: "medium") :
-            "time not reported" }}
-        </p>
-        }
     </div>
 
     <div class="card p-3 shadow-sm mb-4">
-        <h4 class="card-title text-white">Install release</h4>
-        <div class="alert alert-warning">
+        <div
+            class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+            <h4 class="card-title text-white mb-0">Install release</h4>
+            @if (status?.readiness; as readiness) {
+            <span
+                class="badge"
+                data-test="BADGE_Update_Readiness"
+                [ngClass]="readiness.ready ? 'bg-success' : 'bg-danger'">
+                {{ readiness.ready ? "Prerequisites met" : "Prerequisites not
+                met" }}
+            </span>
+            }
+        </div>
+
+        @if (readinessChecks.length > 0) {
+        <div
+            class="preflight-checks mb-3"
+            data-test="LIST_Preflight_Checks">
+            @for (check of readinessChecks; track check.name) {
+            <div
+                class="preflight-chip"
+                [attr.data-test]="'CHK_Preflight_' + check.name"
+                [class.preflight-ok]="isReadinessCheckOk(check.status)"
+                [class.preflight-failed]="!isReadinessCheckOk(check.status)"
+                [title]="check.detail + (check.repair ? ' ' + check.repair : '')">
+                <span class="preflight-dot"></span>
+                <span class="preflight-name"
+                    >{{ readinessCheckLabel(check.name) }}</span
+                >
+                <span class="preflight-detail">{{ check.detail }}</span>
+            </div>
+            }
+        </div>
+        }
+
+        <div class="alert alert-warning py-2 mb-3">
             An update replaces the running stack. Expect brief downtime and
             running programs to stop.
         </div>
@@ -188,65 +238,68 @@
         </div>
         } @if (visibleInstallBlocker && !isActive) {
         <p
-            class="text-muted"
+            class="text-warning mb-3"
             data-test="TXT_Install_Blocker">
             {{ visibleInstallBlocker }}
         </p>
         }
 
-        <div class="mb-3">
-            <label
-                class="text-light"
-                for="update-confirmation">
-                Type <strong>{{ confirmationToken }}</strong> to confirm
-            </label>
-            <input
-                id="update-confirmation"
-                data-test="INP_Update_Confirmation"
-                class="form-control confirmation-input"
-                type="text"
-                autocomplete="off"
-                [disabled]="isActive || starting"
-                [(ngModel)]="confirmation" />
-        </div>
+        <div class="install-controls-bar">
+            <div class="install-confirm-group">
+                <label
+                    class="text-light form-label mb-1"
+                    for="update-confirmation">
+                    Type <strong>{{ confirmationToken }}</strong> to confirm
+                </label>
+                <input
+                    id="update-confirmation"
+                    data-test="INP_Update_Confirmation"
+                    class="form-control confirmation-input"
+                    type="text"
+                    placeholder="UPDATE"
+                    autocomplete="off"
+                    [disabled]="isActive || starting"
+                    [(ngModel)]="confirmation" />
+            </div>
 
-        <div class="form-check form-switch mb-3">
-            <input
-                id="update-force"
-                data-test="SWT_Update_Force"
-                class="form-check-input"
-                type="checkbox"
-                role="switch"
-                [disabled]="isActive || starting"
-                [(ngModel)]="force" />
-            <label
-                class="form-check-label text-light"
-                for="update-force">
-                Force update and discard local changes
-            </label>
-        </div>
+            <div class="form-check form-switch install-force-group mb-0">
+                <input
+                    id="update-force"
+                    data-test="SWT_Update_Force"
+                    class="form-check-input"
+                    type="checkbox"
+                    role="switch"
+                    [disabled]="isActive || starting"
+                    [(ngModel)]="force" />
+                <label
+                    class="form-check-label text-light"
+                    for="update-force">
+                    Force update and discard local changes
+                </label>
+            </div>
 
-        <button
-            id="btn-start-update"
-            data-test="BTN_Start_Update"
-            class="btn btn-danger me-2"
-            [disabled]="!canStart"
-            (click)="startUpdate()">
-            {{ starting ? "Starting..." : channel === "develop" ? "Install
-            development build" : "Install release" }}
-        </button>
+            <button
+                id="btn-start-update"
+                data-test="BTN_Start_Update"
+                class="btn btn-danger install-submit-btn"
+                [disabled]="!canStart"
+                (click)="startUpdate()">
+                {{ starting ? "Starting..." : channel === "develop" ? "Install
+                development build" : "Install release" }}
+            </button>
+        </div>
     </div>
 
     @if (status && (isActive || isTerminal)) {
     <div class="card p-3 shadow-sm mb-4">
         <div
-            class="d-flex justify-content-between align-items-center flex-wrap">
-            <h4 class="card-title text-white">Current phase</h4>
+            class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+            <h4 class="card-title text-white mb-0">Current phase</h4>
             @if (isActive) {
             <button
                 id="btn-cancel-update"
                 data-test="BTN_Cancel_Update"
-                class="btn btn-outline-warning"
+                class="btn btn-outline-warning btn-sm px-3"
                 [disabled]="cancelling || status.cancelRequested"
                 (click)="cancelUpdate()">
                 {{ status.cancelRequested ? "Cancellation requested" :
@@ -256,7 +309,7 @@
         </div>
         @if (isActive) {
         <p
-            class="text-muted"
+            class="text-muted small mb-2"
             data-test="TXT_Cancel_Safety">
             @if (status.cancelSafe) { Cancellation is currently safe between
             phases. It does not roll back by itself. } @else { Cancellation
@@ -278,7 +331,7 @@
             }
         </div>
         <p
-            class="text-light"
+            class="text-light mb-2"
             data-test="TXT_Update_Progress">
             {{ status.message || "No progress message reported." }}
         </p>
@@ -345,7 +398,7 @@
             }
         </ul>
         <button
-            class="btn btn-outline-light"
+            class="btn btn-outline-light align-self-start"
             data-test="BTN_Reload_Frontend"
             type="button"
             (click)="reloadFrontend()">
@@ -353,7 +406,7 @@
         </button>
         } @else if (status.state === "cancelled") {
         <h4 class="text-warning">Update cancelled</h4>
-        <p class="text-light">
+        <p class="text-light mb-0">
             {{ status.message || "The update was cancelled." }} Cancellation is
             not a rollback.
         </p>
@@ -370,14 +423,14 @@
             type="button"
             id="btn-retry-force-update"
             data-test="BTN_Retry_Force_Update"
-            class="btn btn-warning mb-3"
+            class="btn btn-warning align-self-start mb-2"
             [disabled]="isActive || starting"
             (click)="retryWithForce()">
             Retry with force update
         </button>
         } } @if ((status.unhealthyServices ?? []).length > 0) {
         <div
-            class="alert alert-warning"
+            class="alert alert-warning mb-0 mt-2"
             data-test="TXT_Unhealthy_Services">
             <strong>Service warning:</strong> Services that were already
             unhealthy before the update do not fail it.
@@ -395,29 +448,56 @@
     <details
         class="card p-3 shadow-sm mb-4"
         data-test="DETAILS_Update_Expert">
-        <summary class="text-white h5">Details / Expert</summary>
+        <summary class="text-white h5 mb-0">Details / Expert</summary>
         <p class="text-muted mt-3">
             Revisions, logs, force, and the development channel. A normal
             release install does not need these.
         </p>
 
-        <div class="mb-3">
-            <label
-                class="text-light"
-                for="update-channel">
-                Channel
-            </label>
-            <select
-                id="update-channel"
-                data-test="INP_Update_Channel"
-                class="form-select"
-                [disabled]="isActive || starting"
-                [(ngModel)]="channel">
-                <option value="release">release — published stable pair</option>
-                <option value="develop">
-                    develop — expert / development operation
-                </option>
-            </select>
+        <div class="row g-3 mb-3">
+            <div class="col-md-6">
+                <label
+                    class="text-light form-label"
+                    for="update-channel">
+                    Channel
+                </label>
+                <select
+                    id="update-channel"
+                    data-test="INP_Update_Channel"
+                    class="form-select"
+                    [disabled]="isActive || starting"
+                    [(ngModel)]="channel">
+                    <option value="release">
+                        release — published stable pair
+                    </option>
+                    <option value="develop">
+                        develop — expert / development operation
+                    </option>
+                </select>
+            </div>
+
+            @if ((availability?.releases ?? []).length > 0) {
+            <div class="col-md-6">
+                <label
+                    class="text-light form-label"
+                    for="update-release-choice">
+                    Release to install
+                </label>
+                <select
+                    id="update-release-choice"
+                    class="form-select"
+                    [disabled]="isActive || starting || channel !== 'release'"
+                    [(ngModel)]="chosenTag">
+                    <option value="">Latest installable pair</option>
+                    @for (release of availability?.releases ?? []; track
+                    release.tag) {
+                    <option [value]="release.tag">
+                        {{ release.tag }} — {{ relationText(release.relation) }}
+                    </option>
+                    }
+                </select>
+            </div>
+            }
         </div>
 
         @if (channel === "develop") {
@@ -434,27 +514,6 @@
                 >
             </div>
             }
-        </div>
-        } @if ((availability?.releases ?? []).length > 0) {
-        <div class="mb-3">
-            <label
-                class="text-light"
-                for="update-release-choice">
-                Release to install
-            </label>
-            <select
-                id="update-release-choice"
-                class="form-select"
-                [disabled]="isActive || starting || channel !== 'release'"
-                [(ngModel)]="chosenTag">
-                <option value="">Latest installable pair</option>
-                @for (release of availability?.releases ?? []; track
-                release.tag) {
-                <option [value]="release.tag">
-                    {{ release.tag }} — {{ relationText(release.relation) }}
-                </option>
-                }
-            </select>
         </div>
         } @if ((availability?.incomplete ?? []).length > 0) {
         <div class="alert alert-secondary">
