@@ -28,6 +28,7 @@ export class DockerManagementComponent implements OnInit, OnDestroy {
 
     actionLoading: {[containerName: string]: boolean} = {};
     purging = false;
+    pendingStopCoreContainer: string | null = null;
 
     // Log Modal state
     showLogModal = false;
@@ -90,12 +91,33 @@ export class DockerManagementComponent implements OnInit, OnDestroy {
         });
     }
 
+    isCoreContainer(name: string | undefined): boolean {
+        if (!name) return false;
+        const lower = name.toLowerCase();
+        return lower.includes("angular-app") || lower.includes("flask-app");
+    }
+
     toggleContainerStartStop(container: DockerContainer): void {
         if (container.status === "running") {
+            if (this.isCoreContainer(container.name)) {
+                this.pendingStopCoreContainer = container.name;
+                this.cdr.markForCheck();
+                return;
+            }
             this.stopContainer(container.name);
         } else {
             this.startContainer(container.name);
         }
+    }
+
+    confirmStopCoreContainer(name: string): void {
+        this.pendingStopCoreContainer = null;
+        this.stopContainer(name);
+    }
+
+    cancelStopCoreContainer(): void {
+        this.pendingStopCoreContainer = null;
+        this.cdr.markForCheck();
     }
 
     stopContainer(name: string): void {

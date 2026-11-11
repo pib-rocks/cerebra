@@ -1,11 +1,22 @@
 <div class="docker-container p-3">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3 class="text-white">Docker Container Management</h3>
+    <div
+        class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+        <div>
+            <h3 class="text-white mb-1">Docker Container Management</h3>
+            <p
+                class="text-muted small mb-0"
+                data-test="TXT_Purge_Docker_Help">
+                <strong>Purge Docker</strong> safely removes stopped containers,
+                unused images, and build cache to free disk space. Running
+                containers are not affected.
+            </p>
+        </div>
         <div>
             <button
                 id="btn-purge-docker"
                 data-test="BTN_Purge_Docker"
                 class="btn btn-danger me-2"
+                title="Remove stopped containers, unused images, and BuildKit cache without affecting running containers"
                 [disabled]="purging || loading"
                 (click)="purgeDocker()">
                 <i
@@ -27,7 +38,38 @@
         </div>
     </div>
 
-    @if (error) {
+    @if (pendingStopCoreContainer) {
+    <div
+        class="alert alert-warning d-flex justify-content-between align-items-center flex-wrap gap-2"
+        data-test="ALERT_Confirm_Stop_Core">
+        <div>
+            <strong>Warning:</strong>
+            <code>{{ pendingStopCoreContainer }}</code> is an essential core
+            service. Stopping it will disconnect the Cerebra web interface or
+            backend API until restarted on the robot host.
+        </div>
+        <div class="d-flex gap-2">
+            <button
+                type="button"
+                class="btn btn-sm btn-danger"
+                [attr.data-test]="
+                    'BTN_Confirm_Stop_Core_' + pendingStopCoreContainer
+                "
+                (click)="confirmStopCoreContainer(pendingStopCoreContainer)">
+                Stop anyway
+            </button>
+            <button
+                type="button"
+                class="btn btn-sm btn-outline-light"
+                [attr.data-test]="
+                    'BTN_Cancel_Stop_Core_' + pendingStopCoreContainer
+                "
+                (click)="cancelStopCoreContainer()">
+                Cancel
+            </button>
+        </div>
+    </div>
+    } @if (error) {
     <div class="alert alert-danger alert-dismissible fade show">
         {{ error }}
     </div>
@@ -55,7 +97,16 @@
                 <tbody>
                     @for (c of containers; track c) {
                     <tr>
-                        <td class="align-middle fw-bold">{{ c.name }}</td>
+                        <td class="align-middle fw-bold">
+                            {{ c.name }} @if (isCoreContainer(c.name)) {
+                            <span
+                                class="badge bg-info text-dark ms-2"
+                                [attr.data-test]="'BADGE_Core_Container_' + c.name"
+                                title="Essential system service for the Cerebra UI or backend API">
+                                Core
+                            </span>
+                            }
+                        </td>
                         <td class="align-middle text-muted">
                             <code>{{ c.image || 'N/A' }}</code>
                         </td>
