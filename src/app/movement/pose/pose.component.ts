@@ -42,6 +42,7 @@ export class PoseComponent implements OnInit {
     importPreview?: PoseTransfer;
     importErrors: string[] = [];
     importWarnings: string[] = [];
+    pendingUpdatePose?: Pose;
 
     nameFormControl: FormControl<string | null> = new FormControl("", {
         validators: [
@@ -98,14 +99,27 @@ export class PoseComponent implements OnInit {
         this.selectedPoseId = pose.poseId;
     }
 
-    updatePoseMotorPositions(pose: Pose) {
+    requestUpdatePose(pose: Pose) {
         if (!pose.deletable && pose.name !== "Startup/Resting") {
             return;
         }
+        this.pendingUpdatePose = pose;
         this.selectPose(pose);
+    }
+
+    confirmUpdatePoseMotorPositions() {
+        const pose = this.pendingUpdatePose;
+        if (!pose) {
+            return;
+        }
         this.poseService.updatePoseMotorPositions(pose.poseId).subscribe(() => {
+            this.pendingUpdatePose = undefined;
             this.showToast("Pose updated successfully");
         });
+    }
+
+    cancelUpdatePoseMotorPositions() {
+        this.pendingUpdatePose = undefined;
     }
 
     openPoseImportFileDialog(): void {

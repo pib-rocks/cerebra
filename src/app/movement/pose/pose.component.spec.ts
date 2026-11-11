@@ -160,20 +160,38 @@ describe("PoseComponent", () => {
         expect(component.selectedPoseId).toEqual(pose3.poseId);
     });
 
-    it("should update motor positions of the selected pose", () => {
+    it("should prompt before updating motor positions of the selected pose", () => {
+        component.requestUpdatePose(pose1);
+
+        expect(component.selectedPoseId).toEqual(pose1.poseId);
+        expect(component.pendingUpdatePose).toEqual(pose1);
+        expect(poseService.updatePoseMotorPositions).not.toHaveBeenCalled();
+    });
+
+    it("should update motor positions after confirmation", () => {
         poseService.updatePoseMotorPositions.and.returnValue(of(undefined));
 
-        component.updatePoseMotorPositions(pose1);
+        component.requestUpdatePose(pose1);
+        component.confirmUpdatePoseMotorPositions();
 
         expect(poseService.updatePoseMotorPositions).toHaveBeenCalledOnceWith(
             pose1.poseId,
         );
         expect(component.selectedPoseId).toEqual(pose1.poseId);
+        expect(component.pendingUpdatePose).toBeUndefined();
         expect(matSnackBarService.open).toHaveBeenCalledOnceWith(
             "Pose updated successfully",
             "",
             {panelClass: "cerebra-toast", duration: 3000},
         );
+    });
+
+    it("should not update motor positions when update confirmation is cancelled", () => {
+        component.requestUpdatePose(pose1);
+        component.cancelUpdatePoseMotorPositions();
+
+        expect(poseService.updatePoseMotorPositions).not.toHaveBeenCalled();
+        expect(component.pendingUpdatePose).toBeUndefined();
     });
 
     it("should not rename a non-deletable pose", () => {
@@ -192,7 +210,8 @@ describe("PoseComponent", () => {
             "id-calibration",
             false,
         );
-        component.updatePoseMotorPositions(nonDeletablePose);
+        component.requestUpdatePose(nonDeletablePose);
         expect(poseService.updatePoseMotorPositions).not.toHaveBeenCalled();
+        expect(component.pendingUpdatePose).toBeUndefined();
     });
 });
