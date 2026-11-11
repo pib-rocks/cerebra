@@ -10,7 +10,9 @@ import {RosService} from "../shared/services/ros-service/ros.service";
 import {By} from "@angular/platform-browser";
 import {NgbPopover} from "@ng-bootstrap/ng-bootstrap";
 import {CameraService} from "../shared/services/camera.service";
+import {MotorService} from "../shared/services/motor.service";
 import {ApiService} from "../shared/services/api.service";
+import {of} from "rxjs";
 import {HttpClientTestingModule} from "@angular/common/http/testing";
 import {HorizontalSliderComponent} from "../sliders/horizontal-slider/horizontal-slider.component";
 import {
@@ -1308,5 +1310,67 @@ describe("VisionComponent", () => {
         fixture.detectChanges();
         expect(workspace.classList.contains("model-list-collapse")).toBeFalse();
         expect(icon?.classList.contains("bi-chevron-right")).toBeTrue();
+    });
+
+    const zoomStageTransform = (): string =>
+        (
+            fixture.debugElement.query(By.css(".camera-zoom-stage"))
+                .nativeElement as HTMLElement
+        ).style.transform;
+
+    it("zoomIn should increase zoomLevel and scale the camera stage", () => {
+        component.zoomIn();
+        fixture.detectChanges();
+        expect(component.zoomLevel).toBe(1.5);
+        expect(zoomStageTransform()).toBe("scale(1.5)");
+    });
+
+    it("zoomOut should decrease zoomLevel and scale the camera stage", () => {
+        component.zoomLevel = 2;
+        component.zoomOut();
+        fixture.detectChanges();
+        expect(component.zoomLevel).toBe(1.5);
+        expect(zoomStageTransform()).toBe("scale(1.5)");
+    });
+
+    it("resetZoom should restore zoomLevel and the camera stage scale", () => {
+        component.zoomLevel = 2.5;
+        component.resetZoom();
+        fixture.detectChanges();
+        expect(component.zoomLevel).toBe(1);
+        expect(zoomStageTransform()).toBe("scale(1)");
+    });
+
+    it("should nudge the head via toolbar buttons through MotorService", () => {
+        const motorService = TestBed.inject(MotorService);
+        spyOn(motorService, "setPosition").and.returnValue(of(undefined));
+
+        fixture.debugElement
+            .query(By.css('[data-test="BTN_Vision_Head_Left"]'))
+            .nativeElement.click();
+        expect(motorService.setPosition).toHaveBeenCalledWith(
+            "turn_head_motor",
+            -1000,
+        );
+
+        fixture.debugElement
+            .query(By.css('[data-test="BTN_Vision_Head_Up"]'))
+            .nativeElement.click();
+        expect(motorService.setPosition).toHaveBeenCalledWith(
+            "tilt_forward_motor",
+            1000,
+        );
+
+        fixture.debugElement
+            .query(By.css('[data-test="BTN_Vision_Head_Center"]'))
+            .nativeElement.click();
+        expect(motorService.setPosition).toHaveBeenCalledWith(
+            "turn_head_motor",
+            0,
+        );
+        expect(motorService.setPosition).toHaveBeenCalledWith(
+            "tilt_forward_motor",
+            0,
+        );
     });
 });

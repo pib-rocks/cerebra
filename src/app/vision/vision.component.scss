@@ -31,6 +31,13 @@ video {
     width: 100%;
     max-height: inherit;
     line-height: 0;
+    overflow: hidden;
+}
+
+.camera-zoom-stage {
+    position: relative;
+    transform-origin: center center;
+    transition: transform 0.15s ease;
 }
 
 .camera-reconfiguring-overlay {
