@@ -6,6 +6,7 @@ import {
     DestroyRef,
     inject,
 } from "@angular/core";
+import {HttpClient} from "@angular/common/http";
 import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 import {
     NavigationEnd,
@@ -36,6 +37,7 @@ import {KeyStoreSessionService} from "./system/keys/key-store-session.service";
 })
 export class AppComponent implements OnInit {
     private readonly destroyRef = inject(DestroyRef);
+    private readonly http = inject(HttpClient, {optional: true});
 
     // Below this width the navigation overlays the content instead of sitting
     // beside it, and there the collapse class means the opposite (set = shown),
@@ -78,12 +80,11 @@ export class AppComponent implements OnInit {
                 this.changeDetector.markForCheck();
             };
             this.overlayQuery.addEventListener("change", onOverlayChange);
-            this.destroyRef.onDestroy(
-                () =>
-                    this.overlayQuery?.removeEventListener(
-                        "change",
-                        onOverlayChange,
-                    ),
+            this.destroyRef.onDestroy(() =>
+                this.overlayQuery?.removeEventListener(
+                    "change",
+                    onOverlayChange,
+                ),
             );
         }
         this.session.changes
@@ -92,6 +93,23 @@ export class AppComponent implements OnInit {
                 this.changeDetector.markForCheck();
             });
         this.session.refresh();
+        if (this.appVersion.trim().toLowerCase() === "dev" && this.http) {
+            this.http
+                .get<{version?: string}>("/api/version")
+                .pipe(takeUntilDestroyed(this.destroyRef))
+                .subscribe({
+                    next: (res) => {
+                        const ver = res?.version?.trim();
+                        if (ver) {
+                            this.appVersion = ver;
+                            this.changeDetector.markForCheck();
+                        }
+                    },
+                    error: () => {
+                        // Keep build-time fallback when /api/version is unreachable.
+                    },
+                });
+        }
         this.router.events
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe((event) => {
