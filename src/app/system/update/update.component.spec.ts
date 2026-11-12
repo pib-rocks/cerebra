@@ -343,6 +343,7 @@ describe("UpdateComponent", () => {
                 },
             ],
         };
+        (component as any).cdr.markForCheck();
         fixture.detectChanges();
 
         expect(component.installBlocker).toBe(
@@ -670,12 +671,25 @@ describe("UpdateComponent", () => {
     });
 
     it("offers a one-click Retry with force update button when an update fails due to local changes", fakeAsync(() => {
+        component.availability = {
+            ...availability,
+            checkId: "check-1",
+            state: "completed",
+            channel: "release",
+            recommendation: {
+                tag: "v1.2.3",
+                relation: "newer",
+                installable: true,
+                ordinaryUpdate: true,
+            },
+        };
         updateServiceSpy.getStatus.and.returnValue(
             of({
                 state: "failed",
                 classification: "failed",
                 message:
                     "pib-backend has local changes; retry with force=true to discard: ?? tests/results/",
+                readiness: {ready: true, checks: []},
             }),
         );
         component.refreshStatus();

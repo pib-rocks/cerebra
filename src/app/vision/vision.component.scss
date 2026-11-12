@@ -36,6 +36,9 @@ video {
 
 .camera-zoom-stage {
     position: relative;
+    width: 100%;
+    height: 100%;
+    max-height: inherit;
     transform-origin: center center;
     transition: transform 0.15s ease;
 }

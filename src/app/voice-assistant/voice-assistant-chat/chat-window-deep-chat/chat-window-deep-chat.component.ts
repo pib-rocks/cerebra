@@ -371,9 +371,14 @@ export class ChatWindowDeepChatComponent
         if (!root?.querySelectorAll) {
             return;
         }
-        const nodes = root.querySelectorAll(TURN_DETAILS_SELECTOR);
+        const nodes = root.querySelectorAll(TURN_DETAILS_SELECTOR) as
+            | NodeListOf<Element>
+            | Element[];
         for (const index of indices) {
-            const details = nodes.item(index);
+            const details =
+                typeof (nodes as NodeListOf<Element>).item === "function"
+                    ? (nodes as NodeListOf<Element>).item(index)
+                    : (nodes as Element[])[index];
             if (details instanceof HTMLDetailsElement) {
                 details.open = true;
             }
@@ -821,7 +826,7 @@ export class ChatWindowDeepChatComponent
             }
             this.chatService
                 .getChatMessage(chatId, messageId)
-                .subscribe((stored) => {
+                ?.subscribe((stored) => {
                     const attachments = imageAttachments(stored?.meta);
                     if (!attachments.length) {
                         return;

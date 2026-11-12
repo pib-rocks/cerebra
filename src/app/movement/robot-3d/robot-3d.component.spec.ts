@@ -104,6 +104,9 @@ describe("Robot3DComponent", () => {
     let viewer: PibRobotView;
 
     beforeEach(async () => {
+        spyOn(PibRobotView.prototype as any, "load").and.returnValue(
+            Promise.resolve(),
+        );
         jointStates$ = new Subject<JointStateMessage>();
         applyJointTrajectory$ = new Subject<void>();
         applyJointTrajectory = jasmine
@@ -307,6 +310,9 @@ describe("movement 3d route", () => {
     let router: Router;
 
     beforeEach(async () => {
+        spyOn(PibRobotView.prototype as any, "load").and.returnValue(
+            Promise.resolve(),
+        );
         TestBed.configureTestingModule({
             imports: [MovementComponent, Robot3DComponent],
             providers: [
