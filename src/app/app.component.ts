@@ -80,11 +80,12 @@ export class AppComponent implements OnInit {
                 this.changeDetector.markForCheck();
             };
             this.overlayQuery.addEventListener("change", onOverlayChange);
-            this.destroyRef.onDestroy(() =>
-                this.overlayQuery?.removeEventListener(
-                    "change",
-                    onOverlayChange,
-                ),
+            this.destroyRef.onDestroy(
+                () =>
+                    this.overlayQuery?.removeEventListener(
+                        "change",
+                        onOverlayChange,
+                    ),
             );
         }
         this.session.changes
