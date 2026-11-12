@@ -600,4 +600,22 @@ describe("DiagnosticsComponent", () => {
             ),
         ).toBeNull();
     });
+
+    it("should pause interval polling while document.hidden is true and resume on visibilitychange", fakeAsync(() => {
+        freshFixture();
+        spyOnProperty(document, "hidden", "get").and.returnValue(true);
+
+        tick(3000);
+        expect(diagnosticsServiceSpy.getSystem.calls.count()).toBe(0);
+
+        (
+            Object.getOwnPropertyDescriptor(document, "hidden")
+                ?.get as jasmine.Spy
+        ).and.returnValue(false);
+        document.dispatchEvent(new Event("visibilitychange"));
+        expect(diagnosticsServiceSpy.getSystem.calls.count()).toBe(1);
+
+        fixture.destroy();
+        discardPeriodicTasks();
+    }));
 });

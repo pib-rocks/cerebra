@@ -785,4 +785,33 @@ describe("UpdateComponent", () => {
         expect(notesBox.textContent).toContain("Bullet 6");
         expect(notesBox.querySelector("#btn-toggle-release-notes")).toBeNull();
     });
+
+    it("renders active log preview, elapsed timer, and structured expert sections", () => {
+        const startedIso = new Date(Date.now() - 65000).toISOString();
+        component.status = {
+            state: "building",
+            classification: "active",
+            startedAt: startedIso,
+            message: "Updating and recreating pib-backend containers",
+        };
+        component.log =
+            "[2026-11-11T22:00:00Z] Pulling ghcr.io/pib-rocks/cerebra:v0.7.13";
+        fixture.detectChanges();
+
+        const el = fixture.nativeElement as HTMLElement;
+        expect(
+            el.querySelector('[data-test="TXT_Update_Elapsed"]')?.textContent,
+        ).toContain("1m");
+        expect(
+            el.querySelector('[data-test="TXT_Update_Active_Log_Preview"]')
+                ?.textContent,
+        ).toContain("Pulling ghcr.io/pib-rocks/cerebra:v0.7.13");
+        expect(
+            el.querySelector('[data-test="SEC_Expert_Channel"]'),
+        ).toBeTruthy();
+        expect(
+            el.querySelector('[data-test="SEC_Expert_Revisions"]'),
+        ).toBeTruthy();
+        expect(el.querySelector('[data-test="SEC_Expert_Log"]')).toBeTruthy();
+    });
 });
