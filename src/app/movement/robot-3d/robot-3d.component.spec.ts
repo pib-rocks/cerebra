@@ -104,6 +104,9 @@ describe("Robot3DComponent", () => {
     let viewer: PibRobotView;
 
     beforeEach(async () => {
+        spyOn(PibRobotView.prototype as any, "load").and.returnValue(
+            Promise.resolve(),
+        );
         jointStates$ = new Subject<JointStateMessage>();
         applyJointTrajectory$ = new Subject<void>();
         applyJointTrajectory = jasmine
@@ -305,17 +308,11 @@ describe("Robot3DComponent", () => {
 describe("movement 3d route", () => {
     let harness: RouterTestingHarness;
     let router: Router;
-    let prototype: {connectedCallback?: () => void} | undefined;
-    let connected: (() => void) | undefined;
 
     beforeEach(async () => {
-        prototype = customElements.get("pib-robot-view")?.prototype as
-            | {connectedCallback?: () => void}
-            | undefined;
-        connected = prototype?.connectedCallback;
-        if (prototype != null) {
-            prototype.connectedCallback = () => undefined;
-        }
+        spyOn(PibRobotView.prototype as any, "load").and.returnValue(
+            Promise.resolve(),
+        );
         TestBed.configureTestingModule({
             imports: [MovementComponent, Robot3DComponent],
             providers: [
@@ -339,12 +336,6 @@ describe("movement 3d route", () => {
         });
         harness = await RouterTestingHarness.create();
         router = TestBed.inject(Router);
-    });
-
-    afterEach(() => {
-        if (prototype != null && connected != null) {
-            prototype.connectedCallback = connected;
-        }
     });
 
     it("activates Robot3DComponent at /movement/3d", async () => {
