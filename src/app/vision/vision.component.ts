@@ -123,6 +123,7 @@ export class VisionComponent implements OnInit, OnDestroy {
     refreshRateReceiver$!: Observable<number[]>;
     isLoading = false;
     cameraReconfiguring = false;
+    cameraErrorDetail: string | null = null;
     toggleCamera = new FormControl(false);
 
     /**
@@ -404,8 +405,17 @@ export class VisionComponent implements OnInit, OnDestroy {
     }
 
     startCamera() {
+        this.cameraErrorDetail = null;
         this.cameraService.startCamera();
         this.imageSrc = this.cameraService.streamUrl();
+        this.imageIsLive = true;
+        this.changeDetectorRef.markForCheck();
+    }
+
+    retryCameraStream(): void {
+        this.cameraErrorDetail = null;
+        this.cameraService.startCamera();
+        this.imageSrc = this.cameraService.streamUrl(Date.now());
         this.imageIsLive = true;
         this.changeDetectorRef.markForCheck();
     }
@@ -417,6 +427,7 @@ export class VisionComponent implements OnInit, OnDestroy {
         this.clearDisplayRefreshTimer();
         this.clearDetectionFlushTimer();
         this.clearDiagnostics();
+        this.cameraErrorDetail = null;
         this.imageSrc = "../../assets/camera-placeholder.jpg";
         this.imageIsLive = false;
         this.clearDetections();
@@ -424,6 +435,7 @@ export class VisionComponent implements OnInit, OnDestroy {
 
     onMjpegLoad(): void {
         this.clearCameraReconfiguring();
+        this.cameraErrorDetail = null;
         this.onStreamLoad();
     }
 
@@ -452,6 +464,22 @@ export class VisionComponent implements OnInit, OnDestroy {
         this.imageSrc = "../../assets/camera-error-image.svg";
         this.imageIsLive = false;
         this.clearDetections();
+        this.cameraService.getCameraStatus().subscribe((status) => {
+            if (!status) {
+                this.cameraErrorDetail =
+                    "Camera service is unreachable (ros-camera container not responding).";
+            } else if (status.usbDevicePresent === false) {
+                this.cameraErrorDetail =
+                    status.lastError ||
+                    "No OAK-D Lite camera detected on the USB bus. Check the camera USB cable.";
+            } else if (status.lastError) {
+                this.cameraErrorDetail = `Camera pipeline error: ${status.lastError}`;
+            } else {
+                this.cameraErrorDetail =
+                    "Camera stream is currently unavailable.";
+            }
+            this.changeDetectorRef.markForCheck();
+        });
     }
 
     keypoints(detection: Detection): OverlayKeypoint[] {

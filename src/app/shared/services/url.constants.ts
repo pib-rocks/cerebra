@@ -6,6 +6,7 @@ export enum UrlConstants {
     CAMERA = "/camera-settings",
     CAMERA_STREAM = "/api/camera/stream",
     CAMERA_SNAPSHOT = "/api/camera/snapshot",
+    CAMERA_STATUS = "/camera/status",
     PROGRAM = "/program",
     CODE = "code",
     ASSISTANT_MODEL = "/assistant-model",

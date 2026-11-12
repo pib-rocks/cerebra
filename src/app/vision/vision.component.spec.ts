@@ -94,6 +94,7 @@ describe("VisionComponent", () => {
         }).compileComponents();
         rosService = TestBed.inject(RosService);
         cameraService = TestBed.inject(CameraService);
+        spyOn(cameraService, "getCameraStatus").and.returnValue(of(null));
         fixture = TestBed.createComponent(VisionComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
@@ -1372,5 +1373,38 @@ describe("VisionComponent", () => {
             "tilt_forward_motor",
             0,
         );
+    });
+
+    it("surfaces diagnostic camera error details and retries stream on click", () => {
+        (cameraService.getCameraStatus as jasmine.Spy).and.returnValue(
+            of({
+                available: false,
+                sequence: 0,
+                frameBytes: 0,
+                state: "usb_missing",
+                usbDevicePresent: false,
+                lastError:
+                    "No OAK-D Lite USB device detected on the USB bus (03e7:2485).",
+            }),
+        );
+        component.imageSrc = "/api/camera/stream";
+        component.onStreamError();
+        fixture.detectChanges();
+
+        const banner = fixture.debugElement.query(
+            By.css('[data-test="TXT_Camera_Error_Detail"]'),
+        );
+        expect(banner).toBeTruthy();
+        expect(banner.nativeElement.textContent).toContain("03e7:2485");
+
+        const retryBtn = fixture.debugElement.query(
+            By.css('[data-test="BTN_Camera_Retry"]'),
+        );
+        expect(retryBtn).toBeTruthy();
+        retryBtn.nativeElement.click();
+        fixture.detectChanges();
+
+        expect(component.cameraErrorDetail).toBeNull();
+        expect(component.imageSrc).toContain("/api/camera/stream?t=");
     });
 });
