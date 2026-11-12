@@ -221,7 +221,11 @@ describe("DockerManagementComponent table and logs", () => {
             configurable: true,
             value: 100,
         });
-        el.scrollTop = 868;
+        Object.defineProperty(el, "scrollTop", {
+            configurable: true,
+            writable: true,
+            value: 868,
+        });
         component.autoScroll = false;
 
         component.onLogScroll({target: el} as unknown as Event);
@@ -243,6 +247,7 @@ describe("DockerManagementComponent table and logs", () => {
                 image: "ghcr.io/pib-rocks/pib-backend-flask-app:v0.7.13",
             },
         ];
+        (component as any).cdr.markForCheck();
         fixture.detectChanges();
 
         const el = fixture.nativeElement as HTMLElement;

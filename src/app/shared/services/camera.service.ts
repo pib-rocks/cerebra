@@ -1,9 +1,25 @@
 import {CameraSettings} from "../types/camera-settings";
 import {ApiService} from "./api.service";
 import {UrlConstants} from "../../shared/services/url.constants";
-import {BehaviorSubject, Subject, catchError, throwError} from "rxjs";
+import {
+    BehaviorSubject,
+    Observable,
+    Subject,
+    catchError,
+    of,
+    throwError,
+} from "rxjs";
 import {Injectable} from "@angular/core";
 import {RosService} from "./ros-service/ros.service";
+
+export interface CameraStatusResponse {
+    available: boolean;
+    sequence: number;
+    frameBytes: number;
+    state?: string;
+    usbDevicePresent?: boolean;
+    lastError?: string;
+}
 
 @Injectable({
     providedIn: "root",
@@ -132,5 +148,11 @@ export class CameraService {
     publishCameraSettings(cameraSettings: CameraSettings) {
         this.cameraSettings.next(cameraSettings);
         this.updateCameraSettings(cameraSettings);
+    }
+
+    getCameraStatus(): Observable<CameraStatusResponse | null> {
+        return this.apiService
+            .get(UrlConstants.CAMERA_STATUS)
+            .pipe(catchError(() => of(null)));
     }
 }

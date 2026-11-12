@@ -38,6 +38,9 @@ describe("AppComponent", () => {
                 mode: "degraded",
             });
         }
+        for (const req of http.match("/api/version")) {
+            req.flush({version: "v0.7.16"});
+        }
     });
 
     it("should create the app", () => {
@@ -191,5 +194,19 @@ describe("AppComponent", () => {
         app.onDisplayPath = true;
         expect(app.showStartupPassword()).toBeFalse();
         expect(routes.some((route) => route.path === "display")).toBeTrue();
+    });
+
+    it("hydrates the sidebar version footer from /api/version when build version is dev", () => {
+        const app = fixture.componentInstance;
+        app.appVersion = "dev";
+        app.ngOnInit();
+        const http = TestBed.inject(HttpTestingController);
+        http.expectOne("/api/version").flush({version: "v0.7.16"});
+        fixture.detectChanges();
+        expect(app.appVersion).toBe("v0.7.16");
+        const footer: HTMLElement | null = fixture.nativeElement.querySelector(
+            '[data-test="TXT_AppVersion"]',
+        );
+        expect(footer?.textContent?.trim()).toBe("v0.7.16");
     });
 });
