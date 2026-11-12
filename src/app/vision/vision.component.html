@@ -349,6 +349,19 @@
                         aria-hidden="true"></span
                     >Reconfiguring camera...
                 </div>
+                } @if (cameraErrorDetail) {
+                <div
+                    class="camera-error-banner"
+                    data-test="TXT_Camera_Error_Detail">
+                    <span>{{ cameraErrorDetail }}</span>
+                    <button
+                        type="button"
+                        class="btn btn-sm btn-outline-light ms-2"
+                        data-test="BTN_Camera_Retry"
+                        (click)="retryCameraStream()">
+                        Retry
+                    </button>
+                </div>
                 }
                 <div
                     class="camera-diagnostic"
