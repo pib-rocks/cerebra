@@ -36,6 +36,11 @@ export class DiagnosticsComponent implements OnInit, OnDestroy {
 
     private refreshSubscription?: Subscription;
     private refreshInFlight = false;
+    private readonly onVisibilityChange = (): void => {
+        if (typeof document !== "undefined" && !document.hidden) {
+            this.refreshDiagnostics();
+        }
+    };
 
     constructor(
         private diagnosticsService: DiagnosticsService,
@@ -44,12 +49,29 @@ export class DiagnosticsComponent implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         this.refreshDiagnostics();
+        if (typeof document !== "undefined") {
+            document.addEventListener(
+                "visibilitychange",
+                this.onVisibilityChange,
+            );
+        }
         this.refreshSubscription = interval(this.refreshIntervalMs).subscribe(
-            () => this.refreshDiagnostics(),
+            () => {
+                if (typeof document !== "undefined" && document.hidden) {
+                    return;
+                }
+                this.refreshDiagnostics();
+            },
         );
     }
 
     ngOnDestroy(): void {
+        if (typeof document !== "undefined") {
+            document.removeEventListener(
+                "visibilitychange",
+                this.onVisibilityChange,
+            );
+        }
         this.refreshSubscription?.unsubscribe();
     }
 
