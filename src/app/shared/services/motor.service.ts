@@ -210,7 +210,7 @@ export class MotorService {
                 let temperatureC: number | undefined;
                 const temperatureRaw = values.get("temperature");
                 if (temperatureRaw !== undefined) {
-                    const temperature = Number(temperatureRaw);
+                    const temperature = Number.parseFloat(temperatureRaw);
                     if (Number.isFinite(temperature)) {
                         temperatureC = temperature;
                     }
