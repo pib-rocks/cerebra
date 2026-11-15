@@ -16,8 +16,13 @@ import {JointStateMessage} from "src/app/shared/ros-types/msg/joint-state-messag
 import {CommandRequestDetail, PibRobotView} from "@pib/robot-view";
 import {ApiService} from "src/app/shared/services/api.service";
 import {
+    JointTelemetryByMotor,
+    MotorService,
+} from "src/app/shared/services/motor.service";
+import {
     Robot3DComponent,
     jointStateStampMs,
+    jointTelemetryHasValues,
     jointTrajectoryFromCommandMotors,
     trajectoryPointPositionsRad,
 } from "./robot-3d.component";
@@ -95,9 +100,25 @@ describe("trajectoryPointPositionsRad", () => {
     });
 });
 
+describe("jointTelemetryHasValues", () => {
+    it("is false for an empty map", () => {
+        expect(jointTelemetryHasValues({})).toBe(false);
+    });
+
+    it("is true when a motor reports current or temperature", () => {
+        expect(
+            jointTelemetryHasValues({
+                elbow_left: {currentMa: 30},
+                shoulder_right: {temperatureC: 66},
+            }),
+        ).toBe(true);
+    });
+});
+
 describe("Robot3DComponent", () => {
     let fixture: ComponentFixture<Robot3DComponent>;
     let jointStates$: Subject<JointStateMessage>;
+    let jointTelemetry$: Subject<JointTelemetryByMotor>;
     let applyJointTrajectory$: Subject<void>;
     let applyJointTrajectory: jasmine.Spy;
     let apiService: jasmine.SpyObj<ApiService>;
@@ -108,6 +129,7 @@ describe("Robot3DComponent", () => {
             Promise.resolve(),
         );
         jointStates$ = new Subject<JointStateMessage>();
+        jointTelemetry$ = new Subject<JointTelemetryByMotor>();
         applyJointTrajectory$ = new Subject<void>();
         applyJointTrajectory = jasmine
             .createSpy("applyJointTrajectory")
@@ -136,6 +158,13 @@ describe("Robot3DComponent", () => {
                     },
                 },
                 {provide: ApiService, useValue: apiService},
+                {
+                    provide: MotorService,
+                    useValue: {
+                        getJointTelemetryByMotor$: () =>
+                            jointTelemetry$.asObservable(),
+                    },
+                },
             ],
         }).compileComponents();
 
@@ -145,6 +174,7 @@ describe("Robot3DComponent", () => {
             "pib-robot-view",
         ) as PibRobotView;
         spyOn(viewer, "setJointStateSample");
+        spyOn(viewer, "setJointTelemetry");
         spyOn(viewer, "dispose");
         spyOn(viewer, "confirmCommand");
         spyOn(viewer, "reportCommandFailure");
@@ -152,6 +182,36 @@ describe("Robot3DComponent", () => {
         // The mode is a static attribute now; keep the element from acting on it so it does
         // not fetch model.json and mapping.json, which this test does not stub.
         spyOnProperty(viewer, "mode", "set");
+    });
+
+    it("forwards motor telemetry to the viewer keyed by motor name", () => {
+        const byMotor: JointTelemetryByMotor = {
+            shoulder_vertical_right: {currentMa: 290, temperatureC: 66},
+            tilt_forward_motor: {currentMa: 40},
+        };
+
+        jointTelemetry$.next(byMotor);
+
+        expect(viewer.setJointTelemetry).toHaveBeenCalledOnceWith(byMotor);
+    });
+
+    it("does not call setJointTelemetry when telemetry is still empty", () => {
+        jointTelemetry$.next({});
+
+        expect(viewer.setJointTelemetry).not.toHaveBeenCalled();
+    });
+
+    it("replays the latest motor telemetry when the model fires ready", () => {
+        const byMotor: JointTelemetryByMotor = {
+            elbow_right: {currentMa: 30, temperatureC: 33},
+        };
+
+        jointTelemetry$.next(byMotor);
+        (viewer.setJointTelemetry as jasmine.Spy).calls.reset();
+
+        viewer.dispatchEvent(new CustomEvent("ready"));
+
+        expect(viewer.setJointTelemetry).toHaveBeenCalledOnceWith(byMotor);
     });
 
     it("forwards joint state samples to the viewer", () => {
@@ -296,11 +356,15 @@ describe("Robot3DComponent", () => {
 
     it("unsubscribes and disposes the viewer on destroy", () => {
         const subscription = (fixture.componentInstance as any).subscription;
+        const telemetrySubscription = (fixture.componentInstance as any)
+            .telemetrySubscription;
         spyOn(subscription, "unsubscribe").and.callThrough();
+        spyOn(telemetrySubscription, "unsubscribe").and.callThrough();
 
         fixture.destroy();
 
         expect(subscription.unsubscribe).toHaveBeenCalled();
+        expect(telemetrySubscription.unsubscribe).toHaveBeenCalled();
         expect(viewer.dispose).toHaveBeenCalled();
     });
 });
@@ -330,6 +394,12 @@ describe("movement 3d route", () => {
                             of({
                                 motors: [],
                             }),
+                    },
+                },
+                {
+                    provide: MotorService,
+                    useValue: {
+                        getJointTelemetryByMotor$: () => new Subject(),
                     },
                 },
             ],

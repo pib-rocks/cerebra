@@ -20,7 +20,20 @@ import {
     createEmptyJointTrajectoryMessage,
 } from "src/app/shared/ros-types/msg/joint-trajectory-message";
 import {centidegToRad} from "src/app/shared/types/joint-angle-units";
+import {
+    JointTelemetryByMotor,
+    MotorService,
+} from "src/app/shared/services/motor.service";
 import {RobotLimitsService, RobotMotorLimitsMap} from "./robot-limits.service";
+
+export function jointTelemetryHasValues(
+    byMotor: JointTelemetryByMotor,
+): boolean {
+    return Object.values(byMotor).some(
+        ({currentMa, temperatureC}) =>
+            currentMa !== undefined || temperatureC !== undefined,
+    );
+}
 
 export function jointStateStampMs(
     header: StdMessageHeader | undefined,
@@ -114,6 +127,7 @@ export class Robot3DComponent implements AfterViewInit, OnDestroy {
     loadError: string | null = null;
     commandError: string | null = null;
     private subscription?: Subscription;
+    private telemetrySubscription?: Subscription;
     private limitsSubscription?: Subscription;
     private errorListener?: (event: Event) => void;
     private readyListener?: (event: Event) => void;
@@ -121,10 +135,12 @@ export class Robot3DComponent implements AfterViewInit, OnDestroy {
     private modelReady = false;
     private limitsMap: RobotMotorLimitsMap | null = null;
     private latestJointState: JointStateMessage | null = null;
+    private latestJointTelemetry: JointTelemetryByMotor | null = null;
 
     constructor(
         private readonly rosService: RosService,
         private readonly robotLimitsService: RobotLimitsService,
+        private readonly motorService: MotorService,
     ) {}
 
     ngAfterViewInit(): void {
@@ -144,6 +160,12 @@ export class Robot3DComponent implements AfterViewInit, OnDestroy {
                 this.applyLimitsToViewer();
                 if (this.latestJointState) {
                     this.forwardJointState(this.latestJointState);
+                }
+                if (
+                    this.latestJointTelemetry &&
+                    jointTelemetryHasValues(this.latestJointTelemetry)
+                ) {
+                    this.forwardJointTelemetry(this.latestJointTelemetry);
                 }
             };
             element.addEventListener("ready", this.readyListener);
@@ -168,10 +190,17 @@ export class Robot3DComponent implements AfterViewInit, OnDestroy {
                 this.forwardJointState(message);
             },
         );
+
+        this.telemetrySubscription = this.motorService
+            .getJointTelemetryByMotor$()
+            .subscribe((byMotor) => {
+                this.forwardJointTelemetry(byMotor);
+            });
     }
 
     ngOnDestroy(): void {
         this.subscription?.unsubscribe();
+        this.telemetrySubscription?.unsubscribe();
         this.limitsSubscription?.unsubscribe();
         const element = this.robotViewRef?.nativeElement;
         if (element) {
@@ -252,5 +281,20 @@ export class Robot3DComponent implements AfterViewInit, OnDestroy {
             positions: message.position,
             stampMs: jointStateStampMs(message.header),
         });
+    }
+
+    private forwardJointTelemetry(byMotor: JointTelemetryByMotor): void {
+        this.latestJointTelemetry = byMotor;
+        if (!jointTelemetryHasValues(byMotor)) {
+            return;
+        }
+        if (this.loadError) {
+            return;
+        }
+        const viewer = this.robotViewRef?.nativeElement;
+        if (!viewer) {
+            return;
+        }
+        viewer.setJointTelemetry(byMotor);
     }
 }
