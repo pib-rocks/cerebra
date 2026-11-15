@@ -26,6 +26,13 @@ export type DiagnosticMotorFeedback = Extract<
     "actual_position" | "temperature"
 >;
 
+export type MotorJointTelemetry = {
+    currentMa?: number;
+    temperatureC?: number;
+};
+
+export type JointTelemetryByMotor = Record<string, MotorJointTelemetry>;
+
 @Injectable({
     providedIn: "root",
 })
@@ -60,6 +67,8 @@ export class MotorService {
         string,
         BehaviorSubject<Partial<Record<DiagnosticMotorFeedback, string>>>
     > = new Map();
+    private readonly jointTelemetryByMotorSubject =
+        new BehaviorSubject<JointTelemetryByMotor>({});
 
     private publishToSubject<T>(
         motorName: string,
@@ -164,9 +173,11 @@ export class MotorService {
                     (status.values.length === 1
                         ? status.values[0].value
                         : undefined);
+                let currentMa: number | undefined;
                 if (currentValue !== undefined) {
                     const current = Number(currentValue);
                     if (Number.isFinite(current)) {
+                        currentMa = current;
                         this.publishToSubject(
                             motorName,
                             this.motorNameToCurrentSubject,
@@ -195,6 +206,25 @@ export class MotorService {
                         {...previous, ...feedback},
                     );
                 }
+
+                let temperatureC: number | undefined;
+                const temperatureRaw = values.get("temperature");
+                if (temperatureRaw !== undefined) {
+                    const temperature = Number(temperatureRaw);
+                    if (Number.isFinite(temperature)) {
+                        temperatureC = temperature;
+                    }
+                }
+                const telemetryPatch: MotorJointTelemetry = {};
+                if (currentMa !== undefined) {
+                    telemetryPatch.currentMa = currentMa;
+                }
+                if (temperatureC !== undefined) {
+                    telemetryPatch.temperatureC = temperatureC;
+                }
+                if (Object.keys(telemetryPatch).length > 0) {
+                    this.patchJointTelemetry(motorName, telemetryPatch);
+                }
             },
         );
 
@@ -220,9 +250,18 @@ export class MotorService {
 
         this.rosService.solidStateRelayStateReceiver$?.subscribe((state) => {
             if (state?.turned_on === false) {
-                for (const subject of this.motorNameToCurrentSubject.values()) {
+                const telemetry = {...this.jointTelemetryByMotorSubject.value};
+                for (const [
+                    motorName,
+                    subject,
+                ] of this.motorNameToCurrentSubject.entries()) {
                     subject.next(0);
+                    telemetry[motorName] = {
+                        ...(telemetry[motorName] ?? {}),
+                        currentMa: 0,
+                    };
                 }
+                this.jointTelemetryByMotorSubject.next(telemetry);
             }
             if (state != null && typeof state.turned_on === "boolean") {
                 this.relayTurnedOn.next(state.turned_on);
@@ -297,6 +336,29 @@ export class MotorService {
             this.motorNameToCurrentSubject,
             this.defaultCurrent,
         );
+    }
+
+    getJointTelemetryByMotor$(): Observable<JointTelemetryByMotor> {
+        return this.jointTelemetryByMotorSubject.asObservable();
+    }
+
+    private patchJointTelemetry(
+        motorName: string,
+        patch: MotorJointTelemetry,
+    ): void {
+        const previous = this.jointTelemetryByMotorSubject.value;
+        const motorPrevious = previous[motorName] ?? {};
+        const motorNext: MotorJointTelemetry = {...motorPrevious};
+        if (patch.currentMa !== undefined) {
+            motorNext.currentMa = patch.currentMa;
+        }
+        if (patch.temperatureC !== undefined) {
+            motorNext.temperatureC = patch.temperatureC;
+        }
+        this.jointTelemetryByMotorSubject.next({
+            ...previous,
+            [motorName]: motorNext,
+        });
     }
 
     getFeedbackObservable(
