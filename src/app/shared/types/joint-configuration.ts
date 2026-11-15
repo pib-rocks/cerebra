@@ -109,16 +109,14 @@ for (const joint of joints) {
 }
 
 /**
- * Motor name to the name the joint tabs show, prefixed with the tab itself: "Index Finger"
- * appears in both hands, so the tab is what makes it unambiguous.
+ * Motor name to the label a row shows: the motor's own name ("Tilt forward", "Index Finger").
+ * The 3D panel groups the rows under a heading that already names the body part, so prefixing
+ * every row with the joint label repeated it ("Head · Tilt forward" under "Head").
  */
 export const motorLabels: Record<string, string> = Object.fromEntries(
     joints.flatMap((joint) =>
         joint.motors
             .filter((motor) => !motor.isMultiMotor)
-            .map((motor) => [
-                motor.motorName,
-                `${joint.label} · ${motor.label}`,
-            ]),
+            .map((motor) => [motor.motorName, motor.label]),
     ),
 );
