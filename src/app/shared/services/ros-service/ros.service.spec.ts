@@ -85,10 +85,8 @@ describe("RosService", () => {
         expect(rosService["listModelsService"]).toBeTruthy();
         expect(rosService["startModelService"]).toBeTruthy();
         expect(rosService["stopModelService"]).toBeTruthy();
-        expect((rosService["motorCurrentTopic"] as any).throttle_rate).toBe(
-            250,
-        );
-        expect((rosService["motorCurrentTopic"] as any).queue_length).toBe(1);
+        expect((rosService["motorCurrentTopic"] as any).throttle_rate).toBe(0);
+        expect((rosService["motorCurrentTopic"] as any).queue_length).toBe(10);
         expect((rosService["jointTrajectoryTopic"] as any).throttle_rate).toBe(
             50,
         );

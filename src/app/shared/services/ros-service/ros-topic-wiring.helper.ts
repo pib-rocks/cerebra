@@ -194,10 +194,13 @@ export function wireRosTopicsAndServices(target: RosTopicServiceWiring): void {
         rosTopics.cameraTimerPeriodTopicName,
         rosDataTypes.float64,
     );
+    // One message per motor per tick (26 motors at 2 Hz = ~52 msg/s). A 250 ms throttle
+    // with a queue of one kept roughly four of them, so only a random subset of the motors
+    // ever reached the panel and the rest stayed empty.
     target.motorCurrentTopic = topic(
         rosTopics.motorCurrentTopicName,
         rosDataTypes.diagnosticStatus,
-        {throttle_rate: 250, queue_length: 1},
+        {throttle_rate: 0, queue_length: 10},
     );
     target.jointTrajectoryTopic = topic(
         rosTopics.jointTrajectoryTopicName,

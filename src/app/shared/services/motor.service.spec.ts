@@ -1,6 +1,6 @@
 import {TestBed} from "@angular/core/testing";
 
-import {MotorService} from "./motor.service";
+import {JointTelemetryByMotor, MotorService} from "./motor.service";
 import {ApiService} from "./api.service";
 import {RosService} from "./ros-service/ros.service";
 import {BehaviorSubject, Observable, Subject, of, throwError} from "rxjs";
@@ -350,6 +350,30 @@ describe("MotorService", () => {
 
         expect(actualPosition).toBe("12.25");
         expect(temperature).toBe("41.5");
+    });
+
+    it("parses the number out of the node's formatted temperature value", () => {
+        // The motor node sends the reading with its unit ("66 °C"); Number() turns that
+        // into NaN, which is how the temperature column stayed empty on an advanced robot.
+        let telemetry: JointTelemetryByMotor | undefined;
+        service
+            .getJointTelemetryByMotor$()
+            .subscribe((value) => (telemetry = value));
+
+        rosService.currentReceiver$.next({
+            level: "arraybuffer",
+            name: "test-motor",
+            hardware_id: "",
+            values: [
+                {key: "test-motor", value: "280"},
+                {key: "temperature", value: "66 °C"},
+                {key: "actual_position", value: "-2.5 °"},
+                {key: "voltage", value: "11.4 V"},
+            ],
+        });
+
+        expect(telemetry?.["test-motor"]?.currentMa).toBe(280);
+        expect(telemetry?.["test-motor"]?.temperatureC).toBe(66);
     });
 
     it("should get the settings-subject", () => {
