@@ -60,6 +60,12 @@ describe("DockerManagementComponent purge", () => {
         component.purgeDocker();
 
         const confirmation = confirmSpy.calls.mostRecent().args[0];
+        expect(confirmation).toContain(
+            "stopped containers, unused volumes and networks",
+        );
+        expect(confirmation).toContain(
+            "unused dangling images and the BuildKit build cache",
+        );
         expect(confirmation).toContain("unused dangling images");
         expect(confirmation).toContain("Tagged images stay cached");
         expect(confirmation).toContain("when boot recovery is configured");
