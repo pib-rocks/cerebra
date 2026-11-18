@@ -43,6 +43,29 @@ describe("DockerManagementComponent purge", () => {
         expect(component.purging).toBeFalse();
     });
 
+    it("explains that purge keeps tagged images for configured recovery", () => {
+        const confirmSpy = spyOn(window, "confirm").and.returnValue(false);
+        const help = fixture.nativeElement.querySelector(
+            '[data-test="TXT_Purge_Docker_Help"]',
+        ) as HTMLElement;
+        const button = fixture.nativeElement.querySelector(
+            '[data-test="BTN_Purge_Docker"]',
+        ) as HTMLButtonElement;
+
+        expect(help.textContent).toContain("dangling images");
+        expect(help.textContent).toContain("Tagged images are kept");
+        expect(button.title).toContain("dangling images");
+        expect(button.title).toContain("keep tagged images");
+
+        component.purgeDocker();
+
+        const confirmation = confirmSpy.calls.mostRecent().args[0];
+        expect(confirmation).toContain("unused dangling images");
+        expect(confirmation).toContain("Tagged images stay cached");
+        expect(confirmation).toContain("when boot recovery is configured");
+        expect(service.purgeDocker).not.toHaveBeenCalled();
+    });
+
     it("shows the freed size the backend reports", () => {
         spyOn(window, "confirm").and.returnValue(true);
         service.purgeDocker.and.returnValue(
