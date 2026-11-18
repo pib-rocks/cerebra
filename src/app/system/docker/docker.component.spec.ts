@@ -54,8 +54,10 @@ describe("DockerManagementComponent purge", () => {
 
         expect(help.textContent).toContain("dangling images");
         expect(help.textContent).toContain("Tagged images are kept");
+        expect(help.textContent).toContain("when boot recovery is configured");
         expect(button.title).toContain("dangling images");
         expect(button.title).toContain("keep tagged images");
+        expect(button.title).toContain("configured offline recovery");
 
         component.purgeDocker();
 

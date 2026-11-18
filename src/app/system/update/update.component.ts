@@ -304,6 +304,17 @@ export class UpdateComponent implements OnInit, OnDestroy {
         if (this.purgingDocker || this.isActive || this.starting) {
             return;
         }
+        if (
+            !window.confirm(
+                "Purge unused Docker resources to free disk space?\n\n" +
+                    "This removes stopped containers, unused volumes and networks, " +
+                    "dangling images, and BuildKit cache. Unused volumes can contain " +
+                    "data from stopped containers and may be permanently deleted. " +
+                    "Tagged images are kept for configured offline recovery.",
+            )
+        ) {
+            return;
+        }
         this.purgingDocker = true;
         this.purgeNotice = null;
         this.actionError = null;
