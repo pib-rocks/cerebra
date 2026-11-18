@@ -43,7 +43,7 @@ describe("DockerManagementComponent purge", () => {
         expect(component.purging).toBeFalse();
     });
 
-    it("explains that purge keeps tagged images for configured recovery", () => {
+    it("explains purge keeps only current Compose images for recovery", () => {
         const confirmSpy = spyOn(window, "confirm").and.returnValue(false);
         const help = fixture.nativeElement.querySelector(
             '[data-test="TXT_Purge_Docker_Help"]',
@@ -52,12 +52,15 @@ describe("DockerManagementComponent purge", () => {
             '[data-test="BTN_Purge_Docker"]',
         ) as HTMLButtonElement;
 
-        expect(help.textContent).toContain("dangling images");
-        expect(help.textContent).toContain("Tagged images are kept");
-        expect(help.textContent).toContain("when boot recovery is configured");
-        expect(button.title).toContain("dangling images");
-        expect(button.title).toContain("keep tagged images");
-        expect(button.title).toContain("configured offline recovery");
+        expect(help.textContent).toContain("unused images");
+        expect(help.textContent).toContain(
+            "Only images referenced by the current Compose deployment are kept",
+        );
+        expect(help.textContent).toContain(
+            "other unused tagged images are removed",
+        );
+        expect(button.title).toContain("current Compose images");
+        expect(button.title).toContain("obsolete image tags");
 
         component.purgeDocker();
 
@@ -66,11 +69,13 @@ describe("DockerManagementComponent purge", () => {
             "stopped containers, unused volumes and networks",
         );
         expect(confirmation).toContain(
-            "unused dangling images and the BuildKit build cache",
+            "unused tagged images and the BuildKit build cache",
         );
-        expect(confirmation).toContain("unused dangling images");
-        expect(confirmation).toContain("Tagged images stay cached");
-        expect(confirmation).toContain("when boot recovery is configured");
+        expect(confirmation).toContain("unused tagged images");
+        expect(confirmation).toContain(
+            "Only current Compose image references are kept",
+        );
+        expect(confirmation).toContain("other tagged images are removed");
         expect(service.purgeDocker).not.toHaveBeenCalled();
     });
 

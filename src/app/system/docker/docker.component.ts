@@ -167,8 +167,9 @@ export class DockerManagementComponent implements OnInit, OnDestroy {
             !confirm(
                 "Purge unused Docker resources?\n\n" +
                     "This removes stopped containers, unused volumes and networks, " +
-                    "unused dangling images and the BuildKit build cache. Tagged " +
-                    "images stay cached for offline recovery when boot recovery is configured.",
+                    "unused tagged images and the BuildKit build cache. Only current " +
+                    "Compose image references are kept for offline recovery; other " +
+                    "tagged images are removed.",
             )
         ) {
             return;

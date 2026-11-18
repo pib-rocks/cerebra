@@ -7,10 +7,10 @@
                 class="text-muted small mb-0"
                 data-test="TXT_Purge_Docker_Help">
                 <strong>Purge Docker</strong> safely removes stopped containers,
-                unused volumes and networks, dangling images, and build cache to
-                free disk space. Tagged images are kept for offline recovery
-                when boot recovery is configured. Running containers are not
-                affected.
+                unused volumes and networks, unused images, and build cache to
+                free disk space. Only images referenced by the current Compose
+                deployment are kept for offline recovery; other unused tagged
+                images are removed. Running containers are not affected.
             </p>
         </div>
         <div>
@@ -18,7 +18,7 @@
                 id="btn-purge-docker"
                 data-test="BTN_Purge_Docker"
                 class="btn btn-danger me-2"
-                title="Remove stopped containers, unused volumes and networks, dangling images, and BuildKit cache; keep tagged images for configured offline recovery"
+                title="Remove stopped containers, unused volumes and networks, and obsolete image tags; keep current Compose images for recovery"
                 [disabled]="purging || loading"
                 (click)="purgeDocker()">
                 <i
