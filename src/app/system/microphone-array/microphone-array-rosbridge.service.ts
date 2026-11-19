@@ -119,7 +119,7 @@ export class MicrophoneArrayRosbridgeService {
                                     name +
                                     " timed out after " +
                                     PARAMETER_READ_TIMEOUT_MS +
-                                    " ms.",
+                                    " ms (rosbridge/rosapi did not answer).",
                             ),
                     ),
             }),
