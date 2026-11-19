@@ -167,12 +167,14 @@ export class DockerManagementComponent implements OnInit, OnDestroy {
             !confirm(
                 "Purge unused Docker resources?\n\n" +
                     "This removes stopped containers, unused volumes and networks, " +
-                    "eligible obsolete image tags and the BuildKit build cache. " +
+                    "obsolete image tags and the BuildKit build cache. " +
                     "Data in unused volumes may be permanently deleted. Image cleanup " +
-                    "attempts to keep current Compose image references for offline " +
-                    "recovery when saved recovery state is available; if that state is " +
-                    "unavailable, tagged-image cleanup is skipped. Some image removals " +
-                    "may fail.",
+                    "keeps saved current Compose references and images used by running " +
+                    "containers. If recovery needs a missing image, it tries to pull " +
+                    "it and then build it locally; this may need network access and " +
+                    "take longer. Image cleanup is skipped if recovery state or " +
+                    "running-container information is unavailable. Some image " +
+                    "removals may fail.",
             )
         ) {
             return;

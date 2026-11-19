@@ -309,11 +309,13 @@ export class UpdateComponent implements OnInit, OnDestroy {
             !window.confirm(
                 "Purge unused Docker resources to free disk space?\n\n" +
                     "This removes stopped containers, unused volumes and networks, " +
-                    "obsolete image tags, and BuildKit cache. Only current Compose " +
-                    "image references are kept for offline recovery when saved recovery " +
-                    "state is available. If it is unavailable, tagged-image cleanup is " +
-                    "skipped; some image removals may fail. Unused volumes can contain " +
-                    "data from stopped containers and may be permanently deleted.",
+                    "obsolete image tags, and BuildKit cache. Image cleanup keeps saved " +
+                    "current Compose references and images used by running containers. " +
+                    "If recovery needs a missing image, it tries to pull it and then " +
+                    "build it locally; this may need network access and take longer. " +
+                    "Image cleanup is skipped if recovery state or running-container " +
+                    "information is unavailable. Unused volumes can contain data from " +
+                    "stopped containers and may be permanently deleted.",
             )
         ) {
             return;

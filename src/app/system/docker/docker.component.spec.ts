@@ -43,7 +43,7 @@ describe("DockerManagementComponent purge", () => {
         expect(component.purging).toBeFalse();
     });
 
-    it("explains purge keeps only current Compose images for recovery", () => {
+    it("explains image retention and recovery fallback", () => {
         const confirmSpy = spyOn(window, "confirm").and.returnValue(false);
         const help = fixture.nativeElement.querySelector(
             '[data-test="TXT_Purge_Docker_Help"]',
@@ -53,16 +53,16 @@ describe("DockerManagementComponent purge", () => {
         ) as HTMLButtonElement;
 
         expect(help.textContent).toContain("eligible obsolete image tags");
+        expect(help.textContent).toContain("images used by running containers");
         expect(help.textContent).toContain(
-            "attempts to keep current Compose references",
+            "tries to pull it and then build it locally",
         );
         expect(help.textContent).toContain(
-            "tagged-image cleanup is skipped when that state is unavailable",
+            "running-container information is unavailable",
         );
         expect(button.title).toContain(
-            "recovery image retention depends on saved state",
+            "missing recovery images may need to be pulled or built",
         );
-        expect(button.title).toContain("cleanup can be partial");
 
         component.purgeDocker();
 
@@ -71,13 +71,14 @@ describe("DockerManagementComponent purge", () => {
             "stopped containers, unused volumes and networks",
         );
         expect(confirmation).toContain(
-            "eligible obsolete image tags and the BuildKit build cache",
+            "obsolete image tags and the BuildKit build cache",
         );
         expect(confirmation).toContain(
             "Data in unused volumes may be permanently deleted",
         );
+        expect(confirmation).toContain("images used by running containers");
         expect(confirmation).toContain(
-            "attempts to keep current Compose image references",
+            "tries to pull it and then build it locally",
         );
         expect(confirmation).toContain("Some image removals may fail");
         expect(service.purgeDocker).not.toHaveBeenCalled();
