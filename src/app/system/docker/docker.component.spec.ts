@@ -52,15 +52,17 @@ describe("DockerManagementComponent purge", () => {
             '[data-test="BTN_Purge_Docker"]',
         ) as HTMLButtonElement;
 
-        expect(help.textContent).toContain("unused images");
+        expect(help.textContent).toContain("eligible obsolete image tags");
         expect(help.textContent).toContain(
-            "Only images referenced by the current Compose deployment are kept",
+            "attempts to keep current Compose references",
         );
         expect(help.textContent).toContain(
-            "other unused tagged images are removed",
+            "tagged-image cleanup is skipped when that state is unavailable",
         );
-        expect(button.title).toContain("current Compose images");
-        expect(button.title).toContain("obsolete image tags");
+        expect(button.title).toContain(
+            "recovery image retention depends on saved state",
+        );
+        expect(button.title).toContain("cleanup can be partial");
 
         component.purgeDocker();
 
@@ -69,13 +71,15 @@ describe("DockerManagementComponent purge", () => {
             "stopped containers, unused volumes and networks",
         );
         expect(confirmation).toContain(
-            "unused tagged images and the BuildKit build cache",
+            "eligible obsolete image tags and the BuildKit build cache",
         );
-        expect(confirmation).toContain("unused tagged images");
         expect(confirmation).toContain(
-            "Only current Compose image references are kept",
+            "Data in unused volumes may be permanently deleted",
         );
-        expect(confirmation).toContain("other tagged images are removed");
+        expect(confirmation).toContain(
+            "attempts to keep current Compose image references",
+        );
+        expect(confirmation).toContain("Some image removals may fail");
         expect(service.purgeDocker).not.toHaveBeenCalled();
     });
 

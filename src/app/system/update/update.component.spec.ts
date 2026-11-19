@@ -790,6 +790,30 @@ describe("UpdateComponent", () => {
         expect(component.purgingDocker).toBeFalse();
     });
 
+    it("shows partial Docker cleanup as a failure with the backend reason", () => {
+        spyOn(window, "confirm").and.returnValue(true);
+        updateServiceSpy.purgeDockerCache.and.returnValue(
+            of({
+                status: "partial",
+                message:
+                    "Docker cleanup completed: 1.0 GB freed. 1 step failed.",
+                reclaimedHuman: "1.0 GB",
+                errors: ["images: cannot read deployment recovery state"],
+            }),
+        );
+
+        component.purgeDockerForUpdate();
+        fixture.detectChanges();
+
+        const el = fixture.nativeElement as HTMLElement;
+        expect(
+            el.querySelector('[data-test="TXT_Update_Purge_Notice"]'),
+        ).toBeNull();
+        expect(el.querySelector(".alert-danger")?.textContent).toContain(
+            "images: cannot read deployment recovery state",
+        );
+    });
+
     it("does not collapse release notes when only 1 or 2 lines would be hidden", () => {
         const notes = [
             "## Highlights",

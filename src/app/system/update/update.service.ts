@@ -218,6 +218,7 @@ export class UpdateService {
         status: string;
         message?: string;
         reclaimedHuman?: string;
+        errors?: string[] | null;
     }> {
         return this.apiService.post(`${UrlConstants.DOCKER}/admin/purge`, {});
     }

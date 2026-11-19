@@ -8,6 +8,7 @@ import {
 import {CommonModule} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {HttpErrorResponse} from "@angular/common/http";
+import {purgeOutcome} from "../docker/docker.service";
 import {
     AvailableUpdates,
     InstalledRevisions,
@@ -309,7 +310,9 @@ export class UpdateComponent implements OnInit, OnDestroy {
                 "Purge unused Docker resources to free disk space?\n\n" +
                     "This removes stopped containers, unused volumes and networks, " +
                     "obsolete image tags, and BuildKit cache. Only current Compose " +
-                    "image references are kept for offline recovery. Unused volumes can contain " +
+                    "image references are kept for offline recovery when saved recovery " +
+                    "state is available. If it is unavailable, tagged-image cleanup is " +
+                    "skipped; some image removals may fail. Unused volumes can contain " +
                     "data from stopped containers and may be permanently deleted.",
             )
         ) {
@@ -323,11 +326,9 @@ export class UpdateComponent implements OnInit, OnDestroy {
         this.updateService.purgeDockerCache().subscribe({
             next: (res) => {
                 this.purgingDocker = false;
-                this.purgeNotice =
-                    res.message ||
-                    `Docker cleanup finished (${
-                        res.reclaimedHuman ?? "space"
-                    } freed).`;
+                const outcome = purgeOutcome(res);
+                this.purgeNotice = outcome.error ? null : outcome.success;
+                this.actionError = outcome.error;
                 this.refreshStatus();
                 this.cdr.markForCheck();
             },
