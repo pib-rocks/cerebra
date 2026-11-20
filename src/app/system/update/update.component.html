@@ -233,14 +233,15 @@
                 type="button"
                 id="btn-update-purge-docker"
                 data-test="BTN_Update_Purge_Docker"
+                title="Remove stopped containers, unused volumes and networks, eligible obsolete image tags, and build cache. Volume data may be permanently deleted. Recovery image retention depends on saved state and cleanup can be partial."
                 class="btn btn-outline-warning btn-sm"
                 [disabled]="purgingDocker || isActive || starting"
                 (click)="purgeDockerForUpdate()">
                 <i
                     class="fas fa-broom me-1"
                     [class.fa-spin]="purgingDocker"></i>
-                {{ purgingDocker ? "Cleaning up Docker cache..." : "Free disk
-                space (Purge unused Docker cache)" }}
+                {{ purgingDocker ? "Purging Docker resources..." : "Free disk
+                space (Purge unused Docker resources)" }}
             </button>
         </div>
         }

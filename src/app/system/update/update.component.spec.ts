@@ -758,6 +758,11 @@ describe("UpdateComponent", () => {
             '[data-test="BTN_Update_Purge_Docker"]',
         );
         expect(purgeBtn).toBeTruthy();
+        expect(purgeBtn?.textContent).toContain(
+            "Purge unused Docker resources",
+        );
+        expect(purgeBtn?.title).toContain("unused volumes");
+        spyOn(window, "confirm").and.returnValue(true);
         updateServiceSpy.purgeDockerCache.and.returnValue(
             of({
                 status: "success",
@@ -767,8 +772,46 @@ describe("UpdateComponent", () => {
         );
         purgeBtn!.click();
         fixture.detectChanges();
+        expect(window.confirm).toHaveBeenCalledWith(
+            jasmine.stringMatching(
+                /unused volumes.*stopped containers.*permanently delete/i,
+            ),
+        );
         expect(updateServiceSpy.purgeDockerCache).toHaveBeenCalled();
         expect(component.purgeNotice).toContain("4.2 GB freed");
+    });
+
+    it("does not purge Docker resources when the destructive confirmation is canceled", () => {
+        spyOn(window, "confirm").and.returnValue(false);
+
+        component.purgeDockerForUpdate();
+
+        expect(updateServiceSpy.purgeDockerCache).not.toHaveBeenCalled();
+        expect(component.purgingDocker).toBeFalse();
+    });
+
+    it("shows partial Docker cleanup as a failure with the backend reason", () => {
+        spyOn(window, "confirm").and.returnValue(true);
+        updateServiceSpy.purgeDockerCache.and.returnValue(
+            of({
+                status: "partial",
+                message:
+                    "Docker cleanup completed: 1.0 GB freed. 1 step failed.",
+                reclaimedHuman: "1.0 GB",
+                errors: ["images: cannot read deployment recovery state"],
+            }),
+        );
+
+        component.purgeDockerForUpdate();
+        fixture.detectChanges();
+
+        const el = fixture.nativeElement as HTMLElement;
+        expect(
+            el.querySelector('[data-test="TXT_Update_Purge_Notice"]'),
+        ).toBeNull();
+        expect(el.querySelector(".alert-danger")?.textContent).toContain(
+            "images: cannot read deployment recovery state",
+        );
     });
 
     it("does not collapse release notes when only 1 or 2 lines would be hidden", () => {

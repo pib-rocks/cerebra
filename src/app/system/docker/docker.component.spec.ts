@@ -43,6 +43,47 @@ describe("DockerManagementComponent purge", () => {
         expect(component.purging).toBeFalse();
     });
 
+    it("explains image retention and recovery fallback", () => {
+        const confirmSpy = spyOn(window, "confirm").and.returnValue(false);
+        const help = fixture.nativeElement.querySelector(
+            '[data-test="TXT_Purge_Docker_Help"]',
+        ) as HTMLElement;
+        const button = fixture.nativeElement.querySelector(
+            '[data-test="BTN_Purge_Docker"]',
+        ) as HTMLButtonElement;
+
+        expect(help.textContent).toContain("eligible obsolete image tags");
+        expect(help.textContent).toContain("images used by running containers");
+        expect(help.textContent).toContain(
+            "tries to pull it and then build it locally",
+        );
+        expect(help.textContent).toContain(
+            "running-container information is unavailable",
+        );
+        expect(button.title).toContain(
+            "missing recovery images may need to be pulled or built",
+        );
+
+        component.purgeDocker();
+
+        const confirmation = confirmSpy.calls.mostRecent().args[0];
+        expect(confirmation).toContain(
+            "stopped containers, unused volumes and networks",
+        );
+        expect(confirmation).toContain(
+            "obsolete image tags and the BuildKit build cache",
+        );
+        expect(confirmation).toContain(
+            "Data in unused volumes may be permanently deleted",
+        );
+        expect(confirmation).toContain("images used by running containers");
+        expect(confirmation).toContain(
+            "tries to pull it and then build it locally",
+        );
+        expect(confirmation).toContain("Some image removals may fail");
+        expect(service.purgeDocker).not.toHaveBeenCalled();
+    });
+
     it("shows the freed size the backend reports", () => {
         spyOn(window, "confirm").and.returnValue(true);
         service.purgeDocker.and.returnValue(
