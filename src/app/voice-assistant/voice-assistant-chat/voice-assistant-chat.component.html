@@ -9,6 +9,38 @@
                 [warmth]="personalityWarmth"
                 (providerRefresh)="refreshProviderHealth()" />
             <app-turn-trace-panel [trace]="turnTrace" />
+            @if (providerSetupBanner; as banner) {
+            <div
+                class="provider-setup-banner"
+                role="alert"
+                data-test="PNL_Provider_Setup_Banner">
+                <div class="provider-setup-banner__text">
+                    <strong data-test="LBL_Provider_Setup_Title"
+                        >{{ banner.title }}</strong
+                    >
+                    <p
+                        class="mb-0"
+                        data-test="LBL_Provider_Setup_Message">
+                        {{ banner.message }}
+                    </p>
+                </div>
+                <div class="provider-setup-banner__actions">
+                    <button
+                        type="button"
+                        class="btn-regular provider-setup-banner__primary"
+                        data-test="BTN_Banner_Smart_Connect"
+                        (click)="openSmartConnect()">
+                        Connect SmartConnect
+                    </button>
+                    <a
+                        class="btn-regular provider-setup-banner__secondary"
+                        data-test="BTN_Banner_System_Keys"
+                        [routerLink]="['/system/keys']">
+                        Open System &gt; Keys
+                    </a>
+                </div>
+            </div>
+            }
             <router-outlet></router-outlet>
         </div>
         <div
@@ -27,7 +59,7 @@
                     <div class="col pe-0 ps-0">
                         <div
                             id="tooltip-smart-connect-disabled"
-                            [title]="localVoiceEnabled() ? '' : 'Enable SmartConnect to start the Voice-Assistant' ">
+                            [title]="voiceToggleTooltip()">
                             <button
                                 class="btn border-0 p-0"
                                 id="sidebar-right-toggle-voice-assistant"

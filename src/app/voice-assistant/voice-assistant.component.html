@@ -125,6 +125,34 @@
                                 </option>
                                 }
                             </select>
+                            @if (noConfiguredModelsAvailable) {
+                            <div
+                                class="no-models-notice"
+                                data-test="LBL_No_Models_Configured">
+                                <p class="advanced-reason mb-2">
+                                    No AI model is available yet. No local model
+                                    is installed — connect SmartConnect or store
+                                    a provider key in System &gt; Keys to start
+                                    a dialog.
+                                </p>
+                                <div class="no-models-notice__actions">
+                                    <button
+                                        type="button"
+                                        class="btn-regular no-models-notice__btn"
+                                        data-test="BTN_Dialog_Smart_Connect"
+                                        (click)="openSmartConnectFromDialog()">
+                                        Connect SmartConnect
+                                    </button>
+                                    <button
+                                        type="button"
+                                        class="btn-regular no-models-notice__btn no-models-notice__btn--secondary"
+                                        data-test="BTN_Dialog_System_Keys"
+                                        (click)="openKeysFromDialog()">
+                                        Open System &gt; Keys
+                                    </button>
+                                </div>
+                            </div>
+                            }
                         </div>
                         <div class="col">
                             <label

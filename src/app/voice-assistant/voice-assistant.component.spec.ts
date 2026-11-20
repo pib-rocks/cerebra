@@ -129,6 +129,7 @@ describe("VoiceAssistantComponent", () => {
                             tokenExists: true,
                             tokenActive: true,
                         }),
+                        requestOpenModal: jasmine.createSpy("requestOpenModal"),
                     },
                 },
             ],
@@ -1849,20 +1850,11 @@ describe("VoiceAssistantComponent", () => {
 
     it("starts a new personality on the first external model with a stored key", () => {
         setCloudToken(false);
-        const local = listedModel(
-            1,
-            "qwen-fast",
-            "Local (qwen-fast)",
-            null,
-            false,
-            true,
-        );
         const keyless = listedModel(2, "gemini", "Gemini", null, false);
         const first = listedModel(20, "gpt-6", "GPT-6", "provider-20", false);
         const later = listedModel(4, "claude", "Claude", "provider-4", true);
         const cloud = listedModel(10, "pib-cloud", "pib.Cloud", null, false);
         voiceAssistantService.assistantModelsSubject.next([
-            local,
             keyless,
             first,
             later,
@@ -1880,59 +1872,46 @@ describe("VoiceAssistantComponent", () => {
         component.ngbModalRef?.close();
     });
 
-    it("starts a new personality on qwen-fast when nothing earlier is available", () => {
+    it("shows clear empty-state guidance when no SmartConnect token or provider key is configured (PR-2333)", () => {
         setCloudToken(false);
-        const keyless = listedModel(8, "gpt-6", "GPT-6", null, true);
-        const cloud = listedModel(10, "pib-cloud", "pib.Cloud", null, false);
-        const local = listedModel(
-            6,
-            "qwen-fast",
-            "Local (qwen-fast)",
-            null,
-            false,
-            true,
-        );
-        voiceAssistantService.assistantModelsSubject.next([
-            keyless,
-            cloud,
-            local,
-        ]);
+        const keyless = listedModel(8, "gpt-6", "GPT-6", null, false);
+        const cloud = listedModel(10, "pib-cloud", "pib.Cloud", null, true);
+        voiceAssistantService.assistantModelsSubject.next([keyless, cloud]);
         fixture.detectChanges();
         openNewPersonality();
-        expect(component.personalityForm.controls["assistantModel"].value).toBe(
-            String(local.id),
+        expect(component.noConfiguredModelsAvailable).toBeTrue();
+        const notice = document.body.querySelector(
+            "[data-test=LBL_No_Models_Configured]",
         );
-        expect(component.personalityForm.controls["channel"].value).toBe(
-            SMART_CHANNEL,
-        );
-        expect(modelSelect().value).toBe(String(local.id));
-        expect(modelSelect().selectedOptions[0].textContent?.trim()).toBe(
-            "Local (qwen-fast)",
-        );
-        component.ngbModalRef?.close();
-    });
+        expect(notice).not.toBeNull();
+        expect(notice?.textContent).toContain("SmartConnect");
+        expect(notice?.textContent).toContain("System > Keys");
+        expect(
+            document.body.querySelector("[data-test=BTN_Dialog_Smart_Connect]"),
+        ).not.toBeNull();
+        expect(
+            document.body.querySelector("[data-test=BTN_Dialog_System_Keys]"),
+        ).not.toBeNull();
+        const tokenSvc = TestBed.inject(TokenService);
+        const requestOpenSpy = tokenSvc.requestOpenModal as jasmine.Spy;
+        requestOpenSpy.calls.reset();
+        (
+            document.body.querySelector(
+                "[data-test=BTN_Dialog_Smart_Connect]",
+            ) as HTMLButtonElement
+        ).click();
+        expect(requestOpenSpy).toHaveBeenCalledTimes(1);
 
-    it("does not leave the model control empty when qwen-fast is offered", () => {
-        setCloudToken(false);
-        const keyless = listedModel(8, "gpt-6", "GPT-6", null, true);
-        const local = listedModel(
-            6,
-            "qwen-fast",
-            "Local (qwen-fast)",
-            null,
-            false,
-            true,
-        );
-        voiceAssistantService.assistantModelsSubject.next([keyless, local]);
-        fixture.detectChanges();
         openNewPersonality();
-        const select = modelSelect();
-        expect(select.value).toBe(String(local.id));
-        expect(select.selectedOptions.length).toBe(1);
-        expect(select.selectedOptions[0].value).toBe(String(local.id));
-        expect(select.selectedOptions[0].textContent?.trim()).toBe(
-            "Local (qwen-fast)",
-        );
+        const router = TestBed.inject(Router);
+        const routerSpy = router.navigate as jasmine.Spy;
+        routerSpy.calls.reset();
+        (
+            document.body.querySelector(
+                "[data-test=BTN_Dialog_System_Keys]",
+            ) as HTMLButtonElement
+        ).click();
+        expect(routerSpy).toHaveBeenCalledWith(["/system/keys"]);
         component.ngbModalRef?.close();
     });
 

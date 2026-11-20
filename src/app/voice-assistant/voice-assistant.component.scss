@@ -259,6 +259,32 @@ label {
     margin: 0.3rem 0 0;
 }
 
+.no-models-notice {
+    margin-top: 0.45rem;
+    padding: 0.55rem 0.7rem;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 193, 7, 0.55);
+    background: rgba(255, 193, 7, 0.1);
+
+    &__actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+    }
+
+    &__btn {
+        font-size: 0.78rem;
+        padding: 0.28rem 0.65rem !important;
+        border-radius: 5px;
+        font-weight: 600;
+    }
+
+    &__btn--secondary {
+        background: transparent !important;
+        border: 1px solid rgba(255, 255, 255, 0.45);
+    }
+}
+
 #tool-calling-input {
     width: 1.05rem;
     height: 1.05rem;

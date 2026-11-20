@@ -15,9 +15,12 @@ import {
     VOICE_ASSISTANT_CHIP_LABEL,
     chatTransportUnavailableText,
     capabilitiesFrom,
+    NO_PROVIDER_BANNER_TITLE,
+    NO_PROVIDER_BANNER_MESSAGE,
+    RETIRED_MODEL_BANNER_TITLE,
+    resolveProviderSetupBanner,
     isCapabilityControlDisabled,
     isProviderConfigured,
-    isOfflineModel,
     isListedModel,
     isProviderOptionDisabled,
     chatStartRefusal,
@@ -216,9 +219,7 @@ describe("provider registry selection", () => {
         ).toBe("missing-key");
         expect(
             chatStartRefusal(String(missing.id), [cloud, keyed, missing], true),
-        ).toBe(
-            "This personality needs a provider key. It is marked until a key is stored in System > Keys.",
-        );
+        ).toBe(MISSING_KEY_TURN);
     });
 
     it("marks a personality when its provider key is deleted and clears the mark when the key returns", () => {
@@ -546,115 +547,123 @@ describe("reasoning capability (PC-108)", () => {
     });
 });
 
-describe("on-device offline model (PR-1931)", () => {
-    const offline = row(6, false, false, "qwen-fast", null);
-    offline.visualName = "Local (qwen-fast)";
-    offline.capabilities = {
-        tools: false,
-        images: false,
-        live: false,
-        stt: false,
-        tts: false,
-        offline: true,
-    };
-
-    it("carries the offline capability through capabilitiesFrom", () => {
-        expect(capabilitiesFrom({offline: true}, false).offline).toBeTrue();
-        expect(capabilitiesFrom({tools: true}, false).offline).toBeFalse();
-    });
-
-    it("treats a keyless offline row as configured without a key", () => {
-        expect(isOfflineModel(offline)).toBeTrue();
-        expect(offline.credentialRef).toBeNull();
-        expect(isProviderConfigured(offline, false)).toBeTrue();
-        expect(isProviderConfigured(offline, false, [offline])).toBeTrue();
-    });
-
-    it("lists the offline row for selection and does not disable it", () => {
-        expect(isListedModel(offline)).toBeTrue();
-        expect(isProviderOptionDisabled(offline, false)).toBeFalse();
-        expect(
-            providersForSelection([offline], null).map((model) => model.id),
-        ).toEqual([offline.id]);
-    });
-
-    it("does not mark a personality on the offline row as needing a key", () => {
-        expect(
-            personalityAttention(String(offline.id), [offline], false),
-        ).toBeNull();
-        expect(
-            personalityNeedsAttention(String(offline.id), [offline], false),
-        ).toBeFalse();
-        expect(
-            chatStartRefusal(String(offline.id), [offline], false),
-        ).toBeNull();
-    });
-
-    it("still marks a keyless cloud row as needing a key", () => {
-        const keyless = row(8, true, false, "gpt-6", null);
-        expect(isProviderConfigured(keyless, false)).toBeFalse();
-        expect(chatStartRefusal(String(keyless.id), [keyless], false)).toBe(
-            MISSING_KEY_TURN,
+describe("provider setup banner and no-local-fallback gating (PR-2333)", () => {
+    it("never mentions deactivating key storage encryption in composer hints", () => {
+        expect(DEEP_CHAT_SMARTCONNECT_PLACEHOLDER.toLowerCase()).not.toContain(
+            "encryption",
         );
+        expect(DEEP_CHAT_SMARTCONNECT_PLACEHOLDER).toContain("SmartConnect");
+        expect(DEEP_CHAT_SMARTCONNECT_PLACEHOLDER).toContain("System > Keys");
+        expect(MISSING_KEY_TURN).toContain("SmartConnect");
+        expect(MISSING_KEY_TURN).toContain("System > Keys");
+    });
+
+    it("returns a missing-provider banner when no token or key is stored", () => {
+        const cloud = row(1, true, true, CLOUD_TOKEN_API_NAME, null);
+        const banner = resolveProviderSetupBanner(
+            DEFAULT_PROVIDER_REF,
+            [cloud],
+            false,
+            false,
+            "available",
+        );
+        expect(banner).toEqual({
+            reason: "missing-key",
+            title: NO_PROVIDER_BANNER_TITLE,
+            message: NO_PROVIDER_BANNER_MESSAGE,
+        });
+    });
+
+    it("returns null once SmartConnect or a matching external provider key is present", () => {
+        const cloud = row(1, true, true, CLOUD_TOKEN_API_NAME, null);
+        const keyed = row(2, true, false, "gpt-6", "provider-2");
+        expect(
+            resolveProviderSetupBanner(
+                DEFAULT_PROVIDER_REF,
+                [cloud, keyed],
+                true,
+                false,
+                "available",
+            ),
+        ).toBeNull();
+        expect(
+            resolveProviderSetupBanner(
+                String(keyed.id),
+                [cloud, keyed],
+                false,
+                false,
+                "available",
+            ),
+        ).toBeNull();
+    });
+
+    it("does not flash the banner while SmartConnect status is still loading or unavailable", () => {
+        const cloud = row(1, true, true, CLOUD_TOKEN_API_NAME, null);
+        expect(
+            resolveProviderSetupBanner(
+                DEFAULT_PROVIDER_REF,
+                [cloud],
+                false,
+                false,
+                "loading",
+            ),
+        ).toBeNull();
+        expect(
+            resolveProviderSetupBanner(
+                DEFAULT_PROVIDER_REF,
+                [cloud],
+                false,
+                false,
+                "unavailable",
+            ),
+        ).toBeNull();
+    });
+
+    it("returns a retired-model banner when a legacy model row is gone", () => {
+        const cloud = row(1, true, true, CLOUD_TOKEN_API_NAME, null);
+        const banner = resolveProviderSetupBanner(
+            "99",
+            [cloud],
+            true,
+            true,
+            "available",
+        );
+        expect(banner?.reason).toBe("retired");
+        expect(banner?.title).toBe(RETIRED_MODEL_BANNER_TITLE);
     });
 });
 
-describe("starting model for a new personality (PR-1965)", () => {
-    function offlineRow(
-        id: number,
-        apiName: string,
-        isDefault = false,
-    ): ProviderSelectionRow {
-        const model = row(id, false, isDefault, apiName, null);
-        model.visualName = apiName;
-        model.capabilities = {
-            tools: false,
-            images: false,
-            live: false,
-            stt: false,
-            tts: false,
-            offline: true,
-        };
-        return model;
-    }
-
+describe("starting model for a new personality (PR-1965, PR-2333)", () => {
     it("prefers pib.Cloud when that row is offered, ahead of an earlier keyed model", () => {
-        const local = offlineRow(6, "qwen-fast");
         const keyed = row(20, true, false, "gpt-6", "provider-20");
         const cloud = row(10, true, true, CLOUD_TOKEN_API_NAME, null);
-        expect(
-            startingModelForNewPersonality([local, keyed, cloud], true)?.id,
-        ).toBe(cloud.id);
-        expect(
-            startingModelForNewPersonality([local, keyed, cloud], false)?.id,
-        ).toBe(keyed.id);
+        expect(startingModelForNewPersonality([keyed, cloud], true)?.id).toBe(
+            cloud.id,
+        );
+        expect(startingModelForNewPersonality([keyed, cloud], false)?.id).toBe(
+            keyed.id,
+        );
     });
 
     it("takes the first external model with a stored key, in catalogue array order", () => {
-        const local = offlineRow(1, "qwen-fast");
         const keyless = row(2, true, true, "gemini", null);
         const first = row(20, true, false, "gpt-6", "provider-20");
         const later = row(4, true, false, "claude", "provider-4");
         const cloud = row(10, true, false, CLOUD_TOKEN_API_NAME, null);
         expect(
             startingModelForNewPersonality(
-                [local, keyless, first, later, cloud],
+                [keyless, first, later, cloud],
                 false,
             )?.id,
         ).toBe(first.id);
     });
 
-    it("falls back to qwen-fast when no cloud row and no keyed external is offered", () => {
+    it("returns null when no cloud token and no keyed external model is offered", () => {
         const keyless = row(8, true, true, "gpt-6", null);
         const cloud = row(10, true, false, CLOUD_TOKEN_API_NAME, null);
-        const otherLocal = offlineRow(3, "other-local");
-        const local = offlineRow(6, "qwen-fast");
         expect(
-            startingModelForNewPersonality(
-                [keyless, cloud, otherLocal, local],
-                false,
-            )?.id,
-        ).toBe(local.id);
+            startingModelForNewPersonality([keyless, cloud], false),
+        ).toBeNull();
     });
 });
 

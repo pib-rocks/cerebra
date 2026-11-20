@@ -1395,7 +1395,7 @@ describe("ChatWindowDeepChatComponent", () => {
         expect(mockDeepChat.textInput).toEqual({
             disabled: true,
             placeholder: {
-                text: "Enable SmartConnect or deactivate key storage encryption to start the Voice-Assistant",
+                text: DEEP_CHAT_SMARTCONNECT_PLACEHOLDER,
             },
             characterLimit: CHAT_MESSAGE_MAX_LENGTH,
         });

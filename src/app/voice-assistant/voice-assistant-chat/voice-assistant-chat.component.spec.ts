@@ -56,7 +56,7 @@ describe("VoiceAssistantChatComponent", () => {
         tokenStatusSubject = new Subject();
         const tokenServiceMock = createServiceSpy<TokenService>(
             "TokenService",
-            ["checkTokenExists"],
+            ["checkTokenExists", "requestOpenModal"],
             {tokenStatus$: tokenStatusSubject.asObservable()},
         );
         await TestBed.configureTestingModule({
@@ -549,6 +549,135 @@ describe("VoiceAssistantChatComponent", () => {
         tokenStatusSubject.next({tokenExists: false, tokenActive: false});
 
         expect(component.cloudTokenStored).toBeTrue();
+    });
+
+    it("shows the setup banner and disables voice interaction when no token or provider key is configured (PR-2333)", () => {
+        const voiceAssistant = TestBed.inject(VoiceAssistantService);
+        const tokenService = TestBed.inject(TokenService);
+        const openSpy = tokenService.requestOpenModal as jasmine.Spy;
+        openSpy.calls.reset();
+        const flags = {
+            tools: true,
+            images: true,
+            live: false,
+            stt: false,
+            tts: false,
+        };
+        const cloud = new AssistantModel(
+            1,
+            CLOUD_TOKEN_API_NAME,
+            "pib.Cloud",
+            true,
+            "https://cloud.example/v1",
+            flags,
+            null,
+            true,
+        );
+        voiceAssistant.assistantModelsSubject.next([cloud]);
+        tokenStatusSubject.next({
+            tokenExists: false,
+            tokenActive: false,
+            service: "available",
+        });
+        fixture.detectChanges();
+
+        const banner = fixture.nativeElement.querySelector(
+            "[data-test=PNL_Provider_Setup_Banner]",
+        );
+        expect(banner).not.toBeNull();
+        expect(banner.textContent).toContain("No AI provider configured");
+        expect(component.localVoiceEnabled()).toBeFalse();
+        expect(component.voiceToggleTooltip()).toContain("SmartConnect");
+
+        const smartBtn = fixture.nativeElement.querySelector(
+            "[data-test=BTN_Banner_Smart_Connect]",
+        ) as HTMLButtonElement;
+        smartBtn.click();
+        expect(openSpy).toHaveBeenCalledTimes(1);
+        expect(
+            fixture.nativeElement.querySelector(
+                "[data-test=BTN_Banner_System_Keys]",
+            ),
+        ).not.toBeNull();
+    });
+
+    it("hides the setup banner and enables voice interaction when an external provider key is stored (PR-2333)", () => {
+        const voiceAssistant = TestBed.inject(VoiceAssistantService);
+        const flags = {
+            tools: true,
+            images: true,
+            live: false,
+            stt: false,
+            tts: false,
+        };
+        const keyed = new AssistantModel(
+            4,
+            "gpt-6",
+            "GPT-6",
+            true,
+            "https://openai.example/v1",
+            flags,
+            "provider-4",
+            false,
+        );
+        if (component.personality) {
+            component.personality.providerRef = String(keyed.id);
+        }
+        voiceAssistant.assistantModelsSubject.next([keyed]);
+        tokenStatusSubject.next({
+            tokenExists: false,
+            tokenActive: false,
+            service: "available",
+        });
+        fixture.detectChanges();
+
+        expect(
+            fixture.nativeElement.querySelector(
+                "[data-test=PNL_Provider_Setup_Banner]",
+            ),
+        ).toBeNull();
+        expect(component.localVoiceEnabled()).toBeTrue();
+        expect(component.voiceToggleTooltip()).toBe("");
+    });
+
+    it("shows the retired-model banner and locks voice interaction when needsNewModel is set (PR-2333)", () => {
+        const voiceAssistant = TestBed.inject(VoiceAssistantService);
+        const flags = {
+            tools: true,
+            images: true,
+            live: false,
+            stt: false,
+            tts: false,
+        };
+        const cloud = new AssistantModel(
+            1,
+            CLOUD_TOKEN_API_NAME,
+            "pib.Cloud",
+            true,
+            "https://cloud.example/v1",
+            flags,
+            "provider-1",
+            true,
+        );
+        if (component.personality) {
+            component.personality.providerRef = "99";
+            component.personality.needsNewModel = true;
+        }
+        voiceAssistant.assistantModelsSubject.next([cloud]);
+        tokenStatusSubject.next({
+            tokenExists: true,
+            tokenActive: true,
+            service: "available",
+        });
+        fixture.detectChanges();
+
+        const banner = fixture.nativeElement.querySelector(
+            "[data-test=PNL_Provider_Setup_Banner]",
+        );
+        expect(banner).not.toBeNull();
+        expect(banner.textContent).toContain("Model no longer available");
+        expect(component.localVoiceEnabled()).toBeFalse();
+        expect(component.voiceToggleTooltip()).toContain("gone");
     });
 
     // PC-115: the personality's provider is probed when the catalogue

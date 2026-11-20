@@ -964,7 +964,7 @@ describe("KeysComponent", () => {
         );
     });
 
-    it("probes pib.Cloud health with remaining budget and hides keyless offline Local models from the Keys page", () => {
+    it("probes pib.Cloud health with remaining budget and lists external providers on the Keys page", () => {
         providerHealth.check.and.callFake((id: number) => {
             if (id === 1) {
                 return of({
@@ -976,26 +976,6 @@ describe("KeysComponent", () => {
             }
             return of({state: "healthy", latencyMs: 120});
         });
-        const localModel = new AssistantModel(
-            6,
-            "qwen-fast",
-            "Local (qwen-fast)",
-            false,
-            "http://host.docker.internal:11434/v1",
-            {
-                tools: false,
-                images: false,
-                live: false,
-                stt: false,
-                tts: false,
-                offline: true,
-            },
-            null,
-            false,
-            false,
-            5,
-            "Local",
-        );
         models.next([
             new AssistantModel(
                 1,
@@ -1017,7 +997,6 @@ describe("KeysComponent", () => {
                 "provider-4",
                 false,
             ),
-            localModel,
         ]);
 
         fixture = TestBed.createComponent(KeysComponent);
@@ -1026,13 +1005,6 @@ describe("KeysComponent", () => {
 
         expect(providerHealth.check).toHaveBeenCalledWith(1);
         expect(providerHealth.check).toHaveBeenCalledWith(4);
-        expect(providerHealth.check).not.toHaveBeenCalledWith(6);
-        expect(
-            fixture.nativeElement.querySelector("#keys-provider-5"),
-        ).toBeNull();
-        expect(
-            fixture.nativeElement.querySelector("#keys-provider-6"),
-        ).toBeNull();
         expect(text("#keys-cloud-health-text")).toBe(
             "Valid (54 ms) · 48482.43 pib.Tokens left",
         );
