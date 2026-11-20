@@ -441,7 +441,7 @@ describe("MicrophoneArrayRosbridgeService", () => {
             expect(read.completed).toBeFalse();
             expect(read.errors.length).toBe(1);
             expect(read.errors[0].message).toBe(
-                "Reading /doa_publisher:led_mode timed out after 2500 ms.",
+                "Reading /doa_publisher:led_mode timed out after 2500 ms (rosbridge/rosapi did not answer).",
             );
         });
 
