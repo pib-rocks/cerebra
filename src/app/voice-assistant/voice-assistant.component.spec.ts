@@ -129,6 +129,7 @@ describe("VoiceAssistantComponent", () => {
                             tokenExists: true,
                             tokenActive: true,
                         }),
+                        requestOpenModal: jasmine.createSpy("requestOpenModal"),
                     },
                 },
             ],
@@ -1127,13 +1128,13 @@ describe("VoiceAssistantComponent", () => {
             ).options,
         );
         expect(
-            options.some((option) =>
-                option.textContent?.includes("Gemini 3.8 Live"),
+            options.some(
+                (option) => option.textContent?.includes("Gemini 3.8 Live"),
             ),
         ).toBeFalse();
         expect(
-            options.some((option) =>
-                option.textContent?.includes("Gemini 3.8 Flash"),
+            options.some(
+                (option) => option.textContent?.includes("Gemini 3.8 Flash"),
             ),
         ).toBeTrue();
         component.ngbModalRef?.close();
@@ -1891,6 +1892,26 @@ describe("VoiceAssistantComponent", () => {
         expect(
             document.body.querySelector("[data-test=BTN_Dialog_System_Keys]"),
         ).not.toBeNull();
+        const tokenSvc = TestBed.inject(TokenService);
+        const requestOpenSpy = tokenSvc.requestOpenModal as jasmine.Spy;
+        requestOpenSpy.calls.reset();
+        (
+            document.body.querySelector(
+                "[data-test=BTN_Dialog_Smart_Connect]",
+            ) as HTMLButtonElement
+        ).click();
+        expect(requestOpenSpy).toHaveBeenCalledTimes(1);
+
+        openNewPersonality();
+        const router = TestBed.inject(Router);
+        const routerSpy = router.navigate as jasmine.Spy;
+        routerSpy.calls.reset();
+        (
+            document.body.querySelector(
+                "[data-test=BTN_Dialog_System_Keys]",
+            ) as HTMLButtonElement
+        ).click();
+        expect(routerSpy).toHaveBeenCalledWith(["/system/keys"]);
         component.ngbModalRef?.close();
     });
 

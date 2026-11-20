@@ -640,6 +640,46 @@ describe("VoiceAssistantChatComponent", () => {
         expect(component.voiceToggleTooltip()).toBe("");
     });
 
+    it("shows the retired-model banner and locks voice interaction when needsNewModel is set (PR-2333)", () => {
+        const voiceAssistant = TestBed.inject(VoiceAssistantService);
+        const flags = {
+            tools: true,
+            images: true,
+            live: false,
+            stt: false,
+            tts: false,
+        };
+        const cloud = new AssistantModel(
+            1,
+            CLOUD_TOKEN_API_NAME,
+            "pib.Cloud",
+            true,
+            "https://cloud.example/v1",
+            flags,
+            "provider-1",
+            true,
+        );
+        if (component.personality) {
+            component.personality.providerRef = "99";
+            component.personality.needsNewModel = true;
+        }
+        voiceAssistant.assistantModelsSubject.next([cloud]);
+        tokenStatusSubject.next({
+            tokenExists: true,
+            tokenActive: true,
+            service: "available",
+        });
+        fixture.detectChanges();
+
+        const banner = fixture.nativeElement.querySelector(
+            "[data-test=PNL_Provider_Setup_Banner]",
+        );
+        expect(banner).not.toBeNull();
+        expect(banner.textContent).toContain("Model no longer available");
+        expect(component.localVoiceEnabled()).toBeFalse();
+        expect(component.voiceToggleTooltip()).toContain("gone");
+    });
+
     // PC-115: the personality's provider is probed when the catalogue
     // resolves, which is what the status strip paints green or red.
     function pushCloudModel() {

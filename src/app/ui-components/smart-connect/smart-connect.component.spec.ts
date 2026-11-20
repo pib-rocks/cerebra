@@ -34,6 +34,7 @@ describe("SmartConnectComponent", () => {
     // the service/error fields, so the double may send either shape.
     type TokenStatusInput = Parameters<typeof normalizeTokenStatus>[0];
     let tokenStatus$: Subject<TokenStatusInput>;
+    let openModalRequested$: Subject<void>;
     let models$: BehaviorSubject<AssistantModel[]>;
     let mockVoiceAssistant: jasmine.SpyObj<VoiceAssistantService>;
     let mockKeyStore: jasmine.SpyObj<KeyStoreService>;
@@ -47,11 +48,13 @@ describe("SmartConnectComponent", () => {
         ]);
 
         tokenStatus$ = new Subject();
+        openModalRequested$ = new Subject<void>();
         mockTokenService = createServiceSpy<TokenService>(
             "TokenService",
-            ["checkTokenExists"],
+            ["checkTokenExists", "requestOpenModal"],
             {
                 tokenStatus$: tokenStatus$.asObservable(),
+                openModalRequested$: openModalRequested$.asObservable(),
             },
         );
 
@@ -368,5 +371,83 @@ describe("SmartConnectComponent (zoneless)", () => {
         await fixture.whenStable();
 
         expect(fixture.componentInstance.isTokenStored).toBeTrue();
+    });
+
+    it("opens the SmartConnect modal when TokenService.requestOpenModal emits (PR-2333)", () => {
+        const openModal$ = new Subject<void>();
+        const mockModal = jasmine.createSpyObj("NgbModal", [
+            "open",
+            "dismissAll",
+        ]);
+        mockModal.open.and.returnValue({
+            dismissed: of(undefined),
+        } as unknown as NgbModalRef);
+        const tokenService = new TokenService({
+            connectionStatus$: of(false),
+            checkTokenExists: () =>
+                of({tokenExists: false, tokenActive: false}),
+        } as unknown as RosService);
+        let requested = 0;
+        tokenService.openModalRequested$.subscribe(() => {
+            requested += 1;
+        });
+        tokenService.requestOpenModal();
+        expect(requested).toBe(1);
+
+        TestBed.configureTestingModule({
+            imports: [
+                RouterTestingModule,
+                ReactiveFormsModule,
+                SmartConnectComponent,
+            ],
+            providers: [
+                provideZonelessChangeDetection(),
+                {provide: NgbModal, useValue: mockModal},
+                {
+                    provide: RosService,
+                    useValue: jasmine.createSpyObj("RosService", [
+                        "checkTokenExists",
+                    ]),
+                },
+                {
+                    provide: TokenService,
+                    useValue: createServiceSpy<TokenService>(
+                        "TokenService",
+                        ["checkTokenExists", "requestOpenModal"],
+                        {
+                            tokenStatus$: of({
+                                tokenExists: false,
+                                tokenActive: false,
+                                service: "available",
+                                error: null,
+                            }),
+                            openModalRequested$: openModal$.asObservable(),
+                        },
+                    ),
+                },
+                {
+                    provide: ApiService,
+                    useValue: jasmine.createSpyObj("ApiService", ["post"]),
+                },
+                {
+                    provide: VoiceAssistantService,
+                    useValue: {assistantModelsSubject: new BehaviorSubject([])},
+                },
+                {
+                    provide: KeyStoreService,
+                    useValue: {
+                        status: () =>
+                            of({
+                                encryptKeyStorage: false,
+                                credentialRefs: [],
+                            }),
+                    },
+                },
+            ],
+        });
+        const fixture = TestBed.createComponent(SmartConnectComponent);
+        fixture.detectChanges();
+        openModal$.next();
+        expect(mockModal.open).toHaveBeenCalledTimes(1);
     });
 });

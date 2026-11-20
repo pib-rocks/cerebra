@@ -29,7 +29,10 @@ export const MISSING_KEY_TURN =
  * unavailable are not a stored token and not a missing one.
  */
 export type TokenProbeState =
-    "unknown" | "loading" | "available" | "unavailable";
+    | "unknown"
+    | "loading"
+    | "available"
+    | "unavailable";
 
 /** Not a request to store or re-enter a key. */
 export const TOKEN_PROBE_UNAVAILABLE = "SmartConnect status is unavailable.";
@@ -120,8 +123,8 @@ export function resolveVoiceAssistantChip(
         resolved.state === "ok"
             ? "ok"
             : resolved.state === "attention"
-              ? "attention"
-              : "neutral";
+            ? "attention"
+            : "neutral";
     const detail =
         resolved.state === "ok" ? null : resolved.reason?.trim() || null;
     return {
