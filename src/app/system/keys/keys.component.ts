@@ -19,7 +19,6 @@ import {AssistantModel} from "src/app/shared/types/assistantModel";
 import {
     ProviderKeyAccount,
     TokenProbeState,
-    isOfflineModel,
     persistedCloudCredentialPresent,
     providerKeyAccounts,
     usesCloudToken,
@@ -113,10 +112,7 @@ export class KeysComponent implements OnInit {
                     this.probeCloudHealth();
                 }
                 this.providers = models.filter(
-                    (model) =>
-                        !usesCloudToken(model) &&
-                        !isOfflineModel(model) &&
-                        !model.retired,
+                    (model) => !usesCloudToken(model) && !model.retired,
                 );
                 this.keyProviders = providerKeyAccounts(this.providers);
                 this.probeNewProviders();

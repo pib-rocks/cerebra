@@ -22,17 +22,14 @@ export const PIB_CLOUD_NATURAL_CHAT_LABEL = "pib.Cloud - Natural Chat";
 export const MISSING_KEY_MARK = "Needs a key";
 
 export const MISSING_KEY_TURN =
-    "This personality needs a provider key. It is marked until a key is stored in System > Keys.";
+    "No AI provider is configured for this personality. Connect SmartConnect or store a provider key in System > Keys to start a dialog.";
 
 /**
  * A token probe that has not produced a reading. Unknown, loading, and
  * unavailable are not a stored token and not a missing one.
  */
 export type TokenProbeState =
-    | "unknown"
-    | "loading"
-    | "available"
-    | "unavailable";
+    "unknown" | "loading" | "available" | "unavailable";
 
 /** Not a request to store or re-enter a key. */
 export const TOKEN_PROBE_UNAVAILABLE = "SmartConnect status is unavailable.";
@@ -45,7 +42,18 @@ export const CHAT_TRANSPORT_UNAVAILABLE =
     "The chat service is unavailable. The stored key was not removed.";
 
 export const DEEP_CHAT_SMARTCONNECT_PLACEHOLDER =
-    "Enable SmartConnect or deactivate key storage encryption to start the Voice-Assistant";
+    "Connect SmartConnect or store a provider key in System > Keys to start a dialog.";
+
+export interface ProviderSetupBanner {
+    reason: "missing-key" | "retired";
+    title: string;
+    message: string;
+}
+
+export const NO_PROVIDER_BANNER_TITLE = "No AI provider configured";
+export const NO_PROVIDER_BANNER_MESSAGE =
+    "No local language model is installed on pib. Connect SmartConnect (pib.Cloud) or store a provider API key in System > Keys to start a dialog.";
+export const RETIRED_MODEL_BANNER_TITLE = "Model no longer available";
 
 export const DEEP_CHAT_KEY_STORE_LOCKED_PLACEHOLDER =
     "Unlock the key store to use Smart chat and Direct chat";
@@ -112,8 +120,8 @@ export function resolveVoiceAssistantChip(
         resolved.state === "ok"
             ? "ok"
             : resolved.state === "attention"
-            ? "attention"
-            : "neutral";
+              ? "attention"
+              : "neutral";
     const detail =
         resolved.state === "ok" ? null : resolved.reason?.trim() || null;
     return {
@@ -291,29 +299,16 @@ export function capabilitiesFrom(
     };
 }
 
-/**
- * The model runs on the device and needs no provider key. The backend marks it
- * with the offline capability. Without reading it, a keyless on-device model
- * looks like a row whose key is missing and every chat is refused (PR-1931).
- */
-export function isOfflineModel(model: ProviderSelectionRow): boolean {
-    return model.capabilities?.offline === true;
-}
-
 export function hasImagesCapability(model: ProviderSelectionRow): boolean {
     return model.capabilities?.images === true;
 }
 
 /**
- * A personality may choose an image model, a named live model, or the
- * on-device model. Mirrors the backend's is_listed_model.
+ * A personality may choose an image model or a named live model.
+ * Mirrors the backend's is_listed_model.
  */
 export function isListedModel(model: ProviderSelectionRow): boolean {
-    return (
-        hasImagesCapability(model) ||
-        model.capabilities?.live === true ||
-        isOfflineModel(model)
-    );
+    return hasImagesCapability(model) || model.capabilities?.live === true;
 }
 
 export function usesCloudToken(
@@ -413,11 +408,6 @@ export function credentialState(
     models?: readonly ProviderSelectionRow[],
     tokenProbe: TokenProbeState = "available",
 ): CredentialState {
-    // The on-device model needs no key. Without this it looks like a row whose
-    // key is missing and the chat is refused (PR-1931).
-    if (isOfflineModel(model)) {
-        return "present";
-    }
     if (storedCredential(model, models) != null) {
         return "present";
     }
@@ -709,12 +699,41 @@ export function chatModelsForPersonalityDialog<T extends ProviderSelectionRow>(
 }
 
 /**
- * The row the backend offers as the on-device model. That row is added only
- * when Ollama lists qwen-fast, so its presence in the catalogue is the
- * availability signal. There is no separate order field on a catalogue row;
- * catalogue order is the array order of `models`.
+ * Banner shown above the Voice Assistant chat when the open personality cannot
+ * start a dialog because no token/provider key is stored or its model was
+ * retired (PR-2333). Returns null while the token probe is still unresolved so
+ * transient connect states do not flash a missing-provider banner.
  */
-const QWEN_FAST_API_NAME = "qwen-fast";
+export function resolveProviderSetupBanner(
+    providerRef: string | null | undefined,
+    models: ProviderSelectionRow[],
+    cloudTokenStored: boolean,
+    needsNewModel = false,
+    tokenProbe: TokenProbeState = "available",
+): ProviderSetupBanner | null {
+    const attention = personalityAttention(
+        providerRef,
+        models,
+        cloudTokenStored,
+        needsNewModel,
+        tokenProbe,
+    );
+    if (attention == null || attention.reason === "unavailable") {
+        return null;
+    }
+    if (attention.reason === "retired") {
+        return {
+            reason: "retired",
+            title: RETIRED_MODEL_BANNER_TITLE,
+            message: attention.notice,
+        };
+    }
+    return {
+        reason: "missing-key",
+        title: NO_PROVIDER_BANNER_TITLE,
+        message: NO_PROVIDER_BANNER_MESSAGE,
+    };
+}
 
 /**
  * The catalogue row a new personality dialog starts on. Walks the offered
@@ -723,9 +742,8 @@ const QWEN_FAST_API_NAME = "qwen-fast";
  *
  * 1. pib.Cloud, when that row is offered (its credential is stored, or a
  *    resolved probe says the SmartConnect token is stored).
- * 2. Otherwise the first external row with a stored key. The on-device row
- *    is configured without a key, so it is never this step.
- * 3. Otherwise qwen-fast, when that row is offered.
+ * 2. Otherwise the first external row with a stored key.
+ * 3. Otherwise null (no local fallback model is installed; PR-2333).
  */
 export function startingModelForNewPersonality<T extends ProviderSelectionRow>(
     models: readonly T[],
@@ -745,17 +763,11 @@ export function startingModelForNewPersonality<T extends ProviderSelectionRow>(
     }
     const external = offered.find(
         (model) =>
-            !isOfflineModel(model) &&
             !usesCloudToken(model, catalogue) &&
             credentialState(model, cloudTokenStored, catalogue, tokenProbe) ===
                 "present",
     );
-    if (external != null) {
-        return external;
-    }
-    return (
-        offered.find((model) => model.apiName === QWEN_FAST_API_NAME) ?? null
-    );
+    return external ?? null;
 }
 
 function currentSelection<T extends ProviderSelectionRow>(

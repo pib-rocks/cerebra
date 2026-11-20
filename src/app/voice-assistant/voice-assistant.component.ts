@@ -77,7 +77,7 @@ import {
 } from "../shared/services/token.service";
 import {Program} from "../shared/types/program";
 import {VoiceAssistantNavComponent} from "./voice-assistant-nav/voice-assistant-nav.component";
-import {RouterOutlet} from "@angular/router";
+import {Router, RouterOutlet} from "@angular/router";
 import {NgClass} from "@angular/common";
 
 @Component({
@@ -96,6 +96,7 @@ import {NgClass} from "@angular/common";
 export class VoiceAssistantComponent implements OnInit {
     private readonly destroyRef = inject(DestroyRef);
     private readonly changeDetector = inject(ChangeDetectorRef);
+    private readonly router = inject(Router);
 
     personalityForm!: FormGroup;
     uuid: string | undefined;
@@ -506,6 +507,20 @@ export class VoiceAssistantComponent implements OnInit {
     get showIdleTimeout(): boolean {
         const live = this.personalityForm?.controls["live"];
         return live != null && live.value === true;
+    }
+
+    get noConfiguredModelsAvailable(): boolean {
+        return this.selectionModels.length === 0;
+    }
+
+    openSmartConnectFromDialog(): void {
+        this.ngbModalRef?.dismiss("smart-connect");
+        this.tokenService.requestOpenModal?.();
+    }
+
+    openKeysFromDialog(): void {
+        this.ngbModalRef?.dismiss("system-keys");
+        void this.router.navigate(["/system/keys"]);
     }
 
     private rebuildSelection() {

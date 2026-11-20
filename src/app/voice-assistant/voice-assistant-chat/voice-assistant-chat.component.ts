@@ -27,10 +27,14 @@ import {Chat, ChatDto} from "src/app/shared/types/chat.class";
 import {VoiceAssistant} from "src/app/shared/types/voice-assistant";
 import {VoiceAssistantState} from "../../shared/types/voice-assistant-state";
 import {
+    DEEP_CHAT_SMARTCONNECT_PLACEHOLDER,
+    ProviderSetupBanner,
     TokenProbeState,
     chatStartRefusal,
+    credentialState,
     effectiveCloudTokenStored,
     resolveProvider,
+    resolveProviderSetupBanner,
     selectionFromModelRef,
 } from "src/app/shared/types/provider-registry";
 import {ProviderHealth} from "src/app/shared/types/provider-health";
@@ -254,9 +258,9 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
                     .split("/")
                     .find((segment) => RegExp(CerebraRegex.UUID).test(segment));
                 this.personality = this.personalityId
-                    ? this.voiceAssistantService.getPersonality(
+                    ? (this.voiceAssistantService.getPersonality(
                           this.personalityId,
-                      ) ?? this.route.snapshot.params["personality"]
+                      ) ?? this.route.snapshot.params["personality"])
                     : this.route.snapshot.params["personality"];
                 if (this.personality) {
                     this.subject = this.chatService.getSubject(
@@ -358,13 +362,73 @@ export class VoiceAssistantChatComponent implements OnInit, OnDestroy {
     }
 
     /**
-     * faster-whisper and Supertone do not use the key store.
-     * Degraded mode leaves this control on. A persisted cloud credential in
-     * the key store / catalogue also enables voice interaction when the
-     * rosbridge token probe is slow or unavailable.
+     * Voice interaction is enabled whenever the open personality has a usable
+     * AI provider configured (either SmartConnect / pib.Cloud or a stored
+     * external provider key) and no model retirement/missing-key refusal.
      */
     localVoiceEnabled(): boolean {
+        const personality =
+            (this.personalityId != null
+                ? this.voiceAssistantService.getPersonality(this.personalityId)
+                : undefined) ?? this.personality;
+        const models =
+            this.voiceAssistantService.assistantModelsSubject?.getValue() ?? [];
+        if (personality != null) {
+            if (
+                chatStartRefusal(
+                    personality.providerRef,
+                    models,
+                    this.cloudTokenStored,
+                    personality.needsNewModel,
+                    this.tokenProbe,
+                ) != null
+            ) {
+                return false;
+            }
+            const resolved = resolveProvider(personality.providerRef, models);
+            if (
+                resolved != null &&
+                credentialState(
+                    resolved,
+                    this.cloudTokenStored,
+                    models,
+                    this.tokenProbe,
+                ) === "present"
+            ) {
+                return true;
+            }
+        }
         return this.smartConnectActive || this.cloudTokenStored;
+    }
+
+    voiceToggleTooltip(): string {
+        if (this.localVoiceEnabled()) {
+            return "";
+        }
+        return this.modelChoiceRefusal() ?? DEEP_CHAT_SMARTCONNECT_PLACEHOLDER;
+    }
+
+    get providerSetupBanner(): ProviderSetupBanner | null {
+        const personality =
+            (this.personalityId != null
+                ? this.voiceAssistantService.getPersonality(this.personalityId)
+                : undefined) ?? this.personality;
+        if (personality == null) {
+            return null;
+        }
+        const models =
+            this.voiceAssistantService.assistantModelsSubject?.getValue() ?? [];
+        return resolveProviderSetupBanner(
+            personality.providerRef,
+            models,
+            this.cloudTokenStored,
+            personality.needsNewModel,
+            this.tokenProbe,
+        );
+    }
+
+    openSmartConnect(): void {
+        this.tokenService.requestOpenModal?.();
     }
 
     /**

@@ -1,5 +1,5 @@
 import {Injectable} from "@angular/core";
-import {BehaviorSubject, timeout} from "rxjs";
+import {BehaviorSubject, Subject, timeout} from "rxjs";
 import {TokenProbeState} from "../types/provider-registry";
 import {RosService} from "./ros-service/ros.service";
 
@@ -62,7 +62,13 @@ export class TokenService {
         UNKNOWN_TOKEN_STATUS,
     );
     tokenStatus$ = this.tokenStatusSubject.asObservable();
+    private readonly openModalRequests = new Subject<void>();
+    openModalRequested$ = this.openModalRequests.asObservable();
     private probeGeneration = 0;
+
+    requestOpenModal(): void {
+        this.openModalRequests.next();
+    }
 
     constructor(private readonly rosService: RosService) {
         this.rosService.connectionStatus$.subscribe((isConnected) => {

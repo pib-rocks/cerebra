@@ -3,6 +3,7 @@ import {
     Component,
     OnInit,
     TemplateRef,
+    ViewChild,
     ChangeDetectionStrategy,
     DestroyRef,
     inject,
@@ -42,6 +43,8 @@ import {NgClass, NgOptimizedImage} from "@angular/common";
 export class SmartConnectComponent implements OnInit {
     private readonly destroyRef = inject(DestroyRef);
     private readonly changeDetector = inject(ChangeDetectorRef);
+
+    @ViewChild("modalContent") modalContent?: TemplateRef<any>;
 
     // prevent user from opening modal multiple times in case of delay
     isLoadingModal: boolean = false;
@@ -88,6 +91,13 @@ export class SmartConnectComponent implements OnInit {
                 this.isTokenActive = status.tokenActive === true;
                 this.refreshStoredPresence();
                 this.changeDetector.markForCheck();
+            });
+        this.tokenService.openModalRequested$
+            ?.pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe(() => {
+                if (this.modalContent && !this.isLoadingModal) {
+                    this.onOpenModal(this.modalContent);
+                }
             });
     }
 

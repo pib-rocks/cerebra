@@ -322,8 +322,7 @@ describe("ChatWindowDeepChatComponent", () => {
     it("leaves out the chat and personality view toggle", () => {
         const registered = customElements.get("deep-chat");
         const prototype = registered?.prototype as
-            | {connectedCallback?: () => void}
-            | undefined;
+            {connectedCallback?: () => void} | undefined;
         const connected = prototype?.connectedCallback;
         if (prototype != null) {
             prototype.connectedCallback = () => undefined;
@@ -1395,7 +1394,7 @@ describe("ChatWindowDeepChatComponent", () => {
         expect(mockDeepChat.textInput).toEqual({
             disabled: true,
             placeholder: {
-                text: "Enable SmartConnect or deactivate key storage encryption to start the Voice-Assistant",
+                text: DEEP_CHAT_SMARTCONNECT_PLACEHOLDER,
             },
             characterLimit: CHAT_MESSAGE_MAX_LENGTH,
         });
@@ -1942,8 +1941,8 @@ describe("ChatWindowDeepChatComponent fresh chat without id", () => {
             id === createdChatId
                 ? new Chat("hello there", personalityUuid, createdChatId)
                 : id === existingChatId
-                ? new Chat("topic", personalityUuid, existingChatId)
-                : undefined,
+                  ? new Chat("topic", personalityUuid, existingChatId)
+                  : undefined,
         );
 
         TestBed.inject(KeyStoreSessionService).mode = UNLOCKED_MODE;
